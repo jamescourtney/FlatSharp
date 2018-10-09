@@ -56,7 +56,7 @@ public class MonsterTable
     }
 }
 
-[FlatBufferVector]
+[FlatBufferStruct]
 public class Position
 {
    [FlatBufferItem(0)]
