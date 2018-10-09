@@ -1,0 +1,1 @@
+..\Google.FlatBuffers\flatc.exe --gen-onefile --csharp -o FBBench\ FBBench\Google.Flatbuffers.fbs
