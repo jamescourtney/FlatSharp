@@ -229,7 +229,7 @@ namespace FlatSharp
 
         public static void EmitMethodCall(this ILGenerator generator, MethodInfo method)
         {
-            if (method.IsStatic || (!method.IsVirtual && !method.IsAbstract))
+            if (method.IsStatic)
             {
                 generator.Emit(OpCodes.Call, method);
             }
