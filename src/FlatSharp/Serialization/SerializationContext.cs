@@ -28,6 +28,7 @@ namespace FlatSharp
     {
         internal readonly VTableHelper vtableHelper;
         private int offset;
+        private int capacity;
 
         /// <summary>
         /// Initializes a new serialization context.
@@ -49,9 +50,10 @@ namespace FlatSharp
         /// <summary>
         /// Resets the context.
         /// </summary>
-        internal void Reset()
+        internal void Reset(int capacity)
         {
             this.offset = 0;
+            this.capacity = capacity;
             this.vtableHelper.Reset();
         }
 
@@ -113,7 +115,14 @@ namespace FlatSharp
 
                 offset += SerializationHelpers.GetAlignmentError(offset, alignment);
 
-                this.offset = offset + bytesNeeded;
+                int finalOffset = offset + bytesNeeded;
+
+                if (finalOffset >= this.capacity)
+                {
+                    throw new BufferTooSmallException();
+                }
+
+                this.offset = finalOffset;
                 return offset;
             }
         }
