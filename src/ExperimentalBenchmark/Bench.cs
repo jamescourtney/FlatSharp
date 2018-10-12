@@ -221,6 +221,11 @@ namespace BenchmarkCore
         #region FlatSharp
 
 #if FLATSHARP
+        public int FlatSharp_GetMaxSize()
+        {
+            return this.fscacheserializer.GetMaxSize(this.defaultContainer);
+        }
+
         public int FlatSharp_Serialize()
         {
             return this.fscacheserializer.Serialize(this.defaultContainer, this.fs_writeBuffer);

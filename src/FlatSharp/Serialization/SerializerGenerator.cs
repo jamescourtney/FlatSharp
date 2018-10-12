@@ -32,7 +32,8 @@ namespace FlatSharp
     /// </summary>
     internal class SerializerGenerator
     {
-        private readonly Dictionary<Type, MethodBuilder> sizeNeededMethods = new Dictionary<Type, MethodBuilder>();
+        private readonly Dictionary<Type, MethodBuilder> tableInlineSizeMethods = new Dictionary<Type, MethodBuilder>();
+        private readonly Dictionary<Type, MethodBuilder> maxSizeMethods = new Dictionary<Type, MethodBuilder>();
         private readonly Dictionary<Type, MethodBuilder> writeMethods = new Dictionary<Type, MethodBuilder>();
 
         public ISerializer<TRoot> Compile<TRoot>()
@@ -45,7 +46,7 @@ namespace FlatSharp
 
             this.DefineMethods(RuntimeTypeModel.CreateFrom(typeof(TRoot)), typeBuilder);
             this.ImplementMethods();
-            this.ImplementInterfaceMethod(typeof(TRoot), typeBuilder, this.writeMethods[typeof(TRoot)]);
+            this.ImplementInterfaceMethod(typeof(TRoot), typeBuilder);
 
             TypeInfo info = typeBuilder.CreateTypeInfo();
             var writeRoot = info.GetMethod(this.writeMethods[typeof(TRoot)].Name, BindingFlags.Public | BindingFlags.Static);
@@ -68,30 +69,36 @@ namespace FlatSharp
                 return;
             }
 
-            if (this.sizeNeededMethods.ContainsKey(model.ClrType))
+            if (this.tableInlineSizeMethods.ContainsKey(model.ClrType))
             {
                 // Already done.
                 return;
             }
 
-            string nameBase = model.ClrType.FullName.Replace('.', '_');
+            string nameBase = Guid.NewGuid().ToString("n");
             if (model is VectorTypeModel vectorModel2)
             {
                 if (vectorModel2.IsList)
                 {
-                    nameBase = "ListVectorOf_" + vectorModel2.ItemTypeModel.ClrType.FullName.Replace('.', '_');
+                    nameBase = "ListVector_" + Guid.NewGuid().ToString("n");
                 }
                 else
                 {
-                    nameBase = "MemoryVectorOf_" + vectorModel2.ItemTypeModel.ClrType.FullName.Replace('.', '_');
+                    nameBase = "MemoryVector_" + Guid.NewGuid().ToString("n");
                 }
             }
 
             var sizeMethod = builder.DefineMethod(
-                "GetSizeOf_" + nameBase,
+                "GetInlineTableSizeOf_" + nameBase,
                 MethodAttributes.Static | MethodAttributes.Public,
                 typeof(int),
                 new[] { model.ClrType, model.ClrType, typeof(int).MakeByRefType() });
+
+            var maxSizeMethod = builder.DefineMethod(
+                "GetMaxSizeOf_" + nameBase,
+                MethodAttributes.Static | MethodAttributes.Public,
+                typeof(int),
+                new[] { model.ClrType });
 
             var inlineWriteMethod = builder.DefineMethod(
                 "WriteInlineValueOf_" + nameBase,
@@ -99,8 +106,9 @@ namespace FlatSharp
                 null,
                 new[] { typeof(SpanWriter), typeof(Span<byte>), model.ClrType, typeof(int), typeof(SerializationContext) });
 
-            this.sizeNeededMethods[model.ClrType] = sizeMethod;
+            this.tableInlineSizeMethods[model.ClrType] = sizeMethod;
             this.writeMethods[model.ClrType] = inlineWriteMethod;
+            this.maxSizeMethods[model.ClrType] = maxSizeMethod;
 
             if (model is TableTypeModel tableModel)
             {
@@ -124,32 +132,47 @@ namespace FlatSharp
 
         private void ImplementInterfaceMethod(
             Type rootType,
-            TypeBuilder typeBuilder,
-            MethodBuilder writeRoot)
+            TypeBuilder typeBuilder)
         {
-            var rootMethod = typeBuilder.DefineMethod(
-                nameof(ISerializer<byte>.Write),
-                MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.NewSlot | MethodAttributes.Final,
-                null,
-                new[] { typeof(SpanWriter), typeof(Span<byte>), rootType, typeof(int), typeof(SerializationContext) });
+            {
+                var rootMethod = typeBuilder.DefineMethod(
+                    nameof(ISerializer<byte>.Write),
+                    MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.NewSlot | MethodAttributes.Final,
+                    null,
+                    new[] { typeof(SpanWriter), typeof(Span<byte>), rootType, typeof(int), typeof(SerializationContext) });
 
-            rootMethod.SetImplementationFlags(rootMethod.GetMethodImplementationFlags() | MethodImplAttributes.AggressiveInlining);
-            var il = rootMethod.GetILGenerator();
-            il.EmitLdArg(1);
-            il.EmitLdArg(2);
-            il.EmitLdArg(3);
-            il.EmitLdArg(4);
-            il.EmitLdArg(5);
-            il.EmitMethodCall(writeRoot);
-            il.Emit(OpCodes.Ret);
+                rootMethod.SetImplementationFlags(rootMethod.GetMethodImplementationFlags() | MethodImplAttributes.AggressiveInlining);
+                var il = rootMethod.GetILGenerator();
+                il.EmitLdArg(1);
+                il.EmitLdArg(2);
+                il.EmitLdArg(3);
+                il.EmitLdArg(4);
+                il.EmitLdArg(5);
+                il.EmitMethodCall(this.writeMethods[rootType]);
+                il.Emit(OpCodes.Ret);
+            }
+
+            {
+                var rootMethod = typeBuilder.DefineMethod(
+                    nameof(ISerializer<byte>.GetMaxSize),
+                    MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.NewSlot | MethodAttributes.Final,
+                    typeof(int),
+                    new[] { rootType });
+
+                rootMethod.SetImplementationFlags(rootMethod.GetMethodImplementationFlags() | MethodImplAttributes.AggressiveInlining);
+                var il = rootMethod.GetILGenerator();
+                il.EmitLdArg(1);
+                il.EmitMethodCall(this.maxSizeMethods[rootType]);
+                il.Emit(OpCodes.Ret);
+            }
         }
 
         private void ImplementMethods()
         {
-            foreach (var pair in this.sizeNeededMethods)
+            foreach (var pair in this.tableInlineSizeMethods)
             {
                 Type type = pair.Key;
-                this.ImplementGetSizeMethod(type, pair.Value);
+                this.ImplementGetInlineSizeMethod(type, pair.Value);
             }
 
             foreach (var pair in this.writeMethods)
@@ -157,9 +180,221 @@ namespace FlatSharp
                 Type type = pair.Key;
                 this.ImplementInlineWriteMethod(type, pair.Value);
             }
+
+            foreach (var pair in this.maxSizeMethods)
+            {
+                Type type = pair.Key;
+                this.ImplementGetMaxSizeMethod(type, pair.Value);
+            }
         }
 
-        private void ImplementGetSizeMethod(Type type, MethodBuilder getSizeBuilder)
+        private void ImplementGetMaxSizeMethod(Type type, MethodBuilder methodBuilder)
+        {
+            // Parameters: T item
+            // Return: max total size for item.
+            var typeModel = RuntimeTypeModel.CreateFrom(type);
+
+            methodBuilder.AddAggressiveInlining();
+            var generator = methodBuilder.GetILGenerator();
+
+            if (typeModel is StructTypeModel structModel)
+            {
+                generator.EmitInt32Constant(structModel.InlineSize);
+            }
+            else if (typeModel is TableTypeModel tableModel)
+            {
+                // Tables are slightly trickier. We need to figure out:
+                // 1) Maximum size of vtable
+                // 2) Maximum size of table.
+                // 3) Maximum size of any subtables / vectors / strings.
+
+                // Max size of vtable = field count * 2 + 4;
+                int vtableSize = (tableModel.IndexToMemberMap.Keys.Max() + 1) * 2;
+                vtableSize += (2 * sizeof(ushort)) + SerializationHelpers.GetMaxPadding(sizeof(ushort));
+
+                int constantInlineSize = 0;
+                generator.EmitInt32Constant(0);
+
+                // Now we compute the inline size of each element.
+                foreach (var pair in tableModel.IndexToMemberMap)
+                {
+                    var itemModel = pair.Value.ItemTypeModel;
+                    constantInlineSize += itemModel.InlineSize + SerializationHelpers.GetMaxPadding(itemModel.Alignment);
+
+                    MethodInfo subMethod = null;
+                    if (itemModel.SchemaType == FlatBufferSchemaType.String)
+                    {
+                        subMethod = ReflectedMethods.Serialize.SerializationHelpers_GetMaxSizeOfStringMethod;
+                    }
+                    else if (itemModel.SchemaType == FlatBufferSchemaType.Table || itemModel.SchemaType == FlatBufferSchemaType.Vector)
+                    {
+                        subMethod = this.maxSizeMethods[itemModel.ClrType];
+                    }
+
+                    // if we're dealing with an item that isn't stored completely inline (string/vector/subtable), then we need to branch.
+                    if (subMethod != null)
+                    {
+                        var after = generator.DefineLabel();
+                        var temp = generator.DeclareLocal(itemModel.ClrType);
+
+                        generator.EmitLdArg(0);
+                        generator.EmitMethodCall(pair.Value.PropertyInfo.GetGetMethod());
+                        generator.EmitStLoc(temp);
+
+                        if (itemModel is VectorTypeModel vectorModel && vectorModel.IsMemoryVector)
+                        {
+                            PropertyInfo lengthProperty = vectorModel.IsReadOnly ?
+                                ReflectedMethods.Serialize.ReadOnlyMemory_LengthProperty(vectorModel.ItemTypeModel.ClrType) :
+                                ReflectedMethods.Serialize.Memory_LengthProperty(vectorModel.ItemTypeModel.ClrType);
+
+                            generator.EmitLdLoca(temp);
+                            generator.EmitMethodCall(lengthProperty.GetGetMethod());
+                            generator.Emit(OpCodes.Brfalse_S, after);
+                        }
+                        else
+                        {
+                            generator.EmitLdLoc(temp);
+                            generator.Emit(OpCodes.Brfalse_S, after);
+                        }
+
+                        // GetMaxSizeOfString(thing.StringProperty);
+                        generator.EmitLdLoc(temp);
+                        generator.EmitMethodCall(subMethod);
+                        generator.Emit(OpCodes.Add_Ovf);
+
+                        generator.MarkLabel(after);
+                    }
+                }
+
+                generator.EmitInt32Constant(vtableSize + constantInlineSize);
+                generator.Emit(OpCodes.Add_Ovf);
+            }
+            else if (typeModel is VectorTypeModel vectorModel)
+            {
+                var itemTypeModel = vectorModel.ItemTypeModel;
+
+                #region Length Property
+
+                PropertyInfo lengthProperty = null;
+                PropertyInfo indexer = null;
+                if (vectorModel.IsMemoryVector)
+                {
+                    if (vectorModel.IsReadOnly)
+                    {
+                        lengthProperty = ReflectedMethods.Serialize.ReadOnlyMemory_LengthProperty(itemTypeModel.ClrType);
+                    }
+                    else
+                    {
+                        lengthProperty = ReflectedMethods.Serialize.Memory_LengthProperty(itemTypeModel.ClrType);
+                    }
+                }
+                else
+                {
+                    if (vectorModel.IsReadOnly)
+                    {
+                        lengthProperty = ReflectedMethods.Serialize.IReadOnlyList_CountProperty(itemTypeModel.ClrType);
+                        indexer = ReflectedMethods.Serialize.IReadOnlyList_ItemProperty(itemTypeModel.ClrType);
+                    }
+                    else
+                    {
+                        // array implements IList.
+                        lengthProperty = ReflectedMethods.Serialize.IList_CountProperty(itemTypeModel.ClrType);
+                        indexer = ReflectedMethods.Serialize.IList_ItemProperty(itemTypeModel.ClrType);
+                    }
+                }
+
+                #endregion
+                
+                // For fixed-size items, we can just multiply count * length to get our answer.
+                bool isFixedSizeItem = itemTypeModel.SchemaType == FlatBufferSchemaType.Scalar ||
+                                       itemTypeModel.SchemaType == FlatBufferSchemaType.Struct;
+
+                if (isFixedSizeItem)
+                {
+                    // we know they have fixed size now, so the answer is pretty easy:
+                    // 4 + maxpadding(4) + maxpadding(itemSize) + count * length
+                    generator.EmitInt32Constant(
+                        sizeof(uint) + SerializationHelpers.GetMaxPadding(sizeof(uint)) + SerializationHelpers.GetMaxPadding(vectorModel.ItemTypeModel.InlineSize));
+                    generator.EmitInt32Constant(itemTypeModel.InlineSize);
+
+                    if (vectorModel.IsMemoryVector)
+                    {
+                        generator.Emit(OpCodes.Ldarga_S, 0);
+                    }
+                    else
+                    {
+                        generator.EmitLdArg(0);
+                    }
+
+                    generator.EmitMethodCall(lengthProperty.GetGetMethod());
+                    generator.Emit(OpCodes.Mul_Ovf);
+                    generator.Emit(OpCodes.Add_Ovf);
+                }
+                else
+                {
+                    Debug.Assert(vectorModel.IsList || vectorModel.IsArray);
+
+                    MethodInfo itemMaxSize;
+                    if (itemTypeModel.ClrType == typeof(string))
+                    {
+                        itemMaxSize = ReflectedMethods.Serialize.SerializationHelpers_GetMaxSizeOfStringMethod;
+                    }
+                    else
+                    {
+                        itemMaxSize = this.maxSizeMethods[itemTypeModel.ClrType];
+                    }
+
+                    // time to do a "for" loop.
+                    var loopLocal = generator.DeclareLocal(typeof(int));
+                    var countLocal = generator.DeclareLocal(typeof(int));
+                    var maxSizeLocal = generator.DeclareLocal(typeof(int));
+
+                    // uoffset and padding.
+                    generator.EmitInt32Constant(sizeof(uint) + SerializationHelpers.GetMaxPadding(sizeof(uint)));
+                    generator.EmitStLoc(maxSizeLocal);
+
+                    // var count = list.Count;
+                    generator.EmitLdArg(0);
+                    generator.EmitMethodCall(lengthProperty.GetGetMethod());
+                    generator.EmitStLoc(countLocal);
+
+                    generator.EmitInt32Constant(0);
+                    generator.EmitStLoc(loopLocal);
+
+                    var loopStartLabel = generator.DefineLabel();
+                    var loopConditionLabel = generator.DefineLabel();
+
+                    generator.Emit(OpCodes.Br_S, loopConditionLabel);
+                    generator.MarkLabel(loopStartLabel);
+
+                    // load the item at index "loop".
+                    generator.EmitLdLoc(maxSizeLocal);
+                    generator.EmitLdArg(0);
+                    generator.EmitLdLoc(loopLocal);
+                    generator.EmitMethodCall(indexer.GetGetMethod());
+                    generator.EmitMethodCall(itemMaxSize);
+                    generator.Emit(OpCodes.Add_Ovf);
+                    generator.EmitStLoc(maxSizeLocal);
+
+                    // loop++;
+                    generator.EmitLdLoc(loopLocal);
+                    generator.EmitInt32Constant(1);
+                    generator.Emit(OpCodes.Add_Ovf);
+                    generator.EmitStLoc(loopLocal);
+
+                    generator.MarkLabel(loopConditionLabel);
+                    generator.EmitLdLoc(loopLocal);
+                    generator.EmitLdLoc(countLocal);
+                    generator.Emit(OpCodes.Blt_S, loopStartLabel);
+
+                    generator.EmitLdLoc(maxSizeLocal);
+                }
+            }
+
+            generator.Emit(OpCodes.Ret);
+        }
+
+        private void ImplementGetInlineSizeMethod(Type type, MethodBuilder getSizeBuilder)
         {
             // parameters: (T value, T defaultValue_notUsed, ref int sizeNeeded)
             var typeModel = RuntimeTypeModel.CreateFrom(type);
@@ -219,7 +454,7 @@ namespace FlatSharp
             generator.EmitLdLoc(localSizeNeededLocal);
             generator.EmitLdLoc(localSizeNeededLocal);
             generator.EmitInt32Constant(typeModel.Alignment);
-            generator.EmitMethodCall(ReflectedMethods.Serialize.MemoryHelpers_GetAlignmentErrorMethod);
+            generator.EmitMethodCall(ReflectedMethods.Serialize.SerializationHelpers_GetAlignmentErrorMethod);
             generator.Emit(OpCodes.Add_Ovf);
             generator.EmitStLoc(localSizeNeededLocal);
 
@@ -372,9 +607,9 @@ namespace FlatSharp
                 #endregion
                 generator.EmitLdLoca(sizeNeededLocal);
 
-                if (!ReflectedMethods.ILSizers.TryGetValue(memberInfo.ItemTypeModel.ClrType, out MethodInfo sizer))
+                if (!ReflectedMethods.TableInlineSizeGetters.TryGetValue(memberInfo.ItemTypeModel.ClrType, out MethodInfo sizer))
                 {
-                    sizer = this.sizeNeededMethods[memberInfo.ItemTypeModel.ClrType];
+                    sizer = this.tableInlineSizeMethods[memberInfo.ItemTypeModel.ClrType];
                 }
 
                 generator.EmitMethodCall(sizer);

@@ -17,25 +17,20 @@
 namespace FlatSharp
 {
     using System;
+    using System.Text;
 
     /// <summary>
-    /// Interface that can write <typeparamref name="TRoot"/> to a buffer.
+    /// Raised in serialization when the provided buffer was too small.
     /// </summary>
-    internal interface ISerializer<TRoot>
+    public class BufferTooSmallException : Exception
     {
-        /// <summary>
-        /// Writes the given item to the buffer using the given spanwriter.
-        /// </summary>
-        void Write(
-            SpanWriter writer,
-            Span<byte> destination,
-            TRoot item,
-            int offset,
-            SerializationContext context);
+        public BufferTooSmallException() : base($"The provided buffer was too small to hold the serialized data.")
+        {
+        }
 
         /// <summary>
-        /// Computes the maximum size necessary to serialize the given instance of TRoot.
+        /// The maximum amount of size needed for this message.
         /// </summary>
-        int GetMaxSize(TRoot item);
+        public int SizeNeeded { get; internal set; }
     }
 }

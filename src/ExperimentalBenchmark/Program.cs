@@ -31,8 +31,9 @@ namespace BenchmarkCore
 
             Func<int>[] items = new Func<int>[]
             {
+                b.FlatSharp_GetMaxSize,
                 b.FlatSharp_Serialize,
-                b.FlatSharp_ParseAndTraverse_List,
+                // b.FlatSharp_ParseAndTraverse_List,
             };
 
             for (int loop = 0; loop < 2; ++loop)

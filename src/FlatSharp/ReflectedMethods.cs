@@ -44,7 +44,7 @@ namespace FlatSharp
             [typeof(string)] = GetMethod(typeof(InputBuffer), nameof(InputBuffer.ReadString)),
         };
 
-        internal static IReadOnlyDictionary<Type, MethodInfo> ILSizers = new Dictionary<Type, MethodInfo>
+        internal static IReadOnlyDictionary<Type, MethodInfo> TableInlineSizeGetters = new Dictionary<Type, MethodInfo>
         {
             [typeof(bool)] = GetMethod(typeof(SerializationHelpers), nameof(SerializationHelpers.ILGetSizeBool)),
             [typeof(byte)] = GetMethod(typeof(SerializationHelpers), nameof(SerializationHelpers.ILGetSizeByte)),
@@ -87,12 +87,17 @@ namespace FlatSharp
             public static PropertyInfo IReadOnlyList_CountProperty(Type type) => GetPublicProperty(typeof(IReadOnlyCollection<>).MakeGenericType(type), nameof(IReadOnlyCollection<byte>.Count));
             public static PropertyInfo IReadOnlyList_ItemProperty(Type type) => GetPublicProperty(typeof(IReadOnlyList<>).MakeGenericType(type), "Item");
 
-            // MemoryHelpers            
-            public static readonly MethodInfo MemoryHelpers_GetAlignmentErrorMethod = GetMethod(typeof(SerializationHelpers), nameof(SerializationHelpers.GetAlignmentError));
+            // SerializationHelpers            
+            public static readonly MethodInfo SerializationHelpers_GetAlignmentErrorMethod = GetMethod(typeof(SerializationHelpers), nameof(SerializationHelpers.GetAlignmentError));
+            public static readonly MethodInfo SerializationHelpers_GetMaxPaddingethod = GetMethod(typeof(SerializationHelpers), nameof(SerializationHelpers.GetMaxPadding));
+            public static readonly MethodInfo SerializationHelpers_GetMaxSizeOfStringMethod = GetMethod(typeof(SerializationHelpers), nameof(SerializationHelpers.GetMaxSize));
 
+            // Serialization context
             public static readonly MethodInfo SerializationContext_AllocateMemoryMethod = GetMethod(typeof(SerializationContext), nameof(SerializationContext.AllocateSpace));
             public static readonly FieldInfo SerializationContext_Vtable = GetField(typeof(SerializationContext), "vtableHelper");
             public static readonly MethodInfo SerializationContext_AllocateVectorMethod = GetMethod(typeof(SerializationContext), nameof(SerializationContext.AllocateVector));
+
+            // SpanWriter
             public static readonly MethodInfo SpanWriter_WriteUOffset = GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteUOffset));
             public static readonly MethodInfo SpanWriter_WriteByteMemoryBlock = GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteByteMemoryBlock));
             public static readonly MethodInfo SpanWriter_WriteReadOnlyByteMemoryBlock = GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteReadOnlyByteMemoryBlock));

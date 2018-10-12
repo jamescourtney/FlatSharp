@@ -239,6 +239,12 @@ namespace Benchmark.FBBench
 
 #if FLATSHARP
         [Benchmark]
+        public void FlatSharp_GetMaxSize()
+        {
+            this.fs_serializer.GetMaxSize(this.defaultContainer);
+        }
+
+        [Benchmark]
         public void FlatSharp_Serialize()
         {
             this.fs_serializer.Serialize(this.defaultContainer, this.fs_writeMemory);

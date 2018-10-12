@@ -18,6 +18,7 @@ namespace FlatSharp
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Threading;
 
     /// <summary>
@@ -129,15 +130,41 @@ namespace FlatSharp
         /// <returns>The length of data that was written to the memory block.</returns>
         public int Serialize<T>(T item, Span<byte> destination, SpanWriter writer)
         {
+#if DEBUG
+            int expectedMaxSize = this.GetMaxSize<T>(item);
+#endif
+
             var serializer = this.GetOrCreateSerializer<T>();
 
             var serializationContext = context.Value;
 
-            serializationContext.Reset();
+            serializationContext.Reset(destination.Length);
             serializationContext.Offset = 4; // first 4 bytes are reserved for uoffset to the first table.
-            serializer.Write(writer, destination, item, 0, serializationContext);
+
+            try
+            {
+                serializer.Write(writer, destination, item, 0, serializationContext);
+            }
+            catch (BufferTooSmallException ex)
+            {
+                ex.SizeNeeded = this.GetMaxSize(item);
+                throw;
+            }
+
+#if DEBUG
+            Debug.Assert(serializationContext.Offset <= expectedMaxSize - 1);
+#endif
 
             return serializationContext.Offset;
+        }
+
+        /// <summary>
+        /// Gets the maximum serialized size of the given item.
+        /// </summary>
+        public int GetMaxSize<T>(T item)
+        {
+            var serializer = this.GetOrCreateSerializer<T>();
+            return 4 + SerializationHelpers.GetMaxPadding(4) + serializer.GetMaxSize(item);
         }
 
         private Func<InputBuffer, int, TRoot> GetOrCreateParser<TRoot>()

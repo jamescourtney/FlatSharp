@@ -25,6 +25,31 @@ namespace FlatSharp
     /// </summary>
     internal static class SerializationHelpers
     {
+        #region MaxSize
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetMaxSize(string value)
+        {
+            checked
+            {
+                return
+                    sizeof(uint) + GetMaxPadding(sizeof(uint)) + // string length
+                    InputBuffer.Encoding.GetMaxByteCount(value.Length) + 1; // max bytes and null terminator
+            }
+        }
+
+        /// <summary>
+        /// Gets the maximum padding for the given alignment. This method seems simple,
+        /// but is inlined and is useful for generating more comprehensible IL.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetMaxPadding(int alignment)
+        {
+            return alignment - 1;
+        }
+
+        #endregion
+
         #region ILSizers
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
