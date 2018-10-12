@@ -49,10 +49,6 @@
             Assert.AreEqual(3.14159f, parsed.Float);
 
             byte[] serialized = new byte[128];
-
-            int maxSize = FlatBufferSerializer.Default.GetMaximumSize(parsed);
-            Assert.AreEqual(12, maxSize);
-
             int bytesWritten = FlatBufferSerializer.Default.Serialize(parsed, serialized.AsSpan());
 
             Assert.AreEqual(Convert.ToBase64String(data), Convert.ToBase64String(serialized, 0, bytesWritten));

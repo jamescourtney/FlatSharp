@@ -185,7 +185,7 @@ namespace FlatSharp
             il.Emit(OpCodes.Ldarg_1);
             il.Emit(OpCodes.Ldarg_0);
             il.Emit(OpCodes.Ldarg_1);
-            il.EmitMethodCall(ReflectedMethods.Deserialize.InputBuffer_ReadUOffset);
+            il.Emit(OpCodes.Call, ReflectedMethods.Deserialize.InputBuffer_ReadUOffset);
             il.Emit(OpCodes.Add_Ovf);
             il.Emit(OpCodes.Newobj, ctorBuilder);
             il.Emit(OpCodes.Ret);
@@ -234,7 +234,7 @@ namespace FlatSharp
         {
             var il = builder.GetILGenerator();
             il.Emit(OpCodes.Ldarg_0);
-            il.EmitMethodCall(readPropertyMethod);
+            il.Emit(OpCodes.Call, readPropertyMethod);
             il.Emit(OpCodes.Ret);
         }
 
@@ -279,7 +279,7 @@ namespace FlatSharp
             // this.cacheValueField = this.method();
             il.Emit(OpCodes.Ldarg_0);
             il.Emit(OpCodes.Ldarg_0);
-            il.EmitMethodCall(readPropertyMethod);
+            il.Emit(OpCodes.Call, readPropertyMethod);
             il.Emit(OpCodes.Stfld, cacheValueField);
 
             // this.hasCacheValue = true;

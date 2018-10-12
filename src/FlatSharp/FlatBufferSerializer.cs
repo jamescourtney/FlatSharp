@@ -18,7 +18,6 @@ namespace FlatSharp
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Threading;
 
     /// <summary>
@@ -28,7 +27,6 @@ namespace FlatSharp
     {
         private static readonly ThreadLocal<SerializationContext> context = new ThreadLocal<SerializationContext>(() => new SerializationContext());
         private static readonly SpanWriter DefaultWriter = new SpanWriter();
-        private static readonly SpanWriter NoOpWriter = new NoOpSpanWriter();
 
         public static FlatBufferSerializer Default { get; } = new FlatBufferSerializer(new FlatBufferSerializerOptions());
 
@@ -119,7 +117,6 @@ namespace FlatSharp
         /// <summary>
         /// Writes the given object to the given memory block.
         /// </summary>
-        /// <exception cref="BufferTooSmallException">Thrown when the provided buffer is too small to hold the data.</exception>
         /// <returns>The length of data that was written to the memory block.</returns>
         public int Serialize<T>(T item, Span<byte> destination)
         {
@@ -129,54 +126,16 @@ namespace FlatSharp
         /// <summary>
         /// Writes the given object to the given memory block.
         /// </summary>
-        /// <exception cref="BufferTooSmallException">Thrown when the provided buffer is too small to hold the data.</exception>
         /// <returns>The length of data that was written to the memory block.</returns>
         public int Serialize<T>(T item, Span<byte> destination, SpanWriter writer)
         {
-#if DEBUG
-            int expectedMaxSize = this.GetMaximumSize<T>(item);
-#endif
-
             var serializer = this.GetOrCreateSerializer<T>();
 
             var serializationContext = context.Value;
 
-            serializationContext.Reset(capacity: destination.Length);
+            serializationContext.Reset();
             serializationContext.Offset = 4; // first 4 bytes are reserved for uoffset to the first table.
-
-            try
-            {
-                serializer.Write(writer, destination, item, 0, serializationContext);
-            }
-            catch (BufferTooSmallException ex)
-            {
-                ex.SizeNeeded = this.GetMaximumSize(item);
-                throw;
-            }
-
-#if DEBUG
-            Debug.Assert(serializationContext.Offset <= expectedMaxSize);
-#endif
-
-            return serializationContext.Offset;
-        }
-
-        /// <summary>
-        /// Computes the largest buffer necessary to hold this item.
-        /// </summary>
-        public int GetMaximumSize<T>(T item)
-        {
-            // To implement this, we use a trick: Simply reuse the same serialization logic in "no-op" mode.
-            // So, we're not doing any actual work, but are still traversing the object graph looking
-            // for things to serialize, reserving space in the virtual buffer, etc.
-            var serializer = this.GetOrCreateSerializer<T>();
-
-            var serializationContext = context.Value;
-
-            serializationContext.Reset(capacity: int.MaxValue);
-            serializationContext.vtableHelper.isCalculateOnlyMode = true;
-            serializationContext.Offset = 4; // first 4 bytes are reserved for uoffset to the first table.
-            serializer.Write(NoOpWriter, Span<byte>.Empty, item, 0, serializationContext);
+            serializer.Write(writer, destination, item, 0, serializationContext);
 
             return serializationContext.Offset;
         }

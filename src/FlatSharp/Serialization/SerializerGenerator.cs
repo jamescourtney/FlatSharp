@@ -451,7 +451,7 @@ namespace FlatSharp
                 generator.EmitLdLoc(tablePositionLocal);
                 generator.Emit(OpCodes.Add_Ovf);          
                 generator.EmitLdArg(ArgIndex_Context);               // load context
-                generator.EmitMethodCall(writer);
+                generator.Emit(OpCodes.Call, writer);
                 generator.MarkLabel(nextLabel);
             }
 
