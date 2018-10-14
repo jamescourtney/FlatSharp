@@ -26,10 +26,5 @@
         /// on deserializing, but will improve performance in cases of duplicate accesses to the same indices.
         /// </summary>
         public bool CacheListVectorData { get; set; } = false;
-        
-        /// <summary>
-        /// Test hook instructing the deserializer to generate subclasses that implement <see cref="IDeserializedObject"/>.
-        /// </summary>
-        internal bool ImplementIDeserializedObject { get; set; } = false;
     }
 }

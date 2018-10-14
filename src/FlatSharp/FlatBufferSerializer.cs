@@ -33,7 +33,6 @@ namespace FlatSharp
 
         private readonly Dictionary<Type, object> parserCache = new Dictionary<Type, object>();
         private readonly Dictionary<Type, object> serializerCache = new Dictionary<Type, object>();
-        private bool implementIDeserializedObject;
 
         /// <summary>
         /// Creates a new flatbuffer serializer using the default options.
@@ -49,7 +48,6 @@ namespace FlatSharp
         public FlatBufferSerializer(FlatBufferSerializerOptions options)
         {
             this.CacheListVectorData = options.CacheListVectorData;
-            this.implementIDeserializedObject = options.ImplementIDeserializedObject;
         }
 
         /// <summary>
@@ -131,7 +129,6 @@ namespace FlatSharp
 #endif
 
             var serializer = this.GetOrCreateSerializer<T>();
-
             var serializationContext = context.Value;
 
             serializationContext.Reset(destination.Length);

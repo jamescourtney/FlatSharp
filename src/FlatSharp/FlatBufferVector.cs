@@ -25,7 +25,7 @@ namespace FlatSharp
     /// A base class that FlatBuffersNet implements to deserialize vectors. FlatBufferVetor{T} is a lazy implementation
     /// which will create a new instance for each item it returns. For cases where greedy deserialization is desired, 
     /// </summary>
-    public class FlatBufferVector<T> : IList<T>, IReadOnlyList<T>, IDeserializedObject
+    public class FlatBufferVector<T> : IList<T>, IReadOnlyList<T>
     {
         private readonly InputBuffer memory;
         private readonly int offset;
@@ -76,8 +76,6 @@ namespace FlatSharp
         public int Count => this.count;
 
         public bool IsReadOnly => true;
-
-        int IDeserializedObject.GetOffset() => this.offset;
 
         public void Add(T item)
         {

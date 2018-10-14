@@ -48,7 +48,7 @@ namespace BenchmarkCore
         private byte[] zf_readBuffer;
         private byte[] fs_writeBuffer = new byte[64 * 1024];
 
-        private FlatBufferSerializer fscacheserializer = FlatBufferSerializer.Default;
+        private FlatBufferSerializer fscacheserializer = new FlatBufferSerializer(new FlatBufferSerializerOptions { CacheListVectorData = true });
         private InputBuffer fs_readMemory;
         
         public void GlobalSetup()
@@ -101,7 +101,7 @@ namespace BenchmarkCore
 #if FLATSHARP
             {
                 int offset = this.FlatSharp_Serialize();
-                this.fs_readMemory = new FlatSharp.Unsafe.UnsafeMemoryInputBuffer(this.fs_writeBuffer.AsSpan().ToArray());
+                this.fs_readMemory = new FlatSharp.ArrayInputBuffer(this.fs_writeBuffer.AsSpan().ToArray());
                 this.FlatSharp_ParseAndTraverse_List();
             }
 #endif
