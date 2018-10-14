@@ -33,10 +33,11 @@ namespace Benchmark.FBBench
     using FlatSharp.Unsafe;
     using ProtoBuf;
 
-    //[CoreJob]
+    [CoreJob]
     [RPlotExporter]
-    [ShortRunJob]
-    [MemoryDiagnoser]
+    //[ShortRunJob]
+    //[MemoryDiagnoser]
+    [InProcess]
     public class Google_FBBench
     {
         [Params(3, 30)]

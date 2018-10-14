@@ -164,7 +164,7 @@ namespace FlatSharp
         {
             if (!this.serializerCache.TryGetValue(typeof(TRoot), out object serializer))
             {
-                lock (CompilerLock.Instance)
+                lock (SharedLock.Instance)
                 {
                     if (!this.serializerCache.TryGetValue(typeof(TRoot), out serializer))
                     {

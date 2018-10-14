@@ -20,9 +20,9 @@ namespace FlatSharp
     using System.Reflection.Emit;
 
     /// <summary>
-    /// A shared lock for use when doing compilation work.
+    /// A shared lock for use when doing compilation/reflection work.
     /// </summary>
-    internal static class CompilerLock
+    internal static class SharedLock
     {
         public static object Instance { get; } = new object();
     }
