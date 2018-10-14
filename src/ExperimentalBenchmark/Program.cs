@@ -27,13 +27,16 @@ namespace BenchmarkCore
             const int count = 1000000;
             b.TraversalCount = 5;
             b.VectorLength = 30;
+            Stopwatch sw = Stopwatch.StartNew();
             b.GlobalSetup();
+            sw.Stop();
+            Console.WriteLine("Compilation took: " + sw.Elapsed.TotalSeconds + " seconds");
 
             Func<int>[] items = new Func<int>[]
             {
                 b.FlatSharp_GetMaxSize,
                 b.FlatSharp_Serialize,
-                // b.FlatSharp_ParseAndTraverse_List,
+                b.FlatSharp_ParseAndTraverse_List,
             };
 
             for (int loop = 0; loop < 2; ++loop)
@@ -46,7 +49,7 @@ namespace BenchmarkCore
                     }
                     GC.Collect();
 
-                    Stopwatch sw = Stopwatch.StartNew();
+                    sw = Stopwatch.StartNew();
                     for (int i = 0; i < count; ++i)
                     {
                         action();
@@ -57,8 +60,6 @@ namespace BenchmarkCore
                     GC.Collect();
                 }
             }
-
-            b.GlobalCleanup();
         }
     }
 }

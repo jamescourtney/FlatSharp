@@ -24,6 +24,16 @@ namespace FlatSharp
     internal interface ISerializer<TRoot>
     {
         /// <summary>
+        /// Gets the raw assembly data for this serializer. Can be saved to a file and inspected/decompiled.
+        /// </summary>
+        byte[] AssemblyData { get; set; }
+
+        /// <summary>
+        /// Gets the raw C# code used to create this serializer.
+        /// </summary>
+        string CSharp { get; set; }
+
+        /// <summary>
         /// Writes the given item to the buffer using the given spanwriter.
         /// </summary>
         void Write(
@@ -37,5 +47,10 @@ namespace FlatSharp
         /// Computes the maximum size necessary to serialize the given instance of TRoot.
         /// </summary>
         int GetMaxSize(TRoot item);
+
+        /// <summary>
+        /// Parses the given buffer as an instance of TRoot from the given offset.
+        /// </summary>
+        TRoot Parse(InputBuffer buffer, int offset);
     }
 }

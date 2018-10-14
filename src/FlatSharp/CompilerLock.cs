@@ -16,6 +16,7 @@
 
 namespace FlatSharp
 {
+    using System.Reflection;
     using System.Reflection.Emit;
 
     /// <summary>
@@ -24,26 +25,5 @@ namespace FlatSharp
     internal static class CompilerLock
     {
         public static object Instance { get; } = new object();
-
-        static CompilerLock()
-        {
-        }
-
-        public static AssemblyBuilder DynamicAssembly { get; } = AssemblyBuilder.DefineDynamicAssembly(
-            new System.Reflection.AssemblyName("FlatSharpDynamicAssembly"),
-#if NET47
-            AssemblyBuilderAccess.RunAndSave
-#else
-            AssemblyBuilderAccess.Run
-#endif
-            );
-
-        public static ModuleBuilder DynamicModule { get; } = CompilerLock.DynamicAssembly
-            .DefineDynamicModule(
-                "FlatSharpDynamicModule"
-#if NET47
-                , "FlatSharpDynamicModule.dll"
-#endif
-            );
     }
 }

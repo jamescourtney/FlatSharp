@@ -16,6 +16,7 @@
 
 namespace FlatSharp
 {
+    using System;
     using System.Collections;
 
     /// <summary>
@@ -23,7 +24,7 @@ namespace FlatSharp
     /// that caches the results of read operations in an internal array. For this reason, read performance is as good as greedily
     /// allocating all members, but does require more memory than the zero-copy approach.
     /// </summary>
-    public abstract class FlatBufferCacheVector<T> : FlatBufferVector<T>
+    public sealed class FlatBufferCacheVector<T> : FlatBufferVector<T>
     {
         private BitArray hasCachedValue;
         private T[] cachedValues;
@@ -31,7 +32,8 @@ namespace FlatSharp
         internal FlatBufferCacheVector(
             InputBuffer memory,
             int offset,
-            int itemSize) : base(memory, offset, itemSize)
+            int itemSize,
+            Func<InputBuffer, int, T> parseItem) : base(memory, offset, itemSize, parseItem)
         {
             int count = base.Count;
             this.hasCachedValue = new BitArray(count);

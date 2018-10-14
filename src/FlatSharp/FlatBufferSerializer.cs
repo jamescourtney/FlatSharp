@@ -33,7 +33,6 @@ namespace FlatSharp
 
         private readonly Dictionary<Type, object> parserCache = new Dictionary<Type, object>();
         private readonly Dictionary<Type, object> serializerCache = new Dictionary<Type, object>();
-        private readonly ParserGenerator parserGenerator;
         private bool implementIDeserializedObject;
 
         /// <summary>
@@ -51,8 +50,6 @@ namespace FlatSharp
         {
             this.CacheListVectorData = options.CacheListVectorData;
             this.implementIDeserializedObject = options.ImplementIDeserializedObject;
-
-            this.parserGenerator = new ParserGenerator(this.implementIDeserializedObject, this.CacheListVectorData);
         }
 
         /// <summary>
@@ -66,7 +63,6 @@ namespace FlatSharp
         /// </summary>
         public void PreCompile<T>()
         {
-            this.GetOrCreateParser<T>();
             this.GetOrCreateSerializer<T>();
         }
 
@@ -111,8 +107,8 @@ namespace FlatSharp
                 throw new ArgumentException("Buffer is too small to be valid!");
             }
 
-            var parser = this.GetOrCreateParser<T>();
-            return parser(buffer, 0);
+            var parser = this.GetOrCreateSerializer<T>();
+            return parser.Parse(buffer, 0);
         }
 
         /// <summary>
@@ -167,23 +163,6 @@ namespace FlatSharp
             return 4 + SerializationHelpers.GetMaxPadding(4) + serializer.GetMaxSize(item);
         }
 
-        private Func<InputBuffer, int, TRoot> GetOrCreateParser<TRoot>()
-        {
-            if (!this.parserCache.TryGetValue(typeof(TRoot), out object parser))
-            {
-                lock (CompilerLock.Instance)
-                {
-                    if (!this.parserCache.TryGetValue(typeof(TRoot), out parser))
-                    {
-                        parser = this.parserGenerator.GenerateParser<TRoot>();
-                        this.parserCache[typeof(TRoot)] = parser;
-                    }
-                }
-            }
-
-            return (Func<InputBuffer, int, TRoot>)parser;
-        }
-
         private ISerializer<TRoot> GetOrCreateSerializer<TRoot>()
         {
             if (!this.serializerCache.TryGetValue(typeof(TRoot), out object serializer))
@@ -192,7 +171,7 @@ namespace FlatSharp
                 {
                     if (!this.serializerCache.TryGetValue(typeof(TRoot), out serializer))
                     {
-                        serializer = new SerializerGenerator().Compile<TRoot>();
+                        serializer = new RoslynSerializerGenerator(this.CacheListVectorData).Compile<TRoot>();
                         this.serializerCache[typeof(TRoot)] = serializer;
                     }
                 }
@@ -200,15 +179,5 @@ namespace FlatSharp
 
             return (ISerializer<TRoot>)serializer;
         }
-
-#if NET47
-        /// <summary>
-        /// Test hook for investigating IL generation issues.
-        /// </summary>
-        internal static void SaveDynamicAssembly()
-        {
-            CompilerLock.DynamicAssembly.Save("dynamic_" + Guid.NewGuid().ToString("n") + ".dll");
-        }
-#endif
     }
 }

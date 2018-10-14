@@ -51,13 +51,6 @@ namespace BenchmarkCore
         private FlatBufferSerializer fscacheserializer = FlatBufferSerializer.Default;
         private InputBuffer fs_readMemory;
         
-        public void GlobalCleanup()
-        {
-#if NET47
-            FlatBufferSerializer.SaveDynamicAssembly();
-#endif
-        }
-        
         public void GlobalSetup()
         {
             FooBar[] fooBars = new FooBar[this.VectorLength];

@@ -64,15 +64,7 @@ namespace Benchmark.FBBench
         private FlatBufferSerializer fs_serializer;
         private byte[] fs_readMemory;
         private byte[] fs_writeMemory = new byte[64 * 1024];
-
-        [GlobalCleanup]
-        public void GlobalCleanup()
-        {
-#if NET47
-            FlatBufferSerializer.SaveDynamicAssembly();
-#endif
-        }
-
+        
         [GlobalSetup]
         public void GlobalSetup()
         {
