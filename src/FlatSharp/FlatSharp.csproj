@@ -1,15 +1,40 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net47;netcoreapp2.1;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netcoreapp2.1</TargetFrameworks>
     <LangVersion>7.3</LangVersion>
     <AssemblyName>FlatSharp</AssemblyName>
     <RootNamespace>FlatSharp</RootNamespace>
+    <DelaySign>false</DelaySign>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\..\misc\strongname.snk</AssemblyOriginatorKeyFile>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <Version>0.1.0</Version>
+    <Authors>James Courtney</Authors>
+    <Company />
+    <Description>FlatSharp is an idiomatic implementation of the FlatBuffer binary format.</Description>
+    <Copyright>2018</Copyright>
+    <PackageLicenseUrl>https://github.com/jamescourtney/FlatSharp/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/jamescourtney/FlatSharp/</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/jamescourtney/FlatSharp/</RepositoryUrl>
+    <PackageTags>flatbuffers serialization</PackageTags>
+    <PackageReleaseNotes>Initial release. Alpha quality.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="..\..\misc\strongname.snk" Link="strongname.snk" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="2.9.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="2.9.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="2.9.0" />
+    <PackageReference Include="Microsoft.Net.Compilers" Version="2.9.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="System.Memory" Version="4.5.1" />
-    <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
   </ItemGroup>
 
 </Project>

@@ -28,14 +28,11 @@ namespace FlatSharp
     {
         private static readonly ThreadLocal<SerializationContext> context = new ThreadLocal<SerializationContext>(() => new SerializationContext());
         private static readonly SpanWriter DefaultWriter = new SpanWriter();
-        private static readonly SpanWriter NoOpWriter = new NoOpSpanWriter();
 
         public static FlatBufferSerializer Default { get; } = new FlatBufferSerializer(new FlatBufferSerializerOptions());
 
         private readonly Dictionary<Type, object> parserCache = new Dictionary<Type, object>();
         private readonly Dictionary<Type, object> serializerCache = new Dictionary<Type, object>();
-        private readonly ParserGenerator parserGenerator;
-        private bool implementIDeserializedObject;
 
         /// <summary>
         /// Creates a new flatbuffer serializer using the default options.
@@ -51,9 +48,6 @@ namespace FlatSharp
         public FlatBufferSerializer(FlatBufferSerializerOptions options)
         {
             this.CacheListVectorData = options.CacheListVectorData;
-            this.implementIDeserializedObject = options.ImplementIDeserializedObject;
-
-            this.parserGenerator = new ParserGenerator(this.implementIDeserializedObject, this.CacheListVectorData);
         }
 
         /// <summary>
@@ -67,7 +61,6 @@ namespace FlatSharp
         /// </summary>
         public void PreCompile<T>()
         {
-            this.GetOrCreateParser<T>();
             this.GetOrCreateSerializer<T>();
         }
 
@@ -112,14 +105,13 @@ namespace FlatSharp
                 throw new ArgumentException("Buffer is too small to be valid!");
             }
 
-            var parser = this.GetOrCreateParser<T>();
-            return parser(buffer, 0);
+            var parser = this.GetOrCreateSerializer<T>();
+            return parser.Parse(buffer, 0);
         }
 
         /// <summary>
         /// Writes the given object to the given memory block.
         /// </summary>
-        /// <exception cref="BufferTooSmallException">Thrown when the provided buffer is too small to hold the data.</exception>
         /// <returns>The length of data that was written to the memory block.</returns>
         public int Serialize<T>(T item, Span<byte> destination)
         {
@@ -129,19 +121,17 @@ namespace FlatSharp
         /// <summary>
         /// Writes the given object to the given memory block.
         /// </summary>
-        /// <exception cref="BufferTooSmallException">Thrown when the provided buffer is too small to hold the data.</exception>
         /// <returns>The length of data that was written to the memory block.</returns>
         public int Serialize<T>(T item, Span<byte> destination, SpanWriter writer)
         {
 #if DEBUG
-            int expectedMaxSize = this.GetMaximumSize<T>(item);
+            int expectedMaxSize = this.GetMaxSize<T>(item);
 #endif
 
             var serializer = this.GetOrCreateSerializer<T>();
-
             var serializationContext = context.Value;
 
-            serializationContext.Reset(capacity: destination.Length);
+            serializationContext.Reset(destination.Length);
             serializationContext.Offset = 4; // first 4 bytes are reserved for uoffset to the first table.
 
             try
@@ -150,63 +140,35 @@ namespace FlatSharp
             }
             catch (BufferTooSmallException ex)
             {
-                ex.SizeNeeded = this.GetMaximumSize(item);
+                ex.SizeNeeded = this.GetMaxSize(item);
                 throw;
             }
 
 #if DEBUG
-            Debug.Assert(serializationContext.Offset <= expectedMaxSize);
+            Debug.Assert(serializationContext.Offset <= expectedMaxSize - 1);
 #endif
 
             return serializationContext.Offset;
         }
 
         /// <summary>
-        /// Computes the largest buffer necessary to hold this item.
+        /// Gets the maximum serialized size of the given item.
         /// </summary>
-        public int GetMaximumSize<T>(T item)
+        public int GetMaxSize<T>(T item)
         {
-            // To implement this, we use a trick: Simply reuse the same serialization logic in "no-op" mode.
-            // So, we're not doing any actual work, but are still traversing the object graph looking
-            // for things to serialize, reserving space in the virtual buffer, etc.
             var serializer = this.GetOrCreateSerializer<T>();
-
-            var serializationContext = context.Value;
-
-            serializationContext.Reset(capacity: int.MaxValue);
-            serializationContext.vtableHelper.isCalculateOnlyMode = true;
-            serializationContext.Offset = 4; // first 4 bytes are reserved for uoffset to the first table.
-            serializer.Write(NoOpWriter, Span<byte>.Empty, item, 0, serializationContext);
-
-            return serializationContext.Offset;
-        }
-
-        private Func<InputBuffer, int, TRoot> GetOrCreateParser<TRoot>()
-        {
-            if (!this.parserCache.TryGetValue(typeof(TRoot), out object parser))
-            {
-                lock (CompilerLock.Instance)
-                {
-                    if (!this.parserCache.TryGetValue(typeof(TRoot), out parser))
-                    {
-                        parser = this.parserGenerator.GenerateParser<TRoot>();
-                        this.parserCache[typeof(TRoot)] = parser;
-                    }
-                }
-            }
-
-            return (Func<InputBuffer, int, TRoot>)parser;
+            return 4 + SerializationHelpers.GetMaxPadding(4) + serializer.GetMaxSize(item);
         }
 
         private ISerializer<TRoot> GetOrCreateSerializer<TRoot>()
         {
             if (!this.serializerCache.TryGetValue(typeof(TRoot), out object serializer))
             {
-                lock (CompilerLock.Instance)
+                lock (SharedLock.Instance)
                 {
                     if (!this.serializerCache.TryGetValue(typeof(TRoot), out serializer))
                     {
-                        serializer = new SerializerGenerator().Compile<TRoot>();
+                        serializer = new RoslynSerializerGenerator(this.CacheListVectorData).Compile<TRoot>();
                         this.serializerCache[typeof(TRoot)] = serializer;
                     }
                 }
@@ -214,15 +176,5 @@ namespace FlatSharp
 
             return (ISerializer<TRoot>)serializer;
         }
-
-#if NET47
-        /// <summary>
-        /// Test hook for investigating IL generation issues.
-        /// </summary>
-        internal static void SaveDynamicAssembly()
-        {
-            CompilerLock.DynamicAssembly.Save("dynamic_" + Guid.NewGuid().ToString("n") + ".dll");
-        }
-#endif
     }
 }

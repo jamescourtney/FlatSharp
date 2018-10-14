@@ -16,6 +16,7 @@
 
 namespace FlatSharpTests
 {
+    using System;
     using FlatSharp;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -26,12 +27,6 @@ namespace FlatSharpTests
         public void CompileTest()
         {
             FlatBufferSerializer.Default.PreCompile<BasicTypes>();
-        }
-
-        [AssemblyCleanup]
-        public static void AssemblyCleanup()
-        {
-            FlatBufferSerializer.SaveDynamicAssembly();
         }
     }
 }

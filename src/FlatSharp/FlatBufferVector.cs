@@ -25,22 +25,25 @@ namespace FlatSharp
     /// A base class that FlatBuffersNet implements to deserialize vectors. FlatBufferVetor{T} is a lazy implementation
     /// which will create a new instance for each item it returns. For cases where greedy deserialization is desired, 
     /// </summary>
-    public abstract class FlatBufferVector<T> : IList<T>, IReadOnlyList<T>, IDeserializedObject
+    public class FlatBufferVector<T> : IList<T>, IReadOnlyList<T>
     {
         private readonly InputBuffer memory;
         private readonly int offset;
         private readonly int itemSize;
         private readonly int count;
+        private Func<InputBuffer, int, T> parseItem;
 
         internal FlatBufferVector(
             InputBuffer memory,
             int offset,
-            int itemSize)
+            int itemSize,
+            Func<InputBuffer, int, T> parseItem)
         {
             this.memory = memory;
             this.offset = offset;
             this.itemSize = itemSize;
             this.count = checked((int)this.memory.ReadUInt(this.offset));
+            this.parseItem = parseItem;
         }
 
         /// <summary>
@@ -59,7 +62,7 @@ namespace FlatSharp
                     }
 
                     // start at offset, skip past the number of items, and then multiply item size * index.
-                    return this.ParseItem(
+                    return this.parseItem(
                         this.memory,
                         this.offset + sizeof(uint) + (this.itemSize * index));
                 }
@@ -73,8 +76,6 @@ namespace FlatSharp
         public int Count => this.count;
 
         public bool IsReadOnly => true;
-
-        int IDeserializedObject.GetOffset() => this.offset;
 
         public void Add(T item)
         {
@@ -156,8 +157,5 @@ namespace FlatSharp
         {
             return this.GetEnumerator();
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected abstract T ParseItem(InputBuffer memory, int offset);
     }
 }

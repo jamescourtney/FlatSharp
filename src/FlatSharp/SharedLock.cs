@@ -16,15 +16,14 @@
 
 namespace FlatSharp
 {
+    using System.Reflection;
+    using System.Reflection.Emit;
+
     /// <summary>
-    /// Internal interface applied to all deserialized objects. This is largely a test hook that allows us to 
-    /// inspect the state of the buffer at a given location, and verify that things are as we expect.
+    /// A shared lock for use when doing compilation/reflection work.
     /// </summary>
-    internal interface IDeserializedObject
+    internal static class SharedLock
     {
-        /// <summary>
-        /// Gets the offset of this object within the buffer.
-        /// </summary>
-        int GetOffset();
+        public static object Instance { get; } = new object();
     }
 }

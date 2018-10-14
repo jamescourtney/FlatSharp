@@ -33,10 +33,11 @@ namespace Benchmark.FBBench
     using FlatSharp.Unsafe;
     using ProtoBuf;
 
-    //[CoreJob]
+    [CoreJob]
     [RPlotExporter]
-    [ShortRunJob]
-    [MemoryDiagnoser]
+    //[ShortRunJob]
+    //[MemoryDiagnoser]
+    [InProcess]
     public class Google_FBBench
     {
         [Params(3, 30)]
@@ -64,15 +65,7 @@ namespace Benchmark.FBBench
         private FlatBufferSerializer fs_serializer;
         private byte[] fs_readMemory;
         private byte[] fs_writeMemory = new byte[64 * 1024];
-
-        [GlobalCleanup]
-        public void GlobalCleanup()
-        {
-#if NET47
-            FlatBufferSerializer.SaveDynamicAssembly();
-#endif
-        }
-
+        
         [GlobalSetup]
         public void GlobalSetup()
         {
@@ -238,11 +231,10 @@ namespace Benchmark.FBBench
         #region FlatSharp
 
 #if FLATSHARP
-
         [Benchmark]
         public void FlatSharp_GetMaxSize()
         {
-            this.fs_serializer.GetMaximumSize(this.defaultContainer);
+            this.fs_serializer.GetMaxSize(this.defaultContainer);
         }
 
         [Benchmark]

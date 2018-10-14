@@ -27,7 +27,6 @@ namespace Benchmark
             b.TraversalCount = 5;
             b.GlobalSetup();
             b.FlatSharp_Serialize();
-            b.GlobalCleanup();
 
             var summary = BenchmarkRunner.Run<FBBench.Google_FBBench>();
         }

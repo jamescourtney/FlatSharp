@@ -116,10 +116,10 @@ namespace FlatSharp
             int maxItems = encoding.GetMaxByteCount(value.Length);
             int stringStartOffset = context.AllocateVector(sizeof(byte), maxItems + 1, sizeof(byte));
 
-            int bytesWritten = this.WriteStringProtected(this.SliceSpan(span, stringStartOffset + sizeof(uint), maxItems), value, encoding);
+            int bytesWritten = this.WriteStringProtected(span.Slice(stringStartOffset + sizeof(uint), maxItems), value, encoding);
 
             // null teriminator
-            this.WriteByte(span, 0, stringStartOffset + bytesWritten + sizeof(uint), context);
+            span[stringStartOffset + bytesWritten + sizeof(uint)] = 0;
 
             // write length
             this.WriteInt(span, bytesWritten, stringStartOffset, context);
@@ -129,18 +129,6 @@ namespace FlatSharp
 
             // Write the UOffset where we were supposed to go.
             this.WriteUOffset(span, offset, stringStartOffset, context);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual Span<byte> SliceSpan(Span<byte> span, int start, int length)
-        {
-            return span.Slice(start, length);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual Span<byte> SliceSpan(Span<byte> span, int start)
-        {
-            return span.Slice(start);
         }
 
         protected virtual int WriteStringProtected(Span<byte> span, string value, Encoding encoding)
@@ -155,19 +143,13 @@ namespace FlatSharp
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual void SpanCopy(ReadOnlySpan<byte> source, Span<byte> destination)
-        {
-            source.CopyTo(destination);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal void WriteByteMemoryBlock(Span<byte> span, Memory<byte> memory, int offset, int alignment, int inlineSize, SerializationContext ctx)
+        public void WriteByteMemoryBlock(Span<byte> span, Memory<byte> memory, int offset, int alignment, int inlineSize, SerializationContext ctx)
         {
             this.WriteReadOnlyByteMemoryBlock(span, memory, offset, alignment, inlineSize, ctx);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal void WriteReadOnlyByteMemoryBlock(
+        public void WriteReadOnlyByteMemoryBlock(
             Span<byte> span,
             ReadOnlyMemory<byte> memory,
             int offset, 
@@ -184,7 +166,7 @@ namespace FlatSharp
             this.WriteUOffset(span, offset, vectorStartOffset, ctx);
             this.WriteInt(span, numberOfItems, vectorStartOffset, ctx);
 
-            this.SpanCopy(memory.Span, this.SliceSpan(span, vectorStartOffset + sizeof(uint)));
+            memory.Span.CopyTo(span.Slice(vectorStartOffset + sizeof(uint)));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -194,7 +176,7 @@ namespace FlatSharp
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal void WriteReadOnlyMemoryBlock<T>(Span<byte> span, ReadOnlyMemory<T> memory, int offset, int alignment, int inlineSize, SerializationContext ctx) where T : struct
+        public void WriteReadOnlyMemoryBlock<T>(Span<byte> span, ReadOnlyMemory<T> memory, int offset, int alignment, int inlineSize, SerializationContext ctx) where T : struct
         {
             Debug.Assert(alignment == inlineSize);
 
@@ -203,8 +185,7 @@ namespace FlatSharp
 
             this.WriteUOffset(span, offset, vectorStartOffset, ctx);
             this.WriteInt(span, numberOfItems, vectorStartOffset, ctx);
-
-            this.SpanCopy(MemoryMarshal.Cast<T, byte>(memory.Span), this.SliceSpan(span, vectorStartOffset + sizeof(uint)));
+            MemoryMarshal.Cast<T, byte>(memory.Span).CopyTo(span.Slice(vectorStartOffset + sizeof(uint)));
         }
 
         [StructLayout(LayoutKind.Explicit)]

@@ -18,19 +18,44 @@ namespace BenchmarkCore
 {
     using System;
     using System.Diagnostics;
+    using FlatSharp.Attributes;
+
+    [FlatBufferTable]
+    public class Test1<T>
+    {
+        [FlatBufferItem(0)]
+        public virtual T Item { get; set; }
+    }
 
     public class Program
     {
         public static void Main(string[] args)
         {
+            Stopwatch sw = Stopwatch.StartNew();
+            FlatSharp.FlatBufferSerializer.Default.PreCompile<Test1<byte>>();
+            sw.Stop();
+            Console.WriteLine("First compilation took: " + sw.Elapsed.TotalSeconds + " seconds");
+            
+            sw = Stopwatch.StartNew();
+            FlatSharp.FlatBufferSerializer.Default.PreCompile<Test1<sbyte>>();
+            sw.Stop();
+            Console.WriteLine("Second compilation took: " + sw.Elapsed.TotalSeconds + " seconds");
+
+            sw = Stopwatch.StartNew();
+            FlatSharp.FlatBufferSerializer.Default.PreCompile<Test1<bool>>();
+            sw.Stop();
+            Console.WriteLine("Third compilation took: " + sw.Elapsed.TotalSeconds + " seconds");
+
             Google_FBBench b = new Google_FBBench();
             const int count = 1000000;
             b.TraversalCount = 5;
             b.VectorLength = 30;
             b.GlobalSetup();
+            sw.Stop();
 
             Func<int>[] items = new Func<int>[]
             {
+                b.FlatSharp_GetMaxSize,
                 b.FlatSharp_Serialize,
                 b.FlatSharp_ParseAndTraverse_List,
             };
@@ -45,7 +70,7 @@ namespace BenchmarkCore
                     }
                     GC.Collect();
 
-                    Stopwatch sw = Stopwatch.StartNew();
+                    sw = Stopwatch.StartNew();
                     for (int i = 0; i < count; ++i)
                     {
                         action();
@@ -56,8 +81,6 @@ namespace BenchmarkCore
                     GC.Collect();
                 }
             }
-
-            b.GlobalCleanup();
         }
     }
 }

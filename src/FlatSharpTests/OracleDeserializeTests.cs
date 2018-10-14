@@ -165,9 +165,9 @@
             var builder = new FlatBuffers.FlatBufferBuilder(1024);
             var fakeString = builder.CreateString("foobar");
             Oracle.LocationHolder.StartLocationVectorVector(builder, 3);
-            Oracle.Location.CreateLocation(builder, 1f, 2f, 3f);
-            Oracle.Location.CreateLocation(builder, 4f, 5f, 6f);
             Oracle.Location.CreateLocation(builder, 7f, 8f, 9f);
+            Oracle.Location.CreateLocation(builder, 4f, 5f, 6f);
+            Oracle.Location.CreateLocation(builder, 1f, 2f, 3f);
             var vectorOffset = builder.EndVector();
 
             Oracle.LocationHolder.StartLocationHolder(builder);
@@ -180,6 +180,19 @@
 
             byte[] realBuffer = builder.SizedByteArray();
             var parsed = FlatBufferSerializer.Default.Parse<LocationHolder>(realBuffer);
+
+            Assert.AreEqual(parsed.Fake, "foobar");
+            Assert.AreEqual(parsed.Location.X, 0.1f);
+            Assert.AreEqual(parsed.Location.Y, 0.2f);
+            Assert.AreEqual(parsed.Location.Z, 0.3f);
+
+            Assert.AreEqual(parsed.LocationVector.Count, 3);
+            for (int i = 0; i < 3; ++i)
+            {
+                Assert.AreEqual((float)(3 * i + 1), parsed.LocationVector[i].X);
+                Assert.AreEqual((float)(3 * i + 2), parsed.LocationVector[i].Y);
+                Assert.AreEqual((float)(3 * i + 3), parsed.LocationVector[i].Z);
+            }
         }
     }
 }

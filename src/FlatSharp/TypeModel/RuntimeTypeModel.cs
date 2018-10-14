@@ -89,7 +89,7 @@ namespace FlatSharp.TypeModel
                 return value;
             }
 
-            lock (CompilerLock.Instance)
+            lock (SharedLock.Instance)
             {
                 RuntimeTypeModel newModel = null;
                 if (type.GetCustomAttribute<FlatBufferTableAttribute>() != null)

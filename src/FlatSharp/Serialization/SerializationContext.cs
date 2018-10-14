@@ -116,7 +116,6 @@ namespace FlatSharp
                 offset += SerializationHelpers.GetAlignmentError(offset, alignment);
 
                 int finalOffset = offset + bytesNeeded;
-
                 if (finalOffset >= this.capacity)
                 {
                     throw new BufferTooSmallException();

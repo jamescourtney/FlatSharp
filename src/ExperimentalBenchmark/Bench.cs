@@ -15,7 +15,7 @@
  */
 
 #define FLATSHARP
-#define ZERO
+// #define ZERO
 
 namespace BenchmarkCore
 {
@@ -48,15 +48,9 @@ namespace BenchmarkCore
         private byte[] zf_readBuffer;
         private byte[] fs_writeBuffer = new byte[64 * 1024];
 
-        private FlatBufferSerializer fscacheserializer = FlatBufferSerializer.Default;
+        private FlatBufferSerializer fscacheserializer = new FlatBufferSerializer(new FlatBufferSerializerOptions { CacheListVectorData = true });
+        private SpanWriter spanWriter = new UnsafeSpanWriter();
         private InputBuffer fs_readMemory;
-        
-        public void GlobalCleanup()
-        {
-#if NET47
-            FlatBufferSerializer.SaveDynamicAssembly();
-#endif
-        }
         
         public void GlobalSetup()
         {
@@ -108,7 +102,7 @@ namespace BenchmarkCore
 #if FLATSHARP
             {
                 int offset = this.FlatSharp_Serialize();
-                this.fs_readMemory = new FlatSharp.Unsafe.UnsafeMemoryInputBuffer(this.fs_writeBuffer.AsSpan().ToArray());
+                this.fs_readMemory = new FlatSharp.Unsafe.UnsafeArrayInputBuffer(this.fs_writeBuffer.AsSpan().ToArray());
                 this.FlatSharp_ParseAndTraverse_List();
             }
 #endif
@@ -221,9 +215,14 @@ namespace BenchmarkCore
         #region FlatSharp
 
 #if FLATSHARP
+        public int FlatSharp_GetMaxSize()
+        {
+            return this.fscacheserializer.GetMaxSize(this.defaultContainer);
+        }
+
         public int FlatSharp_Serialize()
         {
-            return this.fscacheserializer.Serialize(this.defaultContainer, this.fs_writeBuffer);
+            return this.fscacheserializer.Serialize(this.defaultContainer, this.fs_writeBuffer, this.spanWriter);
         }
         
         public int FlatSharp_ParseAndTraverse_List()
@@ -394,34 +393,33 @@ namespace BenchmarkCore
 
     [ProtoContract]
     [FlatBufferStruct]
-    [ZeroFormatter.ZeroFormattable]
     public class Foo
     {
-        [ProtoMember(1), FlatBufferItem(0), ZeroFormatter.Index(0)]
+        [ProtoMember(1), FlatBufferItem(0)]
         public virtual ulong Id { get; set; }
 
-        [ProtoMember(2), FlatBufferItem(1), ZeroFormatter.Index(1)]
+        [ProtoMember(2), FlatBufferItem(1)]
         public virtual short Count { get; set; }
 
-        [ProtoMember(3), FlatBufferItem(2), ZeroFormatter.Index(2)]
+        [ProtoMember(3), FlatBufferItem(2)]
         public virtual sbyte Prefix { get; set; }
 
-        [ProtoMember(4), FlatBufferItem(3), ZeroFormatter.Index(3)]
+        [ProtoMember(4), FlatBufferItem(3)]
         public virtual uint Length { get; set; }
     }
 
     public struct FooStruct
     {
-        [ProtoMember(1), FlatBufferItem(0), ZeroFormatter.Index(0)]
+        [ProtoMember(1), FlatBufferItem(0)]
         public ulong Id { get; }
 
-        [ProtoMember(2), FlatBufferItem(1), ZeroFormatter.Index(1)]
+        [ProtoMember(2), FlatBufferItem(1)]
         public short Count { get; }
 
-        [ProtoMember(3), FlatBufferItem(2), ZeroFormatter.Index(2)]
+        [ProtoMember(3), FlatBufferItem(2)]
         public sbyte Prefix { get; }
 
-        [ProtoMember(4), FlatBufferItem(3), ZeroFormatter.Index(3)]
+        [ProtoMember(4), FlatBufferItem(3)]
         public uint Length { get; }
 
         public FooStruct(ulong id, short count, sbyte prefix, uint length)
@@ -435,34 +433,33 @@ namespace BenchmarkCore
 
     [ProtoContract]
     [FlatBufferStruct]
-    [ZeroFormatter.ZeroFormattable]
     public class Bar
     {
-        [ProtoMember(1), FlatBufferItem(0), ZeroFormatter.Index(0)]
+        [ProtoMember(1), FlatBufferItem(0)]
         public virtual Foo Parent { get; set; }
 
-        [ProtoMember(2), FlatBufferItem(1), ZeroFormatter.Index(1)]
+        [ProtoMember(2), FlatBufferItem(1)]
         public virtual int Time { get; set; }
 
-        [ProtoMember(3), FlatBufferItem(2), ZeroFormatter.Index(2)]
+        [ProtoMember(3), FlatBufferItem(2)]
         public virtual float Ratio { get; set; }
 
-        [ProtoMember(4), FlatBufferItem(3), ZeroFormatter.Index(3)]
+        [ProtoMember(4), FlatBufferItem(3)]
         public virtual ushort Size { get; set; }
     }
 
     public struct BarStruct
     {
-        [ProtoMember(1), FlatBufferItem(0), ZeroFormatter.Index(0)]
+        [ProtoMember(1), FlatBufferItem(0)]
         public FooStruct Parent { get; }
 
-        [ProtoMember(2), FlatBufferItem(1), ZeroFormatter.Index(1)]
+        [ProtoMember(2), FlatBufferItem(1)]
         public int Time { get; }
 
-        [ProtoMember(3), FlatBufferItem(2), ZeroFormatter.Index(2)]
+        [ProtoMember(3), FlatBufferItem(2)]
         public float Ratio { get; }
 
-        [ProtoMember(4), FlatBufferItem(3), ZeroFormatter.Index(3)]
+        [ProtoMember(4), FlatBufferItem(3)]
         public ushort Size { get; }
 
         public BarStruct(FooStruct parent, int time, float ratio, ushort size)
@@ -476,34 +473,33 @@ namespace BenchmarkCore
 
     [ProtoContract]
     [FlatBufferTable]
-    [ZeroFormatter.ZeroFormattable]
     public class FooBar
     {
-        [ProtoMember(1), FlatBufferItem(0), ZeroFormatter.Index(0)]
+        [ProtoMember(1), FlatBufferItem(0)]
         public virtual Bar Sibling { get; set; }
 
-        [ProtoMember(2), FlatBufferItem(1), ZeroFormatter.Index(1)]
+        [ProtoMember(2), FlatBufferItem(1)]
         public virtual string Name { get; set; }
 
-        [ProtoMember(3), FlatBufferItem(2), ZeroFormatter.Index(2)]
+        [ProtoMember(3), FlatBufferItem(2)]
         public virtual double Rating { get; set; }
 
-        [ProtoMember(4), FlatBufferItem(3), ZeroFormatter.Index(3)]
+        [ProtoMember(4), FlatBufferItem(3)]
         public virtual byte PostFix { get; set; }
     }
 
     public class FooBar_Struct
     {
-        [ProtoMember(1), FlatBufferItem(0), ZeroFormatter.Index(0)]
+        [ProtoMember(1), FlatBufferItem(0)]
         public virtual BarStruct Sibling { get; set; }
 
-        [ProtoMember(2), FlatBufferItem(1), ZeroFormatter.Index(1)]
+        [ProtoMember(2), FlatBufferItem(1)]
         public virtual string Name { get; set; }
 
-        [ProtoMember(3), FlatBufferItem(2), ZeroFormatter.Index(2)]
+        [ProtoMember(3), FlatBufferItem(2)]
         public virtual double Rating { get; set; }
 
-        [ProtoMember(4), FlatBufferItem(3), ZeroFormatter.Index(3)]
+        [ProtoMember(4), FlatBufferItem(3)]
         public virtual byte PostFix { get; set; }
     }
 
@@ -517,19 +513,18 @@ namespace BenchmarkCore
 
     [ProtoContract]
     [FlatBufferTable]
-    [ZeroFormatter.ZeroFormattable]
     public class FooBarArrayContainer : IFooBarContainer
     {
-        [ProtoMember(1), FlatBufferItem(0), ZeroFormatter.Index(0)]
+        [ProtoMember(1), FlatBufferItem(0)]
         public virtual FooBar[] List { get; set; }
 
-        [ProtoMember(2), FlatBufferItem(1), ZeroFormatter.Index(1)]
+        [ProtoMember(2), FlatBufferItem(1)]
         public virtual bool Initialized { get; set; }
 
-        [ProtoMember(3), FlatBufferItem(2), ZeroFormatter.Index(2)]
+        [ProtoMember(3), FlatBufferItem(2)]
         public virtual short Fruit { get; set; }
 
-        [ProtoMember(4), FlatBufferItem(3), ZeroFormatter.Index(3)]
+        [ProtoMember(4), FlatBufferItem(3)]
         public virtual string Location { get; set; }
 
         IList<FooBar> IFooBarContainer.List
@@ -540,34 +535,33 @@ namespace BenchmarkCore
 
     [ProtoContract]
     [FlatBufferTable]
-    [ZeroFormatter.ZeroFormattable]
     public class FooBarListContainer : IFooBarContainer
     {
-        [ProtoMember(1), FlatBufferItem(0), ZeroFormatter.Index(0)]
+        [ProtoMember(1), FlatBufferItem(0)]
         public virtual IList<FooBar> List { get; set; }
 
-        [ProtoMember(2), FlatBufferItem(1), ZeroFormatter.Index(1)]
+        [ProtoMember(2), FlatBufferItem(1)]
         public virtual bool Initialized { get; set; }
 
-        [ProtoMember(3), FlatBufferItem(2), ZeroFormatter.Index(2)]
+        [ProtoMember(3), FlatBufferItem(2)]
         public virtual short Fruit { get; set; }
 
-        [ProtoMember(4), FlatBufferItem(3), ZeroFormatter.Index(3)]
+        [ProtoMember(4), FlatBufferItem(3)]
         public virtual string Location { get; set; }
     }
 
     public class FooBarListContainer_Struct
     {
-        [ProtoMember(1), FlatBufferItem(0), ZeroFormatter.Index(0)]
+        [ProtoMember(1), FlatBufferItem(0)]
         public virtual IList<FooBar_Struct> List { get; set; }
 
-        [ProtoMember(2), FlatBufferItem(1), ZeroFormatter.Index(1)]
+        [ProtoMember(2), FlatBufferItem(1)]
         public virtual bool Initialized { get; set; }
 
-        [ProtoMember(3), FlatBufferItem(2), ZeroFormatter.Index(2)]
+        [ProtoMember(3), FlatBufferItem(2)]
         public virtual short Fruit { get; set; }
 
-        [ProtoMember(4), FlatBufferItem(3), ZeroFormatter.Index(3)]
+        [ProtoMember(4), FlatBufferItem(3)]
         public virtual string Location { get; set; }
     }
 

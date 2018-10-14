@@ -36,8 +36,6 @@ namespace FlatSharp
         private int maxIndex;
         private int maxIndexWithValue;
 
-        internal bool isCalculateOnlyMode;
-
         public VTableHelper(SerializationContext context)
         {
             this.context = context;
@@ -49,7 +47,6 @@ namespace FlatSharp
             this.vtableOffsets.Clear();
             this.vTableBuffer.AsSpan().Fill(0);
             this.isNested = false;
-            this.isCalculateOnlyMode = false;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -104,13 +101,9 @@ namespace FlatSharp
         public int EndObject(Span<byte> buffer, SpanWriter writer, int tableLength)
         {
             Debug.Assert(this.isNested);
+
             this.isNested = false;
             int vtableLength = 4 + 2 * (this.maxIndexWithValue + 1);
-
-            if (this.isCalculateOnlyMode)
-            {
-                return this.context.AllocateSpace(vtableLength, sizeof(ushort));
-            }
 
             Memory<byte> vtableMemory = this.vTableBuffer.AsMemory().Slice(0, vtableLength);
             Span<byte> currentVTable = vtableMemory.Span;
