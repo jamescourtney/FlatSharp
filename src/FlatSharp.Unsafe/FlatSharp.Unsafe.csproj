@@ -9,6 +9,15 @@
     <DelaySign>false</DelaySign>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>..\..\misc\strongname.snk</AssemblyOriginatorKeyFile>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <Version>0.1.0</Version>
+    <Authors>James Courtney</Authors>
+    <Description>Unsafe extensions to the FlatSharp package.</Description>
+    <Copyright>2018</Copyright>
+    <PackageLicenseUrl>https://github.com/jamescourtney/FlatSharp/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/jamescourtney/FlatSharp/</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/jamescourtney/FlatSharp/</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>

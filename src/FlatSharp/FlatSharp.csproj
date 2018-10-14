@@ -8,6 +8,18 @@
     <DelaySign>false</DelaySign>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>..\..\misc\strongname.snk</AssemblyOriginatorKeyFile>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <Version>0.1.0</Version>
+    <Authors>James Courtney</Authors>
+    <Company />
+    <Description>FlatSharp is an idiomatic implementation of the FlatBuffer binary format.</Description>
+    <Copyright>2018</Copyright>
+    <PackageLicenseUrl>https://github.com/jamescourtney/FlatSharp/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/jamescourtney/FlatSharp/</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/jamescourtney/FlatSharp/</RepositoryUrl>
+    <PackageTags>flatbuffers serialization</PackageTags>
+    <PackageReleaseNotes>Initial release. Alpha quality.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

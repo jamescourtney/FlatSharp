@@ -49,6 +49,7 @@ namespace BenchmarkCore
         private byte[] fs_writeBuffer = new byte[64 * 1024];
 
         private FlatBufferSerializer fscacheserializer = new FlatBufferSerializer(new FlatBufferSerializerOptions { CacheListVectorData = true });
+        private SpanWriter spanWriter = new UnsafeSpanWriter();
         private InputBuffer fs_readMemory;
         
         public void GlobalSetup()
@@ -221,7 +222,7 @@ namespace BenchmarkCore
 
         public int FlatSharp_Serialize()
         {
-            return this.fscacheserializer.Serialize(this.defaultContainer, this.fs_writeBuffer);
+            return this.fscacheserializer.Serialize(this.defaultContainer, this.fs_writeBuffer, this.spanWriter);
         }
         
         public int FlatSharp_ParseAndTraverse_List()
