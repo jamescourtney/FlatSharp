@@ -13,8 +13,6 @@
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="protobuf-net" Version="2.4.0" />
-    <PackageReference Include="ZeroFormatter" Version="1.6.4" />
-    <PackageReference Include="ZeroFormatter.Interfaces" Version="1.6.4" />
   </ItemGroup>
 
   <ItemGroup>
