@@ -19,12 +19,13 @@ namespace FlatSharp
     using System;
     using System.Collections.Immutable;
     using System.Diagnostics;
+    using System.IO;
     using System.Reflection;
 
     /// <summary>
     /// An implementation of <see cref="ISerializer{T}"/> that wraps a <see cref="IGeneratedSerializer{T}"/>.
     /// </summary>
-    internal class GeneratedSerializerWrapper<T> : ISerializer<T>
+    internal class GeneratedSerializerWrapper<T> : ISerializer<T> where T : class
     {
         private readonly IGeneratedSerializer<T> innerSerializer;
 
@@ -48,6 +49,11 @@ namespace FlatSharp
 
         public int GetMaxSize(T item)
         {
+            if (object.ReferenceEquals(item, null))
+            {
+                throw new InvalidDataException("The root table may not be null.");
+            }
+
             // 4 + padding(4) + inner serializer size. We add the extra to account for the very first uoffset.
             return sizeof(uint) + SerializationHelpers.GetMaxPadding(sizeof(uint)) + this.innerSerializer.GetMaxSize(item);
         }
@@ -69,6 +75,11 @@ namespace FlatSharp
 
         public int Write(SpanWriter writer, Span<byte> destination, T item)
         {
+            if (object.ReferenceEquals(item, null))
+            {
+                throw new InvalidDataException("The root table may not be null.");
+            }
+
 #if DEBUG
             int expectedMaxSize = this.GetMaxSize(item);
 #endif

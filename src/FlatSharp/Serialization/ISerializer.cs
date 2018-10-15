@@ -23,7 +23,7 @@ namespace FlatSharp
     /// <summary>
     /// An object that can read and write <typeparamref name="T"/> from a buffer.
     /// </summary>
-    public interface ISerializer<T>
+    public interface ISerializer<T> where T : class
     {
         /// <summary>
         /// Gets the C# code that FlatSharp generated to produce this serializer.

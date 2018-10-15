@@ -52,7 +52,7 @@ namespace FlatSharp
             this.cacheListVectorData = cacheListVectorData;
         }
 
-        public ISerializer<TRoot> Compile<TRoot>()
+        public ISerializer<TRoot> Compile<TRoot>() where TRoot : class
         {
             this.DefineMethods(RuntimeTypeModel.CreateFrom(typeof(TRoot)));
             this.ImplementInterfaceMethod(typeof(TRoot));
@@ -167,12 +167,13 @@ $@"
                 {
                     nameBase = "ListVector_" + Guid.NewGuid().ToString("n");
                 }
-                if (vectorModel2.IsArray)
+                else if (vectorModel2.IsArray)
                 {
                     nameBase = "ArrayVector_" + Guid.NewGuid().ToString("n");
                 }
                 else
                 {
+                    Debug.Assert(vectorModel2.IsMemoryVector);
                     nameBase = "MemoryVector_" + Guid.NewGuid().ToString("n");
                 }
             }
@@ -319,15 +320,13 @@ $@"
                         var variableName = $"indexValue_{pair.Key}";
                         body.Add($"var {variableName} = item.{pair.Value.PropertyInfo.Name};");
 
-                        if (itemModel is VectorTypeModel vectorModel && vectorModel.IsMemoryVector)
+                        bool isMemoryVector = itemModel is VectorTypeModel vectorModel && vectorModel.IsMemoryVector;
+                        if (!isMemoryVector)
                         {
-                            body.Add($"if ({variableName}.Length != 0) {{");
-                        }
-                        else
-                        {
-                            body.Add($"if ({variableName} != null) {{");
+                            body.Add($"if ({variableName} != null)");
                         }
 
+                        body.Add("{");
                         body.Add($"runningSum += {subMethod}({variableName});");
                         body.Add("}");
                     }
@@ -375,8 +374,11 @@ $@"
                     // uoffset and padding.
                     body.Add($"int maxSize = {sizeof(uint) + SerializationHelpers.GetMaxPadding(sizeof(uint))};");
 
-                    body.Add("for (int i = 0; i < count; ++i)");
-                    body.Add($"   maxSize += {itemMaxSize}(item[i]);");
+                    body.Add("for (int i = 0; i < count; ++i) {");
+                    body.Add("    var current = item[i];");
+                    body.Add($"   {GetNonNullCheckInvocation(itemTypeModel, "current")};");
+                    body.Add($"   maxSize += {itemMaxSize}(current);");
+                    body.Add("}");
                     body.Add("return maxSize;");
                 }
             }
@@ -441,16 +443,18 @@ $@"
                 body.Add($"var index{index}Value = item.{memberModel.PropertyInfo.Name};");
                 body.Add($"int index{index}Offset = 0;");
 
-                string condition = $"index{index}Value != {GetDefaultValueToken(memberModel)}";
+                string condition = $"if (index{index}Value != {GetDefaultValueToken(memberModel)})";
                 if (itemTypeModel is VectorTypeModel vector && vector.IsMemoryVector)
                 {
-                    condition = $"!index{index}Value.IsEmpty";
+                    // Memory is a struct and can't be null, and 0-length vectors are valid.
+                    // Therefore, we just need to omit the conditional check entirely.
+                    condition = string.Empty;
                 }
 
                 body.Add(
 $@"
                 {{
-                    if ({condition})
+                    {condition}
                     {{
                         sizeNeeded += {FullMethodName(ReflectedMethods.SerializationHelpers_GetAlignmentErrorMethod)}(sizeNeeded, {memberModel.ItemTypeModel.Alignment});
                         vtableHelper.SetOffset({index}, sizeNeeded);
@@ -508,9 +512,7 @@ $@"
         {
             var type = vectorModel.ClrType;
             var methodName = this.writeMethods[vectorModel.ClrType];
-
             var itemTypeModel = vectorModel.ItemTypeModel;
-
             string propertyName = vectorModel.IsList ? "Count" : "Length";
 
             string method =
@@ -522,10 +524,12 @@ $@"
                 int vectorOffset = context.AllocateVector({itemTypeModel.Alignment}, count, {itemTypeModel.InlineSize});
                 writer.WriteUOffset(span, originalOffset, vectorOffset, context);
                 writer.WriteInt(span, count, vectorOffset, context);
-                vectorOffset += 4;
+                vectorOffset += sizeof(int);
                 for (int i = 0; i < count; ++i)
                 {{
-                      {this.GetSerializeInvocation(itemTypeModel.ClrType, "item[i]", "vectorOffset")}
+                      var current = item[i];
+                      {GetNonNullCheckInvocation(itemTypeModel, "current")};
+                      {this.GetSerializeInvocation(itemTypeModel.ClrType, "current", "vectorOffset")}
                       vectorOffset += {itemTypeModel.InlineSize};
                 }}
             }}
@@ -913,6 +917,16 @@ $@"
             {
                 return $"{this.writeMethods[type]}(writer, span, {value}, {offset}, context);";
             }
+        }
+
+        private static string GetNonNullCheckInvocation(RuntimeTypeModel typeModel, string variableName)
+        {
+            if (typeModel.SchemaType == FlatBufferSchemaType.Scalar)
+            {
+                return string.Empty;
+            }
+
+            return $"{FullMethodName(ReflectedMethods.SerializationHelpers_EnsureNonNull(typeModel.ClrType))}({variableName})";
         }
 
         private string GetReadInvocation(Type type, string buffer, string offset)

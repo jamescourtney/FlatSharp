@@ -58,7 +58,7 @@ namespace FlatSharp
         /// <summary>
         /// Compiles and returns the serializer instance for <typeparamref name="T"/>.
         /// </summary>
-        public ISerializer<T> Compile<T>()
+        public ISerializer<T> Compile<T>() where T : class
         {
             return this.GetOrCreateSerializer<T>();
         }
@@ -66,7 +66,7 @@ namespace FlatSharp
         /// <summary>
         /// Parses the given memory as an instance of T.
         /// </summary>
-        public T Parse<T>(Memory<byte> memory)
+        public T Parse<T>(Memory<byte> memory) where T : class
         {
             return this.Parse<T>(new MemoryInputBuffer(memory));
         }
@@ -74,7 +74,7 @@ namespace FlatSharp
         /// <summary>
         /// Parses the given array as an instance of T.
         /// </summary>
-        public T Parse<T>(byte[] buffer)
+        public T Parse<T>(byte[] buffer) where T : class
         {
             return this.Parse<T>(new ArraySegment<byte>(buffer));
         }
@@ -82,7 +82,7 @@ namespace FlatSharp
         /// <summary>
         /// Parses the given ArraySegment as an instance of T.
         /// </summary>
-        public T Parse<T>(ArraySegment<byte> arraySegment)
+        public T Parse<T>(ArraySegment<byte> arraySegment) where T : class
         {
             return this.Parse<T>(new ArrayInputBuffer(arraySegment));
         }
@@ -92,7 +92,7 @@ namespace FlatSharp
         /// and is zero copy by default, which means that modifications to the backing buffer
         /// will modify the data in the resulting object.
         /// </summary>
-        public T Parse<T>(InputBuffer buffer)
+        public T Parse<T>(InputBuffer buffer) where T : class
         {
             return this.GetOrCreateSerializer<T>().Parse(buffer);
         }
@@ -101,7 +101,7 @@ namespace FlatSharp
         /// Writes the given object to the given memory block.
         /// </summary>
         /// <returns>The length of data that was written to the memory block.</returns>
-        public int Serialize<T>(T item, Span<byte> destination)
+        public int Serialize<T>(T item, Span<byte> destination) where T : class
         {
             return this.Serialize(item, destination, DefaultWriter);
         }
@@ -110,7 +110,7 @@ namespace FlatSharp
         /// Writes the given object to the given memory block.
         /// </summary>
         /// <returns>The length of data that was written to the memory block.</returns>
-        public int Serialize<T>(T item, Span<byte> destination, SpanWriter writer)
+        public int Serialize<T>(T item, Span<byte> destination, SpanWriter writer) where T : class
         {
             return this.GetOrCreateSerializer<T>().Write(writer, destination, item);
         }
@@ -118,12 +118,12 @@ namespace FlatSharp
         /// <summary>
         /// Gets the maximum serialized size of the given item.
         /// </summary>
-        public int GetMaxSize<T>(T item)
+        public int GetMaxSize<T>(T item) where T : class
         {
             return this.GetOrCreateSerializer<T>().GetMaxSize(item);
         }
 
-        private ISerializer<TRoot> GetOrCreateSerializer<TRoot>()
+        private ISerializer<TRoot> GetOrCreateSerializer<TRoot>() where TRoot : class
         {
             if (!this.serializerCache.TryGetValue(typeof(TRoot), out object serializer))
             {

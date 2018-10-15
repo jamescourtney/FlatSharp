@@ -17,6 +17,7 @@
 namespace FlatSharp
 {
     using System.Diagnostics;
+    using System.IO;
     using System.Runtime.CompilerServices;
 
     /// <summary>
@@ -54,6 +55,21 @@ namespace FlatSharp
         {
             Debug.Assert(alignment == 1 || alignment % 2 == 0);
             return (~offset + 1) & (alignment - 1);
+        }
+
+        /// <summary>
+        /// Throws an InvalidDataException if the given item is null.
+        /// </summary>
+        /// <remarks>
+        /// Add generic constraint to catch errors calling this for value types.
+        /// </remarks>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void EnsureNonNull<T>(T item) where T : class
+        {
+            if (object.ReferenceEquals(item, null))
+            {
+                throw new InvalidDataException("FlatSharp a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.");
+            }
         }
     }
 }

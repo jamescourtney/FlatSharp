@@ -41,10 +41,14 @@ namespace FlatSharp
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public string ReadString(int offset)
         {
-            // Strings are stored by reference.
-            offset += this.ReadUOffset(offset);
-            int numberOfBytes = this.ReadUOffset(offset);
-            return this.ReadStringProtected(offset + sizeof(int), numberOfBytes, Encoding);
+            checked
+            {
+                // Strings are stored by reference.
+                offset += this.ReadUOffset(offset);
+                int numberOfBytes = (int)this.ReadUInt(offset);
+
+                return this.ReadStringProtected(offset + sizeof(int), numberOfBytes, Encoding);
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -101,14 +105,6 @@ namespace FlatSharp
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReadOnlyMemory<byte> ReadReadOnlyByteMemoryBlock(
-           int offset,
-           int sizePerItem)
-        {
-            return this.ReadByteMemoryBlock(offset, sizePerItem);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Memory<byte> ReadByteMemoryBlock(
            int uoffset,
            int sizePerItem)
@@ -122,17 +118,9 @@ namespace FlatSharp
 
                 // Skip the first 4 bytes of the vector, which contains the length.
                 return this.ReadByteMemoryBlockProtected(
-                    uoffset + sizeof(uint), 
-                    this.ReadUOffset(uoffset));
+                    uoffset + sizeof(uint),
+                    (int)this.ReadUInt(uoffset));
             }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReadOnlyMemory<T> ReadReadOnlyMemoryBlock<T>(
-            int offset,
-            int sizePerItem) where T : struct
-        {
-            return this.ReadMemoryBlock<T>(offset, sizePerItem);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -147,7 +135,7 @@ namespace FlatSharp
 
                 Memory<byte> innerMemory = this.ReadByteMemoryBlockProtected(
                     uoffset + sizeof(uint),
-                    this.ReadUOffset(uoffset) * sizePerItem);
+                    ((int)this.ReadUInt(uoffset)) * sizePerItem);
 
                 MemoryTypeChanger<T> typeChanger = new MemoryTypeChanger<T>(innerMemory);
                 return typeChanger.Memory;
