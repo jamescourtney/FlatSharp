@@ -11,7 +11,7 @@
     <AssemblyOriginatorKeyFile>..\..\misc\strongname.snk</AssemblyOriginatorKeyFile>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <Version>0.1.0</Version>
+    <Version>0.1.2</Version>
     <Authors>James Courtney</Authors>
     <Description>Unsafe extensions to the FlatSharp package.</Description>
     <Copyright>2018</Copyright>

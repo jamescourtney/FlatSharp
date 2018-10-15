@@ -35,78 +35,111 @@ namespace FlatSharpTests
         [TestMethod]
         public void BoolVector()
         {
-            this.TestType(() => r.Next() % 2 == 0);
+            this.TestType(() => r.Next() % 2 == 0, 0);
+            this.TestType(() => r.Next() % 2 == 0, 1);
+            this.TestType(() => r.Next() % 2 == 0, 10);
+            this.TestType(() => r.Next() % 2 == 0, 500);
         }
 
         [TestMethod]
         public void ByteVector()
         {
-            this.TestType(() => (byte)r.Next());
+            this.TestType(() => (byte)r.Next(), 0);
+            this.TestType(() => (byte)r.Next(), 1);
+            this.TestType(() => (byte)r.Next(), 10);
+            this.TestType(() => (byte)r.Next(), 500);
         }
 
         [TestMethod]
         public void SByteVector()
         {
-            this.TestType(() => (sbyte)r.Next());
+            this.TestType(() => (sbyte)r.Next(), 0);
+            this.TestType(() => (sbyte)r.Next(), 1);
+            this.TestType(() => (sbyte)r.Next(), 10);
+            this.TestType(() => (sbyte)r.Next(), 500);
         }
 
         [TestMethod]
         public void UShortVector()
         {
-            this.TestType(() => (ushort)r.Next());
+            this.TestType(() => (ushort)r.Next(), 0);
+            this.TestType(() => (ushort)r.Next(), 1);
+            this.TestType(() => (ushort)r.Next(), 10);
+            this.TestType(() => (ushort)r.Next(), 500);
         }
 
         [TestMethod]
         public void ShortVector()
         {
-            this.TestType(() => (short)r.Next());
+            this.TestType(() => (short)r.Next(), 0);
+            this.TestType(() => (short)r.Next(), 1);
+            this.TestType(() => (short)r.Next(), 10);
+            this.TestType(() => (short)r.Next(), 500);
         }
 
         [TestMethod]
         public void UintVector()
         {
-            this.TestType(() => (uint)r.Next());
+            this.TestType(() => (uint)r.Next(), 0);
+            this.TestType(() => (uint)r.Next(), 1);
+            this.TestType(() => (uint)r.Next(), 10);
+            this.TestType(() => (uint)r.Next(), 500);
         }
 
         [TestMethod]
         public void IntVector()
         {
-            this.TestType(() => r.Next());
+            this.TestType(() => r.Next(), 0);
+            this.TestType(() => r.Next(), 1);
+            this.TestType(() => r.Next(), 10);
+            this.TestType(() => r.Next(), 500);
         }
 
         [TestMethod]
         public void ULongVector()
         {
-            this.TestType(() => (ulong)r.Next());
+            this.TestType(() => (ulong)r.Next(), 0);
+            this.TestType(() => (ulong)r.Next(), 1);
+            this.TestType(() => (ulong)r.Next(), 10);
+            this.TestType(() => (ulong)r.Next(), 500);
         }
 
         [TestMethod]
         public void LongVector()
         {
-            this.TestType(() => r.Next());
+            this.TestType(() => (long)r.Next(), 0);
+            this.TestType(() => (long)r.Next(), 1);
+            this.TestType(() => (long)r.Next(), 10);
+            this.TestType(() => (long)r.Next(), 500);
         }
 
         [TestMethod]
         public void FloatVector()
         {
-            this.TestType(() => (float)r.NextDouble());
+            this.TestType(() => (float)r.NextDouble(), 0);
+            this.TestType(() => (float)r.NextDouble(), 1);
+            this.TestType(() => (float)r.NextDouble(), 10);
+            this.TestType(() => (float)r.NextDouble(), 500);
         }
 
         [TestMethod]
         public void DoubleVector()
         {
-            this.TestType(() => r.NextDouble());
+            this.TestType(() => r.NextDouble(), 0);
+            this.TestType(() => r.NextDouble(), 1);
+            this.TestType(() => r.NextDouble(), 10);
+            this.TestType(() => r.NextDouble(), 500);
         }
 
-        private void TestType<T>(Func<T> generator) where T : IEquatable<T>
+        private void TestType<T>(Func<T> generator, int length) where T : IEquatable<T>
         {
             {
                 var memoryTable = new RootTable<Memory<T>>
                 {
-                    Vector = Enumerable.Range(0, 10).Select(i => generator()).ToArray(),
+                    Vector = Enumerable.Range(0, length).Select(i => generator()).ToArray(),
                     Inner = new InnerTable<Memory<T>>
                     {
-                        Vector = Enumerable.Range(0, 10).Select(i => generator()).ToArray(),
+                        Vector = Enumerable.Range(0, length).Select(i => generator()).ToArray(),
                     }
                 };
 
@@ -114,6 +147,7 @@ namespace FlatSharpTests
                 int offset = FlatBufferSerializer.Default.Serialize(memoryTable, memory);
                 var memoryTableResult = FlatBufferSerializer.Default.Parse<RootTable<Memory<T>>>(memory.Slice(0, offset).ToArray());
                 var resultVector = memoryTableResult.Vector;
+                Assert.AreEqual(length, resultVector.Length);
                 for (int i = 0; i < memoryTableResult.Vector.Length; ++i)
                 {
                     Assert.AreEqual(memoryTable.Vector.Span[i], resultVector.Span[i]);
@@ -123,10 +157,10 @@ namespace FlatSharpTests
             {
                 var memoryTable = new RootTable<ReadOnlyMemory<T>>
                 {
-                    Vector = Enumerable.Range(0, 10).Select(i => generator()).ToArray(),
+                    Vector = Enumerable.Range(0, length).Select(i => generator()).ToArray(),
                     Inner = new InnerTable<ReadOnlyMemory<T>>
                     {
-                        Vector = Enumerable.Range(0, 10).Select(i => generator()).ToArray(),
+                        Vector = Enumerable.Range(0, length).Select(i => generator()).ToArray(),
                     }
                 };
 
@@ -134,6 +168,7 @@ namespace FlatSharpTests
                 int offset = FlatBufferSerializer.Default.Serialize(memoryTable, memory);
                 var memoryTableResult = FlatBufferSerializer.Default.Parse<RootTable<ReadOnlyMemory<T>>>(memory.Slice(0, offset).ToArray());
                 var resultVector = memoryTableResult.Vector;
+                Assert.AreEqual(length, resultVector.Length);
                 for (int i = 0; i < memoryTableResult.Vector.Length; ++i)
                 {
                     Assert.AreEqual(memoryTable.Vector.Span[i], resultVector.Span[i]);
@@ -143,10 +178,10 @@ namespace FlatSharpTests
             {
                 var memoryTable = new RootTable<IList<T>>
                 {
-                    Vector = Enumerable.Range(0, 10).Select(i => generator()).ToArray(),
+                    Vector = Enumerable.Range(0, length).Select(i => generator()).ToArray(),
                     Inner = new InnerTable<IList<T>>
                     {
-                        Vector = Enumerable.Range(0, 10).Select(i => generator()).ToArray(),
+                        Vector = Enumerable.Range(0, length).Select(i => generator()).ToArray(),
                     }
                 };
 
@@ -154,6 +189,7 @@ namespace FlatSharpTests
                 int offset = FlatBufferSerializer.Default.Serialize(memoryTable, memory);
                 var memoryTableResult = FlatBufferSerializer.Default.Parse<RootTable<IList<T>>>(memory.Slice(0, offset).ToArray());
                 var resultVector = memoryTableResult.Vector;
+                Assert.AreEqual(length, resultVector.Count);
                 for (int i = 0; i < memoryTableResult.Vector.Count; ++i)
                 {
                     Assert.AreEqual(memoryTable.Vector[i], resultVector[i]);
@@ -163,10 +199,10 @@ namespace FlatSharpTests
             {
                 var memoryTable = new RootTable<IReadOnlyList<T>>
                 {
-                    Vector = Enumerable.Range(0, 10).Select(i => generator()).ToArray(),
+                    Vector = Enumerable.Range(0, length).Select(i => generator()).ToArray(),
                     Inner = new InnerTable<IReadOnlyList<T>>
                     {
-                        Vector = Enumerable.Range(0, 10).Select(i => generator()).ToArray(),
+                        Vector = Enumerable.Range(0, length).Select(i => generator()).ToArray(),
                     }
                 };
 
@@ -174,6 +210,7 @@ namespace FlatSharpTests
                 int offset = FlatBufferSerializer.Default.Serialize(memoryTable, memory);
                 var memoryTableResult = FlatBufferSerializer.Default.Parse<RootTable<IReadOnlyList<T>>>(memory.Slice(0, offset).ToArray());
                 var resultVector = memoryTableResult.Vector;
+                Assert.AreEqual(length, resultVector.Count);
                 for (int i = 0; i < memoryTableResult.Vector.Count; ++i)
                 {
                     Assert.AreEqual(memoryTable.Vector[i], resultVector[i]);
@@ -183,10 +220,10 @@ namespace FlatSharpTests
             {
                 var memoryTable = new RootTable<T[]>
                 {
-                    Vector = Enumerable.Range(0, 10).Select(i => generator()).ToArray(),
+                    Vector = Enumerable.Range(0, length).Select(i => generator()).ToArray(),
                     Inner = new InnerTable<T[]>
                     {
-                        Vector = Enumerable.Range(0, 10).Select(i => generator()).ToArray(),
+                        Vector = Enumerable.Range(0, length).Select(i => generator()).ToArray(),
                     }
                 };
 
@@ -194,6 +231,7 @@ namespace FlatSharpTests
                 int offset = FlatBufferSerializer.Default.Serialize(memoryTable, memory);
                 var memoryTableResult = FlatBufferSerializer.Default.Parse<RootTable<T[]>>(memory.Slice(0, offset).ToArray());
                 var resultVector = memoryTableResult.Vector;
+                Assert.AreEqual(length, resultVector.Length);
                 for (int i = 0; i < memoryTableResult.Vector.Length; ++i)
                 {
                     Assert.AreEqual(memoryTable.Vector[i], resultVector[i]);
@@ -201,6 +239,7 @@ namespace FlatSharpTests
 
                 var inner = memoryTableResult.Inner;
                 var innerVector = inner.Vector;
+                Assert.AreEqual(length, innerVector.Length);
                 for (int i = 0; i < innerVector.Length; ++i)
                 {
                     Assert.AreEqual(memoryTable.Inner.Vector[i], innerVector[i]);

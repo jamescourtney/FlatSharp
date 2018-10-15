@@ -110,25 +110,28 @@ namespace FlatSharp
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteString(Span<byte> span, string value, int offset, SerializationContext context)
         {
-            var encoding = InputBuffer.Encoding;
+            checked
+            {
+                var encoding = InputBuffer.Encoding;
 
-            // Allocate more than we need and then give back what we don't use.
-            int maxItems = encoding.GetMaxByteCount(value.Length);
-            int stringStartOffset = context.AllocateVector(sizeof(byte), maxItems + 1, sizeof(byte));
+                // Allocate more than we need and then give back what we don't use.
+                int maxItems = encoding.GetMaxByteCount(value.Length);
+                int stringStartOffset = context.AllocateVector(sizeof(byte), maxItems + 1, sizeof(byte));
 
-            int bytesWritten = this.WriteStringProtected(span.Slice(stringStartOffset + sizeof(uint), maxItems), value, encoding);
+                int bytesWritten = this.WriteStringProtected(span.Slice(stringStartOffset + sizeof(uint), maxItems), value, encoding);
 
-            // null teriminator
-            span[stringStartOffset + bytesWritten + sizeof(uint)] = 0;
+                // null teriminator
+                span[stringStartOffset + bytesWritten + sizeof(uint)] = 0;
 
-            // write length
-            this.WriteInt(span, bytesWritten, stringStartOffset, context);
+                // write length
+                this.WriteInt(span, bytesWritten, stringStartOffset, context);
 
-            // give back unused space.
-            context.Offset -= maxItems - (bytesWritten + 1);
+                // give back unused space.
+                context.Offset -= maxItems - bytesWritten;
 
-            // Write the UOffset where we were supposed to go.
-            this.WriteUOffset(span, offset, stringStartOffset, context);
+                // Write the UOffset where we were supposed to go.
+                this.WriteUOffset(span, offset, stringStartOffset, context);
+            }
         }
 
         protected virtual int WriteStringProtected(Span<byte> span, string value, Encoding encoding)
