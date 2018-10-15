@@ -26,7 +26,7 @@ namespace FlatSharpTests
         [TestMethod]
         public void CompileTest()
         {
-            FlatBufferSerializer.Default.PreCompile<BasicTypes>();
+            FlatBufferSerializer.Default.Compile<BasicTypes>();
         }
     }
 }

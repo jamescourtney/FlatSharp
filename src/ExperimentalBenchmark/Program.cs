@@ -32,17 +32,17 @@ namespace BenchmarkCore
         public static void Main(string[] args)
         {
             Stopwatch sw = Stopwatch.StartNew();
-            FlatSharp.FlatBufferSerializer.Default.PreCompile<Test1<byte>>();
+            FlatSharp.FlatBufferSerializer.Default.Compile<Test1<byte>>();
             sw.Stop();
             Console.WriteLine("First compilation took: " + sw.Elapsed.TotalSeconds + " seconds");
             
             sw = Stopwatch.StartNew();
-            FlatSharp.FlatBufferSerializer.Default.PreCompile<Test1<sbyte>>();
+            FlatSharp.FlatBufferSerializer.Default.Compile<Test1<sbyte>>();
             sw.Stop();
             Console.WriteLine("Second compilation took: " + sw.Elapsed.TotalSeconds + " seconds");
 
             sw = Stopwatch.StartNew();
-            FlatSharp.FlatBufferSerializer.Default.PreCompile<Test1<bool>>();
+            FlatSharp.FlatBufferSerializer.Default.Compile<Test1<bool>>();
             sw.Stop();
             Console.WriteLine("Third compilation took: " + sw.Elapsed.TotalSeconds + " seconds");
 

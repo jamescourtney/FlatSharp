@@ -19,6 +19,7 @@ namespace FlatSharp
     using System;
     using System.Diagnostics;
     using System.Runtime.CompilerServices;
+    using System.Threading;
 
     /// <summary>
     /// A context object for a FlatBuffer serialize operation. The context is responsible for allocating space in the buffer
@@ -26,7 +27,8 @@ namespace FlatSharp
     /// </summary>
     public sealed class SerializationContext
     {
-        internal readonly VTableHelper vtableHelper;
+        internal static readonly ThreadLocal<SerializationContext> ThreadLocalContext = new ThreadLocal<SerializationContext>(() => new SerializationContext());
+
         private int offset;
         private int capacity;
 
@@ -35,7 +37,16 @@ namespace FlatSharp
         /// </summary>
         public SerializationContext()
         {
-            this.vtableHelper = new VTableHelper(this);
+            this.VTableBuilder = new VTableBuilder(this);
+        }
+
+        /// <summary>
+        /// Gets the vtable builder associated with this context.
+        /// </summary>
+        public VTableBuilder VTableBuilder
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
         }
 
         /// <summary>
@@ -54,14 +65,14 @@ namespace FlatSharp
         {
             this.offset = 0;
             this.capacity = capacity;
-            this.vtableHelper.Reset();
+            this.VTableBuilder.Reset();
         }
 
         /// <summary>
         /// Allocate a vector and return the index. Does not populate any details of the vector.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal int AllocateVector(int itemAlignment, int numberOfItems, int sizePerItem)
+        public int AllocateVector(int itemAlignment, int numberOfItems, int sizePerItem)
         {
             checked
             {
@@ -106,7 +117,7 @@ namespace FlatSharp
         /// Allocates a block of memory. Returns the offset.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal int AllocateSpace(int bytesNeeded, int alignment)
+        public int AllocateSpace(int bytesNeeded, int alignment)
         {
             checked
             {
