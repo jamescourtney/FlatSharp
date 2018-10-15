@@ -22,7 +22,7 @@ namespace FlatSharp
     /// <summary>
     /// Raised in serialization when the provided buffer was too small.
     /// </summary>
-    public class BufferTooSmallException : Exception
+    public sealed class BufferTooSmallException : Exception
     {
         public BufferTooSmallException() : base($"The provided buffer was too small to hold the serialized data.")
         {

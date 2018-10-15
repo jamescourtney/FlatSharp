@@ -17,40 +17,26 @@
 namespace FlatSharp
 {
     using System;
-    using System.Collections.Immutable;
-    using System.Reflection;
 
     /// <summary>
-    /// An object that can read and write <typeparamref name="T"/> from a buffer.
+    /// An interface implemented dynamically by FlatSharp for reading and writing data from a buffer.
     /// </summary>
-    public interface ISerializer<T>
+    public interface IGeneratedSerializer<T>
     {
-        /// <summary>
-        /// Gets the C# code that FlatSharp generated to produce this serializer.
-        /// </summary>
-        string CSharp { get; }
-
-        /// <summary>
-        /// Gets the Assembly FlatSharp generated to produce this serializer.
-        /// </summary>
-        Assembly Assembly { get; }
-
-        /// <summary>
-        /// Gets the raw data of the <see cref="Assembly"/> property. Can be saved to disk and decompiled, referenced, etc.
-        /// </summary>
-        ImmutableArray<byte> AssemblyBytes { get; }
-
         /// <summary>
         /// Writes the given item to the buffer using the given spanwriter.
         /// </summary>
         /// <param name="writer">The span writer.</param>
         /// <param name="destination">The span to write to.</param>
         /// <param name="item">The object to serialize.</param>
-        /// <returns>The number of bytes written.</returns>
-        int Write(
+        /// <param name="offset">The offset to begin writing at.</param>
+        /// <param name="context">The serialization context.</param>
+        void Write(
             SpanWriter writer,
             Span<byte> destination,
-            T item);
+            T item,
+            int offset,
+            SerializationContext context);
 
         /// <summary>
         /// Computes the maximum size necessary to serialize the given instance of <typeparamref name="T"/>.
@@ -58,8 +44,8 @@ namespace FlatSharp
         int GetMaxSize(T item);
 
         /// <summary>
-        /// Parses the given buffer as an instance of <typeparamref name="T"/>.
+        /// Parses the given buffer as an instance of <typeparamref name="T"/> from the given offset.
         /// </summary>
-        T Parse(InputBuffer buffer);
+        T Parse(InputBuffer buffer, int offset);
     }
 }

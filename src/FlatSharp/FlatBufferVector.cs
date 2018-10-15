@@ -24,6 +24,7 @@ namespace FlatSharp
     /// <summary>
     /// A base class that FlatBuffersNet implements to deserialize vectors. FlatBufferVetor{T} is a lazy implementation
     /// which will create a new instance for each item it returns. For cases where greedy deserialization is desired, 
+    /// consider using an array or <see cref="FlatBufferCacheVector{T}"/>.
     /// </summary>
     public class FlatBufferVector<T> : IList<T>, IReadOnlyList<T>
     {
@@ -33,7 +34,7 @@ namespace FlatSharp
         private readonly int count;
         private Func<InputBuffer, int, T> parseItem;
 
-        internal FlatBufferVector(
+        public FlatBufferVector(
             InputBuffer memory,
             int offset,
             int itemSize,

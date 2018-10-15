@@ -37,10 +37,7 @@ namespace FlatSharp
     /// </summary>
     internal class RoslynSerializerGenerator
     {
-        internal static readonly byte[] PublicKey = StringToByteArray("0024000004800000940000000602000000240000525341310004000001000100898185ce69dca04430ab296e094cd7eb6c66f5a3cfb0631ef64586fa183f0cb5ca64c47539a3a3c6351a9cf8d976a8d94350af430d5adc10536b3904cc1d6ecaaf3d0cb708aa318c559625f05d3b2d89da1c2bb323bb40e36dcf9245f21c3a4b6793c56ffface5e6e18290afb13c7eac1ea9c7a0c22f289c622bfa7b247d81a2");
-
         private static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(LanguageVersion.Latest);
-        private static readonly DesktopStrongNameProvider StrongNameProvider;
 
         private readonly Dictionary<Type, string> maxSizeMethods = new Dictionary<Type, string>();
         private readonly Dictionary<Type, string> writeMethods = new Dictionary<Type, string>();
@@ -49,26 +46,8 @@ namespace FlatSharp
         private readonly bool cacheListVectorData;
 
         private List<SyntaxNode> methodDeclarations = new List<SyntaxNode>();
-
-        static RoslynSerializerGenerator()
-        {
-            using (Stream resource = typeof(RoslynSerializerGenerator).Assembly.GetManifestResourceStream("FlatSharp.strongname.snk"))
-            using (var ms = new MemoryStream())
-            {
-                string fileName = Path.GetTempFileName();
-                resource.CopyTo(ms);
-                
-                using (Stream writer = File.OpenWrite(fileName))
-                {
-                    ms.Position = 0;
-                    ms.CopyTo(writer);
-                }
-                
-                StrongNameProvider = new DesktopStrongNameProvider(ImmutableArray.Create<string>(fileName));
-            }
-        }
-
-        public RoslynSerializerGenerator(bool cacheListVectorData)
+        
+        public RoslynSerializerGenerator(bool cacheListVectorData, bool generateStrongName)
         {
             this.cacheListVectorData = cacheListVectorData;
         }
@@ -104,12 +83,8 @@ $@"
                 using System.Runtime.CompilerServices;
                 using FlatSharp;
                 
-                public sealed class Serializer : ISerializer<{GetCompilableTypeName(typeof(TRoot))}>
+                public sealed class Serializer : {nameof(IGeneratedSerializer<byte>)}<{GetCompilableTypeName(typeof(TRoot))}>
                 {{
-                    public string CSharp {{ get; set; }}
-
-                    public byte[] AssemblyData {{ get; set; }}
-
                     {string.Join("\r\n", this.methodDeclarations.Select(x => x.ToFullString()))}
                 }}
             }}
@@ -130,9 +105,7 @@ $@"
                 .WithModuleName("FlatSharpDynamicAssembly")
                 .WithOverflowChecks(true)
                 .WithAllowUnsafe(false)
-                .WithOptimizationLevel(OptimizationLevel.Release)
-                .WithCryptoPublicKey(ImmutableArray.Create(PublicKey))
-                .WithStrongNameProvider(StrongNameProvider);
+                .WithOptimizationLevel(OptimizationLevel.Release);
 
             CSharpCompilation compilation = CSharpCompilation.Create(
                 "FlatSharpDynamicAssembly",
@@ -158,12 +131,13 @@ $@"
 
                 Assembly assembly = Assembly.Load(assemblyData);
                 object item = Activator.CreateInstance(assembly.GetTypes()[0]);
-                var serializer = (ISerializer<TRoot>)item;
+                var serializer = (IGeneratedSerializer<TRoot>)item;
 
-                serializer.AssemblyData = assemblyData;
-                serializer.CSharp = formattedText;
-
-                return serializer;
+                return new GeneratedSerializerWrapper<TRoot>(
+                    serializer,
+                    assembly,
+                    formattedText,
+                    assemblyData);
             }
         }
 
@@ -450,7 +424,7 @@ $@"
             private static void {methodName} (SpanWriter writer, Span<byte> span, {GetCompilableTypeName(type)} item, int originalOffset, SerializationContext context)
             {{
                 int sizeNeeded = sizeof(uint);
-                var vtableHelper = context.vtableHelper;
+                var vtableHelper = context.{nameof(SerializationContext.VTableBuilder)};
                 vtableHelper.StartObject({maxIndex});
 
 ";

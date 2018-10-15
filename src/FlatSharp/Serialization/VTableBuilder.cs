@@ -21,12 +21,12 @@ namespace FlatSharp
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Runtime.CompilerServices;
-    using System.Runtime.InteropServices;
 
     /// <summary>
-    /// Helps to build vtables for a single serialization action.
+    /// Tracks and builds vtables during serialization. This object can be reused between serialization operations,
+    /// but is not threadsafe.
     /// </summary>
-    internal sealed class VTableHelper
+    public sealed class VTableBuilder
     {
         private byte[] vTableBuffer = new byte[128];
         private List<int> vtableOffsets = new List<int>();
@@ -36,7 +36,7 @@ namespace FlatSharp
         private int maxIndex;
         private int maxIndexWithValue;
 
-        public VTableHelper(SerializationContext context)
+        public VTableBuilder(SerializationContext context)
         {
             this.context = context;
         }
@@ -49,6 +49,9 @@ namespace FlatSharp
             this.isNested = false;
         }
 
+        /// <summary>
+        /// Starts a new vtable.
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void StartObject(int maxIndex)
         {
@@ -71,6 +74,9 @@ namespace FlatSharp
             }
         }
 
+        /// <summary>
+        /// Sets the given index to the given offset.
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetOffset(int index, int value)
         {
@@ -100,6 +106,7 @@ namespace FlatSharp
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int EndObject(Span<byte> buffer, SpanWriter writer, int tableLength)
         {
+            // TODO: Include some sort of hash function here so we don't have to do a linear traversal each time?
             Debug.Assert(this.isNested);
 
             this.isNested = false;
@@ -108,19 +115,22 @@ namespace FlatSharp
             Memory<byte> vtableMemory = this.vTableBuffer.AsMemory().Slice(0, vtableLength);
             Span<byte> currentVTable = vtableMemory.Span;
 
-            BinaryPrimitives.WriteUInt16LittleEndian(currentVTable.Slice(0, 2), checked((ushort)vtableLength));
-            BinaryPrimitives.WriteUInt16LittleEndian(currentVTable.Slice(2, 2), checked((ushort)tableLength));
+            var context = this.context;
+            writer.WriteUShort(currentVTable, checked((ushort)vtableLength), 0, context);
+            writer.WriteUShort(currentVTable, checked((ushort)tableLength), sizeof(ushort), context);
 
             var offsets = this.vtableOffsets;
             int offsetCount = offsets.Count;
+
             for (int i = 0; i < offsetCount; ++i)
             {
                 int offset = offsets[i];
                 ReadOnlySpan<byte> existingVTable = buffer.Slice(offset);
                 existingVTable = existingVTable.Slice(0, BinaryPrimitives.ReadUInt16LittleEndian(existingVTable));
 
-                if (AreContentsEqual(existingVTable, currentVTable))
+                if (existingVTable.SequenceEqual(currentVTable))
                 {
+                    // We already have a vtable that matches this specification. Return that offset.
                     return offset;
                 }
             }
@@ -131,42 +141,6 @@ namespace FlatSharp
             offsets.Add(newVTableOffset);
 
             return newVTableOffset;
-        }
-
-        private static bool AreContentsEqual(ReadOnlySpan<byte> left, ReadOnlySpan<byte> right)
-        {
-            int leftLength = left.Length;
-            if (leftLength != right.Length)
-            {
-                return false;
-            }
-
-            int i = 0;
-
-            // Compare 8 bytes at a time. Faster.
-            ReadOnlySpan<ulong> leftLong = MemoryMarshal.Cast<byte, ulong>(left);
-            ReadOnlySpan<ulong> rightLong = MemoryMarshal.Cast<byte, ulong>(right);
-
-            for (; i < leftLong.Length; ++i)
-            {
-                if (leftLong[i] != rightLong[i])
-                {
-                    return false;
-                }
-            }
-
-            // multiply by 8.
-            i <<= 3;
-
-            for (; i < leftLength; ++i)
-            {
-                if (left[i] != right[i])
-                {
-                    return false;
-                }
-            }
-
-            return true;
         }
     }
 }

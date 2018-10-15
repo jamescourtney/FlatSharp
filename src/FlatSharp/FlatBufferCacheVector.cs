@@ -29,7 +29,7 @@ namespace FlatSharp
         private BitArray hasCachedValue;
         private T[] cachedValues;
 
-        internal FlatBufferCacheVector(
+        public FlatBufferCacheVector(
             InputBuffer memory,
             int offset,
             int itemSize,

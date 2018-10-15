@@ -30,8 +30,7 @@ namespace FlatSharp
         private static readonly SpanWriter DefaultWriter = new SpanWriter();
 
         public static FlatBufferSerializer Default { get; } = new FlatBufferSerializer(new FlatBufferSerializerOptions());
-
-        private readonly Dictionary<Type, object> parserCache = new Dictionary<Type, object>();
+        
         private readonly Dictionary<Type, object> serializerCache = new Dictionary<Type, object>();
 
         /// <summary>
@@ -57,11 +56,11 @@ namespace FlatSharp
         public bool CacheListVectorData { get; }
 
         /// <summary>
-        /// Precompiles a parser and serializer for the given type.
+        /// Compiles and returns the serializer instance for <typeparamref name="T"/>.
         /// </summary>
-        public void PreCompile<T>()
+        public ISerializer<T> Compile<T>()
         {
-            this.GetOrCreateSerializer<T>();
+            return this.GetOrCreateSerializer<T>();
         }
 
         /// <summary>
@@ -95,18 +94,7 @@ namespace FlatSharp
         /// </summary>
         public T Parse<T>(InputBuffer buffer)
         {
-            if (buffer.Length >= int.MaxValue / 2)
-            {
-                throw new ArgumentOutOfRangeException("Memory must be <= 1GB in size.");
-            }
-
-            if (buffer.Length <= 2 * sizeof(uint))
-            {
-                throw new ArgumentException("Buffer is too small to be valid!");
-            }
-
-            var parser = this.GetOrCreateSerializer<T>();
-            return parser.Parse(buffer, 0);
+            return this.GetOrCreateSerializer<T>().Parse(buffer);
         }
 
         /// <summary>
@@ -115,7 +103,7 @@ namespace FlatSharp
         /// <returns>The length of data that was written to the memory block.</returns>
         public int Serialize<T>(T item, Span<byte> destination)
         {
-            return this.Serialize<T>(item, destination, DefaultWriter);
+            return this.Serialize(item, destination, DefaultWriter);
         }
 
         /// <summary>
@@ -124,31 +112,7 @@ namespace FlatSharp
         /// <returns>The length of data that was written to the memory block.</returns>
         public int Serialize<T>(T item, Span<byte> destination, SpanWriter writer)
         {
-#if DEBUG
-            int expectedMaxSize = this.GetMaxSize<T>(item);
-#endif
-
-            var serializer = this.GetOrCreateSerializer<T>();
-            var serializationContext = context.Value;
-
-            serializationContext.Reset(destination.Length);
-            serializationContext.Offset = 4; // first 4 bytes are reserved for uoffset to the first table.
-
-            try
-            {
-                serializer.Write(writer, destination, item, 0, serializationContext);
-            }
-            catch (BufferTooSmallException ex)
-            {
-                ex.SizeNeeded = this.GetMaxSize(item);
-                throw;
-            }
-
-#if DEBUG
-            Debug.Assert(serializationContext.Offset <= expectedMaxSize - 1);
-#endif
-
-            return serializationContext.Offset;
+            return this.GetOrCreateSerializer<T>().Write(writer, destination, item);
         }
 
         /// <summary>
@@ -156,8 +120,7 @@ namespace FlatSharp
         /// </summary>
         public int GetMaxSize<T>(T item)
         {
-            var serializer = this.GetOrCreateSerializer<T>();
-            return 4 + SerializationHelpers.GetMaxPadding(4) + serializer.GetMaxSize(item);
+            return this.GetOrCreateSerializer<T>().GetMaxSize(item);
         }
 
         private ISerializer<TRoot> GetOrCreateSerializer<TRoot>()
@@ -168,7 +131,7 @@ namespace FlatSharp
                 {
                     if (!this.serializerCache.TryGetValue(typeof(TRoot), out serializer))
                     {
-                        serializer = new RoslynSerializerGenerator(this.CacheListVectorData).Compile<TRoot>();
+                        serializer = new RoslynSerializerGenerator(this.CacheListVectorData, false).Compile<TRoot>();
                         this.serializerCache[typeof(TRoot)] = serializer;
                     }
                 }
