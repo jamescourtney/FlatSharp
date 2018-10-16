@@ -107,7 +107,7 @@ namespace FlatSharpTests
 
         private void TestType<T>(bool listCache, Func<T> generator) where T : IEquatable<T>
         {
-            FlatBufferSerializer serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions { CacheListVectorData = listCache });
+            FlatBufferSerializer serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions(cacheListVectorData: listCache));
 
             {
                 var memoryTable = new RootTable<IList<T>>

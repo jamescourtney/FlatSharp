@@ -36,18 +36,18 @@ namespace Benchmark.FBBench
     [CoreJob]
     [RPlotExporter]
     //[ShortRunJob]
+    //[InProcess]
     //[MemoryDiagnoser]
-    [InProcess]
     public class Google_FBBench
     {
-        [Params(3, 30)]
+        [Params(3)]
         public int VectorLength;
 
-        [Params(1, 5)]
+        [Params(5)]
         public int TraversalCount;
 
 #if FLATSHARP
-        [Params(true, false)]
+        [Params(false, true)]
         public bool FlatSharpVectorCache;
 #endif
 
@@ -116,7 +116,7 @@ namespace Benchmark.FBBench
 
 #if FLATSHARP
             {
-                this.fs_serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions { CacheListVectorData = this.FlatSharpVectorCache });
+                this.fs_serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions(cacheListVectorData: this.FlatSharpVectorCache));
                 int offset = this.fs_serializer.Serialize(this.defaultContainer, this.fs_writeMemory);
                 this.fs_readMemory = this.fs_writeMemory.AsSpan(0, offset).ToArray();
                 this.FlatSharp_ParseAndTraverse_SafeMem();

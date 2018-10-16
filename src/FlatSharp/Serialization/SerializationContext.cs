@@ -52,9 +52,12 @@ namespace FlatSharp
         /// <summary>
         /// The maximum offset within the buffer.
         /// </summary>
-        internal int Offset
+        public int Offset
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => this.offset;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => this.offset = value;
         }
 

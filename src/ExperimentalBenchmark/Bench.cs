@@ -48,7 +48,7 @@ namespace BenchmarkCore
         private byte[] zf_readBuffer;
         private byte[] fs_writeBuffer = new byte[64 * 1024];
 
-        private FlatBufferSerializer fscacheserializer = new FlatBufferSerializer(new FlatBufferSerializerOptions { CacheListVectorData = true });
+        private FlatBufferSerializer fscacheserializer = new FlatBufferSerializer(new FlatBufferSerializerOptions(cacheListVectorData: true));
         private SpanWriter spanWriter = new UnsafeSpanWriter();
         private InputBuffer fs_readMemory;
         

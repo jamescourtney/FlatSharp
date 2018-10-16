@@ -44,10 +44,10 @@ namespace FlatSharpTests
 
             byte[] expectedResult =
             {
-                8, 0, 0, 0, // offset to table start
-                4, 0,       // vtable length
-                4, 0,       // table length
-                4, 0, 0, 0  // soffset to vtable
+                4, 0, 0, 0,      // offset to table start
+                252,255,255,255, // soffset to vtable (-4)
+                4, 0,            // vtable length
+                4, 0,            // table length
             };
 
             Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(target));
@@ -67,14 +67,14 @@ namespace FlatSharpTests
 
             byte[] expectedResult =
             {
-                12, 0, 0, 0, // offset to table start
-                6, 0,        // vtable length
-                8, 0,        // table length
-                4, 0,        // offset of index 0 field
-                0, 0,        // padding to 4-byte alignment
-                8, 0, 0, 0,  // soffset to vtable
-                4, 0, 0, 0,  // uoffset_t to vector
-                0, 0, 0, 0,  // vector length
+                4, 0, 0, 0,          // offset to table start
+                248, 255, 255, 255,  // soffset to vtable (-8)
+                12, 0, 0, 0,         // uoffset_t to vector
+                6, 0,                // vtable length
+                8, 0,                // table length
+                4, 0,                // offset of index 0 field
+                0, 0,                // padding to 4-byte alignment
+                0, 0, 0, 0,          // vector length
             };
 
             Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(target));
@@ -94,14 +94,14 @@ namespace FlatSharpTests
 
             byte[] expectedResult =
             {
-                12, 0, 0, 0, // offset to table start
-                6, 0,        // vtable length
-                8, 0,        // table length
-                4, 0,        // offset of index 0 field
-                0, 0,        // padding to 4-byte alignment
-                8, 0, 0, 0,  // soffset to vtable
-                4, 0, 0, 0,  // uoffset_t to vector
-                3, 0, 0, 0,  // vector length,
+                4, 0, 0, 0,          // offset to table start
+                248, 255, 255, 255,  // soffset to vtable (-8)
+                12, 0, 0, 0,         // uoffset_t to vector
+                6, 0,                // vtable length
+                8, 0,                // table length
+                4, 0,                // offset of index 0 field
+                0, 0,                // padding to 4-byte alignment
+                3, 0, 0, 0,          // vector length
 
                 // vector data
                 1, 0,
@@ -126,14 +126,14 @@ namespace FlatSharpTests
 
             byte[] expectedResult =
             {
-                12, 0, 0, 0, // offset to table start
-                6, 0,        // vtable length
-                8, 0,        // table length
-                4, 0,        // offset of index 0 field
-                0, 0,        // padding to 4-byte alignment
-                8, 0, 0, 0,  // soffset to vtable
-                4, 0, 0, 0,  // uoffset_t to vector
-                0, 0, 0, 0,  // vector length
+                4, 0, 0, 0,          // offset to table start
+                248, 255, 255, 255,  // soffset to vtable (-8)
+                12, 0, 0, 0,         // uoffset_t to vector
+                6, 0,                // vtable length
+                8, 0,                // table length
+                4, 0,                // offset of index 0 field
+                0, 0,                // padding to 4-byte alignment
+                0, 0, 0, 0,          // vector length
             };
 
             Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(target));
@@ -153,15 +153,15 @@ namespace FlatSharpTests
 
             byte[] expectedResult =
             {
-                12, 0, 0, 0, // offset to table start
-                6, 0,        // vtable length
-                8, 0,        // table length
-                4, 0,        // offset of index 0 field
-                0, 0,        // padding to 4-byte alignment
-                8, 0, 0, 0,  // soffset to vtable
-                4, 0, 0, 0,  // uoffset_t to vector
-                3, 0, 0, 0,  // vector length
-                1, 0, 1,     // True false true
+                4, 0, 0, 0,          // offset to table start
+                248, 255, 255, 255,  // soffset to vtable (-8)
+                12, 0, 0, 0,         // uoffset_t to vector
+                6, 0,                // vtable length
+                8, 0,                // table length
+                4, 0,                // offset of index 0 field
+                0, 0,                // padding to 4-byte alignment
+                3, 0, 0, 0,          // vector length
+                1, 0, 1,             // True false true
             };
 
             Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(target));
@@ -181,10 +181,10 @@ namespace FlatSharpTests
 
             byte[] expectedResult =
             {
-                8, 0, 0, 0, // offset to table start
-                4, 0,       // vtable length
-                4, 0,       // table length
-                4, 0, 0, 0  // soffset to vtable
+                4, 0, 0, 0,      // offset to table start
+                252,255,255,255, // soffset to vtable (-4)
+                4, 0,            // vtable length
+                4, 0,            // table length
             };
 
             Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(target));
@@ -204,15 +204,15 @@ namespace FlatSharpTests
 
             byte[] expectedResult =
             {
-                12, 0, 0, 0, // offset to table start
-                6, 0,        // vtable length
-                8, 0,        // table length
-                4, 0,        // offset of index 0 field
-                0, 0,        // padding to 4-byte alignment
-                8, 0, 0, 0,  // soffset to vtable
-                4, 0, 0, 0,  // uoffset_t to vector
-                0, 0, 0, 0,  // vector length
-                0,           // null terminator (special case for string vectors).
+                4, 0, 0, 0,          // offset to table start
+                248, 255, 255, 255,  // soffset to vtable (-8)
+                12, 0, 0, 0,         // uoffset_t to string
+                6, 0,                // vtable length
+                8, 0,                // table length
+                4, 0,                // offset of index 0 field
+                0, 0,                // padding to 4-byte alignment
+                0, 0, 0, 0,          // vector length
+                0,                   // null terminator (special case for strings).
             };
 
             Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(target));
@@ -232,15 +232,15 @@ namespace FlatSharpTests
 
             byte[] expectedResult =
             {
-                12, 0, 0, 0, // offset to table start
-                6, 0,        // vtable length
-                8, 0,        // table length
-                4, 0,        // offset of index 0 field
-                0, 0,        // padding to 4-byte alignment
-                8, 0, 0, 0,  // soffset to vtable
-                4, 0, 0, 0,  // uoffset_t to vector
-                3, 0, 0, 0,  // vector length
-                1, 2, 3, 0,  // data + null terminator (special case for string vectors).
+                4, 0, 0, 0,          // offset to table start
+                248, 255, 255, 255,  // soffset to vtable (-8)
+                12, 0, 0, 0,         // uoffset_t to vector
+                6, 0,                // vtable length
+                8, 0,                // table length
+                4, 0,                // offset of index 0 field
+                0, 0,                // padding to 4-byte alignment
+                3, 0, 0, 0,          // vector length
+                1, 2, 3, 0,          // data + null terminator (special case for string vectors).
             };
 
             Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(target));
@@ -260,14 +260,14 @@ namespace FlatSharpTests
 
             byte[] expectedResult =
             {
-                12, 0, 0, 0, // offset to table start
-                6, 0,        // vtable length
-                8, 0,        // table length
-                4, 0,        // offset of index 0 field
-                0, 0,        // padding to 4-byte alignment
-                8, 0, 0, 0,  // soffset to vtable
-                4, 0, 0, 0,  // uoffset_t to vector
-                3, 0, 0, 0,  // vector length
+                4, 0, 0, 0,          // offset to table start
+                248, 255, 255, 255,  // soffset to vtable (-8)
+                12, 0, 0, 0,         // uoffset_t to vector
+                6, 0,                // vtable length
+                8, 0,                // table length
+                4, 0,                // offset of index 0 field
+                0, 0,                // padding to 4-byte alignment
+                3, 0, 0, 0,          // vector length
 
                 // vector data
                 1, 0, 0, 0, 0, 0, 0, 0,
@@ -292,10 +292,10 @@ namespace FlatSharpTests
 
             byte[] expectedResult =
             {
-                8, 0, 0, 0, // offset to table start
-                4, 0,       // vtable length
-                4, 0,       // table length
-                4, 0, 0, 0  // soffset to vtable
+                4, 0, 0, 0,      // offset to table start
+                252,255,255,255, // soffset to vtable (-4)
+                4, 0,            // vtable length
+                4, 0,            // table length
             };
 
             Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(target));
@@ -315,14 +315,14 @@ namespace FlatSharpTests
 
             byte[] expectedResult =
             {
-                12, 0, 0, 0, // offset to table start
-                6, 0,        // vtable length
-                8, 0,        // table length
-                4, 0,        // offset of index 0 field
-                0, 0,        // padding to 4-byte alignment
-                8, 0, 0, 0,  // soffset to vtable
-                4, 0, 0, 0,  // uoffset_t to vector
-                0, 0, 0, 0,  // vector length
+                4, 0, 0, 0,          // offset to table start
+                248, 255, 255, 255,  // soffset to vtable (-8)
+                12, 0, 0, 0,         // uoffset_t to vector
+                6, 0,                // vtable length
+                8, 0,                // table length
+                4, 0,                // offset of index 0 field
+                0, 0,                // padding to 4-byte alignment
+                0, 0, 0, 0,          // vector length
             };
 
             Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(target));

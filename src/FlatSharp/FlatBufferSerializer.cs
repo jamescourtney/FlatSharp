@@ -46,14 +46,18 @@ namespace FlatSharp
         /// </summary>
         public FlatBufferSerializer(FlatBufferSerializerOptions options)
         {
-            this.CacheListVectorData = options.CacheListVectorData;
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            this.Options = options;
         }
 
         /// <summary>
-        /// Indicates if list vectors should have their data cached after reading. This option will cause more allocations
-        /// on deserializing, but will improve performance in cases of duplicate accesses to the same indices.
+        /// Gets the set of options used to create this serializer.
         /// </summary>
-        public bool CacheListVectorData { get; }
+        public FlatBufferSerializerOptions Options { get; }
 
         /// <summary>
         /// Compiles and returns the serializer instance for <typeparamref name="T"/>.
@@ -131,7 +135,7 @@ namespace FlatSharp
                 {
                     if (!this.serializerCache.TryGetValue(typeof(TRoot), out serializer))
                     {
-                        serializer = new RoslynSerializerGenerator(this.CacheListVectorData, false).Compile<TRoot>();
+                        serializer = new RoslynSerializerGenerator(this.Options).Compile<TRoot>();
                         this.serializerCache[typeof(TRoot)] = serializer;
                     }
                 }

@@ -36,10 +36,10 @@
             // hand-craft a table here:
             byte[] data =
             {
-                8, 0, 0, 0,   // uoffset to the start of the table.
-                4, 0,         // vtable size
-                4, 0,         // table length
-                4, 0, 0, 0,   // soffset_t to the vtable
+                4, 0, 0, 0,           // uoffset to the start of the table.
+                252, 255, 255, 255,   // soffset_t to the vtable
+                4, 0,                 // vtable size
+                4, 0,                 // table length
             };
 
             var parsed = FlatBufferSerializer.Default.Parse<DefaultValueTable>(data);
