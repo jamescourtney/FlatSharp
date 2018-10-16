@@ -28,7 +28,7 @@ namespace FlatSharp
     /// </summary>
     public sealed class VTableBuilder
     {
-        private byte[] vTableBuffer = new byte[128];
+        private byte[] vTableBuffer = new byte[64];
         private List<int> vtableOffsets = new List<int>();
 
         private SerializationContext context;
@@ -106,41 +106,43 @@ namespace FlatSharp
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int EndObject(Span<byte> buffer, SpanWriter writer, int tableLength)
         {
-            // TODO: Include some sort of hash function here so we don't have to do a linear traversal each time?
-            Debug.Assert(this.isNested);
-
-            this.isNested = false;
-            int vtableLength = 4 + 2 * (this.maxIndexWithValue + 1);
-
-            Memory<byte> vtableMemory = this.vTableBuffer.AsMemory().Slice(0, vtableLength);
-            Span<byte> currentVTable = vtableMemory.Span;
-
-            var context = this.context;
-            writer.WriteUShort(currentVTable, checked((ushort)vtableLength), 0, context);
-            writer.WriteUShort(currentVTable, checked((ushort)tableLength), sizeof(ushort), context);
-
-            var offsets = this.vtableOffsets;
-            int offsetCount = offsets.Count;
-
-            for (int i = 0; i < offsetCount; ++i)
+            checked
             {
-                int offset = offsets[i];
-                ReadOnlySpan<byte> existingVTable = buffer.Slice(offset);
-                existingVTable = existingVTable.Slice(0, BinaryPrimitives.ReadUInt16LittleEndian(existingVTable));
+                // TODO: Include some sort of hash function here so we don't have to do a linear traversal each time?
+                Debug.Assert(this.isNested);
 
-                if (existingVTable.SequenceEqual(currentVTable))
+                this.isNested = false;
+                int vtableLength = 4 + 2 * (this.maxIndexWithValue + 1);
+
+                Span<byte> currentVTable = this.vTableBuffer.AsSpan().Slice(0, vtableLength);
+
+                var context = this.context;
+                writer.WriteUShort(currentVTable, (ushort)vtableLength, 0, context);
+                writer.WriteUShort(currentVTable, (ushort)tableLength, sizeof(ushort), context);
+
+                var offsets = this.vtableOffsets;
+                int offsetCount = offsets.Count;
+
+                for (int i = 0; i < offsetCount; ++i)
                 {
-                    // We already have a vtable that matches this specification. Return that offset.
-                    return offset;
+                    int offset = offsets[i];
+                    ReadOnlySpan<byte> existingVTable = buffer.Slice(offset);
+                    existingVTable = existingVTable.Slice(0, BinaryPrimitives.ReadUInt16LittleEndian(existingVTable));
+
+                    if (existingVTable.SequenceEqual(currentVTable))
+                    {
+                        // We already have a vtable that matches this specification. Return that offset.
+                        return offset;
+                    }
                 }
+
+                // Oh, well. Write the new table.
+                int newVTableOffset = context.AllocateSpace(vtableLength, sizeof(ushort));
+                currentVTable.CopyTo(buffer.Slice(newVTableOffset, vtableLength));
+                offsets.Add(newVTableOffset);
+
+                return newVTableOffset;
             }
-
-            // Oh, well. Write the new table.
-            int newVTableOffset = this.context.AllocateSpace(vtableLength, sizeof(ushort));
-            currentVTable.CopyTo(buffer.Slice(newVTableOffset, vtableLength));
-            offsets.Add(newVTableOffset);
-
-            return newVTableOffset;
         }
     }
 }

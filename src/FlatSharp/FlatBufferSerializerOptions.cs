@@ -22,9 +22,24 @@
     public class FlatBufferSerializerOptions
     {
         /// <summary>
+        /// Creates a new instance of FlatBufferSerializer options.
+        /// </summary>
+        /// <param name="cacheListVectorData">Indicates that IList vectors should have their reads progressively cached.</param>
+        /// <param name="useCheckedOperations">
+        /// Indicates that FlatSharp should generate unchecked operations. 
+        /// This can result in a nominal performance increase, but most overflows will not be caught. Note that
+        /// this does not affect bounds checking.
+        /// </param>
+        public FlatBufferSerializerOptions(
+            bool cacheListVectorData = false)
+        {
+            this.CacheListVectorData = cacheListVectorData;
+        }
+
+        /// <summary>
         /// Indicates if list vectors should have their data cached after reading. This option will cause more allocations
         /// on deserializing, but will improve performance in cases of duplicate accesses to the same indices.
         /// </summary>
-        public bool CacheListVectorData { get; set; } = false;
+        public bool CacheListVectorData { get; }
     }
 }

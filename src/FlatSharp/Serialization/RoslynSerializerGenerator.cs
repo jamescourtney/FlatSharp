@@ -43,13 +43,13 @@ namespace FlatSharp
         private readonly Dictionary<Type, string> writeMethods = new Dictionary<Type, string>();
         private readonly Dictionary<Type, string> readMethods = new Dictionary<Type, string>();
 
-        private readonly bool cacheListVectorData;
+        private readonly FlatBufferSerializerOptions options;
 
         private List<SyntaxNode> methodDeclarations = new List<SyntaxNode>();
         
-        public RoslynSerializerGenerator(bool cacheListVectorData, bool generateStrongName)
+        public RoslynSerializerGenerator(FlatBufferSerializerOptions options)
         {
-            this.cacheListVectorData = cacheListVectorData;
+            this.options = options;
         }
 
         public ISerializer<TRoot> Compile<TRoot>() where TRoot : class
@@ -421,13 +421,22 @@ $@"
             var methodName = this.writeMethods[tableModel.ClrType];
             int maxIndex = tableModel.IndexToMemberMap.Keys.Max();
 
+            int maxInlineSize = sizeof(int);
+            foreach (var item in tableModel.IndexToMemberMap.Values)
+            {
+                maxInlineSize += item.ItemTypeModel.InlineSize + SerializationHelpers.GetMaxPadding(item.ItemTypeModel.Alignment);
+            }
+
             string header =
 $@"
             private static void {methodName} (SpanWriter writer, Span<byte> span, {GetCompilableTypeName(type)} item, int originalOffset, SerializationContext context)
             {{
-                int sizeNeeded = sizeof(uint);
-                var vtableHelper = context.{nameof(SerializationContext.VTableBuilder)};
-                vtableHelper.StartObject({maxIndex});
+                int tableStart = context.{nameof(SerializationContext.AllocateSpace)}({maxInlineSize}, sizeof(int));
+                writer.{nameof(SpanWriter.WriteUOffset)}(span, originalOffset, tableStart, context);
+                int currentOffset = tableStart + sizeof(int); // skip past vtable soffset_t.
+
+                var vtable = context.{nameof(SerializationContext.VTableBuilder)};
+                vtable.StartObject({maxIndex});
 
 ";
 
@@ -456,27 +465,27 @@ $@"
                 {{
                     {condition}
                     {{
-                        sizeNeeded += {FullMethodName(ReflectedMethods.SerializationHelpers_GetAlignmentErrorMethod)}(sizeNeeded, {memberModel.ItemTypeModel.Alignment});
-                        vtableHelper.SetOffset({index}, sizeNeeded);
-                        index{index}Offset = sizeNeeded;
-                        sizeNeeded += {memberModel.ItemTypeModel.InlineSize};
+                        currentOffset += {FullMethodName(ReflectedMethods.SerializationHelpers_GetAlignmentErrorMethod)}(currentOffset, {memberModel.ItemTypeModel.Alignment});
+                        index{index}Offset = currentOffset;
+                        vtable.SetOffset({index}, currentOffset - tableStart);
+                        currentOffset += {memberModel.ItemTypeModel.InlineSize};
                     }}
                 }}
 ");
             }
 
-            body.Add("int vtableOffset = vtableHelper.EndObject(span, writer, sizeNeeded);");
-            body.Add("int tableOffset = context.AllocateSpace(sizeNeeded, sizeof(uint));");
-            body.Add("writer.WriteUOffset(span, originalOffset, tableOffset, context);");
-            body.Add("writer.WriteInt(span, tableOffset - vtableOffset, tableOffset, context);");
+            body.Add("int tableLength = currentOffset - tableStart;");
+            body.Add($"context.Offset -= {maxInlineSize} - tableLength;");
+            body.Add($"int vtablePosition = vtable.EndObject(span, writer, tableLength);");
+            body.Add("writer.WriteInt(span, tableStart - vtablePosition, tableStart, context);");
 
             foreach (var kvp in tableModel.IndexToMemberMap)
             {
                 var index = kvp.Key;
-                var memberModel = kvp.Value;
+                string valueVariableName = $"index{index}Value";
+                string offsetVariableName = $"index{index}Offset";
 
-                string invocation = this.GetSerializeInvocation(memberModel.ItemTypeModel.ClrType, $"index{index}Value", $"index{index}Offset + tableOffset");
-                body.Add($"if (index{index}Offset != 0) {invocation}");
+                body.Add($"if ({offsetVariableName} != 0) {this.GetSerializeInvocation(kvp.Value.ItemTypeModel.ClrType, valueVariableName, offsetVariableName)}");
             }
 
             string text = $"{header} {string.Join("\r\n", body)} }}";
@@ -826,7 +835,7 @@ $@"
             string readMethodName = this.readMethods[typeModel.ClrType];
 
             string kindToCreate = nameof(FlatBufferVector<byte>);
-            if (this.cacheListVectorData)
+            if (this.options.CacheListVectorData)
             {
                 kindToCreate = nameof(FlatBufferCacheVector<byte>);
             }
