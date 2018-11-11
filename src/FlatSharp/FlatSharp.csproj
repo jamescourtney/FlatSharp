@@ -10,7 +10,7 @@
     <AssemblyOriginatorKeyFile>..\..\misc\strongname.snk</AssemblyOriginatorKeyFile>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <Version>0.1.2</Version>
+    <Version>0.1.3</Version>
     <Authors>James Courtney</Authors>
     <Company />
     <Description>FlatSharp is an idiomatic implementation of the FlatBuffer binary format.</Description>
