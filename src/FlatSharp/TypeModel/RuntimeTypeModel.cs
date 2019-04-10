@@ -16,11 +16,11 @@
 
 namespace FlatSharp.TypeModel
 {
+    using FlatSharp.Attributes;
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Reflection;
-    using FlatSharp.Attributes;
 
     /// <summary>
     /// Defines a type model for an object that can be parsed and serialized to/from a FlatBuffer. While generally most useful to the 
@@ -99,6 +99,11 @@ namespace FlatSharp.TypeModel
                 else if (type.GetCustomAttribute<FlatBufferStructAttribute>() != null)
                 {
                     newModel = new StructTypeModel(type);
+                }
+                else if (typeof(IUnion).IsAssignableFrom(type))
+                {
+                    // Keep this above the "isgeneric" check since our union types are generic.
+                    newModel = new UnionTypeModel(type);
                 }
                 else if (type.IsGenericType)
                 {

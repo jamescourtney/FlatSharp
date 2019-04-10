@@ -18,6 +18,7 @@ namespace FlatSharpTests
 {
     using System;
     using System.Collections.Generic;
+    using FlatSharp;
     using FlatSharp.Attributes;
     using FlatSharp.TypeModel;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -150,6 +151,20 @@ namespace FlatSharpTests
             Assert.IsFalse(model.IsList);
             Assert.IsTrue(model.IsMemoryVector);
             Assert.IsTrue(model.IsReadOnly);
+        }
+
+        [TestMethod]
+        public void TypeModel_Union_Vectors()
+        {
+            var model = (TableTypeModel)RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, IList<string>>>));
+
+            var index = model.IndexToMemberMap[0];
+
+            // 1 is the double part of the union. Model shouldn't contain it.
+            Assert.IsFalse(model.IndexToMemberMap.ContainsKey(1));
+
+            Assert.AreEqual(index.ItemTypeModel.SchemaType, FlatBufferSchemaType.Union);
+            Assert.AreEqual(index.VTableSlotCount, 2);
         }
 
         private VectorTypeModel VectorTest(Type vectorDefinition, Type innerType)
@@ -296,6 +311,31 @@ namespace FlatSharpTests
         [FlatBufferStruct]
         public class DoesNotInheritFromObjectStruct<T> : GenericStruct<T>
         {
+        }
+
+        [FlatBufferTable]
+        public class UnionMemberType<T1, T2>
+        {
+            [FlatBufferItem(0)]
+            public string Value { get; set; }
+
+            // Unions are double-wide types, so indices 1 and 2 are reserved.
+            [FlatBufferItem(1)]
+            public FlatBufferUnion<T1, T2> Union { get; set; }
+
+            [FlatBufferItem(3)]
+            public int Int { get; set; }
+        }
+
+        [FlatBufferTable]
+        public class OverlappingUnionIndex
+        { 
+            [FlatBufferItem(0)]
+            public FlatBufferUnion<string, IList<string>> Union { get; set; }
+
+            // Invalid -- this should be at index 2.
+            [FlatBufferItem(1)]
+            public string FooBar { get; set; }
         }
     }
 }

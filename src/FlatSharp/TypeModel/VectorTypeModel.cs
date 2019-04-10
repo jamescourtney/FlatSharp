@@ -14,7 +14,7 @@
  * limitations under the License.
  */
  
- namespace FlatSharp.TypeModel
+namespace FlatSharp.TypeModel
 {
     using System;
     using System.Collections.Generic;

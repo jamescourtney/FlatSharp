@@ -29,7 +29,15 @@
     /// </summary>
     public class TableTypeModel : RuntimeTypeModel
     {
+        /// <summary>
+        /// Maps vtable index -> type model.
+        /// </summary>
         private readonly Dictionary<int, TableMemberModel> memberTypes = new Dictionary<int, TableMemberModel>();
+
+        /// <summary>
+        /// Contains the vtable indices that have already been occupied.
+        /// </summary>
+        private readonly HashSet<int> occupiedVtableSlots = new HashSet<int>();
 
         internal TableTypeModel(Type clrType) : base(clrType)
         {
@@ -111,9 +119,12 @@
                     hasDefaultValue,
                     defaultValue);
 
-                if (this.memberTypes.ContainsKey(index))
+                for (int i = 0; i < model.VTableSlotCount; ++i)
                 {
-                    throw new InvalidFlatBufferDefinitionException($"FlatBuffer Table {this.ClrType.Name} already defines a property with index {index}");
+                    if (!this.occupiedVtableSlots.Add(index + i))
+                    {
+                        throw new InvalidFlatBufferDefinitionException($"FlatBuffer Table {this.ClrType.Name} already defines a property with index {index}");
+                    }
                 }
 
                 this.memberTypes[index] = model;

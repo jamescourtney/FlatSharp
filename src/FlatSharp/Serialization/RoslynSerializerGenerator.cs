@@ -71,6 +71,7 @@ namespace FlatSharp
                 MetadataReference.CreateFromFile(typeof(TRoot).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(ValueType).Assembly.Location),
                 MetadataReference.CreateFromFile(Assembly.Load("netstandard").Location),
+                MetadataReference.CreateFromFile(typeof(System.IO.InvalidDataException).Assembly.Location),
                 MetadataReference.CreateFromFile(Assembly.Load("System.Runtime").Location),
             };
 
@@ -180,6 +181,9 @@ $@"
 
             this.writeMethods[model.ClrType] = $"WriteInlineValueOf_{nameBase}";
             this.maxSizeMethods[model.ClrType] = $"GetMaxSizeOf_{nameBase}";
+
+            // Unions are given a read method here, but it is never invoked. Similiarly, it is not
+            // defined.
             this.readMethods[model.ClrType] = $"Read_{nameBase}";
 
             if (model is TableTypeModel tableModel)
@@ -199,6 +203,13 @@ $@"
             else if (model is VectorTypeModel vectorModel)
             {
                 this.DefineMethods(vectorModel.ItemTypeModel);
+            }
+            else if (model is UnionTypeModel unionModel)
+            {
+                foreach (var member in unionModel.UnionElementTypeModel)
+                {
+                    this.DefineMethods(member);
+                }
             }
         }
 
@@ -309,12 +320,12 @@ $@"
                     {
                         subMethod = FullMethodName(ReflectedMethods.SerializationHelpers_GetMaxSizeOfStringMethod);
                     }
-                    else if (itemModel.SchemaType == FlatBufferSchemaType.Table || itemModel.SchemaType == FlatBufferSchemaType.Vector)
+                    else if (itemModel.SchemaType == FlatBufferSchemaType.Table || itemModel.SchemaType == FlatBufferSchemaType.Vector || itemModel.SchemaType == FlatBufferSchemaType.Union)
                     {
                         subMethod = this.maxSizeMethods[itemModel.ClrType];
                     }
 
-                    // if we're dealing with an item that isn't stored completely inline (string/vector/subtable), then we need to branch.
+                    // if we're dealing with an item that isn't stored completely inline (string/vector/subtable/union), then we need to branch.
                     if (subMethod != null)
                     {
                         var variableName = $"indexValue_{pair.Key}";
@@ -382,6 +393,43 @@ $@"
                     body.Add("return maxSize;");
                 }
             }
+            else if (typeModel is UnionTypeModel unionTypeModel)
+            {
+                body.Add("switch (item?.Discriminator) {");
+
+                for (int i = 0; i < unionTypeModel.UnionElementTypeModel.Length; ++i)
+                {
+                    var subModel = unionTypeModel.UnionElementTypeModel[i];
+                    body.Add($"case {i + 1}:");
+
+                    // Unions never store data inline. So, we *always* have a uoffset_t
+                    // and a byte for the discriminator.
+                    body.Add("return ");
+                    body.Add($" sizeof(byte) + sizeof(uint) + {SerializationHelpers.GetMaxPadding(sizeof(uint))}");
+                    
+                    if (subModel.SchemaType == FlatBufferSchemaType.Struct)
+                    {
+                        body.Add($"+ {subModel.InlineSize} + {SerializationHelpers.GetMaxPadding(subModel.Alignment)};");
+                    }
+                    else if (subModel.SchemaType == FlatBufferSchemaType.Vector || subModel.SchemaType == FlatBufferSchemaType.Table)
+                    {
+                        string subMethod = this.maxSizeMethods[subModel.ClrType];
+                        body.Add($"+ {subMethod}(item.Item{i + 1});");
+                    }
+                    else if (subModel.SchemaType == FlatBufferSchemaType.String)
+                    {
+                        string subMethod = FullMethodName(ReflectedMethods.SerializationHelpers_GetMaxSizeOfStringMethod);
+                        body.Add($"+ {subMethod}(item.Item{i + 1});");
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException();
+                    }
+                }
+
+                body.Add("default: return 0;");
+                body.Add("}");
+            }
 
             string text = $"{header} {string.Join("\r\n", body)} }}";
             var node = CSharpSyntaxTree.ParseText(text, ParseOptions);
@@ -411,6 +459,10 @@ $@"
                     // Array implements IList.
                     this.ImplementListVectorInlineWriteMethod(vectorModel);
                 }
+            }
+            else if (typeModel is UnionTypeModel unionModel)
+            {
+                this.ImplementUnionInlineWriteMethod(unionModel);
             }
         }
 
@@ -449,8 +501,19 @@ $@"
                 var memberModel = kvp.Value;
                 var itemTypeModel = memberModel.ItemTypeModel;
 
-                body.Add($"var index{index}Value = item.{memberModel.PropertyInfo.Name};");
-                body.Add($"int index{index}Offset = 0;");
+                if (itemTypeModel is UnionTypeModel unionModel)
+                {
+                    body.Add($"var index{index}Value = item.Discriminator;");
+                    body.Add($"int index{index}Offset = 0;");
+
+                    body.Add($"var index{index}Value = item.Discriminator;");
+                    body.Add($"int index{index}Offset = 0;");
+                }
+                else
+                {
+                    body.Add($"var index{index}Value = item.{memberModel.PropertyInfo.Name};");
+                    body.Add($"int index{index}Offset = 0;");
+                }
 
                 string condition = $"if (index{index}Value != {GetDefaultValueToken(memberModel)})";
                 if (itemTypeModel is VectorTypeModel vector && vector.IsMemoryVector)
@@ -574,6 +637,24 @@ $@"
             this.methodDeclarations.Add(node.GetRoot());
         }
 
+        private void ImplementUnionInlineWriteMethod(UnionTypeModel typeModel)
+        {
+            Type type = typeModel.ClrType;
+            var methodName = this.writeMethods[type];
+
+            string method =
+$@"
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private static void {methodName} (SpanWriter writer, Span<byte> span, {GetCompilableTypeName(type)} item, int originalOffset, SerializationContext context)
+            {{
+                // TODO!
+            }}
+";
+
+            var node = CSharpSyntaxTree.ParseText(method, ParseOptions);
+            this.methodDeclarations.Add(node.GetRoot());
+        }
+
         private void ImplementReadMethod(Type type)
         {
             var typeModel = RuntimeTypeModel.CreateFrom(type);
@@ -600,6 +681,14 @@ $@"
                 {
                     this.ImplementListVectorReadMethod(vectorModel);
                 }
+            }
+            else if (typeModel is UnionTypeModel unionModel)
+            {
+                // Explicitly left empty.
+            }
+            else
+            {
+                throw new InvalidOperationException();
             }
         }
 
@@ -646,29 +735,7 @@ $@"
                     fieldDefinitions.Add($"private bool {hasValueFieldName};");
                     fieldDefinitions.Add($"private {compilableTypeName} {valueFieldName};");
 
-                    string defaultValue = GetDefaultValueToken(value);
-
-                    string getter =
-$@"
-                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    get 
-                    {{
-                        if (!this.{hasValueFieldName})
-                        {{
-                            var buffer = this.buffer;
-                            int absoluteLocation = buffer.GetAbsoluteTableFieldLocation(this.offset, {index});
-                            if (absoluteLocation == 0) {{
-                                this.{valueFieldName} = {defaultValue};
-                            }}
-                            else {{
-                                this.{valueFieldName} = {this.GetReadInvocation(propertyType, "buffer", "absoluteLocation")};
-                            }}
-                            this.{hasValueFieldName} = true;
-                        }}
-
-                        return this.{valueFieldName};
-                    }}
-";
+                    string getter = this.GetTableGetter(value, index, valueFieldName, hasValueFieldName);
 
                     string setter = string.Empty;
                     if (!value.IsReadOnly)
@@ -708,6 +775,94 @@ $@"
 ";
                 var node = CSharpSyntaxTree.ParseText(classDefinition, ParseOptions);
                 this.methodDeclarations.Add(node.GetRoot());
+            }
+        }
+
+        private string GetTableGetter(TableMemberModel memberModel, int index, string valueFieldName, string hasValueFieldName)
+        {
+            Type propertyType = memberModel.ItemTypeModel.ClrType;
+            string defaultValue = GetDefaultValueToken(memberModel);
+
+            if (memberModel.ItemTypeModel.SchemaType != FlatBufferSchemaType.Union)
+            {
+                // Standard property.
+                return
+$@"
+                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                    get 
+                    {{
+                        if (!this.{hasValueFieldName})
+                        {{
+                            var buffer = this.buffer;
+                            int absoluteLocation = buffer.GetAbsoluteTableFieldLocation(this.offset, {index});
+                            if (absoluteLocation == 0) {{
+                                this.{valueFieldName} = {defaultValue};
+                            }}
+                            else {{
+                                this.{valueFieldName} = {this.GetReadInvocation(propertyType, "buffer", "absoluteLocation")};
+                            }}
+                            this.{hasValueFieldName} = true;
+                        }}
+
+                        return this.{valueFieldName};
+                    }}
+";
+            }
+            else
+            {
+                UnionTypeModel unionModel = (UnionTypeModel)memberModel.ItemTypeModel;
+
+                // Unions need to access 2 indexes from the vtable. This makes them somewhat intractable
+                // to do from a different location.
+
+                List<string> switchCases = new List<string>();
+                for (int i = 0; i < unionModel.UnionElementTypeModel.Length; ++i)
+                {
+                    var unionMember = unionModel.UnionElementTypeModel[i];
+                    int unionIndex = i + 1;
+
+                    string @case =
+$@"
+                                case {unionIndex}:
+                                    this.{valueFieldName} = new {GetCompilableTypeName(unionModel.ClrType)}({this.GetReadInvocation(unionMember.ClrType, "buffer", "offsetLocation")});
+                                    break;
+";
+
+                    switchCases.Add(@case);
+                }
+
+                return
+$@"
+                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                    get 
+                    {{
+                        if (!this.{hasValueFieldName})
+                        {{
+                            var buffer = this.buffer;
+                            int discriminatorLocation = buffer.GetAbsoluteTableFieldLocation(this.offset, {index});
+                            int offsetLocation = buffer.GetAbsoluteTableFieldLocation(this.offset, {index + 1});
+                            
+                            if (discriminatorLocation == 0) {{
+                                this.{valueFieldName} = {defaultValue};
+                            }}
+                            else {{
+                                byte discriminator = buffer.ReadByte(discriminatorLocation);
+                                if (discriminator == 0 && offsetLocation != 0)
+                                    throw new System.IO.InvalidDataException(""FlatBuffer union had discriminator set but no offset."");
+                                switch (discriminator)
+                                {{
+                                    {string.Join("\r\n", switchCases)}
+                                    default:
+                                        this.{valueFieldName} = {defaultValue};
+                                        break;
+                                }}
+                                this.{hasValueFieldName} = true;
+                            }}
+                        }}
+                        
+                        return this.{valueFieldName};
+                    }}
+";
             }
         }
 
@@ -885,8 +1040,8 @@ $@"
             return $@"new {vectorTypeName}<{GetCompilableTypeName(typeModel.ItemTypeModel.ClrType)}>(
                     memory, 
                     offset + memory.ReadUOffset(offset), 
-                    { typeModel.ItemTypeModel.InlineSize}, 
-                    (b, o) => { this.GetReadInvocation(typeModel.ItemTypeModel.ClrType, "b", "o")})";
+                    {typeModel.ItemTypeModel.InlineSize}, 
+                    (b, o) => {this.GetReadInvocation(typeModel.ItemTypeModel.ClrType, "b", "o")})";
         }
 
         private static string FullMethodName(MethodInfo info)
@@ -1014,18 +1169,6 @@ $@"
             }
 
             throw new InvalidOperationException("Unexpected method visibility: " + method.Name);
-        }
-
-        private static byte[] StringToByteArray(string hexString)
-        {
-            int NumberChars = hexString.Length;
-            byte[] bytes = new byte[NumberChars / 2];
-            for (int i = 0; i < NumberChars; i += 2)
-            {
-                bytes[i / 2] = Convert.ToByte(hexString.Substring(i, 2), 16);
-            }
-
-            return bytes;
         }
     }
 }

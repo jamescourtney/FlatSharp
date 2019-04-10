@@ -45,5 +45,10 @@ namespace FlatSharp.TypeModel
         /// A string.
         /// </summary>
         String = 5,
+
+        /// <summary>
+        /// A union.
+        /// </summary>
+        Union = 6,
     }
 }
