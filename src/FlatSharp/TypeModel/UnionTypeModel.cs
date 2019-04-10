@@ -43,9 +43,9 @@ namespace FlatSharp.TypeModel
         public override int Alignment => sizeof(uint);
 
         /// <summary>
-        /// Gets the inline size of this element.
+        /// Gets the inline size of this element. 1 byte for discriminator and 4 for the uoffset.
         /// </summary>
-        public override int InlineSize => sizeof(uint);
+        public override int InlineSize => sizeof(uint) + sizeof(byte);
 
         /// <summary>
         /// Gets the type model for this union's members. Index 0 corresponds to discriminator 1.

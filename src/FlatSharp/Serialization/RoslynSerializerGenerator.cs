@@ -28,7 +28,7 @@ namespace FlatSharp
     using Microsoft.CodeAnalysis.CSharp;
     using Microsoft.CodeAnalysis.Emit;
     using Microsoft.CodeAnalysis.Formatting;
-    
+
     /// <summary>
     /// Generates a collection of methods to help serialize the given root type.
     /// Does recursive traversal of the object graph and builds a set of methods to assist with populating vtables and writing values.
@@ -46,7 +46,7 @@ namespace FlatSharp
         private readonly FlatBufferSerializerOptions options;
 
         private List<SyntaxNode> methodDeclarations = new List<SyntaxNode>();
-        
+
         public RoslynSerializerGenerator(FlatBufferSerializerOptions options)
         {
             this.options = options;
@@ -92,7 +92,7 @@ $@"
 ";
 
             var node = CSharpSyntaxTree.ParseText(template, ParseOptions);
-            
+
             string formattedText;
             using (var workspace = new AdhocWorkspace())
             {
@@ -406,7 +406,7 @@ $@"
                     // and a byte for the discriminator.
                     body.Add("return ");
                     body.Add($" sizeof(byte) + sizeof(uint) + {SerializationHelpers.GetMaxPadding(sizeof(uint))}");
-                    
+
                     if (subModel.SchemaType == FlatBufferSchemaType.Struct)
                     {
                         body.Add($"+ {subModel.InlineSize} + {SerializationHelpers.GetMaxPadding(subModel.Alignment)};");
@@ -471,7 +471,7 @@ $@"
             // parameters: (T value, T defaultValue_notUsed, ref int sizeNeeded)
             var type = tableModel.ClrType;
             var methodName = this.writeMethods[tableModel.ClrType];
-            int maxIndex = tableModel.IndexToMemberMap.Keys.Max();
+            int maxIndex = tableModel.MaxIndex;
 
             int maxInlineSize = sizeof(int);
             foreach (var item in tableModel.IndexToMemberMap.Values)
@@ -503,11 +503,9 @@ $@"
 
                 if (itemTypeModel is UnionTypeModel unionModel)
                 {
-                    body.Add($"var index{index}Value = item.Discriminator;");
-                    body.Add($"int index{index}Offset = 0;");
-
-                    body.Add($"var index{index}Value = item.Discriminator;");
-                    body.Add($"int index{index}Offset = 0;");
+                    body.Add($"var index{index}DiscriminatorOffset = 0;");
+                    body.Add($"var index{index}Offset = 0;");
+                    body.Add($"var index{index}Union = item.{memberModel.PropertyInfo.Name};");
                 }
                 else
                 {
@@ -523,18 +521,37 @@ $@"
                     condition = string.Empty;
                 }
 
-                body.Add(
+                if (itemTypeModel.SchemaType != FlatBufferSchemaType.Union)
+                {
+                    body.Add(
 $@"
-                {{
-                    {condition}
                     {{
-                        currentOffset += {FullMethodName(ReflectedMethods.SerializationHelpers_GetAlignmentErrorMethod)}(currentOffset, {memberModel.ItemTypeModel.Alignment});
-                        index{index}Offset = currentOffset;
-                        vtable.SetOffset({index}, currentOffset - tableStart);
-                        currentOffset += {memberModel.ItemTypeModel.InlineSize};
+                        {condition}
+                        {{
+                            currentOffset += {FullMethodName(ReflectedMethods.SerializationHelpers_GetAlignmentErrorMethod)}(currentOffset, {memberModel.ItemTypeModel.Alignment});
+                            index{index}Offset = currentOffset;
+                            vtable.SetOffset({index}, currentOffset - tableStart);
+                            currentOffset += {memberModel.ItemTypeModel.InlineSize};
+                        }}
                     }}
-                }}
 ");
+                }
+                else
+                {
+                    body.Add(
+$@"
+                        if ((index{index}Union?.Discriminator ?? (byte)0) != 0)
+                        {{
+                            index{index}DiscriminatorOffset = currentOffset;
+                            vtable.SetOffset({index}, currentOffset - tableStart);
+                            currentOffset++;
+
+                            currentOffset += {FullMethodName(ReflectedMethods.SerializationHelpers_GetAlignmentErrorMethod)}(currentOffset, sizeof(uint));
+                            index{index}Offset = currentOffset;
+                            vtable.SetOffset({index + 1}, currentOffset - tableStart);
+                            currentOffset += sizeof(uint);
+                        }}");
+                }
             }
 
             body.Add("int tableLength = currentOffset - tableStart;");
@@ -547,8 +564,43 @@ $@"
                 var index = kvp.Key;
                 string valueVariableName = $"index{index}Value";
                 string offsetVariableName = $"index{index}Offset";
+                var typeModel = kvp.Value.ItemTypeModel;
 
-                body.Add($"if ({offsetVariableName} != 0) {this.GetSerializeInvocation(kvp.Value.ItemTypeModel.ClrType, valueVariableName, offsetVariableName)}");
+                body.Add($"if ({offsetVariableName} != 0) {{");
+
+                if (typeModel.SchemaType != FlatBufferSchemaType.Union)
+                {
+                    body.Add(this.GetSerializeInvocation(kvp.Value.ItemTypeModel.ClrType, valueVariableName, offsetVariableName));
+                }
+                else
+                {
+                    var unionModel = (UnionTypeModel)typeModel;
+
+                    // Union formatter.
+                    body.Add(this.GetSerializeInvocation(typeof(byte), $"index{index}Union.Discriminator", $"index{index}DiscriminatorOffset"));
+
+                    body.Add($"switch (index{index}Union.Discriminator) {{");
+                    for (int i = 0; i < unionModel.UnionElementTypeModel.Length; ++i)
+                    {
+                        var unionElementModel = unionModel.UnionElementTypeModel[i];
+
+                        body.Add($"case {i + 1}:");
+
+                        if (unionElementModel.SchemaType == FlatBufferSchemaType.Struct)
+                        {
+                            // must allocate space, since structs want to write inline.
+                            body.Add($"var writeOffset = context.AllocateSpace({unionElementModel.InlineSize}, {unionElementModel.Alignment});");
+                            body.Add($"writer.WriteUOffset(span, index{index}Offset, writeOffset, context);");
+                            body.Add($"index{index}Offset = writeOffset;");
+                        }
+
+                        body.Add(this.GetSerializeInvocation(unionModel.UnionElementTypeModel[i].ClrType, $"index{index}Union.Item{i + 1}", $"index{index}Offset"));
+                        body.Add("break;");
+                    }
+                    body.Add($"}}");
+                }
+
+                body.Add($"}}");
             }
 
             string text = $"{header} {string.Join("\r\n", body)} }}";
@@ -735,7 +787,15 @@ $@"
                     fieldDefinitions.Add($"private bool {hasValueFieldName};");
                     fieldDefinitions.Add($"private {compilableTypeName} {valueFieldName};");
 
-                    string getter = this.GetTableGetter(value, index, valueFieldName, hasValueFieldName);
+                    string getter;
+                    if (value.ItemTypeModel is UnionTypeModel)
+                    {
+                        getter = this.CreateUnionTableGetter(value, index, valueFieldName, hasValueFieldName);
+                    }
+                    else
+                    {
+                        getter = this.CreateStandardTableGetter(value, index, valueFieldName, hasValueFieldName);
+                    }
 
                     string setter = string.Empty;
                     if (!value.IsReadOnly)
@@ -778,15 +838,15 @@ $@"
             }
         }
 
-        private string GetTableGetter(TableMemberModel memberModel, int index, string valueFieldName, string hasValueFieldName)
+        /// <summary>
+        /// Generates a standard getter for a normal vtable entry.
+        /// </summary>
+        private string CreateStandardTableGetter(TableMemberModel memberModel, int index, string valueFieldName, string hasValueFieldName)
         {
             Type propertyType = memberModel.ItemTypeModel.ClrType;
             string defaultValue = GetDefaultValueToken(memberModel);
 
-            if (memberModel.ItemTypeModel.SchemaType != FlatBufferSchemaType.Union)
-            {
-                // Standard property.
-                return
+            return
 $@"
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
                     get 
@@ -807,63 +867,76 @@ $@"
                         return this.{valueFieldName};
                     }}
 ";
-            }
-            else
+        }
+
+        /// <summary>
+        /// Generates a special property getter for union types. This stems from
+        /// the fact that unions occupy two spots in the table's vtable to deserialize one
+        /// logical field. This means that the logic to read them must also be special.
+        /// </summary>
+        private string CreateUnionTableGetter(TableMemberModel memberModel, int index, string valueFieldName, string hasValueFieldName)
+        {
+            Type propertyType = memberModel.ItemTypeModel.ClrType;
+            string defaultValue = GetDefaultValueToken(memberModel);
+
+            UnionTypeModel unionModel = (UnionTypeModel)memberModel.ItemTypeModel;
+
+            // Start by generating switch cases. The codegen'ed union types have
+            // well-defined constructors for each constituent type, so this .ctor
+            // will always be available.
+            List<string> switchCases = new List<string>();
+            for (int i = 0; i < unionModel.UnionElementTypeModel.Length; ++i)
             {
-                UnionTypeModel unionModel = (UnionTypeModel)memberModel.ItemTypeModel;
-
-                // Unions need to access 2 indexes from the vtable. This makes them somewhat intractable
-                // to do from a different location.
-
-                List<string> switchCases = new List<string>();
-                for (int i = 0; i < unionModel.UnionElementTypeModel.Length; ++i)
+                var unionMember = unionModel.UnionElementTypeModel[i];
+                int unionIndex = i + 1;
+                string structOffsetAdjustment = string.Empty;
+                if (unionMember.SchemaType == FlatBufferSchemaType.Struct)
                 {
-                    var unionMember = unionModel.UnionElementTypeModel[i];
-                    int unionIndex = i + 1;
-
-                    string @case =
-$@"
-                                case {unionIndex}:
-                                    this.{valueFieldName} = new {GetCompilableTypeName(unionModel.ClrType)}({this.GetReadInvocation(unionMember.ClrType, "buffer", "offsetLocation")});
-                                    break;
-";
-
-                    switchCases.Add(@case);
+                    structOffsetAdjustment = "offsetLocation += buffer.ReadUOffset(offsetLocation);";
                 }
 
-                return
+                string @case =
 $@"
-                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    get 
+                    case {unionIndex}:
+                        {structOffsetAdjustment}
+                        this.{valueFieldName} = new {GetCompilableTypeName(unionModel.ClrType)}({this.GetReadInvocation(unionMember.ClrType, "buffer", "offsetLocation")});
+                        break;
+";
+
+                switchCases.Add(@case);
+            }
+
+            return
+$@"
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get 
+                {{
+                    if (!this.{hasValueFieldName})
                     {{
-                        if (!this.{hasValueFieldName})
-                        {{
-                            var buffer = this.buffer;
-                            int discriminatorLocation = buffer.GetAbsoluteTableFieldLocation(this.offset, {index});
-                            int offsetLocation = buffer.GetAbsoluteTableFieldLocation(this.offset, {index + 1});
+                        var buffer = this.buffer;
+                        int discriminatorLocation = buffer.GetAbsoluteTableFieldLocation(this.offset, {index});
+                        int offsetLocation = buffer.GetAbsoluteTableFieldLocation(this.offset, {index + 1});
                             
-                            if (discriminatorLocation == 0) {{
-                                this.{valueFieldName} = {defaultValue};
-                            }}
-                            else {{
-                                byte discriminator = buffer.ReadByte(discriminatorLocation);
-                                if (discriminator == 0 && offsetLocation != 0)
-                                    throw new System.IO.InvalidDataException(""FlatBuffer union had discriminator set but no offset."");
-                                switch (discriminator)
-                                {{
-                                    {string.Join("\r\n", switchCases)}
-                                    default:
-                                        this.{valueFieldName} = {defaultValue};
-                                        break;
-                                }}
-                                this.{hasValueFieldName} = true;
+                        if (discriminatorLocation == 0) {{
+                            this.{valueFieldName} = {defaultValue};
+                        }}
+                        else {{
+                            byte discriminator = buffer.ReadByte(discriminatorLocation);
+                            if (discriminator == 0 && offsetLocation != 0)
+                                throw new System.IO.InvalidDataException(""FlatBuffer union had discriminator set but no offset."");
+                            switch (discriminator)
+                            {{
+                                {string.Join("\r\n", switchCases)}
+                                default:
+                                    this.{valueFieldName} = {defaultValue};
+                                    break;
                             }}
                         }}
-                        
-                        return this.{valueFieldName};
+                        this.{hasValueFieldName} = true;
                     }}
+                    return this.{valueFieldName};
+                }}
 ";
-            }
         }
 
         private void ImplementStructReadMethod(StructTypeModel typeModel)
@@ -1140,7 +1213,7 @@ $@"
 
             return defaultValue;
         }
-        
+
         private static string GetAccessModifier(MethodBase method)
         {
             if (method.IsPublic)

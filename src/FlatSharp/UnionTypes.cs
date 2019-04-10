@@ -22,6 +22,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T1 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 1;
 					this.item1 = item;
 				}
@@ -29,6 +34,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T2 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 2;
 					this.item2 = item;
 				}
@@ -99,6 +109,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T1 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 1;
 					this.item1 = item;
 				}
@@ -106,6 +121,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T2 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 2;
 					this.item2 = item;
 				}
@@ -113,6 +133,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T3 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 3;
 					this.item3 = item;
 				}
@@ -208,6 +233,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T1 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 1;
 					this.item1 = item;
 				}
@@ -215,6 +245,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T2 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 2;
 					this.item2 = item;
 				}
@@ -222,6 +257,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T3 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 3;
 					this.item3 = item;
 				}
@@ -229,6 +269,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T4 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 4;
 					this.item4 = item;
 				}
@@ -349,6 +394,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T1 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 1;
 					this.item1 = item;
 				}
@@ -356,6 +406,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T2 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 2;
 					this.item2 = item;
 				}
@@ -363,6 +418,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T3 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 3;
 					this.item3 = item;
 				}
@@ -370,6 +430,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T4 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 4;
 					this.item4 = item;
 				}
@@ -377,6 +442,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T5 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 5;
 					this.item5 = item;
 				}
@@ -522,6 +592,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T1 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 1;
 					this.item1 = item;
 				}
@@ -529,6 +604,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T2 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 2;
 					this.item2 = item;
 				}
@@ -536,6 +616,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T3 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 3;
 					this.item3 = item;
 				}
@@ -543,6 +628,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T4 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 4;
 					this.item4 = item;
 				}
@@ -550,6 +640,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T5 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 5;
 					this.item5 = item;
 				}
@@ -557,6 +652,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T6 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 6;
 					this.item6 = item;
 				}
@@ -727,6 +827,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T1 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 1;
 					this.item1 = item;
 				}
@@ -734,6 +839,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T2 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 2;
 					this.item2 = item;
 				}
@@ -741,6 +851,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T3 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 3;
 					this.item3 = item;
 				}
@@ -748,6 +863,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T4 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 4;
 					this.item4 = item;
 				}
@@ -755,6 +875,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T5 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 5;
 					this.item5 = item;
 				}
@@ -762,6 +887,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T6 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 6;
 					this.item6 = item;
 				}
@@ -769,6 +899,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T7 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 7;
 					this.item7 = item;
 				}
@@ -964,6 +1099,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T1 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 1;
 					this.item1 = item;
 				}
@@ -971,6 +1111,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T2 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 2;
 					this.item2 = item;
 				}
@@ -978,6 +1123,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T3 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 3;
 					this.item3 = item;
 				}
@@ -985,6 +1135,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T4 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 4;
 					this.item4 = item;
 				}
@@ -992,6 +1147,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T5 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 5;
 					this.item5 = item;
 				}
@@ -999,6 +1159,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T6 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 6;
 					this.item6 = item;
 				}
@@ -1006,6 +1171,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T7 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 7;
 					this.item7 = item;
 				}
@@ -1013,6 +1183,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T8 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 8;
 					this.item8 = item;
 				}
@@ -1233,6 +1408,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T1 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 1;
 					this.item1 = item;
 				}
@@ -1240,6 +1420,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T2 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 2;
 					this.item2 = item;
 				}
@@ -1247,6 +1432,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T3 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 3;
 					this.item3 = item;
 				}
@@ -1254,6 +1444,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T4 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 4;
 					this.item4 = item;
 				}
@@ -1261,6 +1456,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T5 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 5;
 					this.item5 = item;
 				}
@@ -1268,6 +1468,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T6 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 6;
 					this.item6 = item;
 				}
@@ -1275,6 +1480,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T7 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 7;
 					this.item7 = item;
 				}
@@ -1282,6 +1492,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T8 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 8;
 					this.item8 = item;
 				}
@@ -1289,6 +1504,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T9 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 9;
 					this.item9 = item;
 				}
@@ -1534,6 +1754,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T1 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 1;
 					this.item1 = item;
 				}
@@ -1541,6 +1766,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T2 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 2;
 					this.item2 = item;
 				}
@@ -1548,6 +1778,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T3 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 3;
 					this.item3 = item;
 				}
@@ -1555,6 +1790,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T4 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 4;
 					this.item4 = item;
 				}
@@ -1562,6 +1802,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T5 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 5;
 					this.item5 = item;
 				}
@@ -1569,6 +1814,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T6 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 6;
 					this.item6 = item;
 				}
@@ -1576,6 +1826,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T7 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 7;
 					this.item7 = item;
 				}
@@ -1583,6 +1838,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T8 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 8;
 					this.item8 = item;
 				}
@@ -1590,6 +1850,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T9 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 9;
 					this.item9 = item;
 				}
@@ -1597,6 +1862,11 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T10 item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = 10;
 					this.item10 = item;
 				}

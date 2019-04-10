@@ -36,6 +36,11 @@ namespace FlatSharp
 
 				public FlatBufferUnion(<#= "T" + genericType #> item)
 				{
+					if (object.ReferenceEquals(item, null))
+					{
+						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
+					}
+
 					this.discriminator = <#= genericType #>;
 					this.item<#= genericType #> = item;
 				}

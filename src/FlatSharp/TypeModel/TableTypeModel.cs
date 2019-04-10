@@ -59,6 +59,11 @@
         public override int InlineSize => sizeof(uint);
 
         /// <summary>
+        /// Gets the maximum used index in this vtable.
+        /// </summary>
+        public int MaxIndex => this.occupiedVtableSlots.Max();
+
+        /// <summary>
         /// Maps the table index to the details about that member.
         /// </summary>
         public IReadOnlyDictionary<int, TableMemberModel> IndexToMemberMap => this.memberTypes;

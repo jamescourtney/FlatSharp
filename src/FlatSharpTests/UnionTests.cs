@@ -36,8 +36,34 @@ namespace FlatSharpTests
         [TestMethod]
         public void UnionTest()
         {
-            byte[] bytes = new byte[100];
-            FlatBufferSerializer.Default.Parse<UnionTable<SimpleStruct, SimpleTable>>(bytes);
+            UnionTable<SimpleStruct, SimpleTable> table = new UnionTable<SimpleStruct, SimpleTable>
+            {
+                Item = new FlatBufferUnion<SimpleStruct, SimpleTable>(new SimpleStruct
+                {
+                    Long = 123,
+                })
+            };
+
+            byte[] buffer = new byte[100];
+            FlatBufferSerializer.Default.Serialize(table, buffer.AsSpan());
+
+            var result = FlatBufferSerializer.Default.Parse<UnionTable<SimpleStruct, SimpleTable>>(buffer);
+
+            Assert.AreEqual(result.Item.Discriminator, 1);
+            Assert.AreEqual(result.Item.Item1.Long, 123);
+
+            table.Item = new FlatBufferUnion<SimpleStruct, SimpleTable>(new SimpleTable
+            {
+                String = "foobar"
+            });
+
+            buffer = new byte[100];
+            FlatBufferSerializer.Default.Serialize(table, buffer.AsSpan());
+
+            result = FlatBufferSerializer.Default.Parse<UnionTable<SimpleStruct, SimpleTable>>(buffer);
+
+            Assert.AreEqual(result.Item.Discriminator, 2);
+            Assert.AreEqual(result.Item.Item2.String, "foobar");
         }
 
         [FlatBufferTable]
