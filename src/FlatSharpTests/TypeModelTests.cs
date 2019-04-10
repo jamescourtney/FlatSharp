@@ -62,6 +62,13 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
+        public void TypeModel_Struct_UnionNotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(GenericStruct<FlatBufferUnion<string, GenericTable<string>>>)));
+        }
+
+        [TestMethod]
         public void TypeModel_Struct_Misnumbered()
         {
             Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
@@ -115,6 +122,20 @@ namespace FlatSharpTests
         {
             Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(DuplicateNumberedStruct<byte>)));
+        }
+
+        [TestMethod]
+        public void TypeModel_VectorOfVector()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(GenericTable<IList<IList<int>>>)));
+        }
+
+        [TestMethod]
+        public void TypeModel_VectorOfUnion()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(GenericTable<IList<FlatBufferUnion<string, GenericTable<string>>>>)));
         }
 
         [TestMethod]

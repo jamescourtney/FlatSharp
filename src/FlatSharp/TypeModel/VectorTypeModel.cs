@@ -115,6 +115,11 @@ namespace FlatSharp.TypeModel
                 throw new InvalidFlatBufferDefinitionException("Vectors may not contain other vectors.");
             }
 
+            if (this.memberTypeModel.SchemaType == FlatBufferSchemaType.Union)
+            {
+                throw new InvalidFlatBufferDefinitionException("Vectors of unions are not supported.");
+            }
+
             if (this.isMemory)
             {
                 if (this.memberTypeModel.SchemaType != FlatBufferSchemaType.Scalar)
