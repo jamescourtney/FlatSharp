@@ -28,7 +28,7 @@ namespace FlatSharp
 				
 				<# foreach (var genericType in range) { #>
 
-				private T<#= genericType #> item<#= genericType #>;
+				private readonly T<#= genericType #> item<#= genericType #>;
 				
 				<# } #>
 				
@@ -61,14 +61,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == <#= genericType #>);
-						this.item<#= genericType #> = value;
 					}
 				}
 				

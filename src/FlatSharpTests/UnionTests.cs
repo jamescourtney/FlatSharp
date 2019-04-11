@@ -34,36 +34,61 @@ namespace FlatSharpTests
     public class UnionTests
     {
         [TestMethod]
-        public void UnionTest()
+        public void Union_2Items_TableAndStruct()
         {
-            UnionTable<SimpleStruct, SimpleTable> table = new UnionTable<SimpleStruct, SimpleTable>
+            var expectedStruct = new SimpleStruct { Long = 123 };
+            var expectedTable = new SimpleTable { String = "foobar" };
+
+            var testStruct = CreateAndDeserialize1(expectedStruct, expectedTable);
+            Assert.AreEqual(testStruct.Long, 123);
+
+            var testTable = CreateAndDeserialize2(expectedStruct, expectedTable);
+            Assert.AreEqual(testTable.String, "foobar");
+
+        }
+
+        [TestMethod]
+        public void Union_2Items_StringAndTable()
+        {
+            var expectedString = "foobar";
+            var expectedTable = new SimpleTable { String = expectedString };
+
+            Assert.AreEqual(expectedString, CreateAndDeserialize1(expectedString, expectedTable));
+            Assert.AreEqual(expectedString, CreateAndDeserialize2(expectedString, expectedTable).String);
+        }
+
+        private static T1 CreateAndDeserialize1<T1, T2>(T1 one, T2 two)
+        {
+            var table = new UnionTable<T1, T2>
             {
-                Item = new FlatBufferUnion<SimpleStruct, SimpleTable>(new SimpleStruct
-                {
-                    Long = 123,
-                })
+                Item = new FlatBufferUnion<T1, T2>(one)
             };
 
-            byte[] buffer = new byte[100];
-            FlatBufferSerializer.Default.Serialize(table, buffer.AsSpan());
+            byte[] buffer = new byte[1024];
 
-            var result = FlatBufferSerializer.Default.Parse<UnionTable<SimpleStruct, SimpleTable>>(buffer);
+            FlatBufferSerializer.Default.Serialize(table, buffer);
 
-            Assert.AreEqual(result.Item.Discriminator, 1);
-            Assert.AreEqual(result.Item.Item1.Long, 123);
+            var parseResult = FlatBufferSerializer.Default.Parse<UnionTable<T1, T2>>(buffer);
+            Assert.AreEqual(1, parseResult.Item.Discriminator);
 
-            table.Item = new FlatBufferUnion<SimpleStruct, SimpleTable>(new SimpleTable
+            return parseResult.Item.Item1;
+        }
+
+        private static T2 CreateAndDeserialize2<T1, T2>(T1 one, T2 two)
+        {
+            var table = new UnionTable<T1, T2>
             {
-                String = "foobar"
-            });
+                Item = new FlatBufferUnion<T1, T2>(two)
+            };
 
-            buffer = new byte[100];
-            FlatBufferSerializer.Default.Serialize(table, buffer.AsSpan());
+            byte[] buffer = new byte[1024];
 
-            result = FlatBufferSerializer.Default.Parse<UnionTable<SimpleStruct, SimpleTable>>(buffer);
+            FlatBufferSerializer.Default.Serialize(table, buffer);
 
-            Assert.AreEqual(result.Item.Discriminator, 2);
-            Assert.AreEqual(result.Item.Item2.String, "foobar");
+            var parseResult = FlatBufferSerializer.Default.Parse<UnionTable<T1, T2>>(buffer);
+            Assert.AreEqual(2, parseResult.Item.Discriminator);
+
+            return parseResult.Item.Item2;
         }
 
         [FlatBufferTable]

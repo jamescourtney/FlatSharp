@@ -13,10 +13,10 @@ namespace FlatSharp
 				private readonly byte discriminator;
 				
 				
-				private T1 item1;
+				private readonly T1 item1;
 				
 				
-				private T2 item2;
+				private readonly T2 item2;
 				
 								
 				
@@ -57,14 +57,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 1);
-						this.item1 = value;
 					}
 				}
 				
@@ -79,14 +73,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 2);
-						this.item2 = value;
 					}
 				}
 				
@@ -97,13 +85,13 @@ namespace FlatSharp
 				private readonly byte discriminator;
 				
 				
-				private T1 item1;
+				private readonly T1 item1;
 				
 				
-				private T2 item2;
+				private readonly T2 item2;
 				
 				
-				private T3 item3;
+				private readonly T3 item3;
 				
 								
 				
@@ -156,14 +144,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 1);
-						this.item1 = value;
 					}
 				}
 				
@@ -178,14 +160,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 2);
-						this.item2 = value;
 					}
 				}
 				
@@ -200,14 +176,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 3);
-						this.item3 = value;
 					}
 				}
 				
@@ -218,16 +188,16 @@ namespace FlatSharp
 				private readonly byte discriminator;
 				
 				
-				private T1 item1;
+				private readonly T1 item1;
 				
 				
-				private T2 item2;
+				private readonly T2 item2;
 				
 				
-				private T3 item3;
+				private readonly T3 item3;
 				
 				
-				private T4 item4;
+				private readonly T4 item4;
 				
 								
 				
@@ -292,14 +262,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 1);
-						this.item1 = value;
 					}
 				}
 				
@@ -314,14 +278,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 2);
-						this.item2 = value;
 					}
 				}
 				
@@ -336,14 +294,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 3);
-						this.item3 = value;
 					}
 				}
 				
@@ -358,14 +310,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 4);
-						this.item4 = value;
 					}
 				}
 				
@@ -376,19 +322,19 @@ namespace FlatSharp
 				private readonly byte discriminator;
 				
 				
-				private T1 item1;
+				private readonly T1 item1;
 				
 				
-				private T2 item2;
+				private readonly T2 item2;
 				
 				
-				private T3 item3;
+				private readonly T3 item3;
 				
 				
-				private T4 item4;
+				private readonly T4 item4;
 				
 				
-				private T5 item5;
+				private readonly T5 item5;
 				
 								
 				
@@ -465,14 +411,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 1);
-						this.item1 = value;
 					}
 				}
 				
@@ -487,14 +427,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 2);
-						this.item2 = value;
 					}
 				}
 				
@@ -509,14 +443,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 3);
-						this.item3 = value;
 					}
 				}
 				
@@ -531,14 +459,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 4);
-						this.item4 = value;
 					}
 				}
 				
@@ -553,14 +475,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 5);
-						this.item5 = value;
 					}
 				}
 				
@@ -571,22 +487,22 @@ namespace FlatSharp
 				private readonly byte discriminator;
 				
 				
-				private T1 item1;
+				private readonly T1 item1;
 				
 				
-				private T2 item2;
+				private readonly T2 item2;
 				
 				
-				private T3 item3;
+				private readonly T3 item3;
 				
 				
-				private T4 item4;
+				private readonly T4 item4;
 				
 				
-				private T5 item5;
+				private readonly T5 item5;
 				
 				
-				private T6 item6;
+				private readonly T6 item6;
 				
 								
 				
@@ -675,14 +591,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 1);
-						this.item1 = value;
 					}
 				}
 				
@@ -697,14 +607,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 2);
-						this.item2 = value;
 					}
 				}
 				
@@ -719,14 +623,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 3);
-						this.item3 = value;
 					}
 				}
 				
@@ -741,14 +639,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 4);
-						this.item4 = value;
 					}
 				}
 				
@@ -763,14 +655,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 5);
-						this.item5 = value;
 					}
 				}
 				
@@ -785,14 +671,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 6);
-						this.item6 = value;
 					}
 				}
 				
@@ -803,25 +683,25 @@ namespace FlatSharp
 				private readonly byte discriminator;
 				
 				
-				private T1 item1;
+				private readonly T1 item1;
 				
 				
-				private T2 item2;
+				private readonly T2 item2;
 				
 				
-				private T3 item3;
+				private readonly T3 item3;
 				
 				
-				private T4 item4;
+				private readonly T4 item4;
 				
 				
-				private T5 item5;
+				private readonly T5 item5;
 				
 				
-				private T6 item6;
+				private readonly T6 item6;
 				
 				
-				private T7 item7;
+				private readonly T7 item7;
 				
 								
 				
@@ -922,14 +802,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 1);
-						this.item1 = value;
 					}
 				}
 				
@@ -944,14 +818,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 2);
-						this.item2 = value;
 					}
 				}
 				
@@ -966,14 +834,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 3);
-						this.item3 = value;
 					}
 				}
 				
@@ -988,14 +850,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 4);
-						this.item4 = value;
 					}
 				}
 				
@@ -1010,14 +866,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 5);
-						this.item5 = value;
 					}
 				}
 				
@@ -1032,14 +882,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 6);
-						this.item6 = value;
 					}
 				}
 				
@@ -1054,14 +898,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 7);
-						this.item7 = value;
 					}
 				}
 				
@@ -1072,28 +910,28 @@ namespace FlatSharp
 				private readonly byte discriminator;
 				
 				
-				private T1 item1;
+				private readonly T1 item1;
 				
 				
-				private T2 item2;
+				private readonly T2 item2;
 				
 				
-				private T3 item3;
+				private readonly T3 item3;
 				
 				
-				private T4 item4;
+				private readonly T4 item4;
 				
 				
-				private T5 item5;
+				private readonly T5 item5;
 				
 				
-				private T6 item6;
+				private readonly T6 item6;
 				
 				
-				private T7 item7;
+				private readonly T7 item7;
 				
 				
-				private T8 item8;
+				private readonly T8 item8;
 				
 								
 				
@@ -1206,14 +1044,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 1);
-						this.item1 = value;
 					}
 				}
 				
@@ -1228,14 +1060,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 2);
-						this.item2 = value;
 					}
 				}
 				
@@ -1250,14 +1076,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 3);
-						this.item3 = value;
 					}
 				}
 				
@@ -1272,14 +1092,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 4);
-						this.item4 = value;
 					}
 				}
 				
@@ -1294,14 +1108,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 5);
-						this.item5 = value;
 					}
 				}
 				
@@ -1316,14 +1124,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 6);
-						this.item6 = value;
 					}
 				}
 				
@@ -1338,14 +1140,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 7);
-						this.item7 = value;
 					}
 				}
 				
@@ -1360,14 +1156,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 8);
-						this.item8 = value;
 					}
 				}
 				
@@ -1378,31 +1168,31 @@ namespace FlatSharp
 				private readonly byte discriminator;
 				
 				
-				private T1 item1;
+				private readonly T1 item1;
 				
 				
-				private T2 item2;
+				private readonly T2 item2;
 				
 				
-				private T3 item3;
+				private readonly T3 item3;
 				
 				
-				private T4 item4;
+				private readonly T4 item4;
 				
 				
-				private T5 item5;
+				private readonly T5 item5;
 				
 				
-				private T6 item6;
+				private readonly T6 item6;
 				
 				
-				private T7 item7;
+				private readonly T7 item7;
 				
 				
-				private T8 item8;
+				private readonly T8 item8;
 				
 				
-				private T9 item9;
+				private readonly T9 item9;
 				
 								
 				
@@ -1527,14 +1317,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 1);
-						this.item1 = value;
 					}
 				}
 				
@@ -1549,14 +1333,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 2);
-						this.item2 = value;
 					}
 				}
 				
@@ -1571,14 +1349,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 3);
-						this.item3 = value;
 					}
 				}
 				
@@ -1593,14 +1365,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 4);
-						this.item4 = value;
 					}
 				}
 				
@@ -1615,14 +1381,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 5);
-						this.item5 = value;
 					}
 				}
 				
@@ -1637,14 +1397,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 6);
-						this.item6 = value;
 					}
 				}
 				
@@ -1659,14 +1413,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 7);
-						this.item7 = value;
 					}
 				}
 				
@@ -1681,14 +1429,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 8);
-						this.item8 = value;
 					}
 				}
 				
@@ -1703,14 +1445,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 9);
-						this.item9 = value;
 					}
 				}
 				
@@ -1721,34 +1457,34 @@ namespace FlatSharp
 				private readonly byte discriminator;
 				
 				
-				private T1 item1;
+				private readonly T1 item1;
 				
 				
-				private T2 item2;
+				private readonly T2 item2;
 				
 				
-				private T3 item3;
+				private readonly T3 item3;
 				
 				
-				private T4 item4;
+				private readonly T4 item4;
 				
 				
-				private T5 item5;
+				private readonly T5 item5;
 				
 				
-				private T6 item6;
+				private readonly T6 item6;
 				
 				
-				private T7 item7;
+				private readonly T7 item7;
 				
 				
-				private T8 item8;
+				private readonly T8 item8;
 				
 				
-				private T9 item9;
+				private readonly T9 item9;
 				
 				
-				private T10 item10;
+				private readonly T10 item10;
 				
 								
 				
@@ -1885,14 +1621,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 1);
-						this.item1 = value;
 					}
 				}
 				
@@ -1907,14 +1637,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 2);
-						this.item2 = value;
 					}
 				}
 				
@@ -1929,14 +1653,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 3);
-						this.item3 = value;
 					}
 				}
 				
@@ -1951,14 +1669,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 4);
-						this.item4 = value;
 					}
 				}
 				
@@ -1973,14 +1685,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 5);
-						this.item5 = value;
 					}
 				}
 				
@@ -1995,14 +1701,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 6);
-						this.item6 = value;
 					}
 				}
 				
@@ -2017,14 +1717,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 7);
-						this.item7 = value;
 					}
 				}
 				
@@ -2039,14 +1733,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 8);
-						this.item8 = value;
 					}
 				}
 				
@@ -2061,14 +1749,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 9);
-						this.item9 = value;
 					}
 				}
 				
@@ -2083,14 +1765,8 @@ namespace FlatSharp
 						}
 						else
 						{
-							throw new System.Exception();
+							throw new System.InvalidOperationException();
 						}
-					}
-
-					internal set
-					{
-						System.Diagnostics.Debug.Assert(this.discriminator == 10);
-						this.item10 = value;
 					}
 				}
 				

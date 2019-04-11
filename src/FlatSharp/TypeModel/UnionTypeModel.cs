@@ -57,7 +57,6 @@ namespace FlatSharp.TypeModel
             FlatBufferSchemaType[] validUnionMemberTypes = 
             {
                 FlatBufferSchemaType.String,
-                FlatBufferSchemaType.Vector,
                 FlatBufferSchemaType.Table,
                 FlatBufferSchemaType.Struct
             };

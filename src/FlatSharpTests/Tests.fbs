@@ -33,13 +33,6 @@ table BasicTypes {
 	String:string;
 }
 
-table Simple {
-	Byte:ubyte;
-	Int:int32;
-	string:string;
-	Location:Location;
-}
-
 table LinkedListNode {
     Value:string;
 	Next:LinkedListNode;
@@ -85,4 +78,14 @@ struct AlignmentTestOuter {
 
 table AlignmentTestOuterHoder {
 	Value:AlignmentTestOuter;
+}
+
+union Union { BasicTypes, Location, stringValue:string }
+
+table UnionTable { 
+	Value:Union;
+}
+
+table VectorOfUnionTable {
+	Value:[Union];
 }

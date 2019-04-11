@@ -125,14 +125,14 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
-        public void TypeModel_VectorOfVector()
+        public void TypeModel_Vector_VectorNotAllowed()
         {
             Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(GenericTable<IList<IList<int>>>)));
         }
 
         [TestMethod]
-        public void TypeModel_VectorOfUnion()
+        public void TypeModel_Vector_UnionNotAllowed()
         {
             Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(GenericTable<IList<FlatBufferUnion<string, GenericTable<string>>>>)));
@@ -174,20 +174,6 @@ namespace FlatSharpTests
             Assert.IsTrue(model.IsReadOnly);
         }
 
-        [TestMethod]
-        public void TypeModel_Union_Vectors()
-        {
-            var model = (TableTypeModel)RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, IList<string>>>));
-
-            var index = model.IndexToMemberMap[0];
-
-            // 1 is the double part of the union. Model shouldn't contain it.
-            Assert.IsFalse(model.IndexToMemberMap.ContainsKey(1));
-
-            Assert.AreEqual(index.ItemTypeModel.SchemaType, FlatBufferSchemaType.Union);
-            Assert.AreEqual(index.VTableSlotCount, 2);
-        }
-
         private VectorTypeModel VectorTest(Type vectorDefinition, Type innerType)
         {
             var model = (VectorTypeModel)RuntimeTypeModel.CreateFrom(vectorDefinition.MakeGenericType(innerType));
@@ -201,6 +187,49 @@ namespace FlatSharpTests
             Assert.AreEqual(innerModel, model.ItemTypeModel);
 
             return model;
+        }
+
+        /// <summary>
+        /// This scenario actually works with flatsharp, but the flatc compiler does not support this, so it doesn't seem to be an officially
+        /// sanctioned feature.
+        /// </summary>
+        [TestMethod]
+        public void TypeModel_Union_VectorsNotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, IList<string>>>)));
+
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, IReadOnlyList<string>>>)));
+
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, Memory<int>>>)));
+
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, ReadOnlyMemory<int>>>)));
+
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, string[]>>)));
+        }
+
+        [TestMethod]
+        public void TypeModel_Union_UnionsNotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, FlatBufferUnion<string, GenericStruct<int>>>>)));
+        }
+
+        [TestMethod]
+        public void TypeModel_Union_ScalarsNotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, FlatBufferUnion<string, int>>>)));
+        }
+
+        [TestMethod]
+        public void TypeModel_Union_StructsTablesStringsAllowed()
+        {
+            RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, GenericTable<string>, GenericStruct<int>>>));
         }
 
         [TestMethod]
