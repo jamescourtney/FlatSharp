@@ -138,7 +138,8 @@ $@"
 
             body.AddRange(writers);
 
-            this.GenerateSerializeMethod(type, $"{methodStart} \r\n {string.Join("\r\n", body)}");
+            // These methods are often enormous, and inlining can have a detrimental effect on perf.
+            this.GenerateSerializeMethod(type, $"{methodStart} \r\n {string.Join("\r\n", body)}", inline: false);
         }
 
         private (string prepareBlock, string serializeBlock) GetUnionSerializeBlocks(int index, TableMemberModel memberModel)
@@ -318,10 +319,16 @@ $@"
         /// <summary>
         /// Gets a method to serialize the given type with the given body.
         /// </summary>
-        private void GenerateSerializeMethod(Type type, string body)
+        private void GenerateSerializeMethod(Type type, string body, bool inline = true)
         {
+            string inlineDeclaration = "[MethodImpl(MethodImplOptions.AggressiveInlining)]";
+            if (!inline)
+            {
+                inlineDeclaration = string.Empty;
+            }
+
             string declaration = $@"
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            {inlineDeclaration}
             private static void {this.MethodNames[type]} (SpanWriter writer, Span<byte> span, {CSharpHelpers.GetCompilableTypeName(type)} item, int originalOffset, SerializationContext context)
             {{
                 {body}

@@ -134,10 +134,11 @@ namespace FlatSharp
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected virtual int WriteStringProtected(Span<byte> span, string value, Encoding encoding)
         {
 #if NETCOREAPP2_1
-            return encoding.GetBytes(value.AsSpan(), span);
+            return encoding.GetBytes(value, span);
 #else
             var bytes = encoding.GetBytes(value);
             bytes.CopyTo(span);

@@ -64,7 +64,7 @@ namespace FlatSharp
         /// <summary>
         /// Resets the context.
         /// </summary>
-        internal void Reset(int capacity)
+        public void Reset(int capacity)
         {
             this.offset = 0;
             this.capacity = capacity;
