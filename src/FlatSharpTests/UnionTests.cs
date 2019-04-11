@@ -34,27 +34,91 @@ namespace FlatSharpTests
     public class UnionTests
     {
         [TestMethod]
-        public void Union_2Items_TableAndStruct()
+        public void Union_2Items_TableAndStruct_RoundTrip()
         {
             var expectedStruct = new SimpleStruct { Long = 123 };
-            var expectedTable = new SimpleTable { String = "foobar" };
+            var expectedTable = new SimpleTable { Int = 456 };
 
             var testStruct = CreateAndDeserialize1(expectedStruct, expectedTable);
             Assert.AreEqual(testStruct.Long, 123);
 
             var testTable = CreateAndDeserialize2(expectedStruct, expectedTable);
-            Assert.AreEqual(testTable.String, "foobar");
-
+            Assert.AreEqual(testTable.Int, 456);
         }
 
         [TestMethod]
-        public void Union_2Items_StringAndTable()
+        public void Union_2Items_Struct_SerializationTest()
+        {
+            byte[] expectedData =
+            {
+                4, 0, 0, 0,         // offset to table
+                244, 255, 255, 255, // soffset to vtable
+                2,                  // discriminator (1 byte)
+                0, 0, 0,            // padding
+                12, 0, 0, 0,        // uoffset_t to struct data
+                8, 0,               // vtable length
+                12, 0,              // table length
+                4, 0,               // discriminator offset
+                8, 0,               // value offset
+
+                // struct data
+                123, 0, 0, 0, 0, 0, 0, 0  
+            };
+
+            var union = new UnionTable<string, SimpleStruct>
+            {
+                Item = new FlatBufferUnion<string, SimpleStruct>(new SimpleStruct { Long = 123 })
+            };
+
+            Span<byte> data = new byte[100];
+            int count = FlatBufferSerializer.Default.Serialize(union, data);
+
+            Assert.IsTrue(expectedData.AsSpan().SequenceEqual(data.Slice(0, count)));
+        }
+
+        [TestMethod]
+        public void Union_2Items_Table_SerializationTest()
+        {
+            byte[] expectedData =
+            {
+                4, 0, 0, 0,         // offset to table
+                244, 255, 255, 255, // soffset to vtable
+                1,                  // discriminator (1 byte)
+                0, 0, 0,            // padding
+                12, 0, 0, 0,        // uoffset_t to table data
+                8, 0,               // vtable length
+                12, 0,              // table length
+                4, 0,               // discriminator offset
+                8, 0,               // value offset
+
+                // table data
+                248, 255, 255, 255, // soffset to vtable
+                123, 0, 0, 0,       // value of index 0
+                6, 0,               // vtable length
+                8, 0,               // table length
+                4, 0                // offset of index 0
+            };
+
+            var union = new UnionTable<SimpleTable, SimpleStruct>
+            {
+                Item = new FlatBufferUnion<SimpleTable, SimpleStruct>(new SimpleTable { Int = 123 })
+            };
+
+            Span<byte> data = new byte[100];
+            int count = FlatBufferSerializer.Default.Serialize(union, data);
+
+            Assert.IsTrue(expectedData.AsSpan().SequenceEqual(data.Slice(0, count)));
+        }
+
+        [TestMethod]
+        public void Union_2Items_StringAndTable_RoundTrip()
         {
             var expectedString = "foobar";
-            var expectedTable = new SimpleTable { String = expectedString };
+            var expectedInt = 123;
+            var expectedTable = new SimpleTable { Int = expectedInt };
 
             Assert.AreEqual(expectedString, CreateAndDeserialize1(expectedString, expectedTable));
-            Assert.AreEqual(expectedString, CreateAndDeserialize2(expectedString, expectedTable).String);
+            Assert.AreEqual(expectedInt, CreateAndDeserialize2(expectedString, expectedTable).Int);
         }
 
         private static T1 CreateAndDeserialize1<T1, T2>(T1 one, T2 two)
@@ -102,7 +166,7 @@ namespace FlatSharpTests
         public class SimpleTable
         {
             [FlatBufferItem(0)]
-            public virtual string String { get; set; }
+            public virtual int Int { get; set; }
         }
 
         [FlatBufferStruct]
