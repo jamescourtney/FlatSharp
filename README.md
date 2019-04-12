@@ -6,14 +6,17 @@ FlatSharp is Google's FlatBuffers serialization format implemented in C#, for C#
 - FlatBuffers schema correctness
 
 ### Current Status
-FlatSharp is a very new project and is in active development. There are no known uses in production environments at this time. The current code can be considered alpha quality. Contributions and proposals are always welcomed. Currently, FlatSharp supports the following FlatBuffers features:
+FlatSharp is a very new project and is in active development. There are no known uses in production environments at this time. The current code can be considered alpha quality, with new features still being added. Contributions and proposals are always welcomed. Currently, FlatSharp supports the following FlatBuffers features:
 - Structs
 - Tables
 - Scalars / Strings
-- ```IList<T>```/```IReadOnlyList<T>``` Vectors of Strings, Tables, Structs, and Scalars
+- ```IList<T>```, ```IReadOnlyList<T>```, and ```T[]``` Vectors of Strings, Tables, Structs, and Scalars
 - ```Memory<T>```/```ReadOnlyMemory<T>``` Vectors of scalars when on little-endian systems (1-byte scalars are allowed in Memory vectors on big-endian systems)
+- Discriminated/tagged unions of structs, tables, and strings.
 
-Enums are not currently supported for schema-compatibility reasons; it's too easy to make an implicit change to the type of an enum (going from ```MyEnum : byte``` -> ```MyEnum : int```), which results in a FlatBuffer binary break. Adding enum support may be considered in the future. FlatBuffer unions are also not supported.
+What's not supported (and why):
+- Enums. Enums are not currently supported for schema-compatibility reasons; it's too easy to make an implicit change to the type of an enum (going from ```MyEnum : byte``` -> ```MyEnum : int```), which results in a very non-obvious FlatBuffer binary break, since the enum is defined independently of the contract.
+- Vectors of Unions. This is a reasonably complex feature that can be approximated with a vector of tables, where each table element contains a union.
 
 ### License
 FlatSharp is a C# implementation of Google's FlatBuffer binary format, which is licensed under the Apache 2.0 License. Accordingly, FlatSharp is also licensed under Apache 2.0. FlatSharp incorporates code from the Google FlatSharp library for testing and benchmarking purposes.
@@ -34,23 +37,29 @@ public class MonsterTable
     public virtual Position Position { get; set; }
     
     [FlatBufferItem(1)]
-    [DefaultValue(150s)]
+    [DefaultValue((short)150)]
     public virtual short Mana { get; set; }
     
     [FlatBufferItem(2)]
-    [DefaultValue(100s)]
+    [DefaultValue((short)100)]
     public virtual short HP { get; set; }
     
     [FlatBufferItem(3)]
     public virtual string Name { get; set; }
     
-    [FlatBufferItem(4, IsDeprecated = true)]
+    [FlatBufferItem(4, Deprecated = true)]
     public virtual bool Friendly { get; set; }
     
     [FlatBufferItem(5)]
     public virtual ReadOnlyMemory<byte> Inventory { get; set; }
     
     [FlatBufferItem(6)]
+    public virtual FlatBufferUnion<string, Position> DiscriminatedUnion { get; set; }
+    
+    // Note that that the next index starts at 8. Unions are 'double-wide' types, so the previous
+    // element occupies indices 6 and 7!
+    
+    [FlatBufferItem(8)]
     [DefaultValue((int)Color.Blue)]
     public virtual int RawColor { get; set; }
     
@@ -66,13 +75,13 @@ public class MonsterTable
 public class Position
 {
    [FlatBufferItem(0)]
-   public virtual Float X { get; set; }
+   public virtual float X { get; set; }
    
    [FlatBufferItem(1)]
-   public virtual Float Y { get; set; }
+   public virtual float Y { get; set; }
    
    [FlatBufferItem(2)]
-   public virtual Float Z { get; set; }
+   public virtual float Z { get; set; }
 }
 ```
 For FlatSharp to be able to work with your schema, it must obey the following set of contraints:
@@ -80,8 +89,8 @@ For FlatSharp to be able to work with your schema, it must obey the following se
 - All types must be unsealed.
 - All properties decorated by ```[FlatSharpItem]``` must be virtual and public. Setters may be omitted, but Getters are required.
 - All FlatSharpItem indexes must be unique within the given data type.
-- Struct/Table vectors must be defined as ```IList<T>``` or ```IReadOnlyList<T>```.
-- Scalar vectors must be defined as either ```IList<T>```, ```IReadOnlyList<T>```, ```Memory<T>```, or ```ReadOnlyMemory<T>```.
+- Struct/Table vectors must be defined as ```IList<T>```, ```IReadOnlyList<T>```, or ```T[]```.
+- Scalar vectors must be defined as either ```IList<T>```, ```IReadOnlyList<T>```, ```Memory<T>```, ```ReadOnlyMemory<T>```, or ```T[]```.
 - All types must be serializable in FlatBuffers (that is -- you can't throw in an arbitrary C# type).
 
 When versioning your schema, the [FlatBuffer rules apply](https://google.github.io/flatbuffers/flatbuffers_guide_writing_schema.html).
@@ -141,7 +150,7 @@ Serializers are a common vector for security issues. FlatSharp takes the followi
 - No unsafe code or IL generation via IL.Emit (with the exception of the Unsafe package)
 - Use standard .NET libraries for reading and writing from memory (with the exception of the Unsafe package)
 
-FlatSharp manages to acheive performance by generating safe C# code at runtime and pushing that through the Roslyn C# compiler to emit and load a runtime assembly. This provides an additional level of safety over generating IL directly with minimimal performance impact, since we compile without allowing unsafe code and can embed other invariants in the code (such as readonly). Further, it is easier to debug generated C# than generated IL. Roslyn does have a 3 to 4 second first-run penalty, but subsequent invocations are very quick.
+FlatSharp manages to acheive performance by generating safe C# code at runtime and pushing that through the Roslyn C# compiler to emit and load a runtime assembly. This provides an additional level of safety over generating IL directly with minimimal performance impact, since we compile without allowing unsafe code and can embed other invariants in the code (such as readonly). Further, it is easier to debug generated C# than generated IL. Roslyn does have a 3 to 4 second first-run penalty, but subsequent invocations are very quick, and "compilation" is only done once per root-level FlatBuffer object.
 
 In its default configuration, the FlatSharp library uses no unsafe code at all, and only uses overflow-checked operators. FlatSharp does come with an unsafe companion library that can meaningfully improve performance in some scenarios (```UnsafeMemoryInputBuffer``` provides roughly double the performance of ```MemoryInputBuffer``` with the caveat that it must be disposed for performance to be acceptable).
 
@@ -168,8 +177,7 @@ The benchmarks test 4 different serialization frameworks:
 ![image](doc/Deserialization_5_Traversal.png)
 
 ### Roadmap
-- Support for property setters
-- Support for enums?
+- Support for property setters and mutable types.
 - Security hardening and fuzzing
 - Code gen based on FBS schema files
 - GRPC support
