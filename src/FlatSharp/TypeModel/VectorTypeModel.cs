@@ -50,6 +50,11 @@ namespace FlatSharp.TypeModel
         public override int InlineSize => sizeof(uint);
 
         /// <summary>
+        /// Vectors are arbitrary in length.
+        /// </summary>
+        public override bool IsFixedSize => false;
+
+        /// <summary>
         /// Gets the type model for this vector's elements.
         /// </summary>
         public RuntimeTypeModel ItemTypeModel => this.memberTypeModel;
@@ -73,6 +78,29 @@ namespace FlatSharp.TypeModel
         /// Indicates if this vector's type is read-only.
         /// </summary>
         public bool IsReadOnly => this.isReadOnly;
+
+        internal string LengthPropertyName
+        {
+            get
+            {
+                if (this.IsArray)
+                {
+                    return nameof(Array.Length);
+                }
+                
+                if (this.IsList)
+                {
+                    return nameof(IList<string>.Count);
+                }
+
+                if (this.IsMemoryVector)
+                {
+                    return nameof(Memory<byte>.Length);
+                }
+
+                throw new InvalidOperationException("Unexpected type of vector.");
+            }
+        }
 
         protected override void Initialize()
         {

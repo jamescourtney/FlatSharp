@@ -80,6 +80,19 @@ namespace FlatSharp.TypeModel
         public abstract int InlineSize { get; }
 
         /// <summary>
+        /// Indicates if this item is fixed size or not.
+        /// </summary>
+        public abstract bool IsFixedSize { get; }
+
+        /// <summary>
+        /// Gets the maximum inline size of this item when padded for alignment, when stored in a table or vector.
+        /// </summary>
+        public virtual int MaxInlineSize
+        {
+            get => this.InlineSize + SerializationHelpers.GetMaxPadding(this.Alignment);
+        }
+
+        /// <summary>
         /// Gets or creates a runtime type model from the given type.
         /// </summary>
         public static RuntimeTypeModel CreateFrom(Type type)

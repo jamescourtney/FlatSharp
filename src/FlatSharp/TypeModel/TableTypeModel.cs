@@ -59,6 +59,11 @@
         public override int InlineSize => sizeof(uint);
 
         /// <summary>
+        /// Tables can have vectors and other arbitrary data.
+        /// </summary>
+        public override bool IsFixedSize => false;
+
+        /// <summary>
         /// Gets the maximum used index in this vtable.
         /// </summary>
         public int MaxIndex => this.occupiedVtableSlots.Max();
@@ -72,6 +77,16 @@
         /// The default .ctor used for subclassing.
         /// </summary>
         public ConstructorInfo DefaultConstructor { get; private set; }
+        
+        /// <summary>
+        /// Gets the maximum size of a table assuming all members are populated include the vtable offset. 
+        /// Does not consider alignment of the table, but does consider worst-case alignment of the members.
+        /// </summary>
+        internal int NonPaddedMaxTableInlineSize
+        {
+            // add sizeof(int) for soffset_t to vtable.
+            get => this.IndexToMemberMap.Values.Sum(x => x.ItemTypeModel.MaxInlineSize) + sizeof(int);
+        }
 
         protected override void Initialize()
         {

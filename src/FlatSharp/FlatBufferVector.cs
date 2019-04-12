@@ -90,7 +90,7 @@ namespace FlatSharp
 
         public bool Contains(T item)
         {
-            throw new NotImplementedException();
+            return this.IndexOf(item) >= 0;
         }
 
         public void CopyTo(T[] array, int arrayIndex)

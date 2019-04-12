@@ -20,7 +20,7 @@ namespace FlatSharp
     using System.Collections;
 
     /// <summary>
-    /// A base class that FlatBuffersNet implements to deserialize vectors. FlatBufferCacheVector{T} is a lazy implementation
+    /// FlatBufferCacheVector{T} is a lazy implementation
     /// that caches the results of read operations in an internal array. For this reason, read performance is as good as greedily
     /// allocating all members, but does require more memory than the zero-copy approach.
     /// </summary>

@@ -45,5 +45,10 @@
         /// The size of this scalar. Equal to the alignment.
         /// </summary>
         public override int InlineSize { get; }
+
+        /// <summary>
+        /// Scalars are fixed size.
+        /// </summary>
+        public override bool IsFixedSize => true;
     }
 }

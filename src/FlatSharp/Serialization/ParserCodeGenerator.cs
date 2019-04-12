@@ -395,10 +395,13 @@ $@"
 
         private string CreateFlatBufferVector(VectorTypeModel typeModel, string vectorTypeName)
         {
+            int itemSize = typeModel.ItemTypeModel.InlineSize;
+            itemSize += SerializationHelpers.GetAlignmentError(itemSize, typeModel.ItemTypeModel.Alignment);
+
             return $@"new {vectorTypeName}<{CSharpHelpers.GetCompilableTypeName(typeModel.ItemTypeModel.ClrType)}>(
                     memory, 
                     offset + memory.{nameof(InputBuffer.ReadUOffset)}(offset), 
-                    {typeModel.ItemTypeModel.InlineSize}, 
+                    {itemSize}, 
                     (b, o) => {this.GetReadInvocation(typeModel.ItemTypeModel.ClrType, "b", "o")})";
         }
 

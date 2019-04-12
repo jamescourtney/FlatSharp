@@ -52,6 +52,11 @@
         public override int InlineSize => this.inlineSize;
 
         /// <summary>
+        /// Structs are composed of scalars.
+        /// </summary>
+        public override bool IsFixedSize => true;
+
+        /// <summary>
         /// Gets the members of this struct.
         /// </summary>
         public IReadOnlyList<StructMemberModel> Members => this.memberTypes;

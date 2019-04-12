@@ -94,13 +94,9 @@ namespace FlatSharp
         {
             var type = tableModel.ClrType;
             int maxIndex = tableModel.MaxIndex;
+            int maxInlineSize = tableModel.NonPaddedMaxTableInlineSize;
 
-            int maxInlineSize = sizeof(int);
-            foreach (var item in tableModel.IndexToMemberMap.Values)
-            {
-                maxInlineSize += item.ItemTypeModel.InlineSize + SerializationHelpers.GetMaxPadding(item.ItemTypeModel.Alignment);
-            }
-
+            // Start by asking for the worst-case number of bytes from the serializationcontext.
             string methodStart =
 $@"
                 int tableStart = context.{nameof(SerializationContext.AllocateSpace)}({maxInlineSize}, sizeof(int));
@@ -131,6 +127,8 @@ $@"
                 writers.Add(write);
             }
 
+            // We probably over-allocated. Figure out by how much and back up the cursor.
+            // Then we can write the vtable.
             body.Add("int tableLength = currentOffset - tableStart;");
             body.Add($"context.{nameof(SerializationContext.Offset)} -= {maxInlineSize} - tableLength;");
             body.Add($"int vtablePosition = vtable.{nameof(VTableBuilder.EndObject)}(span, writer, tableLength);");
@@ -271,9 +269,12 @@ $@"
             var itemTypeModel = vectorModel.ItemTypeModel;
             string propertyName = vectorModel.IsList ? nameof(IList<string>.Count) : nameof(Array.Length);
 
+            int itemSize = itemTypeModel.InlineSize;
+            itemSize += SerializationHelpers.GetAlignmentError(itemSize, itemTypeModel.Alignment);
+
             string body = $@"
                 int count = item.{propertyName};
-                int vectorOffset = context.{nameof(SerializationContext.AllocateVector)}({itemTypeModel.Alignment}, count, {itemTypeModel.InlineSize});
+                int vectorOffset = context.{nameof(SerializationContext.AllocateVector)}({itemTypeModel.Alignment}, count, {itemSize});
                 writer.{nameof(SpanWriter.WriteUOffset)}(span, originalOffset, vectorOffset, context);
                 writer.{nameof(SpanWriter.WriteInt)}(span, count, vectorOffset, context);
                 vectorOffset += sizeof(int);
@@ -282,7 +283,7 @@ $@"
                       var current = item[i];
                       {CSharpHelpers.GetNonNullCheckInvocation(itemTypeModel, "current")};
                       {this.GetSerializeInvocation(itemTypeModel.ClrType, "current", "vectorOffset")}
-                      vectorOffset += {itemTypeModel.InlineSize};
+                      vectorOffset += {itemSize};
                 }}";
 
             this.GenerateSerializeMethod(type, body);

@@ -76,6 +76,17 @@ struct AlignmentTestOuter {
 	g:AlignmentTestInner;
 }
 
+struct FiveByteStruct 
+{
+	Int:int32;
+	Byte:ubyte;
+}
+
+table FiveByteStructTable
+{
+	Vector:[FiveByteStruct];
+}
+
 table AlignmentTestOuterHoder {
 	Value:AlignmentTestOuter;
 }

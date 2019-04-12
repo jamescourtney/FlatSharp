@@ -48,6 +48,16 @@ namespace FlatSharp.TypeModel
         public override int InlineSize => sizeof(uint) + sizeof(byte);
 
         /// <summary>
+        /// The discriminator byte is always aligned, since it's a byte. However, the offset may need to be aligned.
+        /// </summary>
+        public override int MaxInlineSize => this.InlineSize + SerializationHelpers.GetMaxPadding(sizeof(uint));
+
+        /// <summary>
+        /// Unions are not fixed because they contain tables.
+        /// </summary>
+        public override bool IsFixedSize => false;
+
+        /// <summary>
         /// Gets the type model for this union's members. Index 0 corresponds to discriminator 1.
         /// </summary>
         public RuntimeTypeModel[] UnionElementTypeModel => this.memberTypeModels;

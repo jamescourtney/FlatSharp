@@ -179,6 +179,38 @@
         }
 
         [TestMethod]
+        public void FiveByteStructVector()
+        {
+            FiveByteStructTable table = new FiveByteStructTable
+            {
+                Vector = new[]
+                {
+                    new FiveByteStruct { Byte = 1, Int = 1 },
+                    new FiveByteStruct { Byte = 2, Int = 2 },
+                    new FiveByteStruct { Byte = 3, Int = 3 },
+                }
+            };
+
+            Span<byte> buffer = new byte[1024];
+            var bytecount = FlatBufferSerializer.Default.Serialize(table, buffer);
+            buffer = buffer.Slice(0, bytecount);
+
+            var oracle = Oracle.FiveByteStructTable.GetRootAsFiveByteStructTable(
+                new FlatBuffers.ByteBuffer(buffer.ToArray()));
+
+            Assert.AreEqual(3, oracle.VectorLength);
+
+            Assert.AreEqual(1, oracle.Vector(0).Value.Int);
+            Assert.AreEqual((byte)1, oracle.Vector(0).Value.Byte);
+
+            Assert.AreEqual(2, oracle.Vector(1).Value.Int);
+            Assert.AreEqual((byte)2, oracle.Vector(1).Value.Byte);
+
+            Assert.AreEqual(3, oracle.Vector(2).Value.Int);
+            Assert.AreEqual((byte)3, oracle.Vector(2).Value.Byte);
+        }
+
+        [TestMethod]
         public void Union_Table_BasicTypes()
         {
             var simple = new BasicTypes

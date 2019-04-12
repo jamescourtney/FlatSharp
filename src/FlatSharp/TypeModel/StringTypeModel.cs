@@ -39,5 +39,10 @@
         /// The inline size of the string (uoffset_t).
         /// </summary>
         public override int InlineSize => sizeof(uint);
+
+        /// <summary>
+        /// Strings are arbitrary in length.
+        /// </summary>
+        public override bool IsFixedSize => false;
     }
 }

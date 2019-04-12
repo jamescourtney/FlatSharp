@@ -186,6 +186,36 @@
         }
 
         [TestMethod]
+        public void FiveByteStructVector()
+        {
+            var builder = new FlatBuffers.FlatBufferBuilder(1024);
+            Oracle.FiveByteStructTable.StartVectorVector(builder, 3);
+            Oracle.FiveByteStruct.CreateFiveByteStruct(builder, 3, 3);
+            Oracle.FiveByteStruct.CreateFiveByteStruct(builder, 2, 2);
+            Oracle.FiveByteStruct.CreateFiveByteStruct(builder, 1, 1);
+            var vectorOffset = builder.EndVector();
+
+            Oracle.FiveByteStructTable.StartFiveByteStructTable(builder);
+            Oracle.FiveByteStructTable.AddVector(builder, vectorOffset);
+            var testData = Oracle.FiveByteStructTable.EndFiveByteStructTable(builder);
+
+            builder.Finish(testData.Value);
+
+            byte[] realBuffer = builder.SizedByteArray();
+            var parsed = FlatBufferSerializer.Default.Parse<FiveByteStructTable>(realBuffer);
+
+            Assert.AreEqual(3, parsed.Vector.Length);
+
+            Assert.AreEqual(1, parsed.Vector[0].Int);
+            Assert.AreEqual(2, parsed.Vector[1].Int);
+            Assert.AreEqual(3, parsed.Vector[2].Int);
+
+            Assert.AreEqual((byte)1, parsed.Vector[0].Byte);
+            Assert.AreEqual((byte)2, parsed.Vector[1].Byte);
+            Assert.AreEqual((byte)3, parsed.Vector[2].Byte);
+        }
+
+        [TestMethod]
         public void Union_Table_BasicTypes()
         {
             var builder = new FlatBuffers.FlatBufferBuilder(1024);
