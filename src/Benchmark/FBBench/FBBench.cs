@@ -15,9 +15,9 @@
  */
 
 #define FLATSHARP  // enable flat sharp benchmarks
-//#define ZERO       // enable zero formatter
-//#define PBDN       // enable protobuf.net
-//#define GOOG       // enable google flatbuffers.
+#define ZERO       // enable zero formatter
+#define PBDN       // enable protobuf.net
+#define GOOG       // enable google flatbuffers.
 
 namespace Benchmark.FBBench
 {
@@ -43,7 +43,7 @@ namespace Benchmark.FBBench
         [Params(3)]
         public int VectorLength;
 
-        [Params(5)]
+        [Params(1, 5)]
         public int TraversalCount;
 
 #if FLATSHARP
