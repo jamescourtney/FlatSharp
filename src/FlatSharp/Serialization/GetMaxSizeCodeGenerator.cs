@@ -149,12 +149,9 @@ $@"
             string lengthProperty = $"item.{vectorModel.LengthPropertyName}";
 
             // Constant size items. We can reduce these reasonably well.
-            int actualSize = itemModel.InlineSize;
-            actualSize += SerializationHelpers.GetAlignmentError(actualSize, itemModel.Alignment);
             if (itemModel.IsFixedSize)
             {
-
-                body = $"return {fixedSize} + {SerializationHelpers.GetMaxPadding(itemModel.Alignment)} + ({actualSize} * {lengthProperty});";
+                body = $"return {fixedSize} + {SerializationHelpers.GetMaxPadding(itemModel.Alignment)} + ({vectorModel.PaddedMemberInlineSize} * {lengthProperty});";
             }
             else if (itemModel.SchemaType == FlatBufferSchemaType.Table || itemModel.SchemaType == FlatBufferSchemaType.String)
             {
@@ -164,7 +161,7 @@ $@"
                 body =
 $@"
                     int length = {lengthProperty};
-                    int runningSum = {fixedSize} + {SerializationHelpers.GetMaxPadding(itemModel.Alignment)} + ({actualSize} * length);
+                    int runningSum = {fixedSize} + {SerializationHelpers.GetMaxPadding(itemModel.Alignment)} + ({vectorModel.PaddedMemberInlineSize} * length);
                     for (int i = 0; i < length; ++i)
                     {{
                         var itemTemp = item[i];

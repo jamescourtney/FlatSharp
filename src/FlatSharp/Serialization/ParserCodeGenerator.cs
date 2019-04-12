@@ -381,8 +381,9 @@ $@"
             var itemTypeModel = typeModel.ItemTypeModel;
 
             string statement;
-            if (itemTypeModel is ScalarTypeModel scalarModel && (scalarModel.InlineSize == 1 || BitConverter.IsLittleEndian))
+            if (itemTypeModel is ScalarTypeModel scalarModel && scalarModel.NativelyReadableFromMemory)
             {
+                // Memory is faster in situations where we can get away with it.
                 statement = $"memory.{nameof(InputBuffer.ReadMemoryBlock)}<{CSharpHelpers.GetCompilableTypeName(itemTypeModel.ClrType)}>(offset, {itemTypeModel.InlineSize}).ToArray()";
             }
             else
@@ -395,13 +396,11 @@ $@"
 
         private string CreateFlatBufferVector(VectorTypeModel typeModel, string vectorTypeName)
         {
-            int itemSize = typeModel.ItemTypeModel.InlineSize;
-            itemSize += SerializationHelpers.GetAlignmentError(itemSize, typeModel.ItemTypeModel.Alignment);
-
+            // Params: Buffer, UOffset after following, Padded size of each member, delegate invocation for parsing individual items.
             return $@"new {vectorTypeName}<{CSharpHelpers.GetCompilableTypeName(typeModel.ItemTypeModel.ClrType)}>(
                     memory, 
                     offset + memory.{nameof(InputBuffer.ReadUOffset)}(offset), 
-                    {itemSize}, 
+                    {typeModel.PaddedMemberInlineSize}, 
                     (b, o) => {this.GetReadInvocation(typeModel.ItemTypeModel.ClrType, "b", "o")})";
         }
 

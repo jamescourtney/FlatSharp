@@ -79,6 +79,20 @@ namespace FlatSharp.TypeModel
         /// </summary>
         public bool IsReadOnly => this.isReadOnly;
 
+        /// <summary>
+        /// Gets the size of each member of this vector, with padding for alignment.
+        /// </summary>
+        public int PaddedMemberInlineSize
+        {
+            get
+            {
+                int itemInlineSize = this.ItemTypeModel.InlineSize;
+                int itemAlignment = this.ItemTypeModel.Alignment;
+
+                return itemInlineSize + SerializationHelpers.GetAlignmentError(itemInlineSize, itemAlignment); 
+            }
+        }
+
         internal string LengthPropertyName
         {
             get
@@ -157,7 +171,8 @@ namespace FlatSharp.TypeModel
 
                 // We can play some tricks on little-endian machines that allow us to store other types inside our vectors.
                 // 1 byte types (bool, byte, sbyte) are always allowed. However, anything larger is subject to endianness issues.
-                if (this.memberTypeModel.InlineSize != 1 && !BitConverter.IsLittleEndian)
+                ScalarTypeModel scalarModel = (ScalarTypeModel)this.memberTypeModel;
+                if (!scalarModel.NativelyReadableFromMemory)
                 {
                     throw new InvalidFlatBufferDefinitionException("Memory<T> vectors may only use 1-byte sized elements on big-endian architectures. Consider using IList<T> instead.");
                 }

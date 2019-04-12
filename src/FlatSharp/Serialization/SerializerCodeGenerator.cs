@@ -267,14 +267,11 @@ $@"
         {
             var type = vectorModel.ClrType;
             var itemTypeModel = vectorModel.ItemTypeModel;
-            string propertyName = vectorModel.IsList ? nameof(IList<string>.Count) : nameof(Array.Length);
-
-            int itemSize = itemTypeModel.InlineSize;
-            itemSize += SerializationHelpers.GetAlignmentError(itemSize, itemTypeModel.Alignment);
+            string propertyName = vectorModel.LengthPropertyName;
 
             string body = $@"
                 int count = item.{propertyName};
-                int vectorOffset = context.{nameof(SerializationContext.AllocateVector)}({itemTypeModel.Alignment}, count, {itemSize});
+                int vectorOffset = context.{nameof(SerializationContext.AllocateVector)}({itemTypeModel.Alignment}, count, {vectorModel.PaddedMemberInlineSize});
                 writer.{nameof(SpanWriter.WriteUOffset)}(span, originalOffset, vectorOffset, context);
                 writer.{nameof(SpanWriter.WriteInt)}(span, count, vectorOffset, context);
                 vectorOffset += sizeof(int);
@@ -283,7 +280,7 @@ $@"
                       var current = item[i];
                       {CSharpHelpers.GetNonNullCheckInvocation(itemTypeModel, "current")};
                       {this.GetSerializeInvocation(itemTypeModel.ClrType, "current", "vectorOffset")}
-                      vectorOffset += {itemSize};
+                      vectorOffset += {vectorModel.PaddedMemberInlineSize};
                 }}";
 
             this.GenerateSerializeMethod(type, body);

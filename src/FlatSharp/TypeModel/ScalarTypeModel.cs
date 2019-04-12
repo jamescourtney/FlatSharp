@@ -50,5 +50,15 @@
         /// Scalars are fixed size.
         /// </summary>
         public override bool IsFixedSize => true;
+
+        /// <summary>
+        /// Indicates if we can natively read this scalar by referencing memory directly.
+        /// </summary>
+        /// <remarks>
+        /// When size is 1 (ie, a byte), it can always be read. FlatBuffers stores data as little endian,
+        /// so on compatible systems we have the ability to simply dereference an address and read the value
+        /// without additional parsing.
+        /// </remarks>
+        public bool NativelyReadableFromMemory => this.InlineSize == 1 || BitConverter.IsLittleEndian;
     }
 }
