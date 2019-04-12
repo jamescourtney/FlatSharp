@@ -229,7 +229,16 @@ namespace FlatSharpTests
         [TestMethod]
         public void TypeModel_Union_StructsTablesStringsAllowed()
         {
-            RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, GenericTable<string>, GenericStruct<int>>>));
+            var tableModel = (TableTypeModel)RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, GenericTable<string>, GenericStruct<int>>>));
+            Assert.AreEqual(1, tableModel.IndexToMemberMap.Count);
+
+            var model = (UnionTypeModel)tableModel.IndexToMemberMap[0].ItemTypeModel;
+
+            Assert.AreEqual(FlatBufferSchemaType.Union, model.SchemaType);
+            Assert.AreEqual(3, model.UnionElementTypeModel.Length);
+            Assert.AreEqual(FlatBufferSchemaType.String, model.UnionElementTypeModel[0].SchemaType);
+            Assert.AreEqual(FlatBufferSchemaType.Table, model.UnionElementTypeModel[1].SchemaType);
+            Assert.AreEqual(FlatBufferSchemaType.Struct, model.UnionElementTypeModel[2].SchemaType);
         }
 
         [TestMethod]
@@ -361,20 +370,6 @@ namespace FlatSharpTests
         [FlatBufferStruct]
         public class DoesNotInheritFromObjectStruct<T> : GenericStruct<T>
         {
-        }
-
-        [FlatBufferTable]
-        public class UnionMemberType<T1, T2> where T1 : class where T2 : class
-        {
-            [FlatBufferItem(0)]
-            public string Value { get; set; }
-
-            // Unions are double-wide types, so indices 1 and 2 are reserved.
-            [FlatBufferItem(1)]
-            public FlatBufferUnion<T1, T2> Union { get; set; }
-
-            [FlatBufferItem(3)]
-            public int Int { get; set; }
         }
 
         [FlatBufferTable]
