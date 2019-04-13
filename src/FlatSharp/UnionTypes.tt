@@ -21,7 +21,7 @@ namespace FlatSharp
 		{
 			var range = Enumerable.Range(1, i + 2);
 	#>
-			
+			[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public sealed class FlatBufferUnion<<#= string.Join(", ", range.Select(x => "T" + x)) #>> : IUnion
 			{
 				private readonly byte discriminator;

@@ -1,0 +1,1 @@
+dotnet test /p:AltCover=true /p:AltCoverAttributeFilter=ExcludeFromCodeCoverage

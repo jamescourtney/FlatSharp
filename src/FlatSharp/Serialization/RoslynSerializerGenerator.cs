@@ -159,7 +159,7 @@ $@"
         /// <param name="dictionary"></param>
         private void DefineMethods(RuntimeTypeModel model)
         {
-            if (model.SchemaType == FlatBufferSchemaType.Scalar || model.SchemaType == FlatBufferSchemaType.String)
+            if (model.IsBuiltInType)
             {
                 // Built in; we can call out to those when we need to.
                 return;
@@ -171,52 +171,65 @@ $@"
                 return;
             }
 
-            string nameBase = Guid.NewGuid().ToString("n");
-            if (model is VectorTypeModel vectorModel2)
+            this.DefineNameBase(model);
+
+            if (model is TableTypeModel tableModel)
             {
-                if (vectorModel2.IsList)
-                {
-                    nameBase = "ListVector_" + Guid.NewGuid().ToString("n");
-                }
-                else if (vectorModel2.IsArray)
-                {
-                    nameBase = "ArrayVector_" + Guid.NewGuid().ToString("n");
-                }
-                else
-                {
-                    Debug.Assert(vectorModel2.IsMemoryVector);
-                    nameBase = "MemoryVector_" + Guid.NewGuid().ToString("n");
-                }
+                this.DefineTableMethods(tableModel);
             }
+            else if (model is StructTypeModel structModel)
+            {
+                this.DefineStructMethods(structModel);
+            }
+            else if (model is VectorTypeModel vectorModel)
+            {
+                this.DefineVectorMethods(vectorModel);
+            }
+            else if (model is UnionTypeModel unionModel)
+            {
+                this.DefineUnionMethods(unionModel);
+            }
+            else
+            {
+                throw new InvalidOperationException("Unexepcted type model: " + model?.GetType());
+            }
+        }
+
+        private void DefineNameBase(RuntimeTypeModel model)
+        {
+            string nameBase = Guid.NewGuid().ToString("n");
 
             this.writeMethods[model.ClrType] = $"WriteInlineValueOf_{nameBase}";
             this.maxSizeMethods[model.ClrType] = $"GetMaxSizeOf_{nameBase}";
             this.readMethods[model.ClrType] = $"Read_{nameBase}";
+        }
 
-            if (model is TableTypeModel tableModel)
+        private void DefineTableMethods(TableTypeModel tableModel)
+        {
+            foreach (var member in tableModel.IndexToMemberMap.Values)
             {
-                foreach (var member in tableModel.IndexToMemberMap.Values)
-                {
-                    this.DefineMethods(member.ItemTypeModel);
-                }
+                this.DefineMethods(member.ItemTypeModel);
             }
-            else if (model is StructTypeModel structModel)
+        }
+
+        private void DefineStructMethods(StructTypeModel structModel)
+        {
+            foreach (var member in structModel.Members)
             {
-                foreach (var member in structModel.Members)
-                {
-                    this.DefineMethods(member.ItemTypeModel);
-                }
+                this.DefineMethods(member.ItemTypeModel);
             }
-            else if (model is VectorTypeModel vectorModel)
+        }
+
+        private void DefineVectorMethods(VectorTypeModel vectorModel)
+        {
+            this.DefineMethods(vectorModel.ItemTypeModel);
+        }
+
+        private void DefineUnionMethods(UnionTypeModel unionModel)
+        {
+            foreach (var member in unionModel.UnionElementTypeModel)
             {
-                this.DefineMethods(vectorModel.ItemTypeModel);
-            }
-            else if (model is UnionTypeModel unionModel)
-            {
-                foreach (var member in unionModel.UnionElementTypeModel)
-                {
-                    this.DefineMethods(member);
-                }
+                this.DefineMethods(member);
             }
         }
 

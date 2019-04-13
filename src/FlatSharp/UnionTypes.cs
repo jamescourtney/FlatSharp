@@ -7,7 +7,7 @@ namespace FlatSharp
 	}
 
 
-				
+				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public sealed class FlatBufferUnion<T1, T2> : IUnion
 			{
 				private readonly byte discriminator;
@@ -79,7 +79,7 @@ namespace FlatSharp
 				}
 				
 							}
-				
+				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public sealed class FlatBufferUnion<T1, T2, T3> : IUnion
 			{
 				private readonly byte discriminator;
@@ -182,7 +182,7 @@ namespace FlatSharp
 				}
 				
 							}
-				
+				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public sealed class FlatBufferUnion<T1, T2, T3, T4> : IUnion
 			{
 				private readonly byte discriminator;
@@ -316,7 +316,7 @@ namespace FlatSharp
 				}
 				
 							}
-				
+				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public sealed class FlatBufferUnion<T1, T2, T3, T4, T5> : IUnion
 			{
 				private readonly byte discriminator;
@@ -481,7 +481,7 @@ namespace FlatSharp
 				}
 				
 							}
-				
+				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public sealed class FlatBufferUnion<T1, T2, T3, T4, T5, T6> : IUnion
 			{
 				private readonly byte discriminator;
@@ -677,7 +677,7 @@ namespace FlatSharp
 				}
 				
 							}
-				
+				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public sealed class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7> : IUnion
 			{
 				private readonly byte discriminator;
@@ -904,7 +904,7 @@ namespace FlatSharp
 				}
 				
 							}
-				
+				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public sealed class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8> : IUnion
 			{
 				private readonly byte discriminator;
@@ -1162,7 +1162,7 @@ namespace FlatSharp
 				}
 				
 							}
-				
+				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public sealed class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9> : IUnion
 			{
 				private readonly byte discriminator;
@@ -1451,7 +1451,7 @@ namespace FlatSharp
 				}
 				
 							}
-				
+				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public sealed class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> : IUnion
 			{
 				private readonly byte discriminator;

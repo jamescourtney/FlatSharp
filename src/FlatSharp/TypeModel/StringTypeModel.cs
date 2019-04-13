@@ -44,5 +44,10 @@
         /// Strings are arbitrary in length.
         /// </summary>
         public override bool IsFixedSize => false;
+
+        /// <summary>
+        /// String are built in.
+        /// </summary>
+        public override bool IsBuiltInType => true;
     }
 }

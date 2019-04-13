@@ -93,6 +93,14 @@ namespace FlatSharp.TypeModel
         }
 
         /// <summary>
+        /// Indicates if this type is built into FlatSharp and no parser needs to be generated.
+        /// </summary>
+        public virtual bool IsBuiltInType
+        {
+            get => false;
+        }
+
+        /// <summary>
         /// Gets or creates a runtime type model from the given type.
         /// </summary>
         public static RuntimeTypeModel CreateFrom(Type type)

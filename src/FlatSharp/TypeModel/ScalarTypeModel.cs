@@ -52,6 +52,11 @@
         public override bool IsFixedSize => true;
 
         /// <summary>
+        /// Scalars are built-into FlatSharp.
+        /// </summary>
+        public override bool IsBuiltInType => true;
+
+        /// <summary>
         /// Indicates if we can natively read this scalar by referencing memory directly.
         /// </summary>
         /// <remarks>
