@@ -18,6 +18,7 @@ namespace FlatSharpTests
 {
     using System;
     using System.Collections.Generic;
+    using FlatSharp;
     using FlatSharp.Attributes;
     using FlatSharp.TypeModel;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -58,6 +59,13 @@ namespace FlatSharpTests
         {
             Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(GenericStruct<GenericTable<int>>)));
+        }
+
+        [TestMethod]
+        public void TypeModel_Struct_UnionNotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(GenericStruct<FlatBufferUnion<string, GenericTable<string>>>)));
         }
 
         [TestMethod]
@@ -117,6 +125,20 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
+        public void TypeModel_Vector_VectorNotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(GenericTable<IList<IList<int>>>)));
+        }
+
+        [TestMethod]
+        public void TypeModel_Vector_UnionNotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(GenericTable<IList<FlatBufferUnion<string, GenericTable<string>>>>)));
+        }
+
+        [TestMethod]
         public void TypeModel_Vector_ListVectorOfStruct()
         {
             var model = this.VectorTest(typeof(IList<>), typeof(GenericStruct<bool>));
@@ -165,6 +187,58 @@ namespace FlatSharpTests
             Assert.AreEqual(innerModel, model.ItemTypeModel);
 
             return model;
+        }
+
+        /// <summary>
+        /// This scenario actually works with flatsharp, but the flatc compiler does not support this, so it doesn't seem to be an officially
+        /// sanctioned feature.
+        /// </summary>
+        [TestMethod]
+        public void TypeModel_Union_VectorsNotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, IList<string>>>)));
+
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, IReadOnlyList<string>>>)));
+
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, Memory<int>>>)));
+
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, ReadOnlyMemory<int>>>)));
+
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, string[]>>)));
+        }
+
+        [TestMethod]
+        public void TypeModel_Union_UnionsNotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, FlatBufferUnion<string, GenericStruct<int>>>>)));
+        }
+
+        [TestMethod]
+        public void TypeModel_Union_ScalarsNotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, FlatBufferUnion<string, int>>>)));
+        }
+
+        [TestMethod]
+        public void TypeModel_Union_StructsTablesStringsAllowed()
+        {
+            var tableModel = (TableTypeModel)RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, GenericTable<string>, GenericStruct<int>>>));
+            Assert.AreEqual(1, tableModel.IndexToMemberMap.Count);
+
+            var model = (UnionTypeModel)tableModel.IndexToMemberMap[0].ItemTypeModel;
+
+            Assert.AreEqual(FlatBufferSchemaType.Union, model.SchemaType);
+            Assert.AreEqual(3, model.UnionElementTypeModel.Length);
+            Assert.AreEqual(FlatBufferSchemaType.String, model.UnionElementTypeModel[0].SchemaType);
+            Assert.AreEqual(FlatBufferSchemaType.Table, model.UnionElementTypeModel[1].SchemaType);
+            Assert.AreEqual(FlatBufferSchemaType.Struct, model.UnionElementTypeModel[2].SchemaType);
         }
 
         [TestMethod]
@@ -296,6 +370,17 @@ namespace FlatSharpTests
         [FlatBufferStruct]
         public class DoesNotInheritFromObjectStruct<T> : GenericStruct<T>
         {
+        }
+
+        [FlatBufferTable]
+        public class OverlappingUnionIndex
+        { 
+            [FlatBufferItem(0)]
+            public FlatBufferUnion<string, IList<string>> Union { get; set; }
+
+            // Invalid -- this should be at index 2.
+            [FlatBufferItem(1)]
+            public string FooBar { get; set; }
         }
     }
 }

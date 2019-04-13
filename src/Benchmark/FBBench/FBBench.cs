@@ -15,9 +15,9 @@
  */
 
 #define FLATSHARP  // enable flat sharp benchmarks
-//#define ZERO       // enable zero formatter
-//#define PBDN       // enable protobuf.net
-//#define GOOG       // enable google flatbuffers.
+#define ZERO       // enable zero formatter
+#define PBDN       // enable protobuf.net
+#define GOOG       // enable google flatbuffers.
 
 namespace Benchmark.FBBench
 {
@@ -43,7 +43,7 @@ namespace Benchmark.FBBench
         [Params(3)]
         public int VectorLength;
 
-        [Params(5)]
+        [Params(1, 5)]
         public int TraversalCount;
 
 #if FLATSHARP
@@ -54,7 +54,7 @@ namespace Benchmark.FBBench
         private FlatBufferBuilder google_flatBufferBuilder = new FlatBufferBuilder(64 * 1024);
         private ByteBuffer google_ByteBuffer;
 
-        private FooBarListContainer defaultContainer;
+        public FooBarListContainer defaultContainer;
 
         private MemoryStream pbdn_writeBuffer = new MemoryStream(64 * 1024);
         private MemoryStream pbdn_readBuffer = new MemoryStream(64 * 1024);

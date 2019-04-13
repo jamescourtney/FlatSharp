@@ -31,7 +31,7 @@
     public class DefaultValueTests
     {
         [TestMethod]
-        public void EmptyTable()
+        public void Read_DefaultValues()
         {
             // hand-craft a table here:
             byte[] data =
@@ -52,6 +52,31 @@
             int bytesWritten = FlatBufferSerializer.Default.Serialize(parsed, serialized.AsSpan());
 
             Assert.AreEqual(Convert.ToBase64String(data), Convert.ToBase64String(serialized, 0, bytesWritten));
+        }
+
+        [TestMethod]
+        public void Write_DefaultValues()
+        {
+            // hand-craft a table here:
+            byte[] data =
+            {
+                4, 0, 0, 0,           // uoffset to the start of the table.
+                252, 255, 255, 255,   // soffset_t to the vtable
+                4, 0,                 // vtable size
+                4, 0,                 // table length
+            };
+
+            var table = new DefaultValueTable
+            {
+                Int = 5,
+                Short = 6,
+                Float = 3.14159f
+            };
+
+            Span<byte> span = new byte[100];
+            int bytesWritten = FlatBufferSerializer.Default.Serialize(table, span);
+
+            Assert.AreEqual(Convert.ToBase64String(data), Convert.ToBase64String(span.Slice(0, bytesWritten).ToArray()));
         }
 
         [FlatBufferTable]

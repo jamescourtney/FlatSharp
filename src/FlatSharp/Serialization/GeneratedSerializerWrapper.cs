@@ -28,20 +28,21 @@ namespace FlatSharp
     internal class GeneratedSerializerWrapper<T> : ISerializer<T> where T : class
     {
         private readonly IGeneratedSerializer<T> innerSerializer;
+        private readonly Lazy<string> lazyCSharp;
 
         public GeneratedSerializerWrapper(
             IGeneratedSerializer<T> innerSerializer,
             Assembly generatedAssembly,
-            string generatedCsharp,
+            Func<string> generatedCSharp,
             byte[] generatedAssemblyBytes)
         {
-            this.CSharp = generatedCsharp;
+            this.lazyCSharp = new Lazy<string>(generatedCSharp);
             this.Assembly = generatedAssembly;
             this.AssemblyBytes = ImmutableArray.Create(generatedAssemblyBytes);
             this.innerSerializer = innerSerializer;
         }
 
-        public string CSharp { get; }
+        public string CSharp => this.lazyCSharp.Value;
 
         public Assembly Assembly { get; }
 
@@ -100,6 +101,7 @@ namespace FlatSharp
             }
 
 #if DEBUG
+            Trace.WriteLine($"Serialized Size: {serializationContext.Offset + 1}, Max Size: {expectedMaxSize}");
             Debug.Assert(serializationContext.Offset <= expectedMaxSize - 1);
 #endif
 

@@ -18,6 +18,7 @@ namespace FlatSharpTests
 {
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel;
     using System.IO;
     using System.Linq;
     using FlatSharp;
@@ -329,6 +330,89 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
+        public void UnalignedStruct_5Byte()
+        {
+            var root = new RootTable<FiveByteStruct[]>
+            {
+                Vector = new[] 
+                {
+                    new FiveByteStruct { Byte = 1, Int = 1 },
+                    new FiveByteStruct { Byte = 2, Int = 2 },
+                    new FiveByteStruct { Byte = 3, Int = 3 },
+                },
+            };
+
+            Span<byte> target = new byte[10240];
+            int offset = FlatBufferSerializer.Default.Serialize(root, target);
+            target = target.Slice(0, offset);
+
+            byte[] expectedResult =
+            {
+                4, 0, 0, 0,          // offset to table start
+                248, 255, 255, 255,  // soffset to vtable (-8)
+                12, 0, 0, 0,         // uoffset_t to vector
+                6, 0,                // vtable length
+                8, 0,                // table length
+                4, 0,                // offset of index 0 field
+                0, 0,                // padding to 4-byte alignment
+                3, 0, 0, 0,          // vector length
+                1, 0, 0, 0,          // index 0.Int
+                1,                   // index 0.Byte
+                0, 0, 0,             // padding
+                2, 0, 0, 0,          // index 1.Int
+                2,                   // index 1.Byte
+                0, 0, 0,             // padding
+                3, 0, 0, 0,          // index2.Int
+                3,                   // Index2.byte
+                0, 0, 0,             // padding
+            };
+
+            Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(target));
+        }
+
+        [TestMethod]
+        public void UnalignedStruct_9Byte()
+        {
+            var root = new RootTable2<NineByteStruct[]>
+            {
+                Vector = new[]
+                {
+                    new NineByteStruct { Byte = 1, Long = 1 },
+                    new NineByteStruct { Byte = 2, Long = 2 },
+                },
+            };
+
+            Span<byte> target = new byte[10240];
+            int offset = FlatBufferSerializer.Default.Serialize(root, target);
+            target = target.Slice(0, offset);
+
+            byte[] expectedResult =
+            {
+                4, 0, 0, 0,                     // offset to table start
+                244, 255, 255, 255,             // soffset to vtable (-12)
+                0,                              // alignment imp
+                0, 0, 0,                        // padding
+                16, 0, 0, 0,                    // uoffset_t to vector
+
+                8, 0,                           // vtable length
+                12, 0,                          // table length
+                4, 0,                           // offset to index 0 field
+                8, 0,                           // offset of index 1 field
+
+                0, 0, 0, 0,                     // padding
+                2, 0, 0, 0,                     // vector length
+                1, 0, 0, 0, 0, 0, 0, 0,         // index 0.Long
+                1,                              // index 0.Byte
+                0, 0, 0, 0, 0, 0, 0,            // padding
+                2, 0, 0, 0, 0, 0, 0, 0,         // index 1.Long
+                2,                              // index 1.Byte
+                0, 0, 0, 0, 0, 0, 0,            // padding
+            };
+
+            Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(target));
+        }
+
+        [TestMethod]
         public void NullStringInVector()
         {
             var root = new RootTable<IList<string>>
@@ -356,10 +440,69 @@ namespace FlatSharpTests
             Assert.ThrowsException<InvalidDataException>(() => FlatBufferSerializer.Default.Serialize(root, target));
         }
 
+        [TestMethod]
+        public void AlignedStructVectorMaxSize()
+        {
+            var root = new RootTable<IList<Struct>>();
+
+            // Empty table max size (vector not included here).
+            var baselineMaxSize = FlatBufferSerializer.Default.GetMaxSize(root);
+
+            root.Vector = new[] { new Struct { Integer = 1 }, new Struct { Integer = 2 } };
+
+            var maxSize = FlatBufferSerializer.Default.GetMaxSize(root);
+
+            // padding + length + padding + 2 * itemLength
+            Assert.AreEqual(3 + 4 + 3 + (2 * 4), maxSize - baselineMaxSize);
+        }
+
+        [TestMethod]
+        public void UnalignedStruct_5Byte_VectorMaxSize()
+        {
+            var root = new RootTable<IList<FiveByteStruct>>();
+
+            // Empty table max size (vector not included here).
+            var baselineMaxSize = FlatBufferSerializer.Default.GetMaxSize(root);
+
+            root.Vector = new[] { new FiveByteStruct { Int = 1 }, new FiveByteStruct { Int = 2 } };
+
+            var maxSize = FlatBufferSerializer.Default.GetMaxSize(root);
+
+            // padding + length + padding to 4 byte alignment + (2 * (padding + itemLength))
+            Assert.AreEqual(3 + 4 + 3 + (2 * (3 + 5)), maxSize - baselineMaxSize);
+        }
+
+        [TestMethod]
+        public void UnalignedStruct_9Byte_VectorMaxSize()
+        {
+            var root = new RootTable<IList<NineByteStruct>>();
+
+            // Empty table max size (vector not included here).
+            var baselineMaxSize = FlatBufferSerializer.Default.GetMaxSize(root);
+
+            root.Vector = new[] { new NineByteStruct { Long = 1 }, new NineByteStruct { Long = 2 } };
+
+            var maxSize = FlatBufferSerializer.Default.GetMaxSize(root);
+
+            // padding + length + padding to 8 byte alignment + (2 * (padding + itemLength))
+            Assert.AreEqual(3 + 4 + 7 + (2 * (7 + 9)), maxSize - baselineMaxSize);
+        }
+
         [FlatBufferTable]
         public class RootTable<TVector>
         {
             [FlatBufferItem(0)]
+            public virtual TVector Vector { get; set; }
+        }
+
+        [FlatBufferTable]
+        public class RootTable2<TVector>
+        {
+            [FlatBufferItem(0)]
+            [DefaultValue((byte)201)]
+            public virtual byte AlignmentImp { get; set; }
+
+            [FlatBufferItem(1)]
             public virtual TVector Vector { get; set; }
         }
 
@@ -368,6 +511,16 @@ namespace FlatSharpTests
         {
             [FlatBufferItem(0)]
             public virtual int Integer { get; set; }
+        }
+
+        [FlatBufferStruct]
+        public class NineByteStruct
+        {
+            [FlatBufferItem(0)]
+            public virtual long Long { get; set; }
+
+            [FlatBufferItem(1)]
+            public virtual byte Byte { get; set; }
         }
     }
 }

@@ -33,13 +33,6 @@ table BasicTypes {
 	String:string;
 }
 
-table Simple {
-	Byte:ubyte;
-	Int:int32;
-	string:string;
-	Location:Location;
-}
-
 table LinkedListNode {
     Value:string;
 	Next:LinkedListNode;
@@ -83,6 +76,27 @@ struct AlignmentTestOuter {
 	g:AlignmentTestInner;
 }
 
+struct FiveByteStruct 
+{
+	Int:int32;
+	Byte:ubyte;
+}
+
+table FiveByteStructTable
+{
+	Vector:[FiveByteStruct];
+}
+
 table AlignmentTestOuterHoder {
 	Value:AlignmentTestOuter;
+}
+
+union Union { BasicTypes, Location, stringValue:string }
+
+table UnionTable { 
+	Value:Union;
+}
+
+table VectorOfUnionTable {
+	Value:[Union];
 }

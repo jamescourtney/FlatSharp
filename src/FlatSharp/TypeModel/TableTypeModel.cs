@@ -29,7 +29,15 @@
     /// </summary>
     public class TableTypeModel : RuntimeTypeModel
     {
+        /// <summary>
+        /// Maps vtable index -> type model.
+        /// </summary>
         private readonly Dictionary<int, TableMemberModel> memberTypes = new Dictionary<int, TableMemberModel>();
+
+        /// <summary>
+        /// Contains the vtable indices that have already been occupied.
+        /// </summary>
+        private readonly HashSet<int> occupiedVtableSlots = new HashSet<int>();
 
         internal TableTypeModel(Type clrType) : base(clrType)
         {
@@ -51,6 +59,16 @@
         public override int InlineSize => sizeof(uint);
 
         /// <summary>
+        /// Tables can have vectors and other arbitrary data.
+        /// </summary>
+        public override bool IsFixedSize => false;
+
+        /// <summary>
+        /// Gets the maximum used index in this vtable.
+        /// </summary>
+        public int MaxIndex => this.occupiedVtableSlots.Max();
+
+        /// <summary>
         /// Maps the table index to the details about that member.
         /// </summary>
         public IReadOnlyDictionary<int, TableMemberModel> IndexToMemberMap => this.memberTypes;
@@ -59,6 +77,16 @@
         /// The default .ctor used for subclassing.
         /// </summary>
         public ConstructorInfo DefaultConstructor { get; private set; }
+        
+        /// <summary>
+        /// Gets the maximum size of a table assuming all members are populated include the vtable offset. 
+        /// Does not consider alignment of the table, but does consider worst-case alignment of the members.
+        /// </summary>
+        internal int NonPaddedMaxTableInlineSize
+        {
+            // add sizeof(int) for soffset_t to vtable.
+            get => this.IndexToMemberMap.Values.Sum(x => x.ItemTypeModel.MaxInlineSize) + sizeof(int);
+        }
 
         protected override void Initialize()
         {
@@ -111,9 +139,12 @@
                     hasDefaultValue,
                     defaultValue);
 
-                if (this.memberTypes.ContainsKey(index))
+                for (int i = 0; i < model.VTableSlotCount; ++i)
                 {
-                    throw new InvalidFlatBufferDefinitionException($"FlatBuffer Table {this.ClrType.Name} already defines a property with index {index}");
+                    if (!this.occupiedVtableSlots.Add(index + i))
+                    {
+                        throw new InvalidFlatBufferDefinitionException($"FlatBuffer Table {this.ClrType.Name} already defines a property with index {index}");
+                    }
                 }
 
                 this.memberTypes[index] = model;

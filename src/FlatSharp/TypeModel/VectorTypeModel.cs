@@ -14,7 +14,7 @@
  * limitations under the License.
  */
  
- namespace FlatSharp.TypeModel
+namespace FlatSharp.TypeModel
 {
     using System;
     using System.Collections.Generic;
@@ -50,6 +50,11 @@
         public override int InlineSize => sizeof(uint);
 
         /// <summary>
+        /// Vectors are arbitrary in length.
+        /// </summary>
+        public override bool IsFixedSize => false;
+
+        /// <summary>
         /// Gets the type model for this vector's elements.
         /// </summary>
         public RuntimeTypeModel ItemTypeModel => this.memberTypeModel;
@@ -73,6 +78,43 @@
         /// Indicates if this vector's type is read-only.
         /// </summary>
         public bool IsReadOnly => this.isReadOnly;
+
+        /// <summary>
+        /// Gets the size of each member of this vector, with padding for alignment.
+        /// </summary>
+        public int PaddedMemberInlineSize
+        {
+            get
+            {
+                int itemInlineSize = this.ItemTypeModel.InlineSize;
+                int itemAlignment = this.ItemTypeModel.Alignment;
+
+                return itemInlineSize + SerializationHelpers.GetAlignmentError(itemInlineSize, itemAlignment); 
+            }
+        }
+
+        internal string LengthPropertyName
+        {
+            get
+            {
+                if (this.IsArray)
+                {
+                    return nameof(Array.Length);
+                }
+                
+                if (this.IsList)
+                {
+                    return nameof(IList<string>.Count);
+                }
+
+                if (this.IsMemoryVector)
+                {
+                    return nameof(Memory<byte>.Length);
+                }
+
+                throw new InvalidOperationException("Unexpected type of vector.");
+            }
+        }
 
         protected override void Initialize()
         {
@@ -115,6 +157,11 @@
                 throw new InvalidFlatBufferDefinitionException("Vectors may not contain other vectors.");
             }
 
+            if (this.memberTypeModel.SchemaType == FlatBufferSchemaType.Union)
+            {
+                throw new InvalidFlatBufferDefinitionException("Vectors of unions are not supported.");
+            }
+
             if (this.isMemory)
             {
                 if (this.memberTypeModel.SchemaType != FlatBufferSchemaType.Scalar)
@@ -124,7 +171,8 @@
 
                 // We can play some tricks on little-endian machines that allow us to store other types inside our vectors.
                 // 1 byte types (bool, byte, sbyte) are always allowed. However, anything larger is subject to endianness issues.
-                if (this.memberTypeModel.InlineSize != 1 && !BitConverter.IsLittleEndian)
+                ScalarTypeModel scalarModel = (ScalarTypeModel)this.memberTypeModel;
+                if (!scalarModel.NativelyReadableFromMemory)
                 {
                     throw new InvalidFlatBufferDefinitionException("Memory<T> vectors may only use 1-byte sized elements on big-endian architectures. Consider using IList<T> instead.");
                 }

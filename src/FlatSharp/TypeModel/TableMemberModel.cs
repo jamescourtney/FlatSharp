@@ -59,5 +59,10 @@
         /// Indicates if this member type has a default value at all. Only valid for tables.
         /// </summary>
         public bool HasDefaultValue { get; }
+
+        /// <summary>
+        /// Indicates how "wide" this element is in the table's vtable. Unions consume 2 slots in the vtable right now.
+        /// </summary>
+        public int VTableSlotCount => this.ItemTypeModel.SchemaType == FlatBufferSchemaType.Union ? 2 : 1;
     }
 }

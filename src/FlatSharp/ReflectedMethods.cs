@@ -63,6 +63,7 @@ namespace FlatSharp
         // SerializationHelpers            
         public static readonly MethodInfo SerializationHelpers_GetAlignmentErrorMethod = GetMethod(typeof(SerializationHelpers), nameof(SerializationHelpers.GetAlignmentError));
         public static readonly MethodInfo SerializationHelpers_GetMaxSizeOfStringMethod = GetMethod(typeof(SerializationHelpers), nameof(SerializationHelpers.GetMaxSize));
+
         public static MethodInfo SerializationHelpers_EnsureNonNull(Type t) => GetMethod(typeof(SerializationHelpers), nameof(SerializationHelpers.EnsureNonNull)).MakeGenericMethod(t);
 
         private static MethodInfo GetMethod(Type type, string methodName, Type[] parameterTypes = null)
@@ -83,28 +84,6 @@ namespace FlatSharp
             }
 
             return methodInfo;
-        }
-
-        private static FieldInfo GetField(Type type, string fieldName)
-        {
-            FieldInfo fieldInfo = type.GetField(fieldName, AllFlags);
-            if (fieldInfo == null)
-            {
-                throw new MissingMemberException($"Can't find field {fieldName} on type {type}.");
-            }
-
-            return fieldInfo;
-        }
-
-        private static PropertyInfo GetPublicProperty(Type type, string propertyName)
-        {
-            PropertyInfo propertyInfo = type.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
-            if (propertyInfo == null)
-            {
-                throw new MissingMemberException($"Can't find public property {propertyName} on type {type}.");
-            }
-
-            return propertyInfo;
         }
     }
 }

@@ -18,6 +18,8 @@ namespace BenchmarkCore
 {
     using System;
     using System.Diagnostics;
+    using Benchmark.FBBench;
+    using FlatSharp;
     using FlatSharp.Attributes;
 
     [FlatBufferTable]
@@ -51,13 +53,17 @@ namespace BenchmarkCore
             b.TraversalCount = 5;
             b.VectorLength = 30;
             b.GlobalSetup();
+            Container = b.defaultContainer;
             sw.Stop();
 
-            Func<int>[] items = new Func<int>[]
+            var s = new ExperimentalBenchmark.Generated.Serializer();
+
+            Action[] items = new Action[]
             {
-                b.FlatSharp_GetMaxSize,
                 b.FlatSharp_Serialize,
-                b.FlatSharp_ParseAndTraverse_List,
+                SerializeManual,
+                //b.FlatSharp_Serialize_Unsafe,
+                // b.ZF_Serialize
             };
 
             for (int loop = 0; loop < 2; ++loop)
@@ -81,6 +87,18 @@ namespace BenchmarkCore
                     GC.Collect();
                 }
             }
+        }
+
+        private static readonly ExperimentalBenchmark.Generated.Serializer ManualSerializer = new ExperimentalBenchmark.Generated.Serializer();
+        private static readonly SpanWriter spanWriter = new SpanWriter();
+        private static readonly byte[] writeBuffer = new byte[128 * 1024];
+        private static FooBarListContainer Container;
+        private static readonly SerializationContext Context = new SerializationContext();
+
+        private static void SerializeManual()
+        {
+            Context.Reset(writeBuffer.Length);
+            ManualSerializer.Write(spanWriter, writeBuffer, Container, 0, Context);
         }
     }
 }

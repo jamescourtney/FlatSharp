@@ -24,7 +24,8 @@
     using System.Runtime.InteropServices;
 
     /// <summary>
-    /// Does oracle-based testing using Google's flatbuffers code.
+    /// Does oracle-based testing using Google's flatbuffers code. These tests all boil down to:
+    ///     Can we parse data we created using the official Google library?
     /// </summary>
     [TestClass]
     public partial class OracleDeserializeTests
@@ -32,17 +33,6 @@
         [TestMethod]
         public void SimpleTypes()
         {
-            Random r = new Random();
-
-            T GetRandom<T>() where T : struct
-            {
-                int bytes = Marshal.SizeOf<T>();
-                byte[] random = new byte[bytes];
-                r.NextBytes(random);
-
-                return MemoryMarshal.Cast<byte, T>(random)[0];
-            }
-
             var builder = new FlatBuffers.FlatBufferBuilder(1024);
             var fbOffset = Oracle.BasicTypes.CreateBasicTypes(
                 builder,
@@ -194,5 +184,161 @@
                 Assert.AreEqual((float)(3 * i + 3), parsed.LocationVector[i].Z);
             }
         }
+
+        [TestMethod]
+        public void FiveByteStructVector()
+        {
+            var builder = new FlatBuffers.FlatBufferBuilder(1024);
+            Oracle.FiveByteStructTable.StartVectorVector(builder, 3);
+            Oracle.FiveByteStruct.CreateFiveByteStruct(builder, 3, 3);
+            Oracle.FiveByteStruct.CreateFiveByteStruct(builder, 2, 2);
+            Oracle.FiveByteStruct.CreateFiveByteStruct(builder, 1, 1);
+            var vectorOffset = builder.EndVector();
+
+            Oracle.FiveByteStructTable.StartFiveByteStructTable(builder);
+            Oracle.FiveByteStructTable.AddVector(builder, vectorOffset);
+            var testData = Oracle.FiveByteStructTable.EndFiveByteStructTable(builder);
+
+            builder.Finish(testData.Value);
+
+            byte[] realBuffer = builder.SizedByteArray();
+            var parsed = FlatBufferSerializer.Default.Parse<FiveByteStructTable>(realBuffer);
+
+            Assert.AreEqual(3, parsed.Vector.Length);
+
+            Assert.AreEqual(1, parsed.Vector[0].Int);
+            Assert.AreEqual(2, parsed.Vector[1].Int);
+            Assert.AreEqual(3, parsed.Vector[2].Int);
+
+            Assert.AreEqual((byte)1, parsed.Vector[0].Byte);
+            Assert.AreEqual((byte)2, parsed.Vector[1].Byte);
+            Assert.AreEqual((byte)3, parsed.Vector[2].Byte);
+        }
+
+        [TestMethod]
+        public void Union_Table_BasicTypes()
+        {
+            var builder = new FlatBuffers.FlatBufferBuilder(1024);
+            var basicTypesOffset = Oracle.BasicTypes.CreateBasicTypes(
+                builder,
+                Bool: true,
+                Byte: GetRandom<byte>(),
+                SByte: GetRandom<sbyte>(),
+                UShort: GetRandom<ushort>(),
+                Short: GetRandom<short>(),
+                UInt: GetRandom<uint>(),
+                Int: GetRandom<int>(),
+                ULong: GetRandom<ulong>(),
+                Long: GetRandom<long>(),
+                Float: GetRandom<float>(),
+                Double: GetRandom<double>(),
+                StringOffset: builder.CreateString("foobar"));
+
+            var offset = Oracle.UnionTable.CreateUnionTable(
+                builder,
+                Oracle.Union.BasicTypes,
+                basicTypesOffset.Value);
+
+            builder.Finish(offset.Value);
+            byte[] realBuffer = builder.DataBuffer.ToSizedArray();
+
+            var oracle = Oracle.UnionTable.GetRootAsUnionTable(new FlatBuffers.ByteBuffer(realBuffer)).Value<Oracle.BasicTypes>().Value;
+            var unionTable = FlatBufferSerializer.Default.Parse<UnionTable>(realBuffer);
+
+            Assert.AreEqual(1, unionTable.Union.Discriminator);
+            BasicTypes parsed = unionTable.Union.Item1;
+            Assert.IsNotNull(parsed);
+
+            Assert.IsTrue(parsed.Bool);
+            Assert.AreEqual(oracle.Byte, parsed.Byte);
+            Assert.AreEqual(oracle.SByte, parsed.SByte);
+
+            Assert.AreEqual(oracle.UShort, parsed.UShort);
+            Assert.AreEqual(oracle.Short, parsed.Short);
+
+            Assert.AreEqual(oracle.UInt, parsed.UInt);
+            Assert.AreEqual(oracle.Int, parsed.Int);
+
+            Assert.AreEqual(oracle.ULong, parsed.ULong);
+            Assert.AreEqual(oracle.Long, parsed.Long);
+
+            Assert.AreEqual(oracle.Float, parsed.Float);
+            Assert.AreEqual(oracle.Double, parsed.Double);
+            Assert.AreEqual("foobar", parsed.String);
+        }
+
+        [TestMethod]
+        public void Union_Struct_Location()
+        {
+            var builder = new FlatBuffers.FlatBufferBuilder(1024);
+            var locationOffset = Oracle.Location.CreateLocation(
+                builder,
+                1.0f,
+                2.0f,
+                3.0f);
+
+            var offset = Oracle.UnionTable.CreateUnionTable(
+                builder,
+                Oracle.Union.Location,
+                locationOffset.Value);
+
+            builder.Finish(offset.Value);
+            byte[] realBuffer = builder.DataBuffer.ToSizedArray();
+            var unionTable = FlatBufferSerializer.Default.Parse<UnionTable>(realBuffer);
+
+            Assert.AreEqual(2, unionTable.Union.Discriminator);
+            Location parsed = unionTable.Union.Item2;
+            Assert.IsNotNull(parsed);
+
+            Assert.AreEqual(1.0f, parsed.X);
+            Assert.AreEqual(2.0f, parsed.Y);
+            Assert.AreEqual(3.0f, parsed.Z);
+        }
+
+        [TestMethod]
+        public void Union_String()
+        {
+            var builder = new FlatBuffers.FlatBufferBuilder(1024);
+            var stringOffset = builder.CreateString("foobar");
+
+            var offset = Oracle.UnionTable.CreateUnionTable(
+                builder,
+                Oracle.Union.stringValue,
+                stringOffset.Value);
+
+            builder.Finish(offset.Value);
+            byte[] realBuffer = builder.DataBuffer.ToSizedArray();
+            var unionTable = FlatBufferSerializer.Default.Parse<UnionTable>(realBuffer);
+
+            Assert.AreEqual(3, unionTable.Union.Discriminator);
+            string parsed = unionTable.Union.Item3;
+            Assert.AreEqual("foobar", parsed);
+        }
+
+        [TestMethod]
+        public void Union_NotSet()
+        {
+            var builder = new FlatBuffers.FlatBufferBuilder(1024);
+
+            var offset = Oracle.UnionTable.CreateUnionTable(builder);
+
+            builder.Finish(offset.Value);
+            byte[] realBuffer = builder.DataBuffer.ToSizedArray();
+
+            var unionTable = FlatBufferSerializer.Default.Parse<UnionTable>(realBuffer);
+            Assert.IsNull(unionTable.Union);
+        }
+
+        private static readonly Random Random = new Random();
+
+        private static T GetRandom<T>() where T : struct
+        {
+            int bytes = Marshal.SizeOf<T>();
+            byte[] random = new byte[bytes];
+            Random.NextBytes(random);
+
+            return MemoryMarshal.Cast<byte, T>(random)[0];
+        }
+
     }
 }
