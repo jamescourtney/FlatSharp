@@ -66,17 +66,9 @@ namespace FlatSharp
 
         public static MethodInfo SerializationHelpers_EnsureNonNull(Type t) => GetMethod(typeof(SerializationHelpers), nameof(SerializationHelpers.EnsureNonNull)).MakeGenericMethod(t);
 
-        private static MethodInfo GetMethod(Type type, string methodName, Type[] parameterTypes = null)
+        private static MethodInfo GetMethod(Type type, string methodName)
         {
-            MethodInfo methodInfo;
-            if (parameterTypes == null)
-            {
-                methodInfo = type.GetMethod(methodName, AllFlags);
-            }
-            else
-            {
-                methodInfo = type.GetMethod(methodName, AllFlags, null, parameterTypes, null);
-            }
+            MethodInfo methodInfo = type.GetMethod(methodName, AllFlags);
 
             if (methodInfo == null)
             {

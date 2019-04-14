@@ -498,8 +498,7 @@ namespace FlatSharpTests
         [FlatBufferTable]
         public class RootTable2<TVector>
         {
-            [FlatBufferItem(0)]
-            [DefaultValue((byte)201)]
+            [FlatBufferItem(0, DefaultValue = (byte)201)]
             public virtual byte AlignmentImp { get; set; }
 
             [FlatBufferItem(1)]

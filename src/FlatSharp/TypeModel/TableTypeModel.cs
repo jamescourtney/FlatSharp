@@ -104,7 +104,6 @@
                 {
                     Property = x,
                     Attribute = x.GetCustomAttribute<FlatBufferItemAttribute>(),
-                    DefaultValue = x.GetCustomAttribute<DefaultValueAttribute>(),
                 })
                 .Where(x => x.Attribute != null)
                 .Where(x => !x.Attribute.Deprecated)
@@ -112,7 +111,6 @@
                 {
                     x.Property,
                     x.Attribute,
-                    x.DefaultValue,
                     ItemTypeModel = RuntimeTypeModel.CreateFrom(x.Property.PropertyType),
                 })
                 .ToList();
@@ -123,10 +121,10 @@
                 bool hasDefaultValue = false;
                 object defaultValue = null;
 
-                if (property.DefaultValue != null)
+                if (!object.ReferenceEquals(property.Attribute.DefaultValue, null))
                 {
                     hasDefaultValue = true;
-                    defaultValue = property.DefaultValue.Value;
+                    defaultValue = property.Attribute.DefaultValue;
                 }
                 
                 ushort index = property.Attribute.Index;

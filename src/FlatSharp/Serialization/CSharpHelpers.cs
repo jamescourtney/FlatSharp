@@ -72,34 +72,66 @@ namespace FlatSharp
         internal static string GetDefaultValueToken(TableMemberModel memberModel)
         {
             var itemTypeModel = memberModel.ItemTypeModel;
+            var clrType = itemTypeModel.ClrType;
 
             string defaultValue = $"default({GetCompilableTypeName(memberModel.ItemTypeModel.ClrType)})";
             if (memberModel.HasDefaultValue)
             {
                 string literalSpecifier = string.Empty;
+                string cast = string.Empty;
+                string defaultValueLiteral = memberModel.DefaultValue.ToString();
 
-                if (itemTypeModel.ClrType == typeof(float))
+                if (clrType == typeof(bool))
+                {
+                    // Bool.ToString() returns 'True', which is not the right keyword.
+                    defaultValueLiteral = defaultValueLiteral.ToLower();
+                }
+                else if (clrType == typeof(sbyte))
+                {
+                    cast = "(sbyte)";
+                }
+                else if (clrType == typeof(byte))
+                {
+                    cast = "(byte)";
+                }
+                else if (clrType == typeof(short))
+                {
+                    cast = "(short)";
+                }
+                else if (clrType == typeof(ushort))
+                {
+                    cast = "(ushort)";
+                }
+                else if (clrType == typeof(float))
                 {
                     literalSpecifier = "f";
                 }
-                else if (itemTypeModel.ClrType == typeof(uint))
+                else if (clrType == typeof(uint))
                 {
-                    literalSpecifier = "U";
+                    literalSpecifier = "u";
                 }
-                else if (itemTypeModel.ClrType == typeof(double))
+                else if (clrType == typeof(int))
+                {
+                    cast = "(int)";
+                }
+                else if (clrType == typeof(double))
                 {
                     literalSpecifier = "d";
                 }
-                else if (itemTypeModel.ClrType == typeof(long))
+                else if (clrType == typeof(long))
                 {
                     literalSpecifier = "L";
                 }
-                else if (itemTypeModel.ClrType == typeof(ulong))
+                else if (clrType == typeof(ulong))
                 {
-                    literalSpecifier = "UL";
+                    literalSpecifier = "ul";
+                }
+                else
+                {
+                    throw new InvalidOperationException("Unexpected default value type: " + clrType.FullName);
                 }
 
-                defaultValue = $"{memberModel.DefaultValue}{literalSpecifier}";
+                defaultValue = $"{cast}{defaultValueLiteral}{literalSpecifier}";
             }
 
             return defaultValue;
