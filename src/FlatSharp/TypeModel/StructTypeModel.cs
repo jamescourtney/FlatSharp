@@ -18,6 +18,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel;
     using System.Linq;
     using System.Reflection;
     using FlatSharp.Attributes;
@@ -104,6 +105,11 @@
                 if (index != expectedIndex)
                 {
                     throw new InvalidFlatBufferDefinitionException($"FlatBuffer struct {this.ClrType.Name} does not declare an item with index {expectedIndex}. Structs must have sequenential indexes starting at 0.");
+                }
+
+                if (!object.ReferenceEquals(propertyAttribute.DefaultValue, null))
+                {
+                    throw new InvalidFlatBufferDefinitionException($"FlatBuffer struct {this.ClrType.Name} declares default value on {expectedIndex}. Structs may not have default values.");
                 }
 
                 expectedIndex++;

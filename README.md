@@ -36,12 +36,10 @@ public class MonsterTable
     [FlatBufferItem(0)]
     public virtual Position Position { get; set; }
     
-    [FlatBufferItem(1)]
-    [DefaultValue((short)150)]
+    [FlatBufferItem(1, DefaultValue = (short)150)]
     public virtual short Mana { get; set; }
     
-    [FlatBufferItem(2)]
-    [DefaultValue((short)100)]
+    [FlatBufferItem(2, DefaultValue = (short)100)]
     public virtual short HP { get; set; }
     
     [FlatBufferItem(3)]
@@ -59,8 +57,7 @@ public class MonsterTable
     // Note that that the next index starts at 8. Unions are 'double-wide' types, so the previous
     // element occupies indices 6 and 7!
     
-    [FlatBufferItem(8)]
-    [DefaultValue((int)Color.Blue)]
+    [FlatBufferItem(8, DefaultValue = (int)Color.Blue)]
     public virtual int RawColor { get; set; }
     
     // Expressing enums still possible.

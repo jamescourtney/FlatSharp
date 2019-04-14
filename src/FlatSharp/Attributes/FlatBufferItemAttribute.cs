@@ -42,5 +42,11 @@ namespace FlatSharp.Attributes
         /// For tables, indicates if this field is deprecated. Deprecated fields are not written or read.
         /// </summary>
         public bool Deprecated { get; set; }
+
+        /// <summary>
+        /// For table items, gets or sets the default value. The type of the object must match the
+        /// type of the property.
+        /// </summary>
+        public object DefaultValue { get; set; }
     }
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
- namespace FlatSharpTests
+namespace FlatSharpTests
 {
     using FlatSharp;
     using FlatSharp.Attributes;
@@ -23,17 +23,24 @@
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.Runtime.InteropServices;
-    
+
     /// <summary>
     /// Tests default values on a table.
     /// </summary>
     [TestClass]
     public class DefaultValueTests
     {
-        [TestMethod]
-        public void Read_DefaultValues()
+        private static byte[] EmptyTable =
         {
-            // hand-craft a table here:
+            4, 0, 0, 0,           // uoffset to the start of the table.
+            252, 255, 255, 255,   // soffset_t to the vtable
+            4, 0,                 // vtable size
+            4, 0,                 // table length
+        };
+
+        [TestMethod]
+        public void Read_AllDefaultValues()
+        {
             byte[] data =
             {
                 4, 0, 0, 0,           // uoffset to the start of the table.
@@ -42,57 +49,82 @@
                 4, 0,                 // table length
             };
 
-            var parsed = FlatBufferSerializer.Default.Parse<DefaultValueTable>(data);
+            var parsed = FlatBufferSerializer.Default.Parse<AllDefaultValueTypes>(data);
 
-            Assert.AreEqual(5, parsed.Int);
-            Assert.AreEqual((short)6, parsed.Short);
-            Assert.AreEqual(3.14159f, parsed.Float);
-
-            byte[] serialized = new byte[128];
-            int bytesWritten = FlatBufferSerializer.Default.Serialize(parsed, serialized.AsSpan());
-
-            Assert.AreEqual(Convert.ToBase64String(data), Convert.ToBase64String(serialized, 0, bytesWritten));
+            Assert.IsTrue(parsed.Bool);
+            Assert.AreEqual((byte)1, parsed.Byte);
+            Assert.AreEqual((sbyte)-1, parsed.SByte);
+            Assert.AreEqual(ushort.MaxValue, parsed.UShort);
+            Assert.AreEqual(short.MinValue, parsed.Short);
+            Assert.AreEqual(uint.MaxValue, parsed.UInt);
+            Assert.AreEqual(int.MinValue, parsed.Int);
+            Assert.AreEqual(3.14f, parsed.Float);
+            Assert.AreEqual(ulong.MaxValue, parsed.ULong);
+            Assert.AreEqual(long.MinValue, parsed.Long);
+            Assert.AreEqual(3.14159d, parsed.Double);
         }
 
         [TestMethod]
-        public void Write_DefaultValues()
+        public void Write_AllDefaultValues()
         {
-            // hand-craft a table here:
-            byte[] data =
+            var all = new AllDefaultValueTypes()
             {
-                4, 0, 0, 0,           // uoffset to the start of the table.
-                252, 255, 255, 255,   // soffset_t to the vtable
-                4, 0,                 // vtable size
-                4, 0,                 // table length
+                Bool = true,
+                Byte = 1,
+                SByte = -1,
+                UShort = ushort.MaxValue,
+                Short = short.MinValue,
+                UInt = uint.MaxValue,
+                Int = int.MinValue,
+                Float = 3.14f,
+                ULong = ulong.MaxValue,
+                Long = long.MinValue,
+                Double = 3.14159d,
             };
 
-            var table = new DefaultValueTable
-            {
-                Int = 5,
-                Short = 6,
-                Float = 3.14159f
-            };
+            Span<byte> buffer = new byte[100];
+            int count = FlatBufferSerializer.Default.Serialize(all, buffer);
 
-            Span<byte> span = new byte[100];
-            int bytesWritten = FlatBufferSerializer.Default.Serialize(table, span);
+            buffer = buffer.Slice(0, count);
 
-            Assert.AreEqual(Convert.ToBase64String(data), Convert.ToBase64String(span.Slice(0, bytesWritten).ToArray()));
+            Assert.IsTrue(buffer.SequenceEqual(EmptyTable));
         }
 
         [FlatBufferTable]
-        public class DefaultValueTable
+        public class AllDefaultValueTypes
         {
-            [FlatBufferItem(0)]
-            [DefaultValue(5)]
-            public virtual int Int { get; set; }
+            [FlatBufferItem(0, DefaultValue = true)]
+            public virtual bool Bool { get; set; }
 
-            [FlatBufferItem(1)]
-            [DefaultValue((short)6)]
+            [FlatBufferItem(1, DefaultValue = (byte)1)]
+            public virtual byte Byte { get; set; }
+
+            [FlatBufferItem(2, DefaultValue = (sbyte)-1)]
+            public virtual sbyte SByte { get; set; }
+
+            [FlatBufferItem(3, DefaultValue = ushort.MaxValue)]
+            public virtual ushort UShort { get; set; }
+
+            [FlatBufferItem(4, DefaultValue = short.MinValue)]
             public virtual short Short { get; set; }
 
-            [FlatBufferItem(2)]
-            [DefaultValue((float)3.14159)]
+            [FlatBufferItem(5, DefaultValue = uint.MaxValue)]
+            public virtual uint UInt { get; set; }
+
+            [FlatBufferItem(6, DefaultValue = int.MinValue)]
+            public virtual int Int { get; set; }
+
+            [FlatBufferItem(7, DefaultValue = 3.14f)]
             public virtual float Float { get; set; }
+
+            [FlatBufferItem(8, DefaultValue = ulong.MaxValue)]
+            public virtual ulong ULong { get; set; }
+
+            [FlatBufferItem(9, DefaultValue = long.MinValue)]
+            public virtual long Long { get; set; }
+
+            [FlatBufferItem(10, DefaultValue = 3.14159d)]
+            public virtual double Double { get; set; }
         }
     }
 }

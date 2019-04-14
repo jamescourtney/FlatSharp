@@ -17,6 +17,7 @@
  namespace FlatSharpTests
 {
     using FlatSharp;
+    using FlatSharp.Unsafe;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using System;
     using System.Runtime.InteropServices;
@@ -29,7 +30,18 @@
     public partial class OracleSerializeTests
     {
         [TestMethod]
-        public void SimpleTypes()
+        public void SimpleTypes_SafeSpanWriter()
+        {
+            this.SimpleTypesTest(new SpanWriter());
+        }
+
+        [TestMethod]
+        public void SimpleTypes_UnsafeSpanWriter()
+        {
+            this.SimpleTypesTest(new UnsafeSpanWriter());
+        }
+
+        private void SimpleTypesTest(SpanWriter writer)
         {
             var simple = new BasicTypes
             {
@@ -48,7 +60,7 @@
             };
 
             Span<byte> memory = new byte[10240];
-            int size = FlatBufferSerializer.Default.Serialize(simple, memory);
+            int size = FlatBufferSerializer.Default.Serialize(simple, memory, writer);
 
             var oracle = Oracle.BasicTypes.GetRootAsBasicTypes(
                 new FlatBuffers.ByteBuffer(memory.Slice(0, size).ToArray()));

@@ -40,7 +40,7 @@ namespace Benchmark.FBBench
     //[MemoryDiagnoser]
     public class Google_FBBench
     {
-        [Params(3)]
+        [Params(3, 30)]
         public int VectorLength;
 
         [Params(1, 5)]
