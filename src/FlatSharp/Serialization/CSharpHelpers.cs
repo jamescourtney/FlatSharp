@@ -112,6 +112,7 @@ namespace FlatSharp
                 }
                 else if (clrType == typeof(int))
                 {
+                    // shouldn't need this one, but let's be thorough.
                     cast = "(int)";
                 }
                 else if (clrType == typeof(double))

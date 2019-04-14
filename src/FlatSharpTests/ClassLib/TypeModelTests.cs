@@ -125,6 +125,13 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
+        public void TypeModel_Struct_DefaultValue()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(StructWithDefaultValue)));
+        }
+
+        [TestMethod]
         public void TypeModel_Vector_VectorNotAllowed()
         {
             Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
@@ -358,6 +365,13 @@ namespace FlatSharpTests
         {
             [FlatBufferItem(0)]
             public abstract T Value { get; set; }
+        }
+
+        [FlatBufferStruct]
+        public class StructWithDefaultValue
+        {
+            [FlatBufferItem(0, DefaultValue = 100)]
+            public virtual int Int { get; set; }
         }
 
         [FlatBufferStruct]
