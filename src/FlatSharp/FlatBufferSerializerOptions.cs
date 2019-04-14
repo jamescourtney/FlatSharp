@@ -24,16 +24,29 @@
         /// <summary>
         /// Creates a new instance of FlatBufferSerializer options.
         /// </summary>
-        /// <param name="cacheListVectorData">Indicates that IList vectors should have their reads progressively cached.</param>
-        /// <param name="useCheckedOperations">
-        /// Indicates that FlatSharp should generate unchecked operations. 
-        /// This can result in a nominal performance increase, but most overflows will not be caught. Note that
-        /// this does not affect bounds checking.
+        /// <param name="cacheListVectorData">
+        /// Indicates that IList vectors should have their reads progressively cached.
+        /// </param>
+        /// <param name="generateMutableObjects">
+        /// Indicates that deserialzied objects should be mutable. The semantics of mutability 
+        /// are "copy on write", which means that the modified data is stored in memory independently 
+        /// of the input buffer.
+        /// </param>
+        /// <param name="greedyDeserialize">
+        /// Indicates if deserialization should be done greedily. 
+        /// This option has similar performance as the <paramref name="cacheListVectorData"/> option, 
+        /// assuming a full traversal of the object graph. The main use case of this option is to
+        /// immediately release the reference to the input buffer, such that the calling application
+        /// can more effectively pool or recycle the buffer.
         /// </param>
         public FlatBufferSerializerOptions(
-            bool cacheListVectorData = false)
+            bool cacheListVectorData = false,
+            bool generateMutableObjects = false,
+            bool greedyDeserialize = false)
         {
             this.CacheListVectorData = cacheListVectorData;
+            this.GenerateMutableObjects = generateMutableObjects;
+            this.GreedyDeserialize = greedyDeserialize;
         }
 
         /// <summary>
@@ -41,5 +54,16 @@
         /// on deserializing, but will improve performance in cases of duplicate accesses to the same indices.
         /// </summary>
         public bool CacheListVectorData { get; }
+        
+        /// <summary>
+        /// Indicates if the serializer should generate mutable objects. Mutable objects are "copy-on-write"
+        /// and do not modify the underlying buffer.
+        /// </summary>
+        public bool GenerateMutableObjects { get; }
+
+        /// <summary>
+        /// Indicates if deserialization should be greedy. Setting this 
+        /// </summary>
+        public bool GreedyDeserialize { get; }
     }
 }

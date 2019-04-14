@@ -73,10 +73,14 @@ namespace FlatSharp
                 MetadataReference.CreateFromFile(typeof(IList<byte>).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(SerializationContext).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(TRoot).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(List<int>).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(System.Collections.ArrayList).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(ValueType).Assembly.Location),
                 MetadataReference.CreateFromFile(Assembly.Load("netstandard").Location),
                 MetadataReference.CreateFromFile(typeof(System.IO.InvalidDataException).Assembly.Location),
                 MetadataReference.CreateFromFile(Assembly.Load("System.Runtime").Location),
+                MetadataReference.CreateFromFile(Assembly.Load("System.Collections").Location),
             };
 
             string template =
@@ -85,6 +89,7 @@ $@"
             {{
                 using System;
                 using System.Collections.Generic;
+                using System.Linq;
                 using System.Runtime.CompilerServices;
                 using FlatSharp;
                 
@@ -94,7 +99,6 @@ $@"
                 }}
             }}
 ";
-
             var node = CSharpSyntaxTree.ParseText(template, ParseOptions);
 
             Func<string> formattedTextFactory = () =>

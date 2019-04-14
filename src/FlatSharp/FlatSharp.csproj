@@ -34,7 +34,7 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="2.9.0" />
     <PackageReference Include="Microsoft.Net.Compilers" Version="2.9.0">
       <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+      <IncludeAssets>runtime</IncludeAssets>
     </PackageReference>
     <PackageReference Include="System.Memory" Version="4.5.1" />
   </ItemGroup>

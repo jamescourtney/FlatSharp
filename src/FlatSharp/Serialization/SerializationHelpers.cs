@@ -16,6 +16,7 @@
 
 namespace FlatSharp
 {
+    using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
     using System.Runtime.CompilerServices;
@@ -70,6 +71,23 @@ namespace FlatSharp
             {
                 throw new InvalidDataException("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.");
             }
+        }
+
+        /// <summary>
+        /// Efficiently converts a <see cref="FlatBufferVector{T}"/> object
+        /// into a <see cref="List{T}"/>.
+        /// </summary>
+        public static List<T> FlatBufferVectorToList<T>(this FlatBufferVector<T> vector)
+        {
+            int count = vector.Count;
+
+            var list = new List<T>(count);
+            for (int i = 0; i < count; ++i)
+            {
+                list.Add(vector[i]);
+            }
+
+            return list;
         }
     }
 }

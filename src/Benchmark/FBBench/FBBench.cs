@@ -33,9 +33,16 @@ namespace Benchmark.FBBench
     using FlatSharp.Unsafe;
     using ProtoBuf;
 
-    [CoreJob]
+    public enum FlatSharpParseProfile
+    {
+        None = 0,
+        VectorCache = 1,
+        GreedyParse = 2,
+    }
+
+    //[CoreJob]
     [RPlotExporter]
-    //[ShortRunJob]
+    [ShortRunJob]
     //[InProcess]
     //[MemoryDiagnoser]
     public class Google_FBBench
@@ -46,9 +53,11 @@ namespace Benchmark.FBBench
         [Params(1, 5)]
         public int TraversalCount;
 
+
+
 #if FLATSHARP
-        [Params(false, true)]
-        public bool FlatSharpVectorCache;
+        [Params(FlatSharpParseProfile.None, FlatSharpParseProfile.VectorCache, FlatSharpParseProfile.GreedyParse)]
+        public FlatSharpParseProfile ParseProfile;
 #endif
 
         private FlatBufferBuilder google_flatBufferBuilder = new FlatBufferBuilder(64 * 1024);
@@ -116,7 +125,11 @@ namespace Benchmark.FBBench
 
 #if FLATSHARP
             {
-                this.fs_serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions(cacheListVectorData: this.FlatSharpVectorCache));
+                var options = new FlatBufferSerializerOptions(
+                    cacheListVectorData: this.ParseProfile == FlatSharpParseProfile.VectorCache,
+                    greedyDeserialize: this.ParseProfile == FlatSharpParseProfile.GreedyParse);
+
+                this.fs_serializer = new FlatBufferSerializer(options);
                 int offset = this.fs_serializer.Serialize(this.defaultContainer, this.fs_writeMemory);
                 this.fs_readMemory = this.fs_writeMemory.AsSpan(0, offset).ToArray();
                 this.FlatSharp_ParseAndTraverse_SafeMem();

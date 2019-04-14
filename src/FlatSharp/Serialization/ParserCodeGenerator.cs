@@ -18,6 +18,7 @@ namespace FlatSharp
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Reflection;
     using FlatSharp.TypeModel;
     using Microsoft.CodeAnalysis;
@@ -131,7 +132,20 @@ namespace FlatSharp
                     string setter = string.Empty;
                     if (!value.IsReadOnly)
                     {
-                        setter = "set { throw new NotMutableException(); }";
+                        if (this.options.GenerateMutableObjects)
+                        {
+                            setter = 
+$@"
+                            set {{
+                                this.{valueFieldName} = value;
+                                this.{hasValueFieldName} = true;
+                            }}
+";
+                        }
+                        else
+                        {
+                            setter = "set { throw new NotMutableException(); }";
+                        }
                     }
 
                     string @override =
@@ -144,6 +158,18 @@ $@"
 ";
 
                     propertyOverrides.Add(@override);
+                }
+
+                string greedyInitBody = "return false;";
+
+                if (this.options.GreedyDeserialize)
+                {
+                    // Declare greedy references and return true.
+                    greedyInitBody = string.Join(
+                        "\r\n",
+                        typeModel.IndexToMemberMap.Select(kvp =>
+                            $"var v{kvp.Key} = this.{kvp.Value.PropertyInfo.Name};")
+                        .Concat(new[] { "return true;" }));
                 }
 
                 string classDefinition =
@@ -159,6 +185,16 @@ $@"
                     {{
                         this.buffer = buffer;
                         this.offset = offset;
+                        if (this.GreedyInitialize())
+                        {{
+                            this.buffer = null;
+                            this.offset = -1;
+                        }}
+                    }}
+
+                    private bool GreedyInitialize()
+                    {{
+                        {greedyInitBody}
                     }}
 
                     {string.Join("\r\n", propertyOverrides)}
@@ -315,7 +351,14 @@ $@"
                     string setter = string.Empty;
                     if (!value.IsReadOnly)
                     {
-                        setter = "set { throw new NotMutableException(); }";
+                        if (this.options.GenerateMutableObjects)
+                        {
+                            setter = $"set {{ this.{valueFieldName} = value; this.{hasValueFieldName} = true; }}";
+                        }
+                        else
+                        {
+                            setter = "set { throw new NotMutableException(); }";
+                        }
                     }
 
                     string @override =
@@ -328,6 +371,16 @@ $@"
 ";
 
                     propertyOverrides.Add(@override);
+                }
+
+                string greedyInitBody = "return false;";
+                if (this.options.GreedyDeserialize)
+                {
+                    greedyInitBody = string.Join(
+                        "\r\n",
+                        typeModel.Members.Select(memberModel =>
+                            $"var v{memberModel.Index} = this.{memberModel.PropertyInfo.Name};")
+                        .Concat(new[] { "return true;" }));
                 }
 
                 string classDefinition =
@@ -343,6 +396,16 @@ $@"
                     {{
                         this.buffer = buffer;
                         this.offset = offset;
+                        if (this.GreedyInit())
+                        {{
+                            this.buffer = null;
+                            this.offset = -1;
+                        }}
+                    }}
+
+                    private bool GreedyInit()
+                    {{
+                        {greedyInitBody}
                     }}
 
                     {string.Join("\r\n", propertyOverrides)}
@@ -355,25 +418,49 @@ $@"
 
         private void ImplementMemoryVectorReadMethod(VectorTypeModel typeModel)
         {
-            string readMethodName = this.MethodNames[typeModel.ClrType];
             string invocation = $"{nameof(InputBuffer.ReadMemoryBlock)}<{CSharpHelpers.GetCompilableTypeName(typeModel.ItemTypeModel.ClrType)}>";
             if (typeModel.ItemTypeModel.ClrType == typeof(byte))
             {
                 invocation = nameof(InputBuffer.ReadByteMemoryBlock);
             }
 
-            this.GenerateMethodDefinition(typeModel.ClrType, $"return memory.{invocation}(offset, {typeModel.ItemTypeModel.InlineSize});");
+            string body = $"memory.{invocation}(offset, {typeModel.ItemTypeModel.InlineSize})";
+
+            // Greedy deserialize has the invariant that we no longer touch the
+            // original buffer. This means a memory copy here.
+            if (this.options.GreedyDeserialize)
+            {
+                // new Memory<T>(memory.ToArray())
+                body = $"new Memory<{CSharpHelpers.GetCompilableTypeName(typeModel.ItemTypeModel.ClrType)}>({body}.ToArray())";
+            }
+
+            this.GenerateMethodDefinition(typeModel.ClrType, $"return {body};");
         }
 
         private void ImplementListVectorReadMethod(VectorTypeModel typeModel)
         {
+            bool greedy = this.options.GreedyDeserialize || this.options.GenerateMutableObjects;
+
             string kindToCreate = nameof(FlatBufferVector<byte>);
-            if (this.options.CacheListVectorData)
+            if (!greedy && this.options.CacheListVectorData)
             {
                 kindToCreate = nameof(FlatBufferCacheVector<byte>);
             }
 
-            this.GenerateMethodDefinition(typeModel.ClrType, $"return {this.CreateFlatBufferVector(typeModel, kindToCreate)};");
+            string body = this.CreateFlatBufferVector(typeModel, kindToCreate);
+            if (greedy)
+            {
+                // Greedy => we just convert to a list in line.
+                body += $".{nameof(SerializationHelpers.FlatBufferVectorToList)}()";
+                if (!this.options.GenerateMutableObjects)
+                {
+                    // If not mutable, then we can make it a read only collection, which implements
+                    // IReadOnlyList and IList.
+                    body += ".AsReadOnly()";
+                }
+            }
+
+            this.GenerateMethodDefinition(typeModel.ClrType, $"return {body};");
         }
 
         private void ImplementArrayVectorReadMethod(VectorTypeModel typeModel)
