@@ -122,6 +122,24 @@ public int GetBufferSize(MonsterTable monster)
 }
 ```
 
+#### Serializer Options and Default Behaviors
+FlatSharp does not expose any special options for the serialization flow; the binary format is the binary format, and isn't customizable. However, there are some knobs to tune on the deserialization flows. 
+
+The default behavior of the FlatSharp parser is to:
+- Store a reference to the input buffer.
+- Lazily cache all table and struct members as they are accessed. Properties are not deserialized until they are read, but the same instance is returned each time following the initial read. There is not much memory overhead here since tables and structs have a fixed size, and the performance gain is nontrivial.
+- Read all vector data from the buffer each time. Vectors can be arbitrarily long, and the decision about whether to make a copy of that should be left to the consumers of the library. 
+- Disallow any mutations to any deserialized data (with the exception of ```Memory<T>```, which can't be prevented).
+
+These behaviors can be changed by specifying your own ```FlatBufferSerializerOptions``` class, which can be passed into the ```FlatBufferSerializer``` constructor.
+
+The options are:
+- ```CacheListVectorData```: Allocate extra arrays when reading an ```IList<T>``` vector and use a progressive cache like FlatSharp does with conventional properties. This increases the memory footprint of your object, but for situations where you will iterate over a vector multiple times, this becomes a useful optimization.
+- ```GenerateMutableObjects```: All objects returned from FlatSharp will be mutable, where allowable. Mutations to objects are never stored back into the original buffer, but are instead stored in Memory using "Copy On Write" semantics. Note that this implies a greedy deserialization for all vector types since vectors must support Add/Clear/RemoveAt semantics. When this option is enabled, FlatSharp provides the invariant that the original buffer is not modified. Any changes will require a re-serialization.
+- ```GreedyDeserialize```: At parse time, the entire object graph is traversed and the contents are copied into the class structure. This option has roughly the same performance as the ```CacheListVectorData``` option above, but provides the guarantee that the original buffer will not be referenced by FlatSharp and can be recycled / used for other purposes.
+
+These options may all be safely used together, though it is recommended to not use ```CacheListVectorData``` and ```GreedyDeserialize``` together as that will introduce extra memory allocations.
+
 ### Internals
 FlatSharp works by generating dynamic subclasses of your data contracts based on the schema that you define, which is why they must be public and virtual. That is, when you attempt to deserialize a ```MonsterTable``` object, you actually get back a dynamic subclass of ```MonsterTable```, which has properties defined in such a way as to index into the buffer. When a FlatSharp object reads a value for it, it goes ahead and makes a copy of that value so that it does not need to consult the original buffer again.
 
@@ -139,7 +157,7 @@ public void ReadMonster(byte[] monsterBuffer)
   Console.WriteLine($"{monster.Position.X}, {monster.Position.Y}, {monster.Position.Z}");
 }
 ```
-Therefore, to use FlatSharp effectively, you must do so with buffer lifecycle management in mind. The simplest way to accomplish is to just let the GC take care of it for you. However, in scenarios where buffers are pooled, lifecycle management becomes important.
+Therefore, to use FlatSharp effectively, you must do so with buffer lifecycle management in mind. The simplest way to accomplish is to just let the GC take care of it for you. However, in scenarios where buffers are pooled, lifecycle management becomes important. The ```FlatBufferSerializerOptions.GreedyDeserialize``` option (documented above) can prevent this entire class of issue, at the cost of extra allocations.
 
 ### Security
 Serializers are a common vector for security issues. FlatSharp takes the following approach to security:
