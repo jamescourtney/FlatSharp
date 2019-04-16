@@ -192,7 +192,6 @@ The benchmarks test 4 different serialization frameworks:
 ![image](doc/Deserialization_5_Traversal.png)
 
 ### Roadmap
-- Support for property setters and mutable types.
 - Security hardening and fuzzing
 - Code gen based on FBS schema files
 - GRPC support
