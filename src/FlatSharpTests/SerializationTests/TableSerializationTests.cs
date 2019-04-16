@@ -21,6 +21,7 @@ namespace FlatSharpTests
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Runtime;
     using System.Runtime.CompilerServices;
     using System.Text;
     using FlatSharp;
@@ -117,6 +118,98 @@ namespace FlatSharpTests
 
             int bytesWritten = FlatBufferSerializer.Default.Serialize(table, buffer);
             Assert.IsTrue(expectedData.AsSpan().SequenceEqual(buffer.AsSpan().Slice(0, bytesWritten)));
+        }
+
+        [TestMethod]
+        public void TableParse_NotMutable()
+        {
+            var options = new FlatBufferSerializerOptions(generateMutableObjects: false, greedyDeserialize: false);
+            var table = this.SerializeAndParse(options, out _);
+
+            Assert.ThrowsException<NotMutableException>(() => table.String = null);
+            Assert.ThrowsException<NotMutableException>(() => table.Struct = null);
+            Assert.ThrowsException<NotMutableException>(() => table.StructVector = new List<SimpleStruct>());
+            Assert.ThrowsException<NotSupportedException>(() => table.StructVector.Add(null));
+        }
+
+        [TestMethod]
+        public void TableParse_LazyMutable()
+        {
+            var options = new FlatBufferSerializerOptions(generateMutableObjects: true, greedyDeserialize: false);
+            var table = this.SerializeAndParse(options, out _);
+            
+            var newString = Guid.NewGuid().ToString();
+            table.String = newString;
+            Assert.AreEqual(newString, table.String);
+
+            var newLong = DateTimeOffset.UtcNow.Ticks;
+            table.Struct.Long = newLong;
+            Assert.AreEqual(newLong, table.Struct.Long);
+
+            var newStruct = new SimpleStruct();
+            table.Struct = newStruct;
+            Assert.AreEqual(newStruct, table.Struct);
+
+            Assert.AreEqual(typeof(List<SimpleStruct>), table.StructVector.GetType());
+            int count = table.StructVector.Count;
+            table.StructVector.Add(new SimpleStruct());
+            Assert.AreEqual(count + 1, table.StructVector.Count);
+        }
+
+        [TestMethod]
+        public void TableParse_GreedyImmutable()
+        {
+            var options = new FlatBufferSerializerOptions(generateMutableObjects: false, greedyDeserialize: true);
+            var table = this.SerializeAndParse(options, out var buffer);
+
+            bool reaped = false;
+            for (int i = 0; i < 5; ++i)
+            {
+                GC.Collect(2, GCCollectionMode.Forced);
+                GCSettings.LatencyMode = GCLatencyMode.Batch;
+                if (!buffer.TryGetTarget(out _))
+                {
+                    reaped = true;
+                    break;
+                }
+            }
+
+            Assert.IsTrue(reaped, "GC did not reclaim underlying byte buffer.");
+
+            // The buffer has been collected. Now verify that we can read all the data as
+            // we expect. This demonstrates that we've copied, as well as that we've 
+            // released references.
+            Assert.IsNotNull(table.String);
+            Assert.IsNotNull(table.Struct);
+            Assert.IsNotNull(table.StructVector);
+
+            Assert.AreEqual("hi", table.String);
+            Assert.AreEqual(1, table.Struct.Byte);
+            Assert.AreEqual(2, table.Struct.Long);
+            Assert.AreEqual(3u, table.Struct.Uint);
+
+            Assert.AreEqual(4, table.StructVector[0].Byte);
+            Assert.AreEqual(5, table.StructVector[0].Long);
+            Assert.AreEqual(6u, table.StructVector[0].Uint);
+        }
+
+        private SimpleTable SerializeAndParse(FlatBufferSerializerOptions options, out WeakReference<byte[]> buffer)
+        {
+            SimpleTable table = new SimpleTable
+            {
+                String = "hi",
+                Struct = new SimpleStruct { Byte = 1, Long = 2, Uint = 3 },
+                StructVector = new List<SimpleStruct> { new SimpleStruct { Byte = 4, Long = 5, Uint = 6 } }
+            };
+
+            var serializer = new FlatBufferSerializer(options);
+
+            var rawBuffer = new byte[1024];
+            serializer.Serialize(table, rawBuffer);
+            buffer = new WeakReference<byte[]>(rawBuffer);
+
+            string csharp = serializer.Compile<SimpleTable>().CSharp;
+            return serializer.Parse<SimpleTable>(rawBuffer);
         }
 
         [FlatBufferTable]

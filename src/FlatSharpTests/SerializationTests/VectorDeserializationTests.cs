@@ -18,6 +18,7 @@ namespace FlatSharpTests
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Linq;
     using FlatSharp;
     using FlatSharp.Attributes;
@@ -252,6 +253,112 @@ namespace FlatSharpTests
             Assert.AreEqual(1L, item.Vector[0]);
             Assert.AreEqual(2L, item.Vector[1]);
             Assert.AreEqual(3L, item.Vector[2]);
+        }
+
+        [TestMethod]
+        public void StringVector_GreedyDeserialize_Mutable()
+        {
+            RootTable<IList<string>> root = new RootTable<IList<string>>
+            {
+                Vector = new List<string> { "one", "two", "three" }
+            };
+
+            var options = new FlatBufferSerializerOptions(generateMutableObjects: true, greedyDeserialize: true);
+            FlatBufferSerializer serializer = new FlatBufferSerializer(options);
+
+            byte[] buffer = new byte[100];
+            serializer.Serialize(root, buffer);
+
+            var parsed = serializer.Parse<RootTable<IList<string>>>(buffer);
+
+            Assert.AreEqual(typeof(List<string>), parsed.Vector.GetType());
+            Assert.IsFalse(parsed.Vector.IsReadOnly);
+
+            // Shouldn't throw.
+            parsed.Vector.Add("four");
+        }
+
+        [TestMethod]
+        public void StringVector_GreedyDeserialize_NotMutable()
+        {
+            RootTable<IList<string>> root = new RootTable<IList<string>>
+            {
+                Vector = new List<string> { "one", "two", "three" }
+            };
+
+            var options = new FlatBufferSerializerOptions(generateMutableObjects: false, greedyDeserialize: true);
+            FlatBufferSerializer serializer = new FlatBufferSerializer(options);
+
+            byte[] buffer = new byte[100];
+            serializer.Serialize(root, buffer);
+
+            var parsed = serializer.Parse<RootTable<IList<string>>>(buffer);
+
+            Assert.AreEqual(typeof(ReadOnlyCollection<string>), parsed.Vector.GetType());
+            Assert.IsTrue(parsed.Vector.IsReadOnly);
+
+            Assert.ThrowsException<NotSupportedException>(() => parsed.Vector.Add("four"));
+        }
+
+        [TestMethod]
+        public void MemoryVector_GreedyDeserialize()
+        {
+            RootTable<Memory<byte>> root = new RootTable<Memory<byte>>()
+            {
+                Vector = new Memory<byte>(new byte[100])
+            };
+
+            root.Vector.Span.Fill(1);
+
+            byte[] buffer = new byte[1024];
+            var options = new FlatBufferSerializerOptions(greedyDeserialize: true);
+            var serializer = new FlatBufferSerializer(options);
+
+            serializer.Serialize(root, buffer.AsSpan());
+
+            var parsed1 = serializer.Parse<RootTable<Memory<byte>>>(buffer);
+            var parsed2 = serializer.Parse<RootTable<Memory<byte>>>(buffer);
+
+            Assert.AreEqual((byte)1, parsed1.Vector.Span[0]);
+            Assert.AreEqual((byte)1, parsed2.Vector.Span[0]);
+
+            // Asser that this change affects only the 'parsed1' object.
+            parsed1.Vector.Span[0] = 2;
+
+            Assert.AreEqual((byte)2, parsed1.Vector.Span[0]);
+            Assert.AreEqual((byte)1, parsed2.Vector.Span[0]);
+        }
+
+        /// <summary>
+        /// Asserts that when greedy parsing is off, a change to the memory of the parsed object represents a change in the buffer.
+        /// </summary>
+        [TestMethod]
+        public void MemoryVector_LazyDeserialize()
+        {
+            RootTable<Memory<byte>> root = new RootTable<Memory<byte>>()
+            {
+                Vector = new Memory<byte>(new byte[100])
+            };
+
+            root.Vector.Span.Fill(1);
+
+            byte[] buffer = new byte[1024];
+            var options = new FlatBufferSerializerOptions(greedyDeserialize: false);
+            var serializer = new FlatBufferSerializer(options);
+
+            serializer.Serialize(root, buffer.AsSpan());
+
+            var parsed1 = serializer.Parse<RootTable<Memory<byte>>>(buffer);
+            var parsed2 = serializer.Parse<RootTable<Memory<byte>>>(buffer);
+
+            Assert.AreEqual((byte)1, parsed1.Vector.Span[0]);
+            Assert.AreEqual((byte)1, parsed2.Vector.Span[0]);
+
+            // Asser that this change affects both objects.
+            parsed1.Vector.Span[0] = 2;
+
+            Assert.AreEqual((byte)2, parsed1.Vector.Span[0]);
+            Assert.AreEqual((byte)2, parsed2.Vector.Span[0]);
         }
 
         [FlatBufferTable]

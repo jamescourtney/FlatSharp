@@ -18,13 +18,14 @@ namespace FlatSharp
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Reflection;
     using FlatSharp.TypeModel;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
 
     /// <summary>
-    /// Generates a collection of methods to help serialize the given root type.
+    /// Generates a collection of methods to help parse the given root type.
     /// </summary>
     internal class ParserCodeGenerator
     {
@@ -131,7 +132,20 @@ namespace FlatSharp
                     string setter = string.Empty;
                     if (!value.IsReadOnly)
                     {
-                        setter = "set { throw new NotMutableException(); }";
+                        if (this.options.GenerateMutableObjects)
+                        {
+                            setter = 
+$@"
+                            set {{
+                                this.{valueFieldName} = value;
+                                this.{hasValueFieldName} = true;
+                            }}
+";
+                        }
+                        else
+                        {
+                            setter = "set { throw new NotMutableException(); }";
+                        }
                     }
 
                     string @override =
@@ -146,24 +160,13 @@ $@"
                     propertyOverrides.Add(@override);
                 }
 
-                string classDefinition =
-$@"
-                private sealed class {className} : {CSharpHelpers.GetCompilableTypeName(typeModel.ClrType)}
-                {{
-                    private readonly InputBuffer buffer;
-                    private readonly int offset;
+                string classDefinition = this.CreateClass(
+                    className, 
+                    typeModel.ClrType, 
+                    typeModel.IndexToMemberMap.Values.Select(x => x.PropertyInfo.Name), 
+                    propertyOverrides, 
+                    fieldDefinitions);
 
-                    {string.Join("\r\n", fieldDefinitions)}
-        
-                    public {className}(InputBuffer buffer, int offset)
-                    {{
-                        this.buffer = buffer;
-                        this.offset = offset;
-                    }}
-
-                    {string.Join("\r\n", propertyOverrides)}
-                }}
-";
                 var node = CSharpSyntaxTree.ParseText(classDefinition, ParseOptions);
                 this.methodDeclarations.Add(node.GetRoot());
             }
@@ -315,7 +318,14 @@ $@"
                     string setter = string.Empty;
                     if (!value.IsReadOnly)
                     {
-                        setter = "set { throw new NotMutableException(); }";
+                        if (this.options.GenerateMutableObjects)
+                        {
+                            setter = $"set {{ this.{valueFieldName} = value; this.{hasValueFieldName} = true; }}";
+                        }
+                        else
+                        {
+                            setter = "set { throw new NotMutableException(); }";
+                        }
                     }
 
                     string @override =
@@ -330,9 +340,40 @@ $@"
                     propertyOverrides.Add(@override);
                 }
 
-                string classDefinition =
+                string classDefinition = this.CreateClass(className, typeModel.ClrType, typeModel.Members.Select(x => x.PropertyInfo.Name), propertyOverrides, fieldDefinitions);
+                var node = CSharpSyntaxTree.ParseText(classDefinition, ParseOptions);
+                this.methodDeclarations.Add(node.GetRoot());
+            }
+        }
+
+        private string CreateClass(
+            string className,
+            Type baseType,
+            IEnumerable<string> propertyNames,
+            IEnumerable<string> propertyOverrides,
+            IEnumerable<string> fieldDefinitions)
+        {
+            // Create a "greedy init" method that returns true if greedy initialization was performed.
+            // In cases where it returns true, the class releases its reference to the "InputBuffer" object
+            // to free it from GC.
+            List<string> greedyInitializaitons = new List<string>();
+            string greedyInitReturnValue = "false";
+            if (this.options.GreedyDeserialize)
+            {
+                int i = 0;
+                foreach (var property in propertyNames)
+                {
+                    // Force evaluation of each property to compel loading and caching the value.
+                    greedyInitializaitons.Add($"var temp{i} = this.{property};");
+                    i++;
+                }
+
+                greedyInitReturnValue = "true";
+            }
+
+            return
 $@"
-                private sealed class {className} : {CSharpHelpers.GetCompilableTypeName(typeModel.ClrType)}
+                private sealed class {className} : {CSharpHelpers.GetCompilableTypeName(baseType)}
                 {{
                     private readonly InputBuffer buffer;
                     private readonly int offset;
@@ -343,37 +384,69 @@ $@"
                     {{
                         this.buffer = buffer;
                         this.offset = offset;
+                        if (this.GreedyInitialize())
+                        {{
+                            this.buffer = null;
+                            this.offset = -1;
+                        }}
+                    }}
+
+                    private bool GreedyInitialize()
+                    {{
+                        {string.Join("\r\n", greedyInitializaitons)}
+                        return {greedyInitReturnValue};
                     }}
 
                     {string.Join("\r\n", propertyOverrides)}
                 }}
 ";
-                var node = CSharpSyntaxTree.ParseText(classDefinition, ParseOptions);
-                this.methodDeclarations.Add(node.GetRoot());
-            }
         }
 
         private void ImplementMemoryVectorReadMethod(VectorTypeModel typeModel)
         {
-            string readMethodName = this.MethodNames[typeModel.ClrType];
             string invocation = $"{nameof(InputBuffer.ReadMemoryBlock)}<{CSharpHelpers.GetCompilableTypeName(typeModel.ItemTypeModel.ClrType)}>";
             if (typeModel.ItemTypeModel.ClrType == typeof(byte))
             {
                 invocation = nameof(InputBuffer.ReadByteMemoryBlock);
             }
 
-            this.GenerateMethodDefinition(typeModel.ClrType, $"return memory.{invocation}(offset, {typeModel.ItemTypeModel.InlineSize});");
+            string body = $"memory.{invocation}(offset, {typeModel.ItemTypeModel.InlineSize})";
+
+            // Greedy deserialize has the invariant that we no longer touch the
+            // original buffer. This means a memory copy here.
+            if (this.options.GreedyDeserialize)
+            {
+                // new Memory<T>(memory.ToArray())
+                body = $"new Memory<{CSharpHelpers.GetCompilableTypeName(typeModel.ItemTypeModel.ClrType)}>({body}.ToArray())";
+            }
+
+            this.GenerateMethodDefinition(typeModel.ClrType, $"return {body};");
         }
 
         private void ImplementListVectorReadMethod(VectorTypeModel typeModel)
         {
+            bool greedy = this.options.GreedyDeserialize || this.options.GenerateMutableObjects;
+
             string kindToCreate = nameof(FlatBufferVector<byte>);
-            if (this.options.CacheListVectorData)
+            if (!greedy && this.options.CacheListVectorData)
             {
                 kindToCreate = nameof(FlatBufferCacheVector<byte>);
             }
 
-            this.GenerateMethodDefinition(typeModel.ClrType, $"return {this.CreateFlatBufferVector(typeModel, kindToCreate)};");
+            string body = this.CreateFlatBufferVector(typeModel, kindToCreate);
+            if (greedy)
+            {
+                // Greedy => we just convert to a list in line.
+                body += $".{nameof(SerializationHelpers.FlatBufferVectorToList)}()";
+                if (!this.options.GenerateMutableObjects)
+                {
+                    // If not mutable, then we can make it a read only collection, which implements
+                    // IReadOnlyList and IList.
+                    body += ".AsReadOnly()";
+                }
+            }
+
+            this.GenerateMethodDefinition(typeModel.ClrType, $"return {body};");
         }
 
         private void ImplementArrayVectorReadMethod(VectorTypeModel typeModel)
