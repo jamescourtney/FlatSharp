@@ -208,6 +208,7 @@ namespace FlatSharpTests
             serializer.Serialize(table, rawBuffer);
             buffer = new WeakReference<byte[]>(rawBuffer);
 
+            string csharp = serializer.Compile<SimpleTable>().CSharp;
             return serializer.Parse<SimpleTable>(rawBuffer);
         }
 

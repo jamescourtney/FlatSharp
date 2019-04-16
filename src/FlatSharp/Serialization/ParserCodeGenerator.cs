@@ -25,7 +25,7 @@ namespace FlatSharp
     using Microsoft.CodeAnalysis.CSharp;
 
     /// <summary>
-    /// Generates a collection of methods to help serialize the given root type.
+    /// Generates a collection of methods to help parse the given root type.
     /// </summary>
     internal class ParserCodeGenerator
     {
@@ -160,46 +160,13 @@ $@"
                     propertyOverrides.Add(@override);
                 }
 
-                string greedyInitBody = "return false;";
+                string classDefinition = this.CreateClass(
+                    className, 
+                    typeModel.ClrType, 
+                    typeModel.IndexToMemberMap.Values.Select(x => x.PropertyInfo.Name), 
+                    propertyOverrides, 
+                    fieldDefinitions);
 
-                if (this.options.GreedyDeserialize)
-                {
-                    // Declare greedy references and return true.
-                    greedyInitBody = string.Join(
-                        "\r\n",
-                        typeModel.IndexToMemberMap.Select(kvp =>
-                            $"var v{kvp.Key} = this.{kvp.Value.PropertyInfo.Name};")
-                        .Concat(new[] { "return true;" }));
-                }
-
-                string classDefinition =
-$@"
-                private sealed class {className} : {CSharpHelpers.GetCompilableTypeName(typeModel.ClrType)}
-                {{
-                    private readonly InputBuffer buffer;
-                    private readonly int offset;
-
-                    {string.Join("\r\n", fieldDefinitions)}
-        
-                    public {className}(InputBuffer buffer, int offset)
-                    {{
-                        this.buffer = buffer;
-                        this.offset = offset;
-                        if (this.GreedyInitialize())
-                        {{
-                            this.buffer = null;
-                            this.offset = -1;
-                        }}
-                    }}
-
-                    private bool GreedyInitialize()
-                    {{
-                        {greedyInitBody}
-                    }}
-
-                    {string.Join("\r\n", propertyOverrides)}
-                }}
-";
                 var node = CSharpSyntaxTree.ParseText(classDefinition, ParseOptions);
                 this.methodDeclarations.Add(node.GetRoot());
             }
@@ -373,19 +340,40 @@ $@"
                     propertyOverrides.Add(@override);
                 }
 
-                string greedyInitBody = "return false;";
-                if (this.options.GreedyDeserialize)
+                string classDefinition = this.CreateClass(className, typeModel.ClrType, typeModel.Members.Select(x => x.PropertyInfo.Name), propertyOverrides, fieldDefinitions);
+                var node = CSharpSyntaxTree.ParseText(classDefinition, ParseOptions);
+                this.methodDeclarations.Add(node.GetRoot());
+            }
+        }
+
+        private string CreateClass(
+            string className,
+            Type baseType,
+            IEnumerable<string> propertyNames,
+            IEnumerable<string> propertyOverrides,
+            IEnumerable<string> fieldDefinitions)
+        {
+            // Create a "greedy init" method that returns true if greedy initialization was performed.
+            // In cases where it returns true, the class releases its reference to the "InputBuffer" object
+            // to free it from GC.
+            List<string> greedyInitializaitons = new List<string>();
+            string greedyInitReturnValue = "false";
+            if (this.options.GreedyDeserialize)
+            {
+                int i = 0;
+                foreach (var property in propertyNames)
                 {
-                    greedyInitBody = string.Join(
-                        "\r\n",
-                        typeModel.Members.Select(memberModel =>
-                            $"var v{memberModel.Index} = this.{memberModel.PropertyInfo.Name};")
-                        .Concat(new[] { "return true;" }));
+                    // Force evaluation of each property to compel loading and caching the value.
+                    greedyInitializaitons.Add($"var temp{i} = this.{property};");
+                    i++;
                 }
 
-                string classDefinition =
+                greedyInitReturnValue = "true";
+            }
+
+            return
 $@"
-                private sealed class {className} : {CSharpHelpers.GetCompilableTypeName(typeModel.ClrType)}
+                private sealed class {className} : {CSharpHelpers.GetCompilableTypeName(baseType)}
                 {{
                     private readonly InputBuffer buffer;
                     private readonly int offset;
@@ -396,24 +384,22 @@ $@"
                     {{
                         this.buffer = buffer;
                         this.offset = offset;
-                        if (this.GreedyInit())
+                        if (this.GreedyInitialize())
                         {{
                             this.buffer = null;
                             this.offset = -1;
                         }}
                     }}
 
-                    private bool GreedyInit()
+                    private bool GreedyInitialize()
                     {{
-                        {greedyInitBody}
+                        {string.Join("\r\n", greedyInitializaitons)}
+                        return {greedyInitReturnValue};
                     }}
 
                     {string.Join("\r\n", propertyOverrides)}
                 }}
 ";
-                var node = CSharpSyntaxTree.ParseText(classDefinition, ParseOptions);
-                this.methodDeclarations.Add(node.GetRoot());
-            }
         }
 
         private void ImplementMemoryVectorReadMethod(VectorTypeModel typeModel)
