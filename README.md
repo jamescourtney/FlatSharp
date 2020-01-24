@@ -6,16 +6,15 @@ FlatSharp is Google's FlatBuffers serialization format implemented in C#, for C#
 - FlatBuffers schema correctness
 
 ### Current Status
-FlatSharp is a very new project and is in active development. There are no known uses in production environments at this time. The current code can be considered alpha quality, with new features still being added. Contributions and proposals are always welcomed. Currently, FlatSharp supports the following FlatBuffers features:
+FlatSharp is in occasional development, as time permits for the author. There are no known uses in production environments at this time. The current code can be considered beta quality, with new features still being added. Contributions and proposals are always welcomed. Currently, FlatSharp supports the following FlatBuffers features:
 - Structs
 - Tables
-- Scalars / Strings
+- Scalars / Strings / Enums
 - ```IList<T>```, ```IReadOnlyList<T>```, and ```T[]``` Vectors of Strings, Tables, Structs, and Scalars
 - ```Memory<T>```/```ReadOnlyMemory<T>``` Vectors of scalars when on little-endian systems (1-byte scalars are allowed in Memory vectors on big-endian systems)
 - Discriminated/tagged unions of structs, tables, and strings.
 
 What's not supported (and why):
-- Enums. Enums are not currently supported for schema-compatibility reasons; it's too easy to make an implicit change to the type of an enum (going from ```MyEnum : byte``` -> ```MyEnum : int```), which results in a very non-obvious FlatBuffer binary break, since the enum is defined independently of the contract.
 - Vectors of Unions. This is a reasonably complex feature that can be approximated with a vector of tables, where each table element contains a union.
 
 ### License
@@ -57,15 +56,14 @@ public class MonsterTable
     // Note that that the next index starts at 8. Unions are 'double-wide' types, so the previous
     // element occupies indices 6 and 7!
     
-    [FlatBufferItem(8, DefaultValue = (int)Color.Blue)]
-    public virtual int RawColor { get; set; }
-    
-    // Expressing enums still possible.
-    public Color Color
-    {
-      get => (Color)this.RawColor;
-      set => this.RawColor = (int)value;
-    }
+    [FlatBufferItem(8, DefaultValue = Color.Blue)]
+    public virtual Color Color { get; set; }
+}
+
+[FlatBufferEnum(typeof(byte))]
+public enum Color : byte
+{
+   Blue, Red, Green
 }
 
 [FlatBufferStruct]
@@ -82,7 +80,7 @@ public class Position
 }
 ```
 For FlatSharp to be able to work with your schema, it must obey the following set of contraints:
-- All types must be public and externally visible
+- All types must be public and externally visible.
 - All types must be unsealed.
 - All properties decorated by ```[FlatSharpItem]``` must be virtual and public. Setters may be omitted, but Getters are required.
 - All FlatSharpItem indexes must be unique within the given data type.
