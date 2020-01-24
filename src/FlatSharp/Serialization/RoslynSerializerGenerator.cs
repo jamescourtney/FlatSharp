@@ -36,6 +36,7 @@ namespace FlatSharp
     internal class RoslynSerializerGenerator
     {
         private static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(LanguageVersion.Latest);
+        private static readonly Dictionary<string, (Assembly, byte[])> AssemblyNameReferenceMapping = new Dictionary<string, (Assembly, byte[])>();
 
         private readonly Dictionary<Type, string> maxSizeMethods = new Dictionary<Type, string>();
         private readonly Dictionary<Type, string> writeMethods = new Dictionary<Type, string>();
@@ -44,11 +45,12 @@ namespace FlatSharp
         private readonly SerializerCodeGenerator serializerCodeGenerator;
         private readonly ParserCodeGenerator parserCodeGenerator;
         private readonly GetMaxSizeCodeGenerator maxSizeCodeGenerator;
-
-        private List<SyntaxNode> methodDeclarations = new List<SyntaxNode>();
-
+        private readonly FlatBufferSerializerOptions options;
+        private readonly List<SyntaxNode> methodDeclarations = new List<SyntaxNode>();
+        
         public RoslynSerializerGenerator(FlatBufferSerializerOptions options)
         {
+            this.options = options;
             this.serializerCodeGenerator = new SerializerCodeGenerator(options, this.writeMethods);
             this.parserCodeGenerator = new ParserCodeGenerator(options, this.readMethods);
             this.maxSizeCodeGenerator = new GetMaxSizeCodeGenerator(options, this.maxSizeMethods);
@@ -77,7 +79,7 @@ $@"
             }}
 ";
 
-            (Assembly assembly, Func<string> formattedTextFactory, byte[] assemblyData) = CompileAssembly(template, typeof(TRoot).Assembly);
+            (Assembly assembly, Func<string> formattedTextFactory, byte[] assemblyData) = CompileAssembly(template, this.options.EnableAppDomainInterceptOnAssemblyLoad, typeof(TRoot).Assembly);
 
             object item = Activator.CreateInstance(assembly.GetTypes()[0]);
             var serializer = (IGeneratedSerializer<TRoot>)item;
@@ -89,24 +91,39 @@ $@"
                 assemblyData);
         }
 
-        internal static (Assembly assembly, Func<string> formattedTextFactory, byte[] assemblyData) CompileAssembly(string sourceCode, params Assembly[] additionalReferences)
+        internal static (Assembly assembly, Func<string> formattedTextFactory, byte[] assemblyData) CompileAssembly(
+            string sourceCode, 
+            bool enableAppDomainIntercept,
+            params Assembly[] additionalReferences)
         {
-            var references = additionalReferences.Select(a => MetadataReference.CreateFromFile(a.Location)).Concat(
-                new[]
+            List<MetadataReference> references = new List<MetadataReference>();
+            foreach (Assembly additionalReference in additionalReferences)
+            {
+                if (AssemblyNameReferenceMapping.TryGetValue(additionalReference.GetName().Name, out var compilationRef))
                 {
-                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(Span<byte>).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(IList<byte>).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(SerializationContext).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(List<int>).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(System.Collections.ArrayList).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(ValueType).Assembly.Location),
-                    MetadataReference.CreateFromFile(Assembly.Load("netstandard").Location),
-                    MetadataReference.CreateFromFile(typeof(System.IO.InvalidDataException).Assembly.Location),
-                    MetadataReference.CreateFromFile(Assembly.Load("System.Runtime").Location),
-                    MetadataReference.CreateFromFile(Assembly.Load("System.Collections").Location),
-                }).ToArray();
+                    references.Add(MetadataReference.CreateFromImage(compilationRef.Item2));
+                }
+                else
+                {
+                    references.Add(MetadataReference.CreateFromFile(additionalReference.Location));
+                }
+            }
+
+            references.AddRange(new[]
+            {
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Span<byte>).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(IList<byte>).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(SerializationContext).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(List<int>).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(System.Collections.ArrayList).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(ValueType).Assembly.Location),
+                MetadataReference.CreateFromFile(Assembly.Load("netstandard").Location),
+                MetadataReference.CreateFromFile(typeof(System.IO.InvalidDataException).Assembly.Location),
+                MetadataReference.CreateFromFile(Assembly.Load("System.Runtime").Location),
+                MetadataReference.CreateFromFile(Assembly.Load("System.Collections").Location),
+            });
 
             var node = CSharpSyntaxTree.ParseText(sourceCode, ParseOptions);
 
@@ -123,14 +140,15 @@ $@"
             var debugCSharp = formattedTextFactory();
 #endif
             
+            string name = $"FlatSharpDynamicAssembly_{Guid.NewGuid():n}";
             var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
-                .WithModuleName("FlatSharpDynamicAssembly")
+                .WithModuleName(name)
                 .WithOverflowChecks(true)
                 .WithAllowUnsafe(false)
                 .WithOptimizationLevel(OptimizationLevel.Release);
 
             CSharpCompilation compilation = CSharpCompilation.Create(
-                "FlatSharpDynamicAssembly",
+                name,
                 new[] { node },
                 references,
                 options);
@@ -149,10 +167,43 @@ $@"
                     throw new FlatSharpCompilationException(failures, formattedTextFactory());
                 }
 
+                var metadataRef = compilation.ToMetadataReference();
                 ms.Position = 0;
                 byte[] assemblyData = ms.ToArray();
 
-                Assembly assembly = Assembly.Load(assemblyData);
+                ResolveEventHandler handler = null;
+                if (enableAppDomainIntercept)
+                {
+                    handler = (s, e) =>
+                    {
+                        AssemblyName requestedName = new AssemblyName(e.Name);
+                        if (AssemblyNameReferenceMapping.TryGetValue(requestedName.Name, out var value))
+                        {
+                            return value.Item1;
+                        }
+
+                        return null;
+                    };
+
+                    AppDomain.CurrentDomain.AssemblyResolve += handler;
+                }
+
+                Assembly assembly;
+                try
+                {
+                    assembly = Assembly.Load(assemblyData);
+                    assembly.GetTypes();
+                }
+                finally
+                {
+                    if (handler != null)
+                    {
+                        AppDomain.CurrentDomain.AssemblyResolve -= handler;
+                    }
+                }
+
+                AssemblyNameReferenceMapping[name] = (assembly, assemblyData);
+
                 return (assembly, formattedTextFactory, assemblyData);
             }
         }
@@ -194,7 +245,7 @@ $@"
             {
                 this.DefineUnionMethods(unionModel);
             }
-            else if (model is EnumTypeModel enumModel)
+            else if (model is EnumTypeModel)
             {
                 // Nothing to define for enums as they don't
                 // contain references to other types.

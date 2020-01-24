@@ -18,7 +18,8 @@ namespace FlatSharp
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
+    using System.Linq;
+    using System.Reflection;
     using System.Threading;
 
     /// <summary>
@@ -125,6 +126,40 @@ namespace FlatSharp
         public int GetMaxSize<T>(T item) where T : class
         {
             return this.GetOrCreateSerializer<T>().GetMaxSize(item);
+        }
+
+        internal int ReflectionSerialize(object item, byte[] destination)
+        {
+            // unit test helper
+            var method = this.GetType()
+                .GetMethods(BindingFlags.NonPublic | BindingFlags.Instance)
+                .Where(m => m.Name == nameof(this.SerializeInternal))
+                .Single();
+
+            var genericMethod = method.MakeGenericMethod(item.GetType());
+            return (int)genericMethod.Invoke(this, new[] { item, destination });
+        }
+
+        internal object ReflectionParse(Type type, byte[] data)
+        {
+            // unit test helper
+            var method = this.GetType()
+                .GetMethods(BindingFlags.NonPublic | BindingFlags.Instance)
+                .Where(m => m.Name == nameof(this.ParseInternal))
+                .Single();
+
+            var genericMethod = method.MakeGenericMethod(type);
+            return genericMethod.Invoke(this, new[] { data });
+        }
+
+        private T ParseInternal<T>(byte[] buffer) where T : class
+        {
+            return this.Parse<T>(buffer);
+        }
+
+        private int SerializeInternal<T>(T item, byte[] destination) where T : class
+        {
+            return this.Serialize(item, destination);
         }
 
         private ISerializer<TRoot> GetOrCreateSerializer<TRoot>() where TRoot : class

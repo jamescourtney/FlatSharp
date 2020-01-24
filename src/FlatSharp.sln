@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28010.2026
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29709.97
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmark", "Benchmark\Benchmark.csproj", "{70AAF4BA-C7B7-436B-ABD2-1B533CD0A4E0}"
 EndProject
@@ -14,6 +14,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Google.FlatBuffers", "Google.FlatBuffers\Google.FlatBuffers.csproj", "{4FFDA329-29FE-4509-B373-C9B3C0E2710F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlatSharp.Unsafe", "FlatSharp.Unsafe\FlatSharp.Unsafe.csproj", "{6282B9BF-A8C5-461C-8512-7742976308E4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlatSharp.Compiler", "FlatSharp.BuildTools\FlatSharp.Compiler.csproj", "{F5EE0334-45EB-4EF8-A83F-FC25BEB992AB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +47,10 @@ Global
 		{6282B9BF-A8C5-461C-8512-7742976308E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6282B9BF-A8C5-461C-8512-7742976308E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6282B9BF-A8C5-461C-8512-7742976308E4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F5EE0334-45EB-4EF8-A83F-FC25BEB992AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5EE0334-45EB-4EF8-A83F-FC25BEB992AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5EE0334-45EB-4EF8-A83F-FC25BEB992AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5EE0334-45EB-4EF8-A83F-FC25BEB992AB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

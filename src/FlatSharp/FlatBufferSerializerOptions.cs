@@ -65,5 +65,10 @@
         /// Indicates if deserialization should be greedy. Setting this 
         /// </summary>
         public bool GreedyDeserialize { get; }
+
+        /// <summary>
+        /// Indicates if FlatSharp should intercept app domain load events to look for cross-referenced generated assemblies. Mostly useful for FlatSharp unit tests.
+        /// </summary>
+        public bool EnableAppDomainInterceptOnAssemblyLoad { get; set; }
     }
 }

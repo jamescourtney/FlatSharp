@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>netcoreapp2.1;net47</TargetFrameworks>
+    <IsPackable>false</IsPackable>
+    <LangVersion>7.3</LangVersion>
+    <AssemblyName>FlatSharp.Compiler</AssemblyName>
+    <RootNamespace>FlatSharp.Compiler</RootNamespace>
+    <DelaySign>false</DelaySign>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\..\misc\strongname.snk</AssemblyOriginatorKeyFile>
+    <Antlr4UseCSharpGenerator>True</Antlr4UseCSharpGenerator>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Antlr4.CodeGenerator" Version="4.6.6">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Antlr4.Runtime" Version="4.6.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FlatSharp\FlatSharp.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Antlr4 Update="FlatBuffers.g4">
+      <Generator>MSBuild:Compile</Generator>
+      <Listener>False</Listener>
+      <Visitor>True</Visitor>
+    </Antlr4>
+  </ItemGroup>
+
+</Project>
