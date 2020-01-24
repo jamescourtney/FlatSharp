@@ -146,6 +146,25 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
+        public void TypeModel_Enum_UntaggedEnumNotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(UntaggedEnum)));
+        }
+        
+        [TestMethod]
+        public void TypeModel_Enum_TaggedEnum()
+        {
+            var model = RuntimeTypeModel.CreateFrom(typeof(TaggedEnum));
+
+            Assert.IsTrue(model is EnumTypeModel enumModel);
+            Assert.AreEqual(typeof(TaggedEnum), model.ClrType);
+            Assert.IsFalse(model.IsBuiltInType);
+            Assert.IsTrue(model.IsFixedSize);
+            Assert.AreEqual(FlatBufferSchemaType.Scalar, model.SchemaType);
+        }
+
+        [TestMethod]
         public void TypeModel_Vector_ListVectorOfStruct()
         {
             var model = this.VectorTest(typeof(IList<>), typeof(GenericStruct<bool>));
@@ -167,6 +186,15 @@ namespace FlatSharpTests
         public void TypeModel_Vector_MemoryOfScalar()
         {
             var model = this.VectorTest(typeof(Memory<>), typeof(int));
+            Assert.IsFalse(model.IsList);
+            Assert.IsTrue(model.IsMemoryVector);
+            Assert.IsFalse(model.IsReadOnly);
+        }
+
+        [TestMethod]
+        public void TypeModel_Vector_MemoryOfEnum()
+        {
+            var model = this.VectorTest(typeof(Memory<>), typeof(TaggedEnum));
             Assert.IsFalse(model.IsList);
             Assert.IsTrue(model.IsMemoryVector);
             Assert.IsFalse(model.IsReadOnly);
@@ -230,7 +258,14 @@ namespace FlatSharpTests
         public void TypeModel_Union_ScalarsNotAllowed()
         {
             Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
-                RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, FlatBufferUnion<string, int>>>)));
+                RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, int>>)));
+        }
+
+        [TestMethod]
+        public void TypeModel_Union_EnumsNotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, TaggedEnum>>)));
         }
 
         [TestMethod]
@@ -282,6 +317,17 @@ namespace FlatSharpTests
 
             Assert.AreEqual(33, structModel.InlineSize);
             Assert.AreEqual(8, structModel.Alignment);
+        }
+
+        public enum UntaggedEnum
+        {
+            Foo, Bar
+        }
+
+        [FlatBufferEnum(typeof(int))]
+        public enum TaggedEnum
+        {
+            Foo, Bar
         }
 
         [FlatBufferTable]

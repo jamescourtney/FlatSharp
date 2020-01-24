@@ -60,26 +60,6 @@ namespace FlatSharp
             this.ImplementInterfaceMethod(typeof(TRoot));
             this.ImplementMethods();
 
-            var runtime = typeof(System.Runtime.CompilerServices.MethodImplAttribute).Assembly;
-            var sysRuntime = typeof(Span<byte>).Assembly;
-
-            var references = new[]
-            {
-                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(Span<byte>).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(IList<byte>).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(SerializationContext).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(TRoot).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(List<int>).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(System.Collections.ArrayList).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(ValueType).Assembly.Location),
-                MetadataReference.CreateFromFile(Assembly.Load("netstandard").Location),
-                MetadataReference.CreateFromFile(typeof(System.IO.InvalidDataException).Assembly.Location),
-                MetadataReference.CreateFromFile(Assembly.Load("System.Runtime").Location),
-                MetadataReference.CreateFromFile(Assembly.Load("System.Collections").Location),
-            };
-
             string template =
 $@"
             namespace Generated
@@ -96,7 +76,39 @@ $@"
                 }}
             }}
 ";
-            var node = CSharpSyntaxTree.ParseText(template, ParseOptions);
+
+            (Assembly assembly, Func<string> formattedTextFactory, byte[] assemblyData) = CompileAssembly(template, typeof(TRoot).Assembly);
+
+            object item = Activator.CreateInstance(assembly.GetTypes()[0]);
+            var serializer = (IGeneratedSerializer<TRoot>)item;
+
+            return new GeneratedSerializerWrapper<TRoot>(
+                serializer,
+                assembly,
+                formattedTextFactory,
+                assemblyData);
+        }
+
+        internal static (Assembly assembly, Func<string> formattedTextFactory, byte[] assemblyData) CompileAssembly(string sourceCode, params Assembly[] additionalReferences)
+        {
+            var references = additionalReferences.Select(a => MetadataReference.CreateFromFile(a.Location)).Concat(
+                new[]
+                {
+                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(Span<byte>).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(IList<byte>).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(SerializationContext).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(List<int>).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(System.Collections.ArrayList).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(ValueType).Assembly.Location),
+                    MetadataReference.CreateFromFile(Assembly.Load("netstandard").Location),
+                    MetadataReference.CreateFromFile(typeof(System.IO.InvalidDataException).Assembly.Location),
+                    MetadataReference.CreateFromFile(Assembly.Load("System.Runtime").Location),
+                    MetadataReference.CreateFromFile(Assembly.Load("System.Collections").Location),
+                }).ToArray();
+
+            var node = CSharpSyntaxTree.ParseText(sourceCode, ParseOptions);
 
             Func<string> formattedTextFactory = () =>
             {
@@ -110,9 +122,7 @@ $@"
 #if DEBUG
             var debugCSharp = formattedTextFactory();
 #endif
-
-            // StrongNameProvider snProvider = new DesktopStrongNameProvider();
-
+            
             var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
                 .WithModuleName("FlatSharpDynamicAssembly")
                 .WithOverflowChecks(true)
@@ -131,25 +141,19 @@ $@"
 
                 if (!result.Success)
                 {
-                    IEnumerable<Diagnostic> failures = result.Diagnostics.Where(diagnostic =>
-                        diagnostic.IsWarningAsError ||
-                        diagnostic.Severity == DiagnosticSeverity.Error);
+                    string[] failures = result.Diagnostics
+                        .Where(diagnostic => diagnostic.IsWarningAsError || diagnostic.Severity == DiagnosticSeverity.Error)
+                        .Select(d => d.ToString())
+                        .ToArray();
 
-                    throw new InvalidOperationException("Unable to compile. This represents a bug in FlatSharp type model validation. Errors = " + string.Join("\r\n", failures));
+                    throw new FlatSharpCompilationException(failures, formattedTextFactory());
                 }
 
                 ms.Position = 0;
                 byte[] assemblyData = ms.ToArray();
 
                 Assembly assembly = Assembly.Load(assemblyData);
-                object item = Activator.CreateInstance(assembly.GetTypes()[0]);
-                var serializer = (IGeneratedSerializer<TRoot>)item;
-
-                return new GeneratedSerializerWrapper<TRoot>(
-                    serializer,
-                    assembly,
-                    formattedTextFactory,
-                    assemblyData);
+                return (assembly, formattedTextFactory, assemblyData);
             }
         }
 
@@ -189,6 +193,11 @@ $@"
             else if (model is UnionTypeModel unionModel)
             {
                 this.DefineUnionMethods(unionModel);
+            }
+            else if (model is EnumTypeModel enumModel)
+            {
+                // Nothing to define for enums as they don't
+                // contain references to other types.
             }
             else
             {

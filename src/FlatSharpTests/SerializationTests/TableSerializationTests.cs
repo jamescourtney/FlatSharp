@@ -199,7 +199,7 @@ namespace FlatSharpTests
             {
                 String = "hi",
                 Struct = new SimpleStruct { Byte = 1, Long = 2, Uint = 3 },
-                StructVector = new List<SimpleStruct> { new SimpleStruct { Byte = 4, Long = 5, Uint = 6 } }
+                StructVector = new List<SimpleStruct> { new SimpleStruct { Byte = 4, Long = 5, Uint = 6 } },
             };
 
             var serializer = new FlatBufferSerializer(options);

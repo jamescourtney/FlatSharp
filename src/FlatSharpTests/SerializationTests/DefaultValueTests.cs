@@ -41,15 +41,7 @@ namespace FlatSharpTests
         [TestMethod]
         public void Read_AllDefaultValues()
         {
-            byte[] data =
-            {
-                4, 0, 0, 0,           // uoffset to the start of the table.
-                252, 255, 255, 255,   // soffset_t to the vtable
-                4, 0,                 // vtable size
-                4, 0,                 // table length
-            };
-
-            var parsed = FlatBufferSerializer.Default.Parse<AllDefaultValueTypes>(data);
+            var parsed = FlatBufferSerializer.Default.Parse<AllDefaultValueTypes>(EmptyTable);
 
             Assert.IsTrue(parsed.Bool);
             Assert.AreEqual((byte)1, parsed.Byte);
@@ -62,6 +54,7 @@ namespace FlatSharpTests
             Assert.AreEqual(ulong.MaxValue, parsed.ULong);
             Assert.AreEqual(long.MinValue, parsed.Long);
             Assert.AreEqual(3.14159d, parsed.Double);
+            Assert.AreEqual(SimpleEnum.B, parsed.Enum);
         }
 
         [TestMethod]
@@ -80,6 +73,7 @@ namespace FlatSharpTests
                 ULong = ulong.MaxValue,
                 Long = long.MinValue,
                 Double = 3.14159d,
+                Enum = SimpleEnum.B,
             };
 
             Span<byte> buffer = new byte[100];
@@ -88,6 +82,14 @@ namespace FlatSharpTests
             buffer = buffer.Slice(0, count);
 
             Assert.IsTrue(buffer.SequenceEqual(EmptyTable));
+        }
+
+        [FlatBufferEnum(typeof(sbyte))]
+        public enum SimpleEnum : sbyte
+        {
+            A = 1,
+            B = 2,
+            C = 3,
         }
 
         [FlatBufferTable]
@@ -125,6 +127,9 @@ namespace FlatSharpTests
 
             [FlatBufferItem(10, DefaultValue = 3.14159d)]
             public virtual double Double { get; set; }
+
+            [FlatBufferItem(11, DefaultValue = SimpleEnum.B)]
+            public virtual SimpleEnum Enum { get; set; }
         }
     }
 }

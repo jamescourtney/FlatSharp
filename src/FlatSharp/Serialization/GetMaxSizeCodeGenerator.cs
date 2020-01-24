@@ -74,6 +74,10 @@ namespace FlatSharp
             {
                 this.ImplementUnionGetMaxSizeMethod(unionModel);
             }
+            else if (typeModel is EnumTypeModel enumModel)
+            {
+                this.ImplementEnumGetMaxSizeMethod(enumModel);
+            }
             else
             {
                 throw new InvalidOperationException();
@@ -134,6 +138,12 @@ $@"
         {
             string body = $"return {structModel.MaxInlineSize};";
             this.GenerateGetMaxSizeMethod(structModel.ClrType, body);
+        }
+
+        private void ImplementEnumGetMaxSizeMethod(EnumTypeModel enumModel)
+        {
+            string body = $"return {enumModel.MaxInlineSize};";
+            this.GenerateGetMaxSizeMethod(enumModel.ClrType, body);
         }
 
         /// <summary>

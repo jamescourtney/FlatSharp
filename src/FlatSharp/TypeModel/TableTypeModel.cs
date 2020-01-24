@@ -116,6 +116,12 @@
                 .ToList();
 
             ushort maxIndex = 0;
+
+            if (!properties.Any())
+            {
+                throw new InvalidFlatBufferDefinitionException($"Can't create table type model from type {this.ClrType.Name} because it does not have any non-static [FlatBufferItem] properties.");
+            }
+
             foreach (var property in properties)
             {
                 bool hasDefaultValue = false;
@@ -141,7 +147,7 @@
                 {
                     if (!this.occupiedVtableSlots.Add(index + i))
                     {
-                        throw new InvalidFlatBufferDefinitionException($"FlatBuffer Table {this.ClrType.Name} already defines a property with index {index}");
+                        throw new InvalidFlatBufferDefinitionException($"FlatBuffer Table {this.ClrType.Name} already defines a property with index {index}. This may happen when unions are declared as these are double-wide members.");
                     }
                 }
 

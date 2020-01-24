@@ -127,6 +127,10 @@ namespace FlatSharp
                 {
                     literalSpecifier = "ul";
                 }
+                else if (clrType.IsEnum)
+                {
+                    defaultValueLiteral = $"{CSharpHelpers.GetCompilableTypeName(clrType)}.{defaultValueLiteral}";
+                }
                 else
                 {
                     throw new InvalidOperationException("Unexpected default value type: " + clrType.FullName);
@@ -138,8 +142,10 @@ namespace FlatSharp
             return defaultValue;
         }
 
-        internal static string GetAccessModifier(MethodBase method)
+        internal static string GetAccessModifier(PropertyInfo property)
         {
+            var method = property.GetGetMethod() ?? property.GetMethod;
+
             if (method.IsPublic)
             {
                 return "public";
