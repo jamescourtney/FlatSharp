@@ -9,6 +9,6 @@
 
         string FbsFieldType { get; }
 
-        void WriteField(CodeWriter writer, SchemaDefinition schemaDefinition);
+        void WriteField(CodeWriter writer, BaseSchemaMember schemaDefinition);
     }
 }

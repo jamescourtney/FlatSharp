@@ -28,7 +28,7 @@ namespace FlatSharp.Compiler
         {
             using (var context = ErrorContext.Current)
             {
-                context.PushScope(".schema");
+                context.PushScope("$");
                 try
                 {
                     string cSharp = CreateCSharp(fbsSchema);
@@ -53,7 +53,7 @@ namespace FlatSharp.Compiler
             parser.AddErrorListener(new CustomErrorListener());
 
             SchemaVisitor visitor = new SchemaVisitor();
-            SchemaDefinition def = visitor.Visit(parser.schema());
+            BaseSchemaMember rootNode = visitor.Visit(parser.schema());
 
             if (ErrorContext.Current.Errors.Any())
             {
@@ -62,7 +62,7 @@ namespace FlatSharp.Compiler
 
             CodeWriter writer = new CodeWriter();
 
-            def.Write(writer);
+            rootNode.WriteCode(writer);
 
             if (ErrorContext.Current.Errors.Any())
             {

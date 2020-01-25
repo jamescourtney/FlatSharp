@@ -5,12 +5,7 @@ namespace FlatSharp.Compiler
 {
     internal class SchemaDefinition
     {
-        // Maps fully qualified type name to the definition.
-        private readonly Dictionary<string, ITypeDefinition> types = new Dictionary<string, ITypeDefinition>(StringComparer.OrdinalIgnoreCase);
-
-        public string NamespaceName { get; set; }
-
-        public IReadOnlyDictionary<string, ITypeDefinition> Types => this.types;
+        public BaseSchemaMember Root { get; set; }
 
         public void Write(CodeWriter writer)
         {
@@ -19,35 +14,7 @@ namespace FlatSharp.Compiler
             writer.AppendLine("using FlatSharp;");
             writer.AppendLine("using FlatSharp.Attributes;");
 
-            ErrorContext.Current.WithScope(this.NamespaceName, () =>
-            {
-                writer.AppendLine($"namespace {this.NamespaceName}");
-                writer.AppendLine($"{{");
-                using (writer.IncreaseIndent())
-                {
-                    foreach (var type in this.types.Values)
-                    {
-                        type.WriteType(writer, this);
-                    }
-                }
-                writer.AppendLine($"}}");
-            });
-        }
-
-        public bool TryGetTypeDefinition(string typeName, out ITypeDefinition typeDefinition)
-        {
-            return this.types.TryGetValue(this.GetFullyQualifiedTypeName(typeName), out typeDefinition);
-        }
-
-        public void AddType(ITypeDefinition typeDefinition)
-        {
-            string fullyQualifiedName = this.GetFullyQualifiedTypeName(typeDefinition.TypeName);
-            if (this.types.ContainsKey(fullyQualifiedName))
-            {
-                ErrorContext.Current?.RegisterError($"Duplicate type name: '{fullyQualifiedName}'.");
-            }
-
-            this.types[fullyQualifiedName] = typeDefinition;
+            this.Root.WriteCode(writer);
         }
 
         public static string ResolvePrimitiveType(string type)
@@ -124,17 +91,6 @@ namespace FlatSharp.Compiler
             }
 
             return true;
-        }
-
-        private string GetFullyQualifiedTypeName(string typeName)
-        {
-            if (typeName.IndexOf(".") >= 0)
-            {
-                // Already namespace'd.
-                return typeName;
-            }
-
-            return this.NamespaceName + "." + typeName;
         }
     }
 }

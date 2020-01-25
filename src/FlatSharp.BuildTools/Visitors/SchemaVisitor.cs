@@ -1,91 +1,90 @@
 ﻿namespace FlatSharp.Compiler
 {
     using System;
-    using System.IO;
+    using System.Collections.Generic;
     using System.Linq;
-    using Antlr4.Runtime;
     using Antlr4.Runtime.Misc;
+    using Antlr4.Runtime.Tree;
 
-    internal class SchemaVisitor : FlatBuffersBaseVisitor<SchemaDefinition>
+    internal class SchemaVisitor : FlatBuffersBaseVisitor<BaseSchemaMember>
     {
-        private readonly SchemaDefinition schemaDefinition = new SchemaDefinition();
+        private BaseSchemaMember schemaRoot;
+        private readonly Stack<BaseSchemaMember> parseStack = new Stack<BaseSchemaMember>();
 
-        public override SchemaDefinition VisitSchema([NotNull] FlatBuffersParser.SchemaContext context)
+        public override BaseSchemaMember Visit([NotNull] IParseTree tree)
         {
-            string namespaceName;
-            {
-                string[] namespaces = context.namespace_decl()?.Select(ns => new NamespaceVisitor().VisitNamespace_decl(ns)).ToArray();
-                if (namespaces?.Length != 1)
-                {
-                    ErrorContext.Current?.RegisterError("FlatBuffer FBS schema must declare a single namespace.");
-                    return null;
-                }
+            this.schemaRoot = new RootNodeDefinition();
+            this.parseStack.Push(this.schemaRoot);
 
-                namespaceName = namespaces[0];
+            base.Visit(tree);
+
+            return this.schemaRoot;
+        }
+
+        public override BaseSchemaMember VisitNamespace_decl([NotNull] FlatBuffersParser.Namespace_declContext context)
+        {
+            // Namespaces reset the whole stack.
+            while (this.parseStack.Peek() != this.schemaRoot)
+            {
+                this.parseStack.Pop();
             }
 
-            var schema = new SchemaDefinition
+            string[] nsParts = context.IDENT().Select(x => x.GetText()).ToArray();
+            this.parseStack.Push(this.GetOrCreateNamespace(nsParts, this.schemaRoot));
+
+            return null;
+        }
+
+        private BaseSchemaMember GetOrCreateNamespace(Span<string> parts, BaseSchemaMember parent)
+        {
+            if (!parent.TryResolveName(parts[0], out var existingNode))
             {
-                NamespaceName = namespaceName
-            };
+                existingNode = new NamespaceDefinition(parts[0], parent);
+                parent.AddChild(existingNode);
+            }
 
-            ErrorContext.Current.WithScope(namespaceName, () =>
+            if (parts.Length == 1)
             {
-                foreach (var union in context.union_decl()?.Select(x => new UnionVisitor(namespaceName).VisitUnion_decl(x)).ToArray() ?? new UnionDefinition[0])
-                {
-                    schema.AddType(union);
-                }
+                return existingNode;
+            }
 
-                foreach (var @enum in context.enum_decl()?.Select(x => new EnumVisitor(namespaceName).VisitEnum_decl(x)).ToArray() ?? new EnumDefinition[0])
-                {
-                    schema.AddType(@enum);
-                }
+            return this.GetOrCreateNamespace(parts.Slice(1), existingNode);
+        }
 
-                foreach (var tableOrStruct in context.type_decl()?.Select(x => new TypeVisitor(namespaceName).VisitType_decl(x)).ToArray() ?? new TableOrStructDefinition[0])
-                {
-                    schema.AddType(tableOrStruct);
-                }
-
-                // Once we've iterated over everything, we can figure out indexes in the tables and structs.
-                foreach (var item in schema.Types)
-                {
-                    if (item.Value is TableOrStructDefinition tableOrStruct)
-                    {
-                        tableOrStruct.AssignIndexes(schema);
-                    }
-                }
+        public override BaseSchemaMember VisitType_decl([NotNull] FlatBuffersParser.Type_declContext context)
+        {
+            var top = this.parseStack.Peek();
+            ErrorContext.Current.WithScope(top.FullName, () =>
+            {
+                TableOrStructDefinition def = new TypeVisitor(top).Visit(context);
+                top.AddChild(def);
             });
 
-            return schema;
+            return null;
         }
 
-        public override SchemaDefinition VisitNamespace_decl([NotNull] FlatBuffersParser.Namespace_declContext context)
+        public override BaseSchemaMember VisitEnum_decl([NotNull] FlatBuffersParser.Enum_declContext context)
         {
-            return base.VisitNamespace_decl(context);
+            var top = this.parseStack.Peek();
+            ErrorContext.Current.WithScope(top.FullName, () =>
+            {
+                EnumDefinition def = new EnumVisitor(top).Visit(context);
+                top.AddChild(def);
+            });
+
+            return null;
         }
 
-        public override SchemaDefinition VisitType_decl([NotNull] FlatBuffersParser.Type_declContext context)
+        public override BaseSchemaMember VisitUnion_decl([NotNull] FlatBuffersParser.Union_declContext context)
         {
-            return base.VisitType_decl(context);
-        }
+            var top = this.parseStack.Peek();
+            ErrorContext.Current.WithScope(top.FullName, () =>
+            {
+                UnionDefinition def = new UnionVisitor(top).Visit(context);
+                top.AddChild(def);
+            });
 
-        public override SchemaDefinition VisitEnum_decl([NotNull] FlatBuffersParser.Enum_declContext context)
-        {
-            return base.VisitEnum_decl(context);
-        }
-
-        public override SchemaDefinition VisitUnion_decl([NotNull] FlatBuffersParser.Union_declContext context)
-        {
-            return base.VisitUnion_decl(context);
-        }
-    }
-
-    internal class NamespaceVisitor : FlatBuffersBaseVisitor<string>
-    {
-        public override string VisitNamespace_decl([NotNull] FlatBuffersParser.Namespace_declContext context)
-        {
-            var ident = string.Join(".", context.IDENT().Select(x => x.Symbol.Text));
-            return ident;
+            return null;
         }
     }
 }

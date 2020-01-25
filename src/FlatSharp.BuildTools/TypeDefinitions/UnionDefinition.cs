@@ -5,13 +5,13 @@
     /// <summary>
     /// Defines a Union.
     /// </summary>
-    internal class UnionDefinition : ITypeDefinition
+    internal class UnionDefinition : BaseSchemaMember
     {
-        public string Namespace { get; set; }
+        public UnionDefinition(string name, BaseSchemaMember parent) : base(name, parent)
+        {
+        }
 
         public List<string> ComponentTypeNames { get; set; } = new List<string>();
-
-        public string TypeName { get; set; }
 
         public string ClrTypeName
         {
@@ -21,7 +21,9 @@
             }
         }
 
-        public void WriteType(CodeWriter writer, SchemaDefinition schemaDefinition)
+        protected override bool SupportsChildren => false;
+
+        protected override void OnWriteCode(CodeWriter writer)
         {
         }
     }

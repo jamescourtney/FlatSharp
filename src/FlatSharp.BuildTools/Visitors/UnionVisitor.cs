@@ -9,18 +9,19 @@
     /// </summary>
     internal class UnionVisitor : FlatBuffersBaseVisitor<UnionDefinition>
     {
-        private readonly UnionDefinition unionDef;
+        private readonly BaseSchemaMember parent;
+        private UnionDefinition unionDef;
 
-        public UnionVisitor(string @namespace)
+        public UnionVisitor(BaseSchemaMember parent)
         {
-            this.unionDef = new UnionDefinition { Namespace = @namespace };
+            this.parent = parent;
         }
 
         public override UnionDefinition VisitUnion_decl([NotNull] FlatBuffersParser.Union_declContext context)
         {
-            this.unionDef.TypeName = context.IDENT().GetText();
+            this.unionDef = new UnionDefinition(context.IDENT().GetText(), this.parent);
 
-            ErrorContext.Current.WithScope(this.unionDef.TypeName, () =>
+            ErrorContext.Current.WithScope(this.unionDef.Name, () =>
             {
                 base.VisitUnion_decl(context);
             });

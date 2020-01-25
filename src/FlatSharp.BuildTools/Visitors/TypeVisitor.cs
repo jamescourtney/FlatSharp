@@ -6,29 +6,29 @@
 
     internal class TypeVisitor : FlatBuffersBaseVisitor<TableOrStructDefinition>
     {
-        private readonly TableOrStructDefinition definition;
+        private readonly BaseSchemaMember parent;
 
-        public TypeVisitor(string namespaceName)
+        public TypeVisitor(BaseSchemaMember parent)
         {
-            this.definition = new TableOrStructDefinition { Namespace = namespaceName };
+            this.parent = parent;
         }
 
         public override TableOrStructDefinition VisitType_decl([NotNull] FlatBuffersParser.Type_declContext context)
         {
-            this.definition.TypeName = context.IDENT().GetText();
+            TableOrStructDefinition definition = new TableOrStructDefinition(context.IDENT().GetText(), this.parent);
 
-            ErrorContext.Current.WithScope(this.definition.TypeName, () =>
+            ErrorContext.Current.WithScope(definition.Name, () =>
             {
-                this.definition.IsTable = context.GetChild(0).GetText() == "table";
+                definition.IsTable = context.GetChild(0).GetText() == "table";
 
                 var fields = context.field_decl();
                 if (fields != null)
                 {
-                    this.definition.Fields = fields.Select(x => new FieldVisitor().VisitField_decl(x)).ToList();
+                    definition.Fields = fields.Select(x => new FieldVisitor().VisitField_decl(x)).ToList();
                 }
             });
 
-            return this.definition;
+            return definition;
         }
     }
 }

@@ -1,20 +1,25 @@
 ﻿namespace FlatSharp.Compiler
 {
+    using System;
     using System.Collections.Generic;
 
-    internal class TableOrStructDefinition : ITypeDefinition
+    internal class TableOrStructDefinition : BaseSchemaMember
     {
-        public string Namespace { get; set; }
+        public TableOrStructDefinition(
+            string name, 
+            BaseSchemaMember parent) : base(name, parent)
+        {
+        }
 
         public List<FieldDefinition> Fields { get; set; } = new List<FieldDefinition>();
-
-        public string TypeName { get; set; }
-
+        
         public bool IsTable { get; set; }
 
-        public void AssignIndexes(SchemaDefinition definition)
+        protected override bool SupportsChildren => false;
+
+        public void AssignIndexes()
         {
-            ErrorContext.Current.WithScope(this.TypeName, () =>
+            ErrorContext.Current.WithScope(this.Name, () =>
             {
                 int nextIndex = 0;
                 for (int i = 0; i < this.Fields.Count; ++i)
@@ -23,7 +28,7 @@
 
                     nextIndex++;
 
-                    if (definition.TryGetTypeDefinition(this.Fields[i].FbsFieldType, out var typeDef) && typeDef is UnionDefinition)
+                    if (this.TryResolveName(this.Fields[i].FbsFieldType, out var typeDef) && typeDef is UnionDefinition)
                     {
                         // Unions are double-wide.
                         nextIndex++;
@@ -32,31 +37,30 @@
             });
         }
 
-        public void WriteType(CodeWriter writer, SchemaDefinition schemaDefinition)
+        protected override void OnWriteCode(CodeWriter writer)
         {
-            ErrorContext.Current.WithScope(this.TypeName, () =>
+            this.AssignIndexes();
+
+            string attribute = this.IsTable ? "[FlatBufferTable]" : "[FlatBufferStruct]";
+
+            writer.AppendLine(attribute);
+            writer.AppendLine($"public class {this.Name} : object");
+            writer.AppendLine($"{{");
+
+            using (writer.IncreaseIndent())
             {
-                string attribute = this.IsTable ? "[FlatBufferTable]" : "[FlatBufferStruct]";
-
-                writer.AppendLine(attribute);
-                writer.AppendLine($"public class {this.TypeName} : object");
-                writer.AppendLine($"{{");
-
-                using (writer.IncreaseIndent())
+                foreach (var field in this.Fields)
                 {
-                    foreach (var field in this.Fields)
+                    if (!this.IsTable && field.Deprecated)
                     {
-                        if (!this.IsTable && field.Deprecated)
-                        {
-                            ErrorContext.Current?.RegisterError($"FlatBuffer structs may not have deprecated fields.");
-                        }
-
-                        field.WriteField(writer, schemaDefinition);
+                        ErrorContext.Current?.RegisterError($"FlatBuffer structs may not have deprecated fields.");
                     }
-                }
 
-                writer.AppendLine($"}}");
-            });
+                    field.WriteField(writer, this);
+                }
+            }
+
+            writer.AppendLine($"}}");
         }
     }
 }

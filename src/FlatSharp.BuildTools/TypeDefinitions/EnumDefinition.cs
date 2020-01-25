@@ -7,21 +7,19 @@
     /// <summary>
     /// Defines an enum.
     /// </summary>
-    internal class EnumDefinition : ITypeDefinition
+    internal class EnumDefinition : BaseSchemaMember
     {
         private BigInteger nextValue = 1;
         private readonly Dictionary<string, string> nameValuePairs = new Dictionary<string, string>();
 
-        public EnumDefinition(string typeName, string underlyingTypeName, string ns)
+        public EnumDefinition(string typeName, string underlyingTypeName, BaseSchemaMember parent)
+            : base(typeName, parent)
         {
-            this.TypeName = typeName;
             this.FbsUnderlyingType = underlyingTypeName;
-            this.Namespace = ns;
+            this.ClrUnderlyingType = SchemaDefinition.ResolvePrimitiveType(underlyingTypeName);
         }
 
-        public string TypeName { get; }
-
-        public string Namespace { get; }
+        protected override bool SupportsChildren => false;
 
         public string FbsUnderlyingType { get; }
 
@@ -31,16 +29,14 @@
 
         public void AddNameValuePair(string name, string value)
         {
-            string clrType = SchemaDefinition.ResolvePrimitiveType(this.FbsUnderlyingType);
-
             if (!string.IsNullOrEmpty(value))
             {
-                value = CodeWriter.GetPrimitiveTypeLiteral(clrType, value, out BigInteger bigInt);
+                value = CodeWriter.GetPrimitiveTypeLiteral(this.ClrUnderlyingType, value, out BigInteger bigInt);
 
                 // C# compiler won't complain about duplicate values.
                 if (this.nameValuePairs.Values.Any(x => x == value))
                 {
-                    ErrorContext.Current?.RegisterError($"Enum '{this.TypeName}' contains duplicate value '{value}'.");
+                    ErrorContext.Current?.RegisterError($"Enum '{this.Name}' contains duplicate value '{value}'.");
                 }
 
                 this.nameValuePairs[name] = value;
@@ -49,31 +45,25 @@
             else
             {
                 value = this.nextValue.ToString();
-                this.nameValuePairs[name] = CodeWriter.GetPrimitiveTypeLiteral(clrType, value, out BigInteger bigInt);
+                this.nameValuePairs[name] = CodeWriter.GetPrimitiveTypeLiteral(this.ClrUnderlyingType, value, out BigInteger bigInt);
                 this.nextValue++;
             }
         }
 
-        public void WriteType(CodeWriter writer, SchemaDefinition schemaDefinition)
+        protected override void OnWriteCode(CodeWriter writer)
         {
-            ErrorContext.Current.WithScope(
-                this.TypeName,
-                () =>
+            writer.AppendLine($"[FlatBufferEnum(typeof({this.ClrUnderlyingType}))]");
+            writer.AppendLine($"public enum {this.Name} : {this.ClrUnderlyingType}");
+            writer.AppendLine($"{{");
+            using (writer.IncreaseIndent())
+            {
+                foreach (var item in this.nameValuePairs)
                 {
-                    string underlyingType = SchemaDefinition.ResolvePrimitiveType(this.FbsUnderlyingType);
-                    writer.AppendLine($"[FlatBufferEnum(typeof({underlyingType}))]");
-                    writer.AppendLine($"public enum {this.TypeName} : {underlyingType}");
-                    writer.AppendLine($"{{");
-                    using (writer.IncreaseIndent())
-                    {
-                        foreach (var item in this.nameValuePairs)
-                        {
-                            writer.AppendLine($"{item.Key} = {item.Value},");
-                        }
-                    }
-                    writer.AppendLine($"}}");
-                    writer.AppendLine(string.Empty);
-                });
+                    writer.AppendLine($"{item.Key} = {item.Value},");
+                }
+            }
+            writer.AppendLine($"}}");
+            writer.AppendLine(string.Empty);
         }
     }
 }

@@ -13,6 +13,7 @@
     [TestClass]
     public class NamespaceTests
     {
+        // https://github.com/google/flatbuffers/tree/master/tests/namespace_test
         private const string Schema = @"
 namespace NamespaceA.NamespaceB;
 
@@ -47,6 +48,7 @@ namespace NamespaceC;
 table TableInC {
     refer_to_a1:NamespaceA.TableInFirstNS;
     refer_to_a2:NamespaceA.SecondTableInA;
+    refer_to_enum:NamespaceA.NamespaceB.EnumInNestedNS = A;
 }
 
 namespace NamespaceA;
@@ -59,6 +61,13 @@ table SecondTableInA {
         public void TestMultipleNamespaces()
         {
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(Schema);
+
+            Assert.IsNotNull(asm.GetType("NamespaceA.NamespaceB.TableInNestedNS"));
+            Assert.IsNotNull(asm.GetType("NamespaceA.NamespaceB.EnumInNestedNS"));
+            Assert.IsNotNull(asm.GetType("NamespaceA.NamespaceB.StructInNestedNS"));
+            Assert.IsNotNull(asm.GetType("NamespaceA.TableInFirstNS"));
+            Assert.IsNotNull(asm.GetType("NamespaceC.TableInC"));
+            Assert.IsNotNull(asm.GetType("NamespaceA.SecondTableInA"));
         }
     }
 }

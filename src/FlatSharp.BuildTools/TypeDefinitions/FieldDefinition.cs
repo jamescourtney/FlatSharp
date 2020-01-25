@@ -19,14 +19,14 @@ namespace FlatSharp.Compiler
 
         public VectorType VectorType { get; set; }
 
-        public void WriteField(CodeWriter writer, SchemaDefinition schemaDefinition)
+        public void WriteField(CodeWriter writer, BaseSchemaMember schemaDefinition)
         {
             ErrorContext.Current.WithScope(this.Name, () =>
             {
                 bool isVector = this.VectorType != VectorType.None;
                 EnumDefinition enumDefinition = null;
 
-                if (schemaDefinition.TryGetTypeDefinition(this.FbsFieldType, out var typeDefinition))
+                if (schemaDefinition.TryResolveName(this.FbsFieldType, out var typeDefinition))
                 {
                     enumDefinition = typeDefinition as EnumDefinition;
 
@@ -62,7 +62,7 @@ namespace FlatSharp.Compiler
                         if (enumDefinition.NameValuePairs.ContainsKey(this.DefaultValue))
                         {
                             // Referenced by name.
-                            defaultValue = $"{enumDefinition.TypeName}.{this.DefaultValue}";
+                            defaultValue = $"{this.FbsFieldType}.{this.DefaultValue}";
                         }
                         else
                         {
