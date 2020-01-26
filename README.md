@@ -6,23 +6,25 @@ FlatSharp is Google's FlatBuffers serialization format implemented in C#, for C#
 - FlatBuffers schema correctness
 
 ### Current Status
-FlatSharp is a very new project and is in active development. There are no known uses in production environments at this time. The current code can be considered alpha quality, with new features still being added. Contributions and proposals are always welcomed. Currently, FlatSharp supports the following FlatBuffers features:
+FlatSharp is in occasional development, as time permits for the author. There are no known uses in production environments at this time. The current code can be considered beta quality, with new features still being added. Contributions and proposals are always welcomed. Currently, FlatSharp supports the following FlatBuffers features:
 - Structs
 - Tables
-- Scalars / Strings
+- Scalars / Strings / Enums
 - ```IList<T>```, ```IReadOnlyList<T>```, and ```T[]``` Vectors of Strings, Tables, Structs, and Scalars
 - ```Memory<T>```/```ReadOnlyMemory<T>``` Vectors of scalars when on little-endian systems (1-byte scalars are allowed in Memory vectors on big-endian systems)
 - Discriminated/tagged unions of structs, tables, and strings.
 
 What's not supported (and why):
-- Enums. Enums are not currently supported for schema-compatibility reasons; it's too easy to make an implicit change to the type of an enum (going from ```MyEnum : byte``` -> ```MyEnum : int```), which results in a very non-obvious FlatBuffer binary break, since the enum is defined independently of the contract.
 - Vectors of Unions. This is a reasonably complex feature that can be approximated with a vector of tables, where each table element contains a union.
 
 ### License
 FlatSharp is a C# implementation of Google's FlatBuffer binary format, which is licensed under the Apache 2.0 License. Accordingly, FlatSharp is also licensed under Apache 2.0. FlatSharp incorporates code from the Google FlatSharp library for testing and benchmarking purposes.
 
 ### Packages
-FlatSharp's alpha package is published on nuget.org under the "FlatSharp" package. The unsafe library is published as FlatSharp.Unsafe.
+All FlatSharp packages are published on nuget.org:
+- Core Library: FlatSharp
+- Unsafe Extensions: FlatSharp.Unsafe
+- FBS to C# Compiler: FlatSharp.Compiler
 
 ### Getting Started
 FlatSharp uses C# as its schema, and does not require any additional files or build-time code generation. Like many other serializers, the process is to annotate your data contracts with attributes, and you're on your way.
@@ -57,15 +59,14 @@ public class MonsterTable
     // Note that that the next index starts at 8. Unions are 'double-wide' types, so the previous
     // element occupies indices 6 and 7!
     
-    [FlatBufferItem(8, DefaultValue = (int)Color.Blue)]
-    public virtual int RawColor { get; set; }
-    
-    // Expressing enums still possible.
-    public Color Color
-    {
-      get => (Color)this.RawColor;
-      set => this.RawColor = (int)value;
-    }
+    [FlatBufferItem(8, DefaultValue = Color.Blue)]
+    public virtual Color Color { get; set; }
+}
+
+[FlatBufferEnum(typeof(byte))]
+public enum Color : byte
+{
+   Blue, Red, Green
 }
 
 [FlatBufferStruct]
@@ -82,7 +83,7 @@ public class Position
 }
 ```
 For FlatSharp to be able to work with your schema, it must obey the following set of contraints:
-- All types must be public and externally visible
+- All types must be public and externally visible.
 - All types must be unsealed.
 - All properties decorated by ```[FlatSharpItem]``` must be virtual and public. Setters may be omitted, but Getters are required.
 - All FlatSharpItem indexes must be unique within the given data type.
@@ -91,6 +92,50 @@ For FlatSharp to be able to work with your schema, it must obey the following se
 - All types must be serializable in FlatBuffers (that is -- you can't throw in an arbitrary C# type).
 
 When versioning your schema, the [FlatBuffer rules apply](https://google.github.io/flatbuffers/flatbuffers_guide_writing_schema.html).
+
+#### FlatSharp Compiler (FBS Schema support)
+Installing the FlatSharp.Compiler package in one of your projects will allow you to use existing FBS schemas to generate FlatSharp contracts like above:
+
+Simply add the FBS schema to your csproj file
+```xml
+  <ItemGroup>
+    <FBS Include="Schema.fbs" />
+  </ItemGroup>
+```
+The FlatSharp compiler supports most elements of the FBS schema:
+```fbs
+namespace MyGame;
+
+enum Color:byte { Red = 0, Green, Blue = 2 }
+union Equipment { Weapon } // Optionally add more tables.
+struct Vec3 { x:float; y:float; z:float; }
+
+table Monster {
+  pos:Vec3;
+  mana:short = 150;
+  name:string;
+  friendly:bool = false (deprecated);
+  inventory:[ubyte];
+  color:Color = Blue;
+  weapons:[Weapon];
+  equipped:Equipment;
+  path1:[Vec3] (vectortype:IReadOnlyList);
+  path2:[Vec3] (vectortype:IList);
+  path3:[Vec3] (vectortype:Array);
+  path4:[ubyte] (vectortype:Memory);
+  path5:[ubyte] (vectortype:ReadOnlyMemory);
+}
+
+table Weapon {
+  name:string;
+  damage:short;
+}
+```
+
+The main departures from the flatc compiler are that the flatsharp compiler does not support:
+- Imports (ignored)
+- Root types (ignored)
+- Most of the flatc attributes, such as ID (cause errors)
 
 #### Serializing and Deserializing
 ```C#
@@ -125,27 +170,21 @@ public int GetBufferSize(MonsterTable monster)
 #### Serializer Options and Default Behaviors
 FlatSharp does not expose any special options for the serialization flow; the binary format is the binary format, and isn't customizable. However, there are some knobs to tune on the deserialization flows. 
 
-The default behavior of the FlatSharp parser is to:
-- Store a reference to the input buffer.
-- Lazily cache all table and struct members as they are accessed. Properties are not deserialized until they are read, but the same instance is returned each time following the initial read. There is not much memory overhead here since tables and structs have a fixed size, and the performance gain is nontrivial.
-- Read all vector data from the buffer each time. Vectors can be arbitrarily long, and the decision about whether to make a copy of that should be left to the consumers of the library. 
-- Disallow any mutations to any deserialized data (with the exception of ```Memory<T>```, which can't be prevented).
+The default behavior of the FlatSharp parser is to greedily parse all information from the buffer. This is a change in behavior from previous versions of FlatSharp, and is made to give the best out-of-the-box experience and to not violate the principle of least surprise.
 
 These behaviors can be changed by specifying your own ```FlatBufferSerializerOptions``` class, which can be passed into the ```FlatBufferSerializer``` constructor.
 
 The options are:
-- ```CacheListVectorData```: Allocate extra arrays when reading an ```IList<T>``` vector and use a progressive cache like FlatSharp does with conventional properties. This increases the memory footprint of your object, but for situations where you will iterate over a vector multiple times, this becomes a useful optimization.
-- ```GenerateMutableObjects```: All objects returned from FlatSharp will be mutable, where allowable. Mutations to objects are never stored back into the original buffer, but are instead stored in Memory using "Copy On Write" semantics. Note that this implies a greedy deserialization for all vector types since vectors must support Add/Clear/RemoveAt semantics. When this option is enabled, FlatSharp provides the invariant that the original buffer is not modified. Any changes will require a re-serialization.
-- ```GreedyDeserialize```: At parse time, the entire object graph is traversed and the contents are copied into the class structure. This option has roughly the same performance as the ```CacheListVectorData``` option above, but provides the guarantee that the original buffer will not be referenced by FlatSharp and can be recycled / used for other purposes.
-
-These options may all be safely used together, though it is recommended to not use ```CacheListVectorData``` and ```GreedyDeserialize``` together as that will introduce extra memory allocations.
+- ```CacheListVectorData``` (Default=false): Allocate extra arrays when reading an ```IList<T>``` vector and use a progressive cache like FlatSharp does with conventional properties. This increases the memory footprint of your object, but for situations where you will iterate over a vector multiple times, this becomes a useful optimization.
+- ```GenerateMutableObjects``` (Default=false): All objects returned from FlatSharp will be mutable, where allowable. Mutations to objects are never stored back into the original buffer, but are instead stored in Memory using "Copy On Write" semantics. Note that this implies a greedy deserialization for all vector types since vectors must support Add/Clear/RemoveAt semantics. When this option is enabled, FlatSharp provides the invariant that the original buffer is not modified. Any changes will require a re-serialization.
+- ```GreedyDeserialize``` (Default=true): At parse time, the entire object graph is traversed and the contents are copied into the class structure. This option has roughly the same performance as the ```CacheListVectorData``` option above, but provides the guarantee that the original buffer will not be referenced by FlatSharp and can be recycled / used for other purposes.
 
 ### Internals
 FlatSharp works by generating dynamic subclasses of your data contracts based on the schema that you define, which is why they must be public and virtual. That is, when you attempt to deserialize a ```MonsterTable``` object, you actually get back a dynamic subclass of ```MonsterTable```, which has properties defined in such a way as to index into the buffer. When a FlatSharp object reads a value for it, it goes ahead and makes a copy of that value so that it does not need to consult the original buffer again.
 
 
-### Safety
-FlatSharp is a lazy parser. That is -- data from the underlying buffer is not actually parsed until you request it. This keeps things very lean throughout your application and prevents your application from paying a deserialize tax on items that you will not use. However, this is a double-edged sword, and any changes to the underlying buffer will modify, and possibly corrupt, the state of any objects that reference that buffer.
+### Safety without GreedyDeserialize
+When GreedyDeserialize is disabled, FlatSharp becomes a lazy parser. That is -- data from the underlying buffer is not actually parsed until you request it. This keeps things very lean throughout your application and prevents your application from paying a deserialize tax on items that you will not use. However, this is a double-edged sword, because the deserialized objects must maintain a reference to the original buffer, and any changes to the underlying buffer will modify, and possibly corrupt, the state of any objects that reference that buffer.
 
 ```C#
 public void ReadMonster(byte[] monsterBuffer)
@@ -157,7 +196,7 @@ public void ReadMonster(byte[] monsterBuffer)
   Console.WriteLine($"{monster.Position.X}, {monster.Position.Y}, {monster.Position.Z}");
 }
 ```
-Therefore, to use FlatSharp effectively, you must do so with buffer lifecycle management in mind. The simplest way to accomplish is to just let the GC take care of it for you. However, in scenarios where buffers are pooled, lifecycle management becomes important. The ```FlatBufferSerializerOptions.GreedyDeserialize``` option (documented above) can prevent this entire class of issue, at the cost of extra allocations.
+Therefore, when ```GreedyDeserialize``` is disabled, you must keep buffer lifecycle management in mind. The simplest way to accomplish is to just let the GC take care of it for you.
 
 ### Security
 Serializers are a common vector for security issues. FlatSharp takes the following approach to security:
@@ -183,15 +222,15 @@ The benchmarks test 4 different serialization frameworks:
 - ZeroFormatter
 
 #### Serialization
-![image](doc/Serialization.png)
+![image](doc/s_3.png) | ![image](doc/s_30.png)
+----------------------|-----------------------
 
-#### Deserialization + 1 Traversal of Data
-![image](doc/Deserialization_1_Traversal.png)
-
-#### Deserialization + 5 Traversals of Data
-![image](doc/Deserialization_5_Traversal.png)
+#### Deserialization
+![image](doc/d_1_3.png) | ![image](doc/d_5_3.png)
+------------------------|-------------------------
+![image](doc/d_1_30.png)|![image](doc/d_5_30.png)
 
 ### Roadmap
-- Security hardening and fuzzing
-- Code gen based on FBS schema files
-- GRPC support
+- [ ] Security hardening and fuzzing
+- [x] Code gen based on FBS schema files
+- [ ] GRPC support

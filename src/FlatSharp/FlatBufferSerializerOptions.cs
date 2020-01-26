@@ -42,7 +42,7 @@
         public FlatBufferSerializerOptions(
             bool cacheListVectorData = false,
             bool generateMutableObjects = false,
-            bool greedyDeserialize = false)
+            bool greedyDeserialize = true)
         {
             this.CacheListVectorData = cacheListVectorData;
             this.GenerateMutableObjects = generateMutableObjects;
@@ -62,8 +62,13 @@
         public bool GenerateMutableObjects { get; }
 
         /// <summary>
-        /// Indicates if deserialization should be greedy. Setting this 
+        /// Indicates if deserialization should be greedy.
         /// </summary>
         public bool GreedyDeserialize { get; }
+
+        /// <summary>
+        /// Indicates if FlatSharp should intercept app domain load events to look for cross-referenced generated assemblies. Mostly useful for FlatSharp unit tests.
+        /// </summary>
+        public bool EnableAppDomainInterceptOnAssemblyLoad { get; set; }
     }
 }

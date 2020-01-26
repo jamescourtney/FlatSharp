@@ -6,7 +6,7 @@
 <#@ output extension=".cs" #>
 
 <#
-	int numGenerics = 9;
+	int numGenerics = 10;
 #>
 
 namespace FlatSharp
@@ -19,7 +19,7 @@ namespace FlatSharp
 	<#
 		for (int i = 0; i < numGenerics; ++i)
 		{
-			var range = Enumerable.Range(1, i + 2);
+			var range = Enumerable.Range(1, i + 1);
 	#>
 			[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public sealed class FlatBufferUnion<<#= string.Join(", ", range.Select(x => "T" + x)) #>> : IUnion
@@ -64,6 +64,18 @@ namespace FlatSharp
 							throw new System.InvalidOperationException();
 						}
 					}
+				}
+
+				public bool TryGet(out T<#= genericType #> item)
+				{
+					item = default;
+					if (this.discriminator == <#= genericType #>)
+					{
+						item = this.item<#= genericType #>;
+						return true;
+					}
+
+					return false;
 				}
 				
 				<# 

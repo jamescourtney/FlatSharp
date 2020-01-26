@@ -1,27 +1,19 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\common.props"/>
+  
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netcoreapp2.1</TargetFrameworks>
-    <LangVersion>7.3</LangVersion>
     <AssemblyName>FlatSharp</AssemblyName>
     <RootNamespace>FlatSharp</RootNamespace>
-    <DelaySign>false</DelaySign>
-    <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>..\..\misc\strongname.snk</AssemblyOriginatorKeyFile>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <Version>1.0.0</Version>
-    <Authors>James Courtney</Authors>
-    <Company />
-    <Description>FlatSharp is an idiomatic implementation of the FlatBuffer binary format.</Description>
-    <Copyright>2019</Copyright>
-    <PackageProjectUrl>https://github.com/jamescourtney/FlatSharp/</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/jamescourtney/FlatSharp/</RepositoryUrl>
-    <PackageTags>flatbuffers serialization flatbuffer flatsharp</PackageTags>
-    <PackageReleaseNotes>v1.0 Release</PackageReleaseNotes>
-    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+    <Description>FlatSharp is an idiomatic C# implementation of the FlatBuffer serialization format. Use attributes to declare your data contracts!</Description>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Update="UnionTypes.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>UnionTypes.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
   <ItemGroup>
     <None Include="UnionTypes.cs">
       <DesignTime>True</DesignTime>
@@ -31,35 +23,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="2.9.0" />
-    <PackageReference Include="Microsoft.Net.Compilers" Version="2.9.0">
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.4.0" />
+    <PackageReference Include="Microsoft.Net.Compilers" Version="3.4.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="System.Memory" Version="4.5.1" />
+    <PackageReference Include="System.Memory" Version="4.5.3" />
   </ItemGroup>
-
-  <ItemGroup>
-    <None Update="UnionTypes.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>UnionTypes.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="UnionTypes.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>UnionTypes.tt</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="..\..\LICENSE.md">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-  </ItemGroup>
-
-
 </Project>

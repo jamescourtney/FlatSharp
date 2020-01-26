@@ -141,10 +141,15 @@ namespace FlatSharp.TypeModel
                 {
                     newModel = new VectorTypeModel(type);
                 }
+                else if (type.GetCustomAttribute<FlatBufferEnumAttribute>() != null)
+                {
+                    ScalarTypeModel scalarModel = (ScalarTypeModel)RuntimeTypeModel.CreateFrom(Enum.GetUnderlyingType(type));
+                    newModel = new EnumTypeModel(type, scalarModel.InlineSize);
+                }
 
                 if (newModel == null)
                 {
-                    throw new InvalidFlatBufferDefinitionException("Unable to create runtime type model for " + type.Name);
+                    throw new InvalidFlatBufferDefinitionException($"Unable to create runtime type model for '{type.Name}'. This type is not supported. Please consult the documentation for a list of supported types.");
                 }
 
                 ModelMap[type] = newModel;

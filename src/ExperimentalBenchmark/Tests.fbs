@@ -1,0 +1,25 @@
+﻿
+namespace Google.Flatbuffers;
+
+union Either { TestTable3, TestTable4 }
+
+enum Blah : ubyte { A, B, C }
+
+table TestTable3
+{
+	Foobar:string;
+	Test:int64;
+	Memory:[ubyte];
+	List:[int];
+}
+
+table TestTable4 
+{
+   Name:string;
+   Age:int;
+}
+
+table TestTable5
+{
+	Something:Google.Flatbuffers.Either;
+}

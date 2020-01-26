@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\common.props" />
+  
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp2.1;net47</TargetFrameworks>
+    <AssemblyName>FlatSharp.Compiler</AssemblyName>
+    <RootNamespace>FlatSharp.Compiler</RootNamespace>
+    <OutputType>Exe</OutputType>
+    <Antlr4UseCSharpGenerator>True</Antlr4UseCSharpGenerator>
+    <NuspecFile>FlatSharp.Compiler.nuspec</NuspecFile>
+    <AntlrVersion>4.6.6</AntlrVersion>
+    <AntlrRuntimeRoot>$(NugetPackageRoot)\Antlr4.Runtime\$(AntlrVersion)</AntlrRuntimeRoot>
+    <NuspecProperties>$(NuspecProperties);AntlrRuntime=$(AntlrRuntimeRoot);OutDir=$(MSBuildThisFileDirectory)\bin\$(Configuration)</NuspecProperties>
+  </PropertyGroup>
+  
+  
+  <ItemGroup>
+    <PackageReference Include="Antlr4.CodeGenerator" Version="$(AntlrVersion)">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Antlr4.Runtime" Version="$(AntlrVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Antlr4 Update="FlatBuffers.g4">
+      <Generator>MSBuild:Compile</Generator>
+      <Listener>False</Listener>
+      <Visitor>True</Visitor>
+    </Antlr4>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FlatSharp\FlatSharp.csproj" />
+  </ItemGroup>
+</Project>

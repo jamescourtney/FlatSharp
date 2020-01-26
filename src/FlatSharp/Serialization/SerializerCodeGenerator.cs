@@ -16,11 +16,11 @@
 
 namespace FlatSharp
 {
-    using System;
-    using System.Collections.Generic;
     using FlatSharp.TypeModel;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
+    using System;
+    using System.Collections.Generic;
 
     /// <summary>
     /// Generates a collection of methods to help serialize the given root type.
@@ -79,6 +79,10 @@ namespace FlatSharp
                 {
                     throw new InvalidOperationException();
                 }
+            }
+            else if (typeModel is EnumTypeModel enumModel)
+            {
+                this.ImplementEnumInlineWriteMethod(enumModel);
             }
             else if (typeModel is UnionTypeModel unionModel)
             {
@@ -291,7 +295,7 @@ $@"
             var type = vectorModel.ClrType;
             var itemTypeModel = vectorModel.ItemTypeModel;
 
-            string writerMethodName = $"{nameof(SpanWriter.WriteReadOnlyMemoryBlock)}<{itemTypeModel.ClrType}>";
+            string writerMethodName = $"{nameof(SpanWriter.WriteReadOnlyMemoryBlock)}<{CSharpHelpers.GetCompilableTypeName(itemTypeModel.ClrType)}>";
             if (itemTypeModel.ClrType == typeof(byte))
             {
                 // Optimization: when we're writing bytes we don't have to change types.
@@ -299,6 +303,14 @@ $@"
             }
 
             string body = $"writer.{writerMethodName}(span, item, originalOffset, {itemTypeModel.Alignment}, {itemTypeModel.InlineSize}, context);";
+            this.GenerateSerializeMethod(type, body);
+        }
+
+        private void ImplementEnumInlineWriteMethod(EnumTypeModel enumModel)
+        {
+            var type = enumModel.ClrType;
+            var underlyingType = Enum.GetUnderlyingType(type);
+            string body = this.GetSerializeInvocation(underlyingType, $"({CSharpHelpers.GetCompilableTypeName(underlyingType)})item", "originalOffset");
             this.GenerateSerializeMethod(type, body);
         }
 
@@ -325,7 +337,8 @@ $@"
                 inlineDeclaration = string.Empty;
             }
 
-            string declaration = $@"
+            string declaration = 
+$@"
             {inlineDeclaration}
             private static void {this.MethodNames[type]} (SpanWriter writer, Span<byte> span, {CSharpHelpers.GetCompilableTypeName(type)} item, int originalOffset, SerializationContext context)
             {{

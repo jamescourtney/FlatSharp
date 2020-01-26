@@ -61,7 +61,7 @@
         public bool HasDefaultValue { get; }
 
         /// <summary>
-        /// Indicates how "wide" this element is in the table's vtable. Unions consume 2 slots in the vtable right now.
+        /// Indicates how "wide" this element is in the table's vtable. Unions consume 2 slots in the vtable.
         /// </summary>
         public int VTableSlotCount => this.ItemTypeModel.SchemaType == FlatBufferSchemaType.Union ? 2 : 1;
     }

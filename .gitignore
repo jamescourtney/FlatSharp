@@ -6,6 +6,7 @@
 **/obj/*
 **/bin/*
 **/*.csproj.user
+**/*.fbs.generated.cs
 /src/FlatSharpTests/coverage.netstandard2.0.xml
 /src/FlatSharpTests/coverage.netcoreapp2.1.xml
 /src/FlatSharpTests/coverage.net47.xml

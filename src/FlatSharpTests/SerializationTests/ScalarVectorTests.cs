@@ -131,7 +131,16 @@ namespace FlatSharpTests
             this.TestType(() => r.NextDouble(), 500);
         }
 
-        private void TestType<T>(Func<T> generator, int length) where T : IEquatable<T>
+        [TestMethod]
+        public void EnumVector()
+        {
+            this.TestType(() => SimpleEnum.Bar, 0);
+            this.TestType(() => SimpleEnum.Foo, 1);
+            this.TestType(() => SimpleEnum.Bar, 10);
+            this.TestType(() => SimpleEnum.Foo, 500);
+        }
+
+        private void TestType<T>(Func<T> generator, int length)
         {
             {
                 var memoryTable = new RootTable<Memory<T>>
@@ -245,6 +254,13 @@ namespace FlatSharpTests
                     Assert.AreEqual(memoryTable.Inner.Vector[i], innerVector[i]);
                 }
             }
+        }
+
+        [FlatBufferEnum(typeof(long))]
+        public enum SimpleEnum : long
+        {
+            Foo = 0,
+            Bar = 1,
         }
 
         [FlatBufferTable]

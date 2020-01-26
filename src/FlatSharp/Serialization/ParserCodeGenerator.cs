@@ -81,7 +81,11 @@ namespace FlatSharp
                     this.ImplementListVectorReadMethod(vectorModel);
                 }
             }
-            else if (typeModel is UnionTypeModel unionModel)
+            else if (typeModel is EnumTypeModel enumModel)
+            {
+                this.ImplementEnumReadMethod(enumModel);
+            }
+            else if (typeModel is UnionTypeModel)
             {
                 // Explicitly left empty.
             }
@@ -134,7 +138,7 @@ namespace FlatSharp
                     {
                         if (this.options.GenerateMutableObjects)
                         {
-                            setter = 
+                            setter =
 $@"
                             set {{
                                 this.{valueFieldName} = value;
@@ -150,7 +154,7 @@ $@"
 
                     string @override =
 $@"
-                    {CSharpHelpers.GetAccessModifier(propertyInfo.GetGetMethod())} override {compilableTypeName} {propertyInfo.Name}
+                    {CSharpHelpers.GetAccessModifier(propertyInfo)} override {compilableTypeName} {propertyInfo.Name}
                     {{
                         {getter}
                         {setter}
@@ -161,10 +165,10 @@ $@"
                 }
 
                 string classDefinition = this.CreateClass(
-                    className, 
-                    typeModel.ClrType, 
-                    typeModel.IndexToMemberMap.Values.Select(x => x.PropertyInfo.Name), 
-                    propertyOverrides, 
+                    className,
+                    typeModel.ClrType,
+                    typeModel.IndexToMemberMap.Values.Select(x => x.PropertyInfo.Name),
+                    propertyOverrides,
                     fieldDefinitions);
 
                 var node = CSharpSyntaxTree.ParseText(classDefinition, ParseOptions);
@@ -272,7 +276,7 @@ $@"
                 }}
 ";
         }
-        
+
         private void ImplementStructReadMethod(StructTypeModel typeModel)
         {
             // We have to implement two items: The table class and the overall "read" method.
@@ -330,7 +334,7 @@ $@"
 
                     string @override =
 $@"
-                    {CSharpHelpers.GetAccessModifier(propertyInfo.GetGetMethod())} override {compilableTypeName} {propertyInfo.Name}
+                    {CSharpHelpers.GetAccessModifier(propertyInfo)} override {compilableTypeName} {propertyInfo.Name}
                     {{
                         {getter}
                         {setter}
@@ -467,6 +471,15 @@ $@"
             this.GenerateMethodDefinition(typeModel.ClrType, $"return {statement};");
         }
 
+        private void ImplementEnumReadMethod(EnumTypeModel typeModel)
+        {
+            Type enumType = typeModel.ClrType;
+            Type underlyingType = Enum.GetUnderlyingType(enumType);
+
+            string body = $"return ({CSharpHelpers.GetCompilableTypeName(enumType)}){this.GetReadInvocation(underlyingType, "memory", "offset")};";
+            this.GenerateMethodDefinition(enumType, body);
+        }
+
         private string CreateFlatBufferVector(VectorTypeModel typeModel, string vectorTypeName)
         {
             // Params: Buffer, UOffset after following, Padded size of each member, delegate invocation for parsing individual items.
@@ -491,7 +504,7 @@ $@"
 
         private void GenerateMethodDefinition(Type type, string body)
         {
-            string methodDef = 
+            string methodDef =
 $@"
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private static {CSharpHelpers.GetCompilableTypeName(type)} {this.MethodNames[type]} (InputBuffer memory, int offset)
