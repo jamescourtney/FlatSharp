@@ -1,24 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
+  <Import Project="..\common.props" />
+  
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <LangVersion>7.3</LangVersion>
     <AssemblyName>FlatSharp.Unsafe</AssemblyName>
     <RootNamespace>FlatSharp.Unsafe</RootNamespace>
-    <DelaySign>false</DelaySign>
-    <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>..\..\misc\strongname.snk</AssemblyOriginatorKeyFile>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <Version>1.1.0</Version>
-    <Authors>James Courtney</Authors>
-    <Description>Unsafe extensions to the FlatSharp package.</Description>
-    <Copyright>2020</Copyright>
-    <PackageLicenseUrl></PackageLicenseUrl>
-    <PackageProjectUrl>https://github.com/jamescourtney/FlatSharp/</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/jamescourtney/FlatSharp/</RepositoryUrl>
-    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,12 +15,4 @@
   <ItemGroup>
     <ProjectReference Include="..\FlatSharp\FlatSharp.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <None Include="..\..\LICENSE.md">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-  </ItemGroup>
-
 </Project>

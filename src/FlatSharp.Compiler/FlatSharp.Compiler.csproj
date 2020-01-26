@@ -1,38 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
+  <Import Project="..\common.props" />
+  
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.1;net47</TargetFrameworks>
-    <LangVersion>7.3</LangVersion>
     <AssemblyName>FlatSharp.Compiler</AssemblyName>
     <RootNamespace>FlatSharp.Compiler</RootNamespace>
-    <DelaySign>false</DelaySign>
-    <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>..\..\misc\strongname.snk</AssemblyOriginatorKeyFile>
     <OutputType>Exe</OutputType>
-    
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <Version>1.1.0</Version>
-    <Authors>James Courtney</Authors>
-    <Company />
-    <Description>FlatSharp is an idiomatic implementation of the FlatBuffer binary format.</Description>
-    <Copyright>2020</Copyright>
-    <PackageProjectUrl>https://github.com/jamescourtney/FlatSharp/</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/jamescourtney/FlatSharp/</RepositoryUrl>
-    <PackageTags>flatbuffers serialization flatbuffer flatsharp</PackageTags>
-    <PackageReleaseNotes>v1.1 Release</PackageReleaseNotes>
-    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-    
     <Antlr4UseCSharpGenerator>True</Antlr4UseCSharpGenerator>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Include="..\..\LICENSE.md">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-  </ItemGroup>
-
+  
   <ItemGroup>
     <PackageReference Include="Antlr4.CodeGenerator" Version="4.6.6">
       <PrivateAssets>all</PrivateAssets>
@@ -42,10 +18,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FlatSharp\FlatSharp.csproj" />
-  </ItemGroup>
-  
-  <ItemGroup>
     <Antlr4 Update="FlatBuffers.g4">
       <Generator>MSBuild:Compile</Generator>
       <Listener>False</Listener>
@@ -53,4 +25,7 @@
     </Antlr4>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\FlatSharp\FlatSharp.csproj" />
+  </ItemGroup>
 </Project>
