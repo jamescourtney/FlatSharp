@@ -1,30 +1,49 @@
-﻿using Antlr4.Runtime;
-using Antlr4.Runtime.Misc;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
+﻿/*
+ * Copyright 2020 James Courtney
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 namespace FlatSharp.Compiler
 {
+    using System;
+    using System.IO;
+    using System.Linq;
+    using System.Reflection;
+    using Antlr4.Runtime;
+    using Antlr4.Runtime.Misc;
+
     public static class FlatSharpCompiler
     {
         static void Main(string[] args)
         {
             using (var context = ErrorContext.Current)
             {
-                context.PushScope(".schema");
-
-                string text = File.ReadAllText(@"C:\Users\jcour\source\repos\jamescourtney\FlatSharp\src\Benchmark\FBBench\Google.Flatbuffers.fbs");
-                string cSharp = CreateCSharp(text);
-                Console.Write(cSharp);
-
-                context.PopScope();
+                context.PushScope("$");
+                try
+                {
+                    string text = File.ReadAllText(@"C:\Users\jcour\source\repos\jamescourtney\FlatSharp\src\Benchmark\FBBench\Google.Flatbuffers.fbs");
+                    string cSharp = CreateCSharp(text);
+                    Console.Write(cSharp);
+                }
+                finally
+                {
+                    context.PopScope();
+                }
             }
         }
 
-        internal static Assembly CompileAndLoadAssembly(string fbsSchema)
+        public static Assembly CompileAndLoadAssembly(string fbsSchema)
         {
             using (var context = ErrorContext.Current)
             {
@@ -76,11 +95,11 @@ namespace FlatSharp.Compiler
     internal class CustomErrorListener : IAntlrErrorListener<IToken>
     {
         public void SyntaxError(
-            [NotNull] IRecognizer recognizer, 
-            [Nullable] IToken offendingSymbol, 
-            int line, 
-            int charPositionInLine, 
-            [NotNull] string msg, 
+            [NotNull] IRecognizer recognizer,
+            [Nullable] IToken offendingSymbol,
+            int line,
+            int charPositionInLine,
+            [NotNull] string msg,
             [Nullable] RecognitionException e)
         {
             ErrorContext.Current?.RegisterError($"Syntax error in FBS file: Token='{offendingSymbol.Text}', Msg='{msg}'.");
