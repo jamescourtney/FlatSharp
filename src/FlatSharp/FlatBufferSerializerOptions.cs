@@ -42,7 +42,7 @@
         public FlatBufferSerializerOptions(
             bool cacheListVectorData = false,
             bool generateMutableObjects = false,
-            bool greedyDeserialize = false)
+            bool greedyDeserialize = true)
         {
             this.CacheListVectorData = cacheListVectorData;
             this.GenerateMutableObjects = generateMutableObjects;
@@ -62,7 +62,7 @@
         public bool GenerateMutableObjects { get; }
 
         /// <summary>
-        /// Indicates if deserialization should be greedy. Setting this 
+        /// Indicates if deserialization should be greedy.
         /// </summary>
         public bool GreedyDeserialize { get; }
 
