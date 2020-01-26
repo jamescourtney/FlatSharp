@@ -10,15 +10,15 @@
     <AssemblyOriginatorKeyFile>..\..\misc\strongname.snk</AssemblyOriginatorKeyFile>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <Version>1.0.0</Version>
+    <Version>1.1.0</Version>
     <Authors>James Courtney</Authors>
     <Company />
     <Description>FlatSharp is an idiomatic implementation of the FlatBuffer binary format.</Description>
-    <Copyright>2019</Copyright>
+    <Copyright>2020</Copyright>
     <PackageProjectUrl>https://github.com/jamescourtney/FlatSharp/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/jamescourtney/FlatSharp/</RepositoryUrl>
     <PackageTags>flatbuffers serialization flatbuffer flatsharp</PackageTags>
-    <PackageReleaseNotes>v1.0 Release</PackageReleaseNotes>
+    <PackageReleaseNotes>v1.1 Release</PackageReleaseNotes>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
   </PropertyGroup>
 
@@ -60,10 +60,4 @@
       <PackagePath></PackagePath>
     </None>
   </ItemGroup>
-
-  <ItemGroup>
-    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
-  </ItemGroup>
-
-
 </Project>
