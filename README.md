@@ -229,15 +229,15 @@ The benchmarks test 4 different serialization frameworks:
 - ZeroFormatter
 
 #### Serialization
-![image](doc/Serialization.png)
+![image](doc/s_3.png) | ![image](doc/s_30.png)
+----------------------|-----------------------
 
-#### Deserialization + 1 Traversal of Data
-![image](doc/Deserialization_1_Traversal.png)
-
-#### Deserialization + 5 Traversals of Data
-![image](doc/Deserialization_5_Traversal.png)
+#### Deserialization
+![image](doc/d_1_3.png) | ![image](doc/d_5_3.png)
+------------------------|-------------------------
+![image](doc/d_1_30.png)|![image](doc/d_5_30.png)
 
 ### Roadmap
-- Security hardening and fuzzing
-- Code gen based on FBS schema files
-- GRPC support
+- [ ] Security hardening and fuzzing
+- [x] Code gen based on FBS schema files
+- [ ] GRPC support
