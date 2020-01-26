@@ -50,8 +50,8 @@ namespace FlatSharpTests
         [TestMethod]
         public void FlatBufferVector_OutOfRange()
         {
-            Assert.ThrowsException<IndexOutOfRangeException>(() => this.parsedVector.StringVector[-1]);
-            Assert.ThrowsException<IndexOutOfRangeException>(() => this.parsedVector.StringVector[5]);
+            Assert.ThrowsException<ArgumentOutOfRangeException>(() => this.parsedVector.StringVector[-1]);
+            Assert.ThrowsException<ArgumentOutOfRangeException>(() => this.parsedVector.StringVector[5]);
         }
 
         [TestMethod]

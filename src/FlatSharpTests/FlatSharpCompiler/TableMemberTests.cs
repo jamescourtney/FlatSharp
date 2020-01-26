@@ -92,8 +92,10 @@ namespace FlatSharpTests.Compiler
         private void RunCompoundTest<T>(string fbsType)
         {
             this.RunSingleTest<T>(fbsType);
+            this.RunSingleTest<T>($"{fbsType} (deprecated)", deprecated: true);
             this.RunSingleTest<IList<T>>($"[{fbsType}]");
             this.RunSingleTest<IList<T>>($"[{fbsType}]  (vectortype: IList)");
+            this.RunSingleTest<T[]>($"[{fbsType}]  (vectortype: Array)");
             this.RunSingleTest<IReadOnlyList<T>>($"[{fbsType}]  (vectortype: IReadOnlyList)");
 
             if (typeof(T).IsValueType)
@@ -108,11 +110,11 @@ namespace FlatSharpTests.Compiler
             }
         }
 
-        private void RunSingleTest<T>(string fbsType)
+        private void RunSingleTest<T>(string fbsType, bool deprecated = false)
         {
             try
             {
-                string schema = $@"namespace TableMemberTests; table Table {{ member:{fbsType}; }}";
+                string schema = $@"namespace TableMemberTests; table Table {{ member:{fbsType}; member2:int; }}";
                 Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema);
 
                 Type tableType = asm.GetType("TableMemberTests.Table");
@@ -122,7 +124,7 @@ namespace FlatSharpTests.Compiler
                 var attribute = property.GetCustomAttribute<FlatBufferItemAttribute>();
 
                 Assert.AreEqual(0, attribute.Index);
-                Assert.AreEqual(false, attribute.Deprecated);
+                Assert.AreEqual(deprecated, attribute.Deprecated);
                 Assert.AreEqual(null, attribute.DefaultValue);
 
                 byte[] data = new byte[100];
