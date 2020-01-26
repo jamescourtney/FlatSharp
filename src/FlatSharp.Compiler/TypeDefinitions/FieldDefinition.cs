@@ -16,7 +16,7 @@
 
 namespace FlatSharp.Compiler
 {
-    internal class FieldDefinition : IFieldDefinition
+    internal class FieldDefinition
     {
         public int Index { get; set; }
 
