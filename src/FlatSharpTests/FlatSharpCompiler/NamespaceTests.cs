@@ -85,5 +85,43 @@ table SecondTableInA {
             Assert.IsNotNull(asm.GetType("NamespaceC.TableInC"));
             Assert.IsNotNull(asm.GetType("NamespaceA.SecondTableInA"));
         }
+
+        [TestMethod]
+        public void TestCrossNamespaceUnion()
+        {
+            string schema = @"
+namespace A;
+
+union Either { A1, A2 }
+
+table A1
+{
+	Foobar:string;
+	Test:int64;
+	Memory:[ubyte];
+	List:[int];
+}
+
+table A2
+{
+   Name:string;
+   Age:int;
+}
+
+table A3
+{
+    Union:Either;
+    Union2:A.Either;
+}
+
+namespace B;
+
+table T3
+{
+	Union:A.Either;
+}";
+
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema);
+        }
     }
 }

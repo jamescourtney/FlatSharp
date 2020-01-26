@@ -18,14 +18,22 @@
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.11.1" />
     <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.11.1" />
+    <PackageReference Include="FlatSharp" Version="1.1.0" />
+    <PackageReference Include="FlatSharp.Compiler" Version="1.1.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="FlatSharp.Unsafe" Version="1.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="protobuf-net" Version="2.4.0" />
     <PackageReference Include="ZeroFormatter" Version="1.6.4" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FlatSharp.Unsafe\FlatSharp.Unsafe.csproj" />
-    <ProjectReference Include="..\FlatSharp\FlatSharp.csproj" />
+    <FBS Include="Tests.fbs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Google.FlatBuffers\Google.FlatBuffers.csproj" />
   </ItemGroup>
 

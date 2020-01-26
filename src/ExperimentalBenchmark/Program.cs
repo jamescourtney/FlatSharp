@@ -33,6 +33,8 @@ namespace BenchmarkCore
     {
         public static void Main(string[] args)
         {
+            Google.Flatbuffers.TestTable3 x = null;
+
             Stopwatch sw = Stopwatch.StartNew();
             FlatSharp.FlatBufferSerializer.Default.Compile<Test1<byte>>();
             sw.Stop();

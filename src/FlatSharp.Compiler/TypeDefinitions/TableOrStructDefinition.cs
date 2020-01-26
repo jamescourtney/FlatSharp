@@ -60,6 +60,7 @@ namespace FlatSharp.Compiler
             string attribute = this.IsTable ? "[FlatBufferTable]" : "[FlatBufferStruct]";
 
             writer.AppendLine(attribute);
+            writer.AppendLine("[System.Runtime.CompilerServices.CompilerGenerated]");
             writer.AppendLine($"public class {this.Name} : object");
             writer.AppendLine($"{{");
 

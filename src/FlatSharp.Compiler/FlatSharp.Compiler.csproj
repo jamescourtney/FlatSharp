@@ -7,14 +7,19 @@
     <RootNamespace>FlatSharp.Compiler</RootNamespace>
     <OutputType>Exe</OutputType>
     <Antlr4UseCSharpGenerator>True</Antlr4UseCSharpGenerator>
+    <NuspecFile>FlatSharp.Compiler.nuspec</NuspecFile>
+    <AntlrVersion>4.6.6</AntlrVersion>
+    <AntlrRuntimeRoot>$(NugetPackageRoot)\Antlr4.Runtime\$(AntlrVersion)</AntlrRuntimeRoot>
+    <NuspecProperties>$(NuspecProperties);AntlrRuntime=$(AntlrRuntimeRoot);OutDir=$(MSBuildThisFileDirectory)\bin\$(Configuration)</NuspecProperties>
   </PropertyGroup>
   
+  
   <ItemGroup>
-    <PackageReference Include="Antlr4.CodeGenerator" Version="4.6.6">
+    <PackageReference Include="Antlr4.CodeGenerator" Version="$(AntlrVersion)">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Antlr4.Runtime" Version="4.6.6" />
+    <PackageReference Include="Antlr4.Runtime" Version="$(AntlrVersion)" />
   </ItemGroup>
 
   <ItemGroup>

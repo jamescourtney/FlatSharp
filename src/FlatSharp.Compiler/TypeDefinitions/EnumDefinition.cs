@@ -69,6 +69,7 @@ namespace FlatSharp.Compiler
         protected override void OnWriteCode(CodeWriter writer)
         {
             writer.AppendLine($"[FlatBufferEnum(typeof({this.ClrUnderlyingType}))]");
+            writer.AppendLine("[System.Runtime.CompilerServices.CompilerGenerated]");
             writer.AppendLine($"public enum {this.Name} : {this.ClrUnderlyingType}");
             writer.AppendLine($"{{");
             using (writer.IncreaseIndent())

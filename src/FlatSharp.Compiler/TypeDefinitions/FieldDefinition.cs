@@ -59,7 +59,7 @@ namespace FlatSharp.Compiler
                 bool isPrimitive = SchemaDefinition.TryResolvePrimitiveType(this.FbsFieldType, out string clrType);
                 if (!isPrimitive)
                 {
-                    clrType = this.FbsFieldType;
+                    clrType = typeDefinition?.GlobalName ?? this.FbsFieldType;
                 }
 
                 if (!string.IsNullOrEmpty(this.DefaultValue))
@@ -73,7 +73,7 @@ namespace FlatSharp.Compiler
                         if (enumDefinition.NameValuePairs.ContainsKey(this.DefaultValue))
                         {
                             // Referenced by name.
-                            defaultValue = $"{this.FbsFieldType}.{this.DefaultValue}";
+                            defaultValue = $"{clrType}.{this.DefaultValue}";
                         }
                         else
                         {

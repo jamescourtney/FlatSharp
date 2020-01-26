@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>FlatSharp.Compiler</id>
+    <version>$version$</version>
+    <releaseNotes>$releaseNotes$</releaseNotes>
+    <authors>James Courtney</authors>
+    <owners>James Courtney</owners>
+    <description>Compile time tools for integrating FlatSharp with FBS schemas.</description>
+    <tags>flatbuffers serialization flatbuffer flatsharp fbs</tags>
+    <projectUrl>https://github.com/jamescourtney/FlatSharp/</projectUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <license type="expression">Apache-2.0</license>
+    <developmentDependency>true</developmentDependency>
+  </metadata>
+  <files>
+    <file src="_._" target="lib/netcoreapp2.1/" />
+    <file src="_._" target="lib/net47/" />
+    
+    <file src="FlatSharp.Compiler.targets" target="build/netcoreapp2.1/FlatSharp.Compiler.targets" />
+    <file src="FlatSharp.Compiler.targets" target="build/net47/FlatSharp.Compiler.targets" />
+    
+    <file src="FlatSharp.Compiler.targets" target="tools/" />
+    
+    <file src="$AntlrRuntime$\lib\net45\**\*.dll" target="tools/net47" />
+    <file src="$OutDir$\net47\*.dll" target="tools/net47" />
+    <file src="$OutDir$\net47\*.exe" target="tools/net47" />
+    
+    <file src="$AntlrRuntime$\lib\netstandard1.1\**\*.dll" target="tools/netcoreapp2.1" />
+    <file src="$OutDir$\netcoreapp2.1\*.dll" target="tools/netcoreapp2.1" />
+    <file src="$OutDir$\netcoreapp2.1\*.json" target="tools/netcoreapp2.1" />
+  </files>
+</package>

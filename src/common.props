@@ -4,25 +4,20 @@
     <DelaySign>false</DelaySign>
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)\..\misc\strongname.snk</AssemblyOriginatorKeyFile>
     <LangVersion>7.3</LangVersion>
-
+  </PropertyGroup>
+  
+  <PropertyGroup>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <Version>1.1.0</Version>
+    <AssemblyVersion>$(Version)</AssemblyVersion>
     <Authors>James Courtney</Authors>
-    <Company />
     <Description>FlatSharp is an idiomatic implementation of the FlatBuffer binary format.</Description>
     <Copyright>2020</Copyright>
-    <PackageProjectUrl>https://github.com/jamescourtney/FlatSharp/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/jamescourtney/FlatSharp/</RepositoryUrl>
     <PackageTags>flatbuffers serialization flatbuffer flatsharp</PackageTags>
-    <PackageReleaseNotes>v1.1 Release</PackageReleaseNotes>
-    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+    <PackageReleaseNotes>v1.1 Release! Support for enums and FBS schemas.</PackageReleaseNotes>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>    
+    <NuspecProperties>version=$(Version);releaseNotes=$(PackageReleaseNotes)</NuspecProperties>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)\..\LICENSE.md">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-  </ItemGroup>
 </Project>

@@ -28,7 +28,12 @@ namespace FlatSharp.Compiler
             this.children = new Dictionary<string, BaseSchemaMember>();
             this.Parent = parent;
             this.Name = name;
-            this.FullName = this.Parent != null ? $"{this.Parent.FullName}.{this.Name}" : this.Name;
+            this.FullName = string.Empty;
+
+            if (this.Parent != null)
+            {
+                this.FullName =  this.Parent.GetType() != typeof(RootNodeDefinition) ? $"{this.Parent.FullName}.{this.Name}" : this.Name;
+            }
         }
 
         public BaseSchemaMember Parent { get; }
@@ -36,6 +41,8 @@ namespace FlatSharp.Compiler
         public string Name { get; }
 
         public string FullName { get; }
+
+        public string GlobalName => $"global::{this.FullName}";
 
         public IReadOnlyDictionary<string, BaseSchemaMember> Children => this.children;
 
@@ -75,6 +82,7 @@ namespace FlatSharp.Compiler
         {
             Span<string> parts = name.Split('.');
 
+            // Go up to the first namespace node in the tree.
             BaseSchemaMember rootNode = this;
             while (!(rootNode is NamespaceDefinition) && !(rootNode is RootNodeDefinition))
             {

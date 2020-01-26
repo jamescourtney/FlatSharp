@@ -25,21 +25,39 @@ namespace FlatSharp.Compiler
 
     public static class FlatSharpCompiler
     {
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
             using (var context = ErrorContext.Current)
             {
-                context.PushScope("$");
                 try
                 {
-                    string text = File.ReadAllText(@"C:\Users\jcour\source\repos\jamescourtney\FlatSharp\src\Benchmark\FBBench\Google.Flatbuffers.fbs");
-                    string cSharp = CreateCSharp(text);
-                    Console.Write(cSharp);
+                    context.PushScope("$");
+                    string cSharp = CreateCSharp(File.ReadAllText(args[0]));
+                    File.WriteAllText(args[0] + ".generated.cs", cSharp);
+                }
+                catch (InvalidFbsFileException ex)
+                {
+                    foreach (var message in ex.Errors)
+                    {
+                        Console.Error.WriteLine(message);
+                    }
+
+                    return -1;
+                }
+                catch (FileNotFoundException)
+                {
+                    Console.Error.WriteLine($"File '{args[0]}' was not found");
+                }
+                catch (IndexOutOfRangeException)
+                {
+                    Console.Error.WriteLine($"No file specified");
                 }
                 finally
                 {
                     context.PopScope();
                 }
+
+                return 0;
             }
         }
 
@@ -102,7 +120,7 @@ namespace FlatSharp.Compiler
             [NotNull] string msg,
             [Nullable] RecognitionException e)
         {
-            ErrorContext.Current?.RegisterError($"Syntax error in FBS file: Token='{offendingSymbol.Text}', Msg='{msg}'.");
+            ErrorContext.Current?.RegisterError($"Syntax error FBS file: Token='{offendingSymbol.Text}', Msg='{msg}' Line='{line}:{charPositionInLine}");
         }
     }
 }

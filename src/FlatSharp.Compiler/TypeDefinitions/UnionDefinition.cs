@@ -33,7 +33,20 @@ namespace FlatSharp.Compiler
         {
             get
             {
-                return $"FlatBufferUnion<{string.Join(", ", this.ComponentTypeNames)}>";
+                List<string> resolvedComponentNames = new List<string>();
+                foreach (var name in this.ComponentTypeNames)
+                {
+                    if (this.TryResolveName(name, out var reference))
+                    {
+                        resolvedComponentNames.Add(reference.GlobalName);
+                    }
+                    else
+                    {
+                        resolvedComponentNames.Add(name);
+                    }
+                }
+
+                return $"FlatBufferUnion<{string.Join(", ", resolvedComponentNames)}>";
             }
         }
 
