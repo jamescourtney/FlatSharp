@@ -21,6 +21,7 @@ namespace FlatSharp
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using FlatSharp.Attributes;
     using FlatSharp.TypeModel;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
@@ -71,7 +72,9 @@ $@"
                 using System.Linq;
                 using System.Runtime.CompilerServices;
                 using FlatSharp;
+                using FlatSharp.Attributes;
                 
+                [{nameof(FlatSharpGeneratedSerializerAttribute)}(({nameof(FlatBufferSerializerFlags)}){(int)this.options.Flags})]
                 public sealed class Serializer : {nameof(IGeneratedSerializer<byte>)}<{CSharpHelpers.GetCompilableTypeName(typeof(TRoot))}>
                 {{
                     {string.Join("\r\n", this.methodDeclarations.Select(x => x.ToFullString()))}

@@ -15,7 +15,7 @@
  */
 
 #define FLATSHARP  // enable flat sharp benchmarks
-#define ZERO       // enable zero formatter
+//#define ZERO       // enable zero formatter
 #define PBDN       // enable protobuf.net
 #define GOOG       // enable google flatbuffers.
 
@@ -33,13 +33,6 @@ namespace Benchmark.FBBench
     using FlatSharp.Unsafe;
     using ProtoBuf;
 
-    public enum FlatSharpParseProfile
-    {
-        None = 0,
-        VectorCache = 1,
-        GreedyParse = 2,
-    }
-
     //[CoreJob]
     [RPlotExporter]
     [ShortRunJob]
@@ -56,8 +49,8 @@ namespace Benchmark.FBBench
 
 
 #if FLATSHARP
-        [Params(FlatSharpParseProfile.None, FlatSharpParseProfile.VectorCache, FlatSharpParseProfile.GreedyParse)]
-        public FlatSharpParseProfile ParseProfile;
+        [Params(FlatBufferSerializerFlags.None, FlatBufferSerializerFlags.CacheListVectorData, FlatBufferSerializerFlags.GreedyDeserialize)]
+        public FlatBufferSerializerFlags ParseProfile;
 #endif
 
         private FlatBufferBuilder google_flatBufferBuilder = new FlatBufferBuilder(64 * 1024);
@@ -125,9 +118,7 @@ namespace Benchmark.FBBench
 
 #if FLATSHARP
             {
-                var options = new FlatBufferSerializerOptions(
-                    cacheListVectorData: this.ParseProfile == FlatSharpParseProfile.VectorCache,
-                    greedyDeserialize: this.ParseProfile == FlatSharpParseProfile.GreedyParse);
+                var options = new FlatBufferSerializerOptions(this.ParseProfile);
 
                 this.fs_serializer = new FlatBufferSerializer(options);
                 int offset = this.fs_serializer.Serialize(this.defaultContainer, this.fs_writeMemory);

@@ -263,7 +263,7 @@ namespace FlatSharpTests
                 Vector = new List<string> { "one", "two", "three" }
             };
 
-            var options = new FlatBufferSerializerOptions(generateMutableObjects: true, greedyDeserialize: true);
+            var options = new FlatBufferSerializerOptions(FlatBufferSerializerFlags.GenerateMutableObjects | FlatBufferSerializerFlags.GreedyDeserialize);
             FlatBufferSerializer serializer = new FlatBufferSerializer(options);
 
             byte[] buffer = new byte[100];
@@ -286,7 +286,7 @@ namespace FlatSharpTests
                 Vector = new List<string> { "one", "two", "three" }
             };
 
-            var options = new FlatBufferSerializerOptions(generateMutableObjects: false, greedyDeserialize: true);
+            var options = new FlatBufferSerializerOptions(FlatBufferSerializerFlags.GreedyDeserialize);
             FlatBufferSerializer serializer = new FlatBufferSerializer(options);
 
             byte[] buffer = new byte[100];
@@ -311,7 +311,7 @@ namespace FlatSharpTests
             root.Vector.Span.Fill(1);
 
             byte[] buffer = new byte[1024];
-            var options = new FlatBufferSerializerOptions(greedyDeserialize: true);
+            var options = new FlatBufferSerializerOptions(FlatBufferSerializerFlags.GreedyDeserialize);
             var serializer = new FlatBufferSerializer(options);
 
             serializer.Serialize(root, buffer.AsSpan());
@@ -343,7 +343,7 @@ namespace FlatSharpTests
             root.Vector.Span.Fill(1);
 
             byte[] buffer = new byte[1024];
-            var options = new FlatBufferSerializerOptions(greedyDeserialize: false);
+            var options = new FlatBufferSerializerOptions(FlatBufferSerializerFlags.None);
             var serializer = new FlatBufferSerializer(options);
 
             serializer.Serialize(root, buffer.AsSpan());

@@ -123,7 +123,7 @@ namespace FlatSharpTests
         [TestMethod]
         public void TableParse_NotMutable()
         {
-            var options = new FlatBufferSerializerOptions(generateMutableObjects: false, greedyDeserialize: false);
+            var options = new FlatBufferSerializerOptions(FlatBufferSerializerFlags.None);
             var table = this.SerializeAndParse(options, out _);
 
             Assert.ThrowsException<NotMutableException>(() => table.String = null);
@@ -135,7 +135,7 @@ namespace FlatSharpTests
         [TestMethod]
         public void TableParse_LazyMutable()
         {
-            var options = new FlatBufferSerializerOptions(generateMutableObjects: true, greedyDeserialize: false);
+            var options = new FlatBufferSerializerOptions(FlatBufferSerializerFlags.GenerateMutableObjects);
             var table = this.SerializeAndParse(options, out _);
             
             var newString = Guid.NewGuid().ToString();
@@ -159,7 +159,7 @@ namespace FlatSharpTests
         [TestMethod]
         public void TableParse_GreedyImmutable()
         {
-            var options = new FlatBufferSerializerOptions(generateMutableObjects: false, greedyDeserialize: true);
+            var options = new FlatBufferSerializerOptions(FlatBufferSerializerFlags.GreedyDeserialize);
             var table = this.SerializeAndParse(options, out var buffer);
 
             bool reaped = false;

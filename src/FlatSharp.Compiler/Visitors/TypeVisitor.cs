@@ -43,6 +43,8 @@ namespace FlatSharp.Compiler
                 }
             });
 
+            var meta = new MetadataVisitor().Visit(context.metadata());
+
             return definition;
         }
     }

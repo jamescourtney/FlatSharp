@@ -56,12 +56,15 @@ namespace BenchmarkCore
             Container = b.defaultContainer;
             sw.Stop();
 
-            var s = new ExperimentalBenchmark.Generated.Serializer();
+            var serializer = FlatSharp.FlatBufferSerializer.Default.Compile<FooBarListContainer>();
+            Console.WriteLine(serializer.CSharp);
 
             Action[] items = new Action[]
             {
                 b.FlatSharp_Serialize,
-                SerializeManual,
+                b.FlatSharp_ParseAndTraverse_SafeMem,
+                b.FlatSharp_ParseAndTraverse_UnsafeMem,
+                b.FlatSharp_ParseAndTraverse_SafeArray
                 //b.FlatSharp_Serialize_Unsafe,
                 // b.ZF_Serialize
             };
@@ -89,16 +92,9 @@ namespace BenchmarkCore
             }
         }
 
-        private static readonly ExperimentalBenchmark.Generated.Serializer ManualSerializer = new ExperimentalBenchmark.Generated.Serializer();
         private static readonly SpanWriter spanWriter = new SpanWriter();
         private static readonly byte[] writeBuffer = new byte[128 * 1024];
         private static FooBarListContainer Container;
         private static readonly SerializationContext Context = new SerializationContext();
-
-        private static void SerializeManual()
-        {
-            Context.Reset(writeBuffer.Length);
-            ManualSerializer.Write(spanWriter, writeBuffer, Container, 0, Context);
-        }
     }
 }
