@@ -18,39 +18,6 @@ using System;
 
 namespace FlatSharp
 {
-    /// <summary>
-    /// Defines FlatSharp serializer options.
-    /// </summary>
-    [Flags]
-    public enum FlatBufferSerializerFlags
-    {
-        /// <summary>
-        /// No options specified. FlatSharp parses in full lazy mode.
-        /// </summary>
-        None = 0,
-
-        /// <summary>
-        /// Indicates if list vectors should have their data cached after reading. This option will cause more allocations
-        /// on deserializing, but will improve performance in cases of duplicate accesses to the same indices.
-        /// </summary>
-        CacheListVectorData = 1,
-
-        /// <summary>
-        /// Indicates if the serializer should generate mutable objects. Mutable objects are "copy-on-write"
-        /// and do not modify the underlying buffer.
-        /// </summary>
-        GenerateMutableObjects = 2,
-
-        /// <summary>
-        /// Indicates if deserialization should be greedy.
-        /// </summary>
-        GreedyDeserialize = 4,
-
-        /// <summary>
-        /// Default options.
-        /// </summary>
-        Default = GreedyDeserialize,
-}
 
     /// <summary>
     /// Defines various confiration settings for serializing and deserializing buffers.
@@ -116,7 +83,7 @@ namespace FlatSharp
         /// on deserializing, but will improve performance in cases of duplicate accesses to the same indices.
         /// </summary>
         public bool CacheListVectorData => this.Flags.HasFlag(FlatBufferSerializerFlags.CacheListVectorData);
-        
+
         /// <summary>
         /// Indicates if the serializer should generate mutable objects. Mutable objects are "copy-on-write"
         /// and do not modify the underlying buffer.

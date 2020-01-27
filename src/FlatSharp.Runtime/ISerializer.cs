@@ -17,7 +17,6 @@
 namespace FlatSharp
 {
     using System;
-    using System.Collections.Immutable;
     using System.Reflection;
 
     /// <summary>
@@ -38,7 +37,7 @@ namespace FlatSharp
         /// <summary>
         /// Gets the raw data of the <see cref="Assembly"/> property. Can be saved to disk and decompiled, referenced, etc.
         /// </summary>
-        ImmutableArray<byte> AssemblyBytes { get; }
+        byte[] AssemblyBytes { get; }
 
         /// <summary>
         /// Writes the given item to the buffer using the given spanwriter.

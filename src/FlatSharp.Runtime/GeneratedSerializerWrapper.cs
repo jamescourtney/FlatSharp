@@ -17,7 +17,6 @@
 namespace FlatSharp
 {
     using System;
-    using System.Collections.Immutable;
     using System.Diagnostics;
     using System.IO;
     using System.Reflection;
@@ -38,7 +37,7 @@ namespace FlatSharp
         {
             this.lazyCSharp = new Lazy<string>(generatedCSharp);
             this.Assembly = generatedAssembly;
-            this.AssemblyBytes = ImmutableArray.Create(generatedAssemblyBytes);
+            this.AssemblyBytes =generatedAssemblyBytes;
             this.innerSerializer = innerSerializer;
         }
 
@@ -46,7 +45,7 @@ namespace FlatSharp
 
         public Assembly Assembly { get; }
 
-        public ImmutableArray<byte> AssemblyBytes { get; }
+        public byte[] AssemblyBytes { get; }
 
         public int GetMaxSize(T item)
         {

@@ -2,9 +2,9 @@
   <Import Project="..\common.props" />
   
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
-    <AssemblyName>FlatSharp</AssemblyName>
-    <RootNamespace>FlatSharp</RootNamespace>
+    <TargetFrameworks>netstandard2.0;netcoreapp2.1</TargetFrameworks>
+    <AssemblyName>FlatSharp.Runtime</AssemblyName>
+    <RootNamespace>FlatSharp.Runtime</RootNamespace>
     <Description>FlatSharp is an idiomatic C# implementation of the FlatBuffer serialization format. Use attributes to declare your data contracts!</Description>
   </PropertyGroup>
 
@@ -16,15 +16,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.4.0" />
-    <PackageReference Include="Microsoft.Net.Compilers" Version="3.4.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="System.Memory" Version="4.5.3" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
+    <Compile Update="UnionTypes.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>UnionTypes.tt</DependentUpon>
+    </Compile>
   </ItemGroup>
 </Project>
