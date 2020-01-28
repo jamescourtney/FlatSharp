@@ -1,7 +1,7 @@
 ﻿
-namespace benchfb;
+namespace Samples.SchemaFilesExample;
 
-enum Enum : int16 { Apples, Pears, Bananas }
+enum Fruit : byte { Apples, Pears, Bananas }
 
 struct Foo {
   id:ulong;
@@ -24,10 +24,10 @@ table FooBar {
   postfix:ubyte; 
 }
 
-table FooBarContainer (PrecompiledSerializer:"greedy") {
-  list:[FooBar] (VectorType:IReadOnlyList);  // 3 copies of the above
+table FooBarContainer {
+  list:[FooBar] (VectorType:IReadOnlyList);  // Can also be IList,Array,Memory,ReadOnlyMemory
   initialized:bool;
-  fruit:Enum;
+  fruit:Fruit;
   location:string;
 }
 

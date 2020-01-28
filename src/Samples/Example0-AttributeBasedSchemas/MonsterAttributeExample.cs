@@ -12,7 +12,7 @@
     /// Based on the monster sample here:
     /// https://google.github.io/flatbuffers/flatbuffers_guide_tutorial.html
     /// </remarks>
-    public class MonsterAttributeExample
+    public class SchemaFilesExample
     {
         public static void Run()
         {

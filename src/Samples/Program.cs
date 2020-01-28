@@ -4,7 +4,7 @@
     {
         public static void Main(string[] args)
         {
-            SerializerOptions.SerializerOptionsExample.Run();
+            IOOptionsExample.IOOperationsExample.Run();
         }
     }
 }

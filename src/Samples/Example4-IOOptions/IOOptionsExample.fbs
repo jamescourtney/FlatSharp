@@ -1,0 +1,33 @@
+﻿
+namespace Samples.IOOptionsExample;
+
+enum Gender : ubyte { Male, Female }
+enum DogBreed : ubyte { GoldenRetriever, GermanShepard, BostonTerrier }
+enum CatBreed : ubyte { Persian, Calico, GrumpyCat }
+union FavoritePet { Dog, Cat }
+
+table Dog {
+	Breed:DogBreed;
+	Vitals:AnimalVitals;
+}
+
+table Cat {
+	Breed:CatBreed;
+	Vitals:AnimalVitals;
+}
+
+table AnimalVitals {
+	Gender:Gender;
+	Age:short;
+	Name:string;
+}
+
+table Person (PrecompiledSerializer) {
+	Name:string;
+	Age:int;
+
+	// Of course we don't actually play favorites :)
+	FavoritePet:FavoritePet;
+	Cats:[Cat];
+	Dogs:[Dog];
+}

@@ -6,7 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <FBS Include="Tests.fbs" />
+    <FBS Include="Example2-SchemaFiles\SchemaFilesExample.fbs" />
+    <FBS Include="Example3-SchemaFiles2\SchemaFilesExample2.fbs" />
+    <FBS Include="Example4-IOOptions\IOOptionsExample.fbs" />
   </ItemGroup>
 
   <ItemGroup>
