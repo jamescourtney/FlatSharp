@@ -57,7 +57,6 @@ namespace FlatSharp.Compiler
 
                     string cSharp = CreateCSharp(File.ReadAllText(args[0]), inputHash);
                     File.WriteAllText(outputFileName, cSharp);
-                    File.AppendAllText(outputFileName, $"\r\n\r\n{inputHash}");
                 }
                 catch (InvalidFbsFileException ex)
                 {

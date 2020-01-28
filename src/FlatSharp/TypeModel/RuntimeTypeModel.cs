@@ -113,7 +113,12 @@ namespace FlatSharp.TypeModel
             lock (SharedLock.Instance)
             {
                 RuntimeTypeModel newModel = null;
-                if (type.GetCustomAttribute<FlatBufferTableAttribute>() != null)
+
+                if (type.GetCustomAttribute<FlatBufferStructAttribute>() != null && type.GetCustomAttribute<FlatBufferTableAttribute>() != null)
+                {
+                    throw new InvalidFlatBufferDefinitionException($"A type cannot be both a class and a struct Type = '{type}'.");
+                }
+                else if (type.GetCustomAttribute<FlatBufferTableAttribute>() != null)
                 {
                     newModel = new TableTypeModel(type);
                 }

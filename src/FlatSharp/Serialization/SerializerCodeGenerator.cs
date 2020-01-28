@@ -260,7 +260,16 @@ $@"
             for (int i = 0; i < structModel.Members.Count; ++i)
             {
                 var memberInfo = structModel.Members[i];
-                string invocation = this.GetSerializeInvocation(memberInfo.ItemTypeModel.ClrType, $"item.{memberInfo.PropertyInfo.Name}", $"{memberInfo.Offset} + originalOffset");
+
+                string propertyAccessor = $"item.{memberInfo.PropertyInfo.Name}";
+                if (memberInfo.ItemTypeModel.SchemaType == FlatBufferSchemaType.Struct)
+                {
+                    // Force structs to be non-null. FlatSharp doesn't declare structs as structs,
+                    // so we need to be careful that structs-within-structs are not null.
+                    propertyAccessor += $" ?? new {CSharpHelpers.GetCompilableTypeName(memberInfo.ItemTypeModel.ClrType)}()";
+                }
+
+                string invocation = this.GetSerializeInvocation(memberInfo.ItemTypeModel.ClrType, propertyAccessor, $"{memberInfo.Offset} + originalOffset");
                 body.Add(invocation);
             }
 
