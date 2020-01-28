@@ -338,6 +338,56 @@
             Assert.AreEqual(bt.Z, location.Z);
         }
 
+        [TestMethod]
+        public void NestedStruct_InnerStructSet()
+        {
+            var nested = new NestedStructs
+            {
+                OuterStruct = new OuterStruct
+                {
+                    A = 100,
+                    InnerStruct = new InnerStruct { A = 401 }
+                }
+            };
+
+            Span<byte> memory = new byte[10240];
+            int size = FlatBufferSerializer.Default.Serialize(nested, memory);
+
+            var oracle = Oracle.NestedStructs.GetRootAsNestedStructs(
+                new FlatBuffers.ByteBuffer(memory.Slice(0, size).ToArray()));
+
+            Assert.IsNotNull(oracle.Outer);
+
+            var outer = oracle.Outer.Value;
+            Assert.AreEqual(100, outer.A);
+            Assert.AreEqual(401, outer.Inner.A);
+        }
+
+        [TestMethod]
+        public void NestedStruct_InnerStructNotSet()
+        {
+            var nested = new NestedStructs
+            {
+                OuterStruct = new OuterStruct
+                {
+                    A = 100,
+                    InnerStruct = null,
+                }
+            };
+
+            Span<byte> memory = new byte[10240];
+            int size = FlatBufferSerializer.Default.Serialize(nested, memory);
+
+            var oracle = Oracle.NestedStructs.GetRootAsNestedStructs(
+                new FlatBuffers.ByteBuffer(memory.Slice(0, size).ToArray()));
+
+            Assert.IsNotNull(oracle.Outer);
+
+            var outer = oracle.Outer.Value;
+            Assert.AreEqual(100, outer.A);
+            Assert.AreEqual(0, outer.Inner.A);
+        }
+
         private static readonly Random Random = new Random();
 
         private static T GetRandom<T>() where T : struct

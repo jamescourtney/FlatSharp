@@ -132,6 +132,13 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
+        public void TypeModel_TypeCantBeTableAndStruct()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(InvalidTableAndStruct)));
+        }
+
+        [TestMethod]
         public void TypeModel_Vector_VectorNotAllowed()
         {
             Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
@@ -328,6 +335,12 @@ namespace FlatSharpTests
         public enum TaggedEnum
         {
             Foo, Bar
+        }
+
+        [FlatBufferTable, FlatBufferStruct]
+        public class InvalidTableAndStruct
+        {
+            public virtual string String { get; set; }
         }
 
         [FlatBufferTable]

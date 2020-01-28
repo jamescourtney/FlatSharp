@@ -12,6 +12,6 @@
     </PropertyGroup>
 
     <Message Text="$(CompilerInvocation) %(FBS.fullpath)" Importance="high" />
-    <Exec Command="$(CompilerInvocation) %(FBS.fullpath)" CustomErrorRegularExpression=".*" />
+    <Exec Command="$(CompilerInvocation) %(FBS.fullpath)" CustomErrorRegularExpression=".*" Condition=" '%(FBS.fullpath)' != '' " />
   </Target>
 </Project>

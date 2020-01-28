@@ -100,3 +100,16 @@ table UnionTable {
 table VectorOfUnionTable {
 	Value:[Union];
 }
+
+table NestedStructs {
+	Outer:OuterStruct;
+}
+
+struct InnerStruct {
+	A:int;
+}
+
+struct OuterStruct {
+	Inner:InnerStruct;
+	A:int;
+}
