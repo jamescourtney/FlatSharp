@@ -44,7 +44,7 @@ struct Vec3 {
   z:float;
 }
 
-table Monster (GenerateSerializer:None) {
+table Monster (PrecompiledSerializer:""greedy|mutable"") {
   pos:Vec3;
   mana:short = 150;
   hp:short = 100;
@@ -57,7 +57,7 @@ table Monster (GenerateSerializer:None) {
   path:[Vec3];
 }
 
-table Weapon {
+table Weapon (PrecompiledSerializer:none) {
   name:string;
   damage:short;
 }
@@ -68,6 +68,8 @@ root_type Monster;";
 
             Type weaponType = asm.GetType("MyGame.Weapon");
             Type monsterType = asm.GetTypes().Single(x => x.FullName == "MyGame.Monster");
+            dynamic serializer = monsterType.GetProperty("Serializer", BindingFlags.Static | BindingFlags.Public).GetValue(null);
+
             object monster = Activator.CreateInstance(monsterType);
             dynamic dMonster = monster;
 
@@ -89,8 +91,101 @@ root_type Monster;";
             Assert.IsTrue(monsterType.GetProperty("friendly").GetCustomAttribute<FlatBufferItemAttribute>().Deprecated);
 
             byte[] data = new byte[1024];
+
             CompilerTestHelpers.CompilerTestSerializer.ReflectionSerialize(monster, data);
-            var parsedMonster = CompilerTestHelpers.CompilerTestSerializer.ReflectionParse(monsterType, data);
+            var parsedMonster = serializer.Parse(new ArrayInputBuffer(data));
+
+            Assert.AreEqual("Blue", parsedMonster.color.ToString());
+        }
+
+        [TestMethod]
+        public void FlagsOptions_Greedy()
+        {
+            this.TestFlags(FlatBufferSerializerFlags.GreedyDeserialize, $"PrecompiledSerializer:{nameof(FlatBufferSerializerFlags.GreedyDeserialize)}");
+        }
+
+        [TestMethod]
+        public void FlagsOptions_Greedy_Shorthand()
+        {
+            this.TestFlags(FlatBufferSerializerFlags.GreedyDeserialize, $"PrecompiledSerializer:greedy");
+        }
+
+        [TestMethod]
+        public void FlagsOptions_Default()
+        {
+            this.TestFlags(FlatBufferSerializerFlags.Default, $"PrecompiledSerializer:{nameof(FlatBufferSerializerFlags.Default)}");
+        }
+
+        [TestMethod]
+        public void FlagsOptions_Default_Implicit()
+        {
+            this.TestFlags(FlatBufferSerializerFlags.Default, $"PrecompiledSerializer");
+        }
+
+        [TestMethod]
+        public void FlagsOptions_None()
+        {
+            this.TestFlags(FlatBufferSerializerFlags.None, $"PrecompiledSerializer:{nameof(FlatBufferSerializerFlags.None)}");
+        }
+
+        [TestMethod]
+        public void FlagsOptions_Mutable()
+        {
+            this.TestFlags(FlatBufferSerializerFlags.GenerateMutableObjects, $"PrecompiledSerializer:{nameof(FlatBufferSerializerFlags.GenerateMutableObjects)}");
+        }
+
+        [TestMethod]
+        public void FlagsOptions_Mutable_Shorthand()
+        {
+            this.TestFlags(FlatBufferSerializerFlags.GenerateMutableObjects, $"PrecompiledSerializer:mutable");
+        }
+
+        [TestMethod]
+        public void FlagsOptions_CacheListVectorData()
+        {
+            this.TestFlags(FlatBufferSerializerFlags.CacheListVectorData, $"PrecompiledSerializer:{nameof(FlatBufferSerializerFlags.CacheListVectorData)}");
+        }
+
+        [TestMethod]
+        public void FlagsOptions_CacheListVectorData_ShortHand()
+        {
+            this.TestFlags(FlatBufferSerializerFlags.CacheListVectorData, $"PrecompiledSerializer:vectorcache");
+        }
+
+        [TestMethod]
+        public void FlagsOptions_Compound_ShortHand()
+        {
+            var expectedFlags = FlatBufferSerializerFlags.CacheListVectorData | FlatBufferSerializerFlags.GenerateMutableObjects | FlatBufferSerializerFlags.GreedyDeserialize;
+            this.TestFlags(expectedFlags, $"PrecompiledSerializer:\"vectorcache|mutable|greedy\"");
+        }
+
+        [TestMethod]
+        public void FlagsOptions_Invalid()
+        {
+            Assert.ThrowsException<InvalidFbsFileException>(() => this.TestFlags(default, $"PrecompiledSerializer:banana"));
+            Assert.ThrowsException<InvalidFbsFileException>(() => this.TestFlags(default, $"PrecompiledSerializer:\"banana\""));
+            Assert.ThrowsException<InvalidFbsFileException>(() => this.TestFlags(default, $"PrecompiledSerializer:\"greedy|banana\""));
+            Assert.ThrowsException<InvalidFbsFileException>(() => this.TestFlags(default, $"PrecompiledSerializer:\"greedy|banana"));
+        }
+
+        private void TestFlags(FlatBufferSerializerFlags expectedFlags, string metadata)
+        {
+            string schema = $"namespace Test; table FooTable ({metadata}) {{ foo:string; }}";
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema);
+
+            Type type = asm.GetType("Test.FooTable");
+            Assert.IsNotNull(type);
+
+            Type serializerType = type.GetNestedType(RoslynSerializerGenerator.GeneratedSerializerClassName, BindingFlags.NonPublic | BindingFlags.Public);
+            
+            Assert.IsNotNull(serializerType);
+            Assert.IsTrue(serializerType.IsNested);
+            Assert.IsTrue(serializerType.IsNestedPrivate);
+
+            var attribute = serializerType.GetCustomAttribute<FlatSharpGeneratedSerializerAttribute>();
+            Assert.IsNotNull(attribute);
+            Assert.AreEqual(expectedFlags, attribute.Flags);
         }
     }
 }
+

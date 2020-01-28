@@ -17,6 +17,8 @@
 namespace FlatSharp.Compiler
 {
     using Antlr4.Runtime.Misc;
+    using System;
+    using System.Collections.Generic;
     using System.Linq;
 
     internal class TypeVisitor : FlatBuffersBaseVisitor<TableOrStructDefinition>
@@ -30,7 +32,12 @@ namespace FlatSharp.Compiler
 
         public override TableOrStructDefinition VisitType_decl([NotNull] FlatBuffersParser.Type_declContext context)
         {
-            TableOrStructDefinition definition = new TableOrStructDefinition(context.IDENT().GetText(), this.parent);
+            Dictionary<string, string> metadata = new MetadataVisitor().Visit(context.metadata());
+
+            TableOrStructDefinition definition = new TableOrStructDefinition(
+                context.IDENT().GetText(), 
+                ParseSerailizerFlags(metadata),
+                this.parent);
 
             ErrorContext.Current.WithScope(definition.Name, () =>
             {
@@ -43,9 +50,58 @@ namespace FlatSharp.Compiler
                 }
             });
 
-            var meta = new MetadataVisitor().Visit(context.metadata());
-
             return definition;
+        }
+
+        private static FlatBufferSerializerFlags? ParseSerailizerFlags(Dictionary<string, string> metadata)
+        {
+            FlatBufferSerializerFlags? flags = null;
+            if (metadata == null || !metadata.TryGetValue("PrecompiledSerializer", out string value))
+            {
+                return null;
+            }
+
+            // probably enclosed in quotes.
+            value = value?.Trim('"');
+
+            if (string.IsNullOrEmpty(value))
+            {
+                return FlatBufferSerializerFlags.Default;
+            }
+
+            // Custom flags
+            flags = FlatBufferSerializerFlags.None;
+
+            // Expect format of flag0|flag1|flag2
+            var parts = value.Split('|').Select(s => s.Trim());
+            foreach (string part in parts)
+            {
+                // Cover all of the real names.
+                if (Enum.TryParse(part, true, out FlatBufferSerializerFlags flag))
+                {
+                    flags |= flag;
+                    continue;
+                }
+
+                // Cover a few abbreviations.
+                switch (part.ToLowerInvariant())
+                {
+                    case "greedy":
+                        flags |= FlatBufferSerializerFlags.GreedyDeserialize;
+                        break;
+                    case "mutable":
+                        flags |= FlatBufferSerializerFlags.GenerateMutableObjects;
+                        break;
+                    case "vectorcache":
+                        flags |= FlatBufferSerializerFlags.CacheListVectorData;
+                        break;
+                    default:
+                        ErrorContext.Current.RegisterError($"Value '{part}' is not understood as a valid value for precompiled serializer flags.");
+                        break;
+                }
+            }
+
+            return flags;
         }
     }
 }

@@ -17,10 +17,12 @@
 namespace BenchmarkCore
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics;
-    using Benchmark.FBBench;
+    using benchfb;
     using FlatSharp;
     using FlatSharp.Attributes;
+    using FlatSharp.Unsafe;
 
     [FlatBufferTable]
     public class Test1<T>
@@ -33,68 +35,83 @@ namespace BenchmarkCore
     {
         public static void Main(string[] args)
         {
-            Stopwatch sw = Stopwatch.StartNew();
-            FlatSharp.FlatBufferSerializer.Default.Compile<Test1<byte>>();
-            sw.Stop();
-            Console.WriteLine("First compilation took: " + sw.Elapsed.TotalSeconds + " seconds");
-            
-            sw = Stopwatch.StartNew();
-            FlatSharp.FlatBufferSerializer.Default.Compile<Test1<sbyte>>();
-            sw.Stop();
-            Console.WriteLine("Second compilation took: " + sw.Elapsed.TotalSeconds + " seconds");
+            Console.WriteLine($"x64={Environment.Is64BitProcess}");
 
-            sw = Stopwatch.StartNew();
-            FlatSharp.FlatBufferSerializer.Default.Compile<Test1<bool>>();
-            sw.Stop();
-            Console.WriteLine("Third compilation took: " + sw.Elapsed.TotalSeconds + " seconds");
-
-            Google_FBBench b = new Google_FBBench();
-            const int count = 1000000;
-            b.TraversalCount = 5;
-            b.VectorLength = 30;
-            b.GlobalSetup();
-            Container = b.defaultContainer;
-            sw.Stop();
-
-            var serializer = FlatSharp.FlatBufferSerializer.Default.Compile<FooBarListContainer>();
-            Console.WriteLine(serializer.CSharp);
-
-            Action[] items = new Action[]
+            FooBar[] fooBars = new FooBar[3];
+            for (int i = 0; i < fooBars.Length; i++)
             {
-                b.FlatSharp_Serialize,
-                b.FlatSharp_ParseAndTraverse_SafeMem,
-                b.FlatSharp_ParseAndTraverse_UnsafeMem,
-                b.FlatSharp_ParseAndTraverse_SafeArray
-                //b.FlatSharp_Serialize_Unsafe,
-                // b.ZF_Serialize
+                var foo = new Foo
+                {
+                    id = 0xABADCAFEABADCAFE + (ulong)i,
+                    count = (short)(10000 + i),
+                    prefix = (sbyte)('@' + i),
+                    length = (uint)(1000000 + i)
+                };
+
+                var bar = new Bar
+                {
+                    parent = foo,
+                    ratio = 3.14159f + i,
+                    size = (ushort)(10000 + i),
+                    time = 123456 + i
+                };
+
+                var fooBar = new FooBar
+                {
+                    name = Guid.NewGuid().ToString(),
+                    postfix = (byte)('!' + i),
+                    rating = 3.1415432432445543543 + i,
+                    sibling = bar,
+                };
+
+                fooBars[i] = fooBar;
+            }
+
+            var defaultContainer = new FooBarContainer
+            {
+                fruit = benchfb.Enum.Bananas,
+                initialized = true,
+                location = "http://google.com/flatbuffers/",
+                list = fooBars,
             };
 
-            for (int loop = 0; loop < 2; ++loop)
+            var serializer = FooBarContainer.Serializer;
+            SpanWriter writer = new SpanWriter();
+            byte[] buffer = new byte[serializer.GetMaxSize(defaultContainer)];
+            InputBuffer inputBuffer = new UnsafeArrayInputBuffer(buffer);
+
+            (string, Action)[] items = new (string, Action)[]
             {
-                foreach (var action in items)
+                ("GetMaxSize", () => serializer.GetMaxSize(defaultContainer)),
+                ("Serialize",  () => serializer.Write(writer, buffer, defaultContainer)),
+                ("Parse",      () => serializer.Parse(inputBuffer)),
+            };
+
+            for (int loop = 0; loop < 5; ++loop)
+            {
+                foreach (var tuple in items)
                 {
+                    var action = tuple.Item2;
+                    var name = tuple.Item1;
+
                     for (int i = 0; i < 10000; ++i)
                     {
                         action();
                     }
                     GC.Collect();
 
-                    sw = Stopwatch.StartNew();
+                    var sw = Stopwatch.StartNew();
+                    int count = 1000000;
                     for (int i = 0; i < count; ++i)
                     {
                         action();
                     }
                     sw.Stop();
-                    Console.WriteLine($"{action.Method.Name}: Took {sw.ElapsedMilliseconds} ({sw.ElapsedMilliseconds * 1000 / ((double)count)} us per op)");
+                    Console.WriteLine($"{name}: Took {sw.ElapsedMilliseconds} ({sw.ElapsedMilliseconds * 1000 / ((double)count)} us per op)");
                     System.Threading.Thread.Sleep(1000);
                     GC.Collect();
                 }
             }
         }
-
-        private static readonly SpanWriter spanWriter = new SpanWriter();
-        private static readonly byte[] writeBuffer = new byte[128 * 1024];
-        private static FooBarListContainer Container;
-        private static readonly SerializationContext Context = new SerializationContext();
     }
 }

@@ -36,6 +36,8 @@ namespace FlatSharp
     /// </summary>
     internal class RoslynSerializerGenerator
     {
+        public const string GeneratedSerializerClassName = "GeneratedSerializer";
+
         private static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(LanguageVersion.Latest);
         private static readonly Dictionary<string, (Assembly, byte[])> AssemblyNameReferenceMapping = new Dictionary<string, (Assembly, byte[])>();
 
@@ -59,9 +61,7 @@ namespace FlatSharp
 
         public ISerializer<TRoot> Compile<TRoot>() where TRoot : class
         {
-            this.DefineMethods(RuntimeTypeModel.CreateFrom(typeof(TRoot)));
-            this.ImplementInterfaceMethod(typeof(TRoot));
-            this.ImplementMethods();
+            string code = this.GenerateCSharp<TRoot>();
 
             string template =
 $@"
@@ -73,14 +73,9 @@ $@"
                 using System.Runtime.CompilerServices;
                 using FlatSharp;
                 using FlatSharp.Attributes;
-                
-                [{nameof(FlatSharpGeneratedSerializerAttribute)}(({nameof(FlatBufferSerializerFlags)}){(int)this.options.Flags})]
-                public sealed class Serializer : {nameof(IGeneratedSerializer<byte>)}<{CSharpHelpers.GetCompilableTypeName(typeof(TRoot))}>
-                {{
-                    {string.Join("\r\n", this.methodDeclarations.Select(x => x.ToFullString()))}
-                }}
-            }}
-";
+
+                {code}
+            }}";
 
             (Assembly assembly, Func<string> formattedTextFactory, byte[] assemblyData) = CompileAssembly(template, this.options.EnableAppDomainInterceptOnAssemblyLoad, typeof(TRoot).Assembly);
 
@@ -92,6 +87,23 @@ $@"
                 assembly,
                 formattedTextFactory,
                 assemblyData);
+        }
+
+        internal string GenerateCSharp<TRoot>(string visibility = "public")
+        {
+            this.DefineMethods(RuntimeTypeModel.CreateFrom(typeof(TRoot)));
+            this.ImplementInterfaceMethod(typeof(TRoot));
+            this.ImplementMethods();
+
+            string code = $@"
+                [{nameof(FlatSharpGeneratedSerializerAttribute)}(({nameof(FlatBufferSerializerFlags)}){(int)this.options.Flags})]
+                {visibility} sealed class {GeneratedSerializerClassName} : {nameof(IGeneratedSerializer<byte>)}<{CSharpHelpers.GetCompilableTypeName(typeof(TRoot))}>
+                {{
+                    {string.Join("\r\n", this.methodDeclarations.Select(x => x.ToFullString()))}
+                }}
+";
+
+            return code;
         }
 
         internal static (Assembly assembly, Func<string> formattedTextFactory, byte[] assemblyData) CompileAssembly(

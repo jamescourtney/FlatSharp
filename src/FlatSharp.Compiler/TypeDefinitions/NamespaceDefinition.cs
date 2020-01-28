@@ -16,6 +16,8 @@
 
 namespace FlatSharp.Compiler
 {
+    using System.Collections.Generic;
+
     internal class NamespaceDefinition : BaseSchemaMember
     {
         public NamespaceDefinition(string name, BaseSchemaMember parent) : base(name, parent)
@@ -24,7 +26,7 @@ namespace FlatSharp.Compiler
 
         protected override bool SupportsChildren => true;
 
-        protected override void OnWriteCode(CodeWriter writer)
+        protected override void OnWriteCode(CodeWriter writer, IReadOnlyDictionary<string, string> precompiledSerailizers)
         {
             writer.AppendLine($"namespace {this.Name}");
             writer.AppendLine($"{{");
@@ -32,7 +34,7 @@ namespace FlatSharp.Compiler
             {
                 foreach (var type in this.Children.Values)
                 {
-                    type.WriteCode(writer);
+                    type.WriteCode(writer, precompiledSerailizers);
                 }
             }
             writer.AppendLine($"}}");
