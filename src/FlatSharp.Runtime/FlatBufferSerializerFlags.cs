@@ -25,9 +25,9 @@ namespace FlatSharp
     public enum FlatBufferSerializerFlags
     {
         /// <summary>
-        /// No options specified. FlatSharp parses in full lazy mode.
+        /// Full Lazy parsing.
         /// </summary>
-        None = 0,
+        Lazy = 0,
 
         /// <summary>
         /// Indicates if list vectors should have their data cached after reading. This option will cause more allocations

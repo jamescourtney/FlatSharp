@@ -48,7 +48,7 @@ namespace FlatSharp
             bool generateMutableObjects,
             bool greedyDeserialize)
         {
-            FlatBufferSerializerFlags flags = FlatBufferSerializerFlags.None;
+            FlatBufferSerializerFlags flags = FlatBufferSerializerFlags.Lazy;
             if (cacheListVectorData)
             {
                 flags |= FlatBufferSerializerFlags.CacheListVectorData;

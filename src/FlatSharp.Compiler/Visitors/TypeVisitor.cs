@@ -70,7 +70,7 @@ namespace FlatSharp.Compiler
             }
 
             // Custom flags
-            flags = FlatBufferSerializerFlags.None;
+            flags = FlatBufferSerializerFlags.Lazy;
 
             // Expect format of flag0|flag1|flag2
             var parts = value.Split('|').Select(s => s.Trim());

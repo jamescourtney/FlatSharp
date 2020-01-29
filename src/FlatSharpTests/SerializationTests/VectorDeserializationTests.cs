@@ -343,7 +343,7 @@ namespace FlatSharpTests
             root.Vector.Span.Fill(1);
 
             byte[] buffer = new byte[1024];
-            var options = new FlatBufferSerializerOptions(FlatBufferSerializerFlags.None);
+            var options = new FlatBufferSerializerOptions(FlatBufferSerializerFlags.Lazy);
             var serializer = new FlatBufferSerializer(options);
 
             serializer.Serialize(root, buffer.AsSpan());

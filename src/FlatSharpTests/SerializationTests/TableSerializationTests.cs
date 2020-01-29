@@ -123,7 +123,7 @@ namespace FlatSharpTests
         [TestMethod]
         public void TableParse_NotMutable()
         {
-            var options = new FlatBufferSerializerOptions(FlatBufferSerializerFlags.None);
+            var options = new FlatBufferSerializerOptions(FlatBufferSerializerFlags.Lazy);
             var table = this.SerializeAndParse(options, out _);
 
             Assert.ThrowsException<NotMutableException>(() => table.String = null);

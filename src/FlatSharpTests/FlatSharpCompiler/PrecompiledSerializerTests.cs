@@ -57,7 +57,7 @@ table Monster (PrecompiledSerializer:""greedy|mutable"") {
   path:[Vec3];
 }
 
-table Weapon (PrecompiledSerializer:none) {
+table Weapon (PrecompiledSerializer:lazy) {
   name:string;
   damage:short;
 }
@@ -125,7 +125,7 @@ root_type Monster;";
         [TestMethod]
         public void FlagsOptions_None()
         {
-            this.TestFlags(FlatBufferSerializerFlags.None, $"PrecompiledSerializer:{nameof(FlatBufferSerializerFlags.None)}");
+            this.TestFlags(FlatBufferSerializerFlags.Lazy, $"PrecompiledSerializer:{nameof(FlatBufferSerializerFlags.Lazy)}");
         }
 
         [TestMethod]

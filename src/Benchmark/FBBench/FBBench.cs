@@ -49,7 +49,7 @@ namespace Benchmark.FBBench
 
 
 #if FLATSHARP
-        [Params(FlatBufferSerializerFlags.None, FlatBufferSerializerFlags.CacheListVectorData, FlatBufferSerializerFlags.GreedyDeserialize)]
+        [Params(FlatBufferSerializerFlags.Lazy, FlatBufferSerializerFlags.CacheListVectorData, FlatBufferSerializerFlags.GreedyDeserialize)]
         public FlatBufferSerializerFlags ParseProfile;
 #endif
 

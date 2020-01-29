@@ -78,18 +78,21 @@ namespace BenchmarkCore
             var serializer = FooBarContainer.Serializer;
             SpanWriter writer = new SpanWriter();
             byte[] buffer = new byte[serializer.GetMaxSize(defaultContainer)];
-            InputBuffer inputBuffer = new UnsafeArrayInputBuffer(buffer);
+            InputBuffer inputBuffer = new MemoryInputBuffer(buffer.AsMemory());
+            int traversalCount = 3;
 
             (string, Action)[] items = new (string, Action)[]
             {
-                ("GetMaxSize", () => serializer.GetMaxSize(defaultContainer)),
-                ("Serialize",  () => serializer.Write(writer, buffer, defaultContainer)),
-                ("Parse",      () => serializer.Parse(inputBuffer)),
+                ("GetMaxSize",       () => serializer.GetMaxSize(defaultContainer)),
+                ("Serialize",        () => serializer.Write(writer, buffer, defaultContainer)),
+                ("Parse",            () => serializer.Parse(inputBuffer)),
+                ("ParseAndTraverse x1", () => ParseAndTraverse(serializer, inputBuffer, 1)),
+                ($"ParseAndTraverse x{traversalCount}", () => ParseAndTraverse(serializer, inputBuffer, traversalCount)),
             };
 
-            for (int loop = 0; loop < 5; ++loop)
+            foreach (var tuple in items)
             {
-                foreach (var tuple in items)
+                for (int loop = 0; loop < 5; ++loop)
                 {
                     var action = tuple.Item2;
                     var name = tuple.Item1;
@@ -110,6 +113,37 @@ namespace BenchmarkCore
                     Console.WriteLine($"{name}: Took {sw.ElapsedMilliseconds} ({sw.ElapsedMilliseconds * 1000 / ((double)count)} us per op)");
                     System.Threading.Thread.Sleep(1000);
                     GC.Collect();
+                }
+            }
+        }
+
+        private static void ParseAndTraverse(ISerializer<FooBarContainer> serializer, InputBuffer inputBuffer, int traversalCount)
+        {
+            FooBarContainer container = serializer.Parse(inputBuffer);
+            for (int i = 0; i < traversalCount; ++i)
+            {
+                var fruit = container.fruit;
+                var initialized = container.initialized;
+                var location = container.location;
+                var items = container.list;
+                int count = items.Count;
+
+                for (int j = 0; j < count; ++j)
+                {
+                    var item = items[j];
+                    var name = item.name;
+                    var postfix = item.postfix;
+                    var rating = item.rating;
+                    var sibling = item.sibling;
+
+                    var ratio = sibling.ratio;
+                    var size = sibling.size;
+                    var time = sibling.time;
+                    var parent = sibling.parent;
+                    var count2 = parent.count;
+                    var id = parent.id;
+                    var length = parent.length;
+                    var prefix = parent.prefix;
                 }
             }
         }
