@@ -11,16 +11,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <FBS Include="Tests.fbs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="FlatSharp.Compiler" Version="1.2.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="FlatSharp.Runtime" Version="1.2.0" />
-    <PackageReference Include="FlatSharp.Unsafe" Version="1.2.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <FBS Include="Tests.fbs" />
+    <ProjectReference Include="..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
+    <ProjectReference Include="..\FlatSharp.Unsafe\FlatSharp.Unsafe.csproj" />
+    <ProjectReference Include="..\FlatSharp\FlatSharp.csproj" />
   </ItemGroup>
 
+  <Import Project="..\FlatSharp.Compiler\FlatSharp.Compiler.targets" />
 </Project>

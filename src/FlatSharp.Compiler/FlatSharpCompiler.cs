@@ -159,7 +159,9 @@ namespace FlatSharp.Compiler
                 throw new InvalidFbsFileException(ErrorContext.Current.Errors);
             }
 
-            return writer.ToString();
+            string rawCode = writer.ToString();
+            string formattedCode = RoslynSerializerGenerator.GetFormattedTextFactory(rawCode)();
+            return formattedCode;
         }
 
         // TODO: consider moving to TableOrStructDefinition.

@@ -420,8 +420,7 @@ $@"
             // original buffer. This means a memory copy here.
             if (this.options.GreedyDeserialize)
             {
-                // new Memory<T>(memory.ToArray())
-                body = $"new Memory<{CSharpHelpers.GetCompilableTypeName(typeModel.ItemTypeModel.ClrType)}>({body}.ToArray())";
+                body = $"{body}.ToArray().AsMemory()";
             }
 
             this.GenerateMethodDefinition(typeModel.ClrType, $"return {body};");
@@ -429,23 +428,17 @@ $@"
 
         private void ImplementListVectorReadMethod(VectorTypeModel typeModel)
         {
-            bool greedy = this.options.GreedyDeserialize || this.options.GenerateMutableObjects;
+            string body = this.CreateFlatBufferVector(typeModel);
 
-            string kindToCreate = nameof(FlatBufferVector<byte>);
-            if (!greedy && this.options.CacheListVectorData)
+            if (this.options.CacheListVectorData)
             {
-                kindToCreate = nameof(FlatBufferCacheVector<byte>);
-            }
-
-            string body = this.CreateFlatBufferVector(typeModel, kindToCreate);
-            if (greedy)
-            {
-                // Greedy => we just convert to a list in line.
+                // We just call .ToList(). Noe that when full greedy mode is on, these items will be 
+                // greedily initialized as we traverse the list. Otherwise, they'll be allocated lazily.
                 body += $".{nameof(SerializationHelpers.FlatBufferVectorToList)}()";
+
                 if (!this.options.GenerateMutableObjects)
                 {
-                    // If not mutable, then we can make it a read only collection, which implements
-                    // IReadOnlyList and IList.
+                    // Finally, if we're not in the business of making mutable objects, then convert the list to read only.
                     body += ".AsReadOnly()";
                 }
             }
@@ -465,7 +458,7 @@ $@"
             }
             else
             {
-                statement = $"{this.CreateFlatBufferVector(typeModel, nameof(FlatBufferVector<byte>))}.ToArray()";
+                statement = $"{this.CreateFlatBufferVector(typeModel)}.ToArray()";
             }
 
             this.GenerateMethodDefinition(typeModel.ClrType, $"return {statement};");
@@ -480,10 +473,10 @@ $@"
             this.GenerateMethodDefinition(enumType, body);
         }
 
-        private string CreateFlatBufferVector(VectorTypeModel typeModel, string vectorTypeName)
+        private string CreateFlatBufferVector(VectorTypeModel typeModel)
         {
             // Params: Buffer, UOffset after following, Padded size of each member, delegate invocation for parsing individual items.
-            return $@"new {vectorTypeName}<{CSharpHelpers.GetCompilableTypeName(typeModel.ItemTypeModel.ClrType)}>(
+            return $@"new {nameof(FlatBufferVector<byte>)}<{CSharpHelpers.GetCompilableTypeName(typeModel.ItemTypeModel.ClrType)}>(
                     memory, 
                     offset + memory.{nameof(InputBuffer.ReadUOffset)}(offset), 
                     {typeModel.PaddedMemberInlineSize}, 

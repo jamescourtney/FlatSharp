@@ -106,6 +106,24 @@ $@"
             return code;
         }
 
+        internal static Func<string> GetFormattedTextFactory(string cSharpCode)
+        {
+            return GetFormattedTextFactory(CSharpSyntaxTree.ParseText(cSharpCode, ParseOptions));
+        }
+
+        internal static Func<string> GetFormattedTextFactory(SyntaxTree syntaxTree)
+        {
+            return () =>
+            {
+                using (var workspace = new AdhocWorkspace())
+                {
+                    var formattedNode = Formatter.Format(syntaxTree.GetRoot(), workspace);
+                    string formatted = formattedNode.ToFullString();
+                    return formatted;
+                }
+            };
+        }
+
         internal static (Assembly assembly, Func<string> formattedTextFactory, byte[] assemblyData) CompileAssembly(
             string sourceCode, 
             bool enableAppDomainIntercept,
@@ -142,15 +160,7 @@ $@"
             });
 
             var node = CSharpSyntaxTree.ParseText(sourceCode, ParseOptions);
-
-            Func<string> formattedTextFactory = () =>
-            {
-                using (var workspace = new AdhocWorkspace())
-                {
-                    var formattedNode = Formatter.Format(node.GetRoot(), workspace);
-                    return formattedNode.ToString();
-                }
-            };
+            Func<string> formattedTextFactory = GetFormattedTextFactory(node);
 
 #if DEBUG
             var debugCSharp = formattedTextFactory();

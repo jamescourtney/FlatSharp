@@ -27,21 +27,9 @@ namespace FlatSharp
         /// <summary>
         /// Creates a new instance of FlatBufferSerializer options.
         /// </summary>
-        /// <param name="cacheListVectorData">
-        /// Indicates that IList vectors should have their reads progressively cached.
-        /// </param>
-        /// <param name="generateMutableObjects">
-        /// Indicates that deserialzied objects should be mutable. The semantics of mutability 
-        /// are "copy on write", which means that the modified data is stored in memory independently 
-        /// of the input buffer.
-        /// </param>
-        /// <param name="greedyDeserialize">
-        /// Indicates if deserialization should be done greedily. 
-        /// This option has similar performance as the <paramref name="cacheListVectorData"/> option, 
-        /// assuming a full traversal of the object graph. The main use case of this option is to
-        /// immediately release the reference to the input buffer, such that the calling application
-        /// can more effectively pool or recycle the buffer.
-        /// </param>
+        /// <param name="cacheListVectorData">If vectors should be progressively cached.</param>
+        /// <param name="generateMutableObjects">If mutable objects should be generated.</param>
+        /// <param name="greedyDeserialize">If Greedy deserialization should be enabled.</param>
         [Obsolete("This constructor has been replaced. Please use FlatBufferSerializationFlags instead.")]
         public FlatBufferSerializerOptions(
             bool cacheListVectorData,
@@ -82,7 +70,9 @@ namespace FlatSharp
         /// Indicates if list vectors should have their data cached after reading. This option will cause more allocations
         /// on deserializing, but will improve performance in cases of duplicate accesses to the same indices.
         /// </summary>
-        public bool CacheListVectorData => this.Flags.HasFlag(FlatBufferSerializerFlags.CacheListVectorData);
+        public bool CacheListVectorData => this.Flags.HasFlag(FlatBufferSerializerFlags.CacheListVectorData) ||
+                                           this.Flags.HasFlag(FlatBufferSerializerFlags.GenerateMutableObjects) ||
+                                           this.Flags.HasFlag(FlatBufferSerializerFlags.GreedyDeserialize);
 
         /// <summary>
         /// Indicates if the serializer should generate mutable objects. Mutable objects are "copy-on-write"

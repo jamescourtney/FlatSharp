@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-using System;
-
 namespace FlatSharp
 {
+    using System;
+
     /// <summary>
     /// Defines FlatSharp serializer options.
     /// </summary>
@@ -37,7 +37,7 @@ namespace FlatSharp
 
         /// <summary>
         /// Indicates if the serializer should generate mutable objects. Mutable objects are "copy-on-write"
-        /// and do not modify the underlying buffer.
+        /// and do not modify the underlying buffer. This option implies <see cref="FlatBufferSerializerFlags.CacheListVectorData"/>.
         /// </summary>
         GenerateMutableObjects = 2,
 

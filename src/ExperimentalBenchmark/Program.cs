@@ -76,6 +76,7 @@ namespace BenchmarkCore
             };
 
             var serializer = FooBarContainer.Serializer;
+            //serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions(FlatBufferSerializerFlags.GenerateMutableObjects)).Compile<FooBarContainer>();
             SpanWriter writer = new SpanWriter();
             byte[] buffer = new byte[serializer.GetMaxSize(defaultContainer)];
             InputBuffer inputBuffer = new MemoryInputBuffer(buffer.AsMemory());
@@ -88,6 +89,8 @@ namespace BenchmarkCore
                 ("Parse",            () => serializer.Parse(inputBuffer)),
                 ("ParseAndTraverse x1", () => ParseAndTraverse(serializer, inputBuffer, 1)),
                 ($"ParseAndTraverse x{traversalCount}", () => ParseAndTraverse(serializer, inputBuffer, traversalCount)),
+                ("ParseAndTraversePartial x1", () => ParseAndTraversePartial(serializer, inputBuffer, 1)),
+                ($"ParseAndTraversePartial x{traversalCount}", () => ParseAndTraversePartial(serializer, inputBuffer, traversalCount)),
             };
 
             foreach (var tuple in items)
@@ -101,7 +104,6 @@ namespace BenchmarkCore
                     {
                         action();
                     }
-                    GC.Collect();
 
                     var sw = Stopwatch.StartNew();
                     int count = 1000000;
@@ -110,10 +112,13 @@ namespace BenchmarkCore
                         action();
                     }
                     sw.Stop();
+
                     Console.WriteLine($"{name}: Took {sw.ElapsedMilliseconds} ({sw.ElapsedMilliseconds * 1000 / ((double)count)} us per op)");
-                    System.Threading.Thread.Sleep(1000);
+                    System.Threading.Thread.Sleep(250);
                     GC.Collect();
                 }
+
+                Console.WriteLine();
             }
         }
 
@@ -144,6 +149,37 @@ namespace BenchmarkCore
                     var id = parent.id;
                     var length = parent.length;
                     var prefix = parent.prefix;
+                }
+            }
+        }
+
+        private static void ParseAndTraversePartial(ISerializer<FooBarContainer> serializer, InputBuffer inputBuffer, int traversalCount)
+        {
+            FooBarContainer container = serializer.Parse(inputBuffer);
+            for (int i = 0; i < traversalCount; ++i)
+            {
+                var fruit = container.fruit;
+                var initialized = container.initialized;
+                var location = container.location;
+                var items = container.list;
+                int count = items.Count;
+
+                for (int j = 0; j < count; ++j)
+                {
+                    var item = items[j];
+                    var name = item.name;
+                    //var postfix = item.postfix;
+                    //var rating = item.rating;
+                    //var sibling = item.sibling;
+
+                    var ratio = item.sibling.ratio;
+                    //var size = sibling.size;
+                    //var time = sibling.time;
+                    //var parent = sibling.parent;
+                    //var count2 = parent.count;
+                    //var id = parent.id;
+                    //var length = parent.length;
+                    //var prefix = parent.prefix;
                 }
             }
         }
