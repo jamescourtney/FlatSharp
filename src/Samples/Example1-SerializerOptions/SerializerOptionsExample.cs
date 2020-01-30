@@ -15,22 +15,21 @@
     /// FlatSharp exposes 4 core deserialization modes, in order from most greedy to laziest:
     /// 1) Greedy: 
     ///    Pre-parse everything and release references to the underlying buffer. 
-    ///    his is the safest option, and therefore the default. It is not always the best option.
+    ///    This is the safest option, and therefore the default. It is usually not the fastest option.
     ///            
     /// 2) Mutable objects: 
     ///    Generated objects are fully mutable, but vectors are allocated ahead of time (however vector elements are not)
-    ///    Imagine a buffer had a vector of 5 objects. Mutable would allocate an array of length 5, where each
-    ///    member was a Lazy{Object} that gets evaluated only if you access that particular index.
+    ///    Imagine a buffer had a vector of 5 objects. This deserialization mode would allocate a vector of length 5,
+    ///    but fill each slot with a lazily-populated FlatBuffer object. When this option is not set, then returned objects are immutable.
     ///                     
     /// 3) Vector Cache: 
-    ///    Vectors elements are cached as they are read. Slightly lazier than mutable. The vector in this case is
-    ///    still preallocated, but filled with null. Individual objects are allocated as their indexes are requested.
+    ///    Operates the same Mutable objects, but all vector items are wrapped in ReadOnlyCollection, which adds some latency.
     /// 
     /// 4) Lazy: None of these behaviors. Everything is allocated on-demand. FlatSharp never allocates an array for you.
     /// 
-    /// FlatBuffer tables and structs always have their non-vector elements cached as they are accessed, so re-reading the same property returns the same object.
-    /// Vectors are special, since they can be large, and array allocations can be expensive. In general, your choice of deserialization method
-    /// will be informed by your answers to these questions:
+    /// FlatBuffer tables and structs always have their non-vector elements cached as they are accessed, so re-reading the same property returns 
+    /// the same object. Vectors are special, since they can be large, and array allocations can be expensive. In general, your choice of 
+    /// deserialization method will be informed by your answers to these questions:
     /// 
     /// Question 1: Am I managing the lifetime of my input buffers? 
     ///    Greedy deserialization guarantees deserialized objects hold no more reference to the input buffer, so you are free to
@@ -50,9 +49,12 @@
     /// 
     /// In order of laziest parsing to most greedy:
     /// 1) Lazy. No allocations you don't ask for. Everything is parsed on-demand.
-    /// 2) VectorCache. Vectors are allocated once you ask for them, but the items in the vector are parsed on-demand.
-    /// 3) Mutable. Superset of VectorCache, and pre-allocates vectors in a different way to generate mutable objects.
+    /// 2) VectorCache/Mutable. Vectors are allocated once you ask for them, but the items in the vector are parsed on-demand. Often the fastest option.
     /// 4) Greedy. Everything parsed and pre-allocated. Usually the slowest option.
+    /// 
+    /// Some combinations like (Greedy | Mutable) are possible, which generates mutable objects that are pre-allocated.
+    /// 
+    /// The right way to handle this is to benchmark, and make your choices based on that. What performs best depends on your access patterns.
     /// </remarks>
     public class SerializerOptionsExample
     {
@@ -181,20 +183,6 @@
         }
 
         /// <summary>
-        /// VectorCache sits halfway between pure lazy mode and pure greedy mode. Recall that non-vector items are
-        /// always cached as they are read from tables and structs. In Lazy deserialization, vector items are re-read each
-        /// time from the buffer. In greedy deserialization, they are read all at once.
-        /// 
-        /// VectorCache mode sits in the middle. Those vector elements that are read, are cached. Elements that are never read never get parsed.
-        /// 
-        /// VectorCache is the most performant option for deserialization, because it doesn't overparse or underparse.
-        /// </summary>
-        public static void VectorCacheDeserialization(DemoTable demo)
-        {
-
-        }
-
-        /// <summary>
         /// This example shows the flag that exposes mutable objects. Note that mutable objects forces FlatSharp to allocate a List{T} for vector types.
         /// However, unlike greedy, it does not eagerly parse the contents of the list. This is simply a mutable version of VectorCache.
         /// </summary>
@@ -231,7 +219,7 @@
         
         /// <summary>
         /// This example shows Greedy + Mutable deserialization. This creates a "normal" .NET object that behaves just as you'd expect.
-        /// Other combinations are permitted, but both Greedy and Mutable supersede CacheListVectorData.
+        /// Other combinations are permitted, but this is the most interesting one.
         /// </summary>
         public static void ComboDeserialization(DemoTable demo)
         {

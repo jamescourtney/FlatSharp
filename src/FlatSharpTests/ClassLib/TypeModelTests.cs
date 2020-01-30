@@ -276,6 +276,22 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
+        public void FlatBufferSerializer_OnlyTablesAllowedAsRootType()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                FlatBufferSerializer.Default.Compile<GenericStruct<int>>());
+
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                FlatBufferSerializer.Default.Compile<IList<int>>());
+
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                FlatBufferSerializer.Default.Compile<string>());
+
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                FlatBufferSerializer.Default.Compile<FlatBufferUnion<string>>());
+        }
+
+        [TestMethod]
         public void TypeModel_Union_StructsTablesStringsAllowed()
         {
             var tableModel = (TableTypeModel)RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, GenericTable<string>, GenericStruct<int>>>));

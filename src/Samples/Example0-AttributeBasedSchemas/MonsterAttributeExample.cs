@@ -12,7 +12,7 @@
     /// Based on the monster sample here:
     /// https://google.github.io/flatbuffers/flatbuffers_guide_tutorial.html
     /// </remarks>
-    public class SchemaFilesExample
+    public class MonsterAttributeExample
     {
         public static void Run()
         {
@@ -20,7 +20,7 @@
             Monster monster = new Monster
             {
                 Color = Color.Green,
-                Equipped = new FlatBufferUnion<Weapon>(new Weapon { Damage = 100, Name = "Master sword" }),
+                Equipped = new FlatBufferUnion<Weapon, string>(new Weapon { Damage = 100, Name = "Master sword" }),
                 Friendly = true,
                 HP = 932,
                 Inventory = new byte[] { 1, 2, 3, 4, 5, },
@@ -126,10 +126,10 @@
         /// <summary>
         /// Unions (discriminated unions) are double-wide types that occupy 2 indexes. So this one occupies slots 8 and 9.
         /// A union of types A,B, and C will have exactly one of those set. FlatSharp exposes the FlatBufferUnion{T} classes to assist with this.
-        /// Unions can contain other tables, but not scalars, vectors, or structs.
+        /// Unions can contain other tables, but not scalars or vectors.
         /// </summary>
         [FlatBufferItem(8)]
-        public virtual FlatBufferUnion<Weapon> Equipped { get; set; }
+        public virtual FlatBufferUnion<Weapon, string> Equipped { get; set; }
 
         /// <summary>
         /// Vectors can also be modeled as arrays.

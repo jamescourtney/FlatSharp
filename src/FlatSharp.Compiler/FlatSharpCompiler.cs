@@ -22,6 +22,7 @@ namespace FlatSharp.Compiler
     using System.Linq;
     using System.Reflection;
     using System.Text;
+    using System.Threading;
     using Antlr4.Runtime;
     using Antlr4.Runtime.Misc;
 
@@ -39,24 +40,39 @@ namespace FlatSharp.Compiler
                     string outputFileName = args[0] + ".generated.cs";
                     string fbsText = File.ReadAllText(args[0]);
 
-                    string inputHash;
-                    using (var sha = System.Security.Cryptography.SHA256.Create())
+                    int attemptCount = 0;
+                    while (attemptCount++ <= 5)
                     {
-                        inputHash = Convert.ToBase64String(sha.ComputeHash(Encoding.UTF8.GetBytes(fbsText)));
-                    }
-
-                    if (File.Exists(outputFileName))
-                    {
-                        string existingOutput = File.ReadAllText(outputFileName);
-                        if (existingOutput.Contains(inputHash))
+                        try
                         {
-                            // Input file unchanged.
-                            return 0;
+                            string inputHash;
+                            using (var sha = System.Security.Cryptography.SHA256.Create())
+                            {
+                                inputHash = Convert.ToBase64String(sha.ComputeHash(Encoding.UTF8.GetBytes(fbsText)));
+                            }
+
+                            if (File.Exists(outputFileName))
+                            {
+                                string existingOutput = File.ReadAllText(outputFileName);
+                                if (existingOutput.Contains(inputHash))
+                                {
+                                    // Input file unchanged.
+                                    return 0;
+                                }
+                            }
+
+                            string cSharp = CreateCSharp(File.ReadAllText(args[0]), inputHash);
+                            File.WriteAllText(outputFileName, cSharp);
+                        }
+                        catch (IOException)
+                        {
+                            // Some projects built multiple targets at once, and this can
+                            // cause contention between different invocations of the compiler.
+                            // Usually, one will succeed, the others will fail, then they'll wake up and
+                            // see that the file looks right to them.
+                            Thread.Sleep(TimeSpan.FromMilliseconds(new Random().Next(20, 200)));
                         }
                     }
-
-                    string cSharp = CreateCSharp(File.ReadAllText(args[0]), inputHash);
-                    File.WriteAllText(outputFileName, cSharp);
                 }
                 catch (InvalidFbsFileException ex)
                 {
@@ -70,10 +86,12 @@ namespace FlatSharp.Compiler
                 catch (FileNotFoundException)
                 {
                     Console.Error.WriteLine($"File '{args[0]}' was not found");
+                    return -1;
                 }
                 catch (IndexOutOfRangeException)
                 {
                     Console.Error.WriteLine($"No file specified");
+                    return -1;
                 }
                 finally
                 {

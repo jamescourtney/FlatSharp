@@ -43,6 +43,11 @@ namespace FlatSharp.Compiler
             {
                 definition.IsTable = context.GetChild(0).GetText() == "table";
 
+                if (!definition.IsTable && definition.RequestedSerializer != null)
+                {
+                    ErrorContext.Current.RegisterError("Structs may not have precompiled serializers.");
+                }
+
                 var fields = context.field_decl();
                 if (fields != null)
                 {

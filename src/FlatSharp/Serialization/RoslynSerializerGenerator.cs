@@ -91,6 +91,12 @@ $@"
 
         internal string GenerateCSharp<TRoot>(string visibility = "public")
         {
+            var runtimeModel = RuntimeTypeModel.CreateFrom(typeof(TRoot));
+            if (runtimeModel.SchemaType != FlatBufferSchemaType.Table)
+            {
+                throw new InvalidFlatBufferDefinitionException($"Can only compile [FlatBufferTable] elements as root types. Type '{typeof(TRoot).Name}' is a '{runtimeModel.SchemaType}'.");
+            }
+
             this.DefineMethods(RuntimeTypeModel.CreateFrom(typeof(TRoot)));
             this.ImplementInterfaceMethod(typeof(TRoot));
             this.ImplementMethods();

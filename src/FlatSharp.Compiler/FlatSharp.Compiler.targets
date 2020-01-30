@@ -1,6 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Project>
-  <Target Name="FlatSharpFbsCompile" AfterTargets="BeforeBuild">
+  <ItemGroup>
+    <Content Include="$(FlatSharpSchema)" />
+  </ItemGroup>
+  
+  <Target Name="FlatSharpFbsCompile" BeforeTargets="BeforeBuild">
     <PropertyGroup Condition=" '$(TargetFrameworkIdentifier)' != '.NETFramework' ">
       <CompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\tools\netcoreapp2.1\FlatSharp.Compiler.dll'))</CompilerPath>
       <CompilerInvocation>dotnet $(CompilerPath)</CompilerInvocation>
@@ -11,7 +15,7 @@
       <CompilerInvocation>$(CompilerPath)</CompilerInvocation>
     </PropertyGroup>
 
-    <Message Text="$(CompilerInvocation) %(FBS.fullpath)" Importance="high" />
-    <Exec Command="$(CompilerInvocation) %(FBS.fullpath)" CustomErrorRegularExpression=".*" Condition=" '%(FBS.fullpath)' != '' " />
+    <Message Text="$(CompilerInvocation) %(FlatSharpSchema.fullpath)" Importance="high" />
+    <Exec Command="$(CompilerInvocation) %(FlatSharpSchema.fullpath)" CustomErrorRegularExpression=".*" Condition=" '%(FlatSharpSchema.fullpath)' != '' " />
   </Target>
 </Project>

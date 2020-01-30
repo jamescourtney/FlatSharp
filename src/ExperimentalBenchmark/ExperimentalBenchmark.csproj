@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <FBS Include="Tests.fbs" />
+    <FlatSharpSchema Include="Tests.fbs" />
   </ItemGroup>
 
   <ItemGroup>

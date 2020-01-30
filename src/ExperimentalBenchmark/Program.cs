@@ -37,7 +37,7 @@ namespace BenchmarkCore
         {
             Console.WriteLine($"x64={Environment.Is64BitProcess}");
 
-            FooBar[] fooBars = new FooBar[3];
+            FooBar[] fooBars = new FooBar[5];
             for (int i = 0; i < fooBars.Length; i++)
             {
                 var foo = new Foo
@@ -79,8 +79,8 @@ namespace BenchmarkCore
             //serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions(FlatBufferSerializerFlags.GenerateMutableObjects)).Compile<FooBarContainer>();
             SpanWriter writer = new SpanWriter();
             byte[] buffer = new byte[serializer.GetMaxSize(defaultContainer)];
-            InputBuffer inputBuffer = new MemoryInputBuffer(buffer.AsMemory());
-            int traversalCount = 3;
+            InputBuffer inputBuffer = new ArrayInputBuffer(buffer);
+            int traversalCount = 5;
 
             (string, Action)[] items = new (string, Action)[]
             {
