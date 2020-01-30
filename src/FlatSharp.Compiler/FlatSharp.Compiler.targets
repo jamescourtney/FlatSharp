@@ -1,9 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Project>
-  <ItemGroup>
-    <Content Include="$(FlatSharpSchema)" />
-  </ItemGroup>
-  
   <Target Name="FlatSharpFbsCompile" BeforeTargets="BeforeBuild">
     <PropertyGroup Condition=" '$(TargetFrameworkIdentifier)' != '.NETFramework' ">
       <CompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\tools\netcoreapp2.1\FlatSharp.Compiler.dll'))</CompilerPath>
