@@ -329,6 +329,26 @@
             Assert.IsNull(unionTable.Union);
         }
 
+        [TestMethod]
+        public void NestedStruct()
+        {
+            var builder = new FlatBuffers.FlatBufferBuilder(1024);
+            var outerOffset = Oracle.OuterStruct.CreateOuterStruct(builder, 401, 100);
+            Oracle.NestedStructs.StartNestedStructs(builder);
+            Oracle.NestedStructs.AddOuter(builder, outerOffset);
+            var offset = Oracle.NestedStructs.EndNestedStructs(builder);
+            builder.Finish(offset.Value);
+
+            byte[] realBuffer = builder.DataBuffer.ToSizedArray();
+            
+            var parsed = FlatBufferSerializer.Default.Parse<NestedStructs>(realBuffer);
+
+            Assert.IsNotNull(parsed?.OuterStruct?.InnerStruct);
+
+            Assert.AreEqual(401, parsed.OuterStruct.InnerStruct.A);
+            Assert.AreEqual(100, parsed.OuterStruct.A);
+        }
+
         private static readonly Random Random = new Random();
 
         private static T GetRandom<T>() where T : struct

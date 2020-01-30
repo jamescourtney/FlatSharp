@@ -51,9 +51,5 @@ namespace FlatSharp.Compiler
         }
 
         protected override bool SupportsChildren => false;
-
-        protected override void OnWriteCode(CodeWriter writer)
-        {
-        }
     }
 }

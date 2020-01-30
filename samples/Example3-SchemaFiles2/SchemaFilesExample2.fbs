@@ -1,0 +1,44 @@
+﻿
+namespace Samples.SchemaFilesExample2;
+
+enum Fruit : byte { Apples, Pears, Bananas }
+
+// FooBarContainer's serializer is generated at build time here, which means we don't need
+// to use FlatBufferSerializer to make one for us at runtime. It also means we don't need
+// a reference to the "FlatSharp" nuget package. Only "FlatSharp.Runtime" is required.
+table FooBarContainer 
+    // Valid values are: "greedy", "mutable", "vectorcache", "lazy", and any value from the FlatBufferSerializerFlags enum.
+    (PrecompiledSerializer:"greedy|mutable|vectorcache") 
+{
+  list:[FooBar] (VectorType:IList);  // Can also be IReadOnlyList,Array,Memory,ReadOnlyMemory
+  initialized:bool;
+  fruit:Fruit;
+  location:string;
+}
+
+table FooBar (PrecompiledSerializer) { // default options used when none are specified.
+  sibling:Bar;
+  name:string;
+  rating:double;
+  postfix:ubyte; 
+}
+
+table OtherTable (PrecompiledSerializer:lazy) { // None means a fully lazy parser
+  name:string;
+}
+
+struct Foo {
+  id:ulong;
+  count:short; 
+  prefix:byte;
+  length:uint;
+}
+
+struct Bar {
+  parent:Foo;
+  time:int;
+  ratio:float;
+  size:ushort;
+}
+
+root_type FooBarContainer;

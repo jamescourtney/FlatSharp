@@ -1,0 +1,34 @@
+﻿
+namespace Samples.SchemaFilesExample;
+
+enum Fruit : byte { Apples, Pears, Bananas }
+
+struct Foo {
+  id:ulong;
+  count:short; 
+  prefix:byte;
+  length:uint;
+}
+
+struct Bar {
+  parent:Foo;
+  time:int;
+  ratio:float;
+  size:ushort;
+}
+
+table FooBar {
+  sibling:Bar;
+  name:string;
+  rating:double;
+  postfix:ubyte; 
+}
+
+table FooBarContainer {
+  list:[FooBar] (VectorType:IReadOnlyList);  // Can also be IList,Array,Memory,ReadOnlyMemory
+  initialized:bool;
+  fruit:Fruit;
+  location:string;
+}
+
+root_type FooBarContainer;

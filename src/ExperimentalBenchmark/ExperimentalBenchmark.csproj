@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>netcoreapp2.1;net47</TargetFrameworks>
-    <LangVersion>7.2</LangVersion>
+    <TargetFrameworks>netcoreapp2.1;net47;netcoreapp3.1</TargetFrameworks>
+    <LangVersion>7.3</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DelaySign>false</DelaySign>
     <SignAssembly>false</SignAssembly>
@@ -11,30 +11,21 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\Benchmark\FBBench\FBBench.cs" Link="FBBench.cs" />
-    <Compile Include="..\Benchmark\FBBench\Google.Flatbuffers.cs" Link="Google.Flatbuffers.cs" />
+    <FlatSharpSchema Include="Tests.fbs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.11.1" />
-    <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.11.1" />
-    <PackageReference Include="FlatSharp" Version="1.1.0" />
-    <PackageReference Include="FlatSharp.Compiler" Version="1.1.0">
+    <PackageReference Include="FlatSharp.Compiler" Version="1.2.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="FlatSharp.Unsafe" Version="1.1.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <PackageReference Include="protobuf-net" Version="2.4.0" />
-    <PackageReference Include="ZeroFormatter" Version="1.6.4" />
   </ItemGroup>
 
   <ItemGroup>
-    <FBS Include="Tests.fbs" />
+    <ProjectReference Include="..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
+    <ProjectReference Include="..\FlatSharp.Unsafe\FlatSharp.Unsafe.csproj" />
+    <ProjectReference Include="..\FlatSharp\FlatSharp.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Google.FlatBuffers\Google.FlatBuffers.csproj" />
-  </ItemGroup>
-
+  <Import Project="..\FlatSharp.Compiler\FlatSharp.Compiler.targets" />
 </Project>

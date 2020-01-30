@@ -26,10 +26,16 @@ namespace FlatSharp.Compiler
     {
         private BaseSchemaMember schemaRoot;
         private readonly Stack<BaseSchemaMember> parseStack = new Stack<BaseSchemaMember>();
+        private readonly string inputHash;
+
+        public SchemaVisitor(string inputHash)
+        {
+            this.inputHash = inputHash;
+        }
 
         public override BaseSchemaMember Visit([NotNull] IParseTree tree)
         {
-            this.schemaRoot = new RootNodeDefinition();
+            this.schemaRoot = new RootNodeDefinition(this.inputHash);
             this.parseStack.Push(this.schemaRoot);
 
             base.Visit(tree);

@@ -137,7 +137,7 @@ namespace FlatSharp
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected virtual int WriteStringProtected(Span<byte> span, string value, Encoding encoding)
         {
-#if NETCOREAPP2_1
+#if NETCOREAPP
             return encoding.GetBytes(value, span);
 #else
             var bytes = encoding.GetBytes(value);

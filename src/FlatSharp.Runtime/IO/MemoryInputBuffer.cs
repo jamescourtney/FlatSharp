@@ -89,7 +89,7 @@ namespace FlatSharp
 
         protected override string ReadStringProtected(int offset, int byteLength, Encoding encoding)
         {
-#if NETCOREAPP2_1
+#if NETCOREAPP
             return encoding.GetString(this.memory.Span.Slice(offset, byteLength));
 #else
             return encoding.GetString(this.memory.Span.Slice(offset, byteLength).ToArray());

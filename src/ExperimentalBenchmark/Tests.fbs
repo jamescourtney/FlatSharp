@@ -1,25 +1,34 @@
 ﻿
-namespace Google.Flatbuffers;
+namespace benchfb;
 
-union Either { TestTable3, TestTable4 }
+enum Enum : short { Apples, Pears, Bananas }
 
-enum Blah : ubyte { A, B, C }
-
-table TestTable3
-{
-	Foobar:string;
-	Test:int64;
-	Memory:[ubyte];
-	List:[int];
+struct Foo {
+  id:ulong;
+  count:short; 
+  prefix:byte;
+  length:uint;
 }
 
-table TestTable4 
-{
-   Name:string;
-   Age:int;
+struct Bar {
+  parent:Foo;
+  time:int;
+  ratio:float;
+  size:ushort;
 }
 
-table TestTable5
-{
-	Something:Google.Flatbuffers.Either;
+table FooBar {
+  sibling:Bar;
+  name:string;
+  rating:double;
+  postfix:ubyte; 
 }
+
+table FooBarContainer (PrecompiledSerializer)  {
+  list:[FooBar] (VectorType:IList);  // 3 copies of the above
+  initialized:bool;
+  fruit:Enum;
+  location:string;
+}
+
+root_type FooBarContainer;

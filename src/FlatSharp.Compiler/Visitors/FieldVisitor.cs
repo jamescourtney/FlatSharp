@@ -35,7 +35,7 @@ namespace FlatSharp.Compiler
 
             ErrorContext.Current.WithScope(this.definition.Name, () =>
             {
-                Dictionary<string, string> metadata = new FieldMetadataVisitor().VisitMetadata(context.metadata());
+                Dictionary<string, string> metadata = new MetadataVisitor().VisitMetadata(context.metadata());
                 string fbsFieldType = context.type().GetText();
 
                 this.definition.VectorType = VectorType.None;

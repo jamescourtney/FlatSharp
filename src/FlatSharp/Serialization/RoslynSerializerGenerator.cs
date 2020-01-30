@@ -21,6 +21,7 @@ namespace FlatSharp
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using FlatSharp.Attributes;
     using FlatSharp.TypeModel;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
@@ -35,6 +36,8 @@ namespace FlatSharp
     /// </summary>
     internal class RoslynSerializerGenerator
     {
+        public const string GeneratedSerializerClassName = "GeneratedSerializer";
+
         private static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(LanguageVersion.Latest);
         private static readonly Dictionary<string, (Assembly, byte[])> AssemblyNameReferenceMapping = new Dictionary<string, (Assembly, byte[])>();
 
@@ -58,9 +61,7 @@ namespace FlatSharp
 
         public ISerializer<TRoot> Compile<TRoot>() where TRoot : class
         {
-            this.DefineMethods(RuntimeTypeModel.CreateFrom(typeof(TRoot)));
-            this.ImplementInterfaceMethod(typeof(TRoot));
-            this.ImplementMethods();
+            string code = this.GenerateCSharp<TRoot>();
 
             string template =
 $@"
@@ -71,13 +72,10 @@ $@"
                 using System.Linq;
                 using System.Runtime.CompilerServices;
                 using FlatSharp;
-                
-                public sealed class Serializer : {nameof(IGeneratedSerializer<byte>)}<{CSharpHelpers.GetCompilableTypeName(typeof(TRoot))}>
-                {{
-                    {string.Join("\r\n", this.methodDeclarations.Select(x => x.ToFullString()))}
-                }}
-            }}
-";
+                using FlatSharp.Attributes;
+
+                {code}
+            }}";
 
             (Assembly assembly, Func<string> formattedTextFactory, byte[] assemblyData) = CompileAssembly(template, this.options.EnableAppDomainInterceptOnAssemblyLoad, typeof(TRoot).Assembly);
 
@@ -89,6 +87,47 @@ $@"
                 assembly,
                 formattedTextFactory,
                 assemblyData);
+        }
+
+        internal string GenerateCSharp<TRoot>(string visibility = "public")
+        {
+            var runtimeModel = RuntimeTypeModel.CreateFrom(typeof(TRoot));
+            if (runtimeModel.SchemaType != FlatBufferSchemaType.Table)
+            {
+                throw new InvalidFlatBufferDefinitionException($"Can only compile [FlatBufferTable] elements as root types. Type '{typeof(TRoot).Name}' is a '{runtimeModel.SchemaType}'.");
+            }
+
+            this.DefineMethods(RuntimeTypeModel.CreateFrom(typeof(TRoot)));
+            this.ImplementInterfaceMethod(typeof(TRoot));
+            this.ImplementMethods();
+
+            string code = $@"
+                [{nameof(FlatSharpGeneratedSerializerAttribute)}(({nameof(FlatBufferSerializerFlags)}){(int)this.options.Flags})]
+                {visibility} sealed class {GeneratedSerializerClassName} : {nameof(IGeneratedSerializer<byte>)}<{CSharpHelpers.GetCompilableTypeName(typeof(TRoot))}>
+                {{
+                    {string.Join("\r\n", this.methodDeclarations.Select(x => x.ToFullString()))}
+                }}
+";
+
+            return code;
+        }
+
+        internal static Func<string> GetFormattedTextFactory(string cSharpCode)
+        {
+            return GetFormattedTextFactory(CSharpSyntaxTree.ParseText(cSharpCode, ParseOptions));
+        }
+
+        internal static Func<string> GetFormattedTextFactory(SyntaxTree syntaxTree)
+        {
+            return () =>
+            {
+                using (var workspace = new AdhocWorkspace())
+                {
+                    var formattedNode = Formatter.Format(syntaxTree.GetRoot(), workspace);
+                    string formatted = formattedNode.ToFullString();
+                    return formatted;
+                }
+            };
         }
 
         internal static (Assembly assembly, Func<string> formattedTextFactory, byte[] assemblyData) CompileAssembly(
@@ -119,6 +158,7 @@ $@"
                 MetadataReference.CreateFromFile(typeof(List<int>).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(System.Collections.ArrayList).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(ValueType).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(IGeneratedSerializer<byte>).Assembly.Location),
                 MetadataReference.CreateFromFile(Assembly.Load("netstandard").Location),
                 MetadataReference.CreateFromFile(typeof(System.IO.InvalidDataException).Assembly.Location),
                 MetadataReference.CreateFromFile(Assembly.Load("System.Runtime").Location),
@@ -126,15 +166,7 @@ $@"
             });
 
             var node = CSharpSyntaxTree.ParseText(sourceCode, ParseOptions);
-
-            Func<string> formattedTextFactory = () =>
-            {
-                using (var workspace = new AdhocWorkspace())
-                {
-                    var formattedNode = Formatter.Format(node.GetRoot(), workspace);
-                    return formattedNode.ToString();
-                }
-            };
+            Func<string> formattedTextFactory = GetFormattedTextFactory(node);
 
 #if DEBUG
             var debugCSharp = formattedTextFactory();

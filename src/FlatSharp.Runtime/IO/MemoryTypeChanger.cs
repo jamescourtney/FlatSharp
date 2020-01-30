@@ -26,17 +26,14 @@ namespace FlatSharp
     internal class MemoryTypeChanger<T> : MemoryManager<T> where T : struct
     {
         private readonly Memory<byte> innerMemory;
-        private MemoryHandle handle;
 
         public MemoryTypeChanger(Memory<byte> innerMemory)
         {
             this.innerMemory = innerMemory;
-            this.handle = this.innerMemory.Pin();
         }
 
-        ~MemoryTypeChanger()
+        protected override void Dispose(bool disposing)
         {
-            this.Dispose(false);
         }
 
         public override Span<T> GetSpan()
@@ -46,21 +43,12 @@ namespace FlatSharp
 
         public override MemoryHandle Pin(int elementIndex = 0)
         {
-            // Don't track anything ourselves; only forward pins and unpins to the underlying memory.
-            return this.innerMemory.Pin();
+            throw new NotSupportedException();
         }
 
         public override void Unpin()
         {
-            // shouldn't ever happen, since all .Pin calls are forwarded to our inner implemention
-            // which means that those unpins will be directed to the underlying item as well.
-            throw new NotImplementedException();
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            this.handle.Dispose();
-            this.handle = default;
+            throw new NotSupportedException();
         }
     }
 }

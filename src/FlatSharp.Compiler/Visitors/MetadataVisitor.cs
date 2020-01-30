@@ -23,7 +23,7 @@ namespace FlatSharp.Compiler
     /// <summary>
     /// Parses metadata as a set of key value pairs. Case insensitive on keys.
     /// </summary>
-    internal class FieldMetadataVisitor : FlatBuffersBaseVisitor<Dictionary<string, string>>
+    internal class MetadataVisitor : FlatBuffersBaseVisitor<Dictionary<string, string>>
     {
         public override Dictionary<string, string> VisitMetadata([NotNull] FlatBuffersParser.MetadataContext context)
         {

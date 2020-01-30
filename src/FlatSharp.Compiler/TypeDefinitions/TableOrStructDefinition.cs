@@ -18,18 +18,24 @@ namespace FlatSharp.Compiler
 {
     using System;
     using System.Collections.Generic;
-
+    
     internal class TableOrStructDefinition : BaseSchemaMember
     {
         public TableOrStructDefinition(
             string name, 
+            FlatBufferSerializerFlags? serializerFlags,
             BaseSchemaMember parent) : base(name, parent)
         {
+            this.RequestedSerializer = serializerFlags;
         }
+
+        public IReadOnlyDictionary<string, string> Metadata { get; }
 
         public List<FieldDefinition> Fields { get; set; } = new List<FieldDefinition>();
         
         public bool IsTable { get; set; }
+
+        public FlatBufferSerializerFlags? RequestedSerializer { get; }
 
         protected override bool SupportsChildren => false;
 
@@ -53,7 +59,7 @@ namespace FlatSharp.Compiler
             });
         }
 
-        protected override void OnWriteCode(CodeWriter writer)
+        protected override void OnWriteCode(CodeWriter writer, IReadOnlyDictionary<string, string> precompiledSerailizers)
         {
             this.AssignIndexes();
 
@@ -74,6 +80,22 @@ namespace FlatSharp.Compiler
                     }
 
                     field.WriteField(writer, this);
+                }
+
+                if (precompiledSerailizers != null && this.RequestedSerializer != null)
+                {
+                    if (precompiledSerailizers.TryGetValue(this.FullName, out string serializer))
+                    {
+                        writer.AppendLine($"public static ISerializer<{this.FullName}> Serializer {{ get; }} = new {RoslynSerializerGenerator.GeneratedSerializerClassName}().AsISerializer();");
+                        writer.AppendLine(string.Empty);
+                        writer.AppendLine($"#region Serializer for {this.FullName}");
+                        writer.AppendLine(serializer);
+                        writer.AppendLine($"#endregion");
+                    }
+                    else
+                    {
+                        ErrorContext.Current.RegisterError($"Table {this.FullName} requested serializer, but none was found.");
+                    }
                 }
             }
 

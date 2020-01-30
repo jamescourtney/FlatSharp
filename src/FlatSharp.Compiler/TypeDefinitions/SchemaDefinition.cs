@@ -16,18 +16,20 @@
 
 namespace FlatSharp.Compiler
 {
+    using System.Collections.Generic;
+
     internal class SchemaDefinition
     {
         public BaseSchemaMember Root { get; set; }
 
-        public void Write(CodeWriter writer)
+        public void Write(CodeWriter writer, IReadOnlyDictionary<string, string> precompiledSerailizers)
         {
             writer.AppendLine("using System;");
             writer.AppendLine("using System.Collections.Generic;");
             writer.AppendLine("using FlatSharp;");
             writer.AppendLine("using FlatSharp.Attributes;");
 
-            this.Root.WriteCode(writer);
+            this.Root.WriteCode(writer, precompiledSerailizers);
         }
 
         public static string ResolvePrimitiveType(string type)
@@ -85,7 +87,7 @@ namespace FlatSharp.Compiler
 
                 case "uint64":
                 case "ulong":
-                    clrType = "ulong"; 
+                    clrType = "ulong";
                     break;
 
                 case "float32":
