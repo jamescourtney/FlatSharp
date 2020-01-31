@@ -41,6 +41,20 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
+        public void TypeModel_Table_PrivateSetter()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(PrivateSetter)));
+        }
+
+        [TestMethod]
+        public void TypeModel_Table_InternalSetter()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(InternalSetter)));
+        }
+
+        [TestMethod]
         public void TypeModel_Struct_StringNotAllowed()
         {
             Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
@@ -465,11 +479,25 @@ namespace FlatSharpTests
         public class OverlappingUnionIndex
         { 
             [FlatBufferItem(0)]
-            public FlatBufferUnion<string, IList<string>> Union { get; set; }
+            public virtual FlatBufferUnion<string, IList<string>> Union { get; set; }
 
             // Invalid -- this should be at index 2.
             [FlatBufferItem(1)]
-            public string FooBar { get; set; }
+            public virtual string FooBar { get; set; }
+        }
+
+        [FlatBufferTable]
+        public class PrivateSetter
+        {
+            [FlatBufferItem(0)]
+            public virtual string String { get; private set; }
+        }
+
+        [FlatBufferTable]
+        public class InternalSetter
+        {
+            [FlatBufferItem(0)]
+            public virtual string String { get; internal set; }
         }
     }
 }
