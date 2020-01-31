@@ -121,6 +121,16 @@ namespace FlatSharpTests
             Assert.AreEqual(expectedInt, CreateAndDeserialize2(expectedString, expectedTable).Int);
         }
 
+        [TestMethod]
+        public void Union_2Items_MultipleStructs_RoundTrip()
+        {
+            var simpleStruct1 = new SimpleStruct { Long = 3 };
+            var simpleStruct2 = new SimpleStruct2 { Long = 4 };
+
+            Assert.AreEqual(simpleStruct1.Long, CreateAndDeserialize1(simpleStruct1, simpleStruct2).Long);
+            Assert.AreEqual(simpleStruct2.Long, CreateAndDeserialize2(simpleStruct1, simpleStruct2).Long);
+        }
+
         private static T1 CreateAndDeserialize1<T1, T2>(T1 one, T2 two)
         {
             var table = new UnionTable<T1, T2>
@@ -171,6 +181,13 @@ namespace FlatSharpTests
 
         [FlatBufferStruct]
         public class SimpleStruct
+        {
+            [FlatBufferItem(0)]
+            public virtual long Long { get; set; }
+        }
+
+        [FlatBufferStruct]
+        public class SimpleStruct2
         {
             [FlatBufferItem(0)]
             public virtual long Long { get; set; }

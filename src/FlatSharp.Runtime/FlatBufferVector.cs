@@ -25,7 +25,7 @@ namespace FlatSharp
     /// A base class that FlatBuffersNet implements to deserialize vectors. FlatBufferVetor{T} is a lazy implementation
     /// which will create a new instance for each item it returns. Calling .ToList() is an effective way to do caching.
     /// </summary>
-    public class FlatBufferVector<T> : IList<T>, IReadOnlyList<T>
+    public sealed class FlatBufferVector<T> : IList<T>, IReadOnlyList<T>
     {
         private readonly InputBuffer memory;
         private readonly int offset;
@@ -43,29 +43,32 @@ namespace FlatSharp
             this.offset = offset;
             this.itemSize = itemSize;
             this.count = checked((int)this.memory.ReadUInt(this.offset));
+
+            // Advance past the length. Means we don't have to keep adding.
+            this.offset = checked(this.offset + sizeof(uint));
+
+            // Ensure we won't overflow whem multiplying within the valid range. This allows us to suppress these
+            // checks later.
+            int maxLocation = checked(this.offset + (this.itemSize * (this.count - 1)));
+            int minLocation = checked(this.offset + (this.itemSize * 0));
+
             this.parseItem = parseItem;
         }
 
         /// <summary>
         /// Gets the item at the given index.
         /// </summary>
-        public virtual T this[int index]
+        public T this[int index]
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                checked
+                if (index < 0 || index >= this.count)
                 {
-                    if (index < 0 || index >= this.Count)
-                    {
-                        throw new IndexOutOfRangeException();
-                    }
-
-                    // start at offset, skip past the number of items, and then multiply item size * index.
-                    return this.parseItem(
-                        this.memory,
-                        this.offset + sizeof(uint) + (this.itemSize * index));
+                    throw new IndexOutOfRangeException();
                 }
+
+                return this.GetItemWithoutRangeCheck(index);
             }
             set
             {
@@ -94,10 +97,10 @@ namespace FlatSharp
 
         public void CopyTo(T[] array, int arrayIndex)
         {
-            var count = this.Count;
+            var count = this.count;
             for (int i = 0; i < count; ++i)
             {
-                array[arrayIndex + i] = this[i];
+                array[arrayIndex + i] = this.GetItemWithoutRangeCheck(i);
             }
         }
 
@@ -109,7 +112,7 @@ namespace FlatSharp
 
             for (int i = 0; i < count; ++i)
             {
-                array[i] = this[i];
+                array[i] = this.GetItemWithoutRangeCheck(i);
             }
 
             return array;
@@ -117,19 +120,19 @@ namespace FlatSharp
 
         public IEnumerator<T> GetEnumerator()
         {
-            int count = this.Count;
+            int count = this.count;
             for (int i = 0; i < count; ++i)
             {
-                yield return this[i];
+                yield return this.GetItemWithoutRangeCheck(i);
             }
         }
 
         public int IndexOf(T item)
         {
-            int count = this.Count;
+            int count = this.count;
             for (int i = 0; i < count; ++i)
             {
-                if (item.Equals(this[i]))
+                if (item.Equals(this.GetItemWithoutRangeCheck(i)))
                 {
                     return i;
                 }
@@ -156,6 +159,15 @@ namespace FlatSharp
         IEnumerator IEnumerable.GetEnumerator()
         {
             return this.GetEnumerator();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private T GetItemWithoutRangeCheck(int index)
+        {
+            // start at offset and then multiply item size * index.
+            return this.parseItem(
+                this.memory,
+                this.offset + (this.itemSize * index));
         }
     }
 }

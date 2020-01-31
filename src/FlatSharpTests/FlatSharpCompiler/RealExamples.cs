@@ -29,22 +29,58 @@ namespace FlatSharpTests.Compiler
     public class RealExamples
     {
         [TestMethod]
-        public void MonsterTest()
+        public void MonsterTest_Greedy()
+        {
+            this.MonsterTest("greedy");
+        }
+
+        [TestMethod]
+        public void MonsterTest_Mutable()
+        {
+            this.MonsterTest("mutable");
+        }
+
+        [TestMethod]
+        public void MonsterTest_VectorCache()
+        {
+            this.MonsterTest("vectorcache");
+        }
+
+        [TestMethod]
+        public void MonsterTest_Lazy()
+        {
+            this.MonsterTest("lazy");
+        }
+
+        [TestMethod]
+        public void MonsterTest_GreedyMutable()
+        {
+            this.MonsterTest("greedy|mutable");
+        }
+
+        private void MonsterTest(string flags)
         {
             // https://github.com/google/flatbuffers/blob/master/samples/monster.fbs
-            string schema = @"
+            string schema = $@"
 namespace MyGame;
-enum Color:byte { Red = 0, Green, Blue = 2 }
 
-union Equipment { Weapon } // Optionally add more tables.
+enum Color:byte {{ Red = 0, Green, Blue = 2 }}
+union Equipment {{ Weapon, Vec3, Vec4, Monster, string }}
 
-struct Vec3 {
+struct Vec3 {{
   x:float;
   y:float;
   z:float;
-}
+}}
 
-table Monster {
+struct Vec4 {{
+  x:float;
+  y:float;
+  z:float;
+  t:float;
+}}
+
+table Monster (PrecompiledSerializer:""{flags}"") {{
   pos:Vec3;
   mana:short = 150;
   hp:short = 100;
@@ -55,12 +91,17 @@ table Monster {
   weapons:[Weapon];
   equipped:Equipment;
   path:[Vec3];
-}
+  vec4:Vec4;
+  FakeVector1:[string] (VectorType:IReadOnlyList);
+  FakeVector2:[string] (VectorType:Array);
+  FakeVector3:[string] (VectorType:IList);
+  FakeVector4:[string];
+}}
 
-table Weapon {
+table Weapon {{
   name:string;
   damage:short;
-}
+}}
 
 root_type Monster;"; 
 
@@ -71,8 +112,9 @@ root_type Monster;";
             object monster = Activator.CreateInstance(monsterType);
             dynamic dMonster = monster;
 
-            Type vecType = asm.GetTypes().Single(x => x.FullName == "MyGame.Vec3");
-            object vec = Activator.CreateInstance(vecType);
+            Type vec4Type = asm.GetTypes().Single(x => x.FullName == "MyGame.Vec4");
+            Type vec3Type = asm.GetTypes().Single(x => x.FullName == "MyGame.Vec3");
+            object vec = Activator.CreateInstance(vec3Type);
             dynamic dVec = vec;
 
             Assert.AreEqual((short)150, dMonster.mana);
@@ -82,9 +124,9 @@ root_type Monster;";
             Assert.IsNull(dMonster.pos);
 
             Assert.AreEqual(typeof(IList<byte>), monsterType.GetProperty("inventory").PropertyType);
-            Assert.AreEqual(typeof(IList<>).MakeGenericType(vecType), monsterType.GetProperty("path").PropertyType);
+            Assert.AreEqual(typeof(IList<>).MakeGenericType(vec3Type), monsterType.GetProperty("path").PropertyType);
             Assert.AreEqual(typeof(IList<>).MakeGenericType(weaponType), monsterType.GetProperty("weapons").PropertyType);
-            Assert.AreEqual(typeof(FlatBufferUnion<>).MakeGenericType(weaponType), monsterType.GetProperty("equipped").PropertyType);
+            Assert.AreEqual(typeof(FlatBufferUnion<,,,,>).MakeGenericType(weaponType, vec3Type, vec4Type, monsterType, typeof(string)), monsterType.GetProperty("equipped").PropertyType);
             Assert.AreEqual(typeof(string), monsterType.GetProperty("name").PropertyType);
             Assert.IsTrue(monsterType.GetProperty("friendly").GetCustomAttribute<FlatBufferItemAttribute>().Deprecated);
 

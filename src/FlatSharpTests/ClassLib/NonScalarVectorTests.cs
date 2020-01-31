@@ -48,7 +48,7 @@ namespace FlatSharpTests
         public void StringVector_Cache()
         {
             this.TestType(
-                false,
+                true,
                 () =>
                 {
                     byte[] b = new byte[20];

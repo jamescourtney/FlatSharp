@@ -195,8 +195,10 @@ $@"
                 string @case =
 $@"
                     case {unionIndex}:
+                    {{
                         {structAdjustment}
                         {this.GetSerializeInvocation(elementModel.ClrType, $"{valueVariableName}.Item{unionIndex}", valueOffsetVariableName)}
+                    }}
                         break;";
 
                 switchCases.Add(@case);
