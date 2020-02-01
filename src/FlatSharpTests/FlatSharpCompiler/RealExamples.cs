@@ -35,16 +35,17 @@ namespace FlatSharpTests.Compiler
         }
 
         [TestMethod]
-        public void MonsterTest_Mutable()
-        {
-            this.MonsterTest("mutable");
-        }
-
-        [TestMethod]
         public void MonsterTest_VectorCache()
         {
             this.MonsterTest("vectorcache");
         }
+
+        [TestMethod]
+        public void MonsterTest_VectorCacheMutable()
+        {
+            this.MonsterTest("vectorcache");
+        }
+
 
         [TestMethod]
         public void MonsterTest_Lazy()
@@ -53,15 +54,15 @@ namespace FlatSharpTests.Compiler
         }
 
         [TestMethod]
-        public void MonsterTest_PureLazy()
+        public void MonsterTest_PropertyCache()
         {
-            this.MonsterTest("purelazy");
+            this.MonsterTest("propertycache");
         }
 
         [TestMethod]
         public void MonsterTest_GreedyMutable()
         {
-            this.MonsterTest("greedy|mutable");
+            this.MonsterTest("greedymutable");
         }
 
         private void MonsterTest(string flags)
@@ -86,7 +87,7 @@ struct Vec4 {{
   t:float;
 }}
 
-table Monster (PrecompiledSerializer:""{flags}"") {{
+table Monster (PrecompiledSerializer:{flags}) {{
   pos:Vec3;
   mana:short = 150;
   hp:short = 100;

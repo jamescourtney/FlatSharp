@@ -44,7 +44,7 @@ struct Vec3 {
   z:float;
 }
 
-table Monster (PrecompiledSerializer:""greedy|mutable"") {
+table Monster (PrecompiledSerializer:""greedymutable"") {
   pos:Vec3;
   mana:short = 150;
   hp:short = 100;
@@ -107,7 +107,7 @@ root_type Monster;";
         [TestMethod]
         public void FlagsOptions_MutableGreedy()
         {
-            this.TestFlags(FlatBufferDeserializationOption.Greedy, $"PrecompiledSerializer:{nameof(FlatBufferDeserializationOption.GreedyMutable)}");
+            this.TestFlags(FlatBufferDeserializationOption.GreedyMutable, $"PrecompiledSerializer:{nameof(FlatBufferDeserializationOption.GreedyMutable)}");
         }
 
         [TestMethod]
@@ -123,7 +123,7 @@ root_type Monster;";
         }
 
         [TestMethod]
-        public void FlagsOptions_None()
+        public void FlagsOptions_Lazy()
         {
             this.TestFlags(FlatBufferDeserializationOption.Lazy, $"PrecompiledSerializer:{nameof(FlatBufferDeserializationOption.Lazy)}");
         }
@@ -138,6 +138,12 @@ root_type Monster;";
         public void FlagsOptions_VectorCache()
         {
             this.TestFlags(FlatBufferDeserializationOption.VectorCache, $"PrecompiledSerializer:{nameof(FlatBufferDeserializationOption.VectorCache)}");
+        }
+
+        [TestMethod]
+        public void FlagsOptions_PropertyCache()
+        {
+            this.TestFlags(FlatBufferDeserializationOption.PropertyCache, $"PrecompiledSerializer:{nameof(FlatBufferDeserializationOption.PropertyCache)}");
         }
 
         [TestMethod]
