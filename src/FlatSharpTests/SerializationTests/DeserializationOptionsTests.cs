@@ -607,6 +607,9 @@ namespace FlatSharpTests
 
             [FlatBufferItem(4)]
             public virtual FlatBufferUnion<FirstStruct, SecondStruct, string> Union { get; set; }
+
+            [FlatBufferItem(6)]
+            public virtual ulong NoSetter { get; }
         }
 
         [FlatBufferStruct]
@@ -614,6 +617,9 @@ namespace FlatSharpTests
         {
             [FlatBufferItem(0)]
             public virtual int First { get; set; }
+
+            [FlatBufferItem(1)]
+            public virtual ulong NoSetter { get; }
         }
 
         [FlatBufferStruct]

@@ -226,6 +226,9 @@ namespace FlatSharpTests
 
             [FlatBufferItem(4)]
             public virtual SimpleTable InnerTable { get; set; }
+
+            [FlatBufferItem(5, DefaultValue = 0L)]
+            public virtual long NoSetter { get; }
         }
 
         [FlatBufferStruct]

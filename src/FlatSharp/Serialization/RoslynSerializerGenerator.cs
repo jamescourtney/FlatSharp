@@ -51,7 +51,7 @@ namespace FlatSharp
         private readonly GetMaxSizeCodeGenerator maxSizeCodeGenerator;
         private readonly FlatBufferSerializerOptions options;
         private readonly List<SyntaxNode> methodDeclarations = new List<SyntaxNode>();
-        
+
         public RoslynSerializerGenerator(FlatBufferSerializerOptions options)
         {
             this.options = options;
@@ -113,8 +113,12 @@ $@"
             return code;
         }
 
-        internal static string GetFormattedText(string cSharpCode) 
-            => GetFormattedTextFactory(CSharpSyntaxTree.ParseText(cSharpCode, ParseOptions))();
+        internal static string GetFormattedText(string cSharpCode)
+        {
+            var root = RoslynSerializerGenerator.ApplySyntaxTransformations(CSharpSyntaxTree.ParseText(cSharpCode, ParseOptions).GetRoot());
+            var tree = SyntaxFactory.SyntaxTree(root, ParseOptions);
+            return GetFormattedTextFactory(tree)();
+        }
 
         // Getting pretty code can be slow, so return a lambda that loads it lazily.
         internal static Func<string> GetFormattedTextFactory(SyntaxTree syntaxTree)
@@ -131,7 +135,7 @@ $@"
         }
 
         internal static (Assembly assembly, Func<string> formattedTextFactory, byte[] assemblyData) CompileAssembly(
-            string sourceCode, 
+            string sourceCode,
             bool enableAppDomainIntercept,
             params Assembly[] additionalReferences)
         {
@@ -165,28 +169,17 @@ $@"
                 MetadataReference.CreateFromFile(Assembly.Load("System.Collections").Location),
             });
 
-            var rootNode = CSharpSyntaxTree.ParseText(sourceCode, ParseOptions).GetRoot();
-            var methods = rootNode.DescendantNodes().OfType<MethodDeclarationSyntax>().ToList();
-            foreach (var method in methods)
-            {
-                SyntaxNode replacement = SyntaxFactory.Block(SyntaxFactory.CheckedStatement(SyntaxKind.CheckedStatement, method.Body));
-                SyntaxNode original = method.Body;
-
-                rootNode = rootNode.ReplaceNode(original, replacement);
-            }
-
+            var rootNode = ApplySyntaxTransformations(CSharpSyntaxTree.ParseText(sourceCode, ParseOptions).GetRoot());
             SyntaxTree tree = SyntaxFactory.SyntaxTree(rootNode);
-
             Func<string> formattedTextFactory = GetFormattedTextFactory(tree);
 
 #if DEBUG
             var debugCSharp = formattedTextFactory();
 #endif
-            
+
             string name = $"FlatSharpDynamicAssembly_{Guid.NewGuid():n}";
             var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
                 .WithModuleName(name)
-                .WithOverflowChecks(true)
                 .WithAllowUnsafe(false)
                 .WithOptimizationLevel(OptimizationLevel.Release);
 
@@ -384,6 +377,40 @@ $@"
 
             this.maxSizeCodeGenerator.ImplementMethods();
             this.methodDeclarations.AddRange(this.maxSizeCodeGenerator.MethodDeclarations);
+        }
+
+        /// <summary>
+        /// Surrounds all properties/methods/constructors with checked syntax.
+        /// </summary>
+        private static SyntaxNode ApplySyntaxTransformations(SyntaxNode rootNode)
+        {
+            rootNode = rootNode.ReplaceNodes(
+               rootNode.DescendantNodes().OfType<MethodDeclarationSyntax>(),
+               (a, b) =>
+               {
+                   return b.WithBody(SyntaxFactory.Block(SyntaxFactory.CheckedStatement(SyntaxKind.CheckedStatement, a.Body)));
+               });
+
+            rootNode = rootNode.ReplaceNodes(
+                rootNode.DescendantNodes().OfType<ConstructorDeclarationSyntax>(),
+                (a, b) =>
+                {
+                    return b.WithBody(SyntaxFactory.Block(SyntaxFactory.CheckedStatement(SyntaxKind.CheckedStatement, a.Body)));
+                });
+
+            rootNode = rootNode.ReplaceNodes(
+                rootNode.DescendantNodes().OfType<AccessorDeclarationSyntax>(),
+                (a, b) =>
+                {
+                    if (b.Body == null)
+                    {
+                        return a;
+                    }
+
+                    return b.WithBody(SyntaxFactory.Block(SyntaxFactory.CheckedStatement(SyntaxKind.CheckedStatement, b.Body)));
+                });
+
+            return rootNode;
         }
     }
 }

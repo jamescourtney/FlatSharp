@@ -6,6 +6,7 @@ enum Fruit : byte { Apples, Pears, Bananas }
 // FooBarContainer's serializer is generated at build time here, which means we don't need
 // to use FlatBufferSerializer to make one for us at runtime. It also means we don't need
 // a reference to the "FlatSharp" nuget package. Only "FlatSharp.Runtime" is required.
+// Runtime vs build-time generated serializers perform equally well.
 table FooBarContainer 
     // Valid values are: "greedy", "greedymutable", "vectorcache", "vectorcachemutable", "propertycache", and "lazy"
     (PrecompiledSerializer:greedymutable) 
