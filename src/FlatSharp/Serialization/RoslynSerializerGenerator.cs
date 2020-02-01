@@ -112,11 +112,10 @@ $@"
             return code;
         }
 
-        internal static Func<string> GetFormattedTextFactory(string cSharpCode)
-        {
-            return GetFormattedTextFactory(CSharpSyntaxTree.ParseText(cSharpCode, ParseOptions));
-        }
+        internal static string GetFormattedText(string cSharpCode) 
+            => GetFormattedTextFactory(CSharpSyntaxTree.ParseText(cSharpCode, ParseOptions))();
 
+        // Getting pretty code can be slow, so return a lambda that loads it lazily.
         internal static Func<string> GetFormattedTextFactory(SyntaxTree syntaxTree)
         {
             return () =>
@@ -243,8 +242,6 @@ $@"
         /// <summary>
         /// Recursively crawls through the object graph and looks for methods to define.
         /// </summary>
-        /// <param name="model"></param>
-        /// <param name="dictionary"></param>
         private void DefineMethods(RuntimeTypeModel model)
         {
             if (model.IsBuiltInType)

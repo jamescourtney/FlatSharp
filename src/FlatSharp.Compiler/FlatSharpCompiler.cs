@@ -178,7 +178,7 @@ namespace FlatSharp.Compiler
             }
 
             string rawCode = writer.ToString();
-            string formattedCode = RoslynSerializerGenerator.GetFormattedTextFactory(rawCode)();
+            string formattedCode = RoslynSerializerGenerator.GetFormattedText(rawCode);
             return formattedCode;
         }
 

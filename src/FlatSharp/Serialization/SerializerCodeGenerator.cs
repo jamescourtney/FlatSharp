@@ -342,14 +342,8 @@ $@"
         /// </summary>
         private void GenerateSerializeMethod(Type type, string body, bool inline = true)
         {
-            string inlineDeclaration = "[MethodImpl(MethodImplOptions.AggressiveInlining)]";
-            if (!inline)
-            {
-                inlineDeclaration = string.Empty;
-            }
-
-            string declaration = 
-$@"
+            string inlineDeclaration = inline ? string.Empty : "[MethodImpl(MethodImplOptions.AggressiveInlining)]";
+            string declaration = $@"
             {inlineDeclaration}
             private static void {this.MethodNames[type]} (SpanWriter writer, Span<byte> span, {CSharpHelpers.GetCompilableTypeName(type)} item, int originalOffset, SerializationContext context)
             {{

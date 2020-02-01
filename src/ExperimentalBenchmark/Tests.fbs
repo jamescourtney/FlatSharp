@@ -24,7 +24,7 @@ table FooBar {
   postfix:ubyte; 
 }
 
-table FooBarContainer (PrecompiledSerializer:"mutable|greedy") {
+table FooBarContainer (PrecompiledSerializer:"mutable") {
   list:[FooBar] (VectorType:IList);  // 3 copies of the above
   initialized:bool;
   fruit:Enum;

@@ -102,40 +102,34 @@ namespace FlatSharp
             string className = "tableReader_" + Guid.NewGuid().ToString("n");
             this.GenerateMethodDefinition(typeModel.ClrType, $"return new {className}(memory, offset + memory.{nameof(InputBuffer.ReadUOffset)}(offset));");
 
-            // Implement the class
+            // Build up a list of property overrides.
+            var propertyOverrides = new List<GeneratedProperty>();
+            foreach (var item in typeModel.IndexToMemberMap)
             {
-                // Build up a list of property overrides.
-                var propertyOverrides = new List<GeneratedProperty>();
-                foreach (var item in typeModel.IndexToMemberMap)
+                int index = item.Key;
+                var value = item.Value;
+
+                GeneratedProperty propertyStuff;
+                if (value.ItemTypeModel is UnionTypeModel)
                 {
-                    int index = item.Key;
-                    var value = item.Value;
-                    PropertyInfo propertyInfo = value.PropertyInfo;
-                    Type propertyType = propertyInfo.PropertyType;
-                    string compilableTypeName = CSharpHelpers.GetCompilableTypeName(propertyType);
-
-                    GeneratedProperty propertyStuff;
-                    if (value.ItemTypeModel is UnionTypeModel)
-                    {
-                        propertyStuff = this.CreateUnionTableGetter(value, index);
-                    }
-                    else
-                    {
-                        propertyStuff = this.CreateStandardTableProperty(value, index);
-                    }
-
-                    propertyOverrides.Add(propertyStuff);
+                    propertyStuff = this.CreateUnionTableGetter(value, index);
+                }
+                else
+                {
+                    propertyStuff = this.CreateStandardTableProperty(value, index);
                 }
 
-                string classDefinition = this.CreateClass(
-                    className,
-                    typeModel.ClrType,
-                    typeModel.IndexToMemberMap.Values.Select(x => x.PropertyInfo.Name),
-                    propertyOverrides);
-
-                var node = CSharpSyntaxTree.ParseText(classDefinition, ParseOptions);
-                this.methodDeclarations.Add(node.GetRoot());
+                propertyOverrides.Add(propertyStuff);
             }
+
+            string classDefinition = this.CreateClass(
+                className,
+                typeModel.ClrType,
+                typeModel.IndexToMemberMap.Values.Select(x => x.PropertyInfo.Name),
+                propertyOverrides);
+
+            var node = CSharpSyntaxTree.ParseText(classDefinition, ParseOptions);
+            this.methodDeclarations.Add(node.GetRoot());
         }
 
         /// <summary>
@@ -145,7 +139,6 @@ namespace FlatSharp
         {
             Type propertyType = memberModel.ItemTypeModel.ClrType;
             string defaultValue = CSharpHelpers.GetDefaultValueToken(memberModel);
-
             GeneratedProperty property = new GeneratedProperty(this.options, index, memberModel.PropertyInfo);
 
             property.ReadValueMethodDefinition =
@@ -264,9 +257,9 @@ $@"
                 }
 
                 string classDefinition = this.CreateClass(
-                    className, 
-                    typeModel.ClrType, 
-                    typeModel.Members.Select(x => x.PropertyInfo.Name), 
+                    className,
+                    typeModel.ClrType,
+                    typeModel.Members.Select(x => x.PropertyInfo.Name),
                     propertyOverrides);
                 var node = CSharpSyntaxTree.ParseText(classDefinition, ParseOptions);
                 this.methodDeclarations.Add(node.GetRoot());
@@ -294,7 +287,7 @@ $@"
                 offsetFieldDef = string.Empty;
                 ctorBody = string.Join("\r\n", propertyOverrides.Select(x => $"this.{x.BackingFieldName} = {x.ReadValueMethodName}(buffer, offset);"));
             }
-            
+
             return
 $@"
                 private sealed class {className} : {CSharpHelpers.GetCompilableTypeName(baseType)}

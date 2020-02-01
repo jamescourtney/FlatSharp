@@ -74,7 +74,7 @@ namespace FlatSharp
             var itemTypeModel = memberModel.ItemTypeModel;
             var clrType = itemTypeModel.ClrType;
 
-            string defaultValue = $"default({GetCompilableTypeName(memberModel.ItemTypeModel.ClrType)})";
+            string defaultValue = $"default";
             if (memberModel.HasDefaultValue)
             {
                 string literalSpecifier = string.Empty;

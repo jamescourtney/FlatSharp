@@ -20,6 +20,9 @@ namespace FlatSharp
     using System.Collections.Generic;
     using System.Reflection;
 
+    /// <summary>
+    /// A helper to assist with generating property overrides for table and struct readers.
+    /// </summary>
     internal class GeneratedProperty
     {
         private readonly FlatBufferSerializerOptions options;
