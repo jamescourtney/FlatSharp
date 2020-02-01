@@ -7,8 +7,8 @@ enum Fruit : byte { Apples, Pears, Bananas }
 // to use FlatBufferSerializer to make one for us at runtime. It also means we don't need
 // a reference to the "FlatSharp" nuget package. Only "FlatSharp.Runtime" is required.
 table FooBarContainer 
-    // Valid values are: "greedy", "mutable", "vectorcache", "lazy", and "purelazy"
-    (PrecompiledSerializer:"greedy|mutable") 
+    // Valid values are: "greedy", "greedymutable", "vectorcache", "vectorcachemutable", "propertycache", and "lazy"
+    (PrecompiledSerializer:greedymutable) 
 {
   list:[FooBar] (VectorType:IList);  // Can also be IReadOnlyList,Array,Memory,ReadOnlyMemory
   initialized:bool;
@@ -23,7 +23,7 @@ table FooBar (PrecompiledSerializer) { // default options used when none are spe
   postfix:ubyte; 
 }
 
-table OtherTable (PrecompiledSerializer:purelazy) {
+table OtherTable (PrecompiledSerializer:lazy) {
   name:string;
 }
 

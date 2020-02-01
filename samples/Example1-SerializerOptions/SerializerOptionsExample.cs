@@ -4,7 +4,6 @@
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Linq;
-    using System.Runtime.InteropServices;
     using FlatSharp;
     using FlatSharp.Attributes;
 
@@ -13,26 +12,23 @@
     /// </summary>
     /// <remarks>
     /// FlatSharp exposes 4 core deserialization modes, in order from most greedy to laziest:
-    /// 1) Greedy: 
+    /// 1) Greedy / GreedyMutable: 
     ///    Pre-parse everything and release references to the underlying buffer. 
     ///    This is the safest option, and therefore the default. It is usually not the fastest option.
     ///            
-    /// 2) Mutable objects: 
-    ///    Generated objects are fully mutable, but vectors are allocated ahead of time 
-    ///    Imagine a buffer had a vector of 5 objects. This deserialization mode would allocate a vector of length 5,
-    ///    but fill each slot with a lazily-populated FlatBuffer object.
-    ///                     
-    /// 3) Vector Cache: 
-    ///    Operates the same Mutable objects, but all vector items are wrapped in ReadOnlyCollection, which adds some latency.
+    /// 2) VectorCache / VectorCacheMutable: 
+    ///    Data is read progressively and cached, and vectors are pre-allocated upon initial access. Guarantees
+    ///    each element is only read once from the underlying buffer.
     /// 
-    /// 4) Lazy: 
-    ///    Properties of tables and structs are cached, but vectors are not. This represents a nice compromise between speed and allocation.
+    /// 4) PropertyCache: 
+    ///    Properties of tables and structs are cached, but vector elements are not. Does not have any array allocations behind
+    ///    the scenes.
     /// 
-    /// 5) PureLazy: 
-    ///    Nothing is ever cached, and data is reconstituted from the underlying buffer each time. This option is fastest when you access
+    /// 5) Lazy: 
+    ///    Nothing is ever cached, and data is reconstituted from the underlying buffer each time. This option is fastest when you access each item
     ///    no more than once, but gets expensive very quickly if you repeatedly access items.
     ///
-    /// Unless in PureLazy mode, FlatBuffer tables and structs always have their non-vector elements cached as they are accessed, 
+    /// Unless in Lazy mode, FlatBuffer tables and structs always have their non-vector elements cached as they are accessed, 
     /// so re-reading the same property returns the same instance. Vectors are special, since they can be large, and array 
     /// allocations can be expensive. In general, your choice of deserialization method will be informed by your answers to these 
     /// questions:
@@ -45,22 +41,11 @@
     ///    
     /// Question 2: Will I read the entire object graph?
     ///    If you're not reading all properties of the object, then Greedy deserialization will waste cycles preparsing data you will not use.
-    ///    If you plan to touch each field no more than once, then a lazier parsing option will be the best approach. Mutable objects
-    ///    and VectorCache options are somewhere in the middle (both provide progressive caching of list vectors), the only difference
-    ///    being mutability of items in the list.
+    ///    If you plan to touch each field no more than once, then a lazier parsing option will be the best approach. 
     ///    
     /// Question 3: Do I have large vectors?
     ///    Array allocations can be expensive, especially for large arrays. If you are deserializing large vectors, you should use some form of lazy parsing
-    ///    (options.Lazy or options.PureLazy). These are the only configurations that don't induce array allocations behind the scenes for vectors.
-    /// 
-    /// In order of laziest parsing to most greedy:
-    /// 1) PureLazy. No allocations you don't ask for. Everything is parsed on-demand. Fastest when you touch each property no more than once.
-    /// 2) Lazy. Like PureLazy, but stores references to the values it parses so the cached results can be returned.
-    /// 3) VectorCache/Mutable. Vectors are allocated once you ask for them, but the items in the vector are parsed on-demand. Often the fastest option.
-    /// 4) Greedy. Everything parsed and pre-allocated. Fastest when you repeatedly traverse the whole object.
-    /// 
-    /// Some combinations like (Greedy | Mutable) are possible, which generates mutable objects that are pre-allocated. PureLazy is incompatible with
-    /// all other options.
+    ///    (options.Lazy or options.PropertyCache). These are the only configurations that don't induce array allocations behind the scenes for vectors.
     /// 
     /// The right way to handle this is to benchmark, and make your choices based on that. What performs best depends on your access patterns. Objectively,
     /// all of these configurations are quite fast.
@@ -72,7 +57,6 @@
             DemoTable demo = new DemoTable
             {
                 Name = "My demo table",
-                MemoryVector = new[] { 1, 2, 3, 4, 5, },
                 ListVector = new List<InnerTable>
                 {
                     new InnerTable { Fruit = "Apple" },
@@ -80,12 +64,125 @@
                     new InnerTable { Fruit = "Pear" }
                 }
             };
-
-            GreedyDeserialization(demo);
+            
+            // In order of greediness
             LazyDeserialization(demo);
-            PureLazyDeserialization(demo);
-            MutableDeserialization(demo);
-            ComboDeserialization(demo);
+            PropertyCacheDeserialization(demo);
+            VectorCacheDeserialization(demo);
+            GreedyDeserialization(demo);
+            GreedyMutableDeserialization(demo);
+        }
+
+        /// <summary>
+        /// In lazy deserialization, FlatSharp reads from the underlying buffer each time. No caching is done. This will be
+        /// the fastest option if your access patterns are sparse and you touch each element only once.
+        /// </summary>
+        public static void LazyDeserialization(DemoTable demo)
+        {
+            var serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions(FlatBufferDeserializationOption.Lazy));
+
+            byte[] buffer = new byte[1024];
+            serializer.Serialize(demo, buffer);
+            var parsed = serializer.Parse<DemoTable>(buffer);
+
+            // Lazy deserialization reads objects from vectors each time you ask for them.
+            InnerTable index0_1 = parsed.ListVector[0];
+            InnerTable index0_2 = parsed.ListVector[0];
+            Debug.Assert(!object.ReferenceEquals(index0_1, index0_2), "A different instance is returned each time from lazy vectors");
+
+            // Properties from tables and structs are cached after they are read.
+            string name = parsed.Name;
+            string name2 = parsed.Name;
+
+            Debug.Assert(
+                !object.ReferenceEquals(name, name2),
+                "When reading table/struct properties Lazy parsing returns a different instance each time.");
+
+            // Invalidate the whole buffer. Undefined behavior past here!
+            Array.Fill(buffer, (byte)0);
+
+            try
+            {
+                var whoKnows = parsed.ListVector[1];
+                Debug.Assert(false);
+            }
+            catch
+            {
+                // This can be any sort of exception. This behavior is undefined.
+            }
+        }
+
+        /// <summary>
+        /// The next step up in greediness is PropertyCache mode. In this mode, Flatsharp will cache the results of property accesses.
+        /// So, if you read the results of FooObject.Property1 multiple times, the same value comes back each time. What this mode
+        /// does not do is cache vectors. So reding FooObject.Vector[0] multiple times re-visits the buffer each time.
+        /// </summary>
+        public static void PropertyCacheDeserialization(DemoTable demo)
+        {
+            var serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions(FlatBufferDeserializationOption.PropertyCache));
+
+            byte[] buffer = new byte[1024];
+            serializer.Serialize(demo, buffer);
+            var parsed = serializer.Parse<DemoTable>(buffer);
+
+            // Properties from tables and structs are cached after they are read.
+            string name = parsed.Name;
+            string name2 = parsed.Name;
+
+            Debug.Assert(
+                object.ReferenceEquals(name, name2),
+                "When reading table/struct properties, PropertyCache mode returns the same instance.");
+
+            // PropertyCache deserialization doesn't cache the results of vector lookups.
+            InnerTable index0_1 = parsed.ListVector[0];
+            InnerTable index0_2 = parsed.ListVector[0];
+
+            Debug.Assert(!object.ReferenceEquals(index0_1, index0_2), "A different instance is returned each time from vectors in PropertyCache mode.");
+            Debug.Assert(object.ReferenceEquals(parsed.ListVector, parsed.ListVector), "But the vector instance itself is the cached.");
+            Debug.Assert(object.ReferenceEquals(index0_1.Fruit, index0_1.Fruit), "And the items returned from each vector exhibit property cache behavior");
+
+            // Invalidate the whole buffer. Undefined behavior past here!
+            Array.Fill(buffer, (byte)0);
+
+            try
+            {
+                var whoKnows = parsed.ListVector[1];
+                Debug.Assert(false);
+            }
+            catch
+            {
+                // This can be any sort of exception. This behavior is undefined.
+            }
+        }
+
+        /// <summary>
+        /// Vector cache is a superset of PropertyCache. The difference is that when deserializing in VectorCache mode, FlatSharp
+        /// will allocate a vector for you that gets lazily filled in as elements are accessed. This leads to some array allocations
+        /// behind the scenes, since FlatSharp needs to know what objects have been returned for what indices.
+        /// </summary>
+        public static void VectorCacheDeserialization(DemoTable demo)
+        {
+            var serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions(FlatBufferDeserializationOption.VectorCache));
+
+            byte[] buffer = new byte[1024];
+            serializer.Serialize(demo, buffer);
+            var parsed = serializer.Parse<DemoTable>(buffer);
+
+            // Properties from tables and structs are cached after they are read.
+            string name = parsed.Name;
+            string name2 = parsed.Name;
+
+            Debug.Assert(
+                object.ReferenceEquals(name, name2),
+                "When reading table/struct properties, PropertyCache mode returns the same instance.");
+
+            // VectorCache deserialization guarantees only one object per index.
+            InnerTable index0_1 = parsed.ListVector[0];
+            InnerTable index0_2 = parsed.ListVector[0];
+
+            Debug.Assert(object.ReferenceEquals(index0_1, index0_2), "The same instance is returned each time from vectors in VectorCache mode.");
+            Debug.Assert(object.ReferenceEquals(parsed.ListVector, parsed.ListVector), "And the vector instance itself is the same.");
+            Debug.Assert(object.ReferenceEquals(index0_1.Fruit, index0_1.Fruit), "And the items returned from each vector exhibit property cache behavior");
         }
 
         /// <summary>
@@ -93,13 +190,11 @@
         /// and the structure is copied into the deserialized object. This is the most straightforward way of using FlatSharp,
         /// because the results it gives are predictable, and require no developer cognitive overhead. However, it can be less efficient
         /// in cases where you do not need to access all data in the buffer.
-        /// 
-        /// Greedy Deserialization is used by FlatBufferSerializer.Default.
         /// </summary>
         public static void GreedyDeserialization(DemoTable demo)
         {
             // Same as FlatBufferSerializer.Default
-            var serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions(FlatBufferSerializerFlags.GreedyDeserialize));
+            var serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions(FlatBufferDeserializationOption.Greedy));
 
             byte[] buffer = new byte[1024];
             serializer.Serialize(demo, buffer);
@@ -107,16 +202,12 @@
 
             var parsed = serializer.Parse<DemoTable>(buffer);
 
-            // Fill array with 0. Source data is gone now.
+            // Fill array with 0. Source data is gone now, but we can still read the buffer because we were greedy!
             Array.Fill(buffer, (byte)0);
 
             InnerTable index0_1 = parsed.ListVector[0];
             InnerTable index0_2 = parsed.ListVector[0];
             Debug.Assert(object.ReferenceEquals(index0_1, index0_2), "Greedy deserialization returns you the same instance each time");
-
-            // Memory vectors are copied when deserializing greedily
-            Span<byte> parsedSpan = MemoryMarshal.Cast<int, byte>(parsed.MemoryVector.Span);
-            Debug.Assert(!parsedSpan.Overlaps(buffer), "The parsed vector does not overlap with the original buffer");
 
             // We cleared the data, but can still read the name. Greedy deserialization is easy!
             string name = parsed.Name;
@@ -142,13 +233,12 @@
         }
 
         /// <summary>
-        /// Lazy deserialization! This is the opposite of the above, and is to show you how FlatSharp behaves without any special options
-        /// specified. In Lazy deserialization, FlatSharp will cache the results of reading properties on tables and structs,
-        /// but vector elements are always re-read each time.
+        /// This example shows GreedyMutable deserialization. This is exactly the same as Greedy deserialization, but setters are generated for
+        /// the objects, so vectors and properties are mutable in a predictable way.
         /// </summary>
-        public static void LazyDeserialization(DemoTable demo)
+        public static void GreedyMutableDeserialization(DemoTable demo)
         {
-            var serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions(FlatBufferSerializerFlags.Lazy));
+            var serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions(FlatBufferDeserializationOption.GreedyMutable));
 
             byte[] buffer = new byte[1024];
             serializer.Serialize(demo, buffer);
@@ -157,156 +247,14 @@
 
             var parsed = serializer.Parse<DemoTable>(buffer);
 
-            // Lazy deserialization reads objects from vectors each time you ask for them.
-            InnerTable index0_1 = parsed.ListVector[0];
-            InnerTable index0_2 = parsed.ListVector[0];
-            Debug.Assert(!object.ReferenceEquals(index0_1, index0_2), "A different instance is returned each time from lazy vectors");
-            
-            // Properties from tables and structs are cached after they are read.
-            string name = parsed.Name;
-            string name2 = parsed.Name;
-
-            Debug.Assert(
-                object.ReferenceEquals(name, name2), 
-                "When reading table/struct properties, FlatSharp caches the result for you even in lazy mode.");
-
-            // Memory vectors reference the underlying buffer directly when not deserialized greedily.
-            Span<byte> parsedSpan = MemoryMarshal.Cast<int, byte>(parsed.MemoryVector.Span);
-            bool overlaps = parsedSpan.Overlaps(buffer);
-            parsedSpan[0] = byte.MaxValue;
-            long newSum = buffer.Sum(x => (long)x);
-
-            Debug.Assert(overlaps, "The parsed vector should reference the underlying buffer");
-            Debug.Assert(newSum != originalSum, "Modifying either vector changes data in both places");
-
-            // Invalidate the whole buffer. Undefined behavior past here!
-            Array.Fill(buffer, (byte)0);
-
-            try
-            {
-                var whoKnows = parsed.ListVector[1];
-                Debug.Assert(false);
-            }
-            catch
-            {
-                // This can be any sort of exception.
-            }
-        }
-
-        /// <summary>
-        /// In pure-lazy deserialization, FlatSharp reads from the underlying buffer each time. No caching is done. This will be
-        /// the fastest option if you access items less than or equal to one time, but gets expensive quickly for repeated accesses.
-        /// </summary>
-        public static void PureLazyDeserialization(DemoTable demo)
-        {
-            var serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions(FlatBufferSerializerFlags.PureLazy));
-
-            byte[] buffer = new byte[1024];
-            serializer.Serialize(demo, buffer);
-
-            long originalSum = buffer.Sum(x => (long)x);
-
-            var parsed = serializer.Parse<DemoTable>(buffer);
-
-            // Lazy deserialization reads objects from vectors each time you ask for them.
-            InnerTable index0_1 = parsed.ListVector[0];
-            InnerTable index0_2 = parsed.ListVector[0];
-            Debug.Assert(!object.ReferenceEquals(index0_1, index0_2), "A different instance is returned each time from lazy vectors");
-
-            // Properties from tables and structs are cached after they are read.
-            string name = parsed.Name;
-            string name2 = parsed.Name;
-
-            Debug.Assert(
-                !object.ReferenceEquals(name, name2),
-                "When reading table/struct properties PureLazy parsing returns a different instance each time.");
-
-            // Memory vectors reference the underlying buffer directly when not deserialized greedily.
-            Span<byte> parsedSpan = MemoryMarshal.Cast<int, byte>(parsed.MemoryVector.Span);
-            bool overlaps = parsedSpan.Overlaps(buffer);
-            parsedSpan[0] = byte.MaxValue;
-            long newSum = buffer.Sum(x => (long)x);
-
-            Debug.Assert(overlaps, "The parsed vector should reference the underlying buffer");
-            Debug.Assert(newSum != originalSum, "Modifying either vector changes data in both places");
-
-            // Invalidate the whole buffer. Undefined behavior past here!
-            Array.Fill(buffer, (byte)0);
-
-            try
-            {
-                var whoKnows = parsed.ListVector[1];
-                Debug.Assert(false);
-            }
-            catch
-            {
-                // This can be any sort of exception.
-            }
-        }
-
-        /// <summary>
-        /// This example shows the flag that exposes mutable objects. Note that mutable objects forces FlatSharp to allocate a List{T} for vector types.
-        /// However, unlike greedy, it does not eagerly parse the contents of the list. This is simply a mutable version of VectorCache.
-        /// </summary>
-        public static void MutableDeserialization(DemoTable demo)
-        {
-            var serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions(FlatBufferSerializerFlags.GenerateMutableObjects));
-
-            byte[] buffer = new byte[1024];
-            serializer.Serialize(demo, buffer);
-
-            long originalSum = buffer.Sum(x => (long)x);
-
-            var parsed = serializer.Parse<DemoTable>(buffer);
-
-            // Same reference returned.
-            var index0_1 = parsed.ListVector[0];
-            var index0_2 = parsed.ListVector[0];
-            Debug.Assert(object.ReferenceEquals(index0_1, index0_2));
-
-            parsed.Name = "Benjamin Franklin";
-            parsed.ListVector.Clear();
-            parsed.ListVector.Add(new InnerTable());
-
-            long newSum = buffer.Sum(x => (long)x);
-            Debug.Assert(
-                newSum == originalSum, 
-                "Changes to the deserialized objects are not written back to the buffer. You'll need to re-serialize it to a new buffer for that. ");
-
-            // If you are not using greedy deserialization, then you need to write back to a new buffer. If you
-            // try to serialize into the same buffer you're reading from, things will get corrupted.
-            byte[] newBuffer = new byte[1024];
-            serializer.Serialize(parsed, newBuffer);
-        }
-        
-        /// <summary>
-        /// This example shows Greedy + Mutable deserialization. This creates a "normal" .NET object that behaves just as you'd expect.
-        /// Other combinations are permitted, but this is the most interesting one.
-        /// </summary>
-        public static void ComboDeserialization(DemoTable demo)
-        {
-            var serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions(
-                FlatBufferSerializerFlags.GreedyDeserialize | FlatBufferSerializerFlags.GenerateMutableObjects));
-
-            byte[] buffer = new byte[1024];
-            serializer.Serialize(demo, buffer);
-
-            long originalSum = buffer.Sum(x => (long)x);
-
-            var parsed = serializer.Parse<DemoTable>(buffer);
             parsed.Name = "James Adams";
-
             parsed.ListVector.Clear();
             parsed.ListVector.Add(new InnerTable());
 
             long newSum = buffer.Sum(x => (long)x);
             Debug.Assert(
                 newSum == originalSum,
-                "Changes to the deserialized objects are not written back to the buffer. You'll need to re-serialize it to a new buffer for that. ");
-
-            // Unlike the example above, here we can be sure that the original buffer is not used
-            // so we're free to immediately reserialize our data into it.
-            serializer.Serialize(parsed, buffer);
+                "Changes to the deserialized objects are not written back to the buffer. You'll need to re-serialize it to a new buffer for that.");
         }
     }
 
@@ -314,12 +262,9 @@
     public class DemoTable : object
     {
         [FlatBufferItem(0)]
-        public virtual Memory<int> MemoryVector { get; set; }
-
-        [FlatBufferItem(1)]
         public virtual string Name { get; set; }
 
-        [FlatBufferItem(2)]
+        [FlatBufferItem(1)]
         public virtual IList<InnerTable> ListVector { get; set; }
     }
 
