@@ -43,8 +43,10 @@ namespace FlatSharpTests
             };
 
             Span<byte> buffer = new byte[1024];
-            int bytesWritten = FlatBufferSerializer.Default.Serialize(originalVector, buffer);
-            this.parsedVector = FlatBufferSerializer.Default.Parse<TableVector>(buffer.Slice(0, bytesWritten).ToArray());
+
+            var serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions(FlatBufferDeserializationOption.Greedy));
+            int bytesWritten = serializer.Serialize(originalVector, buffer);
+            this.parsedVector = serializer.Parse<TableVector>(buffer.Slice(0, bytesWritten).ToArray());
         }
 
         [TestMethod]

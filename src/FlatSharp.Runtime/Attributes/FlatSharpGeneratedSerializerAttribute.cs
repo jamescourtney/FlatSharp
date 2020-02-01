@@ -24,14 +24,14 @@ namespace FlatSharp.Attributes
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
     public class FlatSharpGeneratedSerializerAttribute : Attribute
     {
-        public FlatSharpGeneratedSerializerAttribute(FlatBufferSerializerFlags flags)
+        public FlatSharpGeneratedSerializerAttribute(FlatBufferDeserializationOption deserializeOption)
         {
-            this.Flags = flags;
+            this.DeserializationOption = deserializeOption;
         }
 
         /// <summary>
         /// The flags specified when this serializer was generated.
         /// </summary>
-        public FlatBufferSerializerFlags Flags { get; }
+        public FlatBufferDeserializationOption DeserializationOption { get; }
     }
 }

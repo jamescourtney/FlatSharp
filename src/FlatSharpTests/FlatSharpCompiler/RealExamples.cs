@@ -53,6 +53,12 @@ namespace FlatSharpTests.Compiler
         }
 
         [TestMethod]
+        public void MonsterTest_PureLazy()
+        {
+            this.MonsterTest("purelazy");
+        }
+
+        [TestMethod]
         public void MonsterTest_GreedyMutable()
         {
             this.MonsterTest("greedy|mutable");

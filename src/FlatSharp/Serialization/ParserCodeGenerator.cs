@@ -329,7 +329,7 @@ $@"
         {
             string body = this.CreateFlatBufferVector(typeModel);
 
-            if (this.options.CacheListVectorData)
+            if (this.options.PreallocateVectors)
             {
                 // We just call .ToList(). Noe that when full greedy mode is on, these items will be 
                 // greedily initialized as we traverse the list. Otherwise, they'll be allocated lazily.

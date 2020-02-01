@@ -18,43 +18,52 @@
     ///    This is the safest option, and therefore the default. It is usually not the fastest option.
     ///            
     /// 2) Mutable objects: 
-    ///    Generated objects are fully mutable, but vectors are allocated ahead of time (however vector elements are not)
+    ///    Generated objects are fully mutable, but vectors are allocated ahead of time 
     ///    Imagine a buffer had a vector of 5 objects. This deserialization mode would allocate a vector of length 5,
-    ///    but fill each slot with a lazily-populated FlatBuffer object. When this option is not set, then returned objects are immutable.
+    ///    but fill each slot with a lazily-populated FlatBuffer object.
     ///                     
     /// 3) Vector Cache: 
     ///    Operates the same Mutable objects, but all vector items are wrapped in ReadOnlyCollection, which adds some latency.
     /// 
-    /// 4) Lazy: None of these behaviors. Everything is allocated on-demand. FlatSharp never allocates an array for you.
+    /// 4) Lazy: 
+    ///    Properties of tables and structs are cached, but vectors are not. This represents a nice compromise between speed and allocation.
     /// 
-    /// FlatBuffer tables and structs always have their non-vector elements cached as they are accessed, so re-reading the same property returns 
-    /// the same object. Vectors are special, since they can be large, and array allocations can be expensive. In general, your choice of 
-    /// deserialization method will be informed by your answers to these questions:
+    /// 5) PureLazy: 
+    ///    Nothing is ever cached, and data is reconstituted from the underlying buffer each time. This option is fastest when you access
+    ///    no more than once, but gets expensive very quickly if you repeatedly access items.
+    ///
+    /// Unless in PureLazy mode, FlatBuffer tables and structs always have their non-vector elements cached as they are accessed, 
+    /// so re-reading the same property returns the same instance. Vectors are special, since they can be large, and array 
+    /// allocations can be expensive. In general, your choice of deserialization method will be informed by your answers to these 
+    /// questions:
     /// 
     /// Question 1: Am I managing the lifetime of my input buffers? 
-    ///    Greedy deserialization guarantees deserialized objects hold no more reference to the input buffer, so you are free to
-    ///    immediately recycle/reuse the buffer. If you are pooling or doing your own lifetime management of these objects,
-    ///    then Greedy deserialization may make sense so the buffer can be immediately reused. Otherwise, you will likely
-    ///    see better performance from another option.
+    ///    Greedy deserialization guarantees deserialized objects hold no more reference to the input buffer (literally, the generated code
+    ///    does not even have a variable declared for the input buffer), so you are free to immediately recycle/reuse the buffer. 
+    ///    If you are pooling or doing your own lifetime management of these objects, then Greedy deserialization may make sense so the 
+    ///    buffer can be immediately reused. Otherwise, you will likely see better performance from another option.
     ///    
     /// Question 2: Will I read the entire object graph?
     ///    If you're not reading all properties of the object, then Greedy deserialization will waste cycles preparsing data you will not use.
-    ///    If you plan to touch each field no more than once, then lazy parsing will be the best approach. Mutable objects
+    ///    If you plan to touch each field no more than once, then a lazier parsing option will be the best approach. Mutable objects
     ///    and VectorCache options are somewhere in the middle (both provide progressive caching of list vectors), the only difference
     ///    being mutability of items in the list.
     ///    
     /// Question 3: Do I have large vectors?
-    ///    Array allocations can be expensive, especially for large arrays. If you are deserializing large vectors, you should use pure lazy parsing
-    ///    (options.Lazy). This the only configuration that does not introduce extra array allocations for list vector types.
+    ///    Array allocations can be expensive, especially for large arrays. If you are deserializing large vectors, you should use some form of lazy parsing
+    ///    (options.Lazy or options.PureLazy). These are the only configurations that don't induce array allocations behind the scenes for vectors.
     /// 
     /// In order of laziest parsing to most greedy:
-    /// 1) Lazy. No allocations you don't ask for. Everything is parsed on-demand.
-    /// 2) VectorCache/Mutable. Vectors are allocated once you ask for them, but the items in the vector are parsed on-demand. Often the fastest option.
-    /// 4) Greedy. Everything parsed and pre-allocated. Usually the slowest option.
+    /// 1) PureLazy. No allocations you don't ask for. Everything is parsed on-demand. Fastest when you touch each property no more than once.
+    /// 2) Lazy. Like PureLazy, but stores references to the values it parses so the cached results can be returned.
+    /// 3) VectorCache/Mutable. Vectors are allocated once you ask for them, but the items in the vector are parsed on-demand. Often the fastest option.
+    /// 4) Greedy. Everything parsed and pre-allocated. Fastest when you repeatedly traverse the whole object.
     /// 
-    /// Some combinations like (Greedy | Mutable) are possible, which generates mutable objects that are pre-allocated.
+    /// Some combinations like (Greedy | Mutable) are possible, which generates mutable objects that are pre-allocated. PureLazy is incompatible with
+    /// all other options.
     /// 
-    /// The right way to handle this is to benchmark, and make your choices based on that. What performs best depends on your access patterns.
+    /// The right way to handle this is to benchmark, and make your choices based on that. What performs best depends on your access patterns. Objectively,
+    /// all of these configurations are quite fast.
     /// </remarks>
     public class SerializerOptionsExample
     {
@@ -74,6 +83,7 @@
 
             GreedyDeserialization(demo);
             LazyDeserialization(demo);
+            PureLazyDeserialization(demo);
             MutableDeserialization(demo);
             ComboDeserialization(demo);
         }
@@ -133,7 +143,8 @@
 
         /// <summary>
         /// Lazy deserialization! This is the opposite of the above, and is to show you how FlatSharp behaves without any special options
-        /// specified. 
+        /// specified. In Lazy deserialization, FlatSharp will cache the results of reading properties on tables and structs,
+        /// but vector elements are always re-read each time.
         /// </summary>
         public static void LazyDeserialization(DemoTable demo)
         {
@@ -158,6 +169,57 @@
             Debug.Assert(
                 object.ReferenceEquals(name, name2), 
                 "When reading table/struct properties, FlatSharp caches the result for you even in lazy mode.");
+
+            // Memory vectors reference the underlying buffer directly when not deserialized greedily.
+            Span<byte> parsedSpan = MemoryMarshal.Cast<int, byte>(parsed.MemoryVector.Span);
+            bool overlaps = parsedSpan.Overlaps(buffer);
+            parsedSpan[0] = byte.MaxValue;
+            long newSum = buffer.Sum(x => (long)x);
+
+            Debug.Assert(overlaps, "The parsed vector should reference the underlying buffer");
+            Debug.Assert(newSum != originalSum, "Modifying either vector changes data in both places");
+
+            // Invalidate the whole buffer. Undefined behavior past here!
+            Array.Fill(buffer, (byte)0);
+
+            try
+            {
+                var whoKnows = parsed.ListVector[1];
+                Debug.Assert(false);
+            }
+            catch
+            {
+                // This can be any sort of exception.
+            }
+        }
+
+        /// <summary>
+        /// In pure-lazy deserialization, FlatSharp reads from the underlying buffer each time. No caching is done. This will be
+        /// the fastest option if you access items less than or equal to one time, but gets expensive quickly for repeated accesses.
+        /// </summary>
+        public static void PureLazyDeserialization(DemoTable demo)
+        {
+            var serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions(FlatBufferSerializerFlags.PureLazy));
+
+            byte[] buffer = new byte[1024];
+            serializer.Serialize(demo, buffer);
+
+            long originalSum = buffer.Sum(x => (long)x);
+
+            var parsed = serializer.Parse<DemoTable>(buffer);
+
+            // Lazy deserialization reads objects from vectors each time you ask for them.
+            InnerTable index0_1 = parsed.ListVector[0];
+            InnerTable index0_2 = parsed.ListVector[0];
+            Debug.Assert(!object.ReferenceEquals(index0_1, index0_2), "A different instance is returned each time from lazy vectors");
+
+            // Properties from tables and structs are cached after they are read.
+            string name = parsed.Name;
+            string name2 = parsed.Name;
+
+            Debug.Assert(
+                !object.ReferenceEquals(name, name2),
+                "When reading table/struct properties PureLazy parsing returns a different instance each time.");
 
             // Memory vectors reference the underlying buffer directly when not deserialized greedily.
             Span<byte> parsedSpan = MemoryMarshal.Cast<int, byte>(parsed.MemoryVector.Span);

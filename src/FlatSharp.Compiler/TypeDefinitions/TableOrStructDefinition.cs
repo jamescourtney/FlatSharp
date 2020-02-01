@@ -23,7 +23,7 @@ namespace FlatSharp.Compiler
     {
         public TableOrStructDefinition(
             string name, 
-            FlatBufferSerializerFlags? serializerFlags,
+            FlatBufferDeserializationOption? serializerFlags,
             BaseSchemaMember parent) : base(name, parent)
         {
             this.RequestedSerializer = serializerFlags;
@@ -35,7 +35,7 @@ namespace FlatSharp.Compiler
         
         public bool IsTable { get; set; }
 
-        public FlatBufferSerializerFlags? RequestedSerializer { get; }
+        public FlatBufferDeserializationOption? RequestedSerializer { get; }
 
         protected override bool SupportsChildren => false;
 

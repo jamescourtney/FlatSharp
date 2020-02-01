@@ -58,9 +58,9 @@ namespace FlatSharp.Compiler
             return definition;
         }
 
-        private static FlatBufferSerializerFlags? ParseSerailizerFlags(Dictionary<string, string> metadata)
+        private static FlatBufferDeserializationOption? ParseSerailizerFlags(Dictionary<string, string> metadata)
         {
-            FlatBufferSerializerFlags? flags = null;
+            FlatBufferDeserializationOption? option = null;
             if (metadata == null || !metadata.TryGetValue("PrecompiledSerializer", out string value))
             {
                 return null;
@@ -71,42 +71,17 @@ namespace FlatSharp.Compiler
 
             if (string.IsNullOrEmpty(value))
             {
-                return FlatBufferSerializerFlags.Default;
+                return FlatBufferDeserializationOption.Default;
             }
 
-            // Custom flags
-            flags = FlatBufferSerializerFlags.Lazy;
-
-            // Expect format of flag0|flag1|flag2
-            var parts = value.Split('|').Select(s => s.Trim());
-            foreach (string part in parts)
+            // Cover all of the real names.
+            if (Enum.TryParse(value, true, out FlatBufferDeserializationOption flag))
             {
-                // Cover all of the real names.
-                if (Enum.TryParse(part, true, out FlatBufferSerializerFlags flag))
-                {
-                    flags |= flag;
-                    continue;
-                }
-
-                // Cover a few abbreviations.
-                switch (part.ToLowerInvariant())
-                {
-                    case "greedy":
-                        flags |= FlatBufferSerializerFlags.GreedyDeserialize;
-                        break;
-                    case "mutable":
-                        flags |= FlatBufferSerializerFlags.GenerateMutableObjects;
-                        break;
-                    case "vectorcache":
-                        flags |= FlatBufferSerializerFlags.CacheListVectorData;
-                        break;
-                    default:
-                        ErrorContext.Current.RegisterError($"Value '{part}' is not understood as a valid value for precompiled serializer flags.");
-                        break;
-                }
+                return flag;
             }
 
-            return flags;
+            ErrorContext.Current.RegisterError($"Value '{value}' is not understood as a valid value for precompiled serializer flags. Value must be one of '{string.Join(",", Enum.GetNames(typeof(FlatBufferDeserializationOption)))}'");
+            return null;
         }
     }
 }

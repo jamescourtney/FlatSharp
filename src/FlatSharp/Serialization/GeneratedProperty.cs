@@ -32,8 +32,8 @@ namespace FlatSharp
         {
             this.options = options;
             this.propertyInfo = propertyInfo;
-            this.HasValueFieldName = !options.GreedyDeserialize ? $"__hasIndex{index}" : null;
-            this.BackingFieldName = $"__index{index}";
+            this.HasValueFieldName = options.PropertyCache ? $"__hasIndex{index}" : null;
+            this.BackingFieldName = !options.Lazy ? $"__index{index}" : null;
             this.ReadValueMethodName = $"__ReadIndex{index}Value";
         }
 
@@ -51,7 +51,14 @@ namespace FlatSharp
             {
                 if (string.IsNullOrEmpty(this.HasValueFieldName))
                 {
-                    return $"return this.{this.BackingFieldName};";
+                    if (string.IsNullOrEmpty(this.BackingFieldName))
+                    {
+                        return $"return {this.ReadValueMethodName}(this.buffer, this.offset);";
+                    }
+                    else
+                    {
+                        return $"return this.{this.BackingFieldName};";
+                    }
                 }
                 else
                 {
@@ -93,7 +100,12 @@ $@"
         public override string ToString()
         {
             List<string> lines = new List<string>();
-            lines.Add($"private {CSharpHelpers.GetCompilableTypeName(this.propertyInfo.PropertyType)} {this.BackingFieldName};");
+
+            if (!string.IsNullOrEmpty(this.BackingFieldName))
+            {
+                lines.Add($"private {CSharpHelpers.GetCompilableTypeName(this.propertyInfo.PropertyType)} {this.BackingFieldName};");
+            }
+
             if (!string.IsNullOrEmpty(this.HasValueFieldName))
             {
                 lines.Add($"private bool {this.HasValueFieldName};");

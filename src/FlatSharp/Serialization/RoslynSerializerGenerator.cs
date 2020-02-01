@@ -25,6 +25,7 @@ namespace FlatSharp
     using FlatSharp.TypeModel;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
+    using Microsoft.CodeAnalysis.CSharp.Syntax;
     using Microsoft.CodeAnalysis.Emit;
     using Microsoft.CodeAnalysis.Formatting;
 
@@ -102,7 +103,7 @@ $@"
             this.ImplementMethods();
 
             string code = $@"
-                [{nameof(FlatSharpGeneratedSerializerAttribute)}(({nameof(FlatBufferSerializerFlags)}){(int)this.options.Flags})]
+                [{nameof(FlatSharpGeneratedSerializerAttribute)}({nameof(FlatBufferDeserializationOption)}.{this.options.DeserializationOption})]
                 {visibility} sealed class {GeneratedSerializerClassName} : {nameof(IGeneratedSerializer<byte>)}<{CSharpHelpers.GetCompilableTypeName(typeof(TRoot))}>
                 {{
                     {string.Join("\r\n", this.methodDeclarations.Select(x => x.ToFullString()))}
@@ -164,8 +165,19 @@ $@"
                 MetadataReference.CreateFromFile(Assembly.Load("System.Collections").Location),
             });
 
-            var node = CSharpSyntaxTree.ParseText(sourceCode, ParseOptions);
-            Func<string> formattedTextFactory = GetFormattedTextFactory(node);
+            var rootNode = CSharpSyntaxTree.ParseText(sourceCode, ParseOptions).GetRoot();
+            var methods = rootNode.DescendantNodes().OfType<MethodDeclarationSyntax>().ToList();
+            foreach (var method in methods)
+            {
+                SyntaxNode replacement = SyntaxFactory.Block(SyntaxFactory.CheckedStatement(SyntaxKind.CheckedStatement, method.Body));
+                SyntaxNode original = method.Body;
+
+                rootNode = rootNode.ReplaceNode(original, replacement);
+            }
+
+            SyntaxTree tree = SyntaxFactory.SyntaxTree(rootNode);
+
+            Func<string> formattedTextFactory = GetFormattedTextFactory(tree);
 
 #if DEBUG
             var debugCSharp = formattedTextFactory();
@@ -180,7 +192,7 @@ $@"
 
             CSharpCompilation compilation = CSharpCompilation.Create(
                 name,
-                new[] { node },
+                new[] { tree },
                 references,
                 options);
 

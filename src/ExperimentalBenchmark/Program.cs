@@ -76,21 +76,52 @@ namespace BenchmarkCore
             };
 
             var serializer = FooBarContainer.Serializer;
-            //serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions(FlatBufferSerializerFlags.GenerateMutableObjects)).Compile<FooBarContainer>();
-            SpanWriter writer = new SpanWriter();
-            byte[] buffer = new byte[serializer.GetMaxSize(defaultContainer)];
-            InputBuffer inputBuffer = new ArrayInputBuffer(buffer);
+
+            RunBenchmarkSet(
+                "GreedyBuildTime",
+                serializer,
+                defaultContainer);
+
+            RunBenchmarkSet(
+                "GreedyRuntime",
+                new FlatBufferSerializer(new FlatBufferSerializerOptions(FlatBufferDeserializationOption.GreedyMutable)).Compile<FooBarContainer>(),
+                defaultContainer);
+            /*
+            
+            RunBenchmarkSet(
+                "Lazy",
+                new FlatBufferSerializer(new FlatBufferSerializerOptions(FlatBufferSerializerFlags.GenerateMutableObjects)).Compile<FooBarContainer>(),
+                defaultContainer);
+
+            RunBenchmarkSet(
+                "Greedy",
+                new FlatBufferSerializer(new FlatBufferSerializerOptions(FlatBufferSerializerFlags.GreedyDeserialize | FlatBufferSerializerFlags.GenerateMutableObjects)).Compile<FooBarContainer>(),
+                defaultContainer);*/
+
+
+        }
+
+        private static void RunBenchmarkSet(
+            string runName, 
+            ISerializer<FooBarContainer> serializer, 
+            FooBarContainer container)
+        {
             int traversalCount = 5;
+            byte[] destination = new byte[serializer.GetMaxSize(container)];
+
+            SpanWriter spanWriter = new SpanWriter();
+            InputBuffer inputBuffer = new ArrayInputBuffer(destination);
+            serializer.Write(spanWriter, destination, container);
 
             (string, Action)[] items = new (string, Action)[]
             {
-                ("GetMaxSize",       () => serializer.GetMaxSize(defaultContainer)),
-                ("Serialize",        () => serializer.Write(writer, buffer, defaultContainer)),
-                ("Parse",            () => serializer.Parse(inputBuffer)),
-                ("ParseAndTraverse x1", () => ParseAndTraverse(serializer, inputBuffer, 1)),
-                ($"ParseAndTraverse x{traversalCount}", () => ParseAndTraverse(serializer, inputBuffer, traversalCount)),
-                ("ParseAndTraversePartial x1", () => ParseAndTraversePartial(serializer, inputBuffer, 1)),
-                ($"ParseAndTraversePartial x{traversalCount}", () => ParseAndTraversePartial(serializer, inputBuffer, traversalCount)),
+                ($"{runName}.GetMaxSize",       () => serializer.GetMaxSize(container)),
+                ($"{runName}.Serialize",        () => serializer.Write(spanWriter, destination, container)),
+                ($"{runName}.Parse",            () => serializer.Parse(inputBuffer)),
+                ($"{runName}.ParseAndTraverse x1", () => ParseAndTraverse(serializer, inputBuffer, 1)),
+                ($"{runName}.ParseAndTraverse x{traversalCount}", () => ParseAndTraverse(serializer, inputBuffer, traversalCount)),
+                ($"{runName}.ParseAndTraversePartial x1", () => ParseAndTraversePartial(serializer, inputBuffer, 1)),
+                ($"{runName}.ParseAndTraversePartial x{traversalCount}", () => ParseAndTraversePartial(serializer, inputBuffer, traversalCount)),
             };
 
             foreach (var tuple in items)
@@ -120,6 +151,8 @@ namespace BenchmarkCore
 
                 Console.WriteLine();
             }
+
+            Console.WriteLine();
         }
 
         private static void ParseAndTraverse(ISerializer<FooBarContainer> serializer, InputBuffer inputBuffer, int traversalCount)

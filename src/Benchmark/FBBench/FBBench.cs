@@ -49,8 +49,8 @@ namespace Benchmark.FBBench
 
 
 #if FLATSHARP
-        [Params(FlatBufferSerializerFlags.Lazy, FlatBufferSerializerFlags.CacheListVectorData, FlatBufferSerializerFlags.GreedyDeserialize)]
-        public FlatBufferSerializerFlags ParseProfile;
+        [Params(FlatBufferDeserializationOption.Lazy, FlatBufferDeserializationOption.VectorCacheMutable, FlatBufferDeserializationOption.GreedyMutable)]
+        public FlatBufferDeserializationOption ParseProfile;
 #endif
 
         private FlatBufferBuilder google_flatBufferBuilder = new FlatBufferBuilder(64 * 1024);
