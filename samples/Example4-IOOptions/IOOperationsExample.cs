@@ -55,11 +55,11 @@
 
             // For reading data, we use InputBuffer. There are more options here:
             var p1 = Person.Serializer.Parse(new ArrayInputBuffer(buffer));
-            var p2 = Person.Serializer.Parse(new UnsafeArrayInputBuffer(buffer));
             var p3 = Person.Serializer.Parse(new MemoryInputBuffer(new Memory<byte>(buffer)));
+            var p2 = Person.Serializer.Parse(new UnsafeArrayInputBuffer(buffer));
             using (var unsafeMemoryInput = new UnsafeMemoryInputBuffer(new Memory<byte>(buffer)))
             {
-                // Unsafe memory input buffer must be disposed of, otherwise it'll end up on the finalizer queue.
+                // Unsafe memory input buffer must be disposed of because it pins the memory in place.
                 var p4 = Person.Serializer.Parse(unsafeMemoryInput);
             }
         }

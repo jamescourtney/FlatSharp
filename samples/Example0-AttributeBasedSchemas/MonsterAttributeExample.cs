@@ -11,6 +11,17 @@
     /// <remarks>
     /// Based on the monster sample here:
     /// https://google.github.io/flatbuffers/flatbuffers_guide_tutorial.html
+    /// 
+    /// For FlatSharp to work with your schema, you need to obey the following set of rules:
+    /// - All types must be public and externally visible.
+    /// - All types must be unsealed.
+    /// - All properties decorated by [FlatSharpItem] must be virtual and public. Setters may be omitted, but Getters are required.
+    /// - All FlatSharpItem indexes must be unique within the given data type.
+    /// - Struct/Table vectors must be defined as IList{T}, IReadOnlyList{T}, or T[].
+    /// - Scalar vectors must be defined as either IList{T}, IReadOnlyList{T}, Memory{T}, ReadOnlyMemory{T}, or T[].
+    /// - All types must be serializable in FlatBuffers(that is -- you can't throw in an arbitrary C# type).
+    /// 
+    /// When versioning your schema, you'll need to keep these rules in mind: https://google.github.io/flatbuffers/flatbuffers_guide_writing_schema.html
     /// </remarks>
     public class MonsterAttributeExample
     {
@@ -53,8 +64,8 @@
     }
 
     /// <summary>
-    /// The type of the enum attribute *must* match the underlying type. This is to prevent unintentional changes to the underlying type
-    /// of the enum, which is a binary break.
+    /// The type of the enum attribute *must* match the underlying type. This is to prevent unintentional 
+    /// changes to the underlying type of the enum, which is a binary break.
     /// </summary>
     [FlatBufferEnum(typeof(sbyte))]
     public enum Color : sbyte
@@ -65,7 +76,10 @@
     }
 
     /// <summary>
-    /// FlatBuffer structs are modeled as classes in FlatSharp. Structs can contain only contain scalers.
+    /// FlatBuffer structs are modeled as classes in FlatSharp, since we rely on inheritance. 
+    /// Structs can contain only contain scalers and other structs. They are fixed-size objects whose schema 
+    /// may not change. Structs are highly efficient to read and write, at the cost of 
+    /// versioning the struct. Consider a table with a union of structs to get the best of both worlds.
     /// </summary>
     [FlatBufferStruct]
     public class Vec3 : object
@@ -81,8 +95,9 @@
     }
 
     /// <summary>
-    /// Tables are general-purpose FlatBuffer objects. Tables can contain structs, vectors, strings, unions, and other tables.
-    /// Tables must have virtual methods, public constructors, and inherit directly from system.object.
+    /// Tables are general-purpose FlatBuffer objects. Tables can contain structs, vectors, strings, 
+    /// unions, and other tables. Tables must have virtual properties, public constructors, 
+    /// and inherit directly from system.object.
     /// </summary>
     [FlatBufferTable]
     public class Monster : object

@@ -16,6 +16,8 @@
 
 namespace FlatSharp
 {
+    using System;
+
     /// <summary>
     /// Defines various confiration settings for serializing and deserializing buffers.
     /// </summary>
@@ -27,6 +29,11 @@ namespace FlatSharp
         /// <param name="option">The deserialization mode.</param>
         public FlatBufferSerializerOptions(FlatBufferDeserializationOption option = FlatBufferDeserializationOption.Default)
         {
+            if (!Enum.IsDefined(typeof(FlatBufferDeserializationOption), option))
+            {
+                throw new ArgumentException(nameof(option), $"The value '{option}' is not defined in '{nameof(FlatBufferDeserializationOption)}'.");
+            }
+
             this.DeserializationOption = option;
         }
 

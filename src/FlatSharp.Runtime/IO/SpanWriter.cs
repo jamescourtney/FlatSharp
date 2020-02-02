@@ -147,12 +147,6 @@ namespace FlatSharp
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteByteMemoryBlock(Span<byte> span, Memory<byte> memory, int offset, int alignment, int inlineSize, SerializationContext ctx)
-        {
-            this.WriteReadOnlyByteMemoryBlock(span, memory, offset, alignment, inlineSize, ctx);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteReadOnlyByteMemoryBlock(
             Span<byte> span,
             ReadOnlyMemory<byte> memory,
@@ -171,12 +165,6 @@ namespace FlatSharp
             this.WriteInt(span, numberOfItems, vectorStartOffset, ctx);
 
             memory.Span.CopyTo(span.Slice(vectorStartOffset + sizeof(uint)));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal void WriteMemoryBlock<T>(Span<byte> span, Memory<T> memory, int offset, int alignment, int inlineSize, SerializationContext ctx) where T : struct
-        {
-            this.WriteReadOnlyMemoryBlock<T>(span, memory, offset, alignment, inlineSize, ctx);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
