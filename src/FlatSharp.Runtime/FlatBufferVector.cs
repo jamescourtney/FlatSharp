@@ -31,7 +31,7 @@ namespace FlatSharp
         private readonly int offset;
         private readonly int itemSize;
         private readonly int count;
-        private Func<InputBuffer, int, T> parseItem;
+        private readonly Func<InputBuffer, int, T> parseItem;
 
         public FlatBufferVector(
             InputBuffer memory,
