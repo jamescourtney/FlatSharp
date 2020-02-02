@@ -14,60 +14,43 @@
  * limitations under the License.
  */
 
-#define FLATSHARP  // enable flat sharp benchmarks
-//#define ZERO       // enable zero formatter
-#define PBDN       // enable protobuf.net
-#define GOOG       // enable google flatbuffers.
-
 namespace Benchmark.FBBench
 {
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using System.Runtime.InteropServices;
-    using System.Threading;
     using BenchmarkDotNet.Attributes;
     using FlatBuffers;
     using FlatSharp;
     using FlatSharp.Attributes;
-    using FlatSharp.Unsafe;
     using ProtoBuf;
 
-    //[CoreJob]
-    [RPlotExporter]
     [ShortRunJob]
-    //[InProcess]
-    //[MemoryDiagnoser]
-    public class Google_FBBench
+    [CsvExporter(BenchmarkDotNet.Exporters.Csv.CsvSeparator.Comma)]
+    public abstract class FBBenchCore
     {
-        [Params(3, 30)]
-        public int VectorLength;
-
-        [Params(1, 5)]
-        public int TraversalCount;
-
-
-
-#if FLATSHARP
-        [Params(FlatBufferSerializerFlags.Lazy, FlatBufferSerializerFlags.CacheListVectorData, FlatBufferSerializerFlags.GreedyDeserialize)]
-        public FlatBufferSerializerFlags ParseProfile;
-#endif
-
-        private FlatBufferBuilder google_flatBufferBuilder = new FlatBufferBuilder(64 * 1024);
-        private ByteBuffer google_ByteBuffer;
+        protected FlatBufferBuilder google_flatBufferBuilder = new FlatBufferBuilder(64 * 1024);
+        protected ByteBuffer google_ByteBuffer;
 
         public FooBarListContainer defaultContainer;
 
-        private MemoryStream pbdn_writeBuffer = new MemoryStream(64 * 1024);
-        private MemoryStream pbdn_readBuffer = new MemoryStream(64 * 1024);
-
-        private byte[] zf_writeBuffer = new byte[64 * 1024];
-        private byte[] zf_readBuffer;
+        protected MemoryStream pbdn_writeBuffer = new MemoryStream(64 * 1024);
+        protected MemoryStream pbdn_readBuffer = new MemoryStream(64 * 1024);
 
         private FlatBufferSerializer fs_serializer;
-        private byte[] fs_readMemory;
-        private byte[] fs_writeMemory = new byte[64 * 1024];
-        
+        protected byte[] fs_readMemory;
+        protected readonly byte[] fs_writeMemory = new byte[64 * 1024];
+        private InputBuffer inputBuffer;
+
+        [Params(3, 30)]
+        public virtual int VectorLength { get; set; }
+
+        public abstract int TraversalCount { get; set; }
+
+        public abstract FlatBufferDeserializationOption DeserializeOption { get; set; }
+
+        protected virtual InputBuffer GetInputBuffer(byte[] data) => new ArrayInputBuffer(data);
+
         [GlobalSetup]
         public void GlobalSetup()
         {
@@ -109,48 +92,32 @@ namespace Benchmark.FBBench
                 List = fooBars,
             };
 
-#if GOOG
             {
                 this.Google_FlatBuffers_Serialize();
                 this.google_ByteBuffer = new FlatBuffers.ByteBuffer(this.google_flatBufferBuilder.SizedByteArray());
             }
-#endif
 
-#if FLATSHARP
             {
-                var options = new FlatBufferSerializerOptions(this.ParseProfile);
+                var options = new FlatBufferSerializerOptions(this.DeserializeOption);
 
                 this.fs_serializer = new FlatBufferSerializer(options);
                 int offset = this.fs_serializer.Serialize(this.defaultContainer, this.fs_writeMemory);
                 this.fs_readMemory = this.fs_writeMemory.AsSpan(0, offset).ToArray();
-                this.FlatSharp_ParseAndTraverse_SafeMem();
+                this.inputBuffer = new ArrayInputBuffer(this.fs_readMemory);
+                this.FlatSharp_ParseAndTraverse();
             }
-#endif
 
-#if PBDN
             {
                 this.PBDN_Serialize();
                 this.pbdn_writeBuffer.Position = 0;
                 this.pbdn_writeBuffer.CopyTo(this.pbdn_readBuffer);
                 this.PBDN_ParseAndTraverse();
             }
-#endif
-
-#if ZERO
-            {
-                this.ZF_Serialize();
-                this.zf_readBuffer = this.zf_writeBuffer.AsMemory().ToArray();
-                this.ZF_ParseAndTraverse();
-            }
-#endif
         }
 
         #region Google.FlatBuffers
 
-#if GOOG
-
-        [Benchmark]
-        public void Google_FlatBuffers_Serialize()
+        public virtual void Google_FlatBuffers_Serialize()
         {
             var builder = this.google_flatBufferBuilder;
             builder.Clear();
@@ -189,8 +156,7 @@ namespace Benchmark.FBBench
             builder.Finish(foobarOffset.Value);
         }
 
-        [Benchmark]
-        public int Google_Flatbuffers_ParseAndTraverse()
+        public virtual int Google_Flatbuffers_ParseAndTraverse()
         {
             var iterations = this.TraversalCount;
             int sum = 0;
@@ -228,118 +194,90 @@ namespace Benchmark.FBBench
             return sum;
         }
 
-#endif
+        public virtual int Google_Flatbuffers_ParseAndTraversePartial()
+        {
+            var iterations = this.TraversalCount;
+            int sum = 0;
+
+            for (int loop = 0; loop < iterations; ++loop)
+            {
+                sum = 0;
+                var foobar = Google.FooBarContainer.GetRootAsFooBarContainer(this.google_ByteBuffer);
+
+                sum += foobar.Initialized ? 1 : 0;
+                sum += foobar.Location.Length;
+                sum += foobar.Fruit;
+
+                int listLength = foobar.ListLength;
+                for (int i = 0; i < listLength; ++i)
+                {
+                    var item = foobar.List(i).Value;
+                    sum += item.Name.Length;
+
+                    var bar = item.Sibling.Value;
+                    sum += (int)bar.Ratio;
+
+                    var parent = bar.Parent;
+                    sum += parent.Count;
+                }
+            }
+
+            return sum;
+        }
 
         #endregion
 
         #region FlatSharp
 
-#if FLATSHARP
-        [Benchmark]
-        public void FlatSharp_GetMaxSize()
+        public virtual void FlatSharp_GetMaxSize()
         {
             this.fs_serializer.GetMaxSize(this.defaultContainer);
         }
 
-        [Benchmark]
-        public void FlatSharp_Serialize()
+        public virtual void FlatSharp_Serialize()
         {
             this.fs_serializer.Serialize(this.defaultContainer, this.fs_writeMemory);
         }
 
-        [Benchmark]
-        public void FlatSharp_ParseAndTraverse_SafeMem()
+        public virtual void FlatSharp_ParseAndTraverse()
         {
-            var item = this.fs_serializer.Parse<FooBarListContainer>(new Memory<byte>(this.fs_readMemory));
+            var item = this.fs_serializer.Parse<FooBarListContainer>(this.inputBuffer);
             this.TraverseFooBarContainer(item);
         }
 
-        [Benchmark]
-        public void FlatSharp_ParseAndTraverse_SafeArray()
+        public virtual void FlatSharp_ParseAndTraversePartial()
         {
-            var item = this.fs_serializer.Parse<FooBarListContainer>(new ArrayInputBuffer(this.fs_readMemory));
-            this.TraverseFooBarContainer(item);
+            var item = this.fs_serializer.Parse<FooBarListContainer>(this.inputBuffer);
+            this.TraverseFooBarContainerPartial(item);
         }
-
-        [Benchmark]
-        public void FlatSharp_ParseAndTraverse_UnsafeMem()
-        {
-            using (var unsafeRef = new UnsafeMemoryInputBuffer(this.fs_readMemory))
-            {
-                var item = this.fs_serializer.Parse<FooBarListContainer>(unsafeRef);
-                this.TraverseFooBarContainer(item);
-            }
-        }
-
-        //[Benchmark]
-        //public void FlatSharp_ParseAndTraverse_UnsafeMem_NoDispose()
-        //{
-        //    var unsafeRef = new UnsafeMemoryInputBuffer(this.fs_readMemory);
-        //    {
-        //        var item = this.fs_serializer.Parse<FooBarListContainer>(unsafeRef);
-        //        this.TraverseFooBarContainer(item);
-        //    }
-        //}
-
-        [Benchmark]
-        public void FlatSharp_ParseAndTraverse_UnsafeArray()
-        {
-            var item = this.fs_serializer.Parse<FooBarListContainer>(new UnsafeArrayInputBuffer(this.fs_readMemory));
-            this.TraverseFooBarContainer(item);
-        }
-
-        [Benchmark]
-        public void FlatSharp_ParseAndTraverse_UnsafeArray_Array()
-        {
-            var item = this.fs_serializer.Parse<FooBarArrayContainer>(new UnsafeArrayInputBuffer(this.fs_readMemory));
-            this.TraverseFooBarContainer(item);
-        }
-
-#endif
 
         #endregion
 
-
         #region PBDN
-#if PBDN
-        [Benchmark]
-        public void PBDN_Serialize()
+
+        public virtual void PBDN_Serialize()
         {
             this.pbdn_writeBuffer.Position = 0;
             ProtoBuf.Serializer.Serialize(this.pbdn_writeBuffer, this.defaultContainer);
         }
 
-        [Benchmark]
-        public void PBDN_ParseAndTraverse()
+        public virtual void PBDN_ParseAndTraverse()
         {
             this.pbdn_readBuffer.Position = 0;
             var item = ProtoBuf.Serializer.Deserialize<FooBarListContainer>(this.pbdn_readBuffer);
             this.TraverseFooBarContainer(item);
         }
-#endif
+
+        public virtual void PBDN_ParseAndTraversePartial()
+        {
+            this.pbdn_readBuffer.Position = 0;
+            var item = ProtoBuf.Serializer.Deserialize<FooBarListContainer>(this.pbdn_readBuffer);
+            this.TraverseFooBarContainerPartial(item);
+        }
 
         #endregion
 
-        #region ZeroFormatter
-
-#if ZERO
-        [Benchmark]
-        public void ZF_Serialize()
-        {
-            ZeroFormatter.ZeroFormatterSerializer.Serialize(ref this.zf_writeBuffer, 0, this.defaultContainer);
-        }
-
-        [Benchmark]
-        public void ZF_ParseAndTraverse()
-        {
-            var item = ZeroFormatter.ZeroFormatterSerializer.Deserialize<FooBarListContainer>(this.zf_writeBuffer);
-            this.TraverseFooBarContainer(item);
-        }
-#endif
-
-        #endregion
-
-        private int TraverseFooBarContainer(IFooBarContainer foobar)
+        private int TraverseFooBarContainer(FooBarListContainer foobar)
         {
             var iterations = this.TraversalCount;
             int sum = 0;
@@ -376,110 +314,107 @@ namespace Benchmark.FBBench
 
             return sum;
         }
+
+        private int TraverseFooBarContainerPartial(FooBarListContainer foobar)
+        {
+            var iterations = this.TraversalCount;
+            int sum = 0;
+
+            for (int loop = 0; loop < iterations; ++loop)
+            {
+                sum = 0;
+                sum += foobar.Initialized ? 1 : 0;
+                sum += foobar.Location.Length;
+                sum += foobar.Fruit;
+
+                var list = foobar.List;
+                int count = list.Count;
+
+                for (int i = 0; i < count; ++i)
+                {
+                    var item = list[i];
+                    sum += item.Name.Length;
+
+                    var bar = item.Sibling;
+                    sum += (int)bar.Ratio;
+
+                    var parent = bar.Parent;
+                    sum += parent.Count;
+                }
+            }
+
+            return sum;
+        }
     }
+
 
     #region Shared Contracts
 
     [ProtoContract]
     [FlatBufferStruct]
-    [ZeroFormatter.ZeroFormattable]
     public class Foo
     {
-        [ProtoMember(1), FlatBufferItem(0), ZeroFormatter.Index(0)]
+        [ProtoMember(1), FlatBufferItem(0)]
         public virtual ulong Id { get; set; }
 
-        [ProtoMember(2), FlatBufferItem(1), ZeroFormatter.Index(1)]
+        [ProtoMember(2), FlatBufferItem(1)]
         public virtual short Count { get; set; }
 
-        [ProtoMember(3), FlatBufferItem(2), ZeroFormatter.Index(2)]
+        [ProtoMember(3), FlatBufferItem(2)]
         public virtual sbyte Prefix { get; set; }
 
-        [ProtoMember(4), FlatBufferItem(3), ZeroFormatter.Index(3)]
+        [ProtoMember(4), FlatBufferItem(3)]
         public virtual uint Length { get; set; }
     }
 
     [ProtoContract]
     [FlatBufferStruct]
-    [ZeroFormatter.ZeroFormattable]
     public class Bar
     {
-        [ProtoMember(1), FlatBufferItem(0), ZeroFormatter.Index(0)]
+        [ProtoMember(1), FlatBufferItem(0)]
         public virtual Foo Parent { get; set; }
 
-        [ProtoMember(2), FlatBufferItem(1), ZeroFormatter.Index(1)]
+        [ProtoMember(2), FlatBufferItem(1)]
         public virtual int Time { get; set; }
 
-        [ProtoMember(3), FlatBufferItem(2), ZeroFormatter.Index(2)]
+        [ProtoMember(3), FlatBufferItem(2)]
         public virtual float Ratio { get; set; }
 
-        [ProtoMember(4), FlatBufferItem(3), ZeroFormatter.Index(3)]
+        [ProtoMember(4), FlatBufferItem(3)]
         public virtual ushort Size { get; set; }
     }
 
     [ProtoContract]
     [FlatBufferTable]
-    [ZeroFormatter.ZeroFormattable]
     public class FooBar
     {
-        [ProtoMember(1), FlatBufferItem(0), ZeroFormatter.Index(0)]
+        [ProtoMember(1), FlatBufferItem(0)]
         public virtual Bar Sibling { get; set; }
 
-        [ProtoMember(2), FlatBufferItem(1), ZeroFormatter.Index(1)]
+        [ProtoMember(2), FlatBufferItem(1)]
         public virtual string Name { get; set; }
 
-        [ProtoMember(3), FlatBufferItem(2), ZeroFormatter.Index(2)]
+        [ProtoMember(3), FlatBufferItem(2)]
         public virtual double Rating { get; set; }
 
-        [ProtoMember(4), FlatBufferItem(3), ZeroFormatter.Index(3)]
+        [ProtoMember(4), FlatBufferItem(3)]
         public virtual byte PostFix { get; set; }
     }
 
-    public interface IFooBarContainer
-    {
-        IList<FooBar> List { get; }
-        bool Initialized { get; set; }
-        short Fruit { get; set; }
-        string Location { get; set; }
-    }
-
     [ProtoContract]
     [FlatBufferTable]
-    [ZeroFormatter.ZeroFormattable]
-    public class FooBarArrayContainer : IFooBarContainer
+    public class FooBarListContainer
     {
-        [ProtoMember(1), FlatBufferItem(0), ZeroFormatter.Index(0)]
-        public virtual FooBar[] List { get; set; }
-
-        [ProtoMember(2), FlatBufferItem(1), ZeroFormatter.Index(1)]
-        public virtual bool Initialized { get; set; }
-
-        [ProtoMember(3), FlatBufferItem(2), ZeroFormatter.Index(2)]
-        public virtual short Fruit { get; set; }
-
-        [ProtoMember(4), FlatBufferItem(3), ZeroFormatter.Index(3)]
-        public virtual string Location { get; set; }
-
-        IList<FooBar> IFooBarContainer.List
-        {
-            get => this.List;
-        }
-    }
-
-    [ProtoContract]
-    [FlatBufferTable]
-    [ZeroFormatter.ZeroFormattable]
-    public class FooBarListContainer : IFooBarContainer
-    {
-        [ProtoMember(1), FlatBufferItem(0), ZeroFormatter.Index(0)]
+        [ProtoMember(1), FlatBufferItem(0)]
         public virtual IList<FooBar> List { get; set; }
 
-        [ProtoMember(2), FlatBufferItem(1), ZeroFormatter.Index(1)]
+        [ProtoMember(2), FlatBufferItem(1)]
         public virtual bool Initialized { get; set; }
 
-        [ProtoMember(3), FlatBufferItem(2), ZeroFormatter.Index(2)]
+        [ProtoMember(3), FlatBufferItem(2)]
         public virtual short Fruit { get; set; }
 
-        [ProtoMember(4), FlatBufferItem(3), ZeroFormatter.Index(3)]
+        [ProtoMember(4), FlatBufferItem(3)]
         public virtual string Location { get; set; }
     }
 

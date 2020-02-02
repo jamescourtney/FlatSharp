@@ -16,39 +16,45 @@
 
 namespace FlatSharp
 {
-    using System;
-
     /// <summary>
     /// Defines FlatSharp serializer options.
     /// </summary>
-    [Flags]
-    public enum FlatBufferSerializerFlags
+    public enum FlatBufferDeserializationOption
     {
         /// <summary>
-        /// Full Lazy parsing.
+        /// Full Lazy parsing. Deserialized objects are immutable.
         /// </summary>
         Lazy = 0,
+
+        /// <summary>
+        /// Properties are cached as they are read. Deserialized objects are immutable.
+        /// </summary>
+        PropertyCache = 1,
 
         /// <summary>
         /// Indicates if list vectors should have their data cached after reading. This option will cause more allocations
         /// on deserializing, but will improve performance in cases of duplicate accesses to the same indices.
         /// </summary>
-        CacheListVectorData = 1,
+        VectorCache = 2,
 
         /// <summary>
-        /// Indicates if the serializer should generate mutable objects. Mutable objects are "copy-on-write"
-        /// and do not modify the underlying buffer. This option implies <see cref="FlatBufferSerializerFlags.CacheListVectorData"/>.
+        /// Same properties as <see cref="VectorCache"/>, but deserialized objects are mutable.
         /// </summary>
-        GenerateMutableObjects = 2,
+        VectorCacheMutable = 3,
 
         /// <summary>
-        /// Indicates if deserialization should be greedy.
+        /// The entire object graph is traversed and the deserialized objects do not reference the input buffer. Deserialized objects are immutable.
         /// </summary>
-        GreedyDeserialize = 4,
+        Greedy = 4,
+
+        /// <summary>
+        /// Same properties as <see cref="GreedyMutable"/>, but deserialized objects are mutable.
+        /// </summary>
+        GreedyMutable = 5,
 
         /// <summary>
         /// Default options.
         /// </summary>
-        Default = GreedyDeserialize,
+        Default = GreedyMutable,
     }
 }

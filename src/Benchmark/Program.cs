@@ -16,19 +16,27 @@
 
 namespace Benchmark
 {
+    using BenchmarkDotNet.Configs;
+    using BenchmarkDotNet.Exporters;
+    using BenchmarkDotNet.Jobs;
+    using BenchmarkDotNet.Loggers;
     using BenchmarkDotNet.Running;
 
     public class Program
     {
         public static void Main(string[] args)
         {
-            FBBench.Google_FBBench b = new FBBench.Google_FBBench();
-            b.VectorLength = 30;
-            b.TraversalCount = 5;
-            b.GlobalSetup();
-            b.FlatSharp_Serialize();
+            var summary = BenchmarkRunner.Run<FBBench.FBSerializeBench>();
+            var summary2 = BenchmarkRunner.Run<FBBench.FBDeserializeBench>();
+            var summary3 = BenchmarkRunner.Run<FBBench.OthersDeserializeBench>();
 
-            var summary = BenchmarkRunner.Run<FBBench.Google_FBBench>();
+            MarkdownExporter.Console.ExportToLog(summary, new ConsoleLogger());
+            MarkdownExporter.Console.ExportToLog(summary2, new ConsoleLogger());
+            MarkdownExporter.Console.ExportToLog(summary3, new ConsoleLogger());
+
+            MarkdownExporter.GitHub.ExportToFiles(summary, new ConsoleLogger());
+            MarkdownExporter.GitHub.ExportToFiles(summary2, new ConsoleLogger());
+            MarkdownExporter.GitHub.ExportToFiles(summary3, new ConsoleLogger());
         }
     }
 }

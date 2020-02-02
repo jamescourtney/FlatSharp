@@ -25,6 +25,7 @@ namespace FlatSharp
     using FlatSharp.TypeModel;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
+    using Microsoft.CodeAnalysis.CSharp.Syntax;
     using Microsoft.CodeAnalysis.Emit;
     using Microsoft.CodeAnalysis.Formatting;
 
@@ -50,7 +51,7 @@ namespace FlatSharp
         private readonly GetMaxSizeCodeGenerator maxSizeCodeGenerator;
         private readonly FlatBufferSerializerOptions options;
         private readonly List<SyntaxNode> methodDeclarations = new List<SyntaxNode>();
-        
+
         public RoslynSerializerGenerator(FlatBufferSerializerOptions options)
         {
             this.options = options;
@@ -102,7 +103,7 @@ $@"
             this.ImplementMethods();
 
             string code = $@"
-                [{nameof(FlatSharpGeneratedSerializerAttribute)}(({nameof(FlatBufferSerializerFlags)}){(int)this.options.Flags})]
+                [{nameof(FlatSharpGeneratedSerializerAttribute)}({nameof(FlatBufferDeserializationOption)}.{this.options.DeserializationOption})]
                 {visibility} sealed class {GeneratedSerializerClassName} : {nameof(IGeneratedSerializer<byte>)}<{CSharpHelpers.GetCompilableTypeName(typeof(TRoot))}>
                 {{
                     {string.Join("\r\n", this.methodDeclarations.Select(x => x.ToFullString()))}
@@ -112,11 +113,14 @@ $@"
             return code;
         }
 
-        internal static Func<string> GetFormattedTextFactory(string cSharpCode)
+        internal static string GetFormattedText(string cSharpCode)
         {
-            return GetFormattedTextFactory(CSharpSyntaxTree.ParseText(cSharpCode, ParseOptions));
+            var root = RoslynSerializerGenerator.ApplySyntaxTransformations(CSharpSyntaxTree.ParseText(cSharpCode, ParseOptions).GetRoot());
+            var tree = SyntaxFactory.SyntaxTree(root, ParseOptions);
+            return GetFormattedTextFactory(tree)();
         }
 
+        // Getting pretty code can be slow, so return a lambda that loads it lazily.
         internal static Func<string> GetFormattedTextFactory(SyntaxTree syntaxTree)
         {
             return () =>
@@ -131,7 +135,7 @@ $@"
         }
 
         internal static (Assembly assembly, Func<string> formattedTextFactory, byte[] assemblyData) CompileAssembly(
-            string sourceCode, 
+            string sourceCode,
             bool enableAppDomainIntercept,
             params Assembly[] additionalReferences)
         {
@@ -165,23 +169,23 @@ $@"
                 MetadataReference.CreateFromFile(Assembly.Load("System.Collections").Location),
             });
 
-            var node = CSharpSyntaxTree.ParseText(sourceCode, ParseOptions);
-            Func<string> formattedTextFactory = GetFormattedTextFactory(node);
+            var rootNode = ApplySyntaxTransformations(CSharpSyntaxTree.ParseText(sourceCode, ParseOptions).GetRoot());
+            SyntaxTree tree = SyntaxFactory.SyntaxTree(rootNode);
+            Func<string> formattedTextFactory = GetFormattedTextFactory(tree);
 
 #if DEBUG
             var debugCSharp = formattedTextFactory();
 #endif
-            
+
             string name = $"FlatSharpDynamicAssembly_{Guid.NewGuid():n}";
             var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
                 .WithModuleName(name)
-                .WithOverflowChecks(true)
                 .WithAllowUnsafe(false)
                 .WithOptimizationLevel(OptimizationLevel.Release);
 
             CSharpCompilation compilation = CSharpCompilation.Create(
                 name,
-                new[] { node },
+                new[] { tree },
                 references,
                 options);
 
@@ -243,8 +247,6 @@ $@"
         /// <summary>
         /// Recursively crawls through the object graph and looks for methods to define.
         /// </summary>
-        /// <param name="model"></param>
-        /// <param name="dictionary"></param>
         private void DefineMethods(RuntimeTypeModel model)
         {
             if (model.IsBuiltInType)
@@ -375,6 +377,40 @@ $@"
 
             this.maxSizeCodeGenerator.ImplementMethods();
             this.methodDeclarations.AddRange(this.maxSizeCodeGenerator.MethodDeclarations);
+        }
+
+        /// <summary>
+        /// Surrounds all properties/methods/constructors with checked syntax.
+        /// </summary>
+        private static SyntaxNode ApplySyntaxTransformations(SyntaxNode rootNode)
+        {
+            rootNode = rootNode.ReplaceNodes(
+               rootNode.DescendantNodes().OfType<MethodDeclarationSyntax>(),
+               (a, b) =>
+               {
+                   return b.WithBody(SyntaxFactory.Block(SyntaxFactory.CheckedStatement(SyntaxKind.CheckedStatement, a.Body)));
+               });
+
+            rootNode = rootNode.ReplaceNodes(
+                rootNode.DescendantNodes().OfType<ConstructorDeclarationSyntax>(),
+                (a, b) =>
+                {
+                    return b.WithBody(SyntaxFactory.Block(SyntaxFactory.CheckedStatement(SyntaxKind.CheckedStatement, a.Body)));
+                });
+
+            rootNode = rootNode.ReplaceNodes(
+                rootNode.DescendantNodes().OfType<AccessorDeclarationSyntax>(),
+                (a, b) =>
+                {
+                    if (b.Body == null)
+                    {
+                        return a;
+                    }
+
+                    return b.WithBody(SyntaxFactory.Block(SyntaxFactory.CheckedStatement(SyntaxKind.CheckedStatement, b.Body)));
+                });
+
+            return rootNode;
         }
     }
 }

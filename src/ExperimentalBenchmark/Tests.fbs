@@ -2,6 +2,7 @@
 namespace benchfb;
 
 enum Enum : short { Apples, Pears, Bananas }
+union Union { Foo, Bar, FooBar }
 
 struct Foo {
   id:ulong;
@@ -24,11 +25,12 @@ table FooBar {
   postfix:ubyte; 
 }
 
-table FooBarContainer (PrecompiledSerializer)  {
+table FooBarContainer (PrecompiledSerializer:greedymutable) {
   list:[FooBar] (VectorType:IList);  // 3 copies of the above
   initialized:bool;
   fruit:Enum;
   location:string;
+  myunion:Union;
 }
 
 root_type FooBarContainer;

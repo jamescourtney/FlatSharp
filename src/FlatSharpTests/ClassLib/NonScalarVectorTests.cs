@@ -48,7 +48,7 @@ namespace FlatSharpTests
         public void StringVector_Cache()
         {
             this.TestType(
-                false,
+                true,
                 () =>
                 {
                     byte[] b = new byte[20];
@@ -107,7 +107,7 @@ namespace FlatSharpTests
 
         private void TestType<T>(bool listCache, Func<T> generator) where T : IEquatable<T>
         {
-            var options = new FlatBufferSerializerOptions(listCache ? FlatBufferSerializerFlags.CacheListVectorData : FlatBufferSerializerFlags.Lazy);
+            var options = new FlatBufferSerializerOptions(listCache ? FlatBufferDeserializationOption.VectorCache : FlatBufferDeserializationOption.Lazy);
             FlatBufferSerializer serializer = new FlatBufferSerializer(options);
 
             {

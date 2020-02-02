@@ -100,111 +100,63 @@ namespace FlatSharp
             // We have to implement two items: The table class and the overall "read" method.
             // Let's start with the read method.
             string className = "tableReader_" + Guid.NewGuid().ToString("n");
-
-            // Static factory method.
             this.GenerateMethodDefinition(typeModel.ClrType, $"return new {className}(memory, offset + memory.{nameof(InputBuffer.ReadUOffset)}(offset));");
 
-            // Implement the class
+            // Build up a list of property overrides.
+            var propertyOverrides = new List<GeneratedProperty>();
+            foreach (var item in typeModel.IndexToMemberMap)
             {
-                // Build up a list of property overrides.
-                List<string> propertyOverrides = new List<string>();
-                List<string> fieldDefinitions = new List<string>();
-                foreach (var item in typeModel.IndexToMemberMap)
+                int index = item.Key;
+                var value = item.Value;
+
+                GeneratedProperty propertyStuff;
+                if (value.ItemTypeModel is UnionTypeModel)
                 {
-                    int index = item.Key;
-                    var value = item.Value;
-                    PropertyInfo propertyInfo = value.PropertyInfo;
-                    Type propertyType = propertyInfo.PropertyType;
-                    string compilableTypeName = CSharpHelpers.GetCompilableTypeName(propertyType);
-
-                    string hasValueFieldName = $"hasIndex{index}";
-                    string valueFieldName = $"index{index}Value";
-
-                    fieldDefinitions.Add($"private bool {hasValueFieldName};");
-                    fieldDefinitions.Add($"private {compilableTypeName} {valueFieldName};");
-
-                    string getter;
-                    if (value.ItemTypeModel is UnionTypeModel)
-                    {
-                        getter = this.CreateUnionTableGetter(value, index, valueFieldName, hasValueFieldName);
-                    }
-                    else
-                    {
-                        getter = this.CreateStandardTableGetter(value, index, valueFieldName, hasValueFieldName);
-                    }
-
-                    string setter = string.Empty;
-                    if (!value.IsReadOnly)
-                    {
-                        if (this.options.GenerateMutableObjects)
-                        {
-                            setter =
-$@"
-                            set {{
-                                this.{valueFieldName} = value;
-                                this.{hasValueFieldName} = true;
-                            }}
-";
-                        }
-                        else
-                        {
-                            setter = "set { throw new NotMutableException(); }";
-                        }
-                    }
-
-                    string @override =
-$@"
-                    {CSharpHelpers.GetAccessModifier(propertyInfo)} override {compilableTypeName} {propertyInfo.Name}
-                    {{
-                        {getter}
-                        {setter}
-                    }}
-";
-
-                    propertyOverrides.Add(@override);
+                    propertyStuff = this.CreateUnionTableGetter(value, index);
+                }
+                else
+                {
+                    propertyStuff = this.CreateStandardTableProperty(value, index);
                 }
 
-                string classDefinition = this.CreateClass(
-                    className,
-                    typeModel.ClrType,
-                    typeModel.IndexToMemberMap.Values.Select(x => x.PropertyInfo.Name),
-                    propertyOverrides,
-                    fieldDefinitions);
-
-                var node = CSharpSyntaxTree.ParseText(classDefinition, ParseOptions);
-                this.methodDeclarations.Add(node.GetRoot());
+                propertyOverrides.Add(propertyStuff);
             }
+
+            string classDefinition = this.CreateClass(
+                className,
+                typeModel.ClrType,
+                typeModel.IndexToMemberMap.Values.Select(x => x.PropertyInfo.Name),
+                propertyOverrides);
+
+            var node = CSharpSyntaxTree.ParseText(classDefinition, ParseOptions);
+            this.methodDeclarations.Add(node.GetRoot());
         }
 
         /// <summary>
         /// Generates a standard getter for a normal vtable entry.
         /// </summary>
-        private string CreateStandardTableGetter(TableMemberModel memberModel, int index, string valueFieldName, string hasValueFieldName)
+        private GeneratedProperty CreateStandardTableProperty(TableMemberModel memberModel, int index)
         {
             Type propertyType = memberModel.ItemTypeModel.ClrType;
             string defaultValue = CSharpHelpers.GetDefaultValueToken(memberModel);
+            GeneratedProperty property = new GeneratedProperty(this.options, index, memberModel.PropertyInfo);
 
-            return
+            property.ReadValueMethodDefinition =
 $@"
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    get 
+                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {property.ReadValueMethodName}(InputBuffer buffer, int offset)
                     {{
-                        if (!this.{hasValueFieldName})
-                        {{
-                            var buffer = this.buffer;
-                            int absoluteLocation = buffer.{nameof(InputBuffer.GetAbsoluteTableFieldLocation)}(this.offset, {index});
-                            if (absoluteLocation == 0) {{
-                                this.{valueFieldName} = {defaultValue};
-                            }}
-                            else {{
-                                this.{valueFieldName} = {this.GetReadInvocation(propertyType, "buffer", "absoluteLocation")};
-                            }}
-                            this.{hasValueFieldName} = true;
+                        int absoluteLocation = buffer.{nameof(InputBuffer.GetAbsoluteTableFieldLocation)}(offset, {index});
+                        if (absoluteLocation == 0) {{
+                            return {defaultValue};
                         }}
-
-                        return this.{valueFieldName};
+                        else {{
+                            return {this.GetReadInvocation(propertyType, "buffer", "absoluteLocation")};
+                        }}
                     }}
 ";
+
+            return property;
         }
 
         /// <summary>
@@ -212,12 +164,13 @@ $@"
         /// the fact that unions occupy two spots in the table's vtable to deserialize one
         /// logical field. This means that the logic to read them must also be special.
         /// </summary>
-        private string CreateUnionTableGetter(TableMemberModel memberModel, int index, string valueFieldName, string hasValueFieldName)
+        private GeneratedProperty CreateUnionTableGetter(TableMemberModel memberModel, int index)
         {
             Type propertyType = memberModel.ItemTypeModel.ClrType;
             string defaultValue = CSharpHelpers.GetDefaultValueToken(memberModel);
-
             UnionTypeModel unionModel = (UnionTypeModel)memberModel.ItemTypeModel;
+
+            GeneratedProperty generatedProperty = new GeneratedProperty(this.options, index, memberModel.PropertyInfo);
 
             // Start by generating switch cases. The codegen'ed union types have
             // well-defined constructors for each constituent type, so this .ctor
@@ -237,26 +190,22 @@ $@"
 $@"
                     case {unionIndex}:
                         {structOffsetAdjustment}
-                        this.{valueFieldName} = new {CSharpHelpers.GetCompilableTypeName(unionModel.ClrType)}({this.GetReadInvocation(unionMember.ClrType, "buffer", "offsetLocation")});
-                        break;
+                        return new {CSharpHelpers.GetCompilableTypeName(unionModel.ClrType)}({this.GetReadInvocation(unionMember.ClrType, "buffer", "offsetLocation")});
 ";
-
                 switchCases.Add(@case);
             }
 
-            return
+
+            generatedProperty.ReadValueMethodDefinition =
 $@"
-                [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                get 
-                {{
-                    if (!this.{hasValueFieldName})
+                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {generatedProperty.ReadValueMethodName}(InputBuffer buffer, int offset)
                     {{
-                        var buffer = this.buffer;
-                        int discriminatorLocation = buffer.{nameof(InputBuffer.GetAbsoluteTableFieldLocation)}(this.offset, {index});
-                        int offsetLocation = buffer.{nameof(InputBuffer.GetAbsoluteTableFieldLocation)}(this.offset, {index + 1});
+                        int discriminatorLocation = buffer.{nameof(InputBuffer.GetAbsoluteTableFieldLocation)}(offset, {index});
+                        int offsetLocation = buffer.{nameof(InputBuffer.GetAbsoluteTableFieldLocation)}(offset, {index + 1});
                             
                         if (discriminatorLocation == 0) {{
-                            this.{valueFieldName} = {defaultValue};
+                            return {defaultValue};
                         }}
                         else {{
                             byte discriminator = buffer.{nameof(InputBuffer.ReadByte)}(discriminatorLocation);
@@ -266,15 +215,12 @@ $@"
                             {{
                                 {string.Join("\r\n", switchCases)}
                                 default:
-                                    this.{valueFieldName} = {defaultValue};
-                                    break;
+                                    return {defaultValue};
                             }}
                         }}
-                        this.{hasValueFieldName} = true;
                     }}
-                    return this.{valueFieldName};
-                }}
 ";
+            return generatedProperty;
         }
 
         private void ImplementStructReadMethod(StructTypeModel typeModel)
@@ -289,8 +235,7 @@ $@"
             // Implement the class
             {
                 // Build up a list of property overrides.
-                List<string> propertyOverrides = new List<string>();
-                List<string> fieldDefinitions = new List<string>();
+                var propertyOverrides = new List<GeneratedProperty>();
                 for (int index = 0; index < typeModel.Members.Count; ++index)
                 {
                     var value = typeModel.Members[index];
@@ -298,53 +243,24 @@ $@"
                     Type propertyType = propertyInfo.PropertyType;
                     string compilableTypeName = CSharpHelpers.GetCompilableTypeName(propertyType);
 
-                    string hasValueFieldName = $"hasIndex{index}";
-                    string valueFieldName = $"index{index}Value";
-
-                    fieldDefinitions.Add($"private bool {hasValueFieldName};");
-                    fieldDefinitions.Add($"private {compilableTypeName} {valueFieldName};");
-
-                    string getter =
+                    GeneratedProperty generatedProperty = new GeneratedProperty(this.options, index, propertyInfo);
+                    generatedProperty.ReadValueMethodDefinition =
 $@"
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    get 
+                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {generatedProperty.ReadValueMethodName}(InputBuffer buffer, int offset)
                     {{
-                        if (!this.{hasValueFieldName})
-                        {{
-                            this.{valueFieldName} = {this.GetReadInvocation(propertyType, "this.buffer", $"this.offset + {value.Offset}")};
-                            this.{hasValueFieldName} = true;
-                        }}
-
-                        return this.{valueFieldName};
+                        return {this.GetReadInvocation(propertyType, "buffer", $"offset + {value.Offset}")};
                     }}
 ";
 
-                    string setter = string.Empty;
-                    if (!value.IsReadOnly)
-                    {
-                        if (this.options.GenerateMutableObjects)
-                        {
-                            setter = $"set {{ this.{valueFieldName} = value; this.{hasValueFieldName} = true; }}";
-                        }
-                        else
-                        {
-                            setter = "set { throw new NotMutableException(); }";
-                        }
-                    }
-
-                    string @override =
-$@"
-                    {CSharpHelpers.GetAccessModifier(propertyInfo)} override {compilableTypeName} {propertyInfo.Name}
-                    {{
-                        {getter}
-                        {setter}
-                    }}
-";
-
-                    propertyOverrides.Add(@override);
+                    propertyOverrides.Add(generatedProperty);
                 }
 
-                string classDefinition = this.CreateClass(className, typeModel.ClrType, typeModel.Members.Select(x => x.PropertyInfo.Name), propertyOverrides, fieldDefinitions);
+                string classDefinition = this.CreateClass(
+                    className,
+                    typeModel.ClrType,
+                    typeModel.Members.Select(x => x.PropertyInfo.Name),
+                    propertyOverrides);
                 var node = CSharpSyntaxTree.ParseText(classDefinition, ParseOptions);
                 this.methodDeclarations.Add(node.GetRoot());
             }
@@ -354,51 +270,34 @@ $@"
             string className,
             Type baseType,
             IEnumerable<string> propertyNames,
-            IEnumerable<string> propertyOverrides,
-            IEnumerable<string> fieldDefinitions)
+            IEnumerable<GeneratedProperty> propertyOverrides)
         {
-            // Create a "greedy init" method that returns true if greedy initialization was performed.
-            // In cases where it returns true, the class releases its reference to the "InputBuffer" object
-            // to free it from GC.
-            List<string> greedyInitializaitons = new List<string>();
-            string greedyInitReturnValue = "false";
+            string inputBufferFieldDef = "private readonly InputBuffer buffer;";
+            string offsetFieldDef = "private readonly int offset;";
+
+            string ctorBody =
+$@"
+                this.buffer = buffer;
+                this.offset = offset;
+";
+
             if (this.options.GreedyDeserialize)
             {
-                int i = 0;
-                foreach (var property in propertyNames)
-                {
-                    // Force evaluation of each property to compel loading and caching the value.
-                    greedyInitializaitons.Add($"var temp{i} = this.{property};");
-                    i++;
-                }
-
-                greedyInitReturnValue = "true";
+                inputBufferFieldDef = string.Empty;
+                offsetFieldDef = string.Empty;
+                ctorBody = string.Join("\r\n", propertyOverrides.Select(x => $"this.{x.BackingFieldName} = {x.ReadValueMethodName}(buffer, offset);"));
             }
 
             return
 $@"
                 private sealed class {className} : {CSharpHelpers.GetCompilableTypeName(baseType)}
                 {{
-                    private readonly InputBuffer buffer;
-                    private readonly int offset;
-
-                    {string.Join("\r\n", fieldDefinitions)}
+                    {inputBufferFieldDef}
+                    {offsetFieldDef}
         
                     public {className}(InputBuffer buffer, int offset)
                     {{
-                        this.buffer = buffer;
-                        this.offset = offset;
-                        if (this.GreedyInitialize())
-                        {{
-                            this.buffer = null;
-                            this.offset = -1;
-                        }}
-                    }}
-
-                    private bool GreedyInitialize()
-                    {{
-                        {string.Join("\r\n", greedyInitializaitons)}
-                        return {greedyInitReturnValue};
+                        {ctorBody}
                     }}
 
                     {string.Join("\r\n", propertyOverrides)}
@@ -430,7 +329,7 @@ $@"
         {
             string body = this.CreateFlatBufferVector(typeModel);
 
-            if (this.options.CacheListVectorData)
+            if (this.options.PreallocateVectors)
             {
                 // We just call .ToList(). Noe that when full greedy mode is on, these items will be 
                 // greedily initialized as we traverse the list. Otherwise, they'll be allocated lazily.

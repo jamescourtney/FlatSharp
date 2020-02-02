@@ -56,6 +56,14 @@ namespace FlatSharp
         }
 
         /// <summary>
+        /// Creates a new FlatBufferSerializer using the given deserialization option.
+        /// </summary>
+        public FlatBufferSerializer(FlatBufferDeserializationOption deserializerOption)
+            : this(new FlatBufferSerializerOptions(deserializerOption))
+        {
+        }
+
+        /// <summary>
         /// Gets the set of options used to create this serializer.
         /// </summary>
         public FlatBufferSerializerOptions Options { get; }
