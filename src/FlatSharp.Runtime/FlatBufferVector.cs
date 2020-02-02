@@ -44,13 +44,9 @@ namespace FlatSharp
             this.itemSize = itemSize;
             this.count = checked((int)this.memory.ReadUInt(this.offset));
 
-            // Advance past the length. Means we don't have to keep adding.
+            // Advance to the start of the element at index 0. Easiest to do this once
+            // in the .ctor than repeatedly for each index.
             this.offset = checked(this.offset + sizeof(uint));
-
-            // Ensure we won't overflow whem multiplying within the valid range. This allows us to suppress these
-            // checks later.
-            int maxLocation = checked(this.offset + (this.itemSize * (this.count - 1)));
-            int minLocation = checked(this.offset + (this.itemSize * 0));
 
             this.parseItem = parseItem;
         }
@@ -167,7 +163,7 @@ namespace FlatSharp
             // start at offset and then multiply item size * index.
             return this.parseItem(
                 this.memory,
-                this.offset + (this.itemSize * index));
+                checked(this.offset + (this.itemSize * index)));
         }
     }
 }
