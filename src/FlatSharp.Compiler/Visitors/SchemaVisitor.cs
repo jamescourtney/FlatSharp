@@ -108,5 +108,17 @@ namespace FlatSharp.Compiler
 
             return null;
         }
+
+        public override BaseSchemaMember VisitRpc_decl([NotNull] FlatBuffersParser.Rpc_declContext context)
+        {
+            var top = this.parseStack.Peek();
+            ErrorContext.Current.WithScope(top.FullName, () =>
+            {
+                RpcDefinition def = new RpcVisitor(top).Visit(context);
+                top.AddChild(def);
+            });
+
+            return null;
+        }
     }
 }

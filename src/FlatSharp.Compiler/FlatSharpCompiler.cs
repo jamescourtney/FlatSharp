@@ -121,7 +121,7 @@ namespace FlatSharp.Compiler
             }
         }
 
-        internal static string CreateCSharp(string fbsSchema, string inputHash)
+        internal static BaseSchemaMember ParseSyntax(string fbsSchema, string inputHash)
         {
             AntlrInputStream input = new AntlrInputStream(fbsSchema);
             FlatBuffersLexer lexer = new FlatBuffersLexer(input);
@@ -132,6 +132,13 @@ namespace FlatSharp.Compiler
 
             SchemaVisitor visitor = new SchemaVisitor(inputHash);
             BaseSchemaMember rootNode = visitor.Visit(parser.schema());
+
+            return rootNode;
+        }
+
+        internal static string CreateCSharp(string fbsSchema, string inputHash)
+        {
+            BaseSchemaMember rootNode = ParseSyntax(fbsSchema, inputHash);
 
             if (ErrorContext.Current.Errors.Any())
             {
