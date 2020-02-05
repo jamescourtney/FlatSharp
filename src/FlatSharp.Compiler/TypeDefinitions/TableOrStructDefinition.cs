@@ -67,7 +67,7 @@ namespace FlatSharp.Compiler
 
             writer.AppendLine(attribute);
             writer.AppendLine("[System.Runtime.CompilerServices.CompilerGenerated]");
-            writer.AppendLine($"public class {this.Name} : object");
+            writer.AppendLine($"public partial class {this.Name} : object");
             writer.AppendLine($"{{");
 
             using (writer.IncreaseIndent())
