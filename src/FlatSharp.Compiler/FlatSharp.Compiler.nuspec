@@ -27,7 +27,7 @@
     <file src="$OutDir$\net47\*.exe" target="tools/net47" />
     
     <file src="$AntlrRuntime$\lib\netstandard1.1\**\*.dll" target="tools/netcoreapp2.1" />
-    <file src="$OutDir$\netcoreapp2.1\*.dll" target="tools/netcoreapp2.1" />
+    <file src="$OutDir$\netcoreapp2.1\**.dll" target="tools/netcoreapp2.1" />
     <file src="$OutDir$\netcoreapp2.1\*.json" target="tools/netcoreapp2.1" />
   </files>
 </package>
