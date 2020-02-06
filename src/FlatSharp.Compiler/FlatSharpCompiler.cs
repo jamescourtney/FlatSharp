@@ -149,7 +149,7 @@ namespace FlatSharp.Compiler
             // If the schema requests a pregenerated serializer, then we'll need to load this code, generate
             // the serializer, and then rebuild it.
             CodeWriter writer = new CodeWriter();
-            rootNode.WriteCode(writer, null);
+            rootNode.WriteCode(writer, CodeWritingPass.FirstPass, null);
 
             if (ErrorContext.Current.Errors.Any())
             {
@@ -159,11 +159,12 @@ namespace FlatSharp.Compiler
             string code = writer.ToString();
 
             var tablesNeedingSerializers = new List<TableOrStructDefinition>();
-            FindTablesNeedingSerializers(rootNode, tablesNeedingSerializers);
+            var rpcDefinitions = new List<RpcDefinition>();
+            FindItemsRequiringSecondCodePass(rootNode, tablesNeedingSerializers, rpcDefinitions);
 
-            if (tablesNeedingSerializers.Count == 0)
+            if (tablesNeedingSerializers.Count == 0 && rpcDefinitions.Count == 0)
             {
-                // Hey, no serializers. We're all done. Go ahead and return the code we already generated.
+                // Hey, no serializers or RPCs. We're all done. Go ahead and return the code we already generated.
                 return code;
             }
 
@@ -177,7 +178,7 @@ namespace FlatSharp.Compiler
             }
 
             writer = new CodeWriter();
-            rootNode.WriteCode(writer, generatedSerializers);
+            rootNode.WriteCode(writer, CodeWritingPass.SecondPass, generatedSerializers);
 
             if (ErrorContext.Current.Errors.Any())
             {
@@ -208,19 +209,23 @@ namespace FlatSharp.Compiler
         /// <summary>
         /// Recursively find tables for which the schema has asked for us to generate serializers.
         /// </summary>
-        private static void FindTablesNeedingSerializers(BaseSchemaMember node, List<TableOrStructDefinition> items)
+        private static void FindItemsRequiringSecondCodePass(BaseSchemaMember node, List<TableOrStructDefinition> tables, List<RpcDefinition> rpcs)
         {
             if (node is TableOrStructDefinition tableOrStruct)
             {
                 if (tableOrStruct.RequestedSerializer != null)
                 {
-                    items.Add(tableOrStruct);
+                    tables.Add(tableOrStruct);
                 }
+            }
+            else if (node is RpcDefinition rpc)
+            {
+                rpcs.Add(rpc);
             }
 
             foreach (var childNode in node.Children.Values)
             {
-                FindTablesNeedingSerializers(childNode, items);
+                FindItemsRequiringSecondCodePass(childNode, tables, rpcs);
             }
         }
     }

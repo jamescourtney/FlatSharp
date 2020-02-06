@@ -59,7 +59,7 @@ namespace FlatSharp.Compiler
             });
         }
 
-        protected override void OnWriteCode(CodeWriter writer, IReadOnlyDictionary<string, string> precompiledSerailizers)
+        protected override void OnWriteCode(CodeWriter writer, CodeWritingPass pass, IReadOnlyDictionary<string, string> precompiledSerailizers)
         {
             this.AssignIndexes();
 
@@ -82,7 +82,7 @@ namespace FlatSharp.Compiler
                     field.WriteField(writer, this);
                 }
 
-                if (precompiledSerailizers != null && this.RequestedSerializer != null)
+                if (pass == CodeWritingPass.SecondPass && precompiledSerailizers != null && this.RequestedSerializer != null)
                 {
                     if (precompiledSerailizers.TryGetValue(this.FullName, out string serializer))
                     {
