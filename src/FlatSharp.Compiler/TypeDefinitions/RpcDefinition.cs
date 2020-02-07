@@ -26,7 +26,10 @@ namespace FlatSharp.Compiler
 
         Client = 1,
         Server = 2,
+
         Bidirectional = 3,
+        Bidi = 3,
+        Duplex = 3,
     }
 
     internal class RpcDefinition : BaseSchemaMember
@@ -77,7 +80,7 @@ namespace FlatSharp.Compiler
                 return;
             }
 
-            writer.AppendLine($"public static class {this.Name}");
+            writer.AppendLine($"public static partial class {this.Name}");
             writer.AppendLine("{");
             using (writer.IncreaseIndent())
             {
@@ -91,6 +94,9 @@ namespace FlatSharp.Compiler
                 // #3: Define all of the methods in our RPC. These are the core
                 // of the client/server classes.
                 var methods = this.DefineMethods(writer, marshallers);
+
+                this.DefineServerBaseClass(writer, methods);
+                this.DefineClientClass(writer, methods);
             }
 
             writer.AppendLine("}");
@@ -174,6 +180,235 @@ namespace FlatSharp.Compiler
                 default:
                     throw new InvalidOperationException("Unexpected streaming type: " + streamingType);
             }
+        }
+
+        private void DefineServerBaseClass(CodeWriter writer, Dictionary<string, string> methodNameMap)
+        {
+            string baseClassName = $"{this.Name}ServerBase";
+
+            writer.AppendLine($"[{GrpcCore}.BindServiceMethod(typeof({this.Name}), \"BindService\")]");
+            writer.AppendLine($"public abstract partial class {baseClassName}");
+            writer.AppendLine("{");
+            using (writer.IncreaseIndent())
+            {
+                foreach (var method in this.methods)
+                {
+                    writer.AppendLine(this.GetServerMethodSignature(method.Key, method.Value.requestType, method.Value.responseType, method.Value.streamingType));
+                }
+            }
+            writer.AppendLine("}");
+
+            // Write bind service method
+            writer.AppendLine(string.Empty);
+            writer.AppendLine($"public static {GrpcCore}.ServerServiceDefinition BindService({baseClassName} serviceImpl)");
+            writer.AppendLine("{");
+            using (writer.IncreaseIndent())
+            {
+                writer.AppendLine($"return {GrpcCore}.ServerServiceDefinition.CreateBuilder()");
+                using (writer.IncreaseIndent())
+                {
+                    foreach (var method in this.methods)
+                    {
+                        writer.AppendLine($".AddMethod({methodNameMap[method.Key]}, serviceImpl.{method.Key})");
+                    }
+
+                    writer.AppendLine(".Build();");
+                }
+            }
+            writer.AppendLine("}");
+        }
+
+        private string GetServerMethodSignature(string name, string requestType, string responseType, RpcStreamingType streamingType)
+        {
+            const string TaskString = "System.Threading.Tasks.Task";
+            switch (streamingType)
+            {
+                case RpcStreamingType.Unary:
+                    return $"public abstract {TaskString}<{responseType}> {name}({requestType} request, {GrpcCore}.ServerCallContext callContext);";
+
+
+                case RpcStreamingType.Client:
+                    return $"public abstract {TaskString}<{responseType}> {name}({GrpcCore}.IAsyncStreamReader<{requestType}> requestStream, {GrpcCore}.ServerCallContext callContext);";
+
+
+                case RpcStreamingType.Server:
+                    return $"public abstract {TaskString} {name}({requestType} request, {GrpcCore}.IServerStreamWriter<{responseType}> responseStream, {GrpcCore}.ServerCallContext callContext);";
+
+
+                case RpcStreamingType.Bidirectional:
+                    return $"public abstract {TaskString} {name}({GrpcCore}.IAsyncStreamReader<{requestType}> requestStream, {GrpcCore}.IServerStreamWriter<{responseType}> responseStream, {GrpcCore}.ServerCallContext callContext);";
+            }
+
+            throw new InvalidOperationException("Unrecognized streaming type: " + streamingType);
+        }
+
+        private void DefineClientClass(CodeWriter writer, Dictionary<string, string> methodMapping)
+        {
+            string clientClassName = $"{this.Name}Client";
+
+            writer.AppendLine($"public partial class {clientClassName} : {GrpcCore}.ClientBase<{clientClassName}>");
+            writer.AppendLine("{");
+            using (writer.IncreaseIndent())
+            {
+                this.DefineClientConstructors(writer, clientClassName);
+
+                foreach (var item in this.methods)
+                {
+                    this.WriteClientMethod(writer, item.Key, item.Value.requestType, item.Value.responseType, item.Value.streamingType, methodMapping);
+                }
+            }
+
+            writer.AppendLine("}");
+        }
+
+        private void DefineClientConstructors(CodeWriter writer, string className)
+        {
+            writer.AppendLine($"public {className}({GrpcCore}.ChannelBase channel) : base(channel) {{ }}");
+            writer.AppendLine($"public {className}({GrpcCore}.CallInvoker callInvoker) : base(callInvoker) {{ }}");
+            writer.AppendLine($"protected {className}() : base() {{ }}");
+            writer.AppendLine($"protected {className}(ClientBaseConfiguration configuration) : base(configuration)");
+            writer.AppendLine(string.Empty);
+            writer.AppendLine($"protected override {className} NewInstance(ClientBaseConfiguration configuration)");
+            writer.AppendLine("{");
+            using (writer.IncreaseIndent())
+            {
+                writer.AppendLine($"return new {className}(configuration);");
+            }
+            writer.AppendLine("}");
+            writer.AppendLine(string.Empty);
+        }
+
+        private void WriteClientMethod(CodeWriter writer, string methodName, string requestType, string responseType, RpcStreamingType streamingType, Dictionary<string, string> methodMap)
+        {
+            switch (streamingType)
+            {
+                case RpcStreamingType.Unary:
+                    this.WriteClientUnaryMethod(writer, methodName, requestType, responseType, methodMap);
+                    break;
+
+                case RpcStreamingType.Client:
+                    this.WriteClientClientStreamingMethod(writer, methodName, requestType, responseType, methodMap);
+                    break;
+
+                case RpcStreamingType.Server:
+                    this.WriteClientServerStreamingMethod(writer, methodName, requestType, responseType, methodMap);
+                    break;
+
+                case RpcStreamingType.Bidirectional:
+                    this.WriteClientDuplexStreamingMethod(writer, methodName, requestType, responseType, methodMap);
+                    break;
+            }
+        }
+
+        private const string CancellationToken = "System.Threading.CancellationToken";
+
+        private void WriteClientUnaryMethod(
+            CodeWriter writer, 
+            string methodName, 
+            string requestType, 
+            string responseType,
+            Dictionary<string, string> methodMap)
+        {
+            writer.AppendLine($"public virtual {GrpcCore}.AsyncUnaryCall<{responseType}> {methodName}({requestType} request, {GrpcCore}.Metadata headers = null, System.DateTime? deadline = null, {CancellationToken} cancellationToken = default({CancellationToken}))");
+            writer.AppendLine("{");
+            using (writer.IncreaseIndent())
+            {
+                writer.AppendLine($"return {methodName}(request, new {GrpcCore}.CallOptions(headers, deadline, cancellationToken));");
+            }
+            writer.AppendLine("}");
+            writer.AppendLine(string.Empty);
+
+            writer.AppendLine("");
+
+            writer.AppendLine($"public virtual {GrpcCore}.AsyncUnaryCall<{responseType}> {methodName}({requestType} request, {GrpcCore}.CallOptions options)");
+            writer.AppendLine("{");
+            using (writer.IncreaseIndent())
+            {
+                writer.AppendLine($"return CallInvoker.AsyncUnaryCall({methodMap[methodName]}, null, options, request);");
+            }
+            writer.AppendLine("}");
+
+        }
+
+        private void WriteClientServerStreamingMethod(
+            CodeWriter writer,
+            string methodName,
+            string requestType,
+            string responseType,
+            Dictionary<string, string> methodMap)
+        {
+            writer.AppendLine($"public virtual {GrpcCore}.AsyncServerStreamingCall<{responseType}> {methodName}({requestType} request, {GrpcCore}.Metadata headers = null, System.DateTime? deadline = null, {CancellationToken} cancellationToken = default({CancellationToken}))");
+            writer.AppendLine("{");
+            using (writer.IncreaseIndent())
+            {
+                writer.AppendLine($"return {methodName}(request, new {GrpcCore}.CallOptions(headers, deadline, cancellationToken));");
+            }
+            writer.AppendLine("}");
+            writer.AppendLine(string.Empty);
+
+            writer.AppendLine("");
+
+            writer.AppendLine($"public virtual {GrpcCore}.AsyncServerStreamingCall<{responseType}> {methodName}({requestType} request, {GrpcCore}.CallOptions options)");
+            writer.AppendLine("{");
+            using (writer.IncreaseIndent())
+            {
+                writer.AppendLine($"return CallInvoker.AsyncServerStreamingCall({methodMap[methodName]}, null, options, request);");
+            }
+            writer.AppendLine("}");
+        }
+
+        private void WriteClientClientStreamingMethod(
+            CodeWriter writer,
+            string methodName,
+            string requestType,
+            string responseType,
+            Dictionary<string, string> methodMap)
+        {
+            writer.AppendLine($"public virtual {GrpcCore}.AsyncClientStreamingCall<{requestType}, {responseType}> {methodName}({GrpcCore}.Metadata headers = null, System.DateTime? deadline = null, {CancellationToken} cancellationToken = default({CancellationToken}))");
+            writer.AppendLine("{");
+            using (writer.IncreaseIndent())
+            {
+                writer.AppendLine($"return {methodName}(new {GrpcCore}.CallOptions(headers, deadline, cancellationToken));");
+            }
+            writer.AppendLine("}");
+            writer.AppendLine(string.Empty);
+
+            writer.AppendLine("");
+
+            writer.AppendLine($"public virtual {GrpcCore}.AsyncClientStreamingCall<{requestType}, {responseType}> {methodName}({GrpcCore}.CallOptions options)");
+            writer.AppendLine("{");
+            using (writer.IncreaseIndent())
+            {
+                writer.AppendLine($"return CallInvoker.AsyncClientStreamingCall({methodMap[methodName]}, null, options);");
+            }
+            writer.AppendLine("}");
+        }
+
+        private void WriteClientDuplexStreamingMethod(
+            CodeWriter writer,
+            string methodName,
+            string requestType,
+            string responseType,
+            Dictionary<string, string> methodMap)
+        {
+            writer.AppendLine($"public virtual {GrpcCore}.AsyncDuplexStreamingCall<{requestType}, {responseType}> {methodName}({GrpcCore}.Metadata headers = null, System.DateTime? deadline = null, {CancellationToken} cancellationToken = default({CancellationToken}))");
+            writer.AppendLine("{");
+            using (writer.IncreaseIndent())
+            {
+                writer.AppendLine($"return {methodName}(new {GrpcCore}.CallOptions(headers, deadline, cancellationToken));");
+            }
+            writer.AppendLine("}");
+            writer.AppendLine(string.Empty);
+
+            writer.AppendLine("");
+
+            writer.AppendLine($"public virtual {GrpcCore}.AsyncDuplexStreamingCall<{requestType}, {responseType}> {methodName}({GrpcCore}.CallOptions options)");
+            writer.AppendLine("{");
+            using (writer.IncreaseIndent())
+            {
+                writer.AppendLine($"return CallInvoker.AsyncDuplexStreamingCall({methodMap[methodName]}, null, options);");
+            }
+            writer.AppendLine("}");
         }
     }
 }

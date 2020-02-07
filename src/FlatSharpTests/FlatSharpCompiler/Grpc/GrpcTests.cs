@@ -38,6 +38,9 @@ table Response (PrecompiledSerializer) {{ Data:string; }}
 
 rpc_service MyService {{
     SayHello(Request):Response;
+    SayHelloClient(Request):Response (streaming:client);
+    SayHelloServer(Request):Response (streaming:server);
+    SayHelloChat(Request):Response   (streaming:duplex);
 }}
 ";
 

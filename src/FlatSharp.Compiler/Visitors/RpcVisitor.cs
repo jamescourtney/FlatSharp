@@ -17,6 +17,7 @@
 namespace FlatSharp.Compiler
 {
     using Antlr4.Runtime.Misc;
+    using System;
     using System.Collections.Generic;
 
     /// <summary>
@@ -60,24 +61,13 @@ namespace FlatSharp.Compiler
 
         private static RpcStreamingType ParseStreamingType(string type)
         {
-            switch (type.Trim('"').ToLower())
+            if (!Enum.TryParse<RpcStreamingType>(type, true, out var result))
             {
-                case "bidi":
-                    return RpcStreamingType.Bidirectional;
-
-                case "unary":
-                    return RpcStreamingType.Unary;
-
-                case "client":
-                    return RpcStreamingType.Client;
-
-                case "server":
-                    return RpcStreamingType.Server;
-
-                default:
-                    ErrorContext.Current.RegisterError($"Unable to parse '{type}' as a streaming type. Valid values are 'bidi', 'server', 'client', and 'unary'.");
-                    return RpcStreamingType.Unary;
+                ErrorContext.Current.RegisterError($"Unable to parse '{type}' as a streaming type. Valid values are '{string.Join("', '", Enum.GetNames(typeof(RpcStreamingType)))}'.");
+                result = RpcStreamingType.Unary;
             }
+
+            return result;
         }
     }
 }

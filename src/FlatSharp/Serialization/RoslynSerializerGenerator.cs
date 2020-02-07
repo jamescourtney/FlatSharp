@@ -388,7 +388,12 @@ $@"
                rootNode.DescendantNodes().OfType<MethodDeclarationSyntax>(),
                (a, b) =>
                {
-                   return b.WithBody(SyntaxFactory.Block(SyntaxFactory.CheckedStatement(SyntaxKind.CheckedStatement, a.Body)));
+                   if (a.Body != null)
+                   {
+                       return b.WithBody(SyntaxFactory.Block(SyntaxFactory.CheckedStatement(SyntaxKind.CheckedStatement, a.Body)));
+                   }
+
+                   return a;
                });
 
             rootNode = rootNode.ReplaceNodes(
