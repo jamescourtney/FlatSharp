@@ -23,8 +23,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Samples", "..\samples\Sampl
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GRPCTesters", "GRPCTesters", "{D54080DE-3232-4208-8FEF-21B95EC0943F}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NativeGrpc", "Grpc\NativeGrpc\NativeGrpc.vcxproj", "{4A315BE8-3475-448F-A1AB-20966EBDB42E}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "proto", "proto", "{62A232DC-F662-4731-AA72-603D3ED436B0}"
 	ProjectSection(SolutionItems) = preProject
 		RouteGuide.fbs = RouteGuide.fbs
@@ -148,22 +146,11 @@ Global
 		{5D25AB20-055B-444A-A695-6EA753EAC732}.Release|x64.Build.0 = Release|Any CPU
 		{5D25AB20-055B-444A-A695-6EA753EAC732}.Release|x86.ActiveCfg = Release|Any CPU
 		{5D25AB20-055B-444A-A695-6EA753EAC732}.Release|x86.Build.0 = Release|Any CPU
-		{4A315BE8-3475-448F-A1AB-20966EBDB42E}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{4A315BE8-3475-448F-A1AB-20966EBDB42E}.Debug|x64.ActiveCfg = Debug|x64
-		{4A315BE8-3475-448F-A1AB-20966EBDB42E}.Debug|x64.Build.0 = Debug|x64
-		{4A315BE8-3475-448F-A1AB-20966EBDB42E}.Debug|x86.ActiveCfg = Debug|Win32
-		{4A315BE8-3475-448F-A1AB-20966EBDB42E}.Debug|x86.Build.0 = Debug|Win32
-		{4A315BE8-3475-448F-A1AB-20966EBDB42E}.Release|Any CPU.ActiveCfg = Release|Win32
-		{4A315BE8-3475-448F-A1AB-20966EBDB42E}.Release|x64.ActiveCfg = Release|x64
-		{4A315BE8-3475-448F-A1AB-20966EBDB42E}.Release|x64.Build.0 = Release|x64
-		{4A315BE8-3475-448F-A1AB-20966EBDB42E}.Release|x86.ActiveCfg = Release|Win32
-		{4A315BE8-3475-448F-A1AB-20966EBDB42E}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{4A315BE8-3475-448F-A1AB-20966EBDB42E} = {D54080DE-3232-4208-8FEF-21B95EC0943F}
 		{62A232DC-F662-4731-AA72-603D3ED436B0} = {D54080DE-3232-4208-8FEF-21B95EC0943F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution

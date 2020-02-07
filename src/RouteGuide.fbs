@@ -18,46 +18,46 @@ namespace routeguide;
 rpc_service RouteGuide {
   GetFeature(Point):Feature;
 
-  ListFeatures(Rectangle):Feature (streaming:server);
+  ListFeatures(Rectangle):Feature (streaming:"server");
 
-  RecordRoute(Point):RouteSummary (streaming:client);
+  RecordRoute(Point):RouteSummary (streaming:"client");
 
-  RouteChat(RouteNote):RouteNote (streaming:duplex);
+  RouteChat(RouteNote):RouteNote (streaming:"duplex");
 }
 
-message Point {
-  int32 latitude = 1;
-  int32 longitude = 2;
+table Point {
+  latitude:int32;
+  longitude:int32;
 }
 
 // A latitude-longitude rectangle, represented as two diagonally opposite
 // points "lo" and "hi".
-message Rectangle {
+table Rectangle {
   // One corner of the rectangle.
-  Point lo = 1;
+  lo:Point;
 
   // The other corner of the rectangle.
-  Point hi = 2;
+  hi:Point;
 }
 
 // A feature names something at a given point.
 //
 // If a feature could not be named, the name is empty.
-message Feature {
+table Feature {
   // The name of the feature.
-  string name = 1;
+  name:string;
 
   // The point where the feature is detected.
-  Point location = 2;
+  location:Point;
 }
 
 // A RouteNote is a message sent while at a given point.
-message RouteNote {
+table RouteNote {
   // The location from which the message is sent.
-  Point location = 1;
+  location:Point;
 
   // The message to be sent.
-  string message = 2;
+  message:string;
 }
 
 // A RouteSummary is received in response to a RecordRoute rpc.
@@ -65,16 +65,16 @@ message RouteNote {
 // It contains the number of individual points received, the number of
 // detected features, and the total distance covered as the cumulative sum of
 // the distance between each point.
-message RouteSummary {
+table RouteSummary {
   // The number of points received.
-  int32 point_count = 1;
+  point_count:int;
 
   // The number of known features passed while traversing the route.
-  int32 feature_count = 2;
+  feature_count:int;
 
   // The distance covered in metres.
-  int32 distance = 3;
+  distance:int;
 
   // The duration of the traversal in seconds.
-  int32 elapsed_time = 4;
+  elapsed_time:int;
 }
