@@ -12,3 +12,6 @@
 /src/FlatSharpTests/coverage.net47.xml
 /src/FlatSharpTests/coverage
 /src/FlatSharpTests/.coverage
+/src/Grpc/NativeGrpc/Debug
+/src/Debug
+/src/Grpc/NativeGrpc/NativeGrpc.vcxproj.user
