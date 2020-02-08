@@ -47,18 +47,18 @@
 
         private static async Task UnaryOperation(StatsService.StatsServiceClient client)
         {
-            AverageResponse response = await client.SingleOperation(new AverageRequest { Items = new[] { 1d, 2d, 3d, 4d } });
+            AverageResponse response = await client.SingleOperation(new BulkNumbers { Items = new[] { 1d, 2d, 3d, 4d } });
             Console.WriteLine("[Unary] Average is: " + response.Average);
         }
 
         private static async Task ClientStreamingOperation(StatsService.StatsServiceClient client)
         {
-            AsyncClientStreamingCall<AverageItem, AverageResponse> call = client.AverageStreaming(default);
+            AsyncClientStreamingCall<SingleNumber, AverageResponse> call = client.AverageStreaming(default);
 
-            await call.RequestStream.WriteAsync(new AverageItem { Item = 1d });
-            await call.RequestStream.WriteAsync(new AverageItem { Item = 2d });
-            await call.RequestStream.WriteAsync(new AverageItem { Item = 3d });
-            await call.RequestStream.WriteAsync(new AverageItem { Item = 4d });
+            await call.RequestStream.WriteAsync(new SingleNumber { Item = 1d });
+            await call.RequestStream.WriteAsync(new SingleNumber { Item = 2d });
+            await call.RequestStream.WriteAsync(new SingleNumber { Item = 3d });
+            await call.RequestStream.WriteAsync(new SingleNumber { Item = 4d });
 
             await call.RequestStream.CompleteAsync();
             AverageResponse response = await call.ResponseAsync;
@@ -68,11 +68,11 @@
 
         private static async Task DuplexStreamingOperation(StatsService.StatsServiceClient client)
         {
-            AsyncDuplexStreamingCall<AverageItem, AverageResponse> call = client.DuplexAverage(default);
+            AsyncDuplexStreamingCall<SingleNumber, AverageResponse> call = client.DuplexAverage(default);
 
             for (int i = 1; i < 5; ++i)
             {
-                await call.RequestStream.WriteAsync(new AverageItem { Item = i });
+                await call.RequestStream.WriteAsync(new SingleNumber { Item = i });
 
                 if (await call.ResponseStream.MoveNext())
                 {
@@ -91,7 +91,7 @@
 
         private class ServerImpl : StatsService.StatsServiceServerBase
         {
-            public override Task<AverageResponse> SingleOperation(AverageRequest request, ServerCallContext callContext)
+            public override Task<AverageResponse> SingleOperation(BulkNumbers request, ServerCallContext callContext)
             {
                 return Task.FromResult(new AverageResponse
                 {
@@ -99,14 +99,14 @@
                 });
             }
 
-            public override async Task<AverageResponse> AverageStreaming(IAsyncStreamReader<AverageItem> requestStream, ServerCallContext callContext)
+            public override async Task<AverageResponse> AverageStreaming(IAsyncStreamReader<SingleNumber> requestStream, ServerCallContext callContext)
             {
                 double runningSum = 0;
                 int runningSamples = 0;
                 
                 while (await requestStream.MoveNext(default))
                 {
-                    AverageItem item = requestStream.Current;
+                    SingleNumber item = requestStream.Current;
 
                     runningSum += item.Item;
                     runningSamples++;
@@ -118,14 +118,14 @@
                 };
             }
 
-            public override async Task DuplexAverage(IAsyncStreamReader<AverageItem> requestStream, IServerStreamWriter<AverageResponse> responseStream, ServerCallContext callContext)
+            public override async Task DuplexAverage(IAsyncStreamReader<SingleNumber> requestStream, IServerStreamWriter<AverageResponse> responseStream, ServerCallContext callContext)
             {
                 double runningSum = 0;
                 int runningSamples = 0;
 
                 while (await requestStream.MoveNext(default))
                 {
-                    AverageItem item = requestStream.Current;
+                    SingleNumber item = requestStream.Current;
 
                     runningSum += item.Item;
                     runningSamples++;
