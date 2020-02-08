@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <PackageReference Include="FlatSharp" Version="2.0.0" />
-    <PackageReference Include="FlatSharp.Compiler" Version="2.0.0">
+    <PackageReference Include="FlatSharp.Compiler" Version="2.0.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
