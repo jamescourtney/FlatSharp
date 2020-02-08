@@ -44,7 +44,7 @@ namespace FlatSharp.Compiler
                 {{
                     var bufferWriter = sc.GetBufferWriter();
                     var span = bufferWriter.GetSpan(serializer.GetMaxSize(item));
-                    int bytesWritten = serializer.Write(new SpanWriter(), span, item);
+                    int bytesWritten = serializer.Write(SpanWriter.Instance, span, item);
                     bufferWriter.Advance(bytesWritten);
                     sc.Complete();
                 }},

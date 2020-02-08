@@ -28,6 +28,11 @@ namespace FlatSharp
     /// </summary>
     public class SpanWriter
     {
+        /// <summary>
+        /// A default instance. Spanwriter is stateless and threadsafe.
+        /// </summary>
+        public static SpanWriter Instance { get; } = new SpanWriter();
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteUOffset(Span<byte> span, int offset, int secondOffset, SerializationContext context)
         {
