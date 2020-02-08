@@ -52,7 +52,7 @@ namespace FlatSharp.Compiler
             var streamingType = RpcStreamingType.Unary;
             if (metadata.TryGetValue("streaming", out string value))
             {
-                streamingType = ParseStreamingType(value);
+                streamingType = ParseStreamingType(value.Trim('"'));
             }
 
             this.rpcDefinition.AddRpcMethod(name, requestType, responseType, streamingType);

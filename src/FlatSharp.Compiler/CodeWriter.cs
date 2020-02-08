@@ -40,6 +40,16 @@ namespace FlatSharp.Compiler
             this.builder.AppendLine(line);
         }
 
+        public void AppendLine()
+        {
+            for (int i = 0; i < this.indent; ++i)
+            {
+                this.builder.Append(OneIndent);
+            }
+
+            this.builder.AppendLine();
+        }
+
         public override string ToString()
         {
             return this.builder.ToString();
@@ -189,6 +199,18 @@ namespace FlatSharp.Compiler
         {
             this.indent++;
             return new FakeDisposable(() => this.indent--);
+        }
+
+        public IDisposable WithBlock()
+        {
+            this.AppendLine("{");
+            this.indent++;
+            return new FakeDisposable(() =>
+            {
+                this.indent--;
+                this.AppendLine("}");
+                this.AppendLine(string.Empty);
+            });
         }
 
         private class FakeDisposable : IDisposable

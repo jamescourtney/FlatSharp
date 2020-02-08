@@ -25,7 +25,7 @@ namespace FlatSharp.Compiler
     /// </summary>
     public class InvalidFbsFileException : Exception
     {
-        public InvalidFbsFileException(IEnumerable<string> errors) : base("Errors in FBS schema")
+        public InvalidFbsFileException(IEnumerable<string> errors) : base("Errors in FBS schema: \r\n" + string.Join("\r\n", errors))
         {
             this.Errors = errors.ToArray();
         }

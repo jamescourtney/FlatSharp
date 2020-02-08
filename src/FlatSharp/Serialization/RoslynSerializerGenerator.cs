@@ -17,6 +17,7 @@
 namespace FlatSharp
 {
     using System;
+    using System.Buffers;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
@@ -162,6 +163,7 @@ $@"
                 MetadataReference.CreateFromFile(typeof(List<int>).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(System.Collections.ArrayList).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(ValueType).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(IBufferWriter<>).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(IGeneratedSerializer<byte>).Assembly.Location),
                 MetadataReference.CreateFromFile(Assembly.Load("netstandard").Location),
                 MetadataReference.CreateFromFile(typeof(System.IO.InvalidDataException).Assembly.Location),

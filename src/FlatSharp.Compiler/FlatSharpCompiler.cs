@@ -102,15 +102,16 @@ namespace FlatSharp.Compiler
             }
         }
 
-        public static Assembly CompileAndLoadAssembly(string fbsSchema, string inputHash = "")
+        internal static Assembly CompileAndLoadAssembly(string fbsSchema, string inputHash = "", IEnumerable<Assembly> additionalReferences = null)
         {
             using (var context = ErrorContext.Current)
             {
                 context.PushScope("$");
                 try
                 {
+                    Assembly[] additionalRefs = additionalReferences?.ToArray() ?? Array.Empty<Assembly>();
                     string cSharp = CreateCSharp(fbsSchema, inputHash);
-                    var (assembly, formattedText, _) = RoslynSerializerGenerator.CompileAssembly(cSharp, true);
+                    var (assembly, formattedText, _) = RoslynSerializerGenerator.CompileAssembly(cSharp, true, additionalRefs);
                     string debugText = formattedText();
                     return assembly;
                 }
@@ -121,7 +122,15 @@ namespace FlatSharp.Compiler
             }
         }
 
-        internal static BaseSchemaMember ParseSyntax(string fbsSchema, string inputHash)
+        internal static BaseSchemaMember TestHookParseSyntax(string fbsSchema)
+        {
+            using (ErrorContext.Current)
+            {
+                return ParseSyntax(fbsSchema, string.Empty);
+            }
+        }
+
+        private static BaseSchemaMember ParseSyntax(string fbsSchema, string inputHash)
         {
             AntlrInputStream input = new AntlrInputStream(fbsSchema);
             FlatBuffersLexer lexer = new FlatBuffersLexer(input);
@@ -136,7 +145,15 @@ namespace FlatSharp.Compiler
             return rootNode;
         }
 
-        internal static string CreateCSharp(string fbsSchema, string inputHash)
+        internal static string TestHookCreateCSharp(string fbsSchema)
+        {
+            using (ErrorContext.Current)
+            {
+                return CreateCSharp(fbsSchema, string.Empty);
+            }
+        }
+
+        private static string CreateCSharp(string fbsSchema, string inputHash)
         {
             BaseSchemaMember rootNode = ParseSyntax(fbsSchema, inputHash);
 
@@ -209,7 +226,10 @@ namespace FlatSharp.Compiler
         /// <summary>
         /// Recursively find tables for which the schema has asked for us to generate serializers.
         /// </summary>
-        private static void FindItemsRequiringSecondCodePass(BaseSchemaMember node, List<TableOrStructDefinition> tables, List<RpcDefinition> rpcs)
+        private static void FindItemsRequiringSecondCodePass(
+            BaseSchemaMember node, 
+            List<TableOrStructDefinition> tables, 
+            List<RpcDefinition> rpcs)
         {
             if (node is TableOrStructDefinition tableOrStruct)
             {

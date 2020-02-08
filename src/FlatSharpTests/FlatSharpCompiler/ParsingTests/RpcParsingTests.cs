@@ -42,7 +42,7 @@ rpc_service Service {
     HelloUnaryImplicit(Request):Response;
 }
 ";
-            BaseSchemaMember member = FlatSharpCompiler.ParseSyntax(schema, string.Empty);
+            BaseSchemaMember member = FlatSharpCompiler.TestHookParseSyntax(schema);
             var rpcDef = member.Children["Foo"].Children["Bar"].Children["Service"] as RpcDefinition;
             Assert.IsNotNull(rpcDef);
 
