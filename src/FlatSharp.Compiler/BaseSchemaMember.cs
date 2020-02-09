@@ -48,13 +48,13 @@ namespace FlatSharp.Compiler
 
         protected abstract bool SupportsChildren { get; }
         
-        public void WriteCode(CodeWriter writer, IReadOnlyDictionary<string, string> precompiledSerailizers)
+        public void WriteCode(CodeWriter writer, CodeWritingPass pass, IReadOnlyDictionary<string, string> precompiledSerailizers)
         {
             ErrorContext.Current.WithScope(
-                this.Name, () => this.OnWriteCode(writer, precompiledSerailizers));
+                this.Name, () => this.OnWriteCode(writer, pass, precompiledSerailizers));
         }
 
-        protected virtual void OnWriteCode(CodeWriter writer, IReadOnlyDictionary<string, string> precompiledSerializer)
+        protected virtual void OnWriteCode(CodeWriter writer, CodeWritingPass pass, IReadOnlyDictionary<string, string> precompiledSerializer)
         {
         }
 

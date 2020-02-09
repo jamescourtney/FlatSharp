@@ -1,0 +1,31 @@
+﻿
+namespace Samples.GrpcExample;
+
+enum MathOperation : ubyte { None, Add, Subtract, Multiply, Divide }
+
+table BulkNumbers (PrecompiledSerializer:lazy)
+{
+	Items:[double];
+}
+
+table SingleNumber (PrecompiledSerializer:lazy)
+{
+	Item:double;
+}
+
+table AverageResponse (PrecompiledSerializer:lazy)
+{
+	Average:double;
+}
+
+rpc_service StatsService
+{
+	// Single input, single output.
+	SingleOperation(BulkNumbers):AverageResponse;
+
+	// Stream of inputs. Server sends single response once client has sent all inputs.
+	AverageStreaming(SingleNumber):AverageResponse (streaming:client);
+
+	// Duplex streaming. Server sends an update response each time the client sends a new input.
+	DuplexAverage(SingleNumber):AverageResponse (streaming:duplex);
+}

@@ -46,13 +46,13 @@ public class Location : object
 }
 ```
 
-The second way to define a schema is to use an [FBS schema file](samples/Example2-SchemaFiles/SchemaFilesExample.fbs) and run the FlatSharp compiler at build-time with your project. This enables fancy options like precompiling your serializers, interop with FlatBuffers in other languages, and (in the future) GRPC definitions.
+The second way to define a schema is to use an [FBS schema file](samples/Example2-SchemaFiles/SchemaFilesExample.fbs) and run the FlatSharp compiler at build-time with your project. This enables fancy options like precompiling your serializers, interop with FlatBuffers in other languages, and GRPC definitions.
 ``` fbs
 namespace MyNamespace;
 
 enum Color : ubyte { Red = 1, Green, Blue }
 
-table Person {
+table Person (PrecompiledSerializer) {
     Id:int;
     Name:string;
     Parent:Person (deprecated);
@@ -64,6 +64,10 @@ table Person {
 struct Location {
     Latitude:float;
     Longitude:float;
+}
+
+rpc_service PersonService {
+    GetParent(Person):Person;
 }
 ```
 
@@ -91,6 +95,7 @@ FlatSharp supports some interesting features not covered here. Please visit the 
 - [Build-time serializer code generation](samples/Example3-SchemaFiles2/)
 - [Deserialization options (Lazy, Greedy, and everything in between)](samples/Example1-SerializerOptions/SerializerOptionsExample.cs)
 - [IO Options](samples/Example4-IOOptions/)
+- [gRPC](samples/Example5-gRPC/)
 
 ### Internals
 FlatSharp works by generating subclasses of your data contracts based on the schema that you define. That is, when you attempt to deserialize a ```MonsterTable``` object, you actually get back a subclass of ```MonsterTable```, which has properties defined in such a way as to index into the buffer, according to the deserialization mode specified (greedy, lazy, etc).
@@ -130,7 +135,7 @@ The benchmarks test 4 different serialization frameworks:
 - [ ] Security hardening and fuzzing
 - [x] Code gen based on FBS schema files
 - [x] Build time generation of Serializers
-- [ ] GRPC support
+- [x] GRPC support
 
 ### License
 FlatSharp is a C# implementation of Google's FlatBuffer binary format, which is licensed under the Apache 2.0 License. Accordingly, FlatSharp is also licensed under Apache 2.0. FlatSharp incorporates code from the Google FlatSharp library for testing and benchmarking purposes.

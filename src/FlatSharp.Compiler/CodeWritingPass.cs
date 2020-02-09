@@ -16,20 +16,19 @@
 
 namespace FlatSharp.Compiler
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-
     /// <summary>
-    /// Thrown when FlatSharp.Compiler encounters an error in an FBS file.
+    /// Enumerates the values for code write pass. 
     /// </summary>
-    public class InvalidFbsFileException : Exception
+    internal enum CodeWritingPass
     {
-        public InvalidFbsFileException(IEnumerable<string> errors) : base("Errors in FBS schema: \r\n" + string.Join("\r\n", errors))
-        {
-            this.Errors = errors.ToArray();
-        }
+        /// <summary>
+        /// Only writing out table and struct definitions.
+        /// </summary>
+        FirstPass,
 
-        public string[] Errors { get; }
+        /// <summary>
+        /// Writing Serializers and RPC definitions.
+        /// </summary>
+        SecondPass
     }
 }

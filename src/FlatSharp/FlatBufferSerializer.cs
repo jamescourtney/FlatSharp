@@ -28,7 +28,6 @@ namespace FlatSharp
     public sealed class FlatBufferSerializer
     {
         private static readonly ThreadLocal<SerializationContext> context = new ThreadLocal<SerializationContext>(() => new SerializationContext());
-        private static readonly SpanWriter DefaultWriter = new SpanWriter();
 
         public static FlatBufferSerializer Default { get; } = new FlatBufferSerializer(new FlatBufferSerializerOptions());
         
@@ -116,7 +115,7 @@ namespace FlatSharp
         /// <returns>The length of data that was written to the memory block.</returns>
         public int Serialize<T>(T item, Span<byte> destination) where T : class
         {
-            return this.Serialize(item, destination, DefaultWriter);
+            return this.Serialize(item, destination, SpanWriter.Instance);
         }
 
         /// <summary>

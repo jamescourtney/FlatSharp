@@ -17,8 +17,6 @@
 namespace FlatSharp.Unsafe
 {
     using System;
-    using System.Buffers;
-    using System.Runtime.CompilerServices;
     using System.Text;
 
     public sealed unsafe class UnsafeSpanWriter : SpanWriter

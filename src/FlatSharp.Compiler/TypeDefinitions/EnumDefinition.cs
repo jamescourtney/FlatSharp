@@ -66,7 +66,7 @@ namespace FlatSharp.Compiler
             }
         }
 
-        protected override void OnWriteCode(CodeWriter writer, IReadOnlyDictionary<string, string> precompiledSerailizers)
+        protected override void OnWriteCode(CodeWriter writer, CodeWritingPass pass, IReadOnlyDictionary<string, string> precompiledSerailizers)
         {
             writer.AppendLine($"[FlatBufferEnum(typeof({this.ClrUnderlyingType}))]");
             writer.AppendLine("[System.Runtime.CompilerServices.CompilerGenerated]");
