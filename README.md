@@ -32,7 +32,7 @@ public class Person : object
     [FlatBufferItem(1)] public virtual string Name { get; set; }
     [FlatBufferItem(2, Deprecated = true)] public virtual Person Parent { get; set; }
     [FlatBufferItem(3)] public virtual IList<Person> Children { get; set; }
-    [FlatBufferItem(4, DefaultValue = Color.Blue)] public virtual double FavoriteColor { get; set; } = Color.Blue;
+    [FlatBufferItem(4, DefaultValue = Color.Blue)] public virtual Color FavoriteColor { get; set; } = Color.Blue;
     [FlatBufferItem(5)] public virtual Location Position { get; set; }
 }
 
@@ -96,6 +96,7 @@ FlatSharp supports some interesting features not covered here. Please visit the 
 - [Deserialization options (Lazy, Greedy, and everything in between)](samples/Example1-SerializerOptions/SerializerOptionsExample.cs)
 - [IO Options](samples/Example4-IOOptions/)
 - [gRPC](samples/Example5-gRPC/)
+- [Copy Constructors](samples/Example6-CopyConstructors/)
 
 ### Internals
 FlatSharp works by generating subclasses of your data contracts based on the schema that you define. That is, when you attempt to deserialize a ```MonsterTable``` object, you actually get back a subclass of ```MonsterTable```, which has properties defined in such a way as to index into the buffer, according to the deserialization mode specified (greedy, lazy, etc).
