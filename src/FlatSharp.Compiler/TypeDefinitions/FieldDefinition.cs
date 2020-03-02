@@ -30,6 +30,62 @@ namespace FlatSharp.Compiler
 
         public VectorType VectorType { get; set; }
 
+        public void WriteCopyConstructorLine(CodeWriter writer, string sourceName, BaseSchemaMember parent)
+        {
+            bool isBuiltIn = this.FbsFieldType == "string"
+                || SchemaDefinition.TryResolvePrimitiveType(this.FbsFieldType, out string clrType);
+
+            bool foundNodeType = parent.TryResolveName(this.FbsFieldType, out var nodeType);
+            if (!isBuiltIn && !foundNodeType)
+            {
+                ErrorContext.Current.RegisterError($"Unable to resolve type '{this.FbsFieldType}' as a built in or defined type");
+                return;
+            }
+
+            string selectStatement = this.GetLinqSelectStatement(isBuiltIn, nodeType);
+
+            switch (this.VectorType)
+            {
+                case VectorType.IList:
+                case VectorType.IReadOnlyList:
+                    writer.AppendLine($"this.{this.Name} = {sourceName}.{this.Name}?{selectStatement}.ToList();");
+                    break;
+                case VectorType.Array:
+                    writer.AppendLine($"this.{this.Name} = {sourceName}.{this.Name}?{selectStatement}.ToArray();");
+                    break;
+                case VectorType.Memory:
+                case VectorType.ReadOnlyMemory:
+                    writer.AppendLine($"this.{this.Name} = {sourceName}.{this.Name}.ToArray();");
+                    break;
+                case VectorType.None:
+                {
+                    if (isBuiltIn)
+                    {
+                        writer.AppendLine($"this.{this.Name} = {sourceName}.{this.Name};");
+                    }
+                    else
+                    {
+                        string cloneStatement = nodeType.GetCopyExpression($"{sourceName}.{this.Name}");
+                        writer.AppendLine($"this.{this.Name} = {cloneStatement};");
+                    }
+                }
+                break;
+            }
+        }
+
+        private string GetLinqSelectStatement(bool isBuiltIn, BaseSchemaMember nodeType)
+        {
+            if (isBuiltIn)
+            {
+                return string.Empty;
+            }
+            else
+            {
+                string cloneStatement = nodeType.GetCopyExpression("x");
+                return $".Select(x => {cloneStatement})";
+            }
+        }
+
         public void WriteField(CodeWriter writer, BaseSchemaMember schemaDefinition)
         {
             ErrorContext.Current.WithScope(this.Name, () =>

@@ -28,7 +28,10 @@ namespace FlatSharp.Compiler
         public RootNodeDefinition(string inputHash) : base("", null)
         {
             this.inputHash = inputHash;
+            this.Options = new HashSet<AttributeOption>();
         }
+
+        public override HashSet<AttributeOption> Options { get; }
 
         protected override bool SupportsChildren => true;
 
@@ -56,6 +59,11 @@ namespace FlatSharp.Compiler
             {
                 child.WriteCode(writer, pass, precompiledSerailizers);
             }
+        }
+
+        protected override string OnGetCopyExpression(string source)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

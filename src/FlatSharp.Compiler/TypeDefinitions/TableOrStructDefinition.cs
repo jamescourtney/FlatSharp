@@ -72,6 +72,25 @@ namespace FlatSharp.Compiler
 
             using (writer.IncreaseIndent())
             {
+                writer.AppendLine($"partial void OnInitialized();");
+
+                // default ctor.
+                writer.AppendLine($"public {this.Name}() {{ this.OnInitialized(); }}");
+
+                if (this.Options.Contains(AttributeOption.GenerateCopyConstructors))
+                {
+                    writer.AppendLine($"public {this.Name}({this.Name} source)");
+                    using (writer.WithBlock())
+                    {
+                        foreach (var field in this.Fields)
+                        {
+                            field.WriteCopyConstructorLine(writer, "source", this);
+                        }
+
+                        writer.AppendLine("this.OnInitialized();");
+                    }
+                }
+
                 foreach (var field in this.Fields)
                 {
                     if (!this.IsTable && field.Deprecated)
@@ -100,6 +119,11 @@ namespace FlatSharp.Compiler
             }
 
             writer.AppendLine($"}}");
+        }
+
+        protected override string OnGetCopyExpression(string source)
+        {
+            return $"{source} != null ? new {this.FullName}({source}) : null";
         }
     }
 }

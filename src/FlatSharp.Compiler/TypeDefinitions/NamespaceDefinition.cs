@@ -39,5 +39,10 @@ namespace FlatSharp.Compiler
             }
             writer.AppendLine($"}}");
         }
+
+        protected override string OnGetCopyExpression(string source)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

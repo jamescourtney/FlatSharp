@@ -59,7 +59,20 @@ namespace FlatSharp
 					return false;
 				}
 				
-							}
+				
+				public FlatBufferUnion<T1> Clone(
+				System.Func<T1, T1> cloneT1
+				)
+				{
+					switch (this.discriminator)
+					{
+											case 1:
+							return new FlatBufferUnion<T1>(cloneT1(this.item1));
+										}
+
+					throw new System.InvalidOperationException();
+				}
+			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public sealed class FlatBufferUnion<T1, T2> : IUnion
 			{
@@ -155,7 +168,23 @@ namespace FlatSharp
 					return false;
 				}
 				
-							}
+				
+				public FlatBufferUnion<T1, T2> Clone(
+				System.Func<T1, T1> cloneT1,
+System.Func<T2, T2> cloneT2
+				)
+				{
+					switch (this.discriminator)
+					{
+											case 1:
+							return new FlatBufferUnion<T1, T2>(cloneT1(this.item1));
+											case 2:
+							return new FlatBufferUnion<T1, T2>(cloneT2(this.item2));
+										}
+
+					throw new System.InvalidOperationException();
+				}
+			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public sealed class FlatBufferUnion<T1, T2, T3> : IUnion
 			{
@@ -294,7 +323,26 @@ namespace FlatSharp
 					return false;
 				}
 				
-							}
+				
+				public FlatBufferUnion<T1, T2, T3> Clone(
+				System.Func<T1, T1> cloneT1,
+System.Func<T2, T2> cloneT2,
+System.Func<T3, T3> cloneT3
+				)
+				{
+					switch (this.discriminator)
+					{
+											case 1:
+							return new FlatBufferUnion<T1, T2, T3>(cloneT1(this.item1));
+											case 2:
+							return new FlatBufferUnion<T1, T2, T3>(cloneT2(this.item2));
+											case 3:
+							return new FlatBufferUnion<T1, T2, T3>(cloneT3(this.item3));
+										}
+
+					throw new System.InvalidOperationException();
+				}
+			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public sealed class FlatBufferUnion<T1, T2, T3, T4> : IUnion
 			{
@@ -476,7 +524,29 @@ namespace FlatSharp
 					return false;
 				}
 				
-							}
+				
+				public FlatBufferUnion<T1, T2, T3, T4> Clone(
+				System.Func<T1, T1> cloneT1,
+System.Func<T2, T2> cloneT2,
+System.Func<T3, T3> cloneT3,
+System.Func<T4, T4> cloneT4
+				)
+				{
+					switch (this.discriminator)
+					{
+											case 1:
+							return new FlatBufferUnion<T1, T2, T3, T4>(cloneT1(this.item1));
+											case 2:
+							return new FlatBufferUnion<T1, T2, T3, T4>(cloneT2(this.item2));
+											case 3:
+							return new FlatBufferUnion<T1, T2, T3, T4>(cloneT3(this.item3));
+											case 4:
+							return new FlatBufferUnion<T1, T2, T3, T4>(cloneT4(this.item4));
+										}
+
+					throw new System.InvalidOperationException();
+				}
+			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public sealed class FlatBufferUnion<T1, T2, T3, T4, T5> : IUnion
 			{
@@ -701,7 +771,32 @@ namespace FlatSharp
 					return false;
 				}
 				
-							}
+				
+				public FlatBufferUnion<T1, T2, T3, T4, T5> Clone(
+				System.Func<T1, T1> cloneT1,
+System.Func<T2, T2> cloneT2,
+System.Func<T3, T3> cloneT3,
+System.Func<T4, T4> cloneT4,
+System.Func<T5, T5> cloneT5
+				)
+				{
+					switch (this.discriminator)
+					{
+											case 1:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5>(cloneT1(this.item1));
+											case 2:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5>(cloneT2(this.item2));
+											case 3:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5>(cloneT3(this.item3));
+											case 4:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5>(cloneT4(this.item4));
+											case 5:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5>(cloneT5(this.item5));
+										}
+
+					throw new System.InvalidOperationException();
+				}
+			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public sealed class FlatBufferUnion<T1, T2, T3, T4, T5, T6> : IUnion
 			{
@@ -969,7 +1064,35 @@ namespace FlatSharp
 					return false;
 				}
 				
-							}
+				
+				public FlatBufferUnion<T1, T2, T3, T4, T5, T6> Clone(
+				System.Func<T1, T1> cloneT1,
+System.Func<T2, T2> cloneT2,
+System.Func<T3, T3> cloneT3,
+System.Func<T4, T4> cloneT4,
+System.Func<T5, T5> cloneT5,
+System.Func<T6, T6> cloneT6
+				)
+				{
+					switch (this.discriminator)
+					{
+											case 1:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6>(cloneT1(this.item1));
+											case 2:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6>(cloneT2(this.item2));
+											case 3:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6>(cloneT3(this.item3));
+											case 4:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6>(cloneT4(this.item4));
+											case 5:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6>(cloneT5(this.item5));
+											case 6:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6>(cloneT6(this.item6));
+										}
+
+					throw new System.InvalidOperationException();
+				}
+			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public sealed class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7> : IUnion
 			{
@@ -1280,7 +1403,38 @@ namespace FlatSharp
 					return false;
 				}
 				
-							}
+				
+				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7> Clone(
+				System.Func<T1, T1> cloneT1,
+System.Func<T2, T2> cloneT2,
+System.Func<T3, T3> cloneT3,
+System.Func<T4, T4> cloneT4,
+System.Func<T5, T5> cloneT5,
+System.Func<T6, T6> cloneT6,
+System.Func<T7, T7> cloneT7
+				)
+				{
+					switch (this.discriminator)
+					{
+											case 1:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7>(cloneT1(this.item1));
+											case 2:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7>(cloneT2(this.item2));
+											case 3:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7>(cloneT3(this.item3));
+											case 4:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7>(cloneT4(this.item4));
+											case 5:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7>(cloneT5(this.item5));
+											case 6:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7>(cloneT6(this.item6));
+											case 7:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7>(cloneT7(this.item7));
+										}
+
+					throw new System.InvalidOperationException();
+				}
+			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public sealed class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8> : IUnion
 			{
@@ -1634,7 +1788,41 @@ namespace FlatSharp
 					return false;
 				}
 				
-							}
+				
+				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8> Clone(
+				System.Func<T1, T1> cloneT1,
+System.Func<T2, T2> cloneT2,
+System.Func<T3, T3> cloneT3,
+System.Func<T4, T4> cloneT4,
+System.Func<T5, T5> cloneT5,
+System.Func<T6, T6> cloneT6,
+System.Func<T7, T7> cloneT7,
+System.Func<T8, T8> cloneT8
+				)
+				{
+					switch (this.discriminator)
+					{
+											case 1:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8>(cloneT1(this.item1));
+											case 2:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8>(cloneT2(this.item2));
+											case 3:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8>(cloneT3(this.item3));
+											case 4:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8>(cloneT4(this.item4));
+											case 5:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8>(cloneT5(this.item5));
+											case 6:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8>(cloneT6(this.item6));
+											case 7:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8>(cloneT7(this.item7));
+											case 8:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8>(cloneT8(this.item8));
+										}
+
+					throw new System.InvalidOperationException();
+				}
+			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public sealed class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9> : IUnion
 			{
@@ -2031,7 +2219,44 @@ namespace FlatSharp
 					return false;
 				}
 				
-							}
+				
+				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9> Clone(
+				System.Func<T1, T1> cloneT1,
+System.Func<T2, T2> cloneT2,
+System.Func<T3, T3> cloneT3,
+System.Func<T4, T4> cloneT4,
+System.Func<T5, T5> cloneT5,
+System.Func<T6, T6> cloneT6,
+System.Func<T7, T7> cloneT7,
+System.Func<T8, T8> cloneT8,
+System.Func<T9, T9> cloneT9
+				)
+				{
+					switch (this.discriminator)
+					{
+											case 1:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9>(cloneT1(this.item1));
+											case 2:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9>(cloneT2(this.item2));
+											case 3:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9>(cloneT3(this.item3));
+											case 4:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9>(cloneT4(this.item4));
+											case 5:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9>(cloneT5(this.item5));
+											case 6:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9>(cloneT6(this.item6));
+											case 7:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9>(cloneT7(this.item7));
+											case 8:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9>(cloneT8(this.item8));
+											case 9:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9>(cloneT9(this.item9));
+										}
+
+					throw new System.InvalidOperationException();
+				}
+			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public sealed class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> : IUnion
 			{
@@ -2471,6 +2696,46 @@ namespace FlatSharp
 					return false;
 				}
 				
-							}
+				
+				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> Clone(
+				System.Func<T1, T1> cloneT1,
+System.Func<T2, T2> cloneT2,
+System.Func<T3, T3> cloneT3,
+System.Func<T4, T4> cloneT4,
+System.Func<T5, T5> cloneT5,
+System.Func<T6, T6> cloneT6,
+System.Func<T7, T7> cloneT7,
+System.Func<T8, T8> cloneT8,
+System.Func<T9, T9> cloneT9,
+System.Func<T10, T10> cloneT10
+				)
+				{
+					switch (this.discriminator)
+					{
+											case 1:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(cloneT1(this.item1));
+											case 2:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(cloneT2(this.item2));
+											case 3:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(cloneT3(this.item3));
+											case 4:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(cloneT4(this.item4));
+											case 5:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(cloneT5(this.item5));
+											case 6:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(cloneT6(this.item6));
+											case 7:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(cloneT7(this.item7));
+											case 8:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(cloneT8(this.item8));
+											case 9:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(cloneT9(this.item9));
+											case 10:
+							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(cloneT10(this.item10));
+										}
+
+					throw new System.InvalidOperationException();
+				}
+			}
 	
 }

@@ -82,5 +82,10 @@ namespace FlatSharp.Compiler
             writer.AppendLine($"}}");
             writer.AppendLine(string.Empty);
         }
+
+        protected override string OnGetCopyExpression(string source)
+        {
+            return source;
+        }
     }
 }

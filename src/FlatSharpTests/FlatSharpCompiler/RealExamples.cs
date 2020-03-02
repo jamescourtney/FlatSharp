@@ -71,6 +71,8 @@ namespace FlatSharpTests.Compiler
             string schema = $@"
 namespace MyGame;
 
+attribute ""FlatSharp.CopyConstructors"";
+
 enum Color:byte {{ Red = 0, Green, Blue = 2 }}
 union Equipment {{ Weapon, Vec3, Vec4, Monster, string }}
 

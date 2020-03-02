@@ -120,5 +120,18 @@ namespace FlatSharp.Compiler
 
             return null;
         }
+
+        public override BaseSchemaMember VisitAttribute_decl([NotNull] FlatBuffersParser.Attribute_declContext context)
+        {
+            string text = context.STRING_CONSTANT().GetText().ToLowerInvariant().Trim('"');
+            switch (text)
+            {
+                case "flatsharp.copyconstructors":
+                    this.schemaRoot.Options.Add(AttributeOption.GenerateCopyConstructors);
+                    break;
+            }
+
+            return null;
+        }
     }
 }

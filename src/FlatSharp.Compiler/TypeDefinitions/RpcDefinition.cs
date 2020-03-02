@@ -375,5 +375,10 @@ namespace FlatSharp.Compiler
                 writer.AppendLine($"return CallInvoker.{key}({methodMap[methodName]}, null, options);");
             }
         }
+
+        protected override string OnGetCopyExpression(string source)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

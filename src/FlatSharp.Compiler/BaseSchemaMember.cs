@@ -38,6 +38,8 @@ namespace FlatSharp.Compiler
 
         public BaseSchemaMember Parent { get; }
 
+        public virtual HashSet<AttributeOption> Options => this.Parent.Options;
+
         public string Name { get; }
 
         public string FullName { get; }
@@ -54,9 +56,17 @@ namespace FlatSharp.Compiler
                 this.Name, () => this.OnWriteCode(writer, pass, precompiledSerailizers));
         }
 
+        public string GetCopyExpression(string source)
+        {
+            return ErrorContext.Current.WithScope(
+                this.Name, () => this.OnGetCopyExpression(source));
+        }
+
         protected virtual void OnWriteCode(CodeWriter writer, CodeWritingPass pass, IReadOnlyDictionary<string, string> precompiledSerializer)
         {
         }
+
+        protected abstract string OnGetCopyExpression(string source);
 
         public void AddChild(BaseSchemaMember child)
         {           
