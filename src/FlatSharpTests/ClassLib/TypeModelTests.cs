@@ -55,6 +55,19 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
+        public void TypeModel_Table_InterfaceImplementationNonVirtual()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(InterfaceTableFailure)));
+        }
+
+        [TestMethod]
+        public void TypeModel_Table_InterfaceImplementationVirtual()
+        {
+            RuntimeTypeModel.CreateFrom(typeof(InterfaceTableSuccess));
+        }
+
+        [TestMethod]
         public void TypeModel_Struct_StringNotAllowed()
         {
             Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
@@ -143,6 +156,19 @@ namespace FlatSharpTests
         {
             Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(StructWithDefaultValue)));
+        }
+
+        [TestMethod]
+        public void TypeModel_Struct_InterfaceImplementationNonVirtual()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(InterfaceStructFailure)));
+        }
+
+        [TestMethod]
+        public void TypeModel_Struct_InterfaceImplementationVirtual()
+        {
+            RuntimeTypeModel.CreateFrom(typeof(InterfaceStructSuccess));
         }
 
         [TestMethod]
@@ -498,6 +524,43 @@ namespace FlatSharpTests
         {
             [FlatBufferItem(0)]
             public virtual string String { get; internal set; }
+        }
+
+        public interface IInterface
+        {
+            int Foo { get; set; }
+        }
+
+        // Properties that implement interfaces are virtual according to the property info. It's possible to be both
+        // virtual and final.
+        [FlatBufferTable]
+        public class InterfaceTableFailure : IInterface
+        {
+            [FlatBufferItem(0)]
+            public int Foo { get; set; }
+        }
+
+        [FlatBufferTable]
+        public class InterfaceTableSuccess : IInterface
+        {
+            [FlatBufferItem(0)]
+            public virtual int Foo { get; set; }
+        }
+
+        // Properties that implement interfaces are virtual according to the property info. It's possible to be both
+        // virtual and final.
+        [FlatBufferStruct]
+        public class InterfaceStructFailure : IInterface
+        {
+            [FlatBufferItem(0)]
+            public int Foo { get; set; }
+        }
+
+        [FlatBufferTable]
+        public class InterfaceStructSuccess : IInterface
+        {
+            [FlatBufferItem(0)]
+            public virtual int Foo { get; set; }
         }
     }
 }

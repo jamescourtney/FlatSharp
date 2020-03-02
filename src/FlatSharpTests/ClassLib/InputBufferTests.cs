@@ -22,6 +22,7 @@ namespace FlatSharpTests
     using System.ComponentModel;
     using System.IO;
     using System.Linq;
+    using System.Runtime.InteropServices;
     using System.Text;
     using FlatSharp;
     using FlatSharp.Attributes;
@@ -61,6 +62,7 @@ namespace FlatSharpTests
         {
             this.InputBufferTest(new MemoryInputBuffer(Input));
             this.StringInputBufferTest(new MemoryInputBuffer(StringInput));
+            this.TestDeserializeBoth(b => new MemoryInputBuffer(b));
         }
 
         [TestMethod]
@@ -68,6 +70,10 @@ namespace FlatSharpTests
         {
             this.InputBufferTest(new ReadOnlyMemoryInputBuffer(Input));
             this.StringInputBufferTest(new ReadOnlyMemoryInputBuffer(StringInput));
+
+            this.TestDeserialize<ReadOnlyMemoryInputBuffer, ReadOnlyMemoryTable>(b => new ReadOnlyMemoryInputBuffer(b));
+            Assert.ThrowsException<InvalidOperationException>(
+                () => this.TestDeserialize<ReadOnlyMemoryInputBuffer, MemoryTable>(b => new ReadOnlyMemoryInputBuffer(b)));
         }
 
         [TestMethod]
@@ -75,6 +81,7 @@ namespace FlatSharpTests
         {
             this.InputBufferTest(new ArrayInputBuffer(Input));
             this.StringInputBufferTest(new ArrayInputBuffer(StringInput));
+            this.TestDeserializeBoth(b => new ArrayInputBuffer(b));
         }
 
         [TestMethod]
@@ -82,6 +89,7 @@ namespace FlatSharpTests
         {
             this.InputBufferTest(new UnsafeArrayInputBuffer(Input));
             this.StringInputBufferTest(new UnsafeArrayInputBuffer(StringInput));
+            this.TestDeserializeBoth(b => new UnsafeArrayInputBuffer(b));
         }
 
         [TestMethod]
@@ -96,6 +104,8 @@ namespace FlatSharpTests
             {
                 this.StringInputBufferTest(buffer);
             }
+
+            this.TestDeserializeBoth(b => new UnsafeMemoryInputBuffer(b));
         }
 
         private void InputBufferTest(InputBuffer ib)
@@ -141,9 +151,63 @@ namespace FlatSharpTests
             }
         }
 
-        public class ReadOnlyMemoryTable
+        private void TestDeserializeBoth<TBuffer>(Func<byte[], TBuffer> bufferBuilder) where TBuffer : InputBuffer
         {
+            this.TestDeserialize<TBuffer, ReadOnlyMemoryTable>(bufferBuilder);
+            this.TestDeserialize<TBuffer, MemoryTable>(bufferBuilder);
+        }
+
+        private void TestDeserialize<TBuffer, TType>(Func<byte[], TBuffer> bufferBuilder) 
+            where TBuffer : InputBuffer
+            where TType : class, IMemoryTable, new()
+        {
+            TType table = new TType
+            {
+                IntMemory = new int[] { 1, 2, 3, 4, 5, },
+                Memory = new byte[] { 6, 7, 8, 9, 10 }
+            };
+
+            byte[] dest = new byte[1024];
+            FlatBufferSerializer.Default.Serialize(table, dest);
+
+            TBuffer buffer = bufferBuilder(dest);
+            var parsed = FlatBufferSerializer.Default.Parse<TType>(buffer);
+            for (int i = 1; i <= 5; ++i)
+            {
+                Assert.AreEqual(i, parsed.IntMemory.Span[i - 1]);
+                Assert.AreEqual(i + 5, parsed.Memory.Span[i - 1]);
+            }
+        }
+
+        private interface IMemoryTable
+        {
+            ReadOnlyMemory<int> IntMemory { get; set; }
+
+            ReadOnlyMemory<byte> Memory { get; set; }
+        }
+
+        [FlatBufferTable]
+        public class ReadOnlyMemoryTable : IMemoryTable
+        {
+            [FlatBufferItem(0)]
             public ReadOnlyMemory<int> IntMemory { get; set; }
+
+            [FlatBufferItem(1)]
+            public ReadOnlyMemory<byte> Memory { get; set; }
+        }
+
+        [FlatBufferTable]
+        public class MemoryTable : IMemoryTable
+        {
+            [FlatBufferItem(0)]
+            public Memory<int> IntMemory { get; set; }
+
+            [FlatBufferItem(1)]
+            public Memory<byte> Memory { get; set; }
+
+            ReadOnlyMemory<int> IMemoryTable.IntMemory { get => this.IntMemory; set => this.IntMemory = MemoryMarshal.AsMemory(value); }
+
+            ReadOnlyMemory<byte> IMemoryTable.Memory { get => this.Memory; set => this.Memory = MemoryMarshal.AsMemory(value); }
         }
     }
 }

@@ -29,23 +29,43 @@ namespace FlatSharp.TypeModel
             PropertyInfo propertyInfo,
             ushort index)
         {
+            var getMethod = propertyInfo.GetMethod ?? propertyInfo.GetGetMethod();
+            var setMethod = propertyInfo.SetMethod ?? propertyInfo.GetSetMethod();
+
             this.ItemTypeModel = propertyModel;
             this.PropertyInfo = propertyInfo;
             this.Index = index;
-            this.IsReadOnly = propertyInfo.SetMethod == null;
+            this.IsReadOnly = setMethod == null;
 
-            // public || protected internal || protected
-            Func<MethodInfo, bool> isVisible = m => m.IsPublic || m.IsFamilyOrAssembly || m.IsFamily;
-
-            if (propertyInfo.GetMethod == null || !propertyInfo.GetMethod.IsVirtual || !isVisible(propertyInfo.GetMethod))
+            if (!ValidatePropertyMethod(getMethod, false))
             {
                 throw new InvalidFlatBufferDefinitionException($"Property {propertyInfo.Name} did not declare a public/protected virtual getter.");
             }
 
-            if (propertyInfo.SetMethod != null && (!propertyInfo.SetMethod.IsVirtual || !isVisible(propertyInfo.SetMethod)))
+            if (!ValidatePropertyMethod(setMethod, true))
             {
                 throw new InvalidFlatBufferDefinitionException($"Property {propertyInfo.Name} declared a set method, but it was not public/protected and virtual.");
             }
+        }
+
+        private static bool ValidatePropertyMethod(MethodInfo method, bool allowNull)
+        {
+            if (method == null)
+            {
+                if (allowNull)
+                {
+                    return true;
+                }
+
+                return false;
+            }
+
+            if (!method.IsVirtual || method.IsFinal)
+            {
+                return false;
+            }
+
+            return method.IsPublic || method.IsFamilyOrAssembly || method.IsFamily;
         }
 
         /// <summary>

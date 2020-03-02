@@ -83,6 +83,15 @@ namespace FlatSharp.Compiler
 
                     return -1;
                 }
+                catch (FlatSharpCompilationException ex)
+                {
+                    foreach (var message in ex.CompilerErrors)
+                    {
+                        Console.Error.WriteLine(message);
+                    }
+
+                    return -1;
+                }
                 catch (FileNotFoundException)
                 {
                     Console.Error.WriteLine($"File '{args[0]}' was not found");
