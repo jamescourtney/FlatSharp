@@ -30,4 +30,6 @@ table Person (PrecompiledSerializer) {
 	FavoritePet:FavoritePet;
 	Cats:[Cat];
 	Dogs:[Dog];
+
+	Signature:[ubyte] (VectorType:ReadOnlyMemory);
 }

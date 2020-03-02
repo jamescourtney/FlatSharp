@@ -9,6 +9,7 @@
             SchemaFilesExample.SchemaFilesExample.Run();
             SchemaFilesExample2.SchemaFilesExample2.Run();
             GrpcExample.GrpcExample.Run();
+            CopyConstructorsExample.CopyConstructorsExample.Run();
         }
     }
 }

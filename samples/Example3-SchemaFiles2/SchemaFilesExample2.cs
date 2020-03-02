@@ -43,8 +43,8 @@
             byte[] destination = new byte[1024];
 
             int maxBytes = FooBarContainer.Serializer.GetMaxSize(container);
-            int bytesWritten = FooBarContainer.Serializer.Write(new SpanWriter(), destination, container);
-            var parsed = FooBarContainer.Serializer.Parse(new ArrayInputBuffer(destination));
+            int bytesWritten = FooBarContainer.Serializer.Write(destination, container);
+            var parsed = FooBarContainer.Serializer.Parse(destination);
         }
     }
 }
