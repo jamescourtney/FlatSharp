@@ -64,6 +64,13 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
+        public void SafeReadOnlyMemoryInputBuffer()
+        {
+            this.InputBufferTest(new ReadOnlyMemoryInputBuffer(Input));
+            this.StringInputBufferTest(new ReadOnlyMemoryInputBuffer(StringInput));
+        }
+
+        [TestMethod]
         public void ArrayInputBuffer()
         {
             this.InputBufferTest(new ArrayInputBuffer(Input));
@@ -132,6 +139,11 @@ namespace FlatSharpTests
                 var bufferValue = readAtIndex(i);
                 Assert.AreEqual(memory, bufferValue);
             }
+        }
+
+        public class ReadOnlyMemoryTable
+        {
+            public ReadOnlyMemory<int> IntMemory { get; set; }
         }
     }
 }
