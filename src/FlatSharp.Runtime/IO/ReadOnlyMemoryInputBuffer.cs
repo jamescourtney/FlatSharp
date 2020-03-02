@@ -24,13 +24,13 @@ namespace FlatSharp
     /// <summary>
     /// A utility class for accessing memory.
     /// </summary>
-    public sealed class MemoryInputBuffer : InputBuffer
+    public class ReadOnlyMemoryInputBuffer : InputBuffer
     {
-        private readonly Memory<byte> memory;
+        private readonly ReadOnlyMemory<byte> memory;
 
         public override int Length => this.memory.Length;
 
-        public MemoryInputBuffer(Memory<byte> memory)
+        public ReadOnlyMemoryInputBuffer(ReadOnlyMemory<byte> memory)
         {
             this.memory = memory;
         }
@@ -98,7 +98,7 @@ namespace FlatSharp
 
         protected override Memory<byte> ReadByteMemoryBlockProtected(int start, int length)
         {
-            return this.memory.Slice(start, length);
+            throw new InvalidOperationException("ReadOnlyMemory inputs may not access writable memory.");
         }
 
         protected override ReadOnlyMemory<byte> ReadByteReadOnlyMemoryBlockProtected(int start, int length)

@@ -16,6 +16,8 @@
 
 namespace FlatSharp
 {
+    using System;
+
     /// <summary>
     /// Serializer extension methods.
     /// </summary>
@@ -27,6 +29,78 @@ namespace FlatSharp
         public static ISerializer<T> AsISerializer<T>(this IGeneratedSerializer<T> generatedSerializer) where T : class
         {
             return new GeneratedSerializerWrapper<T>(generatedSerializer, null, () => null, null);
+        }
+
+        /// <summary>
+        /// Parses the given byte array as an instance of T.
+        /// </summary>
+        /// <returns>The parsed instance.</returns>
+        public static T Parse<T>(this ISerializer<T> serializer, byte[] data) where T : class
+        {
+            return serializer.Parse(new ArrayInputBuffer(data));
+        }
+
+        /// <summary>
+        /// Parses the given ArraySegment as an instance of T.
+        /// </summary>
+        /// <returns>The parsed instance.</returns>
+        public static T Parse<T>(this ISerializer<T> serializer, ArraySegment<byte> data) where T : class
+        {
+            return serializer.Parse(new ArrayInputBuffer(data));
+        }
+
+        /// <summary>
+        /// Parses the given Memory as an instance of T.
+        /// </summary>
+        /// <returns>The parsed instance.</returns>
+        public static T Parse<T>(this ISerializer<T> serializer, Memory<byte> data) where T : class
+        {
+            return serializer.Parse(new MemoryInputBuffer(data));
+        }
+
+        /// <summary>
+        /// Parses the given ReadOnlyMemory as an instance of T.
+        /// </summary>
+        /// <returns>The parsed instance.</returns>
+        public static T Parse<T>(this ISerializer<T> serializer, ReadOnlyMemory<byte> data) where T : class
+        {
+            return serializer.Parse(new ReadOnlyMemoryInputBuffer(data));
+        }
+
+        /// <summary>
+        /// Writes the given item to the given buffer using the default SpanWriter.
+        /// </summary>
+        /// <returns>The number of bytes written.</returns>
+        public static int Write<T>(this ISerializer<T> serializer, byte[] buffer, T item) where T : class
+        {
+            return Write(serializer, buffer.AsSpan(), item);
+        }
+
+        /// <summary>
+        /// Writes the given item to the given buffer using the default SpanWriter.
+        /// </summary>
+        /// <returns>The number of bytes written.</returns>
+        public static int Write<T>(this ISerializer<T> serializer, ArraySegment<byte> buffer, T item) where T : class
+        {
+            return Write(serializer, buffer.AsSpan(), item);
+        }
+
+        /// <summary>
+        /// Writes the given item to the given buffer using the default SpanWriter.
+        /// </summary>
+        /// <returns>The number of bytes written.</returns>
+        public static int Write<T>(this ISerializer<T> serializer, Memory<byte> buffer, T item) where T : class
+        {
+            return Write(serializer, buffer.Span, item);
+        }
+
+        /// <summary>
+        /// Writes the given item to the given buffer using the default SpanWriter.
+        /// </summary>
+        /// <returns>The number of bytes written.</returns>
+        public static int Write<T>(this ISerializer<T> serializer, Span<byte> buffer, T item) where T : class
+        {
+            return serializer.Write(SpanWriter.Instance, buffer, item);
         }
     }
 }

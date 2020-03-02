@@ -105,6 +105,11 @@ namespace FlatSharp
             return new Memory<byte>(this.memory.Array, this.memory.Offset + start, length);
         }
 
+        protected override ReadOnlyMemory<byte> ReadByteReadOnlyMemoryBlockProtected(int start, int length)
+        {
+            return this.ReadByteMemoryBlockProtected(start, length);
+        }
+
         [StructLayout(LayoutKind.Explicit)]
         private struct FloatLayout
         {

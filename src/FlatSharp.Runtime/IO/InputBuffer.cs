@@ -19,6 +19,7 @@ namespace FlatSharp
     using System;
     using System.Diagnostics;
     using System.Runtime.CompilerServices;
+    using System.Runtime.InteropServices;
     using System.Text;
 
     /// <summary>
@@ -109,6 +110,25 @@ namespace FlatSharp
            int uoffset,
            int sizePerItem)
         {
+            return this.ReadByteMemoryBlockImpl(
+                uoffset,
+                sizePerItem,
+                this.ReadByteMemoryBlockProtected);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ReadOnlyMemory<byte> ReadByteReadOnlyMemoryBlock(
+           int uoffset,
+           int sizePerItem)
+        {
+            return this.ReadByteMemoryBlockImpl(
+                uoffset,
+                sizePerItem,
+                this.ReadByteReadOnlyMemoryBlockProtected);
+        }
+
+        private T ReadByteMemoryBlockImpl<T>(int uoffset, int sizePerItem, Func<int, int, T> callback)
+        {
             Debug.Assert(sizePerItem == 1);
 
             checked
@@ -117,7 +137,7 @@ namespace FlatSharp
                 uoffset = uoffset + this.ReadUOffset(uoffset);
 
                 // Skip the first 4 bytes of the vector, which contains the length.
-                return this.ReadByteMemoryBlockProtected(
+                return callback(
                     uoffset + sizeof(uint),
                     (int)this.ReadUInt(uoffset));
             }
@@ -128,16 +148,33 @@ namespace FlatSharp
            int uoffset,
            int sizePerItem) where T : struct
         {
+            return this.ReadMemoryBlockImpl<T>(uoffset, sizePerItem, (s, l) => this.ReadByteMemoryBlockProtected(s, l));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ReadOnlyMemory<T> ReadReadOnlyMemoryBlock<T>(
+           int uoffset,
+           int sizePerItem) where T : struct
+        {
+            return this.ReadMemoryBlockImpl<T>(uoffset, sizePerItem, this.ReadByteReadOnlyMemoryBlockProtected);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Memory<T> ReadMemoryBlockImpl<T>(
+           int uoffset,
+           int sizePerItem,
+           Func<int, int, ReadOnlyMemory<byte>> callback) where T : struct
+        {
             checked
             {
                 // The local value stores a uoffset_t, so follow that now.
                 uoffset = uoffset + this.ReadUOffset(uoffset);
 
-                Memory<byte> innerMemory = this.ReadByteMemoryBlockProtected(
+                ReadOnlyMemory<byte> innerMemory = callback(
                     uoffset + sizeof(uint),
                     ((int)this.ReadUInt(uoffset)) * sizePerItem);
 
-                MemoryTypeChanger<T> typeChanger = new MemoryTypeChanger<T>(innerMemory);
+                MemoryTypeChanger<T> typeChanger = new MemoryTypeChanger<T>(MemoryMarshal.AsMemory(innerMemory));
                 return typeChanger.Memory;
             }
         }
@@ -181,5 +218,8 @@ namespace FlatSharp
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected abstract Memory<byte> ReadByteMemoryBlockProtected(int start, int length);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected abstract ReadOnlyMemory<byte> ReadByteReadOnlyMemoryBlockProtected(int start, int length);
     }
 }
