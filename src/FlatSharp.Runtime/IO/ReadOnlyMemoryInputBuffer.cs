@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2018 James Courtney
+ * Copyright 2020 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,11 @@ namespace FlatSharp
     using System.Text;
 
     /// <summary>
-    /// A utility class for accessing memory.
+    /// An implemenation of InputBuffer that accepts ReadOnlyMemory. ReadOnlyMemoryInputBuffer
+    /// behaves identically to MemoryInputBuffer with one exception, which is that it will refuse
+    /// to deserialize any mutable memory (Memory{T}) instances. These will result in an exception
+    /// being thrown. ReadOnlyMemoryInputBuffer guarantees that the objects returned will
+    /// not modify in the input buffer (unless unsafe operations / MemoryMarshal) are used.
     /// </summary>
     public class ReadOnlyMemoryInputBuffer : InputBuffer
     {
@@ -98,7 +102,7 @@ namespace FlatSharp
 
         protected override Memory<byte> ReadByteMemoryBlockProtected(int start, int length)
         {
-            throw new InvalidOperationException("ReadOnlyMemory inputs may not access writable memory.");
+            throw new InvalidOperationException("ReadOnlyMemory inputs may not deserialize writable memory.");
         }
 
         protected override ReadOnlyMemory<byte> ReadByteReadOnlyMemoryBlockProtected(int start, int length)
