@@ -190,20 +190,20 @@ namespace FlatSharpTests
         public class ReadOnlyMemoryTable : IMemoryTable
         {
             [FlatBufferItem(0)]
-            public ReadOnlyMemory<int> IntMemory { get; set; }
+            public virtual ReadOnlyMemory<int> IntMemory { get; set; }
 
             [FlatBufferItem(1)]
-            public ReadOnlyMemory<byte> Memory { get; set; }
+            public virtual ReadOnlyMemory<byte> Memory { get; set; }
         }
 
         [FlatBufferTable]
         public class MemoryTable : IMemoryTable
         {
             [FlatBufferItem(0)]
-            public Memory<int> IntMemory { get; set; }
+            public virtual Memory<int> IntMemory { get; set; }
 
             [FlatBufferItem(1)]
-            public Memory<byte> Memory { get; set; }
+            public virtual Memory<byte> Memory { get; set; }
 
             ReadOnlyMemory<int> IMemoryTable.IntMemory { get => this.IntMemory; set => this.IntMemory = MemoryMarshal.AsMemory(value); }
 
