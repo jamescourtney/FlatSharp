@@ -89,7 +89,7 @@ namespace FlatSharp.Compiler
                 // Attributes from FlatBuffers that we don't support.
                 string[] unsupportedAttributes =
                 {
-                    "id", "required", "force_align", "bit_flags", "nested_flatbuffer", "flexbuffer", "hash", "original_order"
+                    "id", "required", "force_align", "bit_flags", "flexbuffer", "hash", "original_order"
                 };
 
                 foreach (var unsupportedAttribute in unsupportedAttributes)

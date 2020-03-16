@@ -66,9 +66,6 @@ namespace FlatSharp.Compiler
                 return null;
             }
 
-            // probably enclosed in quotes.
-            value = value?.Trim('"');
-
             if (string.IsNullOrEmpty(value))
             {
                 return FlatBufferDeserializationOption.Default;

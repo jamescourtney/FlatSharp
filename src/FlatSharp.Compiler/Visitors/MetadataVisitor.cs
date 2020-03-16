@@ -38,7 +38,7 @@ namespace FlatSharp.Compiler
                 foreach (var item in context.ident_with_opt_single_value())
                 {
                     string identifier = item.IDENT().GetText();
-                    string value = item.single_value()?.GetText();
+                    string value = item.single_value()?.GetText()?.Trim('"');
 
                     pairs[identifier] = value;
                 }

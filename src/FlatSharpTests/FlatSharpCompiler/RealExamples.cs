@@ -101,7 +101,7 @@ table Monster (PrecompiledSerializer:{flags}) {{
   equipped:Equipment;
   path:[Vec3];
   vec4:Vec4;
-  FakeVector1:[string] (VectorType:IReadOnlyList);
+  FakeVector1:[string] (VectorType:""IReadOnlyList"");
   FakeVector2:[string] (VectorType:Array);
   FakeVector3:[string] (VectorType:IList);
   FakeVector4:[string];
