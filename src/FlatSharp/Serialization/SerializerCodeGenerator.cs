@@ -21,6 +21,7 @@ namespace FlatSharp
     using Microsoft.CodeAnalysis.CSharp;
     using System;
     using System.Collections.Generic;
+    using System.Linq;
 
     /// <summary>
     /// Generates a collection of methods to help serialize the given root type.
@@ -243,6 +244,13 @@ $@"
                             vtable.{nameof(VTableBuilder.SetOffset)}({index}, currentOffset - tableStart);
                             currentOffset += {memberModel.ItemTypeModel.InlineSize};
                     }}";
+
+            if (memberModel.IsSortedVector)
+            {
+                var vectorTableModel = (TableTypeModel)((VectorTypeModel)memberModel.ItemTypeModel).ItemTypeModel;
+                string keyPropertyName = vectorTableModel.IndexToMemberMap.Values.Single(x => x.IsKey).PropertyInfo.Name;
+                valueVariableName = $"{valueVariableName}.OrderBy(x => x.{keyPropertyName}).ToArray()";
+            }
 
             string serializeBlock =
 $@"

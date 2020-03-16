@@ -44,6 +44,16 @@ namespace FlatSharp.Attributes
         public bool Deprecated { get; set; }
 
         /// <summary>
+        /// For tables, indicates that this field is used as a key in sorted vectors.
+        /// </summary>
+        public bool Key { get; set; }
+
+        /// <summary>
+        /// Indicates that the given vector property is to be serialized sorted by the key property of the vector type.
+        /// </summary>
+        public bool SortedVector { get; set; }
+
+        /// <summary>
         /// For table items, gets or sets the default value. The type of the object must match the
         /// type of the property.
         /// </summary>

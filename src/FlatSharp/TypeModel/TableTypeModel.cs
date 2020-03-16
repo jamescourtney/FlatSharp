@@ -122,9 +122,52 @@
                 throw new InvalidFlatBufferDefinitionException($"Can't create table type model from type {this.ClrType.Name} because it does not have any non-static [FlatBufferItem] properties.");
             }
 
+            bool hasKey = false;
             foreach (var property in properties)
             {
                 bool hasDefaultValue = false;
+                bool isKey = property.Attribute.Key;
+
+                if (isKey)
+                {
+                    if (hasKey)
+                    {
+                        throw new InvalidFlatBufferDefinitionException($"Table '{this.ClrType.Name}' cannot have more than one key defined.");
+                    }
+
+                    if (!property.ItemTypeModel.IsBuiltInType)
+                    {
+                        throw new InvalidFlatBufferDefinitionException($"Property '{property.Property.Name}' cannot be used as a key; only strings and scalars are eligible to be keys.");
+                    }
+
+                    hasKey = true;
+                }
+
+                if (property.Attribute.SortedVector)
+                {
+                    // This must be a vector, and the inner model must have an item with the 'key' property.
+                    if (property.ItemTypeModel is VectorTypeModel vectorTypeModel)
+                    {
+                        var vectorMemberModel = vectorTypeModel.ItemTypeModel;
+                        if (vectorMemberModel is TableTypeModel tableModel)
+                        {
+                            var keyMember = tableModel.IndexToMemberMap.Values.SingleOrDefault(x => x.IsKey);
+                            if (keyMember == null)
+                            {
+                                throw new InvalidFlatBufferDefinitionException($"Property '{property.Property.Name}' declares a sorted vector, but the member is a table that does not have a key.");
+                            }
+                        }
+                        else
+                        {
+                            throw new InvalidFlatBufferDefinitionException($"Property '{property.Property.Name}' declares a sorted vector, but the member is not a table.");
+                        }
+                    }
+                    else
+                    {
+                        throw new InvalidFlatBufferDefinitionException($"Property '{property.Property.Name}' declares the sortedVector option, but the property is not a vector type.");
+                    }
+                }
+
                 object defaultValue = null;
 
                 if (!object.ReferenceEquals(property.Attribute.DefaultValue, null))
@@ -141,7 +184,9 @@
                     property.Property,
                     index,
                     hasDefaultValue,
-                    defaultValue);
+                    defaultValue,
+                    isKey,
+                    property.Attribute.SortedVector);
 
                 for (int i = 0; i < model.VTableSlotCount; ++i)
                 {

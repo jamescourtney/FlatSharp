@@ -26,6 +26,10 @@ namespace FlatSharp.Compiler
 
         public bool Deprecated { get; set; }
 
+        public bool SortedVector { get; set; }
+
+        public bool IsKey { get; set; }
+
         public string DefaultValue { get; set; }
 
         public VectorType VectorType { get; set; }
@@ -185,10 +189,17 @@ namespace FlatSharp.Compiler
             this.WriteField(writer, clrType, null, this.Name);
         }
 
-        private void WriteField(CodeWriter writer, string clrTypeName, string defaultValue, string name, string accessModifier = "public")
+        private void WriteField(
+            CodeWriter writer, 
+            string clrTypeName, 
+            string defaultValue, 
+            string name, 
+            string accessModifier = "public")
         {
             string defaultValueAttribute = string.Empty;
             string defaultValueAssignment = string.Empty;
+            string isKey = string.Empty;
+            string sortedVector = string.Empty;
 
             if (!string.IsNullOrEmpty(defaultValue))
             {
@@ -196,7 +207,17 @@ namespace FlatSharp.Compiler
                 defaultValueAssignment = $" = {defaultValue};";
             }
 
-            writer.AppendLine($"[FlatBufferItem({this.Index}{this.GetDeprecatedString()}{defaultValueAttribute})]");
+            if (this.IsKey)
+            {
+                isKey = ", Key = true";
+            }
+
+            if (this.SortedVector)
+            {
+                sortedVector = ", SortedVector = true";
+            }
+
+            writer.AppendLine($"[FlatBufferItem({this.Index}{this.GetDeprecatedString()}{defaultValueAttribute}{isKey}{sortedVector})]");
             writer.AppendLine($"{accessModifier} virtual {clrTypeName} {name} {{ get; set; }}{defaultValueAssignment}");
         }
 

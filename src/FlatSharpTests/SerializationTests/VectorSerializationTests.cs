@@ -488,11 +488,52 @@ namespace FlatSharpTests
             Assert.AreEqual(3 + 4 + 7 + (2 * (7 + 9)), maxSize - baselineMaxSize);
         }
 
+        [TestMethod]
+        public void SortedVector_StringKey()
+        {
+            var root = new RootTableSorted<IList<TableWithKey<string>>>();
+
+            root.Vector = new List<TableWithKey<string>>
+            {
+                new TableWithKey<string> { Key = "d", Value = "0" },
+                new TableWithKey<string> { Key = "c", Value = "1" },
+                new TableWithKey<string> { Key = "b", Value = "2" },
+                new TableWithKey<string> { Key = "a", Value = "3" },
+            };
+
+            byte[] data = new byte[1024];
+            FlatBufferSerializer.Default.Serialize(root, data);
+
+            var parsed = FlatBufferSerializer.Default.Parse<RootTableSorted<IList<TableWithKey<string>>>>(data);
+
+            Assert.AreEqual(parsed.Vector[0].Key, "a");
+            Assert.AreEqual(parsed.Vector[1].Key, "b");
+            Assert.AreEqual(parsed.Vector[2].Key, "c");
+            Assert.AreEqual(parsed.Vector[3].Key, "d");
+        }
+
         [FlatBufferTable]
         public class RootTable<TVector>
         {
             [FlatBufferItem(0)]
             public virtual TVector Vector { get; set; }
+        }
+
+        [FlatBufferTable]
+        public class RootTableSorted<TVector>
+        {
+            [FlatBufferItem(0, SortedVector = true)]
+            public virtual TVector Vector { get; set; }
+        }
+
+        [FlatBufferTable]
+        public class TableWithKey<TKey>
+        {
+            [FlatBufferItem(0)]
+            public virtual string Value { get; set; }
+
+            [FlatBufferItem(1, Key = true)]
+            public virtual TKey Key { get; set; }
         }
 
         [FlatBufferTable]
