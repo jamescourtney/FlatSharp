@@ -17,34 +17,42 @@ public struct SortedVectorStringTable : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p.bb_pos = _i; __p.bb = _bb; }
   public SortedVectorStringTable __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public double Value { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetDouble(o + __p.bb_pos) : (double)0.0; } }
+  public string Value { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetValueBytes() { return __p.__vector_as_span(4); }
+#else
+  public ArraySegment<byte>? GetValueBytes() { return __p.__vector_as_arraysegment(4); }
+#endif
+  public byte[] GetValueArray() { return __p.__vector_as_array<byte>(4); }
 
   public static Offset<SortedVectorStringTable> CreateSortedVectorStringTable(FlatBufferBuilder builder,
-      double Value = 0.0) {
+      StringOffset ValueOffset = default(StringOffset)) {
     builder.StartObject(1);
-    SortedVectorStringTable.AddValue(builder, Value);
+    SortedVectorStringTable.AddValue(builder, ValueOffset);
     return SortedVectorStringTable.EndSortedVectorStringTable(builder);
   }
 
   public static void StartSortedVectorStringTable(FlatBufferBuilder builder) { builder.StartObject(1); }
-  public static void AddValue(FlatBufferBuilder builder, double Value) { builder.AddDouble(0, Value, 0.0); }
+  public static void AddValue(FlatBufferBuilder builder, StringOffset ValueOffset) { builder.AddOffset(0, ValueOffset.Value, 0); }
   public static Offset<SortedVectorStringTable> EndSortedVectorStringTable(FlatBufferBuilder builder) {
     int o = builder.EndObject();
+    builder.Required(o, 4);  // Value
     return new Offset<SortedVectorStringTable>(o);
   }
 
   public static VectorOffset CreateSortedVectorOfSortedVectorStringTable(FlatBufferBuilder builder, Offset<SortedVectorStringTable>[] offsets) {
-    Array.Sort(offsets, (Offset<SortedVectorStringTable> o1, Offset<SortedVectorStringTable> o2) => builder.DataBuffer.GetDouble(Table.__offset(4, o1.Value, builder.DataBuffer)).CompareTo(builder.DataBuffer.GetDouble(Table.__offset(4, o2.Value, builder.DataBuffer))));
+    Array.Sort(offsets, (Offset<SortedVectorStringTable> o1, Offset<SortedVectorStringTable> o2) => Table.CompareStrings(Table.__offset(4, o1.Value, builder.DataBuffer), Table.__offset(4, o2.Value, builder.DataBuffer), builder.DataBuffer));
     return builder.CreateVectorOfTables(offsets);
   }
 
-  public static SortedVectorStringTable? __lookup_by_key(int vectorLocation, double key, ByteBuffer bb) {
+  public static SortedVectorStringTable? __lookup_by_key(int vectorLocation, string key, ByteBuffer bb) {
+    byte[] byteKey = System.Text.Encoding.UTF8.GetBytes(key);
     int span = bb.GetInt(vectorLocation - 4);
     int start = 0;
     while (span != 0) {
       int middle = span / 2;
       int tableOffset = Table.__indirect(vectorLocation + 4 * (start + middle), bb);
-      int comp = bb.GetDouble(Table.__offset(4, bb.Length - tableOffset, bb)).CompareTo(key);
+      int comp = Table.CompareStrings(Table.__offset(4, bb.Length - tableOffset, bb), byteKey, bb);
       if (comp > 0) {
         span = middle;
       } else if (comp < 0) {

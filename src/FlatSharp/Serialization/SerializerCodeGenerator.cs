@@ -22,6 +22,7 @@ namespace FlatSharp
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection;
 
     /// <summary>
     /// Generates a collection of methods to help serialize the given root type.
@@ -248,8 +249,16 @@ $@"
             if (memberModel.IsSortedVector)
             {
                 var vectorTableModel = (TableTypeModel)((VectorTypeModel)memberModel.ItemTypeModel).ItemTypeModel;
-                string keyPropertyName = vectorTableModel.IndexToMemberMap.Values.Single(x => x.IsKey).PropertyInfo.Name;
-                valueVariableName = $"{valueVariableName}.OrderBy(x => x.{keyPropertyName}).ToArray()";
+                PropertyInfo keyProperty = vectorTableModel.IndexToMemberMap.Values.Single(x => x.IsKey).PropertyInfo;
+
+                string comparer = $"Comparer<{CSharpHelpers.GetCompilableTypeName(keyProperty.PropertyType)}>.Default";
+                if (keyProperty.PropertyType == typeof(string))
+                {
+                    // FlatBuffers uses a custom string comparison algorithm
+                    comparer = $"{nameof(FlatBufferStringComparer)}.{nameof(FlatBufferStringComparer.Instance)}";
+                }
+
+                valueVariableName = $"{valueVariableName}.OrderBy(x => x.{keyProperty.Name}, {comparer}).ToArray()";
             }
 
             string serializeBlock =

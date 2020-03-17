@@ -115,10 +115,9 @@ struct OuterStruct {
 }
 
 table SortedVectorTest {
-	Int32:[int32];
-	String:[string];
-	Double:[double];
-
+	Int32:[SortedVectorInt32Table];
+	String:[SortedVectorStringTable];
+	Double:[SortedVectorDoubleTable];
 }
 
 table SortedVectorInt32Table {
@@ -130,5 +129,5 @@ table SortedVectorDoubleTable {
 }
 
 table SortedVectorStringTable {
-	Value:double (key);
+	Value:string (key);
 }

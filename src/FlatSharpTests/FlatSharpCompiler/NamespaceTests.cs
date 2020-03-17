@@ -32,7 +32,6 @@ namespace FlatSharpTests.Compiler
         // https://github.com/google/flatbuffers/tree/master/tests/namespace_test
         private const string Schema = @"
 namespace NamespaceA.NamespaceB;
-attribute ""FlatSharp.CopyConstructors"";
 
 table TableInNestedNS
 {
@@ -92,7 +91,6 @@ table SecondTableInA {
         {
             string schema = @"
 namespace A;
-attribute ""FlatSharp.CopyConstructors"";
 
 union Either { A1, A2 }
 

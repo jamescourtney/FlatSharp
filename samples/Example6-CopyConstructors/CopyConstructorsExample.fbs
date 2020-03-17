@@ -1,10 +1,6 @@
 ﻿
 namespace Samples.CopyConstructorsExample;
 
-// Not technically an attribute, but an option to declare that tables and structs should have codegen'd copy
-// constructors. This can be very useful in scenarios where immutability is desired.
-attribute "FlatSharp.CopyConstructors";
-
 enum Fruit : byte { Apples, Pears, Bananas }
 
 struct Foo {
@@ -34,5 +30,3 @@ table FooBarContainer {
   fruit:Fruit;
   location:string;
 }
-
-root_type FooBarContainer;

@@ -124,13 +124,6 @@ namespace FlatSharp.Compiler
         public override BaseSchemaMember VisitAttribute_decl([NotNull] FlatBuffersParser.Attribute_declContext context)
         {
             string text = context.STRING_CONSTANT().GetText().ToLowerInvariant().Trim('"');
-            switch (text)
-            {
-                case "flatsharp.copyconstructors":
-                    this.schemaRoot.Options.Add(AttributeOption.GenerateCopyConstructors);
-                    break;
-            }
-
             return null;
         }
     }

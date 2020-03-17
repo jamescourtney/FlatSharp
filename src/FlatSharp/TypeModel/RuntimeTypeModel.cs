@@ -158,7 +158,16 @@ namespace FlatSharp.TypeModel
                 }
 
                 ModelMap[type] = newModel;
-                newModel.Initialize();
+                try
+                {
+                    newModel.Initialize();
+                }
+                catch
+                {
+                    ModelMap.TryRemove(type, out _);
+                    throw;
+                }
+
                 return newModel;
             }
         }

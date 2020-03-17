@@ -77,18 +77,15 @@ namespace FlatSharp.Compiler
                 // default ctor.
                 writer.AppendLine($"public {this.Name}() {{ this.OnInitialized(); }}");
 
-                if (this.Options.Contains(AttributeOption.GenerateCopyConstructors))
+                writer.AppendLine($"public {this.Name}({this.Name} source)");
+                using (writer.WithBlock())
                 {
-                    writer.AppendLine($"public {this.Name}({this.Name} source)");
-                    using (writer.WithBlock())
+                    foreach (var field in this.Fields)
                     {
-                        foreach (var field in this.Fields)
-                        {
-                            field.WriteCopyConstructorLine(writer, "source", this);
-                        }
-
-                        writer.AppendLine("this.OnInitialized();");
+                        field.WriteCopyConstructorLine(writer, "source", this);
                     }
+
+                    writer.AppendLine("this.OnInitialized();");
                 }
 
                 foreach (var field in this.Fields)
