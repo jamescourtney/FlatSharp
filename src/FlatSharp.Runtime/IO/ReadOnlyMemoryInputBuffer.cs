@@ -100,12 +100,12 @@ namespace FlatSharp
 #endif
         }
 
-        protected override Memory<byte> ReadByteMemoryBlockProtected(int start, int length)
+        protected override Memory<byte> GetByteMemory(int start, int length)
         {
             throw new InvalidOperationException("ReadOnlyMemory inputs may not deserialize writable memory.");
         }
 
-        protected override ReadOnlyMemory<byte> ReadByteReadOnlyMemoryBlockProtected(int start, int length)
+        protected override ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length)
         {
             return this.memory.Slice(start, length);
         }

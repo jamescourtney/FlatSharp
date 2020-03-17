@@ -113,3 +113,22 @@ struct OuterStruct {
 	Inner:InnerStruct;
 	A:int;
 }
+
+table SortedVectorTest {
+	Int32:[int32];
+	String:[string];
+	Double:[double];
+
+}
+
+table SortedVectorInt32Table {
+	Value:int32 (key);
+}
+
+table SortedVectorDoubleTable {
+	Value:double (key);
+}
+
+table SortedVectorStringTable {
+	Value:double (key);
+}

@@ -113,7 +113,7 @@ namespace FlatSharp
             return this.ReadByteMemoryBlockImpl(
                 uoffset,
                 sizePerItem,
-                this.ReadByteMemoryBlockProtected);
+                this.GetByteMemory);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -124,7 +124,7 @@ namespace FlatSharp
             return this.ReadByteMemoryBlockImpl(
                 uoffset,
                 sizePerItem,
-                this.ReadByteReadOnlyMemoryBlockProtected);
+                this.GetReadOnlyByteMemory);
         }
 
         private T ReadByteMemoryBlockImpl<T>(int uoffset, int sizePerItem, Func<int, int, T> callback)
@@ -148,7 +148,7 @@ namespace FlatSharp
            int uoffset,
            int sizePerItem) where T : struct
         {
-            return this.ReadMemoryBlockImpl<T>(uoffset, sizePerItem, (s, l) => this.ReadByteMemoryBlockProtected(s, l));
+            return this.ReadMemoryBlockImpl<T>(uoffset, sizePerItem, (s, l) => this.GetByteMemory(s, l));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -156,11 +156,11 @@ namespace FlatSharp
            int uoffset,
            int sizePerItem) where T : struct
         {
-            return this.ReadMemoryBlockImpl<T>(uoffset, sizePerItem, this.ReadByteReadOnlyMemoryBlockProtected);
+            return this.ReadMemoryBlockImpl<T>(uoffset, sizePerItem, this.GetReadOnlyByteMemory);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Memory<T> ReadMemoryBlockImpl<T>(
+        private Memory<T> ReadMemoryBlockImpl<T>(
            int uoffset,
            int sizePerItem,
            Func<int, int, ReadOnlyMemory<byte>> callback) where T : struct
@@ -217,9 +217,9 @@ namespace FlatSharp
         protected abstract string ReadStringProtected(int offset, int byteLength, Encoding encoding);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected abstract Memory<byte> ReadByteMemoryBlockProtected(int start, int length);
+        protected abstract Memory<byte> GetByteMemory(int start, int length);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected abstract ReadOnlyMemory<byte> ReadByteReadOnlyMemoryBlockProtected(int start, int length);
+        protected abstract ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length);
     }
 }
