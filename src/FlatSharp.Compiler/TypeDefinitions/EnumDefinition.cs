@@ -25,7 +25,7 @@ namespace FlatSharp.Compiler
     /// </summary>
     internal class EnumDefinition : BaseSchemaMember
     {
-        private BigInteger nextValue = 1;
+        private BigInteger nextValue = 0;
         private readonly Dictionary<string, string> nameValuePairs = new Dictionary<string, string>();
 
         public EnumDefinition(string typeName, string underlyingTypeName, BaseSchemaMember parent)

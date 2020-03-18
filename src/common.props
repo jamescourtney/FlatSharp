@@ -8,14 +8,14 @@
   
   <PropertyGroup>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>2.2.0</Version>
+    <Version>3.0.0</Version>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <Authors>James Courtney</Authors>
     <Description>FlatSharp is an idiomatic implementation of the FlatBuffer binary format.</Description>
     <Copyright>2020</Copyright>
     <RepositoryUrl>https://github.com/jamescourtney/FlatSharp/</RepositoryUrl>
     <PackageTags>flatbuffers serialization flatbuffer flatsharp</PackageTags>
-    <PackageReleaseNotes>v2.2.0 release. Bugfixes, usability improvements, and copy constructors.</PackageReleaseNotes>
+    <PackageReleaseNotes>v3.0.0 release. Bugfixes, usability improvements, copy constructors, and a breaking change on enums.</PackageReleaseNotes>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>    
     <NuspecProperties>version=$(Version);releaseNotes=$(PackageReleaseNotes)</NuspecProperties>

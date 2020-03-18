@@ -77,6 +77,11 @@
         /// The default .ctor used for subclassing.
         /// </summary>
         public ConstructorInfo DefaultConstructor { get; private set; }
+
+        /// <summary>
+        /// The property type used as a key.
+        /// </summary>
+        public Type ClrKeyType { get; private set; }
         
         /// <summary>
         /// Gets the maximum size of a table assuming all members are populated include the vtable offset. 
@@ -122,26 +127,11 @@
                 throw new InvalidFlatBufferDefinitionException($"Can't create table type model from type {this.ClrType.Name} because it does not have any non-static [FlatBufferItem] properties.");
             }
 
-            bool hasKey = false;
+            this.InitializeKeys();
+
             foreach (var property in properties)
             {
                 bool hasDefaultValue = false;
-                bool isKey = property.Attribute.Key;
-
-                if (isKey)
-                {
-                    if (hasKey)
-                    {
-                        throw new InvalidFlatBufferDefinitionException($"Table '{this.ClrType.Name}' cannot have more than one key defined.");
-                    }
-
-                    if (!property.ItemTypeModel.IsBuiltInType)
-                    {
-                        throw new InvalidFlatBufferDefinitionException($"Property '{property.Property.Name}' cannot be used as a key; only strings and scalars are eligible to be keys.");
-                    }
-
-                    hasKey = true;
-                }
 
                 if (property.Attribute.SortedVector)
                 {
@@ -151,8 +141,8 @@
                         var vectorMemberModel = vectorTypeModel.ItemTypeModel;
                         if (vectorMemberModel is TableTypeModel tableModel)
                         {
-                            var keyMember = tableModel.IndexToMemberMap.Values.SingleOrDefault(x => x.IsKey);
-                            if (keyMember == null)
+                            var keyType = tableModel.ClrKeyType;
+                            if (keyType == null)
                             {
                                 throw new InvalidFlatBufferDefinitionException($"Property '{property.Property.Name}' declares a sorted vector, but the member is a table that does not have a key.");
                             }
@@ -185,7 +175,6 @@
                     index,
                     hasDefaultValue,
                     defaultValue,
-                    isKey,
                     property.Attribute.SortedVector);
 
                 for (int i = 0; i < model.VTableSlotCount; ++i)
@@ -197,6 +186,35 @@
                 }
 
                 this.memberTypes[index] = model;
+            }
+        }
+
+        private void InitializeKeys()
+        {
+            var keys = this.ClrType.GetInterfaces()
+                .Where(x => x.IsGenericType)
+                .Where(x => x.GetGenericTypeDefinition() == typeof(IKeyedTable<>))
+                .ToList();
+
+            if (keys.Count > 0)
+            {
+                if (keys.Count != 1)
+                {
+                    throw new InvalidFlatBufferDefinitionException($"Table '{this.ClrType.Name}' implements IKeyedTable<T> more than once.");
+                }
+                else
+                {
+                    var keyInterface = keys.Single();
+                    Type keyType = keyInterface.GetGenericArguments()[0];
+                    RuntimeTypeModel typeModel = RuntimeTypeModel.CreateFrom(keyType);
+
+                    if (!typeModel.IsBuiltInType)
+                    {
+                        throw new InvalidFlatBufferDefinitionException($"Type '{keyType.Name}' cannot be used as a key; only strings and scalars are eligible to be keys.");
+                    }
+
+                    this.ClrKeyType = keyType;
+                }
             }
         }
 

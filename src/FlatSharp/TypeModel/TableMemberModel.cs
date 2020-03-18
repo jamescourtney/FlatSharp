@@ -30,12 +30,10 @@
             ushort index, 
             bool hasDefaultValue,
             object defaultValue,
-            bool isKey,
             bool isSortedVector) : base(propertyModel, propertyInfo, index)
         {
             this.HasDefaultValue = hasDefaultValue;
             this.DefaultValue = defaultValue;
-            this.IsKey = isKey;
             this.IsSortedVector = isSortedVector;
             
             if (this.HasDefaultValue)
@@ -63,11 +61,6 @@
         /// Indicates if this member type has a default value at all. Only valid for tables.
         /// </summary>
         public bool HasDefaultValue { get; }
-
-        /// <summary>
-        /// Indicates if this member type is a key for the table.
-        /// </summary>
-        public bool IsKey { get; }
 
         /// <summary>
         /// Indicates if the member vector should be sorted before serializing.

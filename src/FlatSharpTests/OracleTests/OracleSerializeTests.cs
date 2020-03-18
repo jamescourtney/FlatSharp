@@ -20,6 +20,7 @@
     using FlatSharp.Unsafe;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using System;
+    using System.Collections.Generic;
     using System.Runtime.InteropServices;
 
     /// <summary>
@@ -386,6 +387,59 @@
             var outer = oracle.Outer.Value;
             Assert.AreEqual(100, outer.A);
             Assert.AreEqual(0, outer.Inner.A);
+        }
+
+        [TestMethod]
+        public void SortedVectors()
+        {
+            var builder = new FlatBuffers.FlatBufferBuilder(1024 * 1024);
+
+            SortedVectorTest test = new SortedVectorTest
+            {
+                Double = new List<SortedVectorItem<double>>(),
+                IntVector = new List<SortedVectorItem<int>>(),
+                StringVector = new List<SortedVectorItem<string>>(),
+            };
+
+            const int Iterations = 1000;
+            Random random = new Random();
+
+            for (int i = 0; i < Iterations; ++i)
+            {
+                string value = Guid.NewGuid().ToString();
+                test.StringVector.Add(new SortedVectorItem<string> { Value = value });
+                test.IntVector.Add(new SortedVectorItem<int> { Value = random.Next() });
+                test.Double.Add(new SortedVectorItem<double> { Value = random.NextDouble() * random.Next() });
+            }
+
+            byte[] data = new byte[1024 * 1024];
+            int bytesWritten = FlatBufferSerializer.Default.Serialize(test, data);
+
+            var parsed = FlatBufferSerializer.Default.Parse<SortedVectorTest>(data);
+            var table = Oracle.SortedVectorTest.GetRootAsSortedVectorTest(new FlatBuffers.ByteBuffer(data));
+
+            VerifySorted(parsed.StringVector, i => table.String(i)?.Value, t => table.StringByKey(t) != null, FlatBufferStringComparer.Instance);
+            VerifySorted(parsed.IntVector, i => table.Int32(i).Value.Value, t => table.Int32ByKey(t) != null, Comparer<int>.Default);
+            VerifySorted(parsed.Double, i => table.Double(i).Value.Value, t => table.DoubleByKey(t) != null, Comparer<double>.Default);
+        }
+
+        private static void VerifySorted<T>(
+            IList<SortedVectorItem<T>> items, 
+            Func<int, T> oracleGet,
+            Func<T, bool> oracleContains,
+            IComparer<T> comparer)
+        {
+            T previous = items[0].Value;
+            for (int i = 1; i < items.Count; ++i)
+            {
+                T current = items[i].Value;
+                T oracle = oracleGet(i);
+
+                Assert.IsTrue(comparer.Compare(previous, current) <= 0);
+                Assert.IsTrue(comparer.Compare(previous, oracle) <= 0);
+                Assert.IsTrue(comparer.Compare(current, oracle) == 0);
+                Assert.IsTrue(oracleContains(current));
+            }
         }
 
         private static readonly Random Random = new Random();

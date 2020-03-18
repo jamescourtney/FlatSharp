@@ -118,7 +118,7 @@ namespace FlatSharpTests.Compiler
 
             Array values = Enum.GetValues(t);
 
-            Assert.AreEqual(Convert.ChangeType(1, typeof(T)), (T)values.GetValue(0));
+            Assert.AreEqual(Convert.ChangeType(0, typeof(T)), (T)values.GetValue(0));
             Assert.AreEqual(Convert.ChangeType(3, typeof(T)), (T)values.GetValue(1));
             Assert.AreEqual(Convert.ChangeType(4, typeof(T)), (T)values.GetValue(2));
             Assert.AreEqual(Convert.ChangeType(5, typeof(T)), (T)values.GetValue(3));

@@ -645,16 +645,16 @@ namespace FlatSharpTests
         }
 
         [FlatBufferTable]
-        public class SortedVectorKeyTable<T>
+        public class SortedVectorKeyTable<T> : IKeyedTable<T>
         {
-            [FlatBufferItem(0, Key = true)]
+            [FlatBufferItem(0)]
             public virtual T Key { get; set; }
         }
 
         [FlatBufferStruct]
-        public class SortedVectorKeyStruct<T>
+        public class SortedVectorKeyStruct<T> : IKeyedTable<T>
         {
-            [FlatBufferItem(0, Key = true)]
+            [FlatBufferItem(0)]
             public virtual T Key { get; set; }
         }
     }

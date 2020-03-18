@@ -527,12 +527,12 @@ namespace FlatSharpTests
         }
 
         [FlatBufferTable]
-        public class TableWithKey<TKey>
+        public class TableWithKey<TKey> : IKeyedTable<TKey>
         {
             [FlatBufferItem(0)]
             public virtual string Value { get; set; }
 
-            [FlatBufferItem(1, Key = true)]
+            [FlatBufferItem(1)]
             public virtual TKey Key { get; set; }
         }
 

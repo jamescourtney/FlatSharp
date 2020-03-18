@@ -18,6 +18,7 @@ namespace FlatSharpTests
 {
     using System;
     using System.Collections.Generic;
+    using FlatSharp;
     using FlatSharp.Attributes;
 
     [FlatBufferTable]
@@ -34,9 +35,11 @@ namespace FlatSharpTests
     }
 
     [FlatBufferTable]
-    public class SortedVectorItem<T>
+    public class SortedVectorItem<T> : IKeyedTable<T>
     {
-        [FlatBufferItem(0, Key = true)]
+        [FlatBufferItem(0)]
         public virtual T Value { get; set; }
+
+        T IKeyedTable<T>.Key => this.Value;
     }
 }

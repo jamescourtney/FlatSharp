@@ -18,7 +18,8 @@ namespace FlatSharp.Compiler
 {
     using System;
     using System.Collections.Generic;
-    
+    using System.Linq;
+
     internal class TableOrStructDefinition : BaseSchemaMember
     {
         public TableOrStructDefinition(
@@ -65,9 +66,21 @@ namespace FlatSharp.Compiler
 
             string attribute = this.IsTable ? "[FlatBufferTable]" : "[FlatBufferStruct]";
 
+            string keyInterface = string.Empty;
+            List<FieldDefinition> keys = this.Fields.Where(x => x.IsKey).ToList();
+
+            if (keys.Count > 1)
+            {
+                ErrorContext.Current?.RegisterError($"Table {this.Name} has more than 1 key defined.");
+            }
+            else if (keys.Count == 1)
+            {
+                keyInterface = $", IKeyedTable<{keys.Single().GetClrTypeName(this)}>";
+            }
+
             writer.AppendLine(attribute);
             writer.AppendLine("[System.Runtime.CompilerServices.CompilerGenerated]");
-            writer.AppendLine($"public partial class {this.Name} : object");
+            writer.AppendLine($"public partial class {this.Name} : object{keyInterface}");
             writer.AppendLine($"{{");
 
             using (writer.IncreaseIndent())

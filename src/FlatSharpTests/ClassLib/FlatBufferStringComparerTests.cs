@@ -36,30 +36,39 @@ namespace FlatSharpTests
     [TestClass]
     public class FlatBufferStringComparerTests
     {
-        /// <summary>
-        /// Compares our implementation to the google one.
-        /// </summary>
         [TestMethod]
-        public void GoogleFlatBufferComparison()
+        public void RandomFlatBufferStringComparison()
         {
-            int start = char.MinValue;
-            int count = (char.MaxValue - char.MinValue) / Environment.ProcessorCount;
+            Random rng = new Random();
+            int min = char.MinValue;
+            int max = char.MaxValue;
 
-            List<Task> tasks = new List<Task>();
-            for (int i = 0; i < Environment.ProcessorCount; ++i)
+            for (int i = 0; i < 1000000; ++i)
             {
-                tasks.Add(Task.Run(() => this.CompareRange(start, count)));
-                start += count;
-            }
+                StringBuilder sb = new StringBuilder();
+                StringBuilder sb2 = new StringBuilder();
+                for (int j = 0; j < 100; ++j)
+                {
+                    sb.Append((char)rng.Next(min, max));
+                    sb2.Append((char)rng.Next(min, max));
+                }
 
-            tasks.Add(Task.Run(() => this.CompareRange(start, char.MaxValue - start)));
+                string str = sb.ToString();
+                string str2 = sb2.ToString();
 
-            Task.WaitAll(tasks.ToArray());
+                Assert.AreEqual(0, FlatBufferStringComparer.Instance.Compare(str, str));
+                Assert.AreEqual(0, this.Compare(str, str));
 
-            foreach (var task in tasks)
-            {
-                Assert.IsTrue(task.IsCompleted);
-                Assert.IsFalse(task.IsFaulted);
+                Assert.AreEqual(0, FlatBufferStringComparer.Instance.Compare(str2, str2));
+                Assert.AreEqual(0, this.Compare(str2, str2));
+
+                int expected = this.Compare(str, str2);
+                int actual = FlatBufferStringComparer.Instance.Compare(str, str2);
+                Assert.AreEqual(expected, actual);
+
+                expected = this.Compare(str2, str);
+                actual = FlatBufferStringComparer.Instance.Compare(str2, str);
+                Assert.AreEqual(expected, actual);
             }
         }
 

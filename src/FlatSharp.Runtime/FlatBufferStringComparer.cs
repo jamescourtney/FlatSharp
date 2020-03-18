@@ -25,8 +25,8 @@ namespace FlatSharp
     /// </summary>
     /// <remarks>
     /// Based on the FlatBuffer comparison here: https://github.com/google/flatbuffers/blob/3a70e0b30890ca265a33f099912762eb51ac505f/net/FlatBuffers/Table.cs
-    /// This implemention is likely inefficient relative to the FlatBuffers algorithm. This is because FlatSharp largely operates with objects and FlatBuffers largely operates
-    /// with buffers. Optimizations may be available.
+    /// This implemention is likely inefficient relative to the FlatBuffers algorithm. This is because FlatSharp largely operates with objects and 
+    /// FlatBuffers largely operates with buffers. Optimizations may be available and worthwhile if this is really terrible.
     /// </remarks>
     public class FlatBufferStringComparer : IComparer<string>
     {
@@ -42,54 +42,34 @@ namespace FlatSharp
         public int Compare(string x, string y)
         {
             Encoding encoding = InputBuffer.Encoding;
-            int maxBytes = encoding.GetMaxByteCount(1);
 
-#if NETCOREAPP2_1
-            Span<byte> xBytes = stackalloc byte[maxBytes];
-            Span<byte> yBytes = stackalloc byte[maxBytes];
-            Span<char> charBuffer = stackalloc char[1];
+            int xMax = encoding.GetMaxByteCount(x.Length);
+            int yMax = encoding.GetMaxByteCount(y.Length);
+
+#if NETSTANDARD
+            // Consider threadlocal caching to avoid allocations?
+            byte[] xBytes = new byte[xMax];
+            byte[] yBytes = new byte[yMax];
+
+            int xCount = encoding.GetBytes(x, 0, x.Length, xBytes, 0);
+            int yCount = encoding.GetBytes(y, 0, y.Length, yBytes, 0);
 #else
-            byte[] xBytes = new byte[maxBytes];
-            byte[] yBytes = new byte[maxBytes];
-            char[] charBuffer = new char[1];
+            Span<byte> xBytes = stackalloc byte[xMax];
+            Span<byte> yBytes = stackalloc byte[yMax];
+            int xCount = encoding.GetBytes(x, xBytes);
+            int yCount = encoding.GetBytes(y, yBytes);
 #endif
 
-            int minLength = Math.Min(x.Length, y.Length);
+            int minLength = Math.Min(xCount, yCount);
 
             for (int i = 0; i < minLength; ++i)
             {
-                char xChar = x[i];
-                char yChar = y[i];
+                byte xByte = xBytes[i];
+                byte yByte = yBytes[i];
 
-                if (xChar != yChar)
+                if (xByte != yByte)
                 {
-                    charBuffer[0] = xChar;
-#if NETCOREAPP2_1
-                    int xCount = encoding.GetBytes(charBuffer, xBytes);
-#else
-                    int xCount = encoding.GetBytes(charBuffer, 0, 1, xBytes, 0);
-#endif
-
-                    charBuffer[0] = yChar;
-#if NETCOREAPP2_1
-                    int yCount = encoding.GetBytes(charBuffer, yBytes);
-#else
-                    int yCount = encoding.GetBytes(charBuffer, 0, 1, yBytes, 0);
-#endif
-
-                    int minCount = Math.Min(xCount, yCount);
-                    for (int j = 0; j < minCount; ++j)
-                    {
-                        byte xByte = xBytes[j];
-                        byte yByte = yBytes[j];
-
-                        if (xByte != yByte)
-                        {
-                            return xByte - yByte;
-                        }
-                    }
-
-                    return xCount - yCount;
+                    return xByte - yByte;
                 }
             }
 

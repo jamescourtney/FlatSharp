@@ -29,7 +29,7 @@ namespace FlatSharpTests.Compiler
     public class SortedVectors
     {
         [TestMethod]
-        public void MonsterTest_Greedy()
+        public void SortedVector_StringKey()
         {
             string schema = @"
 table Monster (PrecompiledSerializer) {
@@ -41,7 +41,49 @@ table VectorMember {
     Data:int32;
 }
 "; 
+            // We are just verifying that the schema can be generated and compiled. The testing of the logic portion of the sorted vector code takes
+            // place elsewhere.
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema);
+
+            var memberType = asm.GetType("VectorMember");
+
+            // Implements the interface.
+            Assert.IsTrue(memberType.GetInterfaces().Where(x => x == typeof(IKeyedTable<string>)).Any());
+
+            // Explicit implementation
+            var prop = memberType.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance).Where(x => x.Name.Contains("IKeyedTable")).SingleOrDefault();
+            Assert.IsNotNull(prop);
+            Assert.IsNull(prop.SetMethod ?? prop.GetSetMethod());
+            Assert.AreEqual(typeof(string), prop.PropertyType);
+        }
+
+        [TestMethod]
+        public void SortedVector_IntKey()
+        {
+            string schema = @"
+table Monster (PrecompiledSerializer) {
+  Vector:[VectorMember] (VectorType:IReadOnlyList, SortedVector);
+}
+
+table VectorMember {
+    Data:string;
+    Key:int32 (Key);
+}
+";
+            // We are just verifying that the schema can be generated and compiled. The testing of the logic portion of the sorted vector code takes
+            // place elsewhere.
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema);
+
+            var memberType = asm.GetType("VectorMember");
+
+            // Implements the interface.
+            Assert.IsTrue(memberType.GetInterfaces().Where(x => x == typeof(IKeyedTable<int>)).Any());
+
+            // Explicit implementation
+            var prop = memberType.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance).Where(x => x.Name.Contains("IKeyedTable")).SingleOrDefault();
+            Assert.IsNotNull(prop);
+            Assert.IsNull(prop.SetMethod ?? prop.GetSetMethod());
+            Assert.AreEqual(typeof(int), prop.PropertyType);
         }
     }
 }

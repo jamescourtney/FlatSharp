@@ -249,16 +249,10 @@ $@"
             if (memberModel.IsSortedVector)
             {
                 var vectorTableModel = (TableTypeModel)((VectorTypeModel)memberModel.ItemTypeModel).ItemTypeModel;
-                PropertyInfo keyProperty = vectorTableModel.IndexToMemberMap.Values.Single(x => x.IsKey).PropertyInfo;
+                Type keyType = vectorTableModel.ClrKeyType;
 
-                string comparer = $"Comparer<{CSharpHelpers.GetCompilableTypeName(keyProperty.PropertyType)}>.Default";
-                if (keyProperty.PropertyType == typeof(string))
-                {
-                    // FlatBuffers uses a custom string comparison algorithm
-                    comparer = $"{nameof(FlatBufferStringComparer)}.{nameof(FlatBufferStringComparer.Instance)}";
-                }
-
-                valueVariableName = $"{valueVariableName}.OrderBy(x => x.{keyProperty.Name}, {comparer}).ToArray()";
+                string comparer = $"{nameof(SortedVectorHelpers)}.{nameof(SortedVectorHelpers.GetComparer)}<{CSharpHelpers.GetCompilableTypeName(keyType)}>()";
+                valueVariableName = $"{valueVariableName}.OrderBy(x => (({nameof(IKeyedTable<byte>)}<{CSharpHelpers.GetCompilableTypeName(keyType)}>)x).{nameof(IKeyedTable<byte>.Key)}, {comparer}).ToArray()";
             }
 
             string serializeBlock =
