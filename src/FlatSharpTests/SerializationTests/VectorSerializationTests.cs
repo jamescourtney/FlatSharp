@@ -512,6 +512,23 @@ namespace FlatSharpTests
             Assert.AreEqual(parsed.Vector[3].Key, "d");
         }
 
+        [TestMethod]
+        public void SortedVector_StringKey_Null()
+        {
+            var root = new RootTableSorted<IList<TableWithKey<string>>>();
+
+            root.Vector = new List<TableWithKey<string>>
+            {
+                new TableWithKey<string> { Key = null, Value = "0" },
+                new TableWithKey<string> { Key = "notnull", Value = "3" },
+            };
+
+            byte[] data = new byte[1024];
+            FlatBufferSerializer.Default.Serialize(root, data);
+
+            var parsed = FlatBufferSerializer.Default.Parse<RootTableSorted<IList<TableWithKey<string>>>>(data);
+        }
+
         [FlatBufferTable]
         public class RootTable<TVector>
         {

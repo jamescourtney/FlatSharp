@@ -57,10 +57,47 @@ namespace FlatSharp
             return BinarySearch(sortedVector.Count, key, i => sortedVector[i]);
         }
 
+        private static Func<T, int> GetComparerFunc<T>(T comparison)
+        {
+            if (typeof(T) == typeof(string))
+            {
+                return (Func<T, int>)(object)GetStringComparerFunc(comparison as string);
+            }
+            else
+            {
+                IComparer<T> comparer = Comparer<T>.Default;
+                return left => comparer.Compare(left, comparison);
+            }
+        }
+
+        private static Func<string, int> GetStringComparerFunc(string right)
+        {
+            byte[] rightData = InputBuffer.Encoding.GetBytes(right);
+            return left =>
+            {
+                var enc = InputBuffer.Encoding;
+                int maxLength = enc.GetMaxByteCount(left.Length);
+
+#if NETSTANDARD
+                byte[] leftBytes = enc.GetBytes(left);
+                int leftLength = leftBytes.Length;
+                Span<byte> leftSpan = leftBytes;
+#else
+                Span<byte> leftSpan = stackalloc byte[maxLength];
+                int leftLength = enc.GetBytes(left, leftSpan);
+                leftSpan = leftSpan.Slice(0, leftLength);
+#endif
+
+                return FlatBufferStringComparer.CompareSpans(leftSpan, rightData);
+            };
+        }
+
         private static TTable BinarySearch<TTable, TKey>(int count, TKey key, Func<int, TTable> elementAt)
             where TTable : class, IKeyedTable<TKey>
         {
-            IComparer<TKey> comparer = GetComparer<TKey>();
+            // For strings, we avoid having to re-convert our search key to UTF8 tons of times.
+            // For others, this is a passthrough.
+            Func<TKey, int> comparer = GetComparerFunc(key);
 
             int min = 0;
             int max = count - 1;
@@ -71,7 +108,7 @@ namespace FlatSharp
                 int mid = min + ((max - min) >> 1);
 
                 var currentIndex = elementAt(mid);
-                int comparison = comparer.Compare(currentIndex.Key, key);
+                int comparison = comparer(currentIndex.Key);
 
                 if (comparison == 0)
                 {

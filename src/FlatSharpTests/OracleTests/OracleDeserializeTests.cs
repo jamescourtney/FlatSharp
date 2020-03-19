@@ -434,6 +434,5 @@
 
             return MemoryMarshal.Cast<byte, T>(random)[0];
         }
-
     }
 }

@@ -315,12 +315,18 @@ namespace FlatSharpTests
                 RuntimeTypeModel.CreateFrom(typeof(SortedVector<IList<SortedVectorKeyTable<GenericTable<string>>>>)));
         }
 
-
         [TestMethod]
         public void TypeModel_SortedVector_OfTableWithVectorKey_NotAllowed()
         {
             Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(SortedVector<IList<SortedVectorKeyTable<string[]>>>)));
+        }
+
+        [TestMethod]
+        public void TypeModel_SortedVector_OfTableWithEnumKey_NotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(SortedVector<IList<SortedVectorKeyTable<TaggedEnum>>>)));
         }
 
         [TestMethod]

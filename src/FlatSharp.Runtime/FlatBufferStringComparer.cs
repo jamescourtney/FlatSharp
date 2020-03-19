@@ -48,11 +48,12 @@ namespace FlatSharp
 
 #if NETSTANDARD
             // Consider threadlocal caching to avoid allocations?
-            byte[] xBytes = new byte[xMax];
-            byte[] yBytes = new byte[yMax];
-
-            int xCount = encoding.GetBytes(x, 0, x.Length, xBytes, 0);
-            int yCount = encoding.GetBytes(y, 0, y.Length, yBytes, 0);
+            byte[] xArray = new byte[xMax];
+            byte[] yArray = new byte[yMax];
+            int xCount = encoding.GetBytes(x, 0, x.Length, xArray, 0);
+            int yCount = encoding.GetBytes(y, 0, y.Length, yArray, 0);
+            Span<byte> xBytes = xArray.AsSpan();
+            Span<byte> yBytes = yArray.AsSpan();
 #else
             Span<byte> xBytes = stackalloc byte[xMax];
             Span<byte> yBytes = stackalloc byte[yMax];
@@ -60,12 +61,19 @@ namespace FlatSharp
             int yCount = encoding.GetBytes(y, yBytes);
 #endif
 
-            int minLength = Math.Min(xCount, yCount);
+            return CompareSpans(
+                xBytes.Slice(0, xCount), 
+                yBytes.Slice(0, yCount));
+        }
+
+        internal static int CompareSpans(Span<byte> x, Span<byte> y)
+        {
+            int minLength = Math.Min(x.Length, y.Length);
 
             for (int i = 0; i < minLength; ++i)
             {
-                byte xByte = xBytes[i];
-                byte yByte = yBytes[i];
+                byte xByte = x[i];
+                byte yByte = y[i];
 
                 if (xByte != yByte)
                 {
