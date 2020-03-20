@@ -81,7 +81,7 @@
         /// <summary>
         /// The property type used as a key.
         /// </summary>
-        public Type ClrKeyType { get; private set; }
+        public PropertyInfo KeyProperty { get; private set; }
         
         /// <summary>
         /// Gets the maximum size of a table assuming all members are populated include the vtable offset. 
@@ -127,11 +127,24 @@
                 throw new InvalidFlatBufferDefinitionException($"Can't create table type model from type {this.ClrType.Name} because it does not have any non-static [FlatBufferItem] properties.");
             }
 
-            this.InitializeKeys();
-
             foreach (var property in properties)
             {
                 bool hasDefaultValue = false;
+
+                if (property.Attribute.Key)
+                {
+                    if (this.KeyProperty != null)
+                    {
+                        throw new InvalidFlatBufferDefinitionException($"Table {this.ClrType.Name} has more than one [FlatBufferItemAttribute] with Key set to true.");
+                    }
+                    
+                    if (!property.ItemTypeModel.IsBuiltInType)
+                    {
+                        throw new InvalidFlatBufferDefinitionException($"Table {this.ClrType.Name} declares a key property on a type that is not built in. Only scalars and strings may be keys.");
+                    }
+
+                    this.KeyProperty = property.Property;
+                }
 
                 if (property.Attribute.SortedVector)
                 {
@@ -141,8 +154,7 @@
                         var vectorMemberModel = vectorTypeModel.ItemTypeModel;
                         if (vectorMemberModel is TableTypeModel tableModel)
                         {
-                            var keyType = tableModel.ClrKeyType;
-                            if (keyType == null)
+                            if (tableModel.KeyProperty == null)
                             {
                                 throw new InvalidFlatBufferDefinitionException($"Property '{property.Property.Name}' declares a sorted vector, but the member is a table that does not have a key.");
                             }
@@ -175,7 +187,8 @@
                     index,
                     hasDefaultValue,
                     defaultValue,
-                    property.Attribute.SortedVector);
+                    property.Attribute.SortedVector,
+                    property.Attribute.Key);
 
                 for (int i = 0; i < model.VTableSlotCount; ++i)
                 {
@@ -186,35 +199,6 @@
                 }
 
                 this.memberTypes[index] = model;
-            }
-        }
-
-        private void InitializeKeys()
-        {
-            var keys = this.ClrType.GetInterfaces()
-                .Where(x => x.IsGenericType)
-                .Where(x => x.GetGenericTypeDefinition() == typeof(IKeyedTable<>))
-                .ToList();
-
-            if (keys.Count > 0)
-            {
-                if (keys.Count != 1)
-                {
-                    throw new InvalidFlatBufferDefinitionException($"Table '{this.ClrType.Name}' implements IKeyedTable<T> more than once.");
-                }
-                else
-                {
-                    var keyInterface = keys.Single();
-                    Type keyType = keyInterface.GetGenericArguments()[0];
-                    RuntimeTypeModel typeModel = RuntimeTypeModel.CreateFrom(keyType);
-
-                    if (!typeModel.IsBuiltInType)
-                    {
-                        throw new InvalidFlatBufferDefinitionException($"Type '{keyType.Name}' cannot be used as a key; only strings and scalars are eligible to be keys.");
-                    }
-
-                    this.ClrKeyType = keyType;
-                }
             }
         }
 

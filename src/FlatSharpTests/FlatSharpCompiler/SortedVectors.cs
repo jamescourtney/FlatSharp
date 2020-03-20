@@ -23,6 +23,7 @@ namespace FlatSharpTests.Compiler
     using FlatSharp;
     using FlatSharp.Attributes;
     using FlatSharp.Compiler;
+    using FlatSharp.TypeModel;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
@@ -47,14 +48,15 @@ table VectorMember {
 
             var memberType = asm.GetType("VectorMember");
 
-            // Implements the interface.
-            Assert.IsTrue(memberType.GetInterfaces().Where(x => x == typeof(IKeyedTable<string>)).Any());
-
-            // Explicit implementation
-            var prop = memberType.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance).Where(x => x.Name.Contains("IKeyedTable")).SingleOrDefault();
+            var prop = memberType.GetProperty("Key");
             Assert.IsNotNull(prop);
-            Assert.IsNull(prop.SetMethod ?? prop.GetSetMethod());
             Assert.AreEqual(typeof(string), prop.PropertyType);
+            Assert.IsTrue(prop.GetCustomAttribute<FlatBufferItemAttribute>().Key);
+
+            prop = memberType.GetProperty("Data");
+            Assert.IsNotNull(prop);
+            Assert.AreEqual(typeof(int), prop.PropertyType);
+            Assert.IsFalse(prop.GetCustomAttribute<FlatBufferItemAttribute>().Key);
         }
 
         [TestMethod]
@@ -76,14 +78,80 @@ table VectorMember {
 
             var memberType = asm.GetType("VectorMember");
 
-            // Implements the interface.
-            Assert.IsTrue(memberType.GetInterfaces().Where(x => x == typeof(IKeyedTable<int>)).Any());
-
-            // Explicit implementation
-            var prop = memberType.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance).Where(x => x.Name.Contains("IKeyedTable")).SingleOrDefault();
+            var prop = memberType.GetProperty("Key");
             Assert.IsNotNull(prop);
-            Assert.IsNull(prop.SetMethod ?? prop.GetSetMethod());
             Assert.AreEqual(typeof(int), prop.PropertyType);
+            Assert.IsTrue(prop.GetCustomAttribute<FlatBufferItemAttribute>().Key);
+
+            prop = memberType.GetProperty("Data");
+            Assert.IsNotNull(prop);
+            Assert.AreEqual(typeof(string), prop.PropertyType);
+            Assert.IsFalse(prop.GetCustomAttribute<FlatBufferItemAttribute>().Key);
+        }
+
+        /// <summary>
+        /// Tests that the compiler doesn't really care about what junk you write when a serializer
+        /// is not present.
+        /// </summary>
+        [TestMethod]
+        public void SortedVector_InvalidKeys_NoSerializer()
+        {
+            string schema = @"
+enum TestEnum : ubyte { One = 1, Two = 2 }
+
+union TestUnion { VectorMember }
+
+table Monster {
+  Vector:[VectorMember] (VectorType:IReadOnlyList, SortedVector, Key);
+}
+struct FakeStruct { Data:int32 (key); }
+
+table VectorMember {
+    Data:string (SortedVector, Key);
+    Key:int32 (SortedVector, Key);
+    Enum:TestEnum (SortedVector, Key);
+    Struct:FakeStruct (SortedVector, key);
+    Union:TestUnion (SortedVector, Key);
+    StructVector:[FakeStruct] (SortedVector, key);
+}
+
+";
+            // We are just verifying that the schema can be generated and compiled. The testing of the logic portion of the sorted vector code takes
+            // place elsewhere.
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema);
+
+            var memberType = asm.GetType("VectorMember");
+            foreach (var prop in memberType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            {
+                Assert.IsTrue(prop.GetCustomAttribute<FlatBufferItemAttribute>().Key);
+                Assert.IsTrue(prop.GetCustomAttribute<FlatBufferItemAttribute>().SortedVector);
+            }
+        }
+
+        [TestMethod]
+        public void SortedVector_InvalidKeys_WithSerializer()
+        {
+            string schema = @"
+enum TestEnum : ubyte { One = 1, Two = 2 }
+
+union TestUnion { VectorMember }
+
+table Monster (PrecompiledSerializer) {
+  Vector:[VectorMember] (VectorType:IReadOnlyList, SortedVector, Key);
+}
+struct FakeStruct { Data:int32 (key); }
+
+table VectorMember {
+    Data:string (SortedVector, Key);
+    Key:int32 (SortedVector, Key);
+    Enum:TestEnum (SortedVector, Key);
+    Struct:FakeStruct (SortedVector, key);
+    Union:TestUnion (SortedVector, Key);
+    StructVector:[FakeStruct] (SortedVector, key);
+}
+
+";
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema));
         }
     }
 }

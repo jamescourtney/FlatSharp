@@ -35,11 +35,9 @@ namespace FlatSharpTests
     }
 
     [FlatBufferTable]
-    public class SortedVectorItem<T> : IKeyedTable<T>
+    public class SortedVectorItem<T>
     {
-        [FlatBufferItem(0)]
+        [FlatBufferItem(0, Key = true)]
         public virtual T Value { get; set; }
-
-        T IKeyedTable<T>.Key => this.Value;
     }
 }

@@ -49,6 +49,11 @@ namespace FlatSharp.Attributes
         public bool SortedVector { get; set; }
 
         /// <summary>
+        /// Indicates that this field is the key for the table. Keys are used when sorting inside a vector. Only valid on a table.
+        /// </summary>
+        public bool Key { get; set; }
+
+        /// <summary>
         /// For table items, gets or sets the default value. The type of the object must match the
         /// type of the property.
         /// </summary>

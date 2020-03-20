@@ -30,11 +30,13 @@
             ushort index, 
             bool hasDefaultValue,
             object defaultValue,
-            bool isSortedVector) : base(propertyModel, propertyInfo, index)
+            bool isSortedVector,
+            bool isKey) : base(propertyModel, propertyInfo, index)
         {
             this.HasDefaultValue = hasDefaultValue;
             this.DefaultValue = defaultValue;
             this.IsSortedVector = isSortedVector;
+            this.IsKey = isKey;
             
             if (this.HasDefaultValue)
             {
@@ -66,6 +68,11 @@
         /// Indicates if the member vector should be sorted before serializing.
         /// </summary>
         public bool IsSortedVector { get; }
+
+        /// <summary>
+        /// Indicates that this property is the key for the table.
+        /// </summary>
+        public bool IsKey { get; }
 
         /// <summary>
         /// Indicates how "wide" this element is in the table's vtable. Unions consume 2 slots in the vtable.

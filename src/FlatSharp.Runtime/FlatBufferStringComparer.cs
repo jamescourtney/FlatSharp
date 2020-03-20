@@ -41,6 +41,11 @@ namespace FlatSharp
 
         public int Compare(string x, string y)
         {
+            if (x == null || y == null)
+            {
+                throw new InvalidOperationException($"Sorted vectors may not contain null string keys.");
+            }
+
             Encoding encoding = InputBuffer.Encoding;
 
             int xMax = encoding.GetMaxByteCount(x.Length);

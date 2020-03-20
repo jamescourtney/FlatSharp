@@ -197,6 +197,7 @@ namespace FlatSharp.Compiler
             string defaultValueAssignment = string.Empty;
             string isKey = string.Empty;
             string sortedVector = string.Empty;
+            string isDeprecated = string.Empty;
 
             if (!string.IsNullOrEmpty(defaultValue))
             {
@@ -209,24 +210,18 @@ namespace FlatSharp.Compiler
                 sortedVector = ", SortedVector = true";
             }
 
-            writer.AppendLine($"[FlatBufferItem({this.Index}{this.GetDeprecatedString()}{defaultValueAttribute}{sortedVector})]");
-            writer.AppendLine($"{accessModifier} virtual {clrTypeName} {name} {{ get; set; }}{defaultValueAssignment}");
-
             if (this.IsKey)
             {
-                writer.AppendLine();
-                writer.AppendLine($"{clrTypeName} {nameof(IKeyedTable<byte>)}<{clrTypeName}>.{nameof(IKeyedTable<byte>.Key)} => this.{name};");
+                isKey = ", Key = true";
             }
-        }
 
-        private string GetDeprecatedString()
-        {
             if (this.Deprecated)
             {
-                return ", Deprecated = true";
+                isDeprecated = ", Deprecated = true";
             }
 
-            return string.Empty;
+            writer.AppendLine($"[FlatBufferItem({this.Index}{defaultValueAttribute}{isDeprecated}{sortedVector}{isKey})]");
+            writer.AppendLine($"{accessModifier} virtual {clrTypeName} {name} {{ get; set; }}{defaultValueAssignment}");
         }
     }
 }

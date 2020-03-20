@@ -403,6 +403,30 @@
             VerifySorted(parsed.Double, Comparer<double>.Default, doubles, new List<double> { Math.PI, Math.E, Math.Sqrt(2) });
         }
 
+        [TestMethod]
+        public void SortedVectors_NullKey_NotAllowed()
+        {
+            var builder = new FlatBuffers.FlatBufferBuilder(1024 * 1024);
+
+            var strings = new List<string>();
+            var stringOffsets = new List<FlatBuffers.Offset<Oracle.SortedVectorStringTable>>();
+
+            foreach (string s in new[] { Guid.NewGuid().ToString(), null, Guid.NewGuid().ToString() })
+            {
+                strings.Add(s);
+                FlatBuffers.StringOffset strOffset = default;
+                if (s != null)
+                {
+                    strOffset = builder.CreateString(s);
+                }
+
+                stringOffsets.Add(Oracle.SortedVectorStringTable.CreateSortedVectorStringTable(builder, strOffset));
+            }
+
+            Assert.ThrowsException<InvalidOperationException>(
+                () => Oracle.SortedVectorStringTable.CreateSortedVectorOfSortedVectorStringTable(builder, stringOffsets.ToArray()));
+        }
+
         private static void VerifySorted<T>(IList<SortedVectorItem<T>> items, IComparer<T> comparer, List<T> expectedItems, List<T> unexpectedItems)
         {
             T previous = items[0].Value;

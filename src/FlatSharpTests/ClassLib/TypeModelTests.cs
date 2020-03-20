@@ -336,6 +336,13 @@ namespace FlatSharpTests
                 RuntimeTypeModel.CreateFrom(typeof(SortedVector<IList<GenericTable<string>>>)));
         }
 
+        [TestMethod]
+        public void TypeModel_SortedVector_OfTableWithMultipleKeys_NotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(SortedVector<IList<SortedVectorMultiKeyTable<string>>>)));
+        }
+
         private VectorTypeModel VectorTest(Type vectorDefinition, Type innerType)
         {
             var model = (VectorTypeModel)RuntimeTypeModel.CreateFrom(vectorDefinition.MakeGenericType(innerType));
@@ -651,16 +658,26 @@ namespace FlatSharpTests
         }
 
         [FlatBufferTable]
-        public class SortedVectorKeyTable<T> : IKeyedTable<T>
+        public class SortedVectorKeyTable<T>
         {
-            [FlatBufferItem(0)]
+            [FlatBufferItem(0, Key = true)]
             public virtual T Key { get; set; }
         }
 
-        [FlatBufferStruct]
-        public class SortedVectorKeyStruct<T> : IKeyedTable<T>
+        [FlatBufferTable]
+        public class SortedVectorMultiKeyTable<T>
         {
-            [FlatBufferItem(0)]
+            [FlatBufferItem(0, Key = true)]
+            public virtual T Key { get; set; }
+
+            [FlatBufferItem(1, Key = true)]
+            public virtual T Key2 { get; set; }
+        }
+
+        [FlatBufferStruct]
+        public class SortedVectorKeyStruct<T>
+        {
+            [FlatBufferItem(0, Key = true)]
             public virtual T Key { get; set; }
         }
     }

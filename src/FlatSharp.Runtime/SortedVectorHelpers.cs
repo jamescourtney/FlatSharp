@@ -16,8 +16,12 @@
 
 namespace FlatSharp
 {
+    using FlatSharp.Attributes;
     using System;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
+    using System.Linq;
+    using System.Reflection;
 
     /// <summary>
     /// Serializer extension methods.
@@ -42,9 +46,9 @@ namespace FlatSharp
         /// </summary>
         /// <returns>A value if found, null otherwise.</returns>
         public static TTable BinarySearchByFlatBufferKey<TTable, TKey>(this IList<TTable> sortedVector, TKey key)
-            where TTable : class, IKeyedTable<TKey>
+            where TTable : class
         {
-            return BinarySearch(sortedVector.Count, key, i => sortedVector[i]);
+            return GenericBinarySearch(sortedVector.Count, i => sortedVector[i], key);
         }
 
         /// <summary>
@@ -52,9 +56,9 @@ namespace FlatSharp
         /// </summary>
         /// <returns>A value if found, null otherwise.</returns>
         public static TTable BinarySearchByFlatBufferKey<TTable, TKey>(this IReadOnlyList<TTable> sortedVector, TKey key)
-            where TTable : class, IKeyedTable<TKey>
+            where TTable : class
         {
-            return BinarySearch(sortedVector.Count, key, i => sortedVector[i]);
+            return GenericBinarySearch(sortedVector.Count, i => sortedVector[i], key);
         }
 
         private static Func<T, int> GetComparerFunc<T>(T comparison)
@@ -72,9 +76,20 @@ namespace FlatSharp
 
         private static Func<string, int> GetStringComparerFunc(string right)
         {
+            if (right == null)
+            {
+                throw new ArgumentNullException("key");
+            }
+
             byte[] rightData = InputBuffer.Encoding.GetBytes(right);
             return left =>
             {
+                if (left == null)
+                {
+                    // Common exceptions?
+                    als;dfkjalsdfjalsdkfjlasdfj
+                }
+
                 var enc = InputBuffer.Encoding;
                 int maxLength = enc.GetMaxByteCount(left.Length);
 
@@ -92,12 +107,48 @@ namespace FlatSharp
             };
         }
 
-        private static TTable BinarySearch<TTable, TKey>(int count, TKey key, Func<int, TTable> elementAt)
-            where TTable : class, IKeyedTable<TKey>
+        /// <summary>
+        /// Cache TTable -> (TKey, Func{TTable, TKey})
+        /// </summary>
+        private static ConcurrentDictionary<Type, (Type, object)> KeyGetterCallbacks = new ConcurrentDictionary<Type, (Type, object)>();
+
+        private static Func<TTable, TKey> GetOrCreateGetKeyCallback<TTable, TKey>(TKey key)
         {
-            // For strings, we avoid having to re-convert our search key to UTF8 tons of times.
-            // For others, this is a passthrough.
-            Func<TKey, int> comparer = GetComparerFunc(key);
+            if (!KeyGetterCallbacks.TryGetValue(typeof(TTable), out (Type, object) value))
+            {
+                var keys = typeof(TTable)
+                    .GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                    .Where(p => p.GetCustomAttribute<FlatBufferItemAttribute>()?.Key == true)
+                    .ToArray();
+
+                if (keys.Length == 0)
+                {
+                    throw new InvalidOperationException($"Table '{typeof(TTable).Name}' does not declare a property with the Key attribute set.");
+                }
+                else if (keys.Length > 1)
+                {
+                    throw new InvalidOperationException($"Table '{typeof(TTable).Name}' declares more than one property with the Key attribute set.");
+                }
+
+                PropertyInfo keyProperty = keys[0];
+                var keyGetterDelegate = (Func<TTable, TKey>)Delegate.CreateDelegate(typeof(Func<TTable, TKey>), keyProperty.GetMethod ?? keyProperty.GetGetMethod());
+                value = (keyProperty.PropertyType, keyGetterDelegate);
+                KeyGetterCallbacks[typeof(TTable)] = value;
+            }
+
+            if (key.GetType() != value.Item1)
+            {
+                throw new InvalidOperationException($"Key '{key}' had type '{key?.GetType()}', but the key for table '{typeof(TTable).Name}' is of type '{value.Item1.Name}'.");
+            }
+
+            return (Func<TTable, TKey>)value.Item2;
+        }
+
+        private static TTable GenericBinarySearch<TTable, TKey>(int count, Func<int, TTable> itemAtIndex, TKey key)
+            where TTable : class
+        {
+            Func<TTable, TKey> keyGetter = GetOrCreateGetKeyCallback<TTable, TKey>(key);
+            Func<TKey, int> compare = GetComparerFunc<TKey>(key);
 
             int min = 0;
             int max = count - 1;
@@ -107,12 +158,12 @@ namespace FlatSharp
                 // (min + max) / 2, written to avoid overflows.
                 int mid = min + ((max - min) >> 1);
 
-                var currentIndex = elementAt(mid);
-                int comparison = comparer(currentIndex.Key);
+                var midElement = itemAtIndex(mid);
+                int comparison = compare(keyGetter(midElement));
 
                 if (comparison == 0)
                 {
-                    return currentIndex;
+                    return midElement;
                 }
 
                 if (comparison < 0)

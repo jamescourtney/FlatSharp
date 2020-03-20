@@ -515,6 +515,8 @@ namespace FlatSharpTests
         [TestMethod]
         public void SortedVector_StringKey_Null()
         {
+            Assert.Fail();
+
             var root = new RootTableSorted<IList<TableWithKey<string>>>();
 
             root.Vector = new List<TableWithKey<string>>
@@ -544,12 +546,12 @@ namespace FlatSharpTests
         }
 
         [FlatBufferTable]
-        public class TableWithKey<TKey> : IKeyedTable<TKey>
+        public class TableWithKey<TKey>
         {
             [FlatBufferItem(0)]
             public virtual string Value { get; set; }
 
-            [FlatBufferItem(1)]
+            [FlatBufferItem(1, Key = true)]
             public virtual TKey Key { get; set; }
         }
 

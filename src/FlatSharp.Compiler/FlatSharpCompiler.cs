@@ -21,6 +21,7 @@ namespace FlatSharp.Compiler
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using System.Runtime.ExceptionServices;
     using System.Text;
     using System.Threading;
     using Antlr4.Runtime;
@@ -228,8 +229,16 @@ namespace FlatSharp.Compiler
                 .GetMethod(nameof(RoslynSerializerGenerator.GenerateCSharp), BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
                 .MakeGenericMethod(type);
 
-            string code = (string)method.Invoke(generator, new[] { "private" });
-            return code;
+            try
+            {
+                string code = (string)method.Invoke(generator, new[] { "private" });
+                return code;
+            }
+            catch (TargetInvocationException ex)
+            {
+                ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                throw;
+            }
         }
 
         /// <summary>
