@@ -72,24 +72,6 @@ namespace FlatSharpTests
             }
         }
 
-        private void CompareRange(int start, int count)
-        {
-            for (int i = 0; i < count; ++i)
-            {
-                string iStr = new string((char)(i + start), 1);
-
-                for (char j = char.MinValue; j <= char.MaxValue; ++j)
-                {
-                    string jStr = new string(j, 1);
-
-                    int comparison = FlatBufferStringComparer.Instance.Compare(iStr, jStr);
-                    int oracleComparison = this.Compare(iStr, jStr);
-
-                    Assert.AreEqual(comparison, oracleComparison);
-                }
-            }
-        }
-
         private int Compare(string x, string y)
         {
             byte[] xBytes = Encoding.UTF8.GetBytes(x);

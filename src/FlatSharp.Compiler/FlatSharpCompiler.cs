@@ -149,12 +149,20 @@ namespace FlatSharp.Compiler
             }
         }
 
-        internal static BaseSchemaMember TestHookParseSyntax(string fbsSchema)
+        internal static BaseSchemaMember TestHookParseSyntax(string fbsSchema, Dictionary<string, string> includes = null)
         {
             InMemoryIncludeLoader includeLoader = new InMemoryIncludeLoader
             {
                 { "root.fbs", fbsSchema }
             };
+
+            if (includes != null)
+            {
+                foreach (var kvp in includes)
+                {
+                    includeLoader[kvp.Key] = kvp.Value;
+                }
+            }
 
             using (ErrorContext.Current)
             {
@@ -204,12 +212,20 @@ namespace FlatSharp.Compiler
             return parser;
         }
 
-        internal static string TestHookCreateCSharp(string fbsSchema)
+        internal static string TestHookCreateCSharp(string fbsSchema, Dictionary<string, string> includes = null)
         {
             InMemoryIncludeLoader includeLoader = new InMemoryIncludeLoader
             {
                 { "root.fbs", fbsSchema }
             };
+            
+            if (includes != null)
+            {
+                foreach (var pair in includes)
+                {
+                    includeLoader[pair.Key] = pair.Value;
+                }
+            }
 
             using (ErrorContext.Current)
             {

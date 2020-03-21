@@ -515,20 +515,20 @@ namespace FlatSharpTests
         [TestMethod]
         public void SortedVector_StringKey_Null()
         {
-            Assert.Fail();
-
             var root = new RootTableSorted<IList<TableWithKey<string>>>();
 
             root.Vector = new List<TableWithKey<string>>
             {
                 new TableWithKey<string> { Key = null, Value = "0" },
                 new TableWithKey<string> { Key = "notnull", Value = "3" },
+                new TableWithKey<string> { Key = "alsonotnull", Value = "3" },
             };
 
             byte[] data = new byte[1024];
-            FlatBufferSerializer.Default.Serialize(root, data);
-
-            var parsed = FlatBufferSerializer.Default.Parse<RootTableSorted<IList<TableWithKey<string>>>>(data);
+            Assert.ThrowsException<InvalidOperationException>(() => FlatBufferSerializer.Default.Serialize(root, data));
+            Assert.ThrowsException<InvalidOperationException>(() => root.Vector.BinarySearchByFlatBufferKey("AAA"));
+            Assert.ThrowsException<InvalidOperationException>(() => root.Vector.BinarySearchByFlatBufferKey(3));
+            Assert.ThrowsException<ArgumentNullException>(() => root.Vector.BinarySearchByFlatBufferKey((string)null));
         }
 
         [FlatBufferTable]

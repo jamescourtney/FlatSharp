@@ -249,7 +249,8 @@ $@"
             if (memberModel.IsSortedVector)
             {
                 var vectorTableModel = (TableTypeModel)((VectorTypeModel)memberModel.ItemTypeModel).ItemTypeModel;
-                valueVariableName = $"{valueVariableName}.OrderBy(x => x.{vectorTableModel.KeyProperty.Name}).ToArray()";
+                var keyProperty = vectorTableModel.KeyProperty;
+                valueVariableName = $"{valueVariableName}.OrderBy(x => x.{keyProperty.Name}, {nameof(SortedVectorHelpers)}.{nameof(SortedVectorHelpers.GetComparer)}<{CSharpHelpers.GetCompilableTypeName(keyProperty.PropertyType)}>()).ToArray()";
             }
 
             string serializeBlock =

@@ -86,7 +86,7 @@ namespace FlatSharp
             {
                 if (left == null)
                 {
-                    throw new InvalidOperationException("Key was null");
+                    throw new InvalidOperationException("Sorted FlatBuffer vectors may not have null-valued keys.");
                 }
 
                 var enc = InputBuffer.Encoding;
@@ -149,8 +149,8 @@ namespace FlatSharp
         private static TTable GenericBinarySearch<TTable, TKey>(int count, Func<int, TTable> itemAtIndex, TKey key)
             where TTable : class
         {
-            Func<TTable, TKey> keyGetter = GetOrCreateGetKeyCallback<TTable, TKey>(key);
             Func<TKey, int> compare = GetComparerFunc<TKey>(key);
+            Func<TTable, TKey> keyGetter = GetOrCreateGetKeyCallback<TTable, TKey>(key);
 
             int min = 0;
             int max = count - 1;
