@@ -25,17 +25,18 @@ namespace FlatSharp.Compiler
     {
         private readonly string inputHash;
 
-        public RootNodeDefinition(string inputHash) : base("", null)
+        public RootNodeDefinition(string inputHash, string fileName) : base("", null)
         {
             this.inputHash = inputHash;
             this.Options = new HashSet<AttributeOption>();
+            this.DeclaringFile = fileName;
         }
 
         public override HashSet<AttributeOption> Options { get; }
 
         protected override bool SupportsChildren => true;
 
-        protected override void OnWriteCode(CodeWriter writer, CodeWritingPass pass, IReadOnlyDictionary<string, string> precompiledSerailizers)
+        protected override void OnWriteCode(CodeWriter writer, CodeWritingPass pass, string forFile, IReadOnlyDictionary<string, string> precompiledSerailizers)
         {
             writer.AppendLine($@"
 //------------------------------------------------------------------------------
@@ -57,7 +58,7 @@ namespace FlatSharp.Compiler
 
             foreach (var child in this.Children.Values)
             {
-                child.WriteCode(writer, pass, precompiledSerailizers);
+                child.WriteCode(writer, pass, forFile, precompiledSerailizers);
             }
         }
 

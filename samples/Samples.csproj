@@ -11,16 +11,19 @@
     <FlatSharpSchema Include="Example4-IOOptions\IOOptionsExample.fbs" />
     <FlatSharpSchema Include="Example5-gRPC\GrpcExample.fbs" />
     <FlatSharpSchema Include="Example6-CopyConstructors\CopyConstructorsExample.fbs" />
+    <FlatSharpSchema Include="Example7-Includes\A.fbs" />
+    <FlatSharpSchema Include="Example7-Includes\B.fbs" />
+    <FlatSharpSchema Include="Example7-Includes\IncludesExample.fbs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FlatSharp" Version="2.2.0" />
-    <PackageReference Include="FlatSharp.Compiler" Version="2.2.0">
+    <PackageReference Include="FlatSharp" Version="3.0.0" />
+    <PackageReference Include="FlatSharp.Compiler" Version="3.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="FlatSharp.Runtime" Version="2.2.0" />
-    <PackageReference Include="FlatSharp.Unsafe" Version="2.2.0" />
+    <PackageReference Include="FlatSharp.Runtime" Version="3.0.0" />
+    <PackageReference Include="FlatSharp.Unsafe" Version="3.0.0" />
     <PackageReference Include="Grpc" Version="2.27.0" />
   </ItemGroup>
 

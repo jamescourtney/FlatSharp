@@ -26,16 +26,16 @@ namespace FlatSharp.Compiler
     {
         private BaseSchemaMember schemaRoot;
         private readonly Stack<BaseSchemaMember> parseStack = new Stack<BaseSchemaMember>();
-        private readonly string inputHash;
 
-        public SchemaVisitor(string inputHash)
+        public SchemaVisitor(RootNodeDefinition rootNode)
         {
-            this.inputHash = inputHash;
+            this.schemaRoot = rootNode;
         }
+
+        public string CurrentFileName { get; set; }
 
         public override BaseSchemaMember Visit([NotNull] IParseTree tree)
         {
-            this.schemaRoot = new RootNodeDefinition(this.inputHash);
             this.parseStack.Push(this.schemaRoot);
 
             base.Visit(tree);
@@ -62,6 +62,7 @@ namespace FlatSharp.Compiler
             if (!parent.TryResolveName(parts[0], out var existingNode))
             {
                 existingNode = new NamespaceDefinition(parts[0], parent);
+                existingNode.DeclaringFile = this.CurrentFileName;
                 parent.AddChild(existingNode);
             }
 
@@ -79,6 +80,7 @@ namespace FlatSharp.Compiler
             ErrorContext.Current.WithScope(top.FullName, () =>
             {
                 TableOrStructDefinition def = new TypeVisitor(top).Visit(context);
+                def.DeclaringFile = this.CurrentFileName;
                 top.AddChild(def);
             });
 
@@ -91,6 +93,7 @@ namespace FlatSharp.Compiler
             ErrorContext.Current.WithScope(top.FullName, () =>
             {
                 EnumDefinition def = new EnumVisitor(top).Visit(context);
+                def.DeclaringFile = this.CurrentFileName;
                 top.AddChild(def);
             });
 
@@ -103,6 +106,7 @@ namespace FlatSharp.Compiler
             ErrorContext.Current.WithScope(top.FullName, () =>
             {
                 UnionDefinition def = new UnionVisitor(top).Visit(context);
+                def.DeclaringFile = this.CurrentFileName;
                 top.AddChild(def);
             });
 
@@ -115,15 +119,10 @@ namespace FlatSharp.Compiler
             ErrorContext.Current.WithScope(top.FullName, () =>
             {
                 RpcDefinition def = new RpcVisitor(top).Visit(context);
+                def.DeclaringFile = this.CurrentFileName;
                 top.AddChild(def);
             });
 
-            return null;
-        }
-
-        public override BaseSchemaMember VisitAttribute_decl([NotNull] FlatBuffersParser.Attribute_declContext context)
-        {
-            string text = context.STRING_CONSTANT().GetText().ToLowerInvariant().Trim('"');
             return null;
         }
     }

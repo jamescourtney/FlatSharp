@@ -1,0 +1,13 @@
+﻿include "A.fbs";
+
+namespace Samples.IncludesExample;
+
+table Request (PrecompiledSerializer) {
+   Table:TableFromA;
+}
+
+rpc_service Service
+{
+	// Single input, single output.
+	SingleOperation(Request):Request;
+}

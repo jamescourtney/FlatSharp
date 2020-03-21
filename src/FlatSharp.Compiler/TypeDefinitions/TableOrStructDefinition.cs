@@ -60,7 +60,7 @@ namespace FlatSharp.Compiler
             });
         }
 
-        protected override void OnWriteCode(CodeWriter writer, CodeWritingPass pass, IReadOnlyDictionary<string, string> precompiledSerailizers)
+        protected override void OnWriteCode(CodeWriter writer, CodeWritingPass pass, string forFile, IReadOnlyDictionary<string, string> precompiledSerailizers)
         {
             this.AssignIndexes();
 

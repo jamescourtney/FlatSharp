@@ -86,8 +86,7 @@ namespace FlatSharp
             {
                 if (left == null)
                 {
-                    // Common exceptions?
-                    als;dfkjalsdfjalsdkfjlasdfj
+                    throw new InvalidOperationException("Key was null");
                 }
 
                 var enc = InputBuffer.Encoding;
@@ -112,6 +111,9 @@ namespace FlatSharp
         /// </summary>
         private static ConcurrentDictionary<Type, (Type, object)> KeyGetterCallbacks = new ConcurrentDictionary<Type, (Type, object)>();
 
+        /// <summary>
+        /// Reflects on TTable to return a delegate that accesses the flat buffer key property. The type of the property must precisely match TKey.
+        /// </summary>
         private static Func<TTable, TKey> GetOrCreateGetKeyCallback<TTable, TKey>(TKey key)
         {
             if (!KeyGetterCallbacks.TryGetValue(typeof(TTable), out (Type, object) value))

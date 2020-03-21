@@ -46,14 +46,29 @@ namespace FlatSharp.Compiler
 
         public string GlobalName => $"global::{this.FullName}";
 
+        // File that declared this type.
+        public string DeclaringFile { get; set; }
+
         public IReadOnlyDictionary<string, BaseSchemaMember> Children => this.children;
 
         protected abstract bool SupportsChildren { get; }
         
-        public void WriteCode(CodeWriter writer, CodeWritingPass pass, IReadOnlyDictionary<string, string> precompiledSerailizers)
+        public void WriteCode(
+            CodeWriter writer, 
+            CodeWritingPass pass, 
+            string forFile,
+            IReadOnlyDictionary<string, string> precompiledSerailizers)
         {
-            ErrorContext.Current.WithScope(
-                this.Name, () => this.OnWriteCode(writer, pass, precompiledSerailizers));
+            // First pass: write all definitions (even from other files)
+            //  the first pass is internal and is intended to produce a large
+            //  file full of type definitions that FlatSharp can use to build serializers.
+            // Second pass: only write things for the target file.
+            //   the second pass generates only files in the root fbs file.
+            if (pass == CodeWritingPass.FirstPass || forFile == this.DeclaringFile)
+            {
+                ErrorContext.Current.WithScope(
+                    this.Name, () => this.OnWriteCode(writer, pass, forFile, precompiledSerailizers));
+            }
         }
 
         public string GetCopyExpression(string source)
@@ -62,7 +77,7 @@ namespace FlatSharp.Compiler
                 this.Name, () => this.OnGetCopyExpression(source));
         }
 
-        protected virtual void OnWriteCode(CodeWriter writer, CodeWritingPass pass, IReadOnlyDictionary<string, string> precompiledSerializer)
+        protected virtual void OnWriteCode(CodeWriter writer, CodeWritingPass pass, string forFile, IReadOnlyDictionary<string, string> precompiledSerializer)
         {
         }
 

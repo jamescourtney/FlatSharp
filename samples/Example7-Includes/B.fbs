@@ -1,0 +1,12 @@
+﻿namespace Samples.IncludesExample;
+
+enum EnumFromB : ubyte { One, Two, Three }
+
+table TableFromB {
+    String:string;
+}
+
+struct StructFromB {
+   IntValue:int;
+   LongValue:int64;
+}

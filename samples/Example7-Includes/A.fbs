@@ -1,0 +1,15 @@
+﻿include "B.fbs";
+
+namespace Samples.IncludesExample;
+
+table TableFromA {
+   NestedTable:TableFromB;
+   NestedEnum:EnumFromB;
+   NestedStruct1:StructFromA;
+   NestedStruct2:StructFromB;
+}
+
+struct StructFromA {
+  NestedStruct:StructFromB;
+  Value:int;
+}
