@@ -12,7 +12,7 @@
     <FlatSharpSchema Include="Example5-gRPC\GrpcExample.fbs" />
     <FlatSharpSchema Include="Example6-CopyConstructors\CopyConstructorsExample.fbs" />
     <FlatSharpSchema Include="Example7-Includes\A.fbs" />
-    <FlatSharpSchema Include="Example7-Includes\B.fbs" />
+    <FlatSharpSchema Include="Example7-Includes\Subdirectory\B.fbs" />
     <FlatSharpSchema Include="Example7-Includes\IncludesExample.fbs" />
   </ItemGroup>
 

@@ -24,6 +24,6 @@ namespace FlatSharp.Compiler
         /// <summary>
         /// Reads the contents of the given include.
         /// </summary>
-        string LoadInclude(string baseFbsFile, string fileName);
+        string LoadInclude(string fullPath);
     }
 }

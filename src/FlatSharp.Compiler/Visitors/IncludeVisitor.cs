@@ -18,15 +18,18 @@ namespace FlatSharp.Compiler
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using Antlr4.Runtime.Misc;
 
     internal class IncludeVisitor : FlatBuffersBaseVisitor<object>
     {
         private readonly HashSet<string> uniqueIncludes;
         private readonly Queue<string> toVisit;
+        private readonly string currentDirectory;
 
-        public IncludeVisitor(HashSet<string> uniqueIncludes, Queue<string> toVisit)
+        public IncludeVisitor(string currentFilePath, HashSet<string> uniqueIncludes, Queue<string> toVisit)
         {
+            this.currentDirectory = Path.GetDirectoryName(currentFilePath);
             this.uniqueIncludes = uniqueIncludes;
             this.toVisit = toVisit;
         }
@@ -40,9 +43,10 @@ namespace FlatSharp.Compiler
             }
             else
             {
-                if (this.uniqueIncludes.Add(includeFile))
+                string includedPath = Path.Combine(this.currentDirectory, includeFile);
+                if (this.uniqueIncludes.Add(includedPath))
                 {
-                    this.toVisit.Enqueue(includeFile);
+                    this.toVisit.Enqueue(includedPath);
                 }
             }
 

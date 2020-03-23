@@ -15,7 +15,7 @@
     <Copyright>2020</Copyright>
     <RepositoryUrl>https://github.com/jamescourtney/FlatSharp/</RepositoryUrl>
     <PackageTags>flatbuffers serialization flatbuffer flatsharp</PackageTags>
-    <PackageReleaseNotes>v3.0.0 release. Bugfixes, usability improvements, copy constructors, and a breaking change on enums.</PackageReleaseNotes>
+    <PackageReleaseNotes>v3.0.0 release. Bugfixes, usability improvements, copy constructors, FBS includes, and a BREAKING CHANGE on enums declared in FBS files. Read the release notes at https://github.com/jamescourtney/FlatSharp/releases</PackageReleaseNotes>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>    
     <NuspecProperties>version=$(Version);releaseNotes=$(PackageReleaseNotes)</NuspecProperties>

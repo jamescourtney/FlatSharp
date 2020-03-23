@@ -1,4 +1,4 @@
-﻿include "B.fbs";
+﻿include "Subdirectory/B.fbs";
 
 namespace Samples.IncludesExample;
 

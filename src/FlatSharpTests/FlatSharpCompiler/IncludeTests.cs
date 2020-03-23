@@ -17,6 +17,7 @@
 namespace FlatSharpTests.Compiler
 {
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using FlatSharp.Compiler;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -51,8 +52,8 @@ namespace FlatSharpTests.Compiler
             Assert.IsNotNull(basetable);
             Assert.IsNotNull(otherTable);
 
-            Assert.AreEqual("root.fbs", basetable.DeclaringFile);
-            Assert.AreEqual("OtherTable.fbs", otherTable.DeclaringFile);
+            Assert.AreEqual("root.fbs", Path.GetFileName(basetable.DeclaringFile));
+            Assert.AreEqual("OtherTable.fbs", Path.GetFileName(otherTable.DeclaringFile));
         }
 
         /// <summary>
@@ -88,9 +89,9 @@ namespace FlatSharpTests.Compiler
             Assert.IsNotNull(otherTableA);
             Assert.IsNotNull(otherTableB);
 
-            Assert.AreEqual("root.fbs", basetable.DeclaringFile);
-            Assert.AreEqual("A.fbs", otherTableA.DeclaringFile);
-            Assert.AreEqual("B.fbs", otherTableB.DeclaringFile);
+            Assert.AreEqual("root.fbs", Path.GetFileName(basetable.DeclaringFile));
+            Assert.AreEqual("A.fbs", Path.GetFileName(otherTableA.DeclaringFile));
+            Assert.AreEqual("B.fbs", Path.GetFileName(otherTableB.DeclaringFile));
         }
 
         /// <summary>
@@ -125,8 +126,44 @@ namespace FlatSharpTests.Compiler
             Assert.IsNotNull(basetable);
             Assert.IsNotNull(otherTable);
 
-            Assert.AreEqual("root.fbs", basetable.DeclaringFile);
-            Assert.AreEqual("A.fbs", otherTable.DeclaringFile);
+            Assert.AreEqual("root.fbs", Path.GetFileName(basetable.DeclaringFile));
+            Assert.AreEqual("A.fbs", Path.GetFileName(otherTable.DeclaringFile));
+        }
+
+        /// <summary>
+        /// Tests that two files can include each other. Also tests that serializers are only generated for the root file.
+        /// </summary>
+        [TestMethod]
+        public void DuplicateTypesDifferentFiles()
+        {
+            string baseFbs = "include \"A.fbs\"; namespace Foo; table BaseTable (PrecompiledSerializer) { BaseTable:BaseTable; }";
+            var includes = new Dictionary<string, string>
+            {
+                { "A.fbs", "namespace Foo; table BaseTable { BaseTable:BaseTable; }" },
+            };
+
+            var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.TestHookCreateCSharp(baseFbs, includes));
+            Assert.IsTrue(ex.Message.Contains("Duplicate member name"));
+        }
+
+        /// <summary>
+        /// Tests that two files can include each other. Also tests that serializers are only generated for the root file.
+        /// </summary>
+        [TestMethod]
+        public void ChangeInIncludedFileModifiesIncludingFileHash()
+        {
+            string baseFbs = "include \"A.fbs\"; namespace Foo; table RootTable { Foo:int; }";
+            var includes = new Dictionary<string, string>
+            {
+                { "A.fbs", "namespace Foo; table TableA { Bar:string; }" },
+            };
+
+            RootNodeDefinition rootDef1 = FlatSharpCompiler.TestHookParseSyntax(baseFbs, includes);
+            
+            includes["A.fbs"] += " ";
+            RootNodeDefinition rootDef2 = FlatSharpCompiler.TestHookParseSyntax(baseFbs, includes);
+
+            Assert.AreNotEqual(rootDef1.InputHash, rootDef2.InputHash);
         }
     }
 }

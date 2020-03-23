@@ -23,14 +23,11 @@ namespace FlatSharp.Compiler
     /// </summary>
     internal class IncludeFileLoader : IIncludeLoader
     {
-        public string LoadInclude(string baseFbsFile, string fileName)
+        public string LoadInclude(string fullPath)
         {
-            // Combine the requested file with the directory of the base file.
-            fileName = Path.Combine(Path.GetDirectoryName(baseFbsFile), fileName);
-
             try
             {
-                return File.ReadAllText(fileName);
+                return File.ReadAllText(fullPath);
             }
             catch (IOException ex)
             {

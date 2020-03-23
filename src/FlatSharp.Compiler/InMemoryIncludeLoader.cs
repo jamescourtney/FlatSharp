@@ -38,9 +38,9 @@ namespace FlatSharp.Compiler
             this[file] = fbs;
         }
 
-        public string LoadInclude(string baseFbsFile, string fileName)
+        public string LoadInclude(string fileName)
         {
-            return this[fileName];
+            return this[Path.GetFileName(fileName)];
         }
 
         public IEnumerator<KeyValuePair<string, string>> GetEnumerator()
