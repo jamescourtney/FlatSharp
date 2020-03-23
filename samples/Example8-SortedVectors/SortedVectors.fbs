@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-include "A.fbs";
+namespace Samples.SortedVectors;
 
-namespace Samples.IncludesExample;
-
-table Request (PrecompiledSerializer) {
-   Table:TableFromA;
+table UserList {
+    Users:[User] (SortedVector); // Declare the vector to be sorted.
 }
 
-rpc_service Service
-{
-	// Single input, single output.
-	SingleOperation(Request):Request;
+table User {
+    FirstName:string;
+    LastName:string;
+    SSN:string (key); // allow quick lookups based on user's SSN.
 }

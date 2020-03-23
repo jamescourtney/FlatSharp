@@ -10,6 +10,8 @@
             SchemaFilesExample2.SchemaFilesExample2.Run();
             GrpcExample.GrpcExample.Run();
             CopyConstructorsExample.CopyConstructorsExample.Run();
+            IncludesExample.IncludesExample.Run();
+            SortedVectors.SortedVectorsExample.Run();
         }
     }
 }
