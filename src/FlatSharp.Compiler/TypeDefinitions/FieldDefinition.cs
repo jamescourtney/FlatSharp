@@ -38,7 +38,13 @@ namespace FlatSharp.Compiler
 
         public string GetClrTypeName(BaseSchemaMember baseMember)
         {
-            if (!SchemaDefinition.TryResolvePrimitiveType(this.FbsFieldType, out string clrType))
+            string clrType;
+
+            if (SchemaDefinition.TryResolveBuiltInScalarType(this.FbsFieldType, out IBuiltInScalarType builtInType))
+            {
+                clrType = builtInType.CSharpTypeName;
+            }
+            else
             {
                 if (baseMember.TryResolveName(this.FbsFieldType, out var typeDefinition))
                 {
@@ -84,8 +90,7 @@ namespace FlatSharp.Compiler
 
         public void WriteCopyConstructorLine(CodeWriter writer, string sourceName, BaseSchemaMember parent)
         {
-            bool isBuiltIn = this.FbsFieldType == "string"
-                || SchemaDefinition.TryResolvePrimitiveType(this.FbsFieldType, out string clrType);
+            bool isBuiltIn = SchemaDefinition.TryResolveBuiltInType(this.FbsFieldType, out _);
 
             bool foundNodeType = parent.TryResolveName(this.FbsFieldType, out var nodeType);
             if (!isBuiltIn && !foundNodeType)
@@ -151,9 +156,14 @@ namespace FlatSharp.Compiler
                 }
 
                 string defaultValue = string.Empty;
+                string clrType;
+                bool isPrimitive = SchemaDefinition.TryResolveBuiltInScalarType(this.FbsFieldType, out IBuiltInScalarType builtInType);
 
-                bool isPrimitive = SchemaDefinition.TryResolvePrimitiveType(this.FbsFieldType, out string clrType);
-                if (!isPrimitive)
+                if (isPrimitive)
+                {
+                    clrType = builtInType.CSharpTypeName;
+                }
+                else
                 {
                     clrType = typeDefinition?.GlobalName ?? this.FbsFieldType;
                 }
@@ -162,7 +172,7 @@ namespace FlatSharp.Compiler
                 {
                     if (isPrimitive)
                     {
-                        defaultValue = CodeWriter.GetPrimitiveTypeLiteral(clrType, this.DefaultValue);
+                        defaultValue = builtInType.FormatLiteral(this.DefaultValue);
                     }
                     else if (enumDefinition != null)
                     {
@@ -173,7 +183,7 @@ namespace FlatSharp.Compiler
                         }
                         else
                         {
-                            defaultValue = CodeWriter.GetPrimitiveTypeLiteral(enumDefinition.ClrUnderlyingType, this.DefaultValue);
+                            defaultValue = $"({clrType}){enumDefinition.UnderlyingType.FormatLiteral(this.DefaultValue)}";
                         }
                     }
                     else

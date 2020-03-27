@@ -398,9 +398,9 @@ $@"
 
         private string GetReadInvocation(Type type, string buffer, string offset)
         {
-            if (ReflectedMethods.InputBufferReaders.TryGetValue(type, out var readMethod))
+            if (BuiltInType.BuiltInTypes.TryGetValue(type, out var builtInType))
             {
-                return $"{buffer}.{readMethod.Name}({offset})";
+                return $"{buffer}.{builtInType.InputBufferRead.Name}({offset})";
             }
             else
             {

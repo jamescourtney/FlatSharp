@@ -46,7 +46,6 @@ namespace FlatSharpTests.Compiler
             this.MonsterTest("vectorcache");
         }
 
-
         [TestMethod]
         public void MonsterTest_Lazy()
         {
@@ -110,9 +109,7 @@ table Monster (PrecompiledSerializer:{flags}) {{
 table Weapon {{
   name:string;
   damage:short;
-}}
-
-root_type Monster;"; 
+}}"; 
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema);
 

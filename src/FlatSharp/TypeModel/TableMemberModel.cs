@@ -49,7 +49,7 @@
                 }
                 else
                 {
-                    throw new InvalidFlatBufferDefinitionException($"Table property {propertyInfo.Name} declared default value, but this type is not allowed to have one.");
+                    throw new InvalidFlatBufferDefinitionException($"Table property {propertyInfo.Name} declared default value, but this type is not allowed to have one. Only scalar types and enums may have default values.");
                 }
             }
         }

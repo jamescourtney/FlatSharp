@@ -20,6 +20,7 @@ namespace FlatSharpTests
     using System.Buffers.Binary;
     using System.Collections.Generic;
     using System.ComponentModel;
+    using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Linq;
     using System.Runtime.InteropServices;
@@ -37,13 +38,14 @@ namespace FlatSharpTests
     public class FlatBufferStringComparerTests
     {
         [TestMethod]
+        [ExcludeFromCodeCoverage]
         public void RandomFlatBufferStringComparison()
         {
             Random rng = new Random();
             int min = char.MinValue;
             int max = char.MaxValue;
 
-            for (int i = 0; i < 1000000; ++i)
+            for (int i = 0; i < 10000; ++i)
             {
                 StringBuilder sb = new StringBuilder();
                 StringBuilder sb2 = new StringBuilder();

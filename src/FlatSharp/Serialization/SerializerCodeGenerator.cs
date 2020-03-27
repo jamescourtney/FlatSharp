@@ -336,9 +336,9 @@ $@"
 
         private string GetSerializeInvocation(Type type, string value, string offset)
         {
-            if (ReflectedMethods.ILWriters.TryGetValue(type, out var memberWriteMethod))
+            if (BuiltInType.BuiltInTypes.TryGetValue(type, out var builtInType))
             {
-                return $"writer.{memberWriteMethod.Name}(span, {value}, {offset}, context);";
+                return $"writer.{builtInType.SpanWriterWrite.Name}(span, {value}, {offset}, context);";
             }
             else
             {
