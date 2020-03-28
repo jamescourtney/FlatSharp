@@ -6,15 +6,17 @@ namespace FlatSharpTests.Oracle
 {
 
 using global::System;
+using global::System.Collections.Generic;
 using global::FlatBuffers;
 
 public struct BasicTypes : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_1_12_0(); }
   public static BasicTypes GetRootAsBasicTypes(ByteBuffer _bb) { return GetRootAsBasicTypes(_bb, new BasicTypes()); }
   public static BasicTypes GetRootAsBasicTypes(ByteBuffer _bb, BasicTypes obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
-  public void __init(int _i, ByteBuffer _bb) { __p.bb_pos = _i; __p.bb = _bb; }
+  public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public BasicTypes __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public byte Byte { get { int o = __p.__offset(4); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
@@ -30,13 +32,13 @@ public struct BasicTypes : IFlatbufferObject
   public double Double { get { int o = __p.__offset(24); return o != 0 ? __p.bb.GetDouble(o + __p.bb_pos) : (double)0.0; } }
   public string String { get { int o = __p.__offset(26); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetStringBytes() { return __p.__vector_as_span(26); }
+  public Span<byte> GetStringBytes() { return __p.__vector_as_span<byte>(26, 1); }
 #else
   public ArraySegment<byte>? GetStringBytes() { return __p.__vector_as_arraysegment(26); }
 #endif
   public byte[] GetStringArray() { return __p.__vector_as_array<byte>(26); }
 
-  public static Offset<BasicTypes> CreateBasicTypes(FlatBufferBuilder builder,
+  public static Offset<FlatSharpTests.Oracle.BasicTypes> CreateBasicTypes(FlatBufferBuilder builder,
       byte Byte = 0,
       ushort UShort = 0,
       short Short = 0,
@@ -49,7 +51,7 @@ public struct BasicTypes : IFlatbufferObject
       float Float = 0.0f,
       double Double = 0.0,
       StringOffset StringOffset = default(StringOffset)) {
-    builder.StartObject(12);
+    builder.StartTable(12);
     BasicTypes.AddDouble(builder, Double);
     BasicTypes.AddLong(builder, Long);
     BasicTypes.AddULong(builder, ULong);
@@ -65,7 +67,7 @@ public struct BasicTypes : IFlatbufferObject
     return BasicTypes.EndBasicTypes(builder);
   }
 
-  public static void StartBasicTypes(FlatBufferBuilder builder) { builder.StartObject(12); }
+  public static void StartBasicTypes(FlatBufferBuilder builder) { builder.StartTable(12); }
   public static void AddByte(FlatBufferBuilder builder, byte Byte) { builder.AddByte(0, Byte, 0); }
   public static void AddUShort(FlatBufferBuilder builder, ushort UShort) { builder.AddUshort(1, UShort, 0); }
   public static void AddShort(FlatBufferBuilder builder, short Short) { builder.AddShort(2, Short, 0); }
@@ -78,9 +80,9 @@ public struct BasicTypes : IFlatbufferObject
   public static void AddFloat(FlatBufferBuilder builder, float Float) { builder.AddFloat(9, Float, 0.0f); }
   public static void AddDouble(FlatBufferBuilder builder, double Double) { builder.AddDouble(10, Double, 0.0); }
   public static void AddString(FlatBufferBuilder builder, StringOffset StringOffset) { builder.AddOffset(11, StringOffset.Value, 0); }
-  public static Offset<BasicTypes> EndBasicTypes(FlatBufferBuilder builder) {
-    int o = builder.EndObject();
-    return new Offset<BasicTypes>(o);
+  public static Offset<FlatSharpTests.Oracle.BasicTypes> EndBasicTypes(FlatBufferBuilder builder) {
+    int o = builder.EndTable();
+    return new Offset<FlatSharpTests.Oracle.BasicTypes>(o);
   }
 };
 

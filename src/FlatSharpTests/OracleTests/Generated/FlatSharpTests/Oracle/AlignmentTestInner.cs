@@ -6,27 +6,28 @@ namespace FlatSharpTests.Oracle
 {
 
 using global::System;
+using global::System.Collections.Generic;
 using global::FlatBuffers;
 
 public struct AlignmentTestInner : IFlatbufferObject
 {
   private Struct __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public void __init(int _i, ByteBuffer _bb) { __p.bb_pos = _i; __p.bb = _bb; }
+  public void __init(int _i, ByteBuffer _bb) { __p = new Struct(_i, _bb); }
   public AlignmentTestInner __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public byte A { get { return __p.bb.Get(__p.bb_pos + 0); } }
   public int B { get { return __p.bb.GetInt(__p.bb_pos + 4); } }
   public sbyte C { get { return __p.bb.GetSbyte(__p.bb_pos + 8); } }
 
-  public static Offset<AlignmentTestInner> CreateAlignmentTestInner(FlatBufferBuilder builder, byte A, int B, sbyte C) {
+  public static Offset<FlatSharpTests.Oracle.AlignmentTestInner> CreateAlignmentTestInner(FlatBufferBuilder builder, byte A, int B, sbyte C) {
     builder.Prep(4, 12);
     builder.Pad(3);
     builder.PutSbyte(C);
     builder.PutInt(B);
     builder.Pad(3);
     builder.PutByte(A);
-    return new Offset<AlignmentTestInner>(builder.Offset);
+    return new Offset<FlatSharpTests.Oracle.AlignmentTestInner>(builder.Offset);
   }
 };
 

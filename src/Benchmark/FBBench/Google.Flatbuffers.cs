@@ -6,13 +6,14 @@ namespace Benchmark.FBBench.Google
 {
 
 using global::System;
+using global::System.Collections.Generic;
 using global::FlatBuffers;
 
 public struct Foo : IFlatbufferObject
 {
   private Struct __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public void __init(int _i, ByteBuffer _bb) { __p.bb_pos = _i; __p.bb = _bb; }
+  public void __init(int _i, ByteBuffer _bb) { __p = new Struct(_i, _bb); }
   public Foo __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public ulong Id { get { return __p.bb.GetUlong(__p.bb_pos + 0); } }
@@ -20,14 +21,14 @@ public struct Foo : IFlatbufferObject
   public sbyte Prefix { get { return __p.bb.GetSbyte(__p.bb_pos + 10); } }
   public uint Length { get { return __p.bb.GetUint(__p.bb_pos + 12); } }
 
-  public static Offset<Foo> CreateFoo(FlatBufferBuilder builder, ulong Id, short Count, sbyte Prefix, uint Length) {
+  public static Offset<Benchmark.FBBench.Google.Foo> CreateFoo(FlatBufferBuilder builder, ulong Id, short Count, sbyte Prefix, uint Length) {
     builder.Prep(8, 16);
     builder.PutUint(Length);
     builder.Pad(1);
     builder.PutSbyte(Prefix);
     builder.PutShort(Count);
     builder.PutUlong(Id);
-    return new Offset<Foo>(builder.Offset);
+    return new Offset<Benchmark.FBBench.Google.Foo>(builder.Offset);
   }
 };
 
@@ -35,15 +36,15 @@ public struct Bar : IFlatbufferObject
 {
   private Struct __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public void __init(int _i, ByteBuffer _bb) { __p.bb_pos = _i; __p.bb = _bb; }
+  public void __init(int _i, ByteBuffer _bb) { __p = new Struct(_i, _bb); }
   public Bar __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public Foo Parent { get { return (new Foo()).__assign(__p.bb_pos + 0, __p.bb); } }
+  public Benchmark.FBBench.Google.Foo Parent { get { return (new Benchmark.FBBench.Google.Foo()).__assign(__p.bb_pos + 0, __p.bb); } }
   public int Time { get { return __p.bb.GetInt(__p.bb_pos + 16); } }
   public float Ratio { get { return __p.bb.GetFloat(__p.bb_pos + 20); } }
   public ushort Size { get { return __p.bb.GetUshort(__p.bb_pos + 24); } }
 
-  public static Offset<Bar> CreateBar(FlatBufferBuilder builder, ulong parent_Id, short parent_Count, sbyte parent_Prefix, uint parent_Length, int Time, float Ratio, ushort Size) {
+  public static Offset<Benchmark.FBBench.Google.Bar> CreateBar(FlatBufferBuilder builder, ulong parent_Id, short parent_Count, sbyte parent_Prefix, uint parent_Length, int Time, float Ratio, ushort Size) {
     builder.Prep(8, 32);
     builder.Pad(6);
     builder.PutUshort(Size);
@@ -55,7 +56,7 @@ public struct Bar : IFlatbufferObject
     builder.PutSbyte(parent_Prefix);
     builder.PutShort(parent_Count);
     builder.PutUlong(parent_Id);
-    return new Offset<Bar>(builder.Offset);
+    return new Offset<Benchmark.FBBench.Google.Bar>(builder.Offset);
   }
 };
 
@@ -63,25 +64,31 @@ public struct FooBar : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_1_12_0(); }
   public static FooBar GetRootAsFooBar(ByteBuffer _bb) { return GetRootAsFooBar(_bb, new FooBar()); }
   public static FooBar GetRootAsFooBar(ByteBuffer _bb, FooBar obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
-  public void __init(int _i, ByteBuffer _bb) { __p.bb_pos = _i; __p.bb = _bb; }
+  public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public FooBar __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public Bar? Sibling { get { int o = __p.__offset(4); return o != 0 ? (Bar?)(new Bar()).__assign(o + __p.bb_pos, __p.bb) : null; } }
+  public Benchmark.FBBench.Google.Bar? Sibling { get { int o = __p.__offset(4); return o != 0 ? (Benchmark.FBBench.Google.Bar?)(new Benchmark.FBBench.Google.Bar()).__assign(o + __p.bb_pos, __p.bb) : null; } }
   public string Name { get { int o = __p.__offset(6); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetNameBytes() { return __p.__vector_as_span<byte>(6, 1); }
+#else
   public ArraySegment<byte>? GetNameBytes() { return __p.__vector_as_arraysegment(6); }
+#endif
+  public byte[] GetNameArray() { return __p.__vector_as_array<byte>(6); }
   public double Rating { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetDouble(o + __p.bb_pos) : (double)0.0; } }
   public byte Postfix { get { int o = __p.__offset(10); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
 
-  public static void StartFooBar(FlatBufferBuilder builder) { builder.StartObject(4); }
-  public static void AddSibling(FlatBufferBuilder builder, Offset<Bar> siblingOffset) { builder.AddStruct(0, siblingOffset.Value, 0); }
+  public static void StartFooBar(FlatBufferBuilder builder) { builder.StartTable(4); }
+  public static void AddSibling(FlatBufferBuilder builder, Offset<Benchmark.FBBench.Google.Bar> siblingOffset) { builder.AddStruct(0, siblingOffset.Value, 0); }
   public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(1, nameOffset.Value, 0); }
   public static void AddRating(FlatBufferBuilder builder, double rating) { builder.AddDouble(2, rating, 0.0); }
   public static void AddPostfix(FlatBufferBuilder builder, byte postfix) { builder.AddByte(3, postfix, 0); }
-  public static Offset<FooBar> EndFooBar(FlatBufferBuilder builder) {
-    int o = builder.EndObject();
-    return new Offset<FooBar>(o);
+  public static Offset<Benchmark.FBBench.Google.FooBar> EndFooBar(FlatBufferBuilder builder) {
+    int o = builder.EndTable();
+    return new Offset<Benchmark.FBBench.Google.FooBar>(o);
   }
 };
 
@@ -89,24 +96,30 @@ public struct FooBarContainer : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_1_12_0(); }
   public static FooBarContainer GetRootAsFooBarContainer(ByteBuffer _bb) { return GetRootAsFooBarContainer(_bb, new FooBarContainer()); }
   public static FooBarContainer GetRootAsFooBarContainer(ByteBuffer _bb, FooBarContainer obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
-  public void __init(int _i, ByteBuffer _bb) { __p.bb_pos = _i; __p.bb = _bb; }
+  public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public FooBarContainer __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public FooBar? List(int j) { int o = __p.__offset(4); return o != 0 ? (FooBar?)(new FooBar()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
+  public Benchmark.FBBench.Google.FooBar? List(int j) { int o = __p.__offset(4); return o != 0 ? (Benchmark.FBBench.Google.FooBar?)(new Benchmark.FBBench.Google.FooBar()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
   public int ListLength { get { int o = __p.__offset(4); return o != 0 ? __p.__vector_len(o) : 0; } }
   public bool Initialized { get { int o = __p.__offset(6); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
   public short Fruit { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetShort(o + __p.bb_pos) : (short)0; } }
   public string Location { get { int o = __p.__offset(10); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetLocationBytes() { return __p.__vector_as_span<byte>(10, 1); }
+#else
   public ArraySegment<byte>? GetLocationBytes() { return __p.__vector_as_arraysegment(10); }
+#endif
+  public byte[] GetLocationArray() { return __p.__vector_as_array<byte>(10); }
 
-  public static Offset<FooBarContainer> CreateFooBarContainer(FlatBufferBuilder builder,
+  public static Offset<Benchmark.FBBench.Google.FooBarContainer> CreateFooBarContainer(FlatBufferBuilder builder,
       VectorOffset listOffset = default(VectorOffset),
       bool initialized = false,
       short fruit = 0,
       StringOffset locationOffset = default(StringOffset)) {
-    builder.StartObject(4);
+    builder.StartTable(4);
     FooBarContainer.AddLocation(builder, locationOffset);
     FooBarContainer.AddList(builder, listOffset);
     FooBarContainer.AddFruit(builder, fruit);
@@ -114,16 +127,17 @@ public struct FooBarContainer : IFlatbufferObject
     return FooBarContainer.EndFooBarContainer(builder);
   }
 
-  public static void StartFooBarContainer(FlatBufferBuilder builder) { builder.StartObject(4); }
+  public static void StartFooBarContainer(FlatBufferBuilder builder) { builder.StartTable(4); }
   public static void AddList(FlatBufferBuilder builder, VectorOffset listOffset) { builder.AddOffset(0, listOffset.Value, 0); }
-  public static VectorOffset CreateListVector(FlatBufferBuilder builder, Offset<FooBar>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
+  public static VectorOffset CreateListVector(FlatBufferBuilder builder, Offset<Benchmark.FBBench.Google.FooBar>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
+  public static VectorOffset CreateListVectorBlock(FlatBufferBuilder builder, Offset<Benchmark.FBBench.Google.FooBar>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
   public static void StartListVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
   public static void AddInitialized(FlatBufferBuilder builder, bool initialized) { builder.AddBool(1, initialized, false); }
   public static void AddFruit(FlatBufferBuilder builder, short fruit) { builder.AddShort(2, fruit, 0); }
   public static void AddLocation(FlatBufferBuilder builder, StringOffset locationOffset) { builder.AddOffset(3, locationOffset.Value, 0); }
-  public static Offset<FooBarContainer> EndFooBarContainer(FlatBufferBuilder builder) {
-    int o = builder.EndObject();
-    return new Offset<FooBarContainer>(o);
+  public static Offset<Benchmark.FBBench.Google.FooBarContainer> EndFooBarContainer(FlatBufferBuilder builder) {
+    int o = builder.EndTable();
+    return new Offset<Benchmark.FBBench.Google.FooBarContainer>(o);
   }
 };
 

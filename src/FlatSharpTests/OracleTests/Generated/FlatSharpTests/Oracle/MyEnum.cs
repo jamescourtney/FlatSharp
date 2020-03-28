@@ -5,12 +5,10 @@
 namespace FlatSharpTests.Oracle
 {
 
-public enum Union : byte
+public enum MyEnum : sbyte
 {
-  NONE = 0,
-  BasicTypes = 1,
-  Location = 2,
-  stringValue = 3,
+  A = 0,
+  B = 1,
 };
 
 

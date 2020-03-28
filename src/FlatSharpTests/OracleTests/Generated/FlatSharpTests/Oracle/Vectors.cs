@@ -6,21 +6,23 @@ namespace FlatSharpTests.Oracle
 {
 
 using global::System;
+using global::System.Collections.Generic;
 using global::FlatBuffers;
 
 public struct Vectors : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_1_12_0(); }
   public static Vectors GetRootAsVectors(ByteBuffer _bb) { return GetRootAsVectors(_bb, new Vectors()); }
   public static Vectors GetRootAsVectors(ByteBuffer _bb, Vectors obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
-  public void __init(int _i, ByteBuffer _bb) { __p.bb_pos = _i; __p.bb = _bb; }
+  public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public Vectors __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public int IntVector(int j) { int o = __p.__offset(4); return o != 0 ? __p.bb.GetInt(__p.__vector(o) + j * 4) : (int)0; }
   public int IntVectorLength { get { int o = __p.__offset(4); return o != 0 ? __p.__vector_len(o) : 0; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetIntVectorBytes() { return __p.__vector_as_span(4); }
+  public Span<int> GetIntVectorBytes() { return __p.__vector_as_span<int>(4, 4); }
 #else
   public ArraySegment<byte>? GetIntVectorBytes() { return __p.__vector_as_arraysegment(4); }
 #endif
@@ -28,7 +30,7 @@ public struct Vectors : IFlatbufferObject
   public long LongVector(int j) { int o = __p.__offset(6); return o != 0 ? __p.bb.GetLong(__p.__vector(o) + j * 8) : (long)0; }
   public int LongVectorLength { get { int o = __p.__offset(6); return o != 0 ? __p.__vector_len(o) : 0; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetLongVectorBytes() { return __p.__vector_as_span(6); }
+  public Span<long> GetLongVectorBytes() { return __p.__vector_as_span<long>(6, 8); }
 #else
   public ArraySegment<byte>? GetLongVectorBytes() { return __p.__vector_as_arraysegment(6); }
 #endif
@@ -36,7 +38,7 @@ public struct Vectors : IFlatbufferObject
   public byte ByteVector1(int j) { int o = __p.__offset(8); return o != 0 ? __p.bb.Get(__p.__vector(o) + j * 1) : (byte)0; }
   public int ByteVector1Length { get { int o = __p.__offset(8); return o != 0 ? __p.__vector_len(o) : 0; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetByteVector1Bytes() { return __p.__vector_as_span(8); }
+  public Span<byte> GetByteVector1Bytes() { return __p.__vector_as_span<byte>(8, 1); }
 #else
   public ArraySegment<byte>? GetByteVector1Bytes() { return __p.__vector_as_arraysegment(8); }
 #endif
@@ -44,18 +46,18 @@ public struct Vectors : IFlatbufferObject
   public byte ByteVector2(int j) { int o = __p.__offset(10); return o != 0 ? __p.bb.Get(__p.__vector(o) + j * 1) : (byte)0; }
   public int ByteVector2Length { get { int o = __p.__offset(10); return o != 0 ? __p.__vector_len(o) : 0; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetByteVector2Bytes() { return __p.__vector_as_span(10); }
+  public Span<byte> GetByteVector2Bytes() { return __p.__vector_as_span<byte>(10, 1); }
 #else
   public ArraySegment<byte>? GetByteVector2Bytes() { return __p.__vector_as_arraysegment(10); }
 #endif
   public byte[] GetByteVector2Array() { return __p.__vector_as_array<byte>(10); }
 
-  public static Offset<Vectors> CreateVectors(FlatBufferBuilder builder,
+  public static Offset<FlatSharpTests.Oracle.Vectors> CreateVectors(FlatBufferBuilder builder,
       VectorOffset IntVectorOffset = default(VectorOffset),
       VectorOffset LongVectorOffset = default(VectorOffset),
       VectorOffset ByteVector1Offset = default(VectorOffset),
       VectorOffset ByteVector2Offset = default(VectorOffset)) {
-    builder.StartObject(4);
+    builder.StartTable(4);
     Vectors.AddByteVector2(builder, ByteVector2Offset);
     Vectors.AddByteVector1(builder, ByteVector1Offset);
     Vectors.AddLongVector(builder, LongVectorOffset);
@@ -63,7 +65,7 @@ public struct Vectors : IFlatbufferObject
     return Vectors.EndVectors(builder);
   }
 
-  public static void StartVectors(FlatBufferBuilder builder) { builder.StartObject(4); }
+  public static void StartVectors(FlatBufferBuilder builder) { builder.StartTable(4); }
   public static void AddIntVector(FlatBufferBuilder builder, VectorOffset IntVectorOffset) { builder.AddOffset(0, IntVectorOffset.Value, 0); }
   public static VectorOffset CreateIntVectorVector(FlatBufferBuilder builder, int[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddInt(data[i]); return builder.EndVector(); }
   public static VectorOffset CreateIntVectorVectorBlock(FlatBufferBuilder builder, int[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
@@ -80,9 +82,9 @@ public struct Vectors : IFlatbufferObject
   public static VectorOffset CreateByteVector2Vector(FlatBufferBuilder builder, byte[] data) { builder.StartVector(1, data.Length, 1); for (int i = data.Length - 1; i >= 0; i--) builder.AddByte(data[i]); return builder.EndVector(); }
   public static VectorOffset CreateByteVector2VectorBlock(FlatBufferBuilder builder, byte[] data) { builder.StartVector(1, data.Length, 1); builder.Add(data); return builder.EndVector(); }
   public static void StartByteVector2Vector(FlatBufferBuilder builder, int numElems) { builder.StartVector(1, numElems, 1); }
-  public static Offset<Vectors> EndVectors(FlatBufferBuilder builder) {
-    int o = builder.EndObject();
-    return new Offset<Vectors>(o);
+  public static Offset<FlatSharpTests.Oracle.Vectors> EndVectors(FlatBufferBuilder builder) {
+    int o = builder.EndTable();
+    return new Offset<FlatSharpTests.Oracle.Vectors>(o);
   }
 };
 

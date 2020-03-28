@@ -113,3 +113,26 @@ struct OuterStruct {
 	Inner:InnerStruct;
 	A:int;
 }
+
+table SortedVectorTest {
+	Int32:[SortedVectorInt32Table];
+	String:[SortedVectorStringTable];
+	Double:[SortedVectorDoubleTable];
+}
+
+table SortedVectorInt32Table {
+	Value:int32 = 5 (key);
+}
+
+table SortedVectorDoubleTable {
+	Value:double (key);
+}
+
+table SortedVectorStringTable {
+	Value:string (key);
+}
+
+enum MyEnum : byte {
+  A,
+  B
+}
