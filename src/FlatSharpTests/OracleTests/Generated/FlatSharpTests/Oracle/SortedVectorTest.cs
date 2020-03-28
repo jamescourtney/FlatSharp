@@ -6,54 +6,56 @@ namespace FlatSharpTests.Oracle
 {
 
 using global::System;
+using global::System.Collections.Generic;
 using global::FlatBuffers;
 
 public struct SortedVectorTest : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_1_12_0(); }
   public static SortedVectorTest GetRootAsSortedVectorTest(ByteBuffer _bb) { return GetRootAsSortedVectorTest(_bb, new SortedVectorTest()); }
   public static SortedVectorTest GetRootAsSortedVectorTest(ByteBuffer _bb, SortedVectorTest obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
-  public void __init(int _i, ByteBuffer _bb) { __p.bb_pos = _i; __p.bb = _bb; }
+  public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public SortedVectorTest __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public SortedVectorInt32Table? Int32(int j) { int o = __p.__offset(4); return o != 0 ? (SortedVectorInt32Table?)(new SortedVectorInt32Table()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
+  public FlatSharpTests.Oracle.SortedVectorInt32Table? Int32(int j) { int o = __p.__offset(4); return o != 0 ? (FlatSharpTests.Oracle.SortedVectorInt32Table?)(new FlatSharpTests.Oracle.SortedVectorInt32Table()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
   public int Int32Length { get { int o = __p.__offset(4); return o != 0 ? __p.__vector_len(o) : 0; } }
-  public SortedVectorInt32Table? Int32ByKey(int key) { int o = __p.__offset(4); return o != 0 ? SortedVectorInt32Table.__lookup_by_key(__p.__vector(o), key, __p.bb) : null; }
-  public SortedVectorStringTable? String(int j) { int o = __p.__offset(6); return o != 0 ? (SortedVectorStringTable?)(new SortedVectorStringTable()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
+  public FlatSharpTests.Oracle.SortedVectorInt32Table? Int32ByKey(int key) { int o = __p.__offset(4); return o != 0 ? FlatSharpTests.Oracle.SortedVectorInt32Table.__lookup_by_key(__p.__vector(o), key, __p.bb) : null; }
+  public FlatSharpTests.Oracle.SortedVectorStringTable? String(int j) { int o = __p.__offset(6); return o != 0 ? (FlatSharpTests.Oracle.SortedVectorStringTable?)(new FlatSharpTests.Oracle.SortedVectorStringTable()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
   public int StringLength { get { int o = __p.__offset(6); return o != 0 ? __p.__vector_len(o) : 0; } }
-  public SortedVectorStringTable? StringByKey(string key) { int o = __p.__offset(6); return o != 0 ? SortedVectorStringTable.__lookup_by_key(__p.__vector(o), key, __p.bb) : null; }
-  public SortedVectorDoubleTable? Double(int j) { int o = __p.__offset(8); return o != 0 ? (SortedVectorDoubleTable?)(new SortedVectorDoubleTable()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
+  public FlatSharpTests.Oracle.SortedVectorStringTable? StringByKey(string key) { int o = __p.__offset(6); return o != 0 ? FlatSharpTests.Oracle.SortedVectorStringTable.__lookup_by_key(__p.__vector(o), key, __p.bb) : null; }
+  public FlatSharpTests.Oracle.SortedVectorDoubleTable? Double(int j) { int o = __p.__offset(8); return o != 0 ? (FlatSharpTests.Oracle.SortedVectorDoubleTable?)(new FlatSharpTests.Oracle.SortedVectorDoubleTable()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
   public int DoubleLength { get { int o = __p.__offset(8); return o != 0 ? __p.__vector_len(o) : 0; } }
-  public SortedVectorDoubleTable? DoubleByKey(double key) { int o = __p.__offset(8); return o != 0 ? SortedVectorDoubleTable.__lookup_by_key(__p.__vector(o), key, __p.bb) : null; }
+  public FlatSharpTests.Oracle.SortedVectorDoubleTable? DoubleByKey(double key) { int o = __p.__offset(8); return o != 0 ? FlatSharpTests.Oracle.SortedVectorDoubleTable.__lookup_by_key(__p.__vector(o), key, __p.bb) : null; }
 
-  public static Offset<SortedVectorTest> CreateSortedVectorTest(FlatBufferBuilder builder,
+  public static Offset<FlatSharpTests.Oracle.SortedVectorTest> CreateSortedVectorTest(FlatBufferBuilder builder,
       VectorOffset Int32Offset = default(VectorOffset),
       VectorOffset StringOffset = default(VectorOffset),
       VectorOffset DoubleOffset = default(VectorOffset)) {
-    builder.StartObject(3);
+    builder.StartTable(3);
     SortedVectorTest.AddDouble(builder, DoubleOffset);
     SortedVectorTest.AddString(builder, StringOffset);
     SortedVectorTest.AddInt32(builder, Int32Offset);
     return SortedVectorTest.EndSortedVectorTest(builder);
   }
 
-  public static void StartSortedVectorTest(FlatBufferBuilder builder) { builder.StartObject(3); }
+  public static void StartSortedVectorTest(FlatBufferBuilder builder) { builder.StartTable(3); }
   public static void AddInt32(FlatBufferBuilder builder, VectorOffset Int32Offset) { builder.AddOffset(0, Int32Offset.Value, 0); }
-  public static VectorOffset CreateInt32Vector(FlatBufferBuilder builder, Offset<SortedVectorInt32Table>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
-  public static VectorOffset CreateInt32VectorBlock(FlatBufferBuilder builder, Offset<SortedVectorInt32Table>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateInt32Vector(FlatBufferBuilder builder, Offset<FlatSharpTests.Oracle.SortedVectorInt32Table>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
+  public static VectorOffset CreateInt32VectorBlock(FlatBufferBuilder builder, Offset<FlatSharpTests.Oracle.SortedVectorInt32Table>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
   public static void StartInt32Vector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
   public static void AddString(FlatBufferBuilder builder, VectorOffset StringOffset) { builder.AddOffset(1, StringOffset.Value, 0); }
-  public static VectorOffset CreateStringVector(FlatBufferBuilder builder, Offset<SortedVectorStringTable>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
-  public static VectorOffset CreateStringVectorBlock(FlatBufferBuilder builder, Offset<SortedVectorStringTable>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateStringVector(FlatBufferBuilder builder, Offset<FlatSharpTests.Oracle.SortedVectorStringTable>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
+  public static VectorOffset CreateStringVectorBlock(FlatBufferBuilder builder, Offset<FlatSharpTests.Oracle.SortedVectorStringTable>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
   public static void StartStringVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
   public static void AddDouble(FlatBufferBuilder builder, VectorOffset DoubleOffset) { builder.AddOffset(2, DoubleOffset.Value, 0); }
-  public static VectorOffset CreateDoubleVector(FlatBufferBuilder builder, Offset<SortedVectorDoubleTable>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
-  public static VectorOffset CreateDoubleVectorBlock(FlatBufferBuilder builder, Offset<SortedVectorDoubleTable>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateDoubleVector(FlatBufferBuilder builder, Offset<FlatSharpTests.Oracle.SortedVectorDoubleTable>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
+  public static VectorOffset CreateDoubleVectorBlock(FlatBufferBuilder builder, Offset<FlatSharpTests.Oracle.SortedVectorDoubleTable>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
   public static void StartDoubleVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
-  public static Offset<SortedVectorTest> EndSortedVectorTest(FlatBufferBuilder builder) {
-    int o = builder.EndObject();
-    return new Offset<SortedVectorTest>(o);
+  public static Offset<FlatSharpTests.Oracle.SortedVectorTest> EndSortedVectorTest(FlatBufferBuilder builder) {
+    int o = builder.EndTable();
+    return new Offset<FlatSharpTests.Oracle.SortedVectorTest>(o);
   }
 };
 

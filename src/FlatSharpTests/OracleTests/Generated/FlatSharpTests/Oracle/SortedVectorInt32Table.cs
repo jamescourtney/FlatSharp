@@ -6,31 +6,33 @@ namespace FlatSharpTests.Oracle
 {
 
 using global::System;
+using global::System.Collections.Generic;
 using global::FlatBuffers;
 
 public struct SortedVectorInt32Table : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_1_12_0(); }
   public static SortedVectorInt32Table GetRootAsSortedVectorInt32Table(ByteBuffer _bb) { return GetRootAsSortedVectorInt32Table(_bb, new SortedVectorInt32Table()); }
   public static SortedVectorInt32Table GetRootAsSortedVectorInt32Table(ByteBuffer _bb, SortedVectorInt32Table obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
-  public void __init(int _i, ByteBuffer _bb) { __p.bb_pos = _i; __p.bb = _bb; }
+  public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public SortedVectorInt32Table __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public int Value { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int Value { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)5; } }
 
-  public static Offset<SortedVectorInt32Table> CreateSortedVectorInt32Table(FlatBufferBuilder builder,
-      int Value = 0) {
-    builder.StartObject(1);
+  public static Offset<FlatSharpTests.Oracle.SortedVectorInt32Table> CreateSortedVectorInt32Table(FlatBufferBuilder builder,
+      int Value = 5) {
+    builder.StartTable(1);
     SortedVectorInt32Table.AddValue(builder, Value);
     return SortedVectorInt32Table.EndSortedVectorInt32Table(builder);
   }
 
-  public static void StartSortedVectorInt32Table(FlatBufferBuilder builder) { builder.StartObject(1); }
-  public static void AddValue(FlatBufferBuilder builder, int Value) { builder.AddInt(0, Value, 0); }
-  public static Offset<SortedVectorInt32Table> EndSortedVectorInt32Table(FlatBufferBuilder builder) {
-    int o = builder.EndObject();
-    return new Offset<SortedVectorInt32Table>(o);
+  public static void StartSortedVectorInt32Table(FlatBufferBuilder builder) { builder.StartTable(1); }
+  public static void AddValue(FlatBufferBuilder builder, int Value) { builder.AddInt(0, Value, 5); }
+  public static Offset<FlatSharpTests.Oracle.SortedVectorInt32Table> EndSortedVectorInt32Table(FlatBufferBuilder builder) {
+    int o = builder.EndTable();
+    return new Offset<FlatSharpTests.Oracle.SortedVectorInt32Table>(o);
   }
 
   public static VectorOffset CreateSortedVectorOfSortedVectorInt32Table(FlatBufferBuilder builder, Offset<SortedVectorInt32Table>[] offsets) {

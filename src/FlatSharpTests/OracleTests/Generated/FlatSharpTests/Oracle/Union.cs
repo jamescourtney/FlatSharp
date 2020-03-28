@@ -7,10 +7,10 @@ namespace FlatSharpTests.Oracle
 
 public enum Union : byte
 {
- NONE = 0,
- BasicTypes = 1,
- Location = 2,
- stringValue = 3,
+  NONE = 0,
+  BasicTypes = 1,
+  Location = 2,
+  stringValue = 3,
 };
 
 

@@ -7,8 +7,8 @@ namespace FlatSharpTests.Oracle
 
 public enum MyEnum : sbyte
 {
- A = 0,
- B = 1,
+  A = 0,
+  B = 1,
 };
 
 

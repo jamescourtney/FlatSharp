@@ -6,24 +6,26 @@ namespace FlatSharpTests.Oracle
 {
 
 using global::System;
+using global::System.Collections.Generic;
 using global::FlatBuffers;
 
 public struct AlignmentTestOuterHoder : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_1_12_0(); }
   public static AlignmentTestOuterHoder GetRootAsAlignmentTestOuterHoder(ByteBuffer _bb) { return GetRootAsAlignmentTestOuterHoder(_bb, new AlignmentTestOuterHoder()); }
   public static AlignmentTestOuterHoder GetRootAsAlignmentTestOuterHoder(ByteBuffer _bb, AlignmentTestOuterHoder obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
-  public void __init(int _i, ByteBuffer _bb) { __p.bb_pos = _i; __p.bb = _bb; }
+  public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public AlignmentTestOuterHoder __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public AlignmentTestOuter? Value { get { int o = __p.__offset(4); return o != 0 ? (AlignmentTestOuter?)(new AlignmentTestOuter()).__assign(o + __p.bb_pos, __p.bb) : null; } }
+  public FlatSharpTests.Oracle.AlignmentTestOuter? Value { get { int o = __p.__offset(4); return o != 0 ? (FlatSharpTests.Oracle.AlignmentTestOuter?)(new FlatSharpTests.Oracle.AlignmentTestOuter()).__assign(o + __p.bb_pos, __p.bb) : null; } }
 
-  public static void StartAlignmentTestOuterHoder(FlatBufferBuilder builder) { builder.StartObject(1); }
-  public static void AddValue(FlatBufferBuilder builder, Offset<AlignmentTestOuter> ValueOffset) { builder.AddStruct(0, ValueOffset.Value, 0); }
-  public static Offset<AlignmentTestOuterHoder> EndAlignmentTestOuterHoder(FlatBufferBuilder builder) {
-    int o = builder.EndObject();
-    return new Offset<AlignmentTestOuterHoder>(o);
+  public static void StartAlignmentTestOuterHoder(FlatBufferBuilder builder) { builder.StartTable(1); }
+  public static void AddValue(FlatBufferBuilder builder, Offset<FlatSharpTests.Oracle.AlignmentTestOuter> ValueOffset) { builder.AddStruct(0, ValueOffset.Value, 0); }
+  public static Offset<FlatSharpTests.Oracle.AlignmentTestOuterHoder> EndAlignmentTestOuterHoder(FlatBufferBuilder builder) {
+    int o = builder.EndTable();
+    return new Offset<FlatSharpTests.Oracle.AlignmentTestOuterHoder>(o);
   }
 };
 

@@ -6,24 +6,25 @@ namespace FlatSharpTests.Oracle
 {
 
 using global::System;
+using global::System.Collections.Generic;
 using global::FlatBuffers;
 
 public struct FiveByteStruct : IFlatbufferObject
 {
   private Struct __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public void __init(int _i, ByteBuffer _bb) { __p.bb_pos = _i; __p.bb = _bb; }
+  public void __init(int _i, ByteBuffer _bb) { __p = new Struct(_i, _bb); }
   public FiveByteStruct __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public int Int { get { return __p.bb.GetInt(__p.bb_pos + 0); } }
   public byte Byte { get { return __p.bb.Get(__p.bb_pos + 4); } }
 
-  public static Offset<FiveByteStruct> CreateFiveByteStruct(FlatBufferBuilder builder, int Int, byte Byte) {
+  public static Offset<FlatSharpTests.Oracle.FiveByteStruct> CreateFiveByteStruct(FlatBufferBuilder builder, int Int, byte Byte) {
     builder.Prep(4, 8);
     builder.Pad(3);
     builder.PutByte(Byte);
     builder.PutInt(Int);
-    return new Offset<FiveByteStruct>(builder.Offset);
+    return new Offset<FlatSharpTests.Oracle.FiveByteStruct>(builder.Offset);
   }
 };
 

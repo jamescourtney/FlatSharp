@@ -6,38 +6,40 @@ namespace FlatSharpTests.Oracle
 {
 
 using global::System;
+using global::System.Collections.Generic;
 using global::FlatBuffers;
 
 public struct SortedVectorStringTable : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_1_12_0(); }
   public static SortedVectorStringTable GetRootAsSortedVectorStringTable(ByteBuffer _bb) { return GetRootAsSortedVectorStringTable(_bb, new SortedVectorStringTable()); }
   public static SortedVectorStringTable GetRootAsSortedVectorStringTable(ByteBuffer _bb, SortedVectorStringTable obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
-  public void __init(int _i, ByteBuffer _bb) { __p.bb_pos = _i; __p.bb = _bb; }
+  public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public SortedVectorStringTable __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public string Value { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetValueBytes() { return __p.__vector_as_span(4); }
+  public Span<byte> GetValueBytes() { return __p.__vector_as_span<byte>(4, 1); }
 #else
   public ArraySegment<byte>? GetValueBytes() { return __p.__vector_as_arraysegment(4); }
 #endif
   public byte[] GetValueArray() { return __p.__vector_as_array<byte>(4); }
 
-  public static Offset<SortedVectorStringTable> CreateSortedVectorStringTable(FlatBufferBuilder builder,
+  public static Offset<FlatSharpTests.Oracle.SortedVectorStringTable> CreateSortedVectorStringTable(FlatBufferBuilder builder,
       StringOffset ValueOffset = default(StringOffset)) {
-    builder.StartObject(1);
+    builder.StartTable(1);
     SortedVectorStringTable.AddValue(builder, ValueOffset);
     return SortedVectorStringTable.EndSortedVectorStringTable(builder);
   }
 
-  public static void StartSortedVectorStringTable(FlatBufferBuilder builder) { builder.StartObject(1); }
+  public static void StartSortedVectorStringTable(FlatBufferBuilder builder) { builder.StartTable(1); }
   public static void AddValue(FlatBufferBuilder builder, StringOffset ValueOffset) { builder.AddOffset(0, ValueOffset.Value, 0); }
-  public static Offset<SortedVectorStringTable> EndSortedVectorStringTable(FlatBufferBuilder builder) {
-    int o = builder.EndObject();
+  public static Offset<FlatSharpTests.Oracle.SortedVectorStringTable> EndSortedVectorStringTable(FlatBufferBuilder builder) {
+    int o = builder.EndTable();
     builder.Required(o, 4);  // Value
-    return new Offset<SortedVectorStringTable>(o);
+    return new Offset<FlatSharpTests.Oracle.SortedVectorStringTable>(o);
   }
 
   public static VectorOffset CreateSortedVectorOfSortedVectorStringTable(FlatBufferBuilder builder, Offset<SortedVectorStringTable>[] offsets) {

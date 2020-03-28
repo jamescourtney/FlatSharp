@@ -6,31 +6,33 @@ namespace FlatSharpTests.Oracle
 {
 
 using global::System;
+using global::System.Collections.Generic;
 using global::FlatBuffers;
 
 public struct SortedVectorDoubleTable : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_1_12_0(); }
   public static SortedVectorDoubleTable GetRootAsSortedVectorDoubleTable(ByteBuffer _bb) { return GetRootAsSortedVectorDoubleTable(_bb, new SortedVectorDoubleTable()); }
   public static SortedVectorDoubleTable GetRootAsSortedVectorDoubleTable(ByteBuffer _bb, SortedVectorDoubleTable obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
-  public void __init(int _i, ByteBuffer _bb) { __p.bb_pos = _i; __p.bb = _bb; }
+  public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public SortedVectorDoubleTable __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public double Value { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetDouble(o + __p.bb_pos) : (double)0.0; } }
 
-  public static Offset<SortedVectorDoubleTable> CreateSortedVectorDoubleTable(FlatBufferBuilder builder,
+  public static Offset<FlatSharpTests.Oracle.SortedVectorDoubleTable> CreateSortedVectorDoubleTable(FlatBufferBuilder builder,
       double Value = 0.0) {
-    builder.StartObject(1);
+    builder.StartTable(1);
     SortedVectorDoubleTable.AddValue(builder, Value);
     return SortedVectorDoubleTable.EndSortedVectorDoubleTable(builder);
   }
 
-  public static void StartSortedVectorDoubleTable(FlatBufferBuilder builder) { builder.StartObject(1); }
+  public static void StartSortedVectorDoubleTable(FlatBufferBuilder builder) { builder.StartTable(1); }
   public static void AddValue(FlatBufferBuilder builder, double Value) { builder.AddDouble(0, Value, 0.0); }
-  public static Offset<SortedVectorDoubleTable> EndSortedVectorDoubleTable(FlatBufferBuilder builder) {
-    int o = builder.EndObject();
-    return new Offset<SortedVectorDoubleTable>(o);
+  public static Offset<FlatSharpTests.Oracle.SortedVectorDoubleTable> EndSortedVectorDoubleTable(FlatBufferBuilder builder) {
+    int o = builder.EndTable();
+    return new Offset<FlatSharpTests.Oracle.SortedVectorDoubleTable>(o);
   }
 
   public static VectorOffset CreateSortedVectorOfSortedVectorDoubleTable(FlatBufferBuilder builder, Offset<SortedVectorDoubleTable>[] offsets) {
