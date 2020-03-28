@@ -246,11 +246,31 @@ $@"
                             currentOffset += {memberModel.ItemTypeModel.InlineSize};
                     }}";
 
+            string sortInvocation = string.Empty;
             if (memberModel.IsSortedVector)
             {
-                var vectorTableModel = (TableTypeModel)((VectorTypeModel)memberModel.ItemTypeModel).ItemTypeModel;
-                var keyProperty = vectorTableModel.KeyProperty;
-                valueVariableName = $"{valueVariableName}.OrderBy(x => x.{keyProperty.Name}, {nameof(SortedVectorHelpers)}.{nameof(SortedVectorHelpers.GetComparer)}<{CSharpHelpers.GetCompilableTypeName(keyProperty.PropertyType)}>()).ToArray()";
+                if (this.options.UseInPlaceVectorSort)
+                {
+                    VectorTypeModel vectorModel = (VectorTypeModel)memberModel.ItemTypeModel;
+                    TableTypeModel tableModel = (TableTypeModel)vectorModel.ItemTypeModel;
+                    TableMemberModel keyMember = tableModel.IndexToMemberMap.Single(x => x.Value.PropertyInfo == tableModel.KeyProperty).Value;
+
+                    if (tableModel.KeyProperty.PropertyType == typeof(string))
+                    {
+                        sortInvocation = $"{nameof(SortedVectorHelpers)}.{nameof(SortedVectorHelpers.SortStringVector)}(span, {offsetVariableName}, {keyMember.Index});";
+                    }
+                    else if (keyMember.ItemTypeModel is ScalarTypeModel scalarModel)
+                    {
+                        var builtInType = BuiltInType.BuiltInScalars[keyMember.ItemTypeModel.ClrType];
+                        sortInvocation = $"{nameof(SortedVectorHelpers)}.{nameof(SortedVectorHelpers.SortVector)}<{CSharpHelpers.GetCompilableTypeName(tableModel.KeyProperty.PropertyType)}>(span, {offsetVariableName}, {keyMember.Index}, {CSharpHelpers.GetDefaultValueToken(keyMember)}, {keyMember.ItemTypeModel.InlineSize}, {CSharpHelpers.GetFullMethodName(builtInType.ScalarSpanReaderRead)});";
+                    }
+                }
+                else
+                {
+                    var vectorTableModel = (TableTypeModel)((VectorTypeModel)memberModel.ItemTypeModel).ItemTypeModel;
+                    var keyProperty = vectorTableModel.KeyProperty;
+                    valueVariableName = $"{valueVariableName}.OrderBy(x => x.{keyProperty.Name}, {nameof(SortedVectorHelpers)}.{nameof(SortedVectorHelpers.GetComparer)}<{CSharpHelpers.GetCompilableTypeName(keyProperty.PropertyType)}>()).ToArray()";
+                }
             }
 
             string serializeBlock =
@@ -258,6 +278,7 @@ $@"
                     if ({offsetVariableName} != 0)
                     {{
                         {this.GetSerializeInvocation(memberModel.ItemTypeModel.ClrType, valueVariableName, offsetVariableName)}
+                        {sortInvocation}
                     }}";
 
             return (prepareBlock, serializeBlock);
@@ -334,15 +355,21 @@ $@"
             this.GenerateSerializeMethod(type, body);
         }
 
-        private string GetSerializeInvocation(Type type, string value, string offset)
+        private string GetSerializeInvocation(
+            Type type, 
+            string value, 
+            string offset, 
+            string spanVariableName = "span", 
+            string writerVariableName = "writer", 
+            string contextVariableName = "context")
         {
             if (BuiltInType.BuiltInTypes.TryGetValue(type, out var builtInType))
             {
-                return $"writer.{builtInType.SpanWriterWrite.Name}(span, {value}, {offset}, context);";
+                return $"writer.{builtInType.SpanWriterWrite.Name}({spanVariableName}, {value}, {offset}, {contextVariableName});";
             }
             else
             {
-                return $"{this.MethodNames[type]}(writer, span, {value}, {offset}, context);";
+                return $"{this.MethodNames[type]}({writerVariableName}, {spanVariableName}, {value}, {offset}, {contextVariableName});";
             }
         }
 

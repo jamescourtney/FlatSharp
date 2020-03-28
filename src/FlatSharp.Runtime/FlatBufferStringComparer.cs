@@ -28,7 +28,7 @@ namespace FlatSharp
     /// This implemention is likely inefficient relative to the FlatBuffers algorithm. This is because FlatSharp largely operates with objects and 
     /// FlatBuffers largely operates with buffers. Optimizations may be available and worthwhile if this is really terrible.
     /// </remarks>
-    public class FlatBufferStringComparer : IComparer<string>
+    public class FlatBufferStringComparer : IComparer<string>, ISpanComparer
     {
         /// <summary>
         /// Singleton access.
@@ -66,13 +66,25 @@ namespace FlatSharp
             int yCount = encoding.GetBytes(y, yBytes);
 #endif
 
-            return CompareSpans(
-                xBytes.Slice(0, xCount), 
-                yBytes.Slice(0, yCount));
+            return this.Compare(
+                xBytes,
+                0,
+                xCount, 
+                yBytes,
+                0,
+                yCount);
         }
 
-        internal static int CompareSpans(Span<byte> x, Span<byte> y)
+        public int Compare(ReadOnlySpan<byte> left, int leftOffset, int leftLength, ReadOnlySpan<byte> right, int rightOffset, int rightLength)
         {
+            if (leftOffset < 0 || rightOffset < 0 || leftLength < 0 || rightLength < 0)
+            {
+                throw new InvalidOperationException("Strings must have value and cannot be empty.");
+            }
+
+            ReadOnlySpan<byte> x = left.Slice(leftOffset, leftLength);
+            ReadOnlySpan<byte> y = right.Slice(rightOffset, rightLength);
+
             int minLength = Math.Min(x.Length, y.Length);
 
             for (int i = 0; i < minLength; ++i)

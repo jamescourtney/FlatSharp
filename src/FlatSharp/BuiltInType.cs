@@ -66,6 +66,11 @@ namespace FlatSharp
     internal interface IBuiltInScalarType : IBuiltInType
     {
         /// <summary>
+        /// The scalar span reader method to read the given type from a given span and offset.
+        /// </summary>
+        MethodInfo ScalarSpanReaderRead { get; }
+
+        /// <summary>
         /// Formats the given string literal.
         /// </summary>
         string FormatLiteral(string literal);
@@ -86,7 +91,8 @@ namespace FlatSharp
             [typeof(bool)] = new ScalarBuiltInType<bool>(
                 new ScalarTypeModel(typeof(bool), sizeof(bool)),
                 ReflectedMethods.GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteBool)),
-                ReflectedMethods.GetMethod(typeof(InputBuffer), nameof(InputBuffer.ReadBool)), 
+                ReflectedMethods.GetMethod(typeof(InputBuffer), nameof(InputBuffer.ReadBool)),
+                ReflectedMethods.GetMethod(typeof(ScalarSpanReader), nameof(ScalarSpanReader.ReadBool)),
                 new[] { "bool" },
                 "bool",
                 b => b.ToString().ToLowerInvariant()),
@@ -95,6 +101,7 @@ namespace FlatSharp
                 new ScalarTypeModel(typeof(byte), sizeof(byte)),
                 ReflectedMethods.GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteByte)),
                 ReflectedMethods.GetMethod(typeof(InputBuffer), nameof(InputBuffer.ReadByte)),
+                ReflectedMethods.GetMethod(typeof(ScalarSpanReader), nameof(ScalarSpanReader.ReadByte)),
                 new[] { "ubyte", "uint8" },
                 "byte"),
 
@@ -102,6 +109,7 @@ namespace FlatSharp
                 new ScalarTypeModel(typeof(sbyte), sizeof(sbyte)),
                 ReflectedMethods.GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteSByte)),
                 ReflectedMethods.GetMethod(typeof(InputBuffer), nameof(InputBuffer.ReadSByte)),
+                ReflectedMethods.GetMethod(typeof(ScalarSpanReader), nameof(ScalarSpanReader.ReadSByte)),
                 new[] { "byte", "int8" },
                 "sbyte"),
 
@@ -109,6 +117,7 @@ namespace FlatSharp
                 new ScalarTypeModel(typeof(ushort), sizeof(ushort)),
                 ReflectedMethods.GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteUShort)),
                 ReflectedMethods.GetMethod(typeof(InputBuffer), nameof(InputBuffer.ReadUShort)),
+                ReflectedMethods.GetMethod(typeof(ScalarSpanReader), nameof(ScalarSpanReader.ReadUShort)),
                 new[] { "uint16", "ushort" },
                 "ushort"),
 
@@ -116,6 +125,7 @@ namespace FlatSharp
                 new ScalarTypeModel(typeof(short), sizeof(short)),
                 ReflectedMethods.GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteShort)),
                 ReflectedMethods.GetMethod(typeof(InputBuffer), nameof(InputBuffer.ReadShort)),
+                ReflectedMethods.GetMethod(typeof(ScalarSpanReader), nameof(ScalarSpanReader.ReadShort)),
                 new[] { "int16", "short" },
                 "short"),
 
@@ -123,6 +133,7 @@ namespace FlatSharp
                 new ScalarTypeModel(typeof(uint), sizeof(uint)),
                 ReflectedMethods.GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteUInt)),
                 ReflectedMethods.GetMethod(typeof(InputBuffer), nameof(InputBuffer.ReadUInt)),
+                ReflectedMethods.GetMethod(typeof(ScalarSpanReader), nameof(ScalarSpanReader.ReadUInt)),
                 new[] { "uint", "uint32" },
                 "uint"),
 
@@ -130,6 +141,7 @@ namespace FlatSharp
                 new ScalarTypeModel(typeof(int), sizeof(int)),
                 ReflectedMethods.GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteInt)),
                 ReflectedMethods.GetMethod(typeof(InputBuffer), nameof(InputBuffer.ReadInt)),
+                ReflectedMethods.GetMethod(typeof(ScalarSpanReader), nameof(ScalarSpanReader.ReadInt)),
                 new[] { "int", "int32" },
                 "int"),
 
@@ -137,6 +149,7 @@ namespace FlatSharp
                 new ScalarTypeModel(typeof(ulong), sizeof(ulong)),
                 ReflectedMethods.GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteULong)),
                 ReflectedMethods.GetMethod(typeof(InputBuffer), nameof(InputBuffer.ReadULong)),
+                ReflectedMethods.GetMethod(typeof(ScalarSpanReader), nameof(ScalarSpanReader.ReadULong)),
                 new[] { "ulong", "uint64" },
                 "ulong"),
 
@@ -144,6 +157,7 @@ namespace FlatSharp
                 new ScalarTypeModel(typeof(long), sizeof(long)),
                 ReflectedMethods.GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteLong)),
                 ReflectedMethods.GetMethod(typeof(InputBuffer), nameof(InputBuffer.ReadLong)),
+                ReflectedMethods.GetMethod(typeof(ScalarSpanReader), nameof(ScalarSpanReader.ReadLong)),
                 new[] { "long", "int64" },
                 "long"),
 
@@ -151,6 +165,7 @@ namespace FlatSharp
                 new ScalarTypeModel(typeof(float), sizeof(float)),
                 ReflectedMethods.GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteFloat)),
                 ReflectedMethods.GetMethod(typeof(InputBuffer), nameof(InputBuffer.ReadFloat)),
+                ReflectedMethods.GetMethod(typeof(ScalarSpanReader), nameof(ScalarSpanReader.ReadFloat)),
                 new[] { "float", "float32" },
                 "float",
                 f => f.ToString("G17")),
@@ -159,6 +174,7 @@ namespace FlatSharp
                 new ScalarTypeModel(typeof(double), sizeof(double)),
                 ReflectedMethods.GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteDouble)),
                 ReflectedMethods.GetMethod(typeof(InputBuffer), nameof(InputBuffer.ReadDouble)),
+                ReflectedMethods.GetMethod(typeof(ScalarSpanReader), nameof(ScalarSpanReader.ReadDouble)),
                 new[] { "double", "float64" },
                 "double",
                 d => d.ToString("G17")),
@@ -226,13 +242,17 @@ namespace FlatSharp
                 RuntimeTypeModel runtimeModel, 
                 MethodInfo spanWriterWrite, 
                 MethodInfo inputBufferRead, 
+                MethodInfo scalarSpanReaderRead,
                 string[] fbsAliases, 
                 string cSharpTypeName,
                 Func<T, string> format = null) 
                     : base(runtimeModel, spanWriterWrite, inputBufferRead, fbsAliases, cSharpTypeName)
             {
                 this.format = format;
+                this.ScalarSpanReaderRead = scalarSpanReaderRead;
             }
+
+            public MethodInfo ScalarSpanReaderRead { get; }
 
             public string FormatLiteral(string literal)
             {

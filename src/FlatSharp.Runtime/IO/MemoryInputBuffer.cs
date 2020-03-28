@@ -32,7 +32,7 @@ namespace FlatSharp
         {
             // We play a trick with memory marshal to convert the readonly memory into
             // a writable memory. Why is this safe? Because this class takes a writable memory object
-            // in the constructor, so we're just functinoally casting memory -> readonlymemory -> memory.
+            // in the constructor, so we're just functionally casting memory -> readonlymemory -> memory.
             return MemoryMarshal.AsMemory(this.GetReadOnlyByteMemory(start, length));
         }
     }

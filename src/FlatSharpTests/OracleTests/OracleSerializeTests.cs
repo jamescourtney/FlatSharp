@@ -392,9 +392,7 @@
         [TestMethod]
         public void SortedVectors()
         {
-            var builder = new FlatBuffers.FlatBufferBuilder(1024 * 1024);
-
-            SortedVectorTest test = new SortedVectorTest
+            var test = new SortedVectorTest<SortedVectorItem<int>>
             {
                 Double = new List<SortedVectorItem<double>>(),
                 IntVector = new List<SortedVectorItem<int>>(),
@@ -415,25 +413,60 @@
             byte[] data = new byte[1024 * 1024];
             int bytesWritten = FlatBufferSerializer.Default.Serialize(test, data);
 
-            var parsed = FlatBufferSerializer.Default.Parse<SortedVectorTest>(data);
+            var parsed = FlatBufferSerializer.Default.Parse<SortedVectorTest<SortedVectorItem<int>>>(data);
             var table = Oracle.SortedVectorTest.GetRootAsSortedVectorTest(new FlatBuffers.ByteBuffer(data));
 
-            VerifySorted(parsed.StringVector, i => table.String(i)?.Value, t => table.StringByKey(t) != null, FlatBufferStringComparer.Instance);
-            VerifySorted(parsed.IntVector, i => table.Int32(i).Value.Value, t => table.Int32ByKey(t) != null, Comparer<int>.Default);
-            VerifySorted(parsed.Double, i => table.Double(i).Value.Value, t => table.DoubleByKey(t) != null, Comparer<double>.Default);
+            VerifySorted<IList<SortedVectorItem<string>>, SortedVectorItem<string>, string>(parsed.StringVector, i => i.Value, i => table.String(i)?.Value, t => table.StringByKey(t) != null, FlatBufferStringComparer.Instance);
+            VerifySorted<IList<SortedVectorItem<int>>, SortedVectorItem<int>, int>(parsed.IntVector, i => i.Value, i => table.Int32(i).Value.Value, t => table.Int32ByKey(t) != null, Comparer<int>.Default);
+            VerifySorted<IList<SortedVectorItem<double>>, SortedVectorItem<double>, double>(parsed.Double, i => i.Value, i => table.Double(i).Value.Value, t => table.DoubleByKey(t) != null, Comparer<double>.Default);
         }
 
-        private static void VerifySorted<T>(
-            IList<SortedVectorItem<T>> items, 
-            Func<int, T> oracleGet,
-            Func<T, bool> oracleContains,
-            IComparer<T> comparer)
+        [TestMethod]
+        public void SortedVectors_DefaultValue()
         {
-            T previous = items[0].Value;
-            for (int i = 1; i < items.Count; ++i)
+            var test = new SortedVectorTest<SortedVectorDefaultValueItem>
             {
-                T current = items[i].Value;
-                T oracle = oracleGet(i);
+                IntVector = new List<SortedVectorDefaultValueItem>(),
+            };
+
+            // Verify that we don't actually write 5 in the output due to the default value.
+            SortedVectorDefaultValueItem myItem = new SortedVectorDefaultValueItem();
+            byte[] data = new byte[1024 * 1024];
+            int bytesWritten = FlatBufferSerializer.Default.Serialize(myItem, data);
+            Assert.AreEqual(5, myItem.Value);
+            Assert.AreEqual(12, bytesWritten); // table offset (4), vtable offset (4), vtable headers (4)
+
+            const int Iterations = 1000;
+            Random random = new Random();
+
+            for (int i = 0; i < Iterations; ++i)
+            {
+                test.IntVector.Add(new SortedVectorDefaultValueItem { Value = random.Next() });
+            }
+
+            test.IntVector.Add(myItem);
+
+            bytesWritten = FlatBufferSerializer.Default.Serialize(test, data);
+
+            var parsed = FlatBufferSerializer.Default.Parse<SortedVectorTest<SortedVectorDefaultValueItem>>(data);
+            var table = Oracle.SortedVectorTest.GetRootAsSortedVectorTest(new FlatBuffers.ByteBuffer(data));
+
+            VerifySorted<IList<SortedVectorDefaultValueItem>, SortedVectorDefaultValueItem, int>(parsed.IntVector, i => i.Value, i => table.Int32(i).Value.Value, t => table.Int32ByKey(t) != null, Comparer<int>.Default);
+        }
+
+        private static void VerifySorted<TList, TItem, TKey>(
+            TList items, 
+            Func<TItem, TKey> keyGet,
+            Func<int, TKey> oracleGet,
+            Func<TKey, bool> oracleContains,
+            IComparer<TKey> comparer) where TList : IList<TItem>
+        {
+            TKey previous = keyGet(items[0]);
+
+            for (int i = 0; i < items.Count; ++i)
+            {
+                TKey current = keyGet(items[i]);
+                TKey oracle = oracleGet(i);
 
                 Assert.IsTrue(comparer.Compare(previous, current) <= 0);
                 Assert.IsTrue(comparer.Compare(previous, oracle) <= 0);

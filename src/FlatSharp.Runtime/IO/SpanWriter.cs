@@ -100,10 +100,12 @@ namespace FlatSharp
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual void WriteFloat(Span<byte> span, float value, int offset, SerializationContext context)
         {
-            Span<FloatLayout> tempFloat = stackalloc FloatLayout[1];
-            tempFloat[0].value = value;
+            ScalarSpanReader.FloatLayout floatLayout = new ScalarSpanReader.FloatLayout
+            {
+                value = value
+            };
 
-            this.WriteUInt(span, tempFloat[0].bytes, offset, context);
+            this.WriteUInt(span, floatLayout.bytes, offset, context);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -183,16 +185,6 @@ namespace FlatSharp
             this.WriteUOffset(span, offset, vectorStartOffset, ctx);
             this.WriteInt(span, numberOfItems, vectorStartOffset, ctx);
             MemoryMarshal.Cast<T, byte>(memory.Span).CopyTo(span.Slice(vectorStartOffset + sizeof(uint)));
-        }
-
-        [StructLayout(LayoutKind.Explicit)]
-        private struct FloatLayout
-        {
-            [FieldOffset(0)]
-            public uint bytes;
-
-            [FieldOffset(0)]
-            public float value;
         }
     }
 }

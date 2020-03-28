@@ -1,0 +1,110 @@
+﻿/*
+ * Copyright 2018 James Courtney
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+namespace FlatSharp
+{
+    using System;
+    using System.Buffers.Binary;
+    using System.Runtime.CompilerServices;
+    using System.Runtime.InteropServices;
+
+    /// <summary>
+    /// A class that reads FlatBuffer scalars.
+    /// </summary>
+    public static class ScalarSpanReader
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool ReadBool(ReadOnlySpan<byte> span, int offset)
+        {
+            return span[offset] != InputBuffer.False;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static byte ReadByte(ReadOnlySpan<byte> span, int offset)
+        {
+            return span[offset];
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static sbyte ReadSByte(ReadOnlySpan<byte> span, int offset)
+        {
+            return (sbyte)span[offset];
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ushort ReadUShort(ReadOnlySpan<byte> span, int offset)
+        {
+            return BinaryPrimitives.ReadUInt16LittleEndian(span.Slice(offset));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static short ReadShort(ReadOnlySpan<byte> span, int offset)
+        {
+            return BinaryPrimitives.ReadInt16LittleEndian(span.Slice(offset));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static uint ReadUInt(ReadOnlySpan<byte> span, int offset)
+        {
+            return BinaryPrimitives.ReadUInt32LittleEndian(span.Slice(offset));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int ReadInt(ReadOnlySpan<byte> span, int offset)
+        {
+            return BinaryPrimitives.ReadInt32LittleEndian(span.Slice(offset));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ulong ReadULong(ReadOnlySpan<byte> span, int offset)
+        {
+            return BinaryPrimitives.ReadUInt64LittleEndian(span.Slice(offset));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static long ReadLong(ReadOnlySpan<byte> span, int offset)
+        {
+            return BinaryPrimitives.ReadInt64LittleEndian(span.Slice(offset));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float ReadFloat(ReadOnlySpan<byte> span, int offset)
+        {
+            FloatLayout layout = new FloatLayout
+            {
+                bytes = ReadUInt(span, offset)
+            };
+
+            return layout.value;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static double ReadDouble(ReadOnlySpan<byte> span, int offset)
+        {
+            return BitConverter.Int64BitsToDouble(ReadLong(span, offset));
+        }
+
+        [StructLayout(LayoutKind.Explicit)]
+        internal struct FloatLayout
+        {
+            [FieldOffset(0)]
+            public uint bytes;
+
+            [FieldOffset(0)]
+            public float value;
+        }
+    }
+}

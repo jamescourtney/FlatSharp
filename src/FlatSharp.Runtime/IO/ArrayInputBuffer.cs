@@ -17,18 +17,13 @@
 namespace FlatSharp
 {
     using System;
-    using System.Buffers.Binary;
-    using System.Runtime.InteropServices;
-    using System.Text;
 
     /// <summary>
     /// An implementation of <see cref="InputBuffer"/> for managed arrays.
     /// </summary>
-    public sealed class ArrayInputBuffer : InputBuffer
+    public sealed class ArrayInputBuffer : SpanInputBuffer
     {
         private readonly ArraySegment<byte> memory;
-
-        public override int Length => this.memory.Count;
 
         public ArrayInputBuffer(ArraySegment<byte> memory)
         {
@@ -39,85 +34,12 @@ namespace FlatSharp
         {
         }
 
-        public override byte ReadByte(int offset)
-        {
-            return this.memory.AsSpan()[offset];
-        }
+        public override int Length => this.memory.Count;
 
-        public override sbyte ReadSByte(int offset)
-        {
-            return (sbyte)this.memory.AsSpan()[offset];
-        }
+        protected override Memory<byte> GetByteMemory(int start, int length) => this.memory.AsMemory().Slice(start, length);
 
-        public override ushort ReadUShort(int offset)
-        {
-            return BinaryPrimitives.ReadUInt16LittleEndian(this.memory.AsSpan().Slice(offset));
-        }
+        protected override ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length) => this.GetByteMemory(start, length);
 
-        public override short ReadShort(int offset)
-        {
-            return BinaryPrimitives.ReadInt16LittleEndian(this.memory.AsSpan().Slice(offset));
-        }
-
-        public override uint ReadUInt(int offset)
-        {
-            return BinaryPrimitives.ReadUInt32LittleEndian(this.memory.AsSpan().Slice(offset));
-        }
-
-        public override int ReadInt(int offset)
-        {
-            return BinaryPrimitives.ReadInt32LittleEndian(this.memory.AsSpan().Slice(offset));
-        }
-
-        public override ulong ReadULong(int offset)
-        {
-            return BinaryPrimitives.ReadUInt64LittleEndian(this.memory.AsSpan().Slice(offset));
-        }
-
-        public override long ReadLong(int offset)
-        {
-            return BinaryPrimitives.ReadInt64LittleEndian(this.memory.AsSpan().Slice(offset));
-        }
-
-        public override float ReadFloat(int offset)
-        {
-            Span<FloatLayout> layouts = stackalloc FloatLayout[1];
-            layouts[0] = new FloatLayout { bytes = this.ReadUInt(offset) };
-            return layouts[0].value;
-        }
-
-        public override double ReadDouble(int offset)
-        {
-            return BitConverter.Int64BitsToDouble(this.ReadLong(offset));
-        }
-
-        protected override string ReadStringProtected(int offset, int byteLength, Encoding encoding)
-        {
-#if NETCOREAPP
-            return encoding.GetString(this.memory.AsSpan().Slice(offset, byteLength));
-#else
-            return encoding.GetString(this.memory.AsSpan().Slice(offset, byteLength).ToArray());
-#endif
-        }
-
-        protected override Memory<byte> GetByteMemory(int start, int length)
-        {
-            return new Memory<byte>(this.memory.Array, this.memory.Offset + start, length);
-        }
-
-        protected override ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length)
-        {
-            return this.GetByteMemory(start, length);
-        }
-
-        [StructLayout(LayoutKind.Explicit)]
-        private struct FloatLayout
-        {
-            [FieldOffset(0)]
-            public uint bytes;
-
-            [FieldOffset(0)]
-            public float value;
-        }
+        protected override ReadOnlySpan<byte> GetSpan() => this.memory;
     }
 }

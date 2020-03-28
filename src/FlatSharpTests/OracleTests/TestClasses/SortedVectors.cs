@@ -22,10 +22,10 @@ namespace FlatSharpTests
     using FlatSharp.Attributes;
 
     [FlatBufferTable]
-    public class SortedVectorTest
+    public class SortedVectorTest<TIntVectorType>
     {
         [FlatBufferItem(0, SortedVector = true)]
-        public virtual IList<SortedVectorItem<int>> IntVector { get; set; }
+        public virtual IList<TIntVectorType> IntVector { get; set; }
 
         [FlatBufferItem(1, SortedVector = true)]
         public virtual IList<SortedVectorItem<string>> StringVector { get; set; }
@@ -39,5 +39,12 @@ namespace FlatSharpTests
     {
         [FlatBufferItem(0, Key = true)]
         public virtual T Value { get; set; }
+    }
+
+    [FlatBufferTable]
+    public class SortedVectorDefaultValueItem
+    {
+        [FlatBufferItem(0, Key = true, DefaultValue = 5)]
+        public virtual int Value { get; set; } = 5;
     }
 }

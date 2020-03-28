@@ -18,6 +18,7 @@ namespace FlatSharp
 {
     using FlatSharp.Attributes;
     using System;
+    using System.Buffers.Binary;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
@@ -39,6 +40,168 @@ namespace FlatSharp
             }
 
             return Comparer<T>.Default;
+        }
+
+        /// <summary>
+        /// Sorts the given vector with keys of type TKey.
+        /// </summary>
+        public static void SortVector<TKey>(
+            Span<byte> buffer, 
+            int vectorUOffset, 
+            int vtableIndex,
+            TKey defaultValue,
+            int keyInlineSize,
+            StructSpanComparer<TKey>.StructSpanComparerReader reader)
+            where TKey : struct, IComparable<TKey>
+        {
+            ISpanComparer comparer = new StructSpanComparer<TKey>(reader, defaultValue);
+            SortVector(buffer, comparer, vectorUOffset, keyInlineSize, vtableIndex);
+        }
+
+        /// <summary>
+        /// Sorts the given vector with keys of type String.
+        /// </summary>
+        public static void SortStringVector(Span<byte> buffer, int vectorUOffset, int vtableIndex)
+        {
+            ISpanComparer comparer = FlatBufferStringComparer.Instance;
+            SortVector(buffer, comparer, vectorUOffset, null, vtableIndex);
+        }
+
+        private static void SortVector(
+            Span<byte> buffer, 
+            ISpanComparer keyComparer, 
+            int vectorUOffset, 
+            int? keyInlineSize,
+            int vtableIndex)
+        {
+            checked
+            {
+                int vectorStartOffset = vectorUOffset + (int)ScalarSpanReader.ReadUInt(buffer, vectorUOffset);
+                int vectorLength = (int)ScalarSpanReader.ReadUInt(buffer, vectorStartOffset);
+
+                int index0Position = vectorStartOffset + sizeof(int);
+
+                SortVectorRecursive(buffer, keyComparer, index0Position, vectorLength, keyInlineSize, vtableIndex);
+            }
+        }
+
+        /// <summary>
+        /// Quicksort on hard mode.
+        /// </summary>
+        private static void SortVectorRecursive(
+            Span<byte> buffer,
+            ISpanComparer keyComparer,
+            int index0Offset,
+            int vectorLength,
+            int? inlineKeySize,
+            int vtableIndex)
+        {
+            checked
+            {
+                if (vectorLength <= 1)
+                {
+                    return;
+                }
+
+                int pivotIndex = vectorLength - 1;
+                var pivot = GetKeyOffset(buffer, index0Offset, pivotIndex, vtableIndex, inlineKeySize);
+
+                int i = 0;
+                for (int j = 0; j < vectorLength - 1; ++j)
+                {
+                    var currentItem = GetKeyOffset(buffer, index0Offset, j, vtableIndex, inlineKeySize);
+
+                    if (keyComparer.Compare(buffer, currentItem.offset, currentItem.length, buffer, pivot.offset, pivot.length) < 0)
+                    {
+                        SwapVectorPositions(buffer, index0Offset, i, j);
+                        i++;
+                    }
+                }
+
+                SwapVectorPositions(buffer, index0Offset, i, pivotIndex);
+                pivotIndex = i;
+
+                SortVectorRecursive(buffer, keyComparer, index0Offset, pivotIndex, inlineKeySize, vtableIndex);
+                SortVectorRecursive(buffer, keyComparer, index0Offset + (sizeof(int) * (pivotIndex + 1)), vectorLength - (pivotIndex + 1), inlineKeySize, vtableIndex);
+            }
+        }
+
+        /// <summary>
+        /// Swaps the two given indices in the vector, adjusting the UOffsets to compensate for the swap.
+        /// </summary>
+        private static void SwapVectorPositions(Span<byte> vector, int index0Offset, int leftIndex, int rightIndex)
+        {
+            checked
+            {
+                if (leftIndex == rightIndex)
+                {
+                    return;
+                }
+
+                if (leftIndex > rightIndex)
+                {
+                    // Left is always less than right. 
+                    SwapVectorPositions(vector, index0Offset, rightIndex, leftIndex);
+                    return;
+                }
+
+                int difference = (rightIndex - leftIndex) * sizeof(int);
+
+                Span<byte> leftSpan = vector.Slice(index0Offset + (sizeof(int) * leftIndex));
+                Span<byte> rightSpan = vector.Slice(index0Offset + (sizeof(int) * rightIndex));
+
+                int leftValue = (int)ScalarSpanReader.ReadUInt(leftSpan, 0);
+                int rightValue = (int)ScalarSpanReader.ReadUInt(rightSpan, 0);
+
+                leftValue -= difference;
+                rightValue += difference;
+
+                BinaryPrimitives.WriteUInt32LittleEndian(leftSpan, (uint)rightValue);
+                BinaryPrimitives.WriteUInt32LittleEndian(rightSpan, (uint)leftValue);
+            }
+        }
+
+        /// <summary>
+        /// For the given index in a vector, follow the indirection to return a span representing
+        /// the key for that table.
+        /// </summary>
+        private static (int offset, int length) GetKeyOffset(
+            Span<byte> buffer, 
+            int index0Position, 
+            int vectorIndex, 
+            int vtableIndex,
+            int? inlineItemSize)
+        {
+            checked 
+            {
+                // Find offset to the table at the index.
+                int tableOffset = index0Position + (sizeof(uint) * vectorIndex);
+                tableOffset += (int)ScalarSpanReader.ReadUInt(buffer, tableOffset);
+
+                // Consult the vtable.
+                int vtableOffset = tableOffset - ScalarSpanReader.ReadInt(buffer, tableOffset);
+
+                // Vtables have two extra entries: vtable length and table length. The number of entries is vtableLengthBytes / 2 - 2
+                int vtableLengthEntries = (ScalarSpanReader.ReadUShort(buffer, vtableOffset) / 2) - 2;
+
+                if (vtableIndex >= vtableLengthEntries)
+                {
+                    // Undefined.
+                    return (-1, -1);
+                }
+
+                // Absolute offset of the field within the table.
+                int fieldOffset = tableOffset + ScalarSpanReader.ReadUShort(buffer, vtableOffset + 2 * (2 + vtableIndex));
+                if (inlineItemSize != null)
+                {
+                    return (fieldOffset, inlineItemSize.Value);
+                }
+
+                // Strings are stored as a uoffset reference. Follow the indirection one more time.
+                int uoffsetToString = fieldOffset + (int)ScalarSpanReader.ReadUInt(buffer, fieldOffset);
+                int stringLength = (int)ScalarSpanReader.ReadUInt(buffer, uoffsetToString);
+                return (uoffsetToString + sizeof(uint), stringLength);
+            }
         }
 
         /// <summary>
@@ -102,7 +265,7 @@ namespace FlatSharp
                 leftSpan = leftSpan.Slice(0, leftLength);
 #endif
 
-                return FlatBufferStringComparer.CompareSpans(leftSpan, rightData);
+                return FlatBufferStringComparer.Instance.Compare(leftSpan, 0, leftSpan.Length, rightData, 0, rightData.Length);
             };
         }
 

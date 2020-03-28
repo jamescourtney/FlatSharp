@@ -396,7 +396,7 @@
             builder.Finish(table.Value);
             byte[] serialized = builder.SizedByteArray();
 
-            var parsed = FlatBufferSerializer.Default.Parse<SortedVectorTest>(serialized);
+            var parsed = FlatBufferSerializer.Default.Parse<SortedVectorTest<SortedVectorItem<int>>>(serialized);
 
             VerifySorted(parsed.StringVector, FlatBufferStringComparer.Instance, strings, new List<string> { Guid.NewGuid().ToString(), "banana" });
             VerifySorted(parsed.IntVector, Comparer<int>.Default, ints, new List<int> { -1, -3, 0 });
