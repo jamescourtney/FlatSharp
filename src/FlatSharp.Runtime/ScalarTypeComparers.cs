@@ -17,6 +17,7 @@
 namespace FlatSharp
 {
     using System;
+    using System.ComponentModel;
 
     /*
      * This file contains many different span comparers for the FlatBuffer built-in scalar types.
@@ -24,6 +25,7 @@ namespace FlatSharp
      * a meaningful performance hit (upwards of 20%), which is why we define them explicitly here.
      */
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public class BoolSpanComparer : ISpanComparer
     {
         public static BoolSpanComparer Instance { get; } = new BoolSpanComparer();
@@ -32,6 +34,7 @@ namespace FlatSharp
             => ScalarSpanReader.ReadBool(left).CompareTo(ScalarSpanReader.ReadBool(right));
     }
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public class ByteSpanComparer : ISpanComparer
     {
         public static ByteSpanComparer Instance { get; } = new ByteSpanComparer();
@@ -40,6 +43,7 @@ namespace FlatSharp
             => ScalarSpanReader.ReadByte(left).CompareTo(ScalarSpanReader.ReadByte(right));
     }
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public class SByteSpanComparer : ISpanComparer
     {
         public static SByteSpanComparer Instance { get; } = new SByteSpanComparer();
@@ -48,6 +52,7 @@ namespace FlatSharp
             => ScalarSpanReader.ReadSByte(left).CompareTo(ScalarSpanReader.ReadSByte(right));
     }
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public class UShortSpanComparer : ISpanComparer
     {
         public static UShortSpanComparer Instance { get; } = new UShortSpanComparer();
@@ -55,6 +60,8 @@ namespace FlatSharp
         public int Compare(ReadOnlySpan<byte> left, ReadOnlySpan<byte> right)
             => ScalarSpanReader.ReadUShort(left).CompareTo(ScalarSpanReader.ReadUShort(right));
     }
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public class ShortSpanComparer : ISpanComparer
     {
         public static ShortSpanComparer Instance { get; } = new ShortSpanComparer();
@@ -63,6 +70,7 @@ namespace FlatSharp
             => ScalarSpanReader.ReadShort(left).CompareTo(ScalarSpanReader.ReadShort(right));
     }
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public class UIntSpanComparer : ISpanComparer
     {
         public static UIntSpanComparer Instance { get; } = new UIntSpanComparer();
@@ -71,6 +79,7 @@ namespace FlatSharp
             => ScalarSpanReader.ReadUInt(left).CompareTo(ScalarSpanReader.ReadUInt(right));
     }
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public class IntSpanComparer : ISpanComparer
     {
         public static IntSpanComparer Instance { get; } = new IntSpanComparer();
@@ -79,6 +88,7 @@ namespace FlatSharp
             => ScalarSpanReader.ReadInt(left).CompareTo(ScalarSpanReader.ReadInt(right));
     }
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public class ULongSpanComparer : ISpanComparer
     {
         public static ULongSpanComparer Instance { get; } = new ULongSpanComparer();
@@ -87,6 +97,7 @@ namespace FlatSharp
             => ScalarSpanReader.ReadULong(left).CompareTo(ScalarSpanReader.ReadULong(right));
     }
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public class LongSpanComparer : ISpanComparer
     {
         public static LongSpanComparer Instance { get; } = new LongSpanComparer();
@@ -95,6 +106,7 @@ namespace FlatSharp
             => ScalarSpanReader.ReadLong(left).CompareTo(ScalarSpanReader.ReadLong(right));
     }
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public class DoubleSpanComparer : ISpanComparer
     {
         public static DoubleSpanComparer Instance { get; } = new DoubleSpanComparer();
@@ -103,6 +115,7 @@ namespace FlatSharp
             => ScalarSpanReader.ReadDouble(left).CompareTo(ScalarSpanReader.ReadDouble(right));
     }
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public class FloatSpanComparer : ISpanComparer
     {
         public static FloatSpanComparer Instance { get; } = new FloatSpanComparer();

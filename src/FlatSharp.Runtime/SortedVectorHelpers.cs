@@ -36,7 +36,8 @@ namespace FlatSharp
    using System.Buffers.Binary;
    using System.Collections.Concurrent;
    using System.Collections.Generic;
-   using System.Linq;
+    using System.ComponentModel;
+    using System.Linq;
    using System.Reflection;
 
    /// <summary>
@@ -45,9 +46,10 @@ namespace FlatSharp
    public static class SortedVectorHelpers
    {
        /// <summary>
-       /// Sorts the given flatbuffer vector. This method, if used in correctly, is a fantastic way to corrupt your buffer.
+       /// Sorts the given flatbuffer vector. This method, used incorrectly, is a fantastic way to corrupt your buffer.
        /// </summary>
-       public static void SortVector(
+       [EditorBrowsable(EditorBrowsableState.Never)]
+        public static void SortVector(
            Span<byte> buffer,
            int vectorUOffset,
            int vtableIndex,

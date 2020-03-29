@@ -17,10 +17,12 @@
 namespace FlatSharp
 {
     using System;
+    using System.ComponentModel;
 
     /// <summary>
     /// An analog of IComparer for Spans. The implementation performs comparison consistent with the type the span represents.
     /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public interface ISpanComparer
     {
         /// <summary>

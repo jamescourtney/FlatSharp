@@ -17,6 +17,7 @@
 namespace FlatSharp
 {
     using System;
+    using System.ComponentModel;
 
     /// <summary>
     /// Implements string comparison for flatbuffers.
@@ -24,6 +25,7 @@ namespace FlatSharp
     /// <remarks>
     /// Based on the FlatBuffer comparison here: https://github.com/google/flatbuffers/blob/3a70e0b30890ca265a33f099912762eb51ac505f/net/FlatBuffers/Table.cs
     /// </remarks>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public class StringSpanComparer : ISpanComparer
     {
         /// <summary>
