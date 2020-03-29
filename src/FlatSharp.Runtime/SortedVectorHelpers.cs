@@ -14,419 +14,434 @@
  * limitations under the License.
  */
 
+/* 
+This file includes sections modeled after the dotnet runtime project on github. The dotnet license file is included here:
+
+Copyright (c) .NET Foundation and Contributors
+
+All rights reserved.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+*/
+
 namespace FlatSharp
 {
-    using FlatSharp.Attributes;
-    using System;
-    using System.Buffers.Binary;
-    using System.Collections.Concurrent;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reflection;
+   using FlatSharp.Attributes;
+   using System;
+   using System.Buffers.Binary;
+   using System.Collections.Concurrent;
+   using System.Collections.Generic;
+   using System.Linq;
+   using System.Reflection;
 
-    /// <summary>
-    /// Serializer extension methods.
-    /// </summary>
-    public static class SortedVectorHelpers
-    {
-        /// <summary>
-        /// Sorts the given flatbuffer vector. This method, if used in correctly, is a fantastic way to corrupt your buffer.
-        /// </summary>
-        public static void SortVector(
-            Span<byte> buffer,
-            int vectorUOffset,
-            int vtableIndex,
-            int? keyInlineSize,
-            ISpanComparer comparer)
-        {
-            checked
-            {
-                int vectorStartOffset = vectorUOffset + (int)ScalarSpanReader.ReadUInt(buffer.Slice(vectorUOffset));
-                int vectorLength = (int)ScalarSpanReader.ReadUInt(buffer.Slice(vectorStartOffset));
-                int index0Position = vectorStartOffset + sizeof(int);
+   /// <summary>
+   /// Serializer extension methods.
+   /// </summary>
+   public static class SortedVectorHelpers
+   {
+       /// <summary>
+       /// Sorts the given flatbuffer vector. This method, if used in correctly, is a fantastic way to corrupt your buffer.
+       /// </summary>
+       public static void SortVector(
+           Span<byte> buffer,
+           int vectorUOffset,
+           int vtableIndex,
+           int? keyInlineSize,
+           ISpanComparer comparer)
+       {
+           checked
+           {
+               int vectorStartOffset = vectorUOffset + (int)ScalarSpanReader.ReadUInt(buffer.Slice(vectorUOffset));
+               int vectorLength = (int)ScalarSpanReader.ReadUInt(buffer.Slice(vectorStartOffset));
+               int index0Position = vectorStartOffset + sizeof(int);
 
-                // Traverse the vector and figure out the offsets of all the keys.
-                // Store that in some local data, hopefully on the stack.
-                Span<(int offset, int length, int tableOffset)> keyOffsets =
-                    vectorLength < 512
-                    ? stackalloc (int, int, int)[vectorLength]
-                    : new (int, int, int)[vectorLength];
+               // Traverse the vector and figure out the offsets of all the keys.
+               // Store that in some local data, hopefully on the stack.
+               Span<(int offset, int length, int tableOffset)> keyOffsets =
+                   vectorLength < 512
+                   ? stackalloc (int, int, int)[vectorLength]
+                   : new (int, int, int)[vectorLength];
 
-                for (int i = 0; i < keyOffsets.Length; ++i)
-                {
-                    keyOffsets[i] = GetKeyOffset(buffer, index0Position, i, vtableIndex, keyInlineSize);
-                }
+               for (int i = 0; i < keyOffsets.Length; ++i)
+               {
+                   keyOffsets[i] = GetKeyOffset(buffer, index0Position, i, vtableIndex, keyInlineSize);
+               }
 
-                // Sort the offsets.
-                IntroSort(buffer, comparer, 0, vectorLength - 1, keyOffsets);
+               // Sort the offsets.
+               IntroSort(buffer, comparer, 0, vectorLength - 1, keyOffsets);
 
-                // Overwrite the vector with the sorted offsets. Bound the vector so we're confident we aren't 
-                // partying inappropriately in the rest of the buffer.
-                Span<byte> boundedVector = buffer.Slice(index0Position, sizeof(uint) * vectorLength);
-                int nextPosition = index0Position;
-                for (int i = 0; i < keyOffsets.Length; ++i)
-                {
-                    (_, _, int tableOffset) = keyOffsets[i];
-                    BinaryPrimitives.WriteUInt32LittleEndian(boundedVector.Slice(sizeof(uint) * i), (uint)(tableOffset - nextPosition));
-                    nextPosition += sizeof(uint);
-                }
-            }
-        }
+               // Overwrite the vector with the sorted offsets. Bound the vector so we're confident we aren't 
+               // partying inappropriately in the rest of the buffer.
+               Span<byte> boundedVector = buffer.Slice(index0Position, sizeof(uint) * vectorLength);
+               int nextPosition = index0Position;
+               for (int i = 0; i < keyOffsets.Length; ++i)
+               {
+                   (_, _, int tableOffset) = keyOffsets[i];
+                   BinaryPrimitives.WriteUInt32LittleEndian(boundedVector.Slice(sizeof(uint) * i), (uint)(tableOffset - nextPosition));
+                   nextPosition += sizeof(uint);
+               }
+           }
+       }
 
-        /// <summary>
-        /// Perfors a binary search on the given sorted vector with the given key. The vector is presumed to be sorted.
-        /// </summary>
-        /// <returns>A value if found, null otherwise.</returns>
-        public static TTable BinarySearchByFlatBufferKey<TTable, TKey>(this IList<TTable> sortedVector, TKey key)
-            where TTable : class
-        {
-            return GenericBinarySearch(sortedVector.Count, i => sortedVector[i], key);
-        }
+       /// <summary>
+       /// Perfors a binary search on the given sorted vector with the given key. The vector is presumed to be sorted.
+       /// </summary>
+       /// <returns>A value if found, null otherwise.</returns>
+       public static TTable BinarySearchByFlatBufferKey<TTable, TKey>(this IList<TTable> sortedVector, TKey key)
+           where TTable : class
+       {
+           return GenericBinarySearch(sortedVector.Count, i => sortedVector[i], key);
+       }
 
-        /// <summary>
-        /// Perfors a binary search on the given sorted vector with the given key. The vector is presumed to be sorted.
-        /// </summary>
-        /// <returns>A value if found, null otherwise.</returns>
-        public static TTable BinarySearchByFlatBufferKey<TTable, TKey>(this IReadOnlyList<TTable> sortedVector, TKey key)
-            where TTable : class
-        {
-            return GenericBinarySearch(sortedVector.Count, i => sortedVector[i], key);
-        }
+       /// <summary>
+       /// Perfors a binary search on the given sorted vector with the given key. The vector is presumed to be sorted.
+       /// </summary>
+       /// <returns>A value if found, null otherwise.</returns>
+       public static TTable BinarySearchByFlatBufferKey<TTable, TKey>(this IReadOnlyList<TTable> sortedVector, TKey key)
+           where TTable : class
+       {
+           return GenericBinarySearch(sortedVector.Count, i => sortedVector[i], key);
+       }
 
-        private static Func<T, int> GetComparerFunc<T>(T comparison)
-        {
-            if (typeof(T) == typeof(string))
-            {
-                return (Func<T, int>)(object)GetStringComparerFunc(comparison as string);
-            }
-            else
-            {
-                IComparer<T> comparer = Comparer<T>.Default;
-                return left => comparer.Compare(left, comparison);
-            }
-        }
+       private static Func<T, int> GetComparerFunc<T>(T comparison)
+       {
+           if (typeof(T) == typeof(string))
+           {
+               return (Func<T, int>)(object)GetStringComparerFunc(comparison as string);
+           }
+           else
+           {
+               IComparer<T> comparer = Comparer<T>.Default;
+               return left => comparer.Compare(left, comparison);
+           }
+       }
 
-        private static Func<string, int> GetStringComparerFunc(string right)
-        {
-            if (right == null)
-            {
-                throw new ArgumentNullException("key");
-            }
+       private static Func<string, int> GetStringComparerFunc(string right)
+       {
+           if (right == null)
+           {
+               throw new ArgumentNullException("key");
+           }
 
-            byte[] rightData = InputBuffer.Encoding.GetBytes(right);
-            return left =>
-            {
-                if (left == null)
-                {
-                    throw new InvalidOperationException("Sorted FlatBuffer vectors may not have null-valued keys.");
-                }
+           byte[] rightData = InputBuffer.Encoding.GetBytes(right);
+           return left =>
+           {
+               if (left == null)
+               {
+                   throw new InvalidOperationException("Sorted FlatBuffer vectors may not have null-valued keys.");
+               }
 
-                var enc = InputBuffer.Encoding;
-                int maxLength = enc.GetMaxByteCount(left.Length);
+               var enc = InputBuffer.Encoding;
+               int maxLength = enc.GetMaxByteCount(left.Length);
 
 #if NETSTANDARD
-                byte[] leftBytes = enc.GetBytes(left);
-                int leftLength = leftBytes.Length;
-                Span<byte> leftSpan = leftBytes;
+               byte[] leftBytes = enc.GetBytes(left);
+               int leftLength = leftBytes.Length;
+               Span<byte> leftSpan = leftBytes;
 #else
-                Span<byte> leftSpan = maxLength < 1024 ? stackalloc byte[maxLength] : new byte[maxLength];
-                int leftLength = enc.GetBytes(left, leftSpan);
-                leftSpan = leftSpan.Slice(0, leftLength);
+               Span<byte> leftSpan = maxLength < 1024 ? stackalloc byte[maxLength] : new byte[maxLength];
+               int leftLength = enc.GetBytes(left, leftSpan);
+               leftSpan = leftSpan.Slice(0, leftLength);
 #endif
 
-                return StringSpanComparer.Instance.Compare(leftSpan, rightData);
-            };
-        }
+               return StringSpanComparer.Instance.Compare(leftSpan, rightData);
+           };
+       }
 
-        /// <summary>
-        /// Cache TTable -> (TKey, Func{TTable, TKey})
-        /// </summary>
-        private static ConcurrentDictionary<Type, (Type, object)> KeyGetterCallbacks = new ConcurrentDictionary<Type, (Type, object)>();
+       /// <summary>
+       /// Cache TTable -> (TKey, Func{TTable, TKey})
+       /// </summary>
+       private static ConcurrentDictionary<Type, (Type, object)> KeyGetterCallbacks = new ConcurrentDictionary<Type, (Type, object)>();
 
-        /// <summary>
-        /// Reflects on TTable to return a delegate that accesses the flat buffer key property. The type of the property must precisely match TKey.
-        /// </summary>
-        private static Func<TTable, TKey> GetOrCreateGetKeyCallback<TTable, TKey>(TKey key)
-        {
-            if (!KeyGetterCallbacks.TryGetValue(typeof(TTable), out (Type, object) value))
-            {
-                var keys = typeof(TTable)
-                    .GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                    .Where(p => p.GetCustomAttribute<FlatBufferItemAttribute>()?.Key == true)
-                    .ToArray();
+       /// <summary>
+       /// Reflects on TTable to return a delegate that accesses the flat buffer key property. The type of the property must precisely match TKey.
+       /// </summary>
+       private static Func<TTable, TKey> GetOrCreateGetKeyCallback<TTable, TKey>(TKey key)
+       {
+           if (!KeyGetterCallbacks.TryGetValue(typeof(TTable), out (Type, object) value))
+           {
+               var keys = typeof(TTable)
+                   .GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                   .Where(p => p.GetCustomAttribute<FlatBufferItemAttribute>()?.Key == true)
+                   .ToArray();
 
-                if (keys.Length == 0)
-                {
-                    throw new InvalidOperationException($"Table '{typeof(TTable).Name}' does not declare a property with the Key attribute set.");
-                }
-                else if (keys.Length > 1)
-                {
-                    throw new InvalidOperationException($"Table '{typeof(TTable).Name}' declares more than one property with the Key attribute set.");
-                }
+               if (keys.Length == 0)
+               {
+                   throw new InvalidOperationException($"Table '{typeof(TTable).Name}' does not declare a property with the Key attribute set.");
+               }
+               else if (keys.Length > 1)
+               {
+                   throw new InvalidOperationException($"Table '{typeof(TTable).Name}' declares more than one property with the Key attribute set.");
+               }
 
-                PropertyInfo keyProperty = keys[0];
-                var keyGetterDelegate = (Func<TTable, TKey>)Delegate.CreateDelegate(typeof(Func<TTable, TKey>), keyProperty.GetMethod ?? keyProperty.GetGetMethod());
-                value = (keyProperty.PropertyType, keyGetterDelegate);
-                KeyGetterCallbacks[typeof(TTable)] = value;
-            }
+               PropertyInfo keyProperty = keys[0];
+               var keyGetterDelegate = (Func<TTable, TKey>)Delegate.CreateDelegate(typeof(Func<TTable, TKey>), keyProperty.GetMethod ?? keyProperty.GetGetMethod());
+               value = (keyProperty.PropertyType, keyGetterDelegate);
+               KeyGetterCallbacks[typeof(TTable)] = value;
+           }
 
-            if (key.GetType() != value.Item1)
-            {
-                throw new InvalidOperationException($"Key '{key}' had type '{key?.GetType()}', but the key for table '{typeof(TTable).Name}' is of type '{value.Item1.Name}'.");
-            }
+           if (key.GetType() != value.Item1)
+           {
+               throw new InvalidOperationException($"Key '{key}' had type '{key?.GetType()}', but the key for table '{typeof(TTable).Name}' is of type '{value.Item1.Name}'.");
+           }
 
-            return (Func<TTable, TKey>)value.Item2;
-        }
+           return (Func<TTable, TKey>)value.Item2;
+       }
 
-        private static TTable GenericBinarySearch<TTable, TKey>(int count, Func<int, TTable> itemAtIndex, TKey key)
-            where TTable : class
-        {
-            Func<TKey, int> compare = GetComparerFunc<TKey>(key);
-            Func<TTable, TKey> keyGetter = GetOrCreateGetKeyCallback<TTable, TKey>(key);
+       private static TTable GenericBinarySearch<TTable, TKey>(int count, Func<int, TTable> itemAtIndex, TKey key)
+           where TTable : class
+       {
+           Func<TKey, int> compare = GetComparerFunc<TKey>(key);
+           Func<TTable, TKey> keyGetter = GetOrCreateGetKeyCallback<TTable, TKey>(key);
 
-            int min = 0;
-            int max = count - 1;
+           int min = 0;
+           int max = count - 1;
 
-            while (min <= max)
-            {
-                // (min + max) / 2, written to avoid overflows.
-                int mid = min + ((max - min) >> 1);
+           while (min <= max)
+           {
+               // (min + max) / 2, written to avoid overflows.
+               int mid = min + ((max - min) >> 1);
 
-                var midElement = itemAtIndex(mid);
-                int comparison = compare(keyGetter(midElement));
+               var midElement = itemAtIndex(mid);
+               int comparison = compare(keyGetter(midElement));
 
-                if (comparison == 0)
-                {
-                    return midElement;
-                }
+               if (comparison == 0)
+               {
+                   return midElement;
+               }
 
-                if (comparison < 0)
-                {
-                    min = mid + 1;
-                }
-                else
-                {
-                    max = mid - 1;
-                }
-            }
+               if (comparison < 0)
+               {
+                   min = mid + 1;
+               }
+               else
+               {
+                   max = mid - 1;
+               }
+           }
 
-            return null;
-        }
+           return null;
+       }
 
-        /// <summary>
-        /// A partial introsort implementation, inspired by the Array.Sort implemenation from the CoreCLR. 
-        /// Due to the amount of indirection in FlatBuffers, it's not possible to use the built-in sorting algorithms,
-        /// so we do the next best thing. Note that this is not a true IntroSort, since we omit the HeapSort component.
-        /// </summary>
-        private static void IntroSort(
-            ReadOnlySpan<byte> buffer,
-            ISpanComparer keyComparer,
-            int lo,
-            int hi,
-            Span<(int offset, int length, int tableOffset)> keyLocations)
-        {
-            checked
-            {
-                while (true)
-                {
-                    if (hi <= lo)
-                    {
-                        break;
-                    }
+       /// <summary>
+       /// A partial introsort implementation, inspired by the Array.Sort implemenation from the CoreCLR. 
+       /// Due to the amount of indirection in FlatBuffers, it's not possible to use the built-in sorting algorithms,
+       /// so we do the next best thing. Note that this is not a true IntroSort, since we omit the HeapSort component.
+       /// </summary>
+       private static void IntroSort(
+           ReadOnlySpan<byte> buffer,
+           ISpanComparer keyComparer,
+           int lo,
+           int hi,
+           Span<(int offset, int length, int tableOffset)> keyLocations)
+       {
+           checked
+           {
+               while (true)
+               {
+                   if (hi <= lo)
+                   {
+                       break;
+                   }
 
-                    int numElements = hi - lo + 1;
-                    if (numElements <= 16)
-                    {
-                        switch (numElements)
-                        {
-                            case 1:
-                                return;
-                            case 2:
-                                SwapIfGreater(buffer, keyComparer, lo, hi, keyLocations);
-                                return;
-                            case 3:
-                                SwapIfGreater(buffer, keyComparer, lo, hi - 1, keyLocations);
-                                SwapIfGreater(buffer, keyComparer, lo, hi, keyLocations);
-                                SwapIfGreater(buffer, keyComparer, hi - 1, hi, keyLocations);
-                                return;
-                            default:
-                                InsertionSort(buffer, keyComparer, lo, hi, keyLocations);
-                                return;
-                        }
-                    }
+                   int numElements = hi - lo + 1;
+                   if (numElements <= 16)
+                   {
+                       switch (numElements)
+                       {
+                           case 1:
+                               return;
+                           case 2:
+                               SwapIfGreater(buffer, keyComparer, lo, hi, keyLocations);
+                               return;
+                           case 3:
+                               SwapIfGreater(buffer, keyComparer, lo, hi - 1, keyLocations);
+                               SwapIfGreater(buffer, keyComparer, lo, hi, keyLocations);
+                               SwapIfGreater(buffer, keyComparer, hi - 1, hi, keyLocations);
+                               return;
+                           default:
+                               InsertionSort(buffer, keyComparer, lo, hi, keyLocations);
+                               return;
+                       }
+                   }
 
-                    // Use median-of-three partitioning.
-                    int middle = lo + ((hi - lo) >> 1);
-                    {
-                        SwapIfGreater(buffer, keyComparer, lo, middle, keyLocations);
-                        SwapIfGreater(buffer, keyComparer, lo, hi, keyLocations);
-                        SwapIfGreater(buffer, keyComparer, middle, hi, keyLocations);
-                    }
+                   // Use median-of-three partitioning.
+                   int middle = lo + ((hi - lo) >> 1);
+                   {
+                       SwapIfGreater(buffer, keyComparer, lo, middle, keyLocations);
+                       SwapIfGreater(buffer, keyComparer, lo, hi, keyLocations);
+                       SwapIfGreater(buffer, keyComparer, middle, hi, keyLocations);
+                   }
 
-                    // Move the pivot to hi - 1 (since we know hi is already larger than the pivot).
-                    SwapVectorPositions(middle, hi - 1, keyLocations);
-                    var (pivotOffset, pivotLength, _) = keyLocations[hi - 1];
-                    var pivotSpan = buffer.Slice(pivotOffset, pivotLength);
+                   // Move the pivot to hi - 1 (since we know hi is already larger than the pivot).
+                   SwapVectorPositions(middle, hi - 1, keyLocations);
+                   var (pivotOffset, pivotLength, _) = keyLocations[hi - 1];
+                   var pivotSpan = buffer.Slice(pivotOffset, pivotLength);
 
-                    // Partition
-                    int num2 = lo;
-                    int num3 = hi - 1;
-                    while (num2 < num3)
-                    {
-                        while (true)
-                        {
-                            var (keyOffset, keyLength, _) = keyLocations[++num2];
-                            var keySpan = buffer.Slice(keyOffset, keyLength);
-                            if (keyComparer.Compare(keySpan, pivotSpan) >= 0)
-                            {
-                                break;
-                            }
-                        }
+                   // Partition
+                   int num2 = lo;
+                   int num3 = hi - 1;
+                   while (num2 < num3)
+                   {
+                       while (true)
+                       {
+                           var (keyOffset, keyLength, _) = keyLocations[++num2];
+                           var keySpan = buffer.Slice(keyOffset, keyLength);
+                           if (keyComparer.Compare(keySpan, pivotSpan) >= 0)
+                           {
+                               break;
+                           }
+                       }
 
-                        while (true)
-                        {
-                            var (keyOffset, keyLength, _) = keyLocations[--num3];
-                            var keySpan = buffer.Slice(keyOffset, keyLength);
-                            if (keyComparer.Compare(pivotSpan, keySpan) >= 0)
-                            {
-                                break;
-                            }
-                        }
+                       while (true)
+                       {
+                           var (keyOffset, keyLength, _) = keyLocations[--num3];
+                           var keySpan = buffer.Slice(keyOffset, keyLength);
+                           if (keyComparer.Compare(pivotSpan, keySpan) >= 0)
+                           {
+                               break;
+                           }
+                       }
 
-                        if (num2 < num3)
-                        {
-                            SwapVectorPositions(num2, num3, keyLocations);
-                        }
-                    }
+                       if (num2 < num3)
+                       {
+                           SwapVectorPositions(num2, num3, keyLocations);
+                       }
+                   }
 
-                    SwapVectorPositions(num2, hi - 1, keyLocations);
+                   SwapVectorPositions(num2, hi - 1, keyLocations);
 
-                    IntroSort(
-                        buffer,
-                        keyComparer,
-                        num2 + 1,
-                        hi,
-                        keyLocations);
+                   IntroSort(
+                       buffer,
+                       keyComparer,
+                       num2 + 1,
+                       hi,
+                       keyLocations);
 
-                    hi = num2 - 1;
-                }
-            }
-        }
+                   hi = num2 - 1;
+               }
+           }
+       }
 
-        private static void InsertionSort(
-            ReadOnlySpan<byte> buffer,
-            ISpanComparer comparer,
-            int lo,
-            int hi,
-            Span<(int offset, int length, int tableOffset)> keyLocations)
-        {
-            for (int i = lo; i < hi; i++)
-            {
-                int num = i;
+       private static void InsertionSort(
+           ReadOnlySpan<byte> buffer,
+           ISpanComparer comparer,
+           int lo,
+           int hi,
+           Span<(int offset, int length, int tableOffset)> keyLocations)
+       {
+           for (int i = lo; i < hi; i++)
+           {
+               int num = i;
 
-                var valTuple = keyLocations[i + 1];
-                ReadOnlySpan<byte> valSpan = buffer.Slice(valTuple.offset, valTuple.length);
+               var valTuple = keyLocations[i + 1];
+               ReadOnlySpan<byte> valSpan = buffer.Slice(valTuple.offset, valTuple.length);
 
-                while (num >= lo)
-                {
-                    (int keyOffset, int keyLength, _) = keyLocations[num];
-                    ReadOnlySpan<byte> keySpan = buffer.Slice(keyOffset, keyLength);
+               while (num >= lo)
+               {
+                   (int keyOffset, int keyLength, _) = keyLocations[num];
+                   ReadOnlySpan<byte> keySpan = buffer.Slice(keyOffset, keyLength);
 
-                    if (comparer.Compare(valSpan, keySpan) < 0)
-                    {
-                        keyLocations[num + 1] = keyLocations[num];
-                        num--;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
+                   if (comparer.Compare(valSpan, keySpan) < 0)
+                   {
+                       keyLocations[num + 1] = keyLocations[num];
+                       num--;
+                   }
+                   else
+                   {
+                       break;
+                   }
+               }
 
-                keyLocations[num + 1] = valTuple;
-            }
-        }
+               keyLocations[num + 1] = valTuple;
+           }
+       }
 
-        private static void SwapIfGreater(
-            ReadOnlySpan<byte> vector,
-            ISpanComparer comparer,
-            int leftIndex,
-            int rightIndex,
-            Span<(int, int, int)> keyOffsets)
-        {
-            if (leftIndex != rightIndex)
-            {
-                (int leftOffset, int leftLength, _) = keyOffsets[leftIndex];
-                (int rightOffset, int rightLength, _) = keyOffsets[rightIndex];
+       private static void SwapIfGreater(
+           ReadOnlySpan<byte> vector,
+           ISpanComparer comparer,
+           int leftIndex,
+           int rightIndex,
+           Span<(int, int, int)> keyOffsets)
+       {
+           if (leftIndex != rightIndex)
+           {
+               (int leftOffset, int leftLength, _) = keyOffsets[leftIndex];
+               (int rightOffset, int rightLength, _) = keyOffsets[rightIndex];
 
-                var leftSpan = vector.Slice(leftOffset, leftLength);
-                var rightSpan = vector.Slice(rightOffset, rightLength);
+               var leftSpan = vector.Slice(leftOffset, leftLength);
+               var rightSpan = vector.Slice(rightOffset, rightLength);
 
-                if (comparer.Compare(leftSpan, rightSpan) > 0)
-                {
-                    SwapVectorPositions(leftIndex, rightIndex, keyOffsets);
-                }
-            }
-        }
+               if (comparer.Compare(leftSpan, rightSpan) > 0)
+               {
+                   SwapVectorPositions(leftIndex, rightIndex, keyOffsets);
+               }
+           }
+       }
 
-        private static void SwapVectorPositions(int leftIndex, int rightIndex, Span<(int, int, int)> keyOffsets)
-        {
-            checked
-            {
-                if (leftIndex == rightIndex)
-                {
-                    return;
-                }
+       private static void SwapVectorPositions(int leftIndex, int rightIndex, Span<(int, int, int)> keyOffsets)
+       {
+           checked
+           {
+               if (leftIndex == rightIndex)
+               {
+                   return;
+               }
 
-                var temp = keyOffsets[leftIndex];
-                keyOffsets[leftIndex] = keyOffsets[rightIndex];
-                keyOffsets[rightIndex] = temp;
-            }
-        }
+               var temp = keyOffsets[leftIndex];
+               keyOffsets[leftIndex] = keyOffsets[rightIndex];
+               keyOffsets[rightIndex] = temp;
+           }
+       }
 
-        /// <summary>
-        /// For the given index in a vector, follow the indirection to return a tuple representing
-        /// the key start offset, the key length, and the table offset. It's advantageous to return the
-        /// tuple here since we can store that in a span.
-        /// </summary>
-        private static (int offset, int length, int tableOffset) GetKeyOffset(
-            ReadOnlySpan<byte> buffer,
-            int index0Position,
-            int vectorIndex,
-            int vtableIndex,
-            int? inlineItemSize)
-        {
-            checked
-            {
-                // Find offset to the table at the index.
-                int tableOffset = index0Position + (sizeof(uint) * vectorIndex);
-                tableOffset += (int)ScalarSpanReader.ReadUInt(buffer.Slice(tableOffset));
+       /// <summary>
+       /// For the given index in a vector, follow the indirection to return a tuple representing
+       /// the key start offset, the key length, and the table offset. It's advantageous to return the
+       /// tuple here since we can store that in a span.
+       /// </summary>
+       private static (int offset, int length, int tableOffset) GetKeyOffset(
+           ReadOnlySpan<byte> buffer,
+           int index0Position,
+           int vectorIndex,
+           int vtableIndex,
+           int? inlineItemSize)
+       {
+           checked
+           {
+               // Find offset to the table at the index.
+               int tableOffset = index0Position + (sizeof(uint) * vectorIndex);
+               tableOffset += (int)ScalarSpanReader.ReadUInt(buffer.Slice(tableOffset));
 
-                // Consult the vtable.
-                int vtableOffset = tableOffset - ScalarSpanReader.ReadInt(buffer.Slice(tableOffset));
+               // Consult the vtable.
+               int vtableOffset = tableOffset - ScalarSpanReader.ReadInt(buffer.Slice(tableOffset));
 
-                // Vtables have two extra entries: vtable length and table length. The number of entries is vtableLengthBytes / 2 - 2
-                int vtableLengthEntries = (ScalarSpanReader.ReadUShort(buffer.Slice(vtableOffset)) / 2) - 2;
+               // Vtables have two extra entries: vtable length and table length. The number of entries is vtableLengthBytes / 2 - 2
+               int vtableLengthEntries = (ScalarSpanReader.ReadUShort(buffer.Slice(vtableOffset)) / 2) - 2;
 
-                if (vtableIndex >= vtableLengthEntries)
-                {
-                    // Undefined.
-                    throw new InvalidOperationException("Key of table member is undefined.");
-                }
+               if (vtableIndex >= vtableLengthEntries)
+               {
+                   // Undefined.
+                   throw new InvalidOperationException("Key of table member is undefined.");
+               }
 
-                // Absolute offset of the field within the table.
-                int fieldOffset = tableOffset + ScalarSpanReader.ReadUShort(buffer.Slice(vtableOffset + 2 * (2 + vtableIndex)));
-                if (inlineItemSize != null)
-                {
-                    return (fieldOffset, inlineItemSize.Value, tableOffset);
-                }
+               // Absolute offset of the field within the table.
+               int fieldOffset = tableOffset + ScalarSpanReader.ReadUShort(buffer.Slice(vtableOffset + 2 * (2 + vtableIndex)));
+               if (inlineItemSize != null)
+               {
+                   return (fieldOffset, inlineItemSize.Value, tableOffset);
+               }
 
-                // Strings are stored as a uoffset reference. Follow the indirection one more time.
-                int uoffsetToString = fieldOffset + (int)ScalarSpanReader.ReadUInt(buffer.Slice(fieldOffset));
-                int stringLength = (int)ScalarSpanReader.ReadUInt(buffer.Slice(uoffsetToString));
-                return (uoffsetToString + sizeof(uint), stringLength, tableOffset);
-            }
-        }
+               // Strings are stored as a uoffset reference. Follow the indirection one more time.
+               int uoffsetToString = fieldOffset + (int)ScalarSpanReader.ReadUInt(buffer.Slice(fieldOffset));
+               int stringLength = (int)ScalarSpanReader.ReadUInt(buffer.Slice(uoffsetToString));
+               return (uoffsetToString + sizeof(uint), stringLength, tableOffset);
+           }
+       }
 
-    }
+   }
 }

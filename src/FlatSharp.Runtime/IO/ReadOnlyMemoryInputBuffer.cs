@@ -17,6 +17,7 @@
 namespace FlatSharp
 {
     using System;
+    using System.Text;
 
     /// <summary>
     /// An implemenation of InputBuffer that accepts ReadOnlyMemory. ReadOnlyMemoryInputBuffer
@@ -25,7 +26,7 @@ namespace FlatSharp
     /// being thrown. ReadOnlyMemoryInputBuffer guarantees that the objects returned will
     /// not modify in the input buffer (unless unsafe operations / MemoryMarshal) are used.
     /// </summary>
-    public class ReadOnlyMemoryInputBuffer : SpanInputBuffer
+    public class ReadOnlyMemoryInputBuffer : InputBuffer
     {
         private readonly ReadOnlyMemory<byte> memory;
 
@@ -36,6 +37,61 @@ namespace FlatSharp
 
         public override int Length => this.memory.Length;
 
+        public override byte ReadByte(int offset)
+        {
+            return ScalarSpanReader.ReadByte(this.memory.Span.Slice(offset));
+        }
+
+        public override sbyte ReadSByte(int offset)
+        {
+            return ScalarSpanReader.ReadSByte(this.memory.Span.Slice(offset));
+        }
+
+        public override ushort ReadUShort(int offset)
+        {
+            return ScalarSpanReader.ReadUShort(this.memory.Span.Slice(offset));
+        }
+
+        public override short ReadShort(int offset)
+        {
+            return ScalarSpanReader.ReadShort(this.memory.Span.Slice(offset));
+        }
+
+        public override uint ReadUInt(int offset)
+        {
+            return ScalarSpanReader.ReadUInt(this.memory.Span.Slice(offset));
+        }
+
+        public override int ReadInt(int offset)
+        {
+            return ScalarSpanReader.ReadInt(this.memory.Span.Slice(offset));
+        }
+
+        public override ulong ReadULong(int offset)
+        {
+            return ScalarSpanReader.ReadULong(this.memory.Span.Slice(offset));
+        }
+
+        public override long ReadLong(int offset)
+        {
+            return ScalarSpanReader.ReadLong(this.memory.Span.Slice(offset));
+        }
+
+        public override float ReadFloat(int offset)
+        {
+            return ScalarSpanReader.ReadFloat(this.memory.Span.Slice(offset));
+        }
+
+        public override double ReadDouble(int offset)
+        {
+            return ScalarSpanReader.ReadDouble(this.memory.Span.Slice(offset));
+        }
+
+        protected override string ReadStringProtected(int offset, int byteLength, Encoding encoding)
+        {
+            return ScalarSpanReader.ReadString(this.memory.Span.Slice(offset, byteLength), encoding);
+        }
+
         protected override Memory<byte> GetByteMemory(int start, int length)
         {
             throw new InvalidOperationException("ReadOnlyMemory inputs may not deserialize writable memory.");
@@ -45,9 +101,5 @@ namespace FlatSharp
         {
             return this.memory.Slice(start, length);
         }
-
-        protected sealed override ReadOnlySpan<byte> GetSpan(int offset) => this.memory.Span.Slice(offset);
-
-        protected sealed override ReadOnlySpan<byte> GetSpan(int offset, int length) => this.memory.Span.Slice(offset, length);
     }
 }

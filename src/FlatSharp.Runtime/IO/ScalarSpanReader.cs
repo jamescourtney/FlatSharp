@@ -20,6 +20,7 @@ namespace FlatSharp
     using System.Buffers.Binary;
     using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices;
+    using System.Text;
 
     /// <summary>
     /// A class that reads FlatBuffer scalars.
@@ -95,6 +96,16 @@ namespace FlatSharp
         public static double ReadDouble(ReadOnlySpan<byte> span)
         {
             return BitConverter.Int64BitsToDouble(ReadLong(span));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static string ReadString(ReadOnlySpan<byte> span, Encoding encoding)
+        {
+#if NETCOREAPP
+            return encoding.GetString(span);
+#else
+            return encoding.GetString(span.ToArray());
+#endif
         }
 
         [StructLayout(LayoutKind.Explicit)]

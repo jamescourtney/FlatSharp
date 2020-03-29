@@ -17,13 +17,16 @@
 namespace FlatSharp
 {
     using System;
+    using System.Text;
 
     /// <summary>
     /// An implementation of <see cref="InputBuffer"/> for managed arrays.
     /// </summary>
-    public sealed class ArrayInputBuffer : SpanInputBuffer
+    public sealed class ArrayInputBuffer : InputBuffer
     {
         private readonly ArraySegment<byte> memory;
+
+        public override int Length => this.memory.Count;
 
         public ArrayInputBuffer(ArraySegment<byte> memory)
         {
@@ -34,14 +37,69 @@ namespace FlatSharp
         {
         }
 
-        public override int Length => this.memory.Count;
+        public override byte ReadByte(int offset)
+        {
+            return ScalarSpanReader.ReadByte(this.memory.AsSpan().Slice(offset));
+        }
 
-        protected override Memory<byte> GetByteMemory(int start, int length) => this.memory.AsMemory().Slice(start, length);
+        public override sbyte ReadSByte(int offset)
+        {
+            return ScalarSpanReader.ReadSByte(this.memory.AsSpan().Slice(offset));
+        }
 
-        protected override ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length) => this.GetByteMemory(start, length);
+        public override ushort ReadUShort(int offset)
+        {
+            return ScalarSpanReader.ReadUShort(this.memory.AsSpan().Slice(offset));
+        }
 
-        protected override ReadOnlySpan<byte> GetSpan(int offset) => this.memory.AsSpan().Slice(offset);
+        public override short ReadShort(int offset)
+        {
+            return ScalarSpanReader.ReadShort(this.memory.AsSpan().Slice(offset));
+        }
 
-        protected override ReadOnlySpan<byte> GetSpan(int offset, int length) => this.memory.AsSpan().Slice(offset, length);
+        public override uint ReadUInt(int offset)
+        {
+            return ScalarSpanReader.ReadUInt(this.memory.AsSpan().Slice(offset));
+        }
+
+        public override int ReadInt(int offset)
+        {
+            return ScalarSpanReader.ReadInt(this.memory.AsSpan().Slice(offset));
+        }
+
+        public override ulong ReadULong(int offset)
+        {
+            return ScalarSpanReader.ReadULong(this.memory.AsSpan().Slice(offset));
+        }
+
+        public override long ReadLong(int offset)
+        {
+            return ScalarSpanReader.ReadLong(this.memory.AsSpan().Slice(offset));
+        }
+
+        public override float ReadFloat(int offset)
+        {
+            return ScalarSpanReader.ReadFloat(this.memory.AsSpan().Slice(offset));
+        }
+
+        public override double ReadDouble(int offset)
+        {
+            return ScalarSpanReader.ReadDouble(this.memory.AsSpan().Slice(offset));
+        }
+
+        protected override string ReadStringProtected(int offset, int byteLength, Encoding encoding)
+        {
+            return ScalarSpanReader.ReadString(this.memory.AsSpan().Slice(offset, byteLength), encoding);
+        }
+
+        protected override Memory<byte> GetByteMemory(int start, int length)
+        {
+            return new Memory<byte>(this.memory.Array, this.memory.Offset + start, length);
+        }
+
+        protected override ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length)
+        {
+            return this.GetByteMemory(start, length);
+        }
     }
 }
