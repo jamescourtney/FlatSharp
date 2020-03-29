@@ -19,6 +19,7 @@ namespace BenchmarkCore
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Linq;
     using benchfb;
     using FlatSharp;
     using FlatSharp.Attributes;
@@ -37,93 +38,39 @@ namespace BenchmarkCore
         {
             Console.WriteLine($"x64={Environment.Is64BitProcess}");
 
-            FooBar[] fooBars = new FooBar[5];
-            for (int i = 0; i < fooBars.Length; i++)
+            FlatBufferSerializer inPlaceSorter = new FlatBufferSerializer(new FlatBufferSerializerOptions());
+
+            Random r = new Random();
+            SortedVector<int> intVector = new SortedVector<int>
             {
-                var foo = new Foo
-                {
-                    id = 0xABADCAFEABADCAFE + (ulong)i,
-                    count = (short)(10000 + i),
-                    prefix = (sbyte)('@' + i),
-                    length = (uint)(1000000 + i)
-                };
-
-                var bar = new Bar
-                {
-                    parent = foo,
-                    ratio = 3.14159f + i,
-                    size = (ushort)(10000 + i),
-                    time = 123456 + i
-                };
-
-                var fooBar = new FooBar
-                {
-                    name = Guid.NewGuid().ToString(),
-                    postfix = (byte)('!' + i),
-                    rating = 3.1415432432445543543 + i,
-                    sibling = bar,
-                };
-
-                fooBars[i] = fooBar;
-            }
-
-            var defaultContainer = new FooBarContainer
-            {
-                fruit = benchfb.Enum.Bananas,
-                initialized = true,
-                location = "http://google.com/flatbuffers/",
-                list = fooBars,
+                Item = Enumerable.Range(0, 25).Select(x => new SortedVectorItem<int> { Item = r.Next() }).ToList()
             };
 
-            var serializer = FooBarContainer.Serializer;
+            SortedVector<string> stringVector = new SortedVector<string>
+            {
+                Item = Enumerable.Range(0, 25).Select(x => new SortedVectorItem<string> { Item = Guid.NewGuid().ToString() }).ToList()
+            };
 
-            RunBenchmarkSet(
-                "GreedyBuildTime",
-                serializer,
-                defaultContainer);
+            UnsortedVector<string> unsortedString = new UnsortedVector<string> { Item = stringVector.Item };
+            UnsortedVector<int> unsortedInt = new UnsortedVector<int> { Item = intVector.Item };
 
-            RunBenchmarkSet(
-                "GreedyRuntime",
-                new FlatBufferSerializer(new FlatBufferSerializerOptions(FlatBufferDeserializationOption.GreedyMutable)).Compile<FooBarContainer>(),
-                defaultContainer);
-            /*
-            
-            RunBenchmarkSet(
-                "Lazy",
-                new FlatBufferSerializer(new FlatBufferSerializerOptions(FlatBufferSerializerFlags.GenerateMutableObjects)).Compile<FooBarContainer>(),
-                defaultContainer);
+            byte[] buffer = new byte[10 * 1024 * 1024];
+            var items = new (string, Action)[]
+            {
+                //("ToArray", () => intVector.Item.Select(x => x.Item).ToArray()),
+                //("ArrayStringSort", () => Array.Sort(stringVector.Item.Select(x => x.Item).ToArray())),
+                //("ArrayIntSort", () => Array.Sort(intVector.Item.Select(x => x.Item).ToArray())),
+                ("InPlaceSortString", () => inPlaceSorter.Serialize(stringVector, buffer)),
+                ("UnsortedString", () => inPlaceSorter.Serialize(unsortedString, buffer)),
+                ("InPlaceSortInt", () => inPlaceSorter.Serialize(intVector, buffer)),
+                ("UnsortedInt", () => inPlaceSorter.Serialize(unsortedInt, buffer)),
+            };
 
-            RunBenchmarkSet(
-                "Greedy",
-                new FlatBufferSerializer(new FlatBufferSerializerOptions(FlatBufferSerializerFlags.GreedyDeserialize | FlatBufferSerializerFlags.GenerateMutableObjects)).Compile<FooBarContainer>(),
-                defaultContainer);*/
-
-
+            RunBenchmarkSet(items);
         }
 
-        private static void RunBenchmarkSet(
-            string runName, 
-            ISerializer<FooBarContainer> serializer, 
-            FooBarContainer container)
+        private static void RunBenchmarkSet((string, Action)[] items)
         {
-            int traversalCount = 5;
-            byte[] destination = new byte[serializer.GetMaxSize(container)];
-
-            SpanWriter spanWriter = new SpanWriter();
-            InputBuffer inputBuffer = new ArrayInputBuffer(destination);
-            serializer.Write(spanWriter, destination, container);
-
-            (string, Action)[] items = new (string, Action)[]
-            {
-                ($"{runName}.GetMaxSize",       () => serializer.GetMaxSize(container)),
-                ($"{runName}.Serialize",        () => serializer.Write(spanWriter, destination, container)),
-                ($"{runName}.Parse",            () => serializer.Parse(inputBuffer)),
-                ($"{runName}.ParseAndTraverse x1", () => ParseAndTraverse(serializer, inputBuffer, 1)),
-                ($"{runName}.ParseAndTraverse x{traversalCount}", () => ParseAndTraverse(serializer, inputBuffer, traversalCount)),
-                ($"{runName}.ParseAndTraversePartial x1", () => ParseAndTraversePartial(serializer, inputBuffer, 1)),
-                ($"{runName}.ParseAndTraversePartial x{traversalCount}", () => ParseAndTraversePartial(serializer, inputBuffer, traversalCount)),
-            };
-
             foreach (var tuple in items)
             {
                 for (int loop = 0; loop < 5; ++loop)
@@ -153,6 +100,30 @@ namespace BenchmarkCore
             }
 
             Console.WriteLine();
+        }
+
+        private static (string, Action)[] GetBenchmarkSet(
+            string runName, 
+            ISerializer<FooBarContainer> serializer, 
+            FooBarContainer container)
+        {
+            int traversalCount = 5;
+            byte[] destination = new byte[serializer.GetMaxSize(container)];
+
+            SpanWriter spanWriter = new SpanWriter();
+            InputBuffer inputBuffer = new ArrayInputBuffer(destination);
+            serializer.Write(spanWriter, destination, container);
+
+            return new (string, Action)[]
+            {
+                ($"{runName}.GetMaxSize",       () => serializer.GetMaxSize(container)),
+                ($"{runName}.Serialize",        () => serializer.Write(spanWriter, destination, container)),
+                ($"{runName}.Parse",            () => serializer.Parse(inputBuffer)),
+                ($"{runName}.ParseAndTraverse x1", () => ParseAndTraverse(serializer, inputBuffer, 1)),
+                ($"{runName}.ParseAndTraverse x{traversalCount}", () => ParseAndTraverse(serializer, inputBuffer, traversalCount)),
+                ($"{runName}.ParseAndTraversePartial x1", () => ParseAndTraversePartial(serializer, inputBuffer, 1)),
+                ($"{runName}.ParseAndTraversePartial x{traversalCount}", () => ParseAndTraversePartial(serializer, inputBuffer, traversalCount)),
+            };
         }
 
         private static void ParseAndTraverse(ISerializer<FooBarContainer> serializer, InputBuffer inputBuffer, int traversalCount)
@@ -215,6 +186,27 @@ namespace BenchmarkCore
                     //var prefix = parent.prefix;
                 }
             }
+        }
+
+        [FlatBufferTable]
+        public class SortedVector<T>
+        {
+            [FlatBufferItem(0, SortedVector = true)]
+            public virtual IList<SortedVectorItem<T>> Item { get; set; }
+        }
+
+        [FlatBufferTable]
+        public class UnsortedVector<T>
+        {
+            [FlatBufferItem(0, SortedVector = false)]
+            public virtual IList<SortedVectorItem<T>> Item { get; set; }
+        }
+
+        [FlatBufferTable]
+        public class SortedVectorItem<T>
+        {
+            [FlatBufferItem(0, Key = true)]
+            public virtual T Item { get; set; }
         }
     }
 }

@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2020 James Courtney
+ * Copyright 2018 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-namespace FlatSharp
-{
-    using System;
 
-    /// <summary>
-    /// An analog of IComparer for Spans. The implementation performs comparison consistent with the type the span represents.
-    /// </summary>
-    public interface ISpanComparer
+namespace FlatSharpTests
+{
+    using FlatSharp;
+    using System.Collections.Generic;
+
+    public class Utf8StringComparer : IComparer<string>
     {
-        /// <summary>
-        /// Compares the two spans.
-        /// </summary>
-        int Compare(ReadOnlySpan<byte> left, ReadOnlySpan<byte> right);
+        public int Compare(string x, string y)
+        {
+            return StringSpanComparer.Instance.Compare(InputBuffer.Encoding.GetBytes(x), InputBuffer.Encoding.GetBytes(y));
+        }
     }
 }

@@ -46,3 +46,11 @@ table FooBarContainer {
   fruit:short;
   location:string;
 }
+
+table SortedVectorContainer {
+    StringVector:[SortedVectorStringKey];
+    IntVector:[SortedVectorIntKey];
+}
+
+table SortedVectorStringKey { Key:string (key); }
+table SortedVectorIntKey { Key:int (key); }

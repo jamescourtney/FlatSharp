@@ -58,18 +58,21 @@ namespace FlatSharpTests
                 string str = sb.ToString();
                 string str2 = sb2.ToString();
 
-                Assert.AreEqual(0, FlatBufferStringComparer.Instance.Compare(str, str));
+                Span<byte> span = InputBuffer.Encoding.GetBytes(str);
+                Span<byte> span2 = InputBuffer.Encoding.GetBytes(str2);
+
+                Assert.AreEqual(0, StringSpanComparer.Instance.Compare(span, span));
                 Assert.AreEqual(0, this.Compare(str, str));
 
-                Assert.AreEqual(0, FlatBufferStringComparer.Instance.Compare(str2, str2));
+                Assert.AreEqual(0, StringSpanComparer.Instance.Compare(span2, span2));
                 Assert.AreEqual(0, this.Compare(str2, str2));
 
                 int expected = this.Compare(str, str2);
-                int actual = FlatBufferStringComparer.Instance.Compare(str, str2);
+                int actual = StringSpanComparer.Instance.Compare(span, span2);
                 Assert.AreEqual(expected, actual);
 
                 expected = this.Compare(str2, str);
-                actual = FlatBufferStringComparer.Instance.Compare(str2, str);
+                actual = StringSpanComparer.Instance.Compare(span2, span);
                 Assert.AreEqual(expected, actual);
             }
         }

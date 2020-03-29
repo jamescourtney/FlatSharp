@@ -525,7 +525,7 @@ namespace FlatSharpTests
             };
 
             byte[] data = new byte[1024];
-            Assert.ThrowsException<InvalidOperationException>(() => FlatBufferSerializer.Default.Serialize(root, data));
+            Assert.ThrowsException<NullReferenceException>(() => FlatBufferSerializer.Default.Serialize(root, data));
             Assert.ThrowsException<InvalidOperationException>(() => root.Vector.BinarySearchByFlatBufferKey("AAA"));
             Assert.ThrowsException<InvalidOperationException>(() => root.Vector.BinarySearchByFlatBufferKey(3));
             Assert.ThrowsException<ArgumentNullException>(() => root.Vector.BinarySearchByFlatBufferKey((string)null));

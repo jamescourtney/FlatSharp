@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
- namespace FlatSharpTests
+namespace FlatSharpTests
 {
     using FlatSharp;
     using FlatSharp.Unsafe;
@@ -416,7 +416,7 @@
             var parsed = FlatBufferSerializer.Default.Parse<SortedVectorTest<SortedVectorItem<int>>>(data);
             var table = Oracle.SortedVectorTest.GetRootAsSortedVectorTest(new FlatBuffers.ByteBuffer(data));
 
-            VerifySorted<IList<SortedVectorItem<string>>, SortedVectorItem<string>, string>(parsed.StringVector, i => i.Value, i => table.String(i)?.Value, t => table.StringByKey(t) != null, FlatBufferStringComparer.Instance);
+            VerifySorted<IList<SortedVectorItem<string>>, SortedVectorItem<string>, string>(parsed.StringVector, i => i.Value, i => table.String(i)?.Value, t => table.StringByKey(t) != null, new Utf8StringComparer());
             VerifySorted<IList<SortedVectorItem<int>>, SortedVectorItem<int>, int>(parsed.IntVector, i => i.Value, i => table.Int32(i).Value.Value, t => table.Int32ByKey(t) != null, Comparer<int>.Default);
             VerifySorted<IList<SortedVectorItem<double>>, SortedVectorItem<double>, double>(parsed.Double, i => i.Value, i => table.Double(i).Value.Value, t => table.DoubleByKey(t) != null, Comparer<double>.Default);
         }
@@ -429,12 +429,12 @@
                 IntVector = new List<SortedVectorDefaultValueItem>(),
             };
 
-            // Verify that we don't actually write 5 in the output due to the default value.
+            // Verify that we actually write 5 in the output due even though it has a default value set.
             SortedVectorDefaultValueItem myItem = new SortedVectorDefaultValueItem();
             byte[] data = new byte[1024 * 1024];
             int bytesWritten = FlatBufferSerializer.Default.Serialize(myItem, data);
             Assert.AreEqual(5, myItem.Value);
-            Assert.AreEqual(12, bytesWritten); // table offset (4), vtable offset (4), vtable headers (4)
+            Assert.AreEqual(18, bytesWritten); // table offset (4), vtable offset (4), vtable headers (6), data (4)
 
             const int Iterations = 1000;
             Random random = new Random();

@@ -77,10 +77,5 @@ namespace FlatSharp
         /// Indicates if FlatSharp should intercept app domain load events to look for cross-referenced generated assemblies. Mostly useful for FlatSharp unit tests.
         /// </summary>
         public bool EnableAppDomainInterceptOnAssemblyLoad { get; set; }
-
-        /// <summary>
-        /// Indicates if we should use in-place vector sort or the .NET default.
-        /// </summary>
-        public bool UseInPlaceVectorSort { get; set; }
     }
 }

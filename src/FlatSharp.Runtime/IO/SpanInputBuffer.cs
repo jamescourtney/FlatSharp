@@ -22,27 +22,28 @@ namespace FlatSharp
     using System.Text;
 
     /// <summary>
-    /// An implementation of <see cref="InputBuffer"/> for managed arrays.
+    /// Describes a general-purpose input buffer that can be read using Span methods. Note that the underlying buffer is not a span. 
+    /// Rather, it is a type that may be converted to one.
     /// </summary>
     public abstract class SpanInputBuffer : InputBuffer
     {
-        public sealed override byte ReadByte(int offset) => ScalarSpanReader.ReadByte(this.GetSpan(), offset);
+        public sealed override byte ReadByte(int offset) => ScalarSpanReader.ReadByte(this.GetSpan(offset));
 
-        public sealed override sbyte ReadSByte(int offset) => ScalarSpanReader.ReadSByte(this.GetSpan(), offset);
+        public sealed override sbyte ReadSByte(int offset) => ScalarSpanReader.ReadSByte(this.GetSpan(offset));
 
-        public sealed override ushort ReadUShort(int offset) => ScalarSpanReader.ReadUShort(this.GetSpan(), offset);
+        public sealed override ushort ReadUShort(int offset) => ScalarSpanReader.ReadUShort(this.GetSpan(offset));
 
-        public sealed override short ReadShort(int offset) => ScalarSpanReader.ReadShort(this.GetSpan(), offset);
+        public sealed override short ReadShort(int offset) => ScalarSpanReader.ReadShort(this.GetSpan(offset));
 
-        public sealed override uint ReadUInt(int offset) => ScalarSpanReader.ReadUInt(this.GetSpan(), offset);
+        public sealed override uint ReadUInt(int offset) => ScalarSpanReader.ReadUInt(this.GetSpan(offset));
 
-        public sealed override int ReadInt(int offset) => ScalarSpanReader.ReadInt(this.GetSpan(), offset);
+        public sealed override int ReadInt(int offset) => ScalarSpanReader.ReadInt(this.GetSpan(offset));
 
-        public sealed override ulong ReadULong(int offset) => ScalarSpanReader.ReadULong(this.GetSpan(), offset);
+        public sealed override ulong ReadULong(int offset) => ScalarSpanReader.ReadULong(this.GetSpan(offset));
 
-        public sealed override long ReadLong(int offset) => ScalarSpanReader.ReadLong(this.GetSpan(), offset);
+        public sealed override long ReadLong(int offset) => ScalarSpanReader.ReadLong(this.GetSpan(offset));
 
-        public sealed override float ReadFloat(int offset) => ScalarSpanReader.ReadFloat(this.GetSpan(), offset);
+        public sealed override float ReadFloat(int offset) => ScalarSpanReader.ReadFloat(this.GetSpan(offset));
 
         public sealed override double ReadDouble(int offset)
         {
@@ -52,12 +53,14 @@ namespace FlatSharp
         protected sealed override string ReadStringProtected(int offset, int byteLength, Encoding encoding)
         {
 #if NETCOREAPP
-            return encoding.GetString(this.GetSpan().Slice(offset, byteLength));
+            return encoding.GetString(this.GetSpan(offset, byteLength));
 #else
-            return encoding.GetString(this.GetSpan().Slice(offset, byteLength).ToArray());
+            return encoding.GetString(this.GetSpan(offset, byteLength).ToArray());
 #endif
         }
 
-        protected abstract ReadOnlySpan<byte> GetSpan();
+        protected abstract ReadOnlySpan<byte> GetSpan(int offset, int length);
+
+        protected abstract ReadOnlySpan<byte> GetSpan(int offset);
     }
 }

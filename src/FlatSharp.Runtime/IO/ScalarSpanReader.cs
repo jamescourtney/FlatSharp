@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2018 James Courtney
+ * Copyright 2020 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,74 +27,74 @@ namespace FlatSharp
     public static class ScalarSpanReader
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool ReadBool(ReadOnlySpan<byte> span, int offset)
+        public static bool ReadBool(ReadOnlySpan<byte> span)
         {
-            return span[offset] != InputBuffer.False;
+            return span[0] != InputBuffer.False;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static byte ReadByte(ReadOnlySpan<byte> span, int offset)
+        public static byte ReadByte(ReadOnlySpan<byte> span)
         {
-            return span[offset];
+            return span[0];
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static sbyte ReadSByte(ReadOnlySpan<byte> span, int offset)
+        public static sbyte ReadSByte(ReadOnlySpan<byte> span)
         {
-            return (sbyte)span[offset];
+            return (sbyte)span[0];
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ushort ReadUShort(ReadOnlySpan<byte> span, int offset)
+        public static ushort ReadUShort(ReadOnlySpan<byte> span)
         {
-            return BinaryPrimitives.ReadUInt16LittleEndian(span.Slice(offset));
+            return BinaryPrimitives.ReadUInt16LittleEndian(span);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short ReadShort(ReadOnlySpan<byte> span, int offset)
+        public static short ReadShort(ReadOnlySpan<byte> span)
         {
-            return BinaryPrimitives.ReadInt16LittleEndian(span.Slice(offset));
+            return BinaryPrimitives.ReadInt16LittleEndian(span);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint ReadUInt(ReadOnlySpan<byte> span, int offset)
+        public static uint ReadUInt(ReadOnlySpan<byte> span)
         {
-            return BinaryPrimitives.ReadUInt32LittleEndian(span.Slice(offset));
+            return BinaryPrimitives.ReadUInt32LittleEndian(span);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int ReadInt(ReadOnlySpan<byte> span, int offset)
+        public static int ReadInt(ReadOnlySpan<byte> span)
         {
-            return BinaryPrimitives.ReadInt32LittleEndian(span.Slice(offset));
+            return BinaryPrimitives.ReadInt32LittleEndian(span);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ulong ReadULong(ReadOnlySpan<byte> span, int offset)
+        public static ulong ReadULong(ReadOnlySpan<byte> span)
         {
-            return BinaryPrimitives.ReadUInt64LittleEndian(span.Slice(offset));
+            return BinaryPrimitives.ReadUInt64LittleEndian(span);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static long ReadLong(ReadOnlySpan<byte> span, int offset)
+        public static long ReadLong(ReadOnlySpan<byte> span)
         {
-            return BinaryPrimitives.ReadInt64LittleEndian(span.Slice(offset));
+            return BinaryPrimitives.ReadInt64LittleEndian(span);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float ReadFloat(ReadOnlySpan<byte> span, int offset)
+        public static float ReadFloat(ReadOnlySpan<byte> span)
         {
             FloatLayout layout = new FloatLayout
             {
-                bytes = ReadUInt(span, offset)
+                bytes = ReadUInt(span)
             };
 
             return layout.value;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static double ReadDouble(ReadOnlySpan<byte> span, int offset)
+        public static double ReadDouble(ReadOnlySpan<byte> span)
         {
-            return BitConverter.Int64BitsToDouble(ReadLong(span, offset));
+            return BitConverter.Int64BitsToDouble(ReadLong(span));
         }
 
         [StructLayout(LayoutKind.Explicit)]

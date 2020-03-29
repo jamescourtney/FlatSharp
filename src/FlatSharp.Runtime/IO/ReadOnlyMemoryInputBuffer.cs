@@ -46,6 +46,8 @@ namespace FlatSharp
             return this.memory.Slice(start, length);
         }
 
-        protected sealed override ReadOnlySpan<byte> GetSpan() => this.memory.Span;
+        protected sealed override ReadOnlySpan<byte> GetSpan(int offset) => this.memory.Span.Slice(offset);
+
+        protected sealed override ReadOnlySpan<byte> GetSpan(int offset, int length) => this.memory.Span.Slice(offset, length);
     }
 }

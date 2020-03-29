@@ -398,7 +398,7 @@
 
             var parsed = FlatBufferSerializer.Default.Parse<SortedVectorTest<SortedVectorItem<int>>>(serialized);
 
-            VerifySorted(parsed.StringVector, FlatBufferStringComparer.Instance, strings, new List<string> { Guid.NewGuid().ToString(), "banana" });
+            VerifySorted(parsed.StringVector, new Utf8StringComparer(), strings, new List<string> { Guid.NewGuid().ToString(), "banana" });
             VerifySorted(parsed.IntVector, Comparer<int>.Default, ints, new List<int> { -1, -3, 0 });
             VerifySorted(parsed.Double, Comparer<double>.Default, doubles, new List<double> { Math.PI, Math.E, Math.Sqrt(2) });
         }

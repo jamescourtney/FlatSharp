@@ -227,10 +227,11 @@ $@"
             string offsetVariableName = $"index{index}Offset";
 
             string condition = $"if ({valueVariableName} != {CSharpHelpers.GetDefaultValueToken(memberModel)})";
-            if (memberModel.ItemTypeModel is VectorTypeModel vector && vector.IsMemoryVector)
+            if ((memberModel.ItemTypeModel is VectorTypeModel vector && vector.IsMemoryVector) || memberModel.IsKey)
             {
                 // Memory is a struct and can't be null, and 0-length vectors are valid.
                 // Therefore, we just need to omit the conditional check entirely.
+                // For vector keys, we must include the value since some other libraries cannot do binary search with omitted keys.
                 condition = string.Empty;
             }
 
@@ -249,28 +250,15 @@ $@"
             string sortInvocation = string.Empty;
             if (memberModel.IsSortedVector)
             {
-                if (this.options.UseInPlaceVectorSort)
-                {
-                    VectorTypeModel vectorModel = (VectorTypeModel)memberModel.ItemTypeModel;
-                    TableTypeModel tableModel = (TableTypeModel)vectorModel.ItemTypeModel;
-                    TableMemberModel keyMember = tableModel.IndexToMemberMap.Single(x => x.Value.PropertyInfo == tableModel.KeyProperty).Value;
+                VectorTypeModel vectorModel = (VectorTypeModel)memberModel.ItemTypeModel;
+                TableTypeModel tableModel = (TableTypeModel)vectorModel.ItemTypeModel;
+                TableMemberModel keyMember = tableModel.IndexToMemberMap.Single(x => x.Value.PropertyInfo == tableModel.KeyProperty).Value;
 
-                    if (tableModel.KeyProperty.PropertyType == typeof(string))
-                    {
-                        sortInvocation = $"{nameof(SortedVectorHelpers)}.{nameof(SortedVectorHelpers.SortStringVector)}(span, {offsetVariableName}, {keyMember.Index});";
-                    }
-                    else if (keyMember.ItemTypeModel is ScalarTypeModel scalarModel)
-                    {
-                        var builtInType = BuiltInType.BuiltInScalars[keyMember.ItemTypeModel.ClrType];
-                        sortInvocation = $"{nameof(SortedVectorHelpers)}.{nameof(SortedVectorHelpers.SortVector)}<{CSharpHelpers.GetCompilableTypeName(tableModel.KeyProperty.PropertyType)}>(span, {offsetVariableName}, {keyMember.Index}, {CSharpHelpers.GetDefaultValueToken(keyMember)}, {keyMember.ItemTypeModel.InlineSize}, {CSharpHelpers.GetFullMethodName(builtInType.ScalarSpanReaderRead)});";
-                    }
-                }
-                else
-                {
-                    var vectorTableModel = (TableTypeModel)((VectorTypeModel)memberModel.ItemTypeModel).ItemTypeModel;
-                    var keyProperty = vectorTableModel.KeyProperty;
-                    valueVariableName = $"{valueVariableName}.OrderBy(x => x.{keyProperty.Name}, {nameof(SortedVectorHelpers)}.{nameof(SortedVectorHelpers.GetComparer)}<{CSharpHelpers.GetCompilableTypeName(keyProperty.PropertyType)}>()).ToArray()";
-                }
+                var builtInType = BuiltInType.BuiltInTypes[keyMember.ItemTypeModel.ClrType];
+                string inlineSize = builtInType.TypeModel.SchemaType == FlatBufferSchemaType.Scalar ? builtInType.TypeModel.InlineSize.ToString() : "null";
+
+                sortInvocation = $"{nameof(SortedVectorHelpers)}.{nameof(SortedVectorHelpers.SortVector)}(" +
+                                    $"span, {offsetVariableName}, {keyMember.Index}, {inlineSize}, {CSharpHelpers.GetCompilableTypeName(builtInType.SpanComparerType)}.Instance);";
             }
 
             string serializeBlock =

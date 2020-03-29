@@ -40,6 +40,8 @@ namespace FlatSharp
 
         protected override ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length) => this.GetByteMemory(start, length);
 
-        protected override ReadOnlySpan<byte> GetSpan() => this.memory;
+        protected override ReadOnlySpan<byte> GetSpan(int offset) => this.memory.AsSpan().Slice(offset);
+
+        protected override ReadOnlySpan<byte> GetSpan(int offset, int length) => this.memory.AsSpan().Slice(offset, length);
     }
 }
