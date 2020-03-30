@@ -229,16 +229,25 @@ $@"
             string condition = $"if ({valueVariableName} != {CSharpHelpers.GetDefaultValueToken(memberModel)})";
             if ((memberModel.ItemTypeModel is VectorTypeModel vector && vector.IsMemoryVector) || memberModel.IsKey)
             {
-                // Memory is a struct and can't be null, and 0-length vectors are valid.
-                // Therefore, we just need to omit the conditional check entirely.
-                // For vector keys, we must include the value since some other libraries cannot do binary search with omitted keys.
+                // 1) Memory is a struct and can't be null, and 0-length vectors are valid.
+                //    Therefore, we just need to omit the conditional check entirely.
+
+                // 2) For sorted vector keys, we must include the value since some other 
+                //    libraries cannot do binary search with omitted keys.
                 condition = string.Empty;
+            }
+
+            string keyCheckMethodCall = string.Empty;
+            if (memberModel.IsKey)
+            {
+                keyCheckMethodCall = $"{nameof(SortedVectorHelpers)}.{nameof(SortedVectorHelpers.EnsureKeyNonNull)}({valueVariableName});";
             }
 
             string prepareBlock =
 $@"
                     var {valueVariableName} = item.{memberModel.PropertyInfo.Name};
                     int {offsetVariableName} = 0;
+                    {keyCheckMethodCall}
                     {condition} 
                     {{
                             currentOffset += {CSharpHelpers.GetFullMethodName(ReflectedMethods.SerializationHelpers_GetAlignmentErrorMethod)}(currentOffset, {memberModel.ItemTypeModel.Alignment});

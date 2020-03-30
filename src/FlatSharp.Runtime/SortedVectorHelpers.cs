@@ -39,13 +39,38 @@ namespace FlatSharp
     using System.ComponentModel;
     using System.Linq;
    using System.Reflection;
+    using System.Runtime.CompilerServices;
 
-   /// <summary>
-   /// Helper methods for dealing with sorted vectors. This class provides functionality for both sorting vectors and
-   /// binary searching through them.
-   /// </summary>
-   public static class SortedVectorHelpers
-   {
+    /// <summary>
+    /// Helper methods for dealing with sorted vectors. This class provides functionality for both sorting vectors and
+    /// binary searching through them.
+    /// </summary>
+    public static class SortedVectorHelpers
+    {
+        /// <summary>
+        /// A method that will be optimized out. Left in place to keep logic simple 
+        /// for the serializer codegen (so it doesn't need to think about string vs struct).
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void EnsureKeyNonNull<TKey>(TKey key) where TKey : struct
+        {
+        }
+
+        /// <summary>
+        /// String keys cannot be null in a sorted vector. We use this method as a hook to throw a rational
+        /// exception before a nullref.
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void EnsureKeyNonNull(string key)
+        {
+            if (key == null)
+            {
+                throw new InvalidOperationException("Unable to serialize object. String keys in sorted vectors may not be null.");
+            }
+        }
+
        /// <summary>
        /// Sorts the given flatbuffer vector. This method, used incorrectly, is a fantastic way to corrupt your buffer.
        /// </summary>

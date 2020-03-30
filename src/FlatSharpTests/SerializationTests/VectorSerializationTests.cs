@@ -500,6 +500,7 @@ namespace FlatSharpTests
                 new TableWithKey<string> { Key = "c", Value = "1" },
                 new TableWithKey<string> { Key = "b", Value = "2" },
                 new TableWithKey<string> { Key = "a", Value = "3" },
+                new TableWithKey<string> { Key = "", Value = "4" },
             };
 
             byte[] data = new byte[1024];
@@ -507,10 +508,11 @@ namespace FlatSharpTests
 
             var parsed = FlatBufferSerializer.Default.Parse<RootTableSorted<IList<TableWithKey<string>>>>(data);
 
-            Assert.AreEqual(parsed.Vector[0].Key, "a");
-            Assert.AreEqual(parsed.Vector[1].Key, "b");
-            Assert.AreEqual(parsed.Vector[2].Key, "c");
-            Assert.AreEqual(parsed.Vector[3].Key, "d");
+            Assert.AreEqual(parsed.Vector[0].Key, "");
+            Assert.AreEqual(parsed.Vector[1].Key, "a");
+            Assert.AreEqual(parsed.Vector[2].Key, "b");
+            Assert.AreEqual(parsed.Vector[3].Key, "c");
+            Assert.AreEqual(parsed.Vector[4].Key, "d");
         }
 
         [TestMethod]
@@ -526,7 +528,7 @@ namespace FlatSharpTests
             };
 
             byte[] data = new byte[1024];
-            Assert.ThrowsException<NullReferenceException>(() => FlatBufferSerializer.Default.Serialize(root, data));
+            Assert.ThrowsException<InvalidOperationException>(() => FlatBufferSerializer.Default.Serialize(root, data));
             Assert.ThrowsException<InvalidOperationException>(() => root.Vector.BinarySearchByFlatBufferKey("AAA"));
             Assert.ThrowsException<InvalidOperationException>(() => root.Vector.BinarySearchByFlatBufferKey(3));
             Assert.ThrowsException<ArgumentNullException>(() => root.Vector.BinarySearchByFlatBufferKey((string)null));
@@ -592,6 +594,25 @@ namespace FlatSharpTests
                         s += (char)rng.Next();
                     }
 
+                    return s;
+                },
+                new Utf8StringComparer());
+        }
+
+        [TestMethod]
+        public void SortedVector_String_Empty()
+        {
+            int i = 0;
+            this.SortedVectorTest<string>(
+                rng =>
+                {
+                    string s = "";
+                    for (int j = 0; j < Math.Min(i, 100); ++j)
+                    {
+                        s += "a";
+                    }
+
+                    ++i;
                     return s;
                 },
                 new Utf8StringComparer());
