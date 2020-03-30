@@ -19,6 +19,7 @@ namespace Benchmark.FBBench
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using BenchmarkDotNet.Attributes;
     using FlatBuffers;
     using FlatSharp;
@@ -31,6 +32,7 @@ namespace Benchmark.FBBench
     {
         protected FlatBufferBuilder google_flatBufferBuilder = new FlatBufferBuilder(64 * 1024);
         protected ByteBuffer google_ByteBuffer;
+        public Google.FooBarContainerT google_defaultContainer;
 
         public FooBarListContainer defaultContainer;
         public SortedVectorTable<string> sortedStringContainer;
@@ -109,11 +111,6 @@ namespace Benchmark.FBBench
             this.unsortedStringContainer = new UnsortedVectorTable<string> { Vector = this.sortedStringContainer.Vector };
 
             {
-                this.Google_FlatBuffers_Serialize();
-                this.google_ByteBuffer = new FlatBuffers.ByteBuffer(this.google_flatBufferBuilder.SizedByteArray());
-            }
-
-            {
                 var options = new FlatBufferSerializerOptions(this.DeserializeOption);
 
                 this.fs_serializer = new FlatBufferSerializer(options);
@@ -121,6 +118,11 @@ namespace Benchmark.FBBench
                 this.fs_readMemory = this.fs_writeMemory.AsSpan(0, offset).ToArray();
                 this.inputBuffer = new ArrayInputBuffer(this.fs_readMemory);
                 this.FlatSharp_ParseAndTraverse();
+            }
+
+            {
+                this.google_ByteBuffer = new FlatBuffers.ByteBuffer(this.fs_readMemory.ToArray());
+                this.google_defaultContainer = Google.FooBarContainer.GetRootAsFooBarContainer(this.google_ByteBuffer).UnPack();
             }
 
             {
@@ -172,6 +174,14 @@ namespace Benchmark.FBBench
             builder.Finish(foobarOffset.Value);
         }
 
+        public virtual void Google_FlatBuffers_Serialize_ObjectApi()
+        {
+            var builder = this.google_flatBufferBuilder;
+            builder.Clear();
+            var offset = Google.FooBarContainer.Pack(builder, this.google_defaultContainer);
+            builder.Finish(offset.Value);
+        }
+
         public virtual int Google_Flatbuffers_ParseAndTraverse()
         {
             var iterations = this.TraversalCount;
@@ -210,6 +220,46 @@ namespace Benchmark.FBBench
             return sum;
         }
 
+        public virtual int Google_Flatbuffers_ParseAndTraverse_ObjectApi()
+        {
+            var @struct = Google.FooBarContainer.GetRootAsFooBarContainer(this.google_ByteBuffer);
+            var foobar = @struct.UnPack();
+
+            var iterations = this.TraversalCount;
+            int sum = 0;
+
+            for (int loop = 0; loop < iterations; ++loop)
+            {
+                sum = 0;
+
+                sum += foobar.Initialized ? 1 : 0;
+                sum += foobar.Location.Length;
+                sum += foobar.Fruit;
+
+                int listLength = foobar.List.Count;
+                for (int i = 0; i < listLength; ++i)
+                {
+                    var item = foobar.List[i];
+                    sum += item.Name.Length;
+                    sum += item.Postfix;
+                    sum += (int)item.Rating;
+
+                    var bar = item.Sibling;
+                    sum += (int)bar.Ratio;
+                    sum += bar.Size;
+                    sum += bar.Time;
+
+                    var parent = bar.Parent;
+                    sum += parent.Count;
+                    sum += (int)parent.Id;
+                    sum += (int)parent.Length;
+                    sum += parent.Prefix;
+                }
+            }
+
+            return sum;
+        }
+
         public virtual int Google_Flatbuffers_ParseAndTraversePartial()
         {
             var iterations = this.TraversalCount;
@@ -231,6 +281,39 @@ namespace Benchmark.FBBench
                     sum += item.Name.Length;
 
                     var bar = item.Sibling.Value;
+                    sum += (int)bar.Ratio;
+
+                    var parent = bar.Parent;
+                    sum += parent.Count;
+                }
+            }
+
+            return sum;
+        }
+
+        public virtual int Google_Flatbuffers_ParseAndTraversePartial_ObjectApi()
+        {
+            var @struct = Google.FooBarContainer.GetRootAsFooBarContainer(this.google_ByteBuffer);
+            var foobar = @struct.UnPack();
+
+            var iterations = this.TraversalCount;
+            int sum = 0;
+
+            for (int loop = 0; loop < iterations; ++loop)
+            {
+                sum = 0;
+
+                sum += foobar.Initialized ? 1 : 0;
+                sum += foobar.Location.Length;
+                sum += foobar.Fruit;
+
+                int listLength = foobar.List.Count;
+                for (int i = 0; i < listLength; ++i)
+                {
+                    var item = foobar.List[i];
+                    sum += item.Name.Length;
+
+                    var bar = item.Sibling;
                     sum += (int)bar.Ratio;
 
                     var parent = bar.Parent;

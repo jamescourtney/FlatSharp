@@ -29,6 +29,9 @@ namespace Benchmark.FBBench
         public override void Google_FlatBuffers_Serialize() => base.Google_FlatBuffers_Serialize();
 
         [Benchmark]
+        public override void Google_FlatBuffers_Serialize_ObjectApi() => base.Google_FlatBuffers_Serialize_ObjectApi();
+
+        [Benchmark]
         public override void Google_Flatbuffers_StringVector_Sorted() => base.Google_Flatbuffers_StringVector_Sorted();
 
         [Benchmark]
@@ -40,7 +43,7 @@ namespace Benchmark.FBBench
         [Benchmark]
         public override void Google_Flatbuffers_IntVector_Unsorted() => base.Google_Flatbuffers_IntVector_Unsorted();
 
-        //[Benchmark]
+        [Benchmark]
         public override void FlatSharp_GetMaxSize() => base.FlatSharp_GetMaxSize();
 
         [Benchmark]
