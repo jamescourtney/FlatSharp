@@ -1,5 +1,4 @@
 ## FlatSharp
-
 FlatSharp is Google's FlatBuffers serialization format implemented in C#, for C#. FlatBuffers is a zero-copy binary serialization format intended for high-performance scenarios. FlatSharp leverages the latest and greatest from .NET in the form of ```Memory<T>``` and ```Span<T>```. As such, FlatSharp's safe-code implementations are often faster than other implementations using unsafe code. FlatSharp aims to provide 3 core priorities:
 - Full safety (no unsafe code or IL generation -- more on that below).
 - Speed
@@ -115,9 +114,11 @@ At its core, FlatSharp is a tool to convert a FlatBuffer schema into a pile of s
 ### Performance & Benchmarks
 FlatSharp is really fast. This is primarily thanks to new changes in C# with Memory and Span, as well as FlatBuffers itself exposing a very simple type system that makes optimization simple. FlatSharp has a default serializer instance (```FlatBuffersSerializer.Default```), however it is possible to tune the serializer by creating your own with a custom ```FlatBufferSerializerOptions``` instance. More details are available in the [samples solution](samples/Example1-SerializerOptions/SerializerOptionsExample.cs).
 
-The FlatSharp benchmarks were run on .NET Core 2.1, using a C# approximation of [Google's FlatBuffer benchmark](https://github.com/google/flatbuffers/tree/benchmarks/benchmarks/cpp/FB). The FlatSharp benchmarks use this schema, but with the following parameters:
+The FlatSharp benchmarks were run on .NET Core 2.1, using a C# approximation of [Google's FlatBuffer benchmark](https://github.com/google/flatbuffers/tree/benchmarks/benchmarks/cpp/FB), which can be found [here](src/Benchmark).The FlatSharp benchmarks use this schema, but with the following parameters:
 - Vector length = 3 or 30
 - Traversal count = 1 or 5
+
+The full results for each version of FlatSharp can be viewed in the [benchmarks folder](benchmarks).
 
 The benchmarks test 4 different serialization frameworks:
 - FlatSharp
