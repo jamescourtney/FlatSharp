@@ -50,6 +50,10 @@ namespace FlatSharp
 
                 name = $"{t.FullName.Split('`')[0]}<{string.Join(", ", parameters)}>";
             }
+            else if (t.IsArray)
+            {
+                name = $"{GetCompilableTypeName(t.GetElementType())}[]";
+            }
             else
             {
                 name = t.FullName;

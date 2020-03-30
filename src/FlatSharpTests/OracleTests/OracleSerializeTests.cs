@@ -429,7 +429,7 @@ namespace FlatSharpTests
                 IntVector = new List<SortedVectorDefaultValueItem>(),
             };
 
-            // Verify that we actually write 5 in the output due even though it has a default value set.
+            // Verify that we actually write 5 in the output even though it has a default value set.
             SortedVectorDefaultValueItem myItem = new SortedVectorDefaultValueItem();
             byte[] data = new byte[1024 * 1024];
             int bytesWritten = FlatBufferSerializer.Default.Serialize(myItem, data);

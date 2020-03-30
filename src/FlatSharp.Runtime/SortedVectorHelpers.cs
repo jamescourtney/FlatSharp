@@ -41,13 +41,24 @@ namespace FlatSharp
    using System.Reflection;
 
    /// <summary>
-   /// Serializer extension methods.
+   /// Helper methods for dealing with sorted vectors. This class provides functionality for both sorting vectors and
+   /// binary searching through them.
    /// </summary>
    public static class SortedVectorHelpers
    {
        /// <summary>
        /// Sorts the given flatbuffer vector. This method, used incorrectly, is a fantastic way to corrupt your buffer.
        /// </summary>
+       /// <remarks>
+       /// This method assumes that all vector members are tables, and each table has a defined key. Our vector looks like this:
+       /// [length] [ uoffset to first table ] [ uoffset 2 ] ... [ uoffset N ]
+       /// 
+       /// Prior to sorting, we iterate through the vector and populate an array with tuples of (absolute key offset, key length, absolute table offset).
+       /// Then, we sort that array. This saves us from having to follow unnecessary indirections from vector -> table -> vtable -> key.
+       /// 
+       /// After we sort our array of tuples, we go back and overwrite the vectors with the updated uoffsets, which need to be adjusted relative to the
+       /// new position within the vector.
+       /// </remarks>
        [EditorBrowsable(EditorBrowsableState.Never)]
         public static void SortVector(
            Span<byte> buffer,
@@ -63,7 +74,7 @@ namespace FlatSharp
                int index0Position = vectorStartOffset + sizeof(int);
 
                // Traverse the vector and figure out the offsets of all the keys.
-               // Store that in some local data, hopefully on the stack.
+               // Store that in some local data, hopefully on the stack. 512 is somewhat arbitrary, but we want to avoid stack overflows.
                Span<(int offset, int length, int tableOffset)> keyOffsets =
                    vectorLength < 512
                    ? stackalloc (int, int, int)[vectorLength]
@@ -98,13 +109,23 @@ namespace FlatSharp
            where TTable : class
        {
            return GenericBinarySearch(sortedVector.Count, i => sortedVector[i], key);
-       }
+        }
 
-       /// <summary>
-       /// Perfors a binary search on the given sorted vector with the given key. The vector is presumed to be sorted.
-       /// </summary>
-       /// <returns>A value if found, null otherwise.</returns>
-       public static TTable BinarySearchByFlatBufferKey<TTable, TKey>(this IReadOnlyList<TTable> sortedVector, TKey key)
+        /// <summary>
+        /// Perfors a binary search on the given sorted vector with the given key. The vector is presumed to be sorted.
+        /// </summary>
+        /// <returns>A value if found, null otherwise.</returns>
+        public static TTable BinarySearchByFlatBufferKey<TTable, TKey>(this TTable[] sortedVector, TKey key)
+            where TTable : class
+        {
+            return GenericBinarySearch(sortedVector.Length, i => sortedVector[i], key);
+        }
+
+        /// <summary>
+        /// Perfors a binary search on the given sorted vector with the given key. The vector is presumed to be sorted.
+        /// </summary>
+        /// <returns>A value if found, null otherwise.</returns>
+        public static TTable BinarySearchByFlatBufferKey<TTable, TKey>(this IReadOnlyList<TTable> sortedVector, TKey key)
            where TTable : class
        {
            return GenericBinarySearch(sortedVector.Count, i => sortedVector[i], key);
