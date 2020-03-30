@@ -17,6 +17,7 @@
 namespace FlatSharp.Compiler
 {
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Linq;
     using System.Numerics;
 
@@ -25,21 +26,21 @@ namespace FlatSharp.Compiler
     /// </summary>
     internal class EnumDefinition : BaseSchemaMember
     {
-        private BigInteger nextValue = 1;
+        private BigInteger nextValue = 0;
         private readonly Dictionary<string, string> nameValuePairs = new Dictionary<string, string>();
 
         public EnumDefinition(string typeName, string underlyingTypeName, BaseSchemaMember parent)
             : base(typeName, parent)
         {
             this.FbsUnderlyingType = underlyingTypeName;
-            this.ClrUnderlyingType = SchemaDefinition.ResolvePrimitiveType(underlyingTypeName);
+            this.UnderlyingType = SchemaDefinition.ResolveBuiltInScalarType(underlyingTypeName);
         }
 
         protected override bool SupportsChildren => false;
 
         public string FbsUnderlyingType { get; }
 
-        public string ClrUnderlyingType { get; }
+        public IBuiltInScalarType UnderlyingType { get; }
 
         public IReadOnlyDictionary<string, string> NameValuePairs => this.nameValuePairs;
 
@@ -47,30 +48,38 @@ namespace FlatSharp.Compiler
         {
             if (!string.IsNullOrEmpty(value))
             {
-                value = CodeWriter.GetPrimitiveTypeLiteral(this.ClrUnderlyingType, value, out BigInteger bigInt);
+                BigInteger bigInt = ParseInteger(value) ?? this.nextValue;
+
+                // If the value got set backwards.
+                if (bigInt < this.nextValue && this.nameValuePairs.Count > 0)
+                {
+                    ErrorContext.Current?.RegisterError($"Enum '{this.Name}' must declare values sorted in ascending order.");
+                }
+
+                string standardizedString = this.UnderlyingType.FormatLiteral(bigInt.ToString());
 
                 // C# compiler won't complain about duplicate values.
-                if (this.nameValuePairs.Values.Any(x => x == value))
+                if (this.nameValuePairs.Values.Any(x => x == standardizedString))
                 {
                     ErrorContext.Current?.RegisterError($"Enum '{this.Name}' contains duplicate value '{value}'.");
                 }
 
-                this.nameValuePairs[name] = value;
+                this.nameValuePairs[name] = standardizedString;
                 this.nextValue = bigInt + 1;
             }
             else
             {
                 value = this.nextValue.ToString();
-                this.nameValuePairs[name] = CodeWriter.GetPrimitiveTypeLiteral(this.ClrUnderlyingType, value, out BigInteger bigInt);
+                this.nameValuePairs[name] = this.UnderlyingType.FormatLiteral(value);
                 this.nextValue++;
             }
         }
 
-        protected override void OnWriteCode(CodeWriter writer, CodeWritingPass pass, IReadOnlyDictionary<string, string> precompiledSerailizers)
+        protected override void OnWriteCode(CodeWriter writer, CodeWritingPass pass, string forFile, IReadOnlyDictionary<string, string> precompiledSerailizers)
         {
-            writer.AppendLine($"[FlatBufferEnum(typeof({this.ClrUnderlyingType}))]");
+            writer.AppendLine($"[FlatBufferEnum(typeof({this.UnderlyingType.CSharpTypeName}))]");
             writer.AppendLine("[System.Runtime.CompilerServices.CompilerGenerated]");
-            writer.AppendLine($"public enum {this.Name} : {this.ClrUnderlyingType}");
+            writer.AppendLine($"public enum {this.Name} : {this.UnderlyingType.CSharpTypeName}");
             writer.AppendLine($"{{");
             using (writer.IncreaseIndent())
             {
@@ -81,6 +90,46 @@ namespace FlatSharp.Compiler
             }
             writer.AppendLine($"}}");
             writer.AppendLine(string.Empty);
+        }
+
+        protected override string OnGetCopyExpression(string source)
+        {
+            return source;
+        }
+
+        private static BigInteger? ParseInteger(string value)
+        {
+            if (BigInteger.TryParse(value, NumberStyles.Integer, null, out var bigInt))
+            {
+                return bigInt;
+            }
+            else
+            {
+                // Hex parsing is broken in .NET. Strip off the sign, parse as either long or ulong hex depending on sign, convert to decimal, and then reparse for our given format.
+                // Not fast, but works well enough.
+                bool negative = value.StartsWith("-");
+                if (negative || value.StartsWith("+"))
+                {
+                    value = value.Substring(1);
+                }
+
+                if (value.StartsWith("0x") || value.StartsWith("0X"))
+                {
+                    value = value.Substring(2);
+                    if (BigInteger.TryParse(value, NumberStyles.HexNumber, null, out bigInt))
+                    {
+                        if (negative)
+                        {
+                            bigInt *= -1;
+                        }
+
+                        return bigInt;
+                    }
+                }
+            }
+
+            ErrorContext.Current?.RegisterError($"Unable to parse enum value '{bigInt}' as an integer.");
+            return null;
         }
     }
 }

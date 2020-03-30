@@ -349,6 +349,105 @@
             Assert.AreEqual(100, parsed.OuterStruct.A);
         }
 
+        [TestMethod]
+        public void SortedVectors()
+        {
+            var builder = new FlatBuffers.FlatBufferBuilder(1024 * 1024);
+
+            var strings = new List<string>();
+            var stringOffsets = new List<FlatBuffers.Offset<Oracle.SortedVectorStringTable>>();
+
+            List<int> ints = new List<int>();
+            var intOffsets = new List<FlatBuffers.Offset<Oracle.SortedVectorInt32Table>>();
+
+            List<double> doubles = new List<double>();
+            var doubleOffsets = new List<FlatBuffers.Offset<Oracle.SortedVectorDoubleTable>>();
+
+            const int Iterations = 1000;
+            Random random = new Random();
+
+            for (int i = 0; i < Iterations; ++i)
+            {
+                string value = Guid.NewGuid().ToString();
+                strings.Add(value);
+                stringOffsets.Add(Oracle.SortedVectorStringTable.CreateSortedVectorStringTable(builder, builder.CreateString(value)));
+            }
+
+            for (int i = 0; i < Iterations; ++i)
+            {
+                int value = random.Next();
+                ints.Add(value);
+                intOffsets.Add(Oracle.SortedVectorInt32Table.CreateSortedVectorInt32Table(builder, value));
+            }
+
+            for (int i = 0; i < Iterations; ++i)
+            {
+                double value = random.NextDouble() * random.Next();
+                doubles.Add(value);
+                doubleOffsets.Add(Oracle.SortedVectorDoubleTable.CreateSortedVectorDoubleTable(builder, value));
+            }
+
+            var table = Oracle.SortedVectorTest.CreateSortedVectorTest(
+                builder,
+                Oracle.SortedVectorInt32Table.CreateSortedVectorOfSortedVectorInt32Table(builder, intOffsets.ToArray()),
+                Oracle.SortedVectorStringTable.CreateSortedVectorOfSortedVectorStringTable(builder, stringOffsets.ToArray()),
+                Oracle.SortedVectorDoubleTable.CreateSortedVectorOfSortedVectorDoubleTable(builder, doubleOffsets.ToArray()));
+
+            builder.Finish(table.Value);
+            byte[] serialized = builder.SizedByteArray();
+
+            var parsed = FlatBufferSerializer.Default.Parse<SortedVectorTest<SortedVectorItem<int>>>(serialized);
+
+            VerifySorted(parsed.StringVector, new Utf8StringComparer(), strings, new List<string> { Guid.NewGuid().ToString(), "banana" });
+            VerifySorted(parsed.IntVector, Comparer<int>.Default, ints, new List<int> { -1, -3, 0 });
+            VerifySorted(parsed.Double, Comparer<double>.Default, doubles, new List<double> { Math.PI, Math.E, Math.Sqrt(2) });
+        }
+
+        [TestMethod]
+        public void SortedVectors_NullKey_NotAllowed()
+        {
+            var builder = new FlatBuffers.FlatBufferBuilder(1024 * 1024);
+
+            var strings = new List<string>();
+            var stringOffsets = new List<FlatBuffers.Offset<Oracle.SortedVectorStringTable>>();
+
+            foreach (string s in new[] { Guid.NewGuid().ToString(), null, Guid.NewGuid().ToString() })
+            {
+                strings.Add(s);
+                FlatBuffers.StringOffset strOffset = default;
+                if (s != null)
+                {
+                    strOffset = builder.CreateString(s);
+                }
+
+                stringOffsets.Add(Oracle.SortedVectorStringTable.CreateSortedVectorStringTable(builder, strOffset));
+            }
+
+            Assert.ThrowsException<InvalidOperationException>(
+                () => Oracle.SortedVectorStringTable.CreateSortedVectorOfSortedVectorStringTable(builder, stringOffsets.ToArray()));
+        }
+
+        private static void VerifySorted<T>(IList<SortedVectorItem<T>> items, IComparer<T> comparer, List<T> expectedItems, List<T> unexpectedItems)
+        {
+            T previous = items[0].Value;
+            for (int i = 1; i < items.Count; ++i)
+            {
+                T current = items[i].Value;
+                Assert.IsTrue(comparer.Compare(previous, current) <= 0);
+            }
+
+            foreach (var expectedItem in expectedItems)
+            {
+                SortedVectorItem<T> item = items.BinarySearchByFlatBufferKey(expectedItem);
+                Assert.IsNotNull(item);
+            }
+
+            foreach (var unexpectedItem in unexpectedItems)
+            {
+                Assert.IsNull(items.BinarySearchByFlatBufferKey(unexpectedItem));
+            }
+        }
+
         private static readonly Random Random = new Random();
 
         private static T GetRandom<T>() where T : struct
@@ -359,6 +458,5 @@
 
             return MemoryMarshal.Cast<byte, T>(random)[0];
         }
-
     }
 }

@@ -46,7 +46,6 @@ namespace FlatSharpTests.Compiler
             this.MonsterTest("vectorcache");
         }
 
-
         [TestMethod]
         public void MonsterTest_Lazy()
         {
@@ -99,18 +98,18 @@ table Monster (PrecompiledSerializer:{flags}) {{
   equipped:Equipment;
   path:[Vec3];
   vec4:Vec4;
-  FakeVector1:[string] (VectorType:IReadOnlyList);
+  FakeVector1:[string] (VectorType:""IReadOnlyList"");
   FakeVector2:[string] (VectorType:Array);
   FakeVector3:[string] (VectorType:IList);
   FakeVector4:[string];
+  FakeMemoryVector:[ubyte] (VectorType:Memory);
+  FakeMemoryVectorReadOnly:[ubyte] (VectorType:ReadOnlyMemory);
 }}
 
 table Weapon {{
   name:string;
   damage:short;
-}}
-
-root_type Monster;"; 
+}}"; 
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema);
 
@@ -140,6 +139,10 @@ root_type Monster;";
             byte[] data = new byte[1024];
             CompilerTestHelpers.CompilerTestSerializer.ReflectionSerialize(monster, data);
             var parsedMonster = CompilerTestHelpers.CompilerTestSerializer.ReflectionParse(monsterType, data);
+            Assert.AreNotEqual(parsedMonster.GetType(), monster.GetType());
+
+            var copiedMonster = Activator.CreateInstance(monsterType, new[] { parsedMonster });
+            Assert.AreEqual(copiedMonster.GetType(), monster.GetType());
         }
     }
 }

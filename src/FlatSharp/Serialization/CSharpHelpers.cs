@@ -50,6 +50,10 @@ namespace FlatSharp
 
                 name = $"{t.FullName.Split('`')[0]}<{string.Join(", ", parameters)}>";
             }
+            else if (t.IsArray)
+            {
+                name = $"{GetCompilableTypeName(t.GetElementType())}[]";
+            }
             else
             {
                 name = t.FullName;
@@ -77,66 +81,18 @@ namespace FlatSharp
             string defaultValue = $"default({GetCompilableTypeName(memberModel.ItemTypeModel.ClrType)})";
             if (memberModel.HasDefaultValue)
             {
-                string literalSpecifier = string.Empty;
-                string cast = string.Empty;
-                string defaultValueLiteral = memberModel.DefaultValue.ToString();
-
-                if (clrType == typeof(bool))
+                if (BuiltInType.BuiltInScalars.TryGetValue(clrType, out IBuiltInScalarType builtInType))
                 {
-                    // Bool.ToString() returns 'True', which is not the right keyword.
-                    defaultValueLiteral = defaultValueLiteral.ToLower();
-                }
-                else if (clrType == typeof(sbyte))
-                {
-                    cast = "(sbyte)";
-                }
-                else if (clrType == typeof(byte))
-                {
-                    cast = "(byte)";
-                }
-                else if (clrType == typeof(short))
-                {
-                    cast = "(short)";
-                }
-                else if (clrType == typeof(ushort))
-                {
-                    cast = "(ushort)";
-                }
-                else if (clrType == typeof(float))
-                {
-                    literalSpecifier = "f";
-                }
-                else if (clrType == typeof(uint))
-                {
-                    literalSpecifier = "u";
-                }
-                else if (clrType == typeof(int))
-                {
-                    // shouldn't need this one, but let's be thorough.
-                    cast = "(int)";
-                }
-                else if (clrType == typeof(double))
-                {
-                    literalSpecifier = "d";
-                }
-                else if (clrType == typeof(long))
-                {
-                    literalSpecifier = "L";
-                }
-                else if (clrType == typeof(ulong))
-                {
-                    literalSpecifier = "ul";
+                    return builtInType.FormatObject(memberModel.DefaultValue);
                 }
                 else if (clrType.IsEnum)
                 {
-                    defaultValueLiteral = $"{CSharpHelpers.GetCompilableTypeName(clrType)}.{defaultValueLiteral}";
+                    return $"{CSharpHelpers.GetCompilableTypeName(clrType)}.{memberModel.DefaultValue}";
                 }
                 else
                 {
                     throw new InvalidOperationException("Unexpected default value type: " + clrType.FullName);
                 }
-
-                defaultValue = $"{cast}{defaultValueLiteral}{literalSpecifier}";
             }
 
             return defaultValue;
@@ -149,26 +105,6 @@ namespace FlatSharp
             if (method.IsPublic)
             {
                 return "public";
-            }
-
-            if (method.IsFamilyOrAssembly)
-            {
-                return "protected internal";
-            }
-
-            if (method.IsFamily)
-            {
-                return "protected";
-            }
-
-            if (method.IsPrivate)
-            {
-                return "private";
-            }
-
-            if (method.IsAssembly)
-            {
-                return "internal";
             }
 
             throw new InvalidOperationException("Unexpected method visibility: " + method.Name);

@@ -307,10 +307,24 @@ $@"
 
         private void ImplementMemoryVectorReadMethod(VectorTypeModel typeModel)
         {
-            string invocation = $"{nameof(InputBuffer.ReadMemoryBlock)}<{CSharpHelpers.GetCompilableTypeName(typeModel.ItemTypeModel.ClrType)}>";
+            string invocation;
             if (typeModel.ItemTypeModel.ClrType == typeof(byte))
             {
                 invocation = nameof(InputBuffer.ReadByteMemoryBlock);
+                if (typeModel.IsReadOnly)
+                {
+                    invocation = nameof(InputBuffer.ReadByteReadOnlyMemoryBlock);
+                }
+            }
+            else
+            {
+                string methodName = nameof(InputBuffer.ReadMemoryBlock);
+                if (typeModel.IsReadOnly)
+                {
+                    methodName = nameof(InputBuffer.ReadReadOnlyMemoryBlock);
+                }
+
+                invocation =  $"{methodName}<{CSharpHelpers.GetCompilableTypeName(typeModel.ItemTypeModel.ClrType)}>";
             }
 
             string body = $"memory.{invocation}(offset, {typeModel.ItemTypeModel.InlineSize})";
@@ -384,9 +398,9 @@ $@"
 
         private string GetReadInvocation(Type type, string buffer, string offset)
         {
-            if (ReflectedMethods.InputBufferReaders.TryGetValue(type, out var readMethod))
+            if (BuiltInType.BuiltInTypes.TryGetValue(type, out var builtInType))
             {
-                return $"{buffer}.{readMethod.Name}({offset})";
+                return $"{buffer}.{builtInType.InputBufferRead.Name}({offset})";
             }
             else
             {

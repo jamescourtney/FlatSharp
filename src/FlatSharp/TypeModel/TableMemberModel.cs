@@ -29,11 +29,15 @@
             PropertyInfo propertyInfo, 
             ushort index, 
             bool hasDefaultValue,
-            object defaultValue) : base(propertyModel, propertyInfo, index)
+            object defaultValue,
+            bool isSortedVector,
+            bool isKey) : base(propertyModel, propertyInfo, index)
         {
             this.HasDefaultValue = hasDefaultValue;
             this.DefaultValue = defaultValue;
-
+            this.IsSortedVector = isSortedVector;
+            this.IsKey = isKey;
+            
             if (this.HasDefaultValue)
             {
                 if (propertyModel is ScalarTypeModel)
@@ -45,7 +49,7 @@
                 }
                 else
                 {
-                    throw new InvalidFlatBufferDefinitionException($"Table property {propertyInfo.Name} declared default value, but this type is not allowed to have one.");
+                    throw new InvalidFlatBufferDefinitionException($"Table property {propertyInfo.Name} declared default value, but this type is not allowed to have one. Only scalar types and enums may have default values.");
                 }
             }
         }
@@ -59,6 +63,16 @@
         /// Indicates if this member type has a default value at all. Only valid for tables.
         /// </summary>
         public bool HasDefaultValue { get; }
+
+        /// <summary>
+        /// Indicates if the member vector should be sorted before serializing.
+        /// </summary>
+        public bool IsSortedVector { get; }
+
+        /// <summary>
+        /// Indicates that this property is the key for the table.
+        /// </summary>
+        public bool IsKey { get; }
 
         /// <summary>
         /// Indicates how "wide" this element is in the table's vtable. Unions consume 2 slots in the vtable.

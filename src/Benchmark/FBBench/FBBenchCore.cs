@@ -19,6 +19,7 @@ namespace Benchmark.FBBench
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using BenchmarkDotNet.Attributes;
     using FlatBuffers;
     using FlatSharp;
@@ -31,8 +32,13 @@ namespace Benchmark.FBBench
     {
         protected FlatBufferBuilder google_flatBufferBuilder = new FlatBufferBuilder(64 * 1024);
         protected ByteBuffer google_ByteBuffer;
+        public Google.FooBarContainerT google_defaultContainer;
 
         public FooBarListContainer defaultContainer;
+        public SortedVectorTable<string> sortedStringContainer;
+        public SortedVectorTable<int> sortedIntContainer;
+        public UnsortedVectorTable<string> unsortedStringContainer;
+        public UnsortedVectorTable<int> unsortedIntContainer;
 
         protected MemoryStream pbdn_writeBuffer = new MemoryStream(64 * 1024);
         protected MemoryStream pbdn_readBuffer = new MemoryStream(64 * 1024);
@@ -92,10 +98,17 @@ namespace Benchmark.FBBench
                 List = fooBars,
             };
 
+            Random rng = new Random();
+            this.sortedIntContainer = new SortedVectorTable<int> { Vector = new List<SortedVectorTableItem<int>>() };
+            this.sortedStringContainer = new SortedVectorTable<string> { Vector = new List<SortedVectorTableItem<string>>() };
+            for (int i = 0; i < this.VectorLength; ++i)
             {
-                this.Google_FlatBuffers_Serialize();
-                this.google_ByteBuffer = new FlatBuffers.ByteBuffer(this.google_flatBufferBuilder.SizedByteArray());
+                this.sortedIntContainer.Vector.Add(new SortedVectorTableItem<int> { Key = rng.Next() });
+                this.sortedStringContainer.Vector.Add(new SortedVectorTableItem<string> { Key = Guid.NewGuid().ToString() });
             }
+
+            this.unsortedIntContainer = new UnsortedVectorTable<int> { Vector = this.sortedIntContainer.Vector };
+            this.unsortedStringContainer = new UnsortedVectorTable<string> { Vector = this.sortedStringContainer.Vector };
 
             {
                 var options = new FlatBufferSerializerOptions(this.DeserializeOption);
@@ -105,6 +118,11 @@ namespace Benchmark.FBBench
                 this.fs_readMemory = this.fs_writeMemory.AsSpan(0, offset).ToArray();
                 this.inputBuffer = new ArrayInputBuffer(this.fs_readMemory);
                 this.FlatSharp_ParseAndTraverse();
+            }
+
+            {
+                this.google_ByteBuffer = new FlatBuffers.ByteBuffer(this.fs_readMemory.ToArray());
+                this.google_defaultContainer = Google.FooBarContainer.GetRootAsFooBarContainer(this.google_ByteBuffer).UnPack();
             }
 
             {
@@ -156,6 +174,14 @@ namespace Benchmark.FBBench
             builder.Finish(foobarOffset.Value);
         }
 
+        public virtual void Google_FlatBuffers_Serialize_ObjectApi()
+        {
+            var builder = this.google_flatBufferBuilder;
+            builder.Clear();
+            var offset = Google.FooBarContainer.Pack(builder, this.google_defaultContainer);
+            builder.Finish(offset.Value);
+        }
+
         public virtual int Google_Flatbuffers_ParseAndTraverse()
         {
             var iterations = this.TraversalCount;
@@ -179,6 +205,46 @@ namespace Benchmark.FBBench
                     sum += (int)item.Rating;
 
                     var bar = item.Sibling.Value;
+                    sum += (int)bar.Ratio;
+                    sum += bar.Size;
+                    sum += bar.Time;
+
+                    var parent = bar.Parent;
+                    sum += parent.Count;
+                    sum += (int)parent.Id;
+                    sum += (int)parent.Length;
+                    sum += parent.Prefix;
+                }
+            }
+
+            return sum;
+        }
+
+        public virtual int Google_Flatbuffers_ParseAndTraverse_ObjectApi()
+        {
+            var @struct = Google.FooBarContainer.GetRootAsFooBarContainer(this.google_ByteBuffer);
+            var foobar = @struct.UnPack();
+
+            var iterations = this.TraversalCount;
+            int sum = 0;
+
+            for (int loop = 0; loop < iterations; ++loop)
+            {
+                sum = 0;
+
+                sum += foobar.Initialized ? 1 : 0;
+                sum += foobar.Location.Length;
+                sum += foobar.Fruit;
+
+                int listLength = foobar.List.Count;
+                for (int i = 0; i < listLength; ++i)
+                {
+                    var item = foobar.List[i];
+                    sum += item.Name.Length;
+                    sum += item.Postfix;
+                    sum += (int)item.Rating;
+
+                    var bar = item.Sibling;
                     sum += (int)bar.Ratio;
                     sum += bar.Size;
                     sum += bar.Time;
@@ -225,6 +291,115 @@ namespace Benchmark.FBBench
             return sum;
         }
 
+        public virtual int Google_Flatbuffers_ParseAndTraversePartial_ObjectApi()
+        {
+            var @struct = Google.FooBarContainer.GetRootAsFooBarContainer(this.google_ByteBuffer);
+            var foobar = @struct.UnPack();
+
+            var iterations = this.TraversalCount;
+            int sum = 0;
+
+            for (int loop = 0; loop < iterations; ++loop)
+            {
+                sum = 0;
+
+                sum += foobar.Initialized ? 1 : 0;
+                sum += foobar.Location.Length;
+                sum += foobar.Fruit;
+
+                int listLength = foobar.List.Count;
+                for (int i = 0; i < listLength; ++i)
+                {
+                    var item = foobar.List[i];
+                    sum += item.Name.Length;
+
+                    var bar = item.Sibling;
+                    sum += (int)bar.Ratio;
+
+                    var parent = bar.Parent;
+                    sum += parent.Count;
+                }
+            }
+
+            return sum;
+        }
+
+        public virtual void Google_Flatbuffers_StringVector_Sorted()
+        {
+            var builder = this.google_flatBufferBuilder;
+            builder.Clear();
+
+            var offsets = this.CreateSortedStringVectorOffsets(builder);
+            var vectorOffset = Google.SortedVectorStringKey.CreateSortedVectorOfSortedVectorStringKey(builder, offsets);
+            var tableOffset = Google.SortedVectorContainer.CreateSortedVectorContainer(builder, StringVectorOffset: vectorOffset);
+            builder.Finish(tableOffset.Value);
+        }
+
+        public virtual void Google_Flatbuffers_IntVector_Sorted()
+        {
+            var builder = this.google_flatBufferBuilder;
+            builder.Clear();
+
+            var offsets = this.CreateSortedIntVectorOffsets(builder);
+            var vectorOffset = Google.SortedVectorIntKey.CreateSortedVectorOfSortedVectorIntKey(builder, offsets);
+            var tableOffset = Google.SortedVectorContainer.CreateSortedVectorContainer(builder, IntVectorOffset: vectorOffset);
+            builder.Finish(tableOffset.Value);
+        }
+
+        public virtual void Google_Flatbuffers_StringVector_Unsorted()
+        {
+            var builder = this.google_flatBufferBuilder;
+            builder.Clear();
+
+            var offsets = this.CreateSortedStringVectorOffsets(builder);
+            var vectorOffset = Google.SortedVectorContainer.CreateStringVectorVector(builder, offsets);
+            var tableOffset = Google.SortedVectorContainer.CreateSortedVectorContainer(builder, StringVectorOffset: vectorOffset);
+            builder.Finish(tableOffset.Value);
+        }
+
+        public virtual void Google_Flatbuffers_IntVector_Unsorted()
+        {
+            var builder = this.google_flatBufferBuilder;
+            builder.Clear();
+
+            var offsets = this.CreateSortedIntVectorOffsets(builder);
+            var vectorOffset = Google.SortedVectorContainer.CreateIntVectorVector(builder, offsets);
+            var tableOffset = Google.SortedVectorContainer.CreateSortedVectorContainer(builder, IntVectorOffset: vectorOffset);
+            builder.Finish(tableOffset.Value);
+        }
+
+        private Offset<Google.SortedVectorStringKey>[] CreateSortedStringVectorOffsets(FlatBufferBuilder builder)
+        {
+            var stringVector = this.sortedStringContainer.Vector;
+            int stringVectorLength = stringVector.Count;
+
+            var offsets = new Offset<Google.SortedVectorStringKey>[stringVectorLength];
+            for (int i = 0; i < stringVectorLength; ++i)
+            {
+                offsets[i] = Google.SortedVectorStringKey.CreateSortedVectorStringKey(
+                    builder,
+                    builder.CreateString(stringVector[i].Key));
+            }
+
+            return offsets;
+        }
+
+        private Offset<Google.SortedVectorIntKey>[] CreateSortedIntVectorOffsets(FlatBufferBuilder builder)
+        {
+            var intVector = this.sortedIntContainer.Vector;
+            int intVectorLength = intVector.Count;
+
+            var offsets = new Offset<Google.SortedVectorIntKey>[intVectorLength];
+            for (int i = 0; i < intVectorLength; ++i)
+            {
+                offsets[i] = Google.SortedVectorIntKey.CreateSortedVectorIntKey(
+                    builder,
+                    intVector[i].Key);
+            }
+
+            return offsets;
+        }
+
         #endregion
 
         #region FlatSharp
@@ -249,6 +424,26 @@ namespace Benchmark.FBBench
         {
             var item = this.fs_serializer.Parse<FooBarListContainer>(this.inputBuffer);
             this.TraverseFooBarContainerPartial(item);
+        }
+
+        public virtual void FlatSharp_Serialize_StringVector_Sorted()
+        {
+            this.fs_serializer.Serialize(this.sortedStringContainer, this.fs_writeMemory);
+        }
+
+        public virtual void FlatSharp_Serialize_IntVector_Sorted()
+        {
+            this.fs_serializer.Serialize(this.sortedIntContainer, this.fs_writeMemory);
+        }
+
+        public virtual void FlatSharp_Serialize_StringVector_Unsorted()
+        {
+            this.fs_serializer.Serialize(this.unsortedStringContainer, this.fs_writeMemory);
+        }
+
+        public virtual void FlatSharp_Serialize_IntVector_Unsorted()
+        {
+            this.fs_serializer.Serialize(this.unsortedIntContainer, this.fs_writeMemory);
         }
 
         #endregion
@@ -416,6 +611,31 @@ namespace Benchmark.FBBench
 
         [ProtoMember(4), FlatBufferItem(3)]
         public virtual string Location { get; set; }
+    }
+
+    #endregion
+
+    #region Sorted Vector Contracts
+
+    [FlatBufferTable]
+    public class SortedVectorTable<T>
+    {
+        [FlatBufferItem(0, SortedVector = true)]
+        public virtual IList<SortedVectorTableItem<T>> Vector { get; set; }
+    }
+
+    [FlatBufferTable]
+    public class UnsortedVectorTable<T>
+    {
+        [FlatBufferItem(0, SortedVector = false)]
+        public virtual IList<SortedVectorTableItem<T>> Vector { get; set; }
+    }
+
+    [FlatBufferTable]
+    public class SortedVectorTableItem<T>
+    {
+        [FlatBufferItem(0, Key = true)]
+        public virtual T Key { get; set; }
     }
 
     #endregion

@@ -20,6 +20,7 @@ namespace FlatSharpTests.Compiler
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
+    using System.Runtime.InteropServices;
     using FlatSharp;
     using FlatSharp.Attributes;
     using FlatSharp.Compiler;
@@ -30,64 +31,83 @@ namespace FlatSharpTests.Compiler
     public class TableMemberTests
     {
         [TestMethod]
-        public void TableMember_bool() => this.RunCompoundTest<bool>("bool");
+        public void TableMember_bool() => this.RunCompoundTestWithDefaultValue_Bool("bool");
 
         [TestMethod]
-        public void TableMember_byte() => this.RunCompoundTest<byte>("ubyte");
+        public void TableMember_byte() => this.RunCompoundTestWithDefaultValue<byte>("ubyte");
 
         [TestMethod]
-        public void TableMember_sbyte() => this.RunCompoundTest<sbyte>("byte");
+        public void TableMember_sbyte() => this.RunCompoundTestWithDefaultValue<sbyte>("byte");
 
         [TestMethod]
-        public void TableMember_short_alias() => this.RunCompoundTest<short>("short");
+        public void TableMember_short_alias() => this.RunCompoundTestWithDefaultValue<short>("short");
 
         [TestMethod]
-        public void TableMember_short() => this.RunCompoundTest<short>("int16");
+        public void TableMember_short() => this.RunCompoundTestWithDefaultValue<short>("int16");
 
         [TestMethod]
-        public void TableMember_ushort_alias() => this.RunCompoundTest<ushort>("ushort");
+        public void TableMember_ushort_alias() => this.RunCompoundTestWithDefaultValue<ushort>("ushort");
 
         [TestMethod]
-        public void TableMember_ushort() => this.RunCompoundTest<ushort>("uint16");
+        public void TableMember_ushort() => this.RunCompoundTestWithDefaultValue<ushort>("uint16");
 
         [TestMethod]
-        public void TableMember_int_alias() => this.RunCompoundTest<int>("int");
+        public void TableMember_int_alias() => this.RunCompoundTestWithDefaultValue<int>("int");
 
         [TestMethod]
-        public void TableMember_int() => this.RunCompoundTest<int>("int32");
+        public void TableMember_int() => this.RunCompoundTestWithDefaultValue<int>("int32");
 
         [TestMethod]
-        public void TableMember_uint_alias() => this.RunCompoundTest<uint>("uint");
+        public void TableMember_uint_alias() => this.RunCompoundTestWithDefaultValue<uint>("uint");
 
         [TestMethod]
-        public void TableMember_uint() => this.RunCompoundTest<uint>("uint32");
+        public void TableMember_uint() => this.RunCompoundTestWithDefaultValue<uint>("uint32");
 
         [TestMethod]
-        public void TableMember_long_alias() => this.RunCompoundTest<long>("long");
+        public void TableMember_long_alias() => this.RunCompoundTestWithDefaultValue<long>("long");
 
         [TestMethod]
-        public void TableMember_long() => this.RunCompoundTest<long>("int64");
+        public void TableMember_long() => this.RunCompoundTestWithDefaultValue<long>("int64");
 
         [TestMethod]
-        public void TableMember_ulong_alias() => this.RunCompoundTest<ulong>("ulong");
+        public void TableMember_ulong_alias() => this.RunCompoundTestWithDefaultValue<ulong>("ulong");
 
         [TestMethod]
-        public void TableMember_ulong() => this.RunCompoundTest<ulong>("uint64");
+        public void TableMember_ulong() => this.RunCompoundTestWithDefaultValue<ulong>("uint64");
 
         [TestMethod]
-        public void TableMember_float_alias() => this.RunCompoundTest<float>("float");
+        public void TableMember_float_alias() => this.RunCompoundTestWithDefaultValue<float>("float", "G17");
 
         [TestMethod]
-        public void TableMember_float() => this.RunCompoundTest<float>("float32");
+        public void TableMember_float() => this.RunCompoundTestWithDefaultValue<float>("float32", "G17");
 
         [TestMethod]
-        public void TableMember_double_alias() => this.RunCompoundTest<double>("double");
+        public void TableMember_double_alias() => this.RunCompoundTestWithDefaultValue<double>("double", "G17");
 
         [TestMethod]
-        public void TableMember_double() => this.RunCompoundTest<double>("float64");
+        public void TableMember_double() => this.RunCompoundTestWithDefaultValue<double>("float64", "G17");
 
         [TestMethod]
         public void TableMember_string() => this.RunCompoundTest<string>("string");
+
+        private void RunCompoundTestWithDefaultValue_Bool(string fbsType)
+        {
+            this.RunSingleTest<bool>($"{fbsType} = true", hasDefaultValue: true, expectedDefaultValue: true);
+            this.RunSingleTest<bool>($"{fbsType} = false", hasDefaultValue: true, expectedDefaultValue: false);
+            this.RunCompoundTest<bool>(fbsType);
+        }
+
+        private void RunCompoundTestWithDefaultValue<T>(string fbsType, string format = null) where T : struct, IFormattable
+        {
+            Random random = new Random();
+            byte[] data = new byte[16];
+            random.NextBytes(data);
+            T randomValue = MemoryMarshal.Cast<byte, T>(data)[0];
+
+            this.RunSingleTest<T>($"{fbsType} = {randomValue.ToString(format, null).ToLowerInvariant()}", hasDefaultValue: true, expectedDefaultValue: randomValue);
+
+            this.RunCompoundTest<T>(fbsType);
+        }
 
         private void RunCompoundTest<T>(string fbsType)
         {
@@ -110,7 +130,7 @@ namespace FlatSharpTests.Compiler
             }
         }
 
-        private void RunSingleTest<T>(string fbsType, bool deprecated = false)
+        private void RunSingleTest<T>(string fbsType, bool deprecated = false, bool hasDefaultValue = false, T expectedDefaultValue = default)
         {
             try
             {
@@ -125,8 +145,16 @@ namespace FlatSharpTests.Compiler
 
                 Assert.AreEqual(0, attribute.Index);
                 Assert.AreEqual(deprecated, attribute.Deprecated);
-                Assert.AreEqual(null, attribute.DefaultValue);
 
+                Assert.AreEqual(hasDefaultValue, attribute.DefaultValue != null);
+                if (hasDefaultValue)
+                {
+                    Assert.IsInstanceOfType(attribute.DefaultValue, typeof(T));
+
+                    T actualDefault = (T)attribute.DefaultValue;
+                    Assert.AreEqual(0, Comparer<T>.Default.Compare(expectedDefaultValue, actualDefault));
+                }
+                
                 byte[] data = new byte[100];
                 CompilerTestHelpers.CompilerTestSerializer.ReflectionSerialize(Activator.CreateInstance(tableType), data);
                 CompilerTestHelpers.CompilerTestSerializer.ReflectionParse(tableType, data);

@@ -60,14 +60,10 @@ namespace FlatSharp.Compiler
 
         private static FlatBufferDeserializationOption? ParseSerailizerFlags(Dictionary<string, string> metadata)
         {
-            FlatBufferDeserializationOption? option = null;
             if (metadata == null || !metadata.TryGetValue("PrecompiledSerializer", out string value))
             {
                 return null;
             }
-
-            // probably enclosed in quotes.
-            value = value?.Trim('"');
 
             if (string.IsNullOrEmpty(value))
             {

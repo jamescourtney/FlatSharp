@@ -20,6 +20,7 @@ namespace FlatSharp.TypeModel
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Reflection;
 
     /// <summary>
@@ -28,25 +29,8 @@ namespace FlatSharp.TypeModel
     /// </summary>
     public abstract class RuntimeTypeModel
     {
-        private static readonly ConcurrentDictionary<Type, RuntimeTypeModel> ModelMap = new ConcurrentDictionary<Type, RuntimeTypeModel>
-        {
-            [typeof(bool)] = new ScalarTypeModel(typeof(bool), sizeof(bool)),
-            [typeof(byte)] = new ScalarTypeModel(typeof(byte), sizeof(byte)),
-            [typeof(sbyte)] = new ScalarTypeModel(typeof(sbyte), sizeof(sbyte)),
-
-            [typeof(ushort)] = new ScalarTypeModel(typeof(ushort), sizeof(ushort)),
-            [typeof(short)] = new ScalarTypeModel(typeof(short), sizeof(short)),
-
-            [typeof(uint)] = new ScalarTypeModel(typeof(uint), sizeof(uint)),
-            [typeof(int)] = new ScalarTypeModel(typeof(int), sizeof(int)),
-            [typeof(float)] = new ScalarTypeModel(typeof(float), sizeof(float)),
-
-            [typeof(ulong)] = new ScalarTypeModel(typeof(ulong), sizeof(ulong)),
-            [typeof(long)] = new ScalarTypeModel(typeof(long), sizeof(long)),
-            [typeof(double)] = new ScalarTypeModel(typeof(double), sizeof(double)),
-
-            [typeof(string)] = new StringTypeModel(),
-        };
+        private static readonly ConcurrentDictionary<Type, RuntimeTypeModel> ModelMap = new ConcurrentDictionary<Type, RuntimeTypeModel>(
+            BuiltInType.BuiltInTypes.ToDictionary(x => x.Key, x => x.Value.TypeModel));
 
         internal RuntimeTypeModel(Type clrType)
         {
@@ -158,7 +142,16 @@ namespace FlatSharp.TypeModel
                 }
 
                 ModelMap[type] = newModel;
-                newModel.Initialize();
+                try
+                {
+                    newModel.Initialize();
+                }
+                catch
+                {
+                    ModelMap.TryRemove(type, out _);
+                    throw;
+                }
+
                 return newModel;
             }
         }

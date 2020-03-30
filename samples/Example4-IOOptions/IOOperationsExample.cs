@@ -1,4 +1,20 @@
-﻿namespace Samples.IOOptionsExample
+﻿/*
+ * Copyright 2020 James Courtney
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+namespace Samples.IOOptionsExample
 {
     using System;
     using System.Collections.Generic;
@@ -54,13 +70,21 @@
             bytesWritten = Person.Serializer.Write(unsafeSpanWriter, buffer, person);
 
             // For reading data, we use InputBuffer. There are more options here:
+
+            // Array and Memory input buffers are general purpose and support all scenarios.
             var p1 = Person.Serializer.Parse(new ArrayInputBuffer(buffer));
-            var p3 = Person.Serializer.Parse(new MemoryInputBuffer(new Memory<byte>(buffer)));
-            var p2 = Person.Serializer.Parse(new UnsafeArrayInputBuffer(buffer));
+            var p2 = Person.Serializer.Parse(new MemoryInputBuffer(new Memory<byte>(buffer)));
+
+            // ReadOnlyMemory input buffer will fail to Parse any objects that have Memory<T> in them (that is -- non read only memory).
+            var p3 = Person.Serializer.Parse(new ReadOnlyMemoryInputBuffer(new ReadOnlyMemory<byte>(buffer)));
+
+            // The unsafe variants are available in the FlatSharp.Unsafe package and use pointers and other unsafe code to squeeze
+            // out some more performance.
+            var p4 = Person.Serializer.Parse(new UnsafeArrayInputBuffer(buffer));
             using (var unsafeMemoryInput = new UnsafeMemoryInputBuffer(new Memory<byte>(buffer)))
             {
                 // Unsafe memory input buffer must be disposed of because it pins the memory in place.
-                var p4 = Person.Serializer.Parse(unsafeMemoryInput);
+                var p5 = Person.Serializer.Parse(unsafeMemoryInput);
             }
         }
     }

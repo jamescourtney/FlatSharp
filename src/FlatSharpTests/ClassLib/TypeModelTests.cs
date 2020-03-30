@@ -55,6 +55,19 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
+        public void TypeModel_Table_InterfaceImplementationNonVirtual()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(InterfaceTableFailure)));
+        }
+
+        [TestMethod]
+        public void TypeModel_Table_InterfaceImplementationVirtual()
+        {
+            RuntimeTypeModel.CreateFrom(typeof(InterfaceTableSuccess));
+        }
+
+        [TestMethod]
         public void TypeModel_Struct_StringNotAllowed()
         {
             Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
@@ -146,6 +159,19 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
+        public void TypeModel_Struct_InterfaceImplementationNonVirtual()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(InterfaceStructFailure)));
+        }
+
+        [TestMethod]
+        public void TypeModel_Struct_InterfaceImplementationVirtual()
+        {
+            RuntimeTypeModel.CreateFrom(typeof(InterfaceStructSuccess));
+        }
+
+        [TestMethod]
         public void TypeModel_TypeCantBeTableAndStruct()
         {
             Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
@@ -172,7 +198,7 @@ namespace FlatSharpTests
             Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(UntaggedEnum)));
         }
-        
+
         [TestMethod]
         public void TypeModel_Enum_TaggedEnum()
         {
@@ -228,6 +254,93 @@ namespace FlatSharpTests
             Assert.IsFalse(model.IsList);
             Assert.IsTrue(model.IsMemoryVector);
             Assert.IsTrue(model.IsReadOnly);
+        }
+
+        [TestMethod]
+        public void TypeModel_SortedVector_OfStruct_NotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyStruct<int>[]>)));
+        }
+
+        [TestMethod]
+        public void TypeModel_SortedVector_OfEnum_NotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                   RuntimeTypeModel.CreateFrom(typeof(SortedVector<TaggedEnum[]>)));
+        }
+
+        [TestMethod]
+        public void TypeModel_SortedVector_OfString_NotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                   RuntimeTypeModel.CreateFrom(typeof(SortedVector<string[]>)));
+        }
+
+        [TestMethod]
+        public void TypeModel_SortedVector_OfScalar_NotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                   RuntimeTypeModel.CreateFrom(typeof(SortedVector<int[]>)));
+        }
+
+        [TestMethod]
+        public void TypeModel_SortedVector_OfTableWithBuiltInKey()
+        {
+            RuntimeTypeModel.CreateFrom(typeof(SortedVector<IList<SortedVectorKeyTable<string>>>));
+            RuntimeTypeModel.CreateFrom(typeof(SortedVector<IReadOnlyList<SortedVectorKeyTable<bool>>>));
+            RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<byte>[]>));
+            RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<sbyte>[]>));
+            RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<ushort>[]>));
+            RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<short>[]>));
+            RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<uint>[]>));
+            RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<int>[]>));
+            RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<ulong>[]>));
+            RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<long>[]>));
+            RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<float>[]>));
+            RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<double>[]>));
+        }
+
+        [TestMethod]
+        public void TypeModel_SortedVector_OfTableWithStructKey_NotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(SortedVector<IList<SortedVectorKeyTable<GenericStruct<string>>>>)));
+        }
+
+        [TestMethod]
+        public void TypeModel_SortedVector_OfTableWithTableKey_NotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(SortedVector<IList<SortedVectorKeyTable<GenericTable<string>>>>)));
+        }
+
+        [TestMethod]
+        public void TypeModel_SortedVector_OfTableWithVectorKey_NotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(SortedVector<IList<SortedVectorKeyTable<string[]>>>)));
+        }
+
+        [TestMethod]
+        public void TypeModel_SortedVector_OfTableWithEnumKey_NotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(SortedVector<IList<SortedVectorKeyTable<TaggedEnum>>>)));
+        }
+
+        [TestMethod]
+        public void TypeModel_SortedVector_OfTableWithoutKey_NotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(SortedVector<IList<GenericTable<string>>>)));
+        }
+
+        [TestMethod]
+        public void TypeModel_SortedVector_OfTableWithMultipleKeys_NotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(SortedVector<IList<SortedVectorMultiKeyTable<string>>>)));
         }
 
         private VectorTypeModel VectorTest(Type vectorDefinition, Type innerType)
@@ -477,7 +590,7 @@ namespace FlatSharpTests
 
         [FlatBufferTable]
         public class OverlappingUnionIndex
-        { 
+        {
             [FlatBufferItem(0)]
             public virtual FlatBufferUnion<string, IList<string>> Union { get; set; }
 
@@ -498,6 +611,74 @@ namespace FlatSharpTests
         {
             [FlatBufferItem(0)]
             public virtual string String { get; internal set; }
+        }
+
+        public interface IInterface
+        {
+            int Foo { get; set; }
+        }
+
+        // Properties that implement interfaces are virtual according to the property info. It's possible to be both
+        // virtual and final.
+        [FlatBufferTable]
+        public class InterfaceTableFailure : IInterface
+        {
+            [FlatBufferItem(0)]
+            public int Foo { get; set; }
+        }
+
+        [FlatBufferTable]
+        public class InterfaceTableSuccess : IInterface
+        {
+            [FlatBufferItem(0)]
+            public virtual int Foo { get; set; }
+        }
+
+        // Properties that implement interfaces are virtual according to the property info. It's possible to be both
+        // virtual and final.
+        [FlatBufferStruct]
+        public class InterfaceStructFailure : IInterface
+        {
+            [FlatBufferItem(0)]
+            public int Foo { get; set; }
+        }
+
+        [FlatBufferTable]
+        public class InterfaceStructSuccess : IInterface
+        {
+            [FlatBufferItem(0)]
+            public virtual int Foo { get; set; }
+        }
+
+        [FlatBufferTable]
+        public class SortedVector<T>
+        {
+            [FlatBufferItem(0, SortedVector = true)]
+            public virtual T Vector { get; set; }
+        }
+
+        [FlatBufferTable]
+        public class SortedVectorKeyTable<T>
+        {
+            [FlatBufferItem(0, Key = true)]
+            public virtual T Key { get; set; }
+        }
+
+        [FlatBufferTable]
+        public class SortedVectorMultiKeyTable<T>
+        {
+            [FlatBufferItem(0, Key = true)]
+            public virtual T Key { get; set; }
+
+            [FlatBufferItem(1, Key = true)]
+            public virtual T Key2 { get; set; }
+        }
+
+        [FlatBufferStruct]
+        public class SortedVectorKeyStruct<T>
+        {
+            [FlatBufferItem(0, Key = true)]
+            public virtual T Key { get; set; }
         }
     }
 }

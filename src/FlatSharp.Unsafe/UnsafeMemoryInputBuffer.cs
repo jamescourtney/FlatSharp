@@ -179,13 +179,19 @@ namespace FlatSharp.Unsafe
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected override Memory<byte> ReadByteMemoryBlockProtected(int start, int length)
+        protected override Memory<byte> GetByteMemory(int start, int length)
         {
             checked
             {
                 this.EnsureInBounds(start, length);
                 return this.memory.Slice(start, length);
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected override ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length)
+        {
+            return this.GetByteMemory(start, length);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

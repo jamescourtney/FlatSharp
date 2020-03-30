@@ -73,7 +73,7 @@ namespace FlatSharp.Compiler
 
         protected override bool SupportsChildren => false;
 
-        protected override void OnWriteCode(CodeWriter writer, CodeWritingPass pass, IReadOnlyDictionary<string, string> precompiledSerializer)
+        protected override void OnWriteCode(CodeWriter writer, CodeWritingPass pass, string forFile, IReadOnlyDictionary<string, string> precompiledSerializer)
         {
             if (pass == CodeWritingPass.FirstPass)
             {
@@ -374,6 +374,11 @@ namespace FlatSharp.Compiler
             {
                 writer.AppendLine($"return CallInvoker.{key}({methodMap[methodName]}, null, options);");
             }
+        }
+
+        protected override string OnGetCopyExpression(string source)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -121,7 +121,7 @@ table SortedVectorTest {
 }
 
 table SortedVectorInt32Table {
-	Value:int32 = 5 (key);
+	Value:int32 (key);
 }
 
 table SortedVectorDoubleTable {

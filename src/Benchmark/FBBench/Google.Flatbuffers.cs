@@ -30,7 +30,42 @@ public struct Foo : IFlatbufferObject
     builder.PutUlong(Id);
     return new Offset<Benchmark.FBBench.Google.Foo>(builder.Offset);
   }
+  public FooT UnPack() {
+    var _o = new FooT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(FooT _o) {
+    _o.Id = this.Id;
+    _o.Count = this.Count;
+    _o.Prefix = this.Prefix;
+    _o.Length = this.Length;
+  }
+  public static Offset<Benchmark.FBBench.Google.Foo> Pack(FlatBufferBuilder builder, FooT _o) {
+    if (_o == null) return default(Offset<Benchmark.FBBench.Google.Foo>);
+    return CreateFoo(
+      builder,
+      _o.Id,
+      _o.Count,
+      _o.Prefix,
+      _o.Length);
+  }
 };
+
+public class FooT
+{
+  public ulong Id { get; set; }
+  public short Count { get; set; }
+  public sbyte Prefix { get; set; }
+  public uint Length { get; set; }
+
+  public FooT() {
+    this.Id = 0;
+    this.Count = 0;
+    this.Prefix = 0;
+    this.Length = 0;
+  }
+}
 
 public struct Bar : IFlatbufferObject
 {
@@ -58,7 +93,45 @@ public struct Bar : IFlatbufferObject
     builder.PutUlong(parent_Id);
     return new Offset<Benchmark.FBBench.Google.Bar>(builder.Offset);
   }
+  public BarT UnPack() {
+    var _o = new BarT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(BarT _o) {
+    _o.Parent = this.Parent.UnPack();
+    _o.Time = this.Time;
+    _o.Ratio = this.Ratio;
+    _o.Size = this.Size;
+  }
+  public static Offset<Benchmark.FBBench.Google.Bar> Pack(FlatBufferBuilder builder, BarT _o) {
+    if (_o == null) return default(Offset<Benchmark.FBBench.Google.Bar>);
+    return CreateBar(
+      builder,
+      _o.Parent.Id,
+      _o.Parent.Count,
+      _o.Parent.Prefix,
+      _o.Parent.Length,
+      _o.Time,
+      _o.Ratio,
+      _o.Size);
+  }
 };
+
+public class BarT
+{
+  public Benchmark.FBBench.Google.FooT Parent { get; set; }
+  public int Time { get; set; }
+  public float Ratio { get; set; }
+  public ushort Size { get; set; }
+
+  public BarT() {
+    this.Parent = new Benchmark.FBBench.Google.FooT();
+    this.Time = 0;
+    this.Ratio = 0.0f;
+    this.Size = 0;
+  }
+}
 
 public struct FooBar : IFlatbufferObject
 {
@@ -90,7 +163,43 @@ public struct FooBar : IFlatbufferObject
     int o = builder.EndTable();
     return new Offset<Benchmark.FBBench.Google.FooBar>(o);
   }
+  public FooBarT UnPack() {
+    var _o = new FooBarT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(FooBarT _o) {
+    _o.Sibling = this.Sibling.HasValue ? this.Sibling.Value.UnPack() : null;
+    _o.Name = this.Name;
+    _o.Rating = this.Rating;
+    _o.Postfix = this.Postfix;
+  }
+  public static Offset<Benchmark.FBBench.Google.FooBar> Pack(FlatBufferBuilder builder, FooBarT _o) {
+    if (_o == null) return default(Offset<Benchmark.FBBench.Google.FooBar>);
+    var _name = _o.Name == null ? default(StringOffset) : builder.CreateString(_o.Name);
+    StartFooBar(builder);
+    AddSibling(builder, Benchmark.FBBench.Google.Bar.Pack(builder, _o.Sibling));
+    AddName(builder, _name);
+    AddRating(builder, _o.Rating);
+    AddPostfix(builder, _o.Postfix);
+    return EndFooBar(builder);
+  }
 };
+
+public class FooBarT
+{
+  public Benchmark.FBBench.Google.BarT Sibling { get; set; }
+  public string Name { get; set; }
+  public double Rating { get; set; }
+  public byte Postfix { get; set; }
+
+  public FooBarT() {
+    this.Sibling = new Benchmark.FBBench.Google.BarT();
+    this.Name = null;
+    this.Rating = 0.0;
+    this.Postfix = 0;
+  }
+}
 
 public struct FooBarContainer : IFlatbufferObject
 {
@@ -139,7 +248,291 @@ public struct FooBarContainer : IFlatbufferObject
     int o = builder.EndTable();
     return new Offset<Benchmark.FBBench.Google.FooBarContainer>(o);
   }
+  public FooBarContainerT UnPack() {
+    var _o = new FooBarContainerT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(FooBarContainerT _o) {
+    _o.List = new List<Benchmark.FBBench.Google.FooBarT>();
+    for (var _j = 0; _j < this.ListLength; ++_j) {_o.List.Add(this.List(_j).HasValue ? this.List(_j).Value.UnPack() : null);}
+    _o.Initialized = this.Initialized;
+    _o.Fruit = this.Fruit;
+    _o.Location = this.Location;
+  }
+  public static Offset<Benchmark.FBBench.Google.FooBarContainer> Pack(FlatBufferBuilder builder, FooBarContainerT _o) {
+    if (_o == null) return default(Offset<Benchmark.FBBench.Google.FooBarContainer>);
+    var _list = default(VectorOffset);
+    if (_o.List != null) {
+      var __list = new Offset<Benchmark.FBBench.Google.FooBar>[_o.List.Count];
+      for (var _j = 0; _j < __list.Length; ++_j) { __list[_j] = Benchmark.FBBench.Google.FooBar.Pack(builder, _o.List[_j]); }
+      _list = CreateListVector(builder, __list);
+    }
+    var _location = _o.Location == null ? default(StringOffset) : builder.CreateString(_o.Location);
+    return CreateFooBarContainer(
+      builder,
+      _list,
+      _o.Initialized,
+      _o.Fruit,
+      _location);
+  }
 };
+
+public class FooBarContainerT
+{
+  public List<Benchmark.FBBench.Google.FooBarT> List { get; set; }
+  public bool Initialized { get; set; }
+  public short Fruit { get; set; }
+  public string Location { get; set; }
+
+  public FooBarContainerT() {
+    this.List = null;
+    this.Initialized = false;
+    this.Fruit = 0;
+    this.Location = null;
+  }
+}
+
+public struct SortedVectorContainer : IFlatbufferObject
+{
+  private Table __p;
+  public ByteBuffer ByteBuffer { get { return __p.bb; } }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_1_12_0(); }
+  public static SortedVectorContainer GetRootAsSortedVectorContainer(ByteBuffer _bb) { return GetRootAsSortedVectorContainer(_bb, new SortedVectorContainer()); }
+  public static SortedVectorContainer GetRootAsSortedVectorContainer(ByteBuffer _bb, SortedVectorContainer obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
+  public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
+  public SortedVectorContainer __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
+
+  public Benchmark.FBBench.Google.SortedVectorStringKey? StringVector(int j) { int o = __p.__offset(4); return o != 0 ? (Benchmark.FBBench.Google.SortedVectorStringKey?)(new Benchmark.FBBench.Google.SortedVectorStringKey()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
+  public int StringVectorLength { get { int o = __p.__offset(4); return o != 0 ? __p.__vector_len(o) : 0; } }
+  public Benchmark.FBBench.Google.SortedVectorStringKey? StringVectorByKey(string key) { int o = __p.__offset(4); return o != 0 ? Benchmark.FBBench.Google.SortedVectorStringKey.__lookup_by_key(__p.__vector(o), key, __p.bb) : null; }
+  public Benchmark.FBBench.Google.SortedVectorIntKey? IntVector(int j) { int o = __p.__offset(6); return o != 0 ? (Benchmark.FBBench.Google.SortedVectorIntKey?)(new Benchmark.FBBench.Google.SortedVectorIntKey()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
+  public int IntVectorLength { get { int o = __p.__offset(6); return o != 0 ? __p.__vector_len(o) : 0; } }
+  public Benchmark.FBBench.Google.SortedVectorIntKey? IntVectorByKey(int key) { int o = __p.__offset(6); return o != 0 ? Benchmark.FBBench.Google.SortedVectorIntKey.__lookup_by_key(__p.__vector(o), key, __p.bb) : null; }
+
+  public static Offset<Benchmark.FBBench.Google.SortedVectorContainer> CreateSortedVectorContainer(FlatBufferBuilder builder,
+      VectorOffset StringVectorOffset = default(VectorOffset),
+      VectorOffset IntVectorOffset = default(VectorOffset)) {
+    builder.StartTable(2);
+    SortedVectorContainer.AddIntVector(builder, IntVectorOffset);
+    SortedVectorContainer.AddStringVector(builder, StringVectorOffset);
+    return SortedVectorContainer.EndSortedVectorContainer(builder);
+  }
+
+  public static void StartSortedVectorContainer(FlatBufferBuilder builder) { builder.StartTable(2); }
+  public static void AddStringVector(FlatBufferBuilder builder, VectorOffset StringVectorOffset) { builder.AddOffset(0, StringVectorOffset.Value, 0); }
+  public static VectorOffset CreateStringVectorVector(FlatBufferBuilder builder, Offset<Benchmark.FBBench.Google.SortedVectorStringKey>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
+  public static VectorOffset CreateStringVectorVectorBlock(FlatBufferBuilder builder, Offset<Benchmark.FBBench.Google.SortedVectorStringKey>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
+  public static void StartStringVectorVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
+  public static void AddIntVector(FlatBufferBuilder builder, VectorOffset IntVectorOffset) { builder.AddOffset(1, IntVectorOffset.Value, 0); }
+  public static VectorOffset CreateIntVectorVector(FlatBufferBuilder builder, Offset<Benchmark.FBBench.Google.SortedVectorIntKey>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
+  public static VectorOffset CreateIntVectorVectorBlock(FlatBufferBuilder builder, Offset<Benchmark.FBBench.Google.SortedVectorIntKey>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
+  public static void StartIntVectorVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
+  public static Offset<Benchmark.FBBench.Google.SortedVectorContainer> EndSortedVectorContainer(FlatBufferBuilder builder) {
+    int o = builder.EndTable();
+    return new Offset<Benchmark.FBBench.Google.SortedVectorContainer>(o);
+  }
+  public SortedVectorContainerT UnPack() {
+    var _o = new SortedVectorContainerT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(SortedVectorContainerT _o) {
+    _o.StringVector = new List<Benchmark.FBBench.Google.SortedVectorStringKeyT>();
+    for (var _j = 0; _j < this.StringVectorLength; ++_j) {_o.StringVector.Add(this.StringVector(_j).HasValue ? this.StringVector(_j).Value.UnPack() : null);}
+    _o.IntVector = new List<Benchmark.FBBench.Google.SortedVectorIntKeyT>();
+    for (var _j = 0; _j < this.IntVectorLength; ++_j) {_o.IntVector.Add(this.IntVector(_j).HasValue ? this.IntVector(_j).Value.UnPack() : null);}
+  }
+  public static Offset<Benchmark.FBBench.Google.SortedVectorContainer> Pack(FlatBufferBuilder builder, SortedVectorContainerT _o) {
+    if (_o == null) return default(Offset<Benchmark.FBBench.Google.SortedVectorContainer>);
+    var _StringVector = default(VectorOffset);
+    if (_o.StringVector != null) {
+      var __StringVector = new Offset<Benchmark.FBBench.Google.SortedVectorStringKey>[_o.StringVector.Count];
+      for (var _j = 0; _j < __StringVector.Length; ++_j) { __StringVector[_j] = Benchmark.FBBench.Google.SortedVectorStringKey.Pack(builder, _o.StringVector[_j]); }
+      _StringVector = CreateStringVectorVector(builder, __StringVector);
+    }
+    var _IntVector = default(VectorOffset);
+    if (_o.IntVector != null) {
+      var __IntVector = new Offset<Benchmark.FBBench.Google.SortedVectorIntKey>[_o.IntVector.Count];
+      for (var _j = 0; _j < __IntVector.Length; ++_j) { __IntVector[_j] = Benchmark.FBBench.Google.SortedVectorIntKey.Pack(builder, _o.IntVector[_j]); }
+      _IntVector = CreateIntVectorVector(builder, __IntVector);
+    }
+    return CreateSortedVectorContainer(
+      builder,
+      _StringVector,
+      _IntVector);
+  }
+};
+
+public class SortedVectorContainerT
+{
+  public List<Benchmark.FBBench.Google.SortedVectorStringKeyT> StringVector { get; set; }
+  public List<Benchmark.FBBench.Google.SortedVectorIntKeyT> IntVector { get; set; }
+
+  public SortedVectorContainerT() {
+    this.StringVector = null;
+    this.IntVector = null;
+  }
+}
+
+public struct SortedVectorStringKey : IFlatbufferObject
+{
+  private Table __p;
+  public ByteBuffer ByteBuffer { get { return __p.bb; } }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_1_12_0(); }
+  public static SortedVectorStringKey GetRootAsSortedVectorStringKey(ByteBuffer _bb) { return GetRootAsSortedVectorStringKey(_bb, new SortedVectorStringKey()); }
+  public static SortedVectorStringKey GetRootAsSortedVectorStringKey(ByteBuffer _bb, SortedVectorStringKey obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
+  public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
+  public SortedVectorStringKey __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
+
+  public string Key { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetKeyBytes() { return __p.__vector_as_span<byte>(4, 1); }
+#else
+  public ArraySegment<byte>? GetKeyBytes() { return __p.__vector_as_arraysegment(4); }
+#endif
+  public byte[] GetKeyArray() { return __p.__vector_as_array<byte>(4); }
+
+  public static Offset<Benchmark.FBBench.Google.SortedVectorStringKey> CreateSortedVectorStringKey(FlatBufferBuilder builder,
+      StringOffset KeyOffset = default(StringOffset)) {
+    builder.StartTable(1);
+    SortedVectorStringKey.AddKey(builder, KeyOffset);
+    return SortedVectorStringKey.EndSortedVectorStringKey(builder);
+  }
+
+  public static void StartSortedVectorStringKey(FlatBufferBuilder builder) { builder.StartTable(1); }
+  public static void AddKey(FlatBufferBuilder builder, StringOffset KeyOffset) { builder.AddOffset(0, KeyOffset.Value, 0); }
+  public static Offset<Benchmark.FBBench.Google.SortedVectorStringKey> EndSortedVectorStringKey(FlatBufferBuilder builder) {
+    int o = builder.EndTable();
+    builder.Required(o, 4);  // Key
+    return new Offset<Benchmark.FBBench.Google.SortedVectorStringKey>(o);
+  }
+
+  public static VectorOffset CreateSortedVectorOfSortedVectorStringKey(FlatBufferBuilder builder, Offset<SortedVectorStringKey>[] offsets) {
+    Array.Sort(offsets, (Offset<SortedVectorStringKey> o1, Offset<SortedVectorStringKey> o2) => Table.CompareStrings(Table.__offset(4, o1.Value, builder.DataBuffer), Table.__offset(4, o2.Value, builder.DataBuffer), builder.DataBuffer));
+    return builder.CreateVectorOfTables(offsets);
+  }
+
+  public static SortedVectorStringKey? __lookup_by_key(int vectorLocation, string key, ByteBuffer bb) {
+    byte[] byteKey = System.Text.Encoding.UTF8.GetBytes(key);
+    int span = bb.GetInt(vectorLocation - 4);
+    int start = 0;
+    while (span != 0) {
+      int middle = span / 2;
+      int tableOffset = Table.__indirect(vectorLocation + 4 * (start + middle), bb);
+      int comp = Table.CompareStrings(Table.__offset(4, bb.Length - tableOffset, bb), byteKey, bb);
+      if (comp > 0) {
+        span = middle;
+      } else if (comp < 0) {
+        middle++;
+        start += middle;
+        span -= middle;
+      } else {
+        return new SortedVectorStringKey().__assign(tableOffset, bb);
+      }
+    }
+    return null;
+  }
+  public SortedVectorStringKeyT UnPack() {
+    var _o = new SortedVectorStringKeyT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(SortedVectorStringKeyT _o) {
+    _o.Key = this.Key;
+  }
+  public static Offset<Benchmark.FBBench.Google.SortedVectorStringKey> Pack(FlatBufferBuilder builder, SortedVectorStringKeyT _o) {
+    if (_o == null) return default(Offset<Benchmark.FBBench.Google.SortedVectorStringKey>);
+    var _Key = _o.Key == null ? default(StringOffset) : builder.CreateString(_o.Key);
+    return CreateSortedVectorStringKey(
+      builder,
+      _Key);
+  }
+};
+
+public class SortedVectorStringKeyT
+{
+  public string Key { get; set; }
+
+  public SortedVectorStringKeyT() {
+    this.Key = null;
+  }
+}
+
+public struct SortedVectorIntKey : IFlatbufferObject
+{
+  private Table __p;
+  public ByteBuffer ByteBuffer { get { return __p.bb; } }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_1_12_0(); }
+  public static SortedVectorIntKey GetRootAsSortedVectorIntKey(ByteBuffer _bb) { return GetRootAsSortedVectorIntKey(_bb, new SortedVectorIntKey()); }
+  public static SortedVectorIntKey GetRootAsSortedVectorIntKey(ByteBuffer _bb, SortedVectorIntKey obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
+  public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
+  public SortedVectorIntKey __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
+
+  public int Key { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+
+  public static Offset<Benchmark.FBBench.Google.SortedVectorIntKey> CreateSortedVectorIntKey(FlatBufferBuilder builder,
+      int Key = 0) {
+    builder.StartTable(1);
+    SortedVectorIntKey.AddKey(builder, Key);
+    return SortedVectorIntKey.EndSortedVectorIntKey(builder);
+  }
+
+  public static void StartSortedVectorIntKey(FlatBufferBuilder builder) { builder.StartTable(1); }
+  public static void AddKey(FlatBufferBuilder builder, int Key) { builder.AddInt(0, Key, 0); }
+  public static Offset<Benchmark.FBBench.Google.SortedVectorIntKey> EndSortedVectorIntKey(FlatBufferBuilder builder) {
+    int o = builder.EndTable();
+    return new Offset<Benchmark.FBBench.Google.SortedVectorIntKey>(o);
+  }
+
+  public static VectorOffset CreateSortedVectorOfSortedVectorIntKey(FlatBufferBuilder builder, Offset<SortedVectorIntKey>[] offsets) {
+    Array.Sort(offsets, (Offset<SortedVectorIntKey> o1, Offset<SortedVectorIntKey> o2) => builder.DataBuffer.GetInt(Table.__offset(4, o1.Value, builder.DataBuffer)).CompareTo(builder.DataBuffer.GetInt(Table.__offset(4, o2.Value, builder.DataBuffer))));
+    return builder.CreateVectorOfTables(offsets);
+  }
+
+  public static SortedVectorIntKey? __lookup_by_key(int vectorLocation, int key, ByteBuffer bb) {
+    int span = bb.GetInt(vectorLocation - 4);
+    int start = 0;
+    while (span != 0) {
+      int middle = span / 2;
+      int tableOffset = Table.__indirect(vectorLocation + 4 * (start + middle), bb);
+      int comp = bb.GetInt(Table.__offset(4, bb.Length - tableOffset, bb)).CompareTo(key);
+      if (comp > 0) {
+        span = middle;
+      } else if (comp < 0) {
+        middle++;
+        start += middle;
+        span -= middle;
+      } else {
+        return new SortedVectorIntKey().__assign(tableOffset, bb);
+      }
+    }
+    return null;
+  }
+  public SortedVectorIntKeyT UnPack() {
+    var _o = new SortedVectorIntKeyT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(SortedVectorIntKeyT _o) {
+    _o.Key = this.Key;
+  }
+  public static Offset<Benchmark.FBBench.Google.SortedVectorIntKey> Pack(FlatBufferBuilder builder, SortedVectorIntKeyT _o) {
+    if (_o == null) return default(Offset<Benchmark.FBBench.Google.SortedVectorIntKey>);
+    return CreateSortedVectorIntKey(
+      builder,
+      _o.Key);
+  }
+};
+
+public class SortedVectorIntKeyT
+{
+  public int Key { get; set; }
+
+  public SortedVectorIntKeyT() {
+    this.Key = 0;
+  }
+}
 
 
 }

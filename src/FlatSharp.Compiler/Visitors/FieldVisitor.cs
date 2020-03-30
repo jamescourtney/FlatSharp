@@ -76,10 +76,20 @@ namespace FlatSharp.Compiler
                     this.definition.Deprecated = true;
                 }
 
+                if (metadata.ContainsKey("key"))
+                {
+                    this.definition.IsKey = true;
+                }
+
+                if (metadata.ContainsKey("sortedvector"))
+                {
+                    this.definition.SortedVector = true;
+                }
+
                 // Attributes from FlatBuffers that we don't support.
                 string[] unsupportedAttributes =
                 {
-                    "id", "required", "force_align", "bit_flags", "nested_flatbuffer", "flexbuffer", "key", "hash", "original_order"
+                    "id", "required", "force_align", "bit_flags", "flexbuffer", "hash", "original_order"
                 };
 
                 foreach (var unsupportedAttribute in unsupportedAttributes)

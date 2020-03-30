@@ -16,82 +16,45 @@
 
 namespace FlatSharp.Compiler
 {
+
+    using System;
+    using System.Collections.Generic;
+
     internal class SchemaDefinition
     {
-        public static string ResolvePrimitiveType(string type)
+        public static IBuiltInScalarType ResolveBuiltInScalarType(string type)
         {
-            if (!TryResolvePrimitiveType(type, out string clrtype))
+            if (!TryResolveBuiltInScalarType(type, out IBuiltInScalarType builtInType))
             {
                 ErrorContext.Current?.RegisterError("Unexpected primitive type: " + type);
             }
 
-            return clrtype;
+            return builtInType;
         }
 
-        public static bool TryResolvePrimitiveType(string type, out string clrType)
+        public static bool TryResolveBuiltInType(string type, out IBuiltInType builtInType)
         {
-            switch (type)
+            return TryResolve(type, BuiltInType.BuiltInTypes, out builtInType);
+        }
+
+        public static bool TryResolveBuiltInScalarType(string type, out IBuiltInScalarType builtInType)
+        {
+            return TryResolve(type, BuiltInType.BuiltInScalars, out builtInType);
+        }
+
+        private static bool TryResolve<T>(string type, IReadOnlyDictionary<Type, T> dict, out T builtInType) where T : class, IBuiltInType
+        {
+            foreach (var t in dict.Values)
             {
-                case "bool":
-                    clrType = "bool";
-                    break;
-
-                case "byte":
-                case "int8":
-                    clrType = "sbyte";
-                    break;
-
-                case "ubyte":
-                case "uint8":
-                    clrType = "byte";
-                    break;
-
-                case "int16":
-                case "short":
-                    clrType = "short";
-                    break;
-
-                case "uint16":
-                case "ushort":
-                    clrType = "ushort";
-                    break;
-
-                case "int32":
-                case "int":
-                    clrType = "int";
-                    break;
-
-                case "uint32":
-                case "uint":
-                    clrType = "uint";
-                    break;
-
-                case "int64":
-                case "long":
-                    clrType = "long";
-                    break;
-
-                case "uint64":
-                case "ulong":
-                    clrType = "ulong";
-                    break;
-
-                case "float32":
-                case "float":
-                    clrType = "float";
-                    break;
-
-                case "float64":
-                case "double":
-                    clrType = "double";
-                    break;
-
-                default:
-                    clrType = null;
-                    return false;
+                if (t.FbsAliases.Contains(type))
+                {
+                    builtInType = t;
+                    return true;
+                }
             }
 
-            return true;
+            builtInType = null;
+            return false;
         }
     }
 }

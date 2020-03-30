@@ -27,8 +27,6 @@ namespace FlatSharp
     /// </summary>
     public sealed class FlatBufferSerializer
     {
-        private static readonly ThreadLocal<SerializationContext> context = new ThreadLocal<SerializationContext>(() => new SerializationContext());
-
         public static FlatBufferSerializer Default { get; } = new FlatBufferSerializer(new FlatBufferSerializerOptions());
         
         private readonly Dictionary<Type, object> serializerCache = new Dictionary<Type, object>();
@@ -81,6 +79,14 @@ namespace FlatSharp
         public T Parse<T>(Memory<byte> memory) where T : class
         {
             return this.Parse<T>(new MemoryInputBuffer(memory));
+        }
+
+        /// <summary>
+        /// Parses the given ReadOnlyMemory as an instance of T.
+        /// </summary>
+        public T Parse<T>(ReadOnlyMemory<byte> memory) where T : class
+        {
+            return this.Parse<T>(new ReadOnlyMemoryInputBuffer(memory));
         }
 
         /// <summary>

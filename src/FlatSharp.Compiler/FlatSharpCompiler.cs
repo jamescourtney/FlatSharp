@@ -21,6 +21,8 @@ namespace FlatSharp.Compiler
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using System.Runtime.ExceptionServices;
+    using System.Security.Cryptography;
     using System.Text;
     using System.Threading;
     using Antlr4.Runtime;
@@ -45,23 +47,19 @@ namespace FlatSharp.Compiler
                     {
                         try
                         {
-                            string inputHash;
-                            using (var sha = System.Security.Cryptography.SHA256.Create())
-                            {
-                                inputHash = Convert.ToBase64String(sha.ComputeHash(Encoding.UTF8.GetBytes(fbsText)));
-                            }
+                            RootNodeDefinition rootNode = ParseSyntax(args[0], new IncludeFileLoader());
 
                             if (File.Exists(outputFileName))
                             {
                                 string existingOutput = File.ReadAllText(outputFileName);
-                                if (existingOutput.Contains(inputHash))
+                                if (existingOutput.Contains(rootNode.InputHash))
                                 {
                                     // Input file unchanged.
                                     return 0;
                                 }
                             }
 
-                            string cSharp = CreateCSharp(File.ReadAllText(args[0]), inputHash);
+                            string cSharp = CreateCSharp(rootNode);
                             File.WriteAllText(outputFileName, cSharp);
                         }
                         catch (IOException)
@@ -77,6 +75,15 @@ namespace FlatSharp.Compiler
                 catch (InvalidFbsFileException ex)
                 {
                     foreach (var message in ex.Errors)
+                    {
+                        Console.Error.WriteLine(message);
+                    }
+
+                    return -1;
+                }
+                catch (FlatSharpCompilationException ex)
+                {
+                    foreach (var message in ex.CompilerErrors)
                     {
                         Console.Error.WriteLine(message);
                     }
@@ -102,15 +109,32 @@ namespace FlatSharp.Compiler
             }
         }
 
-        internal static Assembly CompileAndLoadAssembly(string fbsSchema, string inputHash = "", IEnumerable<Assembly> additionalReferences = null)
+        internal static Assembly CompileAndLoadAssembly(
+            string fbsSchema,
+            IEnumerable<Assembly> additionalReferences = null,
+            Dictionary<string, string> additionalIncludes = null)
         {
+            InMemoryIncludeLoader includeLoader = new InMemoryIncludeLoader
+            {
+                { "root.fbs", fbsSchema }
+            };
+
+            if (additionalIncludes != null)
+            {
+                foreach (var kvp in additionalIncludes)
+                {
+                    includeLoader[kvp.Key] = kvp.Value;
+                }
+            }
+
             using (var context = ErrorContext.Current)
             {
                 context.PushScope("$");
                 try
                 {
                     Assembly[] additionalRefs = additionalReferences?.ToArray() ?? Array.Empty<Assembly>();
-                    string cSharp = CreateCSharp(fbsSchema, inputHash);
+                    var rootNode = ParseSyntax("root.fbs", includeLoader);
+                    string cSharp = CreateCSharp(rootNode);
                     var (assembly, formattedText, _) = RoslynSerializerGenerator.CompileAssembly(cSharp, true, additionalRefs);
                     string debugText = formattedText();
                     return assembly;
@@ -122,58 +146,111 @@ namespace FlatSharp.Compiler
             }
         }
 
-        internal static BaseSchemaMember TestHookParseSyntax(string fbsSchema)
+        internal static RootNodeDefinition TestHookParseSyntax(string fbsSchema, Dictionary<string, string> includes = null)
         {
+            InMemoryIncludeLoader includeLoader = new InMemoryIncludeLoader
+            {
+                { "root.fbs", fbsSchema }
+            };
+
+            if (includes != null)
+            {
+                foreach (var kvp in includes)
+                {
+                    includeLoader[kvp.Key] = kvp.Value;
+                }
+            }
+
             using (ErrorContext.Current)
             {
-                return ParseSyntax(fbsSchema, string.Empty);
+                return ParseSyntax("root.fbs", includeLoader);
             }
         }
 
-        private static BaseSchemaMember ParseSyntax(string fbsSchema, string inputHash)
+        private static RootNodeDefinition ParseSyntax(
+            string fbsPath,
+            IIncludeLoader includeLoader)
         {
-            AntlrInputStream input = new AntlrInputStream(fbsSchema);
-            FlatBuffersLexer lexer = new FlatBuffersLexer(input);
-            CommonTokenStream tokenStream = new CommonTokenStream(lexer);
-            FlatBuffersParser parser = new FlatBuffersParser(tokenStream);
+            string rootPath = Path.GetFullPath(fbsPath);
 
-            parser.AddErrorListener(new CustomErrorListener());
+            // First, visit includes. We need to figure out which files warrant a thorough look.
+            HashSet<string> includes = new HashSet<string>() { rootPath };
+            Queue<string> visitOrder = new Queue<string>();
+            visitOrder.Enqueue(rootPath);
 
-            SchemaVisitor visitor = new SchemaVisitor(inputHash);
-            BaseSchemaMember rootNode = visitor.Visit(parser.schema());
+            var rootNode = new RootNodeDefinition(rootPath);
+            var schemaVisitor = new SchemaVisitor(rootNode);
 
+            // SHA256 -> 32 bytes.
+            byte[] hash = new byte[32];
+
+            string asmVersion = typeof(FlatSharpCompiler).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "unknown";
+            Encoding.UTF8.GetBytes(asmVersion, 0, asmVersion.Length, hash, 0);
+
+            while (visitOrder.Count > 0)
+            {
+                string next = visitOrder.Dequeue();
+                string fbs = includeLoader.LoadInclude(next);
+
+                using (var sha256 = SHA256Managed.Create())
+                {
+                    byte[] componentHash = sha256.ComputeHash(Encoding.UTF8.GetBytes(fbs));
+                    for (int i = 0; i < hash.Length; ++i)
+                    {
+                        hash[i] ^= componentHash[i];
+                    }
+                }
+
+                schemaVisitor.CurrentFileName = next;
+
+                // Traverse the graph of includes.
+                var includeVisitor = new IncludeVisitor(next, includes, visitOrder);
+                includeVisitor.Visit(GetParser(fbs).schema());
+                schemaVisitor.Visit(GetParser(fbs).schema());
+            }
+
+            rootNode.InputHash = $"{asmVersion}.{Convert.ToBase64String(hash)}";
             return rootNode;
         }
 
-        internal static string TestHookCreateCSharp(string fbsSchema)
+        private static FlatBuffersParser GetParser(string fbs)
         {
+            AntlrInputStream input = new AntlrInputStream(fbs);
+            FlatBuffersLexer lexer = new FlatBuffersLexer(input);
+            CommonTokenStream tokenStream = new CommonTokenStream(lexer);
+            FlatBuffersParser parser = new FlatBuffersParser(tokenStream);
+            parser.AddErrorListener(new CustomErrorListener());
+
+            return parser;
+        }
+
+        internal static string TestHookCreateCSharp(string fbsSchema, Dictionary<string, string> includes = null)
+        {
+            InMemoryIncludeLoader includeLoader = new InMemoryIncludeLoader
+            {
+                { "root.fbs", fbsSchema }
+            };
+
+            if (includes != null)
+            {
+                foreach (var pair in includes)
+                {
+                    includeLoader[pair.Key] = pair.Value;
+                }
+            }
+
             using (ErrorContext.Current)
             {
-                return CreateCSharp(fbsSchema, string.Empty);
+                return CreateCSharp(ParseSyntax("root.fbs", includeLoader));
             }
         }
 
-        private static string CreateCSharp(string fbsSchema, string inputHash)
+        private static string CreateCSharp(BaseSchemaMember rootNode)
         {
-            BaseSchemaMember rootNode = ParseSyntax(fbsSchema, inputHash);
-
             if (ErrorContext.Current.Errors.Any())
             {
                 throw new InvalidFbsFileException(ErrorContext.Current.Errors);
             }
-
-            // Create the first pass of the code. This pass includes the data contracts from the FBS file.
-            // If the schema requests a pregenerated serializer, then we'll need to load this code, generate
-            // the serializer, and then rebuild it.
-            CodeWriter writer = new CodeWriter();
-            rootNode.WriteCode(writer, CodeWritingPass.FirstPass, null);
-
-            if (ErrorContext.Current.Errors.Any())
-            {
-                throw new InvalidFbsFileException(ErrorContext.Current.Errors);
-            }
-
-            string code = writer.ToString();
 
             var tablesNeedingSerializers = new List<TableOrStructDefinition>();
             var rpcDefinitions = new List<RpcDefinition>();
@@ -182,10 +259,22 @@ namespace FlatSharp.Compiler
             if (tablesNeedingSerializers.Count == 0 && rpcDefinitions.Count == 0)
             {
                 // Hey, no serializers or RPCs. We're all done. Go ahead and return the code we already generated.
-                return code;
+                CodeWriter tempWriter = new CodeWriter();
+                rootNode.WriteCode(tempWriter, CodeWritingPass.SecondPass, rootNode.DeclaringFile, new Dictionary<string, string>());
+
+                if (ErrorContext.Current.Errors.Any())
+                {
+                    throw new InvalidFbsFileException(ErrorContext.Current.Errors);
+                }
+
+                return tempWriter.ToString();
             }
 
-            // Compile the assembly so that we may generate serializers for the data contracts defined in this FBS file.
+            // Compile the assembly so that we may generate serializers for the data contracts defined in this FBS file.;
+            // Compile with firstpass here to include all data (even stuff from includes).
+            CodeWriter writer = new CodeWriter();
+            rootNode.WriteCode(writer, CodeWritingPass.FirstPass, rootNode.DeclaringFile, new Dictionary<string, string>());
+            string code = writer.ToString();
             var (assembly, _, _) = RoslynSerializerGenerator.CompileAssembly(code, true);
 
             Dictionary<string, string> generatedSerializers = new Dictionary<string, string>();
@@ -195,7 +284,7 @@ namespace FlatSharp.Compiler
             }
 
             writer = new CodeWriter();
-            rootNode.WriteCode(writer, CodeWritingPass.SecondPass, generatedSerializers);
+            rootNode.WriteCode(writer, CodeWritingPass.SecondPass, rootNode.DeclaringFile, generatedSerializers);
 
             if (ErrorContext.Current.Errors.Any())
             {
@@ -219,16 +308,24 @@ namespace FlatSharp.Compiler
                 .GetMethod(nameof(RoslynSerializerGenerator.GenerateCSharp), BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
                 .MakeGenericMethod(type);
 
-            string code = (string)method.Invoke(generator, new[] { "private" });
-            return code;
+            try
+            {
+                string code = (string)method.Invoke(generator, new[] { "private" });
+                return code;
+            }
+            catch (TargetInvocationException ex)
+            {
+                ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                throw;
+            }
         }
 
         /// <summary>
         /// Recursively find tables for which the schema has asked for us to generate serializers.
         /// </summary>
         private static void FindItemsRequiringSecondCodePass(
-            BaseSchemaMember node, 
-            List<TableOrStructDefinition> tables, 
+            BaseSchemaMember node,
+            List<TableOrStructDefinition> tables,
             List<RpcDefinition> rpcs)
         {
             if (node is TableOrStructDefinition tableOrStruct)

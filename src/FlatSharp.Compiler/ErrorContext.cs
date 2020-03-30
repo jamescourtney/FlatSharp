@@ -68,17 +68,27 @@ namespace FlatSharp.Compiler
         {
             this.contextStack.RemoveLast();
         }
-        
+
         public void WithScope(string scope, Action callback)
+        {
+            this.WithScope(scope, () =>
+            {
+                callback();
+                return true;
+            });
+        }
+        
+        public T WithScope<T>(string scope, Func<T> callback)
         {
             try
             {
                 this.PushScope(scope);
-                callback();
+                return callback();
             }
             catch (Exception ex)
             {
                 this.RegisterError("Unexpected compiler exception: " + ex);
+                return default;
             }
             finally
             {

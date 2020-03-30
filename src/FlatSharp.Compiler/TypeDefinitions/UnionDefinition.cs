@@ -50,6 +50,29 @@ namespace FlatSharp.Compiler
             }
         }
 
+        protected override string OnGetCopyExpression(string source)
+        {
+            List<string> cloners = new List<string>();
+            foreach (var item in this.ComponentTypeNames)
+            {
+                if (this.Parent.TryResolveName(item, out var node))
+                {
+                    string subClone = node.GetCopyExpression("x");
+                    cloners.Add($"x => {subClone}");
+                }
+                else if (item == "string")
+                {
+                    cloners.Add("x => x");
+                }
+                else
+                {
+                    ErrorContext.Current.RegisterError("Unable to resolve type: " + item);
+                }
+            }
+
+            return $"{source}?.Clone({string.Join(",\r\n", cloners)})";
+        }
+
         protected override bool SupportsChildren => false;
     }
 }

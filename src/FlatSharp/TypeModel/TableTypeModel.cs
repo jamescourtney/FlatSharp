@@ -77,6 +77,11 @@
         /// The default .ctor used for subclassing.
         /// </summary>
         public ConstructorInfo DefaultConstructor { get; private set; }
+
+        /// <summary>
+        /// The property type used as a key.
+        /// </summary>
+        public PropertyInfo KeyProperty { get; private set; }
         
         /// <summary>
         /// Gets the maximum size of a table assuming all members are populated include the vtable offset. 
@@ -125,6 +130,46 @@
             foreach (var property in properties)
             {
                 bool hasDefaultValue = false;
+
+                if (property.Attribute.Key)
+                {
+                    if (this.KeyProperty != null)
+                    {
+                        throw new InvalidFlatBufferDefinitionException($"Table {this.ClrType.Name} has more than one [FlatBufferItemAttribute] with Key set to true.");
+                    }
+                    
+                    if (!property.ItemTypeModel.IsBuiltInType)
+                    {
+                        throw new InvalidFlatBufferDefinitionException($"Table {this.ClrType.Name} declares a key property on a type that is not built in. Only scalars and strings may be keys.");
+                    }
+
+                    this.KeyProperty = property.Property;
+                }
+
+                if (property.Attribute.SortedVector)
+                {
+                    // This must be a vector, and the inner model must have an item with the 'key' property.
+                    if (property.ItemTypeModel is VectorTypeModel vectorTypeModel)
+                    {
+                        var vectorMemberModel = vectorTypeModel.ItemTypeModel;
+                        if (vectorMemberModel is TableTypeModel tableModel)
+                        {
+                            if (tableModel.KeyProperty == null)
+                            {
+                                throw new InvalidFlatBufferDefinitionException($"Property '{property.Property.Name}' declares a sorted vector, but the member is a table that does not have a key.");
+                            }
+                        }
+                        else
+                        {
+                            throw new InvalidFlatBufferDefinitionException($"Property '{property.Property.Name}' declares a sorted vector, but the member is not a table.");
+                        }
+                    }
+                    else
+                    {
+                        throw new InvalidFlatBufferDefinitionException($"Property '{property.Property.Name}' declares the sortedVector option, but the property is not a vector type.");
+                    }
+                }
+
                 object defaultValue = null;
 
                 if (!object.ReferenceEquals(property.Attribute.DefaultValue, null))
@@ -141,7 +186,9 @@
                     property.Property,
                     index,
                     hasDefaultValue,
-                    defaultValue);
+                    defaultValue,
+                    property.Attribute.SortedVector,
+                    property.Attribute.Key);
 
                 for (int i = 0; i < model.VTableSlotCount; ++i)
                 {

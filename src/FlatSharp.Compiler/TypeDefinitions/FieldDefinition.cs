@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+using System;
+
 namespace FlatSharp.Compiler
 {
     internal class FieldDefinition
@@ -26,9 +28,120 @@ namespace FlatSharp.Compiler
 
         public bool Deprecated { get; set; }
 
+        public bool SortedVector { get; set; }
+
+        public bool IsKey { get; set; }
+
         public string DefaultValue { get; set; }
 
         public VectorType VectorType { get; set; }
+
+        public string GetClrTypeName(BaseSchemaMember baseMember)
+        {
+            string clrType;
+
+            if (SchemaDefinition.TryResolveBuiltInScalarType(this.FbsFieldType, out IBuiltInScalarType builtInType))
+            {
+                clrType = builtInType.CSharpTypeName;
+            }
+            else
+            {
+                if (baseMember.TryResolveName(this.FbsFieldType, out var typeDefinition))
+                {
+                    if (typeDefinition is UnionDefinition unionDef)
+                    {
+                        clrType = unionDef.ClrTypeName;
+                    }
+                    else
+                    {
+                        clrType = typeDefinition.GlobalName;
+                    }
+                }
+                else
+                {
+                    clrType = this.FbsFieldType;
+                }
+            }
+
+            switch (this.VectorType)
+            {
+                case VectorType.Array:
+                    return $"{clrType}[]";
+
+                case VectorType.IList:
+                    return $"IList<{clrType}>";
+
+                case VectorType.IReadOnlyList:
+                    return $"IReadOnlyList<{clrType}>";
+
+                case VectorType.Memory:
+                    return $"Memory<{clrType}>";
+
+                case VectorType.ReadOnlyMemory:
+                    return $"ReadOnlyMemory<{clrType}>";
+
+                case VectorType.None:
+                    return clrType;
+
+                default:
+                    throw new InvalidOperationException($"Unexpected value for vectortype: '{this.VectorType}'");
+            }
+        }
+
+        public void WriteCopyConstructorLine(CodeWriter writer, string sourceName, BaseSchemaMember parent)
+        {
+            bool isBuiltIn = SchemaDefinition.TryResolveBuiltInType(this.FbsFieldType, out _);
+
+            bool foundNodeType = parent.TryResolveName(this.FbsFieldType, out var nodeType);
+            if (!isBuiltIn && !foundNodeType)
+            {
+                ErrorContext.Current.RegisterError($"Unable to resolve type '{this.FbsFieldType}' as a built in or defined type");
+                return;
+            }
+
+            string selectStatement = this.GetLinqSelectStatement(isBuiltIn, nodeType);
+
+            switch (this.VectorType)
+            {
+                case VectorType.IList:
+                case VectorType.IReadOnlyList:
+                    writer.AppendLine($"this.{this.Name} = {sourceName}.{this.Name}?{selectStatement}.ToList();");
+                    break;
+                case VectorType.Array:
+                    writer.AppendLine($"this.{this.Name} = {sourceName}.{this.Name}?{selectStatement}.ToArray();");
+                    break;
+                case VectorType.Memory:
+                case VectorType.ReadOnlyMemory:
+                    writer.AppendLine($"this.{this.Name} = {sourceName}.{this.Name}.ToArray();");
+                    break;
+                case VectorType.None:
+                {
+                    if (isBuiltIn)
+                    {
+                        writer.AppendLine($"this.{this.Name} = {sourceName}.{this.Name};");
+                    }
+                    else
+                    {
+                        string cloneStatement = nodeType.GetCopyExpression($"{sourceName}.{this.Name}");
+                        writer.AppendLine($"this.{this.Name} = {cloneStatement};");
+                    }
+                }
+                break;
+            }
+        }
+
+        private string GetLinqSelectStatement(bool isBuiltIn, BaseSchemaMember nodeType)
+        {
+            if (isBuiltIn)
+            {
+                return string.Empty;
+            }
+            else
+            {
+                string cloneStatement = nodeType.GetCopyExpression("x");
+                return $".Select(x => {cloneStatement})";
+            }
+        }
 
         public void WriteField(CodeWriter writer, BaseSchemaMember schemaDefinition)
         {
@@ -40,24 +153,17 @@ namespace FlatSharp.Compiler
                 if (schemaDefinition.TryResolveName(this.FbsFieldType, out var typeDefinition))
                 {
                     enumDefinition = typeDefinition as EnumDefinition;
-
-                    if (typeDefinition is UnionDefinition unionDef)
-                    {
-                        this.WriteField(writer, unionDef.ClrTypeName, null, this.Name);
-                        return;
-                    }
-                }
-
-                if (isVector)
-                {
-                    this.WriteVectorField(writer);
-                    return;
                 }
 
                 string defaultValue = string.Empty;
+                string clrType;
+                bool isPrimitive = SchemaDefinition.TryResolveBuiltInScalarType(this.FbsFieldType, out IBuiltInScalarType builtInType);
 
-                bool isPrimitive = SchemaDefinition.TryResolvePrimitiveType(this.FbsFieldType, out string clrType);
-                if (!isPrimitive)
+                if (isPrimitive)
+                {
+                    clrType = builtInType.CSharpTypeName;
+                }
+                else
                 {
                     clrType = typeDefinition?.GlobalName ?? this.FbsFieldType;
                 }
@@ -66,7 +172,7 @@ namespace FlatSharp.Compiler
                 {
                     if (isPrimitive)
                     {
-                        defaultValue = CodeWriter.GetPrimitiveTypeLiteral(clrType, this.DefaultValue);
+                        defaultValue = builtInType.FormatLiteral(this.DefaultValue);
                     }
                     else if (enumDefinition != null)
                     {
@@ -77,7 +183,7 @@ namespace FlatSharp.Compiler
                         }
                         else
                         {
-                            defaultValue = CodeWriter.GetPrimitiveTypeLiteral(enumDefinition.ClrUnderlyingType, this.DefaultValue);
+                            defaultValue = $"({clrType}){enumDefinition.UnderlyingType.FormatLiteral(this.DefaultValue)}";
                         }
                     }
                     else
@@ -86,53 +192,22 @@ namespace FlatSharp.Compiler
                     }
                 }
 
-                this.WriteField(writer, clrType, defaultValue, this.Name);
+                this.WriteField(writer, this.GetClrTypeName(schemaDefinition), defaultValue, this.Name);
             });
         }
 
-        private void WriteVectorField(CodeWriter writer)
-        {
-            string innerType = this.FbsFieldType;
-            if (!SchemaDefinition.TryResolvePrimitiveType(innerType, out string clrType))
-            {
-                clrType = innerType;
-            }
-            
-            switch (this.VectorType)
-            {
-                case VectorType.Array:
-                    clrType = $"{clrType}[]";
-                    break;
-
-                case VectorType.IList:
-                    clrType = $"IList<{clrType}>";
-                    break;
-
-                case VectorType.IReadOnlyList:
-                    clrType = $"IReadOnlyList<{clrType}>";
-                    break;
-
-                case VectorType.Memory:
-                    clrType = $"Memory<{clrType}>";
-                    break;
-
-                case VectorType.ReadOnlyMemory:
-                    clrType = $"ReadOnlyMemory<{clrType}>";
-                    break;
-
-                default:
-                    ErrorContext.Current?.RegisterError("Unexpected vector type: " + this.VectorType);
-                    clrType = $"IList<{clrType}>";
-                    break;
-            }
-
-            this.WriteField(writer, clrType, null, this.Name);
-        }
-
-        private void WriteField(CodeWriter writer, string clrTypeName, string defaultValue, string name, string accessModifier = "public")
+        private void WriteField(
+            CodeWriter writer,
+            string clrTypeName,
+            string defaultValue,
+            string name,
+            string accessModifier = "public")
         {
             string defaultValueAttribute = string.Empty;
             string defaultValueAssignment = string.Empty;
+            string isKey = string.Empty;
+            string sortedVector = string.Empty;
+            string isDeprecated = string.Empty;
 
             if (!string.IsNullOrEmpty(defaultValue))
             {
@@ -140,18 +215,23 @@ namespace FlatSharp.Compiler
                 defaultValueAssignment = $" = {defaultValue};";
             }
 
-            writer.AppendLine($"[FlatBufferItem({this.Index}{this.GetDeprecatedString()}{defaultValueAttribute})]");
-            writer.AppendLine($"{accessModifier} virtual {clrTypeName} {name} {{ get; set; }}{defaultValueAssignment}");
-        }
-
-        private string GetDeprecatedString()
-        {
-            if (this.Deprecated)
+            if (this.SortedVector)
             {
-                return ", Deprecated = true";
+                sortedVector = ", SortedVector = true";
             }
 
-            return string.Empty;
+            if (this.IsKey)
+            {
+                isKey = ", Key = true";
+            }
+
+            if (this.Deprecated)
+            {
+                isDeprecated = ", Deprecated = true";
+            }
+
+            writer.AppendLine($"[FlatBufferItem({this.Index}{defaultValueAttribute}{isDeprecated}{sortedVector}{isKey})]");
+            writer.AppendLine($"{accessModifier} virtual {clrTypeName} {name} {{ get; set; }}{defaultValueAssignment}");
         }
     }
 }

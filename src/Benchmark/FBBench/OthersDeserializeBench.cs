@@ -33,6 +33,12 @@ namespace Benchmark.FBBench
         public override int Google_Flatbuffers_ParseAndTraversePartial() => base.Google_Flatbuffers_ParseAndTraversePartial();
 
         [Benchmark]
+        public override int Google_Flatbuffers_ParseAndTraverse_ObjectApi() => base.Google_Flatbuffers_ParseAndTraverse_ObjectApi();
+
+        [Benchmark]
+        public override int Google_Flatbuffers_ParseAndTraversePartial_ObjectApi() => base.Google_Flatbuffers_ParseAndTraversePartial_ObjectApi();
+
+        [Benchmark]
         public override void PBDN_ParseAndTraverse() => base.PBDN_ParseAndTraverse();
 
         [Benchmark]

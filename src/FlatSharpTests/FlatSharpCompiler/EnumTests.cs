@@ -83,7 +83,7 @@ namespace FlatSharpTests.Compiler
         [TestMethod]
         public void InvalidEnumTest_WrongUnderlyingType_Bool()
         {
-            Assert.ThrowsException<InvalidFbsFileException>(() => this.EnumTest<bool>("bool"));
+            Assert.ThrowsException<FlatSharpCompilationException>(() => this.EnumTest<bool>("bool"));
         }
 
         [TestMethod]
@@ -96,6 +96,64 @@ namespace FlatSharpTests.Compiler
         public void InvalidEnumTest_WrongUnderlyingType_Float()
         {
             Assert.ThrowsException<FlatSharpCompilationException>(() => this.EnumTest<float>("float"));
+        }
+
+        [TestMethod]
+        public void InvalidEnumTest_DuplicateValues()
+        {
+            string fbs = $"namespace Foo.Bar; enum MyEnum : ubyte {{ Red = 0x0, Blue = 0X10, Yellow = 16 }}";
+            Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(fbs));
+        }
+
+        [TestMethod]
+        public void InvalidEnumTest_NonAscendingValues()
+        {
+            string fbs = $"namespace Foo.Bar; enum MyEnum : ubyte {{ Red = 0x0, Blue = 3, Yellow = 2 }}";
+            var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(fbs));
+        }
+
+        [TestMethod]
+        public void InvalidEnumTest_ValueOutOfRangeOfUnderlyingType()
+        {
+            string fbs = $"namespace Foo.Bar; enum MyEnum : ubyte {{ Red = 0x0, Blue = 255, Yellow = 256 }}";
+            Assert.ThrowsException<FlatSharpCompilationException>(() => FlatSharpCompiler.CompileAndLoadAssembly(fbs));
+        }
+
+        [TestMethod]
+        public void BasicEnumTest_HexNumber()
+        {
+            string fbs = $"namespace Foo.Bar; enum MyEnum : ubyte {{ Red = 0x0, Blue = 0X01, Green = 2, Yellow = 0X10 }}";
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(fbs);
+
+            Type t = asm.GetTypes().Single(x => x.FullName == "Foo.Bar.MyEnum");
+            Assert.IsTrue(t.IsEnum);
+            Assert.AreEqual(typeof(byte), Enum.GetUnderlyingType(t));
+
+            Array values = Enum.GetValues(t);
+
+            Assert.AreEqual((byte)0, (byte)values.GetValue(0));
+            Assert.AreEqual((byte)1, (byte)values.GetValue(1));
+            Assert.AreEqual((byte)2, (byte)values.GetValue(2));
+            Assert.AreEqual((byte)16, (byte)values.GetValue(3));
+        }
+
+        [TestMethod]
+        public void BasicEnumTest_NegativeNumbers()
+        {
+            string fbs = $"namespace Foo.Bar; enum MyEnum : byte {{ Red = -0x02, Blue = -1, Green = 0, Yellow = 0X1, Purple = 0x02 }}";
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(fbs);
+
+            Type t = asm.GetTypes().Single(x => x.FullName == "Foo.Bar.MyEnum");
+            Assert.IsTrue(t.IsEnum);
+            Assert.AreEqual(typeof(sbyte), Enum.GetUnderlyingType(t));
+
+            var values = Enum.GetValues(t).OfType<object>().Select(x => new { Name = x.ToString(), Value = (sbyte)x });
+
+            Assert.AreEqual((sbyte)-2, values.Single(x => x.Name == "Red").Value);
+            Assert.AreEqual((sbyte)-1, values.Single(x => x.Name == "Blue").Value);
+            Assert.AreEqual((sbyte)0, values.Single(x => x.Name == "Green").Value);
+            Assert.AreEqual((sbyte)1, values.Single(x => x.Name == "Yellow").Value);
+            Assert.AreEqual((sbyte)2, values.Single(x => x.Name == "Purple").Value);
         }
 
         public void EnumTest<T>(string flatBufferType) where T : struct
@@ -118,7 +176,7 @@ namespace FlatSharpTests.Compiler
 
             Array values = Enum.GetValues(t);
 
-            Assert.AreEqual(Convert.ChangeType(1, typeof(T)), (T)values.GetValue(0));
+            Assert.AreEqual(Convert.ChangeType(0, typeof(T)), (T)values.GetValue(0));
             Assert.AreEqual(Convert.ChangeType(3, typeof(T)), (T)values.GetValue(1));
             Assert.AreEqual(Convert.ChangeType(4, typeof(T)), (T)values.GetValue(2));
             Assert.AreEqual(Convert.ChangeType(5, typeof(T)), (T)values.GetValue(3));

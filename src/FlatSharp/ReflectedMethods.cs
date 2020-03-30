@@ -27,46 +27,13 @@ namespace FlatSharp
     {
         private static BindingFlags AllFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance;
 
-        // Built-in readers for certain types.
-        internal static IReadOnlyDictionary<Type, MethodInfo> InputBufferReaders = new Dictionary<Type, MethodInfo>
-        {
-            [typeof(bool)] = GetMethod(typeof(InputBuffer), nameof(InputBuffer.ReadBool)),
-            [typeof(sbyte)] = GetMethod(typeof(InputBuffer), nameof(InputBuffer.ReadSByte)),
-            [typeof(byte)] = GetMethod(typeof(InputBuffer), nameof(InputBuffer.ReadByte)),
-            [typeof(short)] = GetMethod(typeof(InputBuffer), nameof(InputBuffer.ReadShort)),
-            [typeof(ushort)] = GetMethod(typeof(InputBuffer), nameof(InputBuffer.ReadUShort)),
-            [typeof(int)] = GetMethod(typeof(InputBuffer), nameof(InputBuffer.ReadInt)),
-            [typeof(uint)] = GetMethod(typeof(InputBuffer), nameof(InputBuffer.ReadUInt)),
-            [typeof(long)] = GetMethod(typeof(InputBuffer), nameof(InputBuffer.ReadLong)),
-            [typeof(ulong)] = GetMethod(typeof(InputBuffer), nameof(InputBuffer.ReadULong)),
-            [typeof(float)] = GetMethod(typeof(InputBuffer), nameof(InputBuffer.ReadFloat)),
-            [typeof(double)] = GetMethod(typeof(InputBuffer), nameof(InputBuffer.ReadDouble)),
-            [typeof(string)] = GetMethod(typeof(InputBuffer), nameof(InputBuffer.ReadString)),
-        };
-
-        internal static IReadOnlyDictionary<Type, MethodInfo> ILWriters = new Dictionary<Type, MethodInfo>
-        {
-            [typeof(bool)] = GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteBool)),
-            [typeof(byte)] = GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteByte)),
-            [typeof(sbyte)] = GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteSByte)),
-            [typeof(ushort)] = GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteUShort)),
-            [typeof(short)] = GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteShort)),
-            [typeof(uint)] = GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteUInt)),
-            [typeof(int)] = GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteInt)),
-            [typeof(ulong)] = GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteULong)),
-            [typeof(long)] = GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteLong)),
-            [typeof(float)] = GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteFloat)),
-            [typeof(double)] = GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteDouble)),
-            [typeof(string)] = GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteString)),
-        };
-
         // SerializationHelpers            
         public static readonly MethodInfo SerializationHelpers_GetAlignmentErrorMethod = GetMethod(typeof(SerializationHelpers), nameof(SerializationHelpers.GetAlignmentError));
         public static readonly MethodInfo SerializationHelpers_GetMaxSizeOfStringMethod = GetMethod(typeof(SerializationHelpers), nameof(SerializationHelpers.GetMaxSize));
 
         public static MethodInfo SerializationHelpers_EnsureNonNull(Type t) => GetMethod(typeof(SerializationHelpers), nameof(SerializationHelpers.EnsureNonNull)).MakeGenericMethod(t);
 
-        private static MethodInfo GetMethod(Type type, string methodName)
+        internal static MethodInfo GetMethod(Type type, string methodName)
         {
             MethodInfo methodInfo = type.GetMethod(methodName, AllFlags);
 

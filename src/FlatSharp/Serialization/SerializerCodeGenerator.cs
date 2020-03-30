@@ -21,6 +21,8 @@ namespace FlatSharp
     using Microsoft.CodeAnalysis.CSharp;
     using System;
     using System.Collections.Generic;
+    using System.Linq;
+    using System.Reflection;
 
     /// <summary>
     /// Generates a collection of methods to help serialize the given root type.
@@ -225,17 +227,27 @@ $@"
             string offsetVariableName = $"index{index}Offset";
 
             string condition = $"if ({valueVariableName} != {CSharpHelpers.GetDefaultValueToken(memberModel)})";
-            if (memberModel.ItemTypeModel is VectorTypeModel vector && vector.IsMemoryVector)
+            if ((memberModel.ItemTypeModel is VectorTypeModel vector && vector.IsMemoryVector) || memberModel.IsKey)
             {
-                // Memory is a struct and can't be null, and 0-length vectors are valid.
-                // Therefore, we just need to omit the conditional check entirely.
+                // 1) Memory is a struct and can't be null, and 0-length vectors are valid.
+                //    Therefore, we just need to omit the conditional check entirely.
+
+                // 2) For sorted vector keys, we must include the value since some other 
+                //    libraries cannot do binary search with omitted keys.
                 condition = string.Empty;
+            }
+
+            string keyCheckMethodCall = string.Empty;
+            if (memberModel.IsKey)
+            {
+                keyCheckMethodCall = $"{nameof(SortedVectorHelpers)}.{nameof(SortedVectorHelpers.EnsureKeyNonNull)}({valueVariableName});";
             }
 
             string prepareBlock =
 $@"
                     var {valueVariableName} = item.{memberModel.PropertyInfo.Name};
                     int {offsetVariableName} = 0;
+                    {keyCheckMethodCall}
                     {condition} 
                     {{
                             currentOffset += {CSharpHelpers.GetFullMethodName(ReflectedMethods.SerializationHelpers_GetAlignmentErrorMethod)}(currentOffset, {memberModel.ItemTypeModel.Alignment});
@@ -244,11 +256,26 @@ $@"
                             currentOffset += {memberModel.ItemTypeModel.InlineSize};
                     }}";
 
+            string sortInvocation = string.Empty;
+            if (memberModel.IsSortedVector)
+            {
+                VectorTypeModel vectorModel = (VectorTypeModel)memberModel.ItemTypeModel;
+                TableTypeModel tableModel = (TableTypeModel)vectorModel.ItemTypeModel;
+                TableMemberModel keyMember = tableModel.IndexToMemberMap.Single(x => x.Value.PropertyInfo == tableModel.KeyProperty).Value;
+
+                var builtInType = BuiltInType.BuiltInTypes[keyMember.ItemTypeModel.ClrType];
+                string inlineSize = builtInType.TypeModel.SchemaType == FlatBufferSchemaType.Scalar ? builtInType.TypeModel.InlineSize.ToString() : "null";
+
+                sortInvocation = $"{nameof(SortedVectorHelpers)}.{nameof(SortedVectorHelpers.SortVector)}(" +
+                                    $"span, {offsetVariableName}, {keyMember.Index}, {inlineSize}, {CSharpHelpers.GetCompilableTypeName(builtInType.SpanComparerType)}.Instance);";
+            }
+
             string serializeBlock =
 $@"
                     if ({offsetVariableName} != 0)
                     {{
                         {this.GetSerializeInvocation(memberModel.ItemTypeModel.ClrType, valueVariableName, offsetVariableName)}
+                        {sortInvocation}
                     }}";
 
             return (prepareBlock, serializeBlock);
@@ -325,15 +352,21 @@ $@"
             this.GenerateSerializeMethod(type, body);
         }
 
-        private string GetSerializeInvocation(Type type, string value, string offset)
+        private string GetSerializeInvocation(
+            Type type, 
+            string value, 
+            string offset, 
+            string spanVariableName = "span", 
+            string writerVariableName = "writer", 
+            string contextVariableName = "context")
         {
-            if (ReflectedMethods.ILWriters.TryGetValue(type, out var memberWriteMethod))
+            if (BuiltInType.BuiltInTypes.TryGetValue(type, out var builtInType))
             {
-                return $"writer.{memberWriteMethod.Name}(span, {value}, {offset}, context);";
+                return $"writer.{builtInType.SpanWriterWrite.Name}({spanVariableName}, {value}, {offset}, {contextVariableName});";
             }
             else
             {
-                return $"{this.MethodNames[type]}(writer, span, {value}, {offset}, context);";
+                return $"{this.MethodNames[type]}({writerVariableName}, {spanVariableName}, {value}, {offset}, {contextVariableName});";
             }
         }
 
