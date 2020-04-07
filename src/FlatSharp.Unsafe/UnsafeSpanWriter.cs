@@ -25,7 +25,7 @@ namespace FlatSharp.Unsafe
         {
             if (!BitConverter.IsLittleEndian)
             {
-                throw new InvalidOperationException("UnsafeSpanWriter only works on little-endian architectures presently. On big-endian systems, ArrayInputBuffer and MemoryInputBuffer will both work.");
+                throw new InvalidOperationException("UnsafeSpanWriter only works on little-endian architectures. On big-endian systems, SpanWriter will work.");
             }
         }
 
@@ -41,6 +41,7 @@ namespace FlatSharp.Unsafe
 
         public override void WriteDouble(Span<byte> span, double value, int offset, SerializationContext context)
         {
+            CheckAlignment(offset, sizeof(double));
             checked
             {
                 fixed (byte* pByte = &span[offset])
@@ -52,6 +53,7 @@ namespace FlatSharp.Unsafe
 
         public override void WriteFloat(Span<byte> span, float value, int offset, SerializationContext context)
         {
+            CheckAlignment(offset, sizeof(float));
             checked
             {
                 fixed (byte* pByte = &span[offset])
@@ -63,6 +65,7 @@ namespace FlatSharp.Unsafe
 
         public override void WriteInt(Span<byte> span, int value, int offset, SerializationContext context)
         {
+            CheckAlignment(offset, sizeof(int));
             checked
             {
                 fixed (byte* pByte = &span[offset])
@@ -74,6 +77,7 @@ namespace FlatSharp.Unsafe
 
         public override void WriteLong(Span<byte> span, long value, int offset, SerializationContext context)
         {
+            CheckAlignment(offset, sizeof(long));
             checked
             {
                 fixed (byte* pByte = &span[offset])
@@ -85,6 +89,7 @@ namespace FlatSharp.Unsafe
 
         public override void WriteShort(Span<byte> span, short value, int offset, SerializationContext context)
         {
+            CheckAlignment(offset, sizeof(short));
             checked
             {
                 fixed (byte* pByte = &span[offset])
@@ -96,6 +101,7 @@ namespace FlatSharp.Unsafe
 
         public override void WriteUInt(Span<byte> span, uint value, int offset, SerializationContext context)
         {
+            CheckAlignment(offset, sizeof(uint));
             checked
             {
                 fixed (byte* pByte = &span[offset])
@@ -107,6 +113,7 @@ namespace FlatSharp.Unsafe
 
         public override void WriteULong(Span<byte> span, ulong value, int offset, SerializationContext context)
         {
+            CheckAlignment(offset, sizeof(ulong));
             checked
             {
                 fixed (byte* pByte = &span[offset])
@@ -118,6 +125,7 @@ namespace FlatSharp.Unsafe
 
         public override void WriteUShort(Span<byte> span, ushort value, int offset, SerializationContext context)
         {
+            CheckAlignment(offset, sizeof(ushort));
             checked
             {
                 fixed (byte* pByte = &span[offset])

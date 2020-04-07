@@ -49,41 +49,49 @@ namespace FlatSharp
 
         public override ushort ReadUShort(int offset)
         {
+            CheckAlignment(offset, sizeof(ushort));
             return ScalarSpanReader.ReadUShort(this.memory.AsSpan().Slice(offset));
         }
 
         public override short ReadShort(int offset)
         {
+            CheckAlignment(offset, sizeof(short));
             return ScalarSpanReader.ReadShort(this.memory.AsSpan().Slice(offset));
         }
 
         public override uint ReadUInt(int offset)
         {
+            CheckAlignment(offset, sizeof(uint));
             return ScalarSpanReader.ReadUInt(this.memory.AsSpan().Slice(offset));
         }
 
         public override int ReadInt(int offset)
         {
+            CheckAlignment(offset, sizeof(int));
             return ScalarSpanReader.ReadInt(this.memory.AsSpan().Slice(offset));
         }
 
         public override ulong ReadULong(int offset)
         {
+            CheckAlignment(offset, sizeof(ulong));
             return ScalarSpanReader.ReadULong(this.memory.AsSpan().Slice(offset));
         }
 
         public override long ReadLong(int offset)
         {
+            CheckAlignment(offset, sizeof(long));
             return ScalarSpanReader.ReadLong(this.memory.AsSpan().Slice(offset));
         }
 
         public override float ReadFloat(int offset)
         {
+            CheckAlignment(offset, sizeof(float));
             return ScalarSpanReader.ReadFloat(this.memory.AsSpan().Slice(offset));
         }
 
         public override double ReadDouble(int offset)
         {
+            CheckAlignment(offset, sizeof(double));
             return ScalarSpanReader.ReadDouble(this.memory.AsSpan().Slice(offset));
         }
 

@@ -143,7 +143,7 @@ namespace FlatSharpTests
             Func<int, T> readMemoryAtIndex,
             Func<int, T> readAtIndex)
         {
-            for (int i = 0; i < Input.Length - size; ++i)
+            for (int i = 0; i < Input.Length - size; i += size)
             {
                 var memory = readMemoryAtIndex(i);
                 var bufferValue = readAtIndex(i);
