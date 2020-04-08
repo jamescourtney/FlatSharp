@@ -53,6 +53,24 @@ namespace FlatSharp
         private readonly FlatBufferSerializerOptions options;
         private readonly List<SyntaxNode> methodDeclarations = new List<SyntaxNode>();
 
+        private static readonly MetadataReference netstandardReference;
+
+        static RoslynSerializerGenerator()
+        {
+            Assembly netStandard;
+            try
+            {
+                netStandard = Assembly.Load("netstandard");
+            }
+            catch (FileNotFoundException)
+            {
+                // For .NET 47, NetStandard may not be present in the GAC. Try to expand to see if we can grab it locally.
+                netStandard = Assembly.LoadFile(Path.Combine(typeof(RoslynSerializerGenerator).Assembly.Location, "netstandard.dll"));
+            }
+
+            netstandardReference = MetadataReference.CreateFromFile(netStandard.Location);
+        }
+
         public RoslynSerializerGenerator(FlatBufferSerializerOptions options)
         {
             this.options = options;
@@ -165,8 +183,8 @@ $@"
                 MetadataReference.CreateFromFile(typeof(ValueType).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(IBufferWriter<>).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(IGeneratedSerializer<byte>).Assembly.Location),
-                MetadataReference.CreateFromFile(Assembly.Load("netstandard").Location),
-                MetadataReference.CreateFromFile(typeof(System.IO.InvalidDataException).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(InvalidDataException).Assembly.Location),
+                netstandardReference,
                 MetadataReference.CreateFromFile(Assembly.Load("System.Runtime").Location),
                 MetadataReference.CreateFromFile(Assembly.Load("System.Collections").Location),
             });
