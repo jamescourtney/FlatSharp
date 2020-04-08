@@ -53,22 +53,28 @@ namespace FlatSharp
         private readonly FlatBufferSerializerOptions options;
         private readonly List<SyntaxNode> methodDeclarations = new List<SyntaxNode>();
 
-        private static readonly MetadataReference netstandardReference;
+        private static readonly List<MetadataReference> commonReferences;
 
         static RoslynSerializerGenerator()
         {
-            Assembly netStandard;
-            try
-            {
-                netStandard = Assembly.Load("netstandard");
-            }
-            catch (FileNotFoundException)
-            {
-                // For .NET 47, NetStandard may not be present in the GAC. Try to expand to see if we can grab it locally.
-                netStandard = Assembly.LoadFile(Path.Combine(typeof(RoslynSerializerGenerator).Assembly.Location, "netstandard.dll"));
-            }
+            commonReferences = new List<MetadataReference>();
 
-            netstandardReference = MetadataReference.CreateFromFile(netStandard.Location);
+            foreach (string name in new[] { "netstandard", "System.Collections", "System.Runtime" })
+            {
+                Assembly assembly;
+                try
+                {
+                    assembly = Assembly.Load(name);
+                }
+                catch (FileNotFoundException)
+                {
+                    // For .NET 47, NetStandard may not be present in the GAC. Try to expand to see if we can grab it locally.
+                    assembly = Assembly.LoadFile(Path.Combine(typeof(RoslynSerializerGenerator).Assembly.Location, $"{name}.dll"));
+                }
+
+                var reference = MetadataReference.CreateFromFile(assembly.Location);
+                commonReferences.Add(reference);
+            }
         }
 
         public RoslynSerializerGenerator(FlatBufferSerializerOptions options)
@@ -158,7 +164,7 @@ $@"
             bool enableAppDomainIntercept,
             params Assembly[] additionalReferences)
         {
-            List<MetadataReference> references = new List<MetadataReference>();
+            List<MetadataReference> references = new List<MetadataReference>(commonReferences);
             foreach (Assembly additionalReference in additionalReferences)
             {
                 if (AssemblyNameReferenceMapping.TryGetValue(additionalReference.GetName().Name, out var compilationRef))
@@ -184,9 +190,6 @@ $@"
                 MetadataReference.CreateFromFile(typeof(IBufferWriter<>).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(IGeneratedSerializer<byte>).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(InvalidDataException).Assembly.Location),
-                netstandardReference,
-                MetadataReference.CreateFromFile(Assembly.Load("System.Runtime").Location),
-                MetadataReference.CreateFromFile(Assembly.Load("System.Collections").Location),
             });
 
             var rootNode = ApplySyntaxTransformations(CSharpSyntaxTree.ParseText(sourceCode, ParseOptions).GetRoot());
