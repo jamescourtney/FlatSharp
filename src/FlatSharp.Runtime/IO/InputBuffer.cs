@@ -221,5 +221,15 @@ namespace FlatSharp
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected abstract ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Conditional("DEBUG")]
+        protected static void CheckAlignment(int offset, int size)
+        {
+            if (offset % size != 0)
+            {
+                throw new InvalidOperationException($"BugCheck: attempted to read unaligned data at index: {offset}, expected alignment: {size}");
+            }
+        }
     }
 }

@@ -29,8 +29,7 @@ namespace FlatSharp.TypeModel
     /// </summary>
     public abstract class RuntimeTypeModel
     {
-        private static readonly ConcurrentDictionary<Type, RuntimeTypeModel> ModelMap = new ConcurrentDictionary<Type, RuntimeTypeModel>(
-            BuiltInType.BuiltInTypes.ToDictionary(x => x.Key, x => x.Value.TypeModel));
+        private static readonly ConcurrentDictionary<Type, RuntimeTypeModel> ModelMap = new ConcurrentDictionary<Type, RuntimeTypeModel>();
 
         internal RuntimeTypeModel(Type clrType)
         {
@@ -98,7 +97,11 @@ namespace FlatSharp.TypeModel
             {
                 RuntimeTypeModel newModel = null;
 
-                if (type.GetCustomAttribute<FlatBufferStructAttribute>() != null && type.GetCustomAttribute<FlatBufferTableAttribute>() != null)
+                if (BuiltInType.BuiltInTypes.TryGetValue(type, out IBuiltInType builtInType))
+                {
+                    newModel = builtInType.TypeModel;
+                }
+                else if (type.GetCustomAttribute<FlatBufferStructAttribute>() != null && type.GetCustomAttribute<FlatBufferTableAttribute>() != null)
                 {
                     throw new InvalidFlatBufferDefinitionException($"A type cannot be both a class and a struct Type = '{type}'.");
                 }

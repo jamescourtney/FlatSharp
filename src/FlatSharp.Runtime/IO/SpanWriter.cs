@@ -24,7 +24,7 @@ namespace FlatSharp
     using System.Text;
 
     /// <summary>
-    /// Utilitiy class for writing items to spans.
+    /// Utility class for writing items to spans.
     /// </summary>
     public class SpanWriter
     {
@@ -64,36 +64,42 @@ namespace FlatSharp
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual void WriteUShort(Span<byte> span, ushort value, int offset, SerializationContext context)
         {
+            CheckAlignment(offset, sizeof(ushort));
             BinaryPrimitives.WriteUInt16LittleEndian(span.Slice(offset), value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual void WriteShort(Span<byte> span, short value, int offset, SerializationContext context)
         {
+            CheckAlignment(offset, sizeof(short));
             BinaryPrimitives.WriteInt16LittleEndian(span.Slice(offset), value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual void WriteUInt(Span<byte> span, uint value, int offset, SerializationContext context)
         {
+            CheckAlignment(offset, sizeof(uint));
             BinaryPrimitives.WriteUInt32LittleEndian(span.Slice(offset), value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual void WriteInt(Span<byte> span, int value, int offset, SerializationContext context)
         {
+            CheckAlignment(offset, sizeof(int));
             BinaryPrimitives.WriteInt32LittleEndian(span.Slice(offset), value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual void WriteULong(Span<byte> span, ulong value, int offset, SerializationContext context)
         {
+            CheckAlignment(offset, sizeof(ulong));
             BinaryPrimitives.WriteUInt64LittleEndian(span.Slice(offset), value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual void WriteLong(Span<byte> span, long value, int offset, SerializationContext context)
         {
+            CheckAlignment(offset, sizeof(long));
             BinaryPrimitives.WriteInt64LittleEndian(span.Slice(offset), value);
         }
 
@@ -185,6 +191,16 @@ namespace FlatSharp
             this.WriteUOffset(span, offset, vectorStartOffset, ctx);
             this.WriteInt(span, numberOfItems, vectorStartOffset, ctx);
             MemoryMarshal.Cast<T, byte>(memory.Span).CopyTo(span.Slice(vectorStartOffset + sizeof(uint)));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Conditional("DEBUG")]
+        protected static void CheckAlignment(int offset, int size)
+        {
+            if (offset % size != 0)
+            {
+                throw new InvalidOperationException($"BugCheck: attempted to read unaligned data at index: {offset}, expected alignment: {size}");
+            }
         }
     }
 }

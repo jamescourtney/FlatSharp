@@ -91,6 +91,7 @@ namespace FlatSharp.Unsafe
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override double ReadDouble(int offset)
         {
+            CheckAlignment(offset, sizeof(double));
             checked
             {
                 this.EnsureInBounds(offset, sizeof(double));
@@ -101,6 +102,7 @@ namespace FlatSharp.Unsafe
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override float ReadFloat(int offset)
         {
+            CheckAlignment(offset, sizeof(float));
             checked
             {
                 this.EnsureInBounds(offset, sizeof(float));
@@ -111,6 +113,7 @@ namespace FlatSharp.Unsafe
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override int ReadInt(int offset)
         {
+            CheckAlignment(offset, sizeof(int));
             checked
             {
                 this.EnsureInBounds(offset, sizeof(int));
@@ -121,6 +124,7 @@ namespace FlatSharp.Unsafe
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override long ReadLong(int offset)
         {
+            CheckAlignment(offset, sizeof(long));
             checked
             {
                 this.EnsureInBounds(offset, sizeof(long));
@@ -141,6 +145,7 @@ namespace FlatSharp.Unsafe
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override short ReadShort(int offset)
         {
+            CheckAlignment(offset, sizeof(short));
             checked
             {
                 this.EnsureInBounds(offset, sizeof(short));
@@ -151,6 +156,7 @@ namespace FlatSharp.Unsafe
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override uint ReadUInt(int offset)
         {
+            CheckAlignment(offset, sizeof(uint));
             checked
             {
                 this.EnsureInBounds(offset, sizeof(uint));
@@ -161,6 +167,7 @@ namespace FlatSharp.Unsafe
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override ulong ReadULong(int offset)
         {
+            CheckAlignment(offset, sizeof(ulong));
             checked
             {
                 this.EnsureInBounds(offset, sizeof(ulong));
@@ -171,6 +178,7 @@ namespace FlatSharp.Unsafe
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override ushort ReadUShort(int offset)
         {
+            CheckAlignment(offset, sizeof(ushort));
             checked
             {
                 this.EnsureInBounds(offset, sizeof(ushort));
