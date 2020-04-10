@@ -53,6 +53,30 @@ namespace FlatSharp
         private readonly FlatBufferSerializerOptions options;
         private readonly List<SyntaxNode> methodDeclarations = new List<SyntaxNode>();
 
+        private static readonly List<MetadataReference> commonReferences;
+
+        static RoslynSerializerGenerator()
+        {
+            commonReferences = new List<MetadataReference>();
+
+            foreach (string name in new[] { "netstandard", "System.Collections", "System.Runtime" })
+            {
+                Assembly assembly;
+                try
+                {
+                    assembly = Assembly.Load(name);
+                }
+                catch (FileNotFoundException)
+                {
+                    // For .NET 47, NetStandard may not be present in the GAC. Try to expand to see if we can grab it locally.
+                    assembly = Assembly.LoadFile(Path.Combine(typeof(RoslynSerializerGenerator).Assembly.Location, $"{name}.dll"));
+                }
+
+                var reference = MetadataReference.CreateFromFile(assembly.Location);
+                commonReferences.Add(reference);
+            }
+        }
+
         public RoslynSerializerGenerator(FlatBufferSerializerOptions options)
         {
             this.options = options;
@@ -140,7 +164,7 @@ $@"
             bool enableAppDomainIntercept,
             params Assembly[] additionalReferences)
         {
-            List<MetadataReference> references = new List<MetadataReference>();
+            List<MetadataReference> references = new List<MetadataReference>(commonReferences);
             foreach (Assembly additionalReference in additionalReferences)
             {
                 if (AssemblyNameReferenceMapping.TryGetValue(additionalReference.GetName().Name, out var compilationRef))
@@ -165,10 +189,7 @@ $@"
                 MetadataReference.CreateFromFile(typeof(ValueType).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(IBufferWriter<>).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(IGeneratedSerializer<byte>).Assembly.Location),
-                MetadataReference.CreateFromFile(Assembly.Load("netstandard").Location),
-                MetadataReference.CreateFromFile(typeof(System.IO.InvalidDataException).Assembly.Location),
-                MetadataReference.CreateFromFile(Assembly.Load("System.Runtime").Location),
-                MetadataReference.CreateFromFile(Assembly.Load("System.Collections").Location),
+                MetadataReference.CreateFromFile(typeof(InvalidDataException).Assembly.Location),
             });
 
             var rootNode = ApplySyntaxTransformations(CSharpSyntaxTree.ParseText(sourceCode, ParseOptions).GetRoot());
