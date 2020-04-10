@@ -12,6 +12,10 @@
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <license type="expression">Apache-2.0</license>
     <developmentDependency>true</developmentDependency>
+     <dependencies>
+      <group targetFramework=".NETFramework4.7" />
+      <group targetFramework=".NETCoreApp2.1" />
+    </dependencies>
   </metadata>
   <files>
     <file src="_._" target="lib/netcoreapp2.1/" />

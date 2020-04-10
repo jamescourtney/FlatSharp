@@ -1,0 +1,41 @@
+image:
+  - Visual Studio 2019
+
+install:
+  - choco install gitversion.portable -y
+
+configuration:
+  - Release
+
+before_build:
+  - dotnet restore src
+  - gitversion /l console /output buildserver
+  - ps: appveyor UpdateBuild -Version "$env:GitVersion_SemVer-$env:GitVersion_BuildMetaData"
+  # This is a hack, the dynamic generated fbs.generated files are not triggering at the right time for the build which causes it to fail
+  # We trigger a build to generate the files in preparation for the actual build.
+  - ps: |
+      $cmd = 'dotnet build src\FlatSharp.sln -c:"Release"'
+      iex "& $cmd"
+      $host.SetShouldExit(0)
+
+dotnet_csproj:
+  patch: true
+  file: '**\*.csproj;**\*.props'
+  version: $(GitVersion_NuGetVersion)
+  package_version: $(GitVersion_NuGetVersion)
+  assembly_version: $(GitVersion_MajorMinorPatch)
+  file_version: $(GitVersion_MajorMinorPatch)
+  informational_version: $(GitVersion_InformationalVersion) 
+
+build:
+  project: src\FlatSharp.sln
+
+after_build:
+  - cmd: dotnet pack src\FlatSharp\flatsharp.csproj -c Release -o .\artifacts -p:PackageVersion="%GitVersion_NuGetVersion%" --include-symbols -v n
+  - cmd: dotnet pack src\FlatSharp.Compiler\FlatSharp.Compiler.csproj -c Release -o .\artifacts -p:PackageVersion="%GitVersion_NuGetVersion%" --include-symbols -v n
+  - cmd: dotnet pack src\FlatSharp.Runtime\FlatSharp.Runtime.csproj -c Release -o .\artifacts -p:PackageVersion="%GitVersion_NuGetVersion%" --include-symbols -v n
+  - cmd: dotnet pack src\FlatSharp.Unsafe\FlatSharp.Unsafe.csproj -c Release -o .\artifacts -p:PackageVersion="%GitVersion_NuGetVersion%" --include-symbols -v n
+
+artifacts:
+  - path: '.\artifacts\*.nupkg'
+    name: Nuget
