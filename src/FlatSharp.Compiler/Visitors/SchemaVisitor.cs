@@ -74,6 +74,17 @@ namespace FlatSharp.Compiler
             return this.GetOrCreateNamespace(parts.Slice(1), existingNode);
         }
 
+        public override BaseSchemaMember VisitFile_identifier_decl([NotNull] FlatBuffersParser.File_identifier_declContext context)
+        {
+            var top = this.parseStack.Peek();
+            ErrorContext.Current.WithScope(top.FullName, () =>
+            {
+              FileIdentifierDefinition def = (FileIdentifierDefinition)new FileIdentifierVisitor(top).Visit(context);
+              top.AddChild(def);
+            });
+            return null;
+        }
+
         public override BaseSchemaMember VisitType_decl([NotNull] FlatBuffersParser.Type_declContext context)
         {
             var top = this.parseStack.Peek();
