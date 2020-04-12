@@ -56,9 +56,9 @@ value : single_value | object | '[' commasep_value ']' ;
 
 commasep_value : value( ',' value )* ','? ;
 
-file_extension_decl : 'file_extension' STRING_CONSTANT ;
+file_extension_decl : 'file_extension' STRING_CONSTANT ';' ;
 
-file_identifier_decl : 'file_identifier' STRING_CONSTANT ;
+file_identifier_decl : 'file_identifier' STRING_CONSTANT ';' ;
 
 ns_ident : IDENT ( '.' IDENT )* ;
 
