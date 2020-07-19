@@ -13,5 +13,9 @@
 
     <Message Text="$(CompilerInvocation) %(FlatSharpSchema.fullpath)" Importance="high" />
     <Exec Command="$(CompilerInvocation) %(FlatSharpSchema.fullpath)" CustomErrorRegularExpression=".*" Condition=" '%(FlatSharpSchema.fullpath)' != '' " />
+    
+    <ItemGroup>
+      <Compile Include="%(FlatSharpSchema.fullpath).generated.cs" Condition="Exists('%(FlatSharpSchema.fullpath).generated.cs')" />
+    </ItemGroup>
   </Target>
 </Project>
