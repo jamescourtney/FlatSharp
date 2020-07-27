@@ -6,7 +6,7 @@
 <#@ output extension=".cs" #>
 
 <#
-	int numGenerics = 10;
+	int numGenerics = 30;
 #>
 
 namespace FlatSharp
@@ -95,6 +95,73 @@ namespace FlatSharp
 					}
 
 					throw new System.InvalidOperationException();
+				}
+
+				public void Switch(
+					System.Action unknownType,
+					<#= string.Join(",\r\n", range.Select(x => $"System.Action<T{x}> callback{x}")) #> )
+				{
+					switch (this.discriminator)
+					{
+					<# foreach (var genericType in range) { #>
+						case <#= genericType #>:
+							callback<#= genericType #>(this.item<#= genericType #>);
+							break;
+					<# } #>
+						default:
+							unknownType();
+							break;
+					}
+				}
+
+				public void Switch<TState>(
+					TState state,
+					System.Action<TState> unknownType,
+					<#= string.Join(",\r\n", range.Select(x => $"System.Action<TState, T{x}> callback{x}")) #> )
+				{
+					switch (this.discriminator)
+					{
+					<# foreach (var genericType in range) { #>
+						case <#= genericType #>:
+							callback<#= genericType #>(state, this.item<#= genericType #>);
+							break;
+					<# } #>
+						default:
+							unknownType(state);
+							break;
+					}
+				}
+
+				
+				public TResult Switch<TResult>(
+					System.Func<TResult> unknownType,
+					<#= string.Join(",\r\n", range.Select(x => $"System.Func<T{x}, TResult> callback{x}")) #> )
+				{
+					switch (this.discriminator)
+					{
+					<# foreach (var genericType in range) { #>
+						case <#= genericType #>:
+							return callback<#= genericType #>(this.item<#= genericType #>);
+					<# } #>
+						default:
+							return unknownType();
+					}
+				}
+
+				public TResult Switch<TState, TResult>(
+					TState state,
+					System.Func<TState, TResult> unknownType,
+					<#= string.Join(",\r\n", range.Select(x => $"System.Func<TState, T{x}, TResult> callback{x}")) #> )
+				{
+					switch (this.discriminator)
+					{
+					<# foreach (var genericType in range) { #>
+						case <#= genericType #>:
+							return callback<#= genericType #>(state, this.item<#= genericType #>);
+					<# } #>
+						default:
+							return unknownType(state);
+					}
 				}
 			}
 	<#
