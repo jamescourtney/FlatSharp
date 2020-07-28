@@ -63,6 +63,7 @@ namespace FlatSharpTests
             this.InputBufferTest(new MemoryInputBuffer(Input));
             this.StringInputBufferTest(new MemoryInputBuffer(StringInput));
             this.TestDeserializeBoth(b => new MemoryInputBuffer(b));
+            this.TestReadByteArray(b => new MemoryInputBuffer(b));
         }
 
         [TestMethod]
@@ -72,6 +73,7 @@ namespace FlatSharpTests
             this.StringInputBufferTest(new ReadOnlyMemoryInputBuffer(StringInput));
 
             this.TestDeserialize<ReadOnlyMemoryInputBuffer, ReadOnlyMemoryTable>(b => new ReadOnlyMemoryInputBuffer(b));
+            this.TestReadByteArray(b => new ReadOnlyMemoryInputBuffer(b));
             Assert.ThrowsException<InvalidOperationException>(
                 () => this.TestDeserialize<ReadOnlyMemoryInputBuffer, MemoryTable>(b => new ReadOnlyMemoryInputBuffer(b)));
         }
@@ -82,6 +84,7 @@ namespace FlatSharpTests
             this.InputBufferTest(new ArrayInputBuffer(Input));
             this.StringInputBufferTest(new ArrayInputBuffer(StringInput));
             this.TestDeserializeBoth(b => new ArrayInputBuffer(b));
+            this.TestReadByteArray(b => new ArrayInputBuffer(b));
         }
 
         [TestMethod]
@@ -90,6 +93,7 @@ namespace FlatSharpTests
             this.InputBufferTest(new UnsafeArrayInputBuffer(Input));
             this.StringInputBufferTest(new UnsafeArrayInputBuffer(StringInput));
             this.TestDeserializeBoth(b => new UnsafeArrayInputBuffer(b));
+            this.TestReadByteArray(b => new UnsafeArrayInputBuffer(b));
         }
 
         [TestMethod]
@@ -155,6 +159,17 @@ namespace FlatSharpTests
         {
             this.TestDeserialize<TBuffer, ReadOnlyMemoryTable>(bufferBuilder);
             this.TestDeserialize<TBuffer, MemoryTable>(bufferBuilder);
+        }
+
+        private void TestReadByteArray<TBuffer>(Func<byte[], TBuffer> bufferBuilder) where TBuffer : InputBuffer
+        {
+            byte[] buffer = new byte[] { 4, 0, 0, 0, 7, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7 };
+            TBuffer inputBuffer = bufferBuilder(buffer);
+
+            byte[] expected = new byte[] { 1, 2, 3, 4, 5, 6, 7, };
+
+            Assert.IsTrue(inputBuffer.ReadReadOnlyMemoryBlock<byte>(0, 1).Span.SequenceEqual(expected));
+            Assert.IsTrue(inputBuffer.ReadByteReadOnlyMemoryBlock(0, 1).Span.SequenceEqual(expected));
         }
 
         private void TestDeserialize<TBuffer, TType>(Func<byte[], TBuffer> bufferBuilder) 
