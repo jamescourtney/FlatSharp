@@ -17,6 +17,7 @@
 namespace FlatSharp.Unsafe
 {
     using System;
+    using System.Runtime.CompilerServices;
     using System.Text;
 
     public sealed unsafe class UnsafeSpanWriter : SpanWriter
@@ -44,6 +45,7 @@ namespace FlatSharp.Unsafe
             CheckAlignment(offset, sizeof(double));
             checked
             {
+                EnsureInBounds(span, offset, sizeof(double));
                 fixed (byte* pByte = &span[offset])
                 {
                     *(double*)pByte = value;
@@ -56,6 +58,7 @@ namespace FlatSharp.Unsafe
             CheckAlignment(offset, sizeof(float));
             checked
             {
+                EnsureInBounds(span, offset, sizeof(float));
                 fixed (byte* pByte = &span[offset])
                 {
                     *(float*)pByte = value;
@@ -68,6 +71,7 @@ namespace FlatSharp.Unsafe
             CheckAlignment(offset, sizeof(int));
             checked
             {
+                EnsureInBounds(span, offset, sizeof(int));
                 fixed (byte* pByte = &span[offset])
                 {
                     *(int*)pByte = value;
@@ -80,6 +84,7 @@ namespace FlatSharp.Unsafe
             CheckAlignment(offset, sizeof(long));
             checked
             {
+                EnsureInBounds(span, offset, sizeof(long));
                 fixed (byte* pByte = &span[offset])
                 {
                     *(long*)pByte = value;
@@ -92,6 +97,7 @@ namespace FlatSharp.Unsafe
             CheckAlignment(offset, sizeof(short));
             checked
             {
+                EnsureInBounds(span, offset, sizeof(short));
                 fixed (byte* pByte = &span[offset])
                 {
                     *(short*)pByte = value;
@@ -104,6 +110,7 @@ namespace FlatSharp.Unsafe
             CheckAlignment(offset, sizeof(uint));
             checked
             {
+                EnsureInBounds(span, offset, sizeof(uint));
                 fixed (byte* pByte = &span[offset])
                 {
                     *(uint*)pByte = value;
@@ -116,6 +123,7 @@ namespace FlatSharp.Unsafe
             CheckAlignment(offset, sizeof(ulong));
             checked
             {
+                EnsureInBounds(span, offset, sizeof(ulong));
                 fixed (byte* pByte = &span[offset])
                 {
                     *(ulong*)pByte = value;
@@ -128,6 +136,7 @@ namespace FlatSharp.Unsafe
             CheckAlignment(offset, sizeof(ushort));
             checked
             {
+                EnsureInBounds(span, offset, sizeof(ushort));
                 fixed (byte* pByte = &span[offset])
                 {
                     *(ushort*)pByte = value;
@@ -143,6 +152,18 @@ namespace FlatSharp.Unsafe
                 fixed (char* pChar = value)
                 {
                     return encoding.GetBytes(pChar, value.Length, pByte, span.Length);
+                }
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void EnsureInBounds(Span<byte> span, int offset, int size)
+        {
+            checked
+            {
+                if (offset + size > span.Length || offset < 0 || size < 0)
+                {
+                    throw new IndexOutOfRangeException();
                 }
             }
         }

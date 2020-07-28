@@ -98,70 +98,74 @@ namespace FlatSharp
 				}
 
 				public void Switch(
-					System.Action unknownType,
-					<#= string.Join(",\r\n", range.Select(x => $"System.Action<T{x}> callback{x}")) #> )
+					System.Action defaultCase = null,
+					<#= string.Join(",\r\n", range.Select(x => $"System.Action<T{x}> case{x} = null")) #>)
 				{
-					switch (this.discriminator)
-					{
 					<# foreach (var genericType in range) { #>
-						case <#= genericType #>:
-							callback<#= genericType #>(this.item<#= genericType #>);
-							break;
+						if (this.discriminator == <#= genericType #> && case<#= genericType #> != null)
+						{
+							case<#= genericType #>(this.item<#= genericType #>);
+							return;
+						}
 					<# } #>
-						default:
-							unknownType();
-							break;
-					}
+
+					defaultCase?.Invoke();
 				}
 
 				public void Switch<TState>(
 					TState state,
-					System.Action<TState> unknownType,
-					<#= string.Join(",\r\n", range.Select(x => $"System.Action<TState, T{x}> callback{x}")) #> )
+					System.Action<TState> defaultCase = null,
+					<#= string.Join(",\r\n", range.Select(x => $"System.Action<TState, T{x}> case{x} = null")) #>)
 				{
-					switch (this.discriminator)
-					{
 					<# foreach (var genericType in range) { #>
-						case <#= genericType #>:
-							callback<#= genericType #>(state, this.item<#= genericType #>);
-							break;
+						if (this.discriminator == <#= genericType #> && case<#= genericType #> != null)
+						{
+							case<#= genericType #>(state, this.item<#= genericType #>);
+							return;
+						}
 					<# } #>
-						default:
-							unknownType(state);
-							break;
-					}
+
+					defaultCase?.Invoke(state);
 				}
 
 				
 				public TResult Switch<TResult>(
-					System.Func<TResult> unknownType,
-					<#= string.Join(",\r\n", range.Select(x => $"System.Func<T{x}, TResult> callback{x}")) #> )
+					System.Func<TResult> defaultCase = null,
+					<#= string.Join(",\r\n", range.Select(x => $"System.Func<T{x}, TResult> case{x} = null")) #>)
 				{
-					switch (this.discriminator)
-					{
 					<# foreach (var genericType in range) { #>
-						case <#= genericType #>:
-							return callback<#= genericType #>(this.item<#= genericType #>);
+						if (this.discriminator == <#= genericType #> && case<#= genericType #> != null)
+						{
+							return case<#= genericType #>(this.item<#= genericType #>);
+						}
 					<# } #>
-						default:
-							return unknownType();
+
+					if (defaultCase != null)
+					{
+						return defaultCase();
 					}
+
+					return default;
 				}
 
 				public TResult Switch<TState, TResult>(
 					TState state,
-					System.Func<TState, TResult> unknownType,
-					<#= string.Join(",\r\n", range.Select(x => $"System.Func<TState, T{x}, TResult> callback{x}")) #> )
+					System.Func<TState, TResult> defaultCase = null,
+					<#= string.Join(",\r\n", range.Select(x => $"System.Func<TState, T{x}, TResult> case{x} = null")) #>)
 				{
-					switch (this.discriminator)
-					{
 					<# foreach (var genericType in range) { #>
-						case <#= genericType #>:
-							return callback<#= genericType #>(state, this.item<#= genericType #>);
+						if (this.discriminator == <#= genericType #> && case<#= genericType #> != null)
+						{
+							return case<#= genericType #>(state, this.item<#= genericType #>);
+						}
 					<# } #>
-						default:
-							return unknownType(state);
+
+					if (defaultCase != null)
+					{
+						return defaultCase(state);
 					}
+
+					return default;
 				}
 			}
 	<#

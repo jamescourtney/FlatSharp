@@ -191,7 +191,7 @@ namespace FlatSharp.Unsafe
         {
             checked
             {
-                this.EnsureInBounds(start, length);
+                EnsureInBounds(start, length);
                 return this.memory.Slice(start, length);
             }
         }
@@ -222,7 +222,7 @@ namespace FlatSharp.Unsafe
 
             checked
             {
-                if (offset + size >= this.length || offset < 0)
+                if (offset + size > this.length || offset < 0 || size < 0)
                 {
                     throw new IndexOutOfRangeException();
                 }
