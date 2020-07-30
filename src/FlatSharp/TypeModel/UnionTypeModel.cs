@@ -29,6 +29,12 @@ namespace FlatSharp.TypeModel
 
         internal UnionTypeModel(Type unionType) : base(unionType)
         {
+            // Look for the actual FlatBufferUnion.
+            while (unionType.BaseType != typeof(object))
+            {
+                unionType = unionType.BaseType;
+            }
+
             this.memberTypeModels = unionType.GetGenericArguments().Select(RuntimeTypeModel.CreateFrom).ToArray();
         }
 
