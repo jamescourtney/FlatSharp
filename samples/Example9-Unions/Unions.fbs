@@ -1,0 +1,42 @@
+﻿/*
+ * Copyright 2020 James Courtney
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+namespace Samples.Unions;
+
+enum DogBreed : byte { Golden, Lab, Corgi }
+enum CatBreed : byte { Calico, Shorthair, Bengal }
+enum FishKind : byte { Coelacanth, Dorado, Piranha }
+
+// FlatSharp generates a "Pet" class that derives from the "FlatBufferUnion" class. The derived class
+// is syntax sugar and just contains some quality-of-life improvements.
+// In this example, the "Doggo" label is applied, so all of the union's properties in C# will
+// refer to "Doggo". For fish and Cat, the names are left as-is.
+union Pet { Doggo:Dog, Cat, Fish }
+
+// Don't generate a custom type for this union.
+union BasicPet (NoCustomType) { Dog, Cat, Fish }
+
+table Dog { Breed:DogBreed; Name:string; }
+table Cat { Breed:CatBreed; Name:string; }
+table Fish { Kind:FishKind; Weight:float64; Name:string; }
+
+table Person 
+{ 
+	// A person can have one pet. Either a dog, cat, or fish.
+	Pet:Pet;
+
+	BasicPet:BasicPet;
+}

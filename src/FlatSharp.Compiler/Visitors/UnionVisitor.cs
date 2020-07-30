@@ -35,6 +35,12 @@ namespace FlatSharp.Compiler
         {
             this.unionDef = new UnionDefinition(context.IDENT().GetText(), this.parent);
 
+            var metadata = new MetadataVisitor().VisitMetadata(context.metadata());
+            if (metadata.ContainsKey("NoCustomType"))
+            {
+                this.unionDef.GenerateCustomUnionType = false;
+            }
+
             ErrorContext.Current.WithScope(this.unionDef.Name, () =>
             {
                 base.VisitUnion_decl(context);
@@ -46,7 +52,8 @@ namespace FlatSharp.Compiler
         public override UnionDefinition VisitUnionval_decl([NotNull] FlatBuffersParser.Unionval_declContext context)
         {
             string type = context.type().GetText();
-            this.unionDef.ComponentTypeNames.Add(type);
+            string alias = context.IDENT()?.GetText();
+            this.unionDef.Components.Add((alias, type));
 
             return null;
         }

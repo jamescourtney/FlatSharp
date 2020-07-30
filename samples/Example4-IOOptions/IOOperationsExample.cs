@@ -56,7 +56,7 @@ namespace Samples.IOOptionsExample
                 Age = 24,
                 Cats = new[] { grumpyCat },
                 Dogs = new[] { tony, rocket, peaches },
-                FavoritePet = new FlatBufferUnion<Dog, Cat>(rocket),
+                FavoritePet = new FavoritePet(rocket),
                 Name = "Nikola Tesla"
             };
 

@@ -14,16 +14,17 @@
     <FlatSharpSchema Include="Example7-Includes\A.fbs" />
     <FlatSharpSchema Include="Example7-Includes\Subdirectory\B.fbs" />
     <FlatSharpSchema Include="Example7-Includes\IncludesExample.fbs" />
+    <FlatSharpSchema Include="Example9-Unions\Unions.fbs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FlatSharp" Version="3.0.0" />
-    <PackageReference Include="FlatSharp.Compiler" Version="3.0.0">
+    <PackageReference Include="FlatSharp" Version="3.2.0" />
+    <PackageReference Include="FlatSharp.Compiler" Version="3.2.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="FlatSharp.Runtime" Version="3.0.0" />
-    <PackageReference Include="FlatSharp.Unsafe" Version="3.0.0" />
+    <PackageReference Include="FlatSharp.Runtime" Version="3.2.0" />
+    <PackageReference Include="FlatSharp.Unsafe" Version="3.2.0" />
     <PackageReference Include="Grpc" Version="2.27.0" />
   </ItemGroup>
 
