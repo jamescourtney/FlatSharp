@@ -59,6 +59,10 @@ namespace FlatSharp.Compiler
             foreach (var component in this.Components)
             {
                 string fallbackName = component.type.Split('.').Last();
+                if (fallbackName == "string")
+                {
+                    fallbackName = "String";
+                }
 
                 if (this.TryResolveName(component.type, out var reference))
                 {
@@ -239,7 +243,7 @@ namespace FlatSharp.Compiler
                     string subClone = node.GetCopyExpression("x");
                     cloners.Add($"x => {subClone}");
                 }
-                else if (item.alias == "string")
+                else if (item.type == "string")
                 {
                     cloners.Add("x => x");
                 }
