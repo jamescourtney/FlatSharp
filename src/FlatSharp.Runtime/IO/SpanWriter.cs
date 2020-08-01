@@ -28,10 +28,37 @@ namespace FlatSharp
     /// </summary>
     public class SpanWriter
     {
+        private readonly IStringWriter stringWriter;
+
         /// <summary>
         /// A default instance. Spanwriter is stateless and threadsafe.
         /// </summary>
         public static SpanWriter Instance { get; } = new SpanWriter();
+
+        /// <summary>
+        /// Initializes a new SpanWriter using default settings.
+        /// </summary>
+        public SpanWriter() : this (new SimpleStringWriter())
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new SpanWriter using the given sting writer. It is recommended to
+        /// create a new span writer per thread or instance if using a custom StringWriter to avoid
+        /// race conditions.
+        /// </summary>
+        public SpanWriter(IStringWriter stringWriter)
+        {
+            this.stringWriter = stringWriter;
+        }
+
+        /// <summary>
+        /// Flushes any pending writes from the string writer.
+        /// </summary>
+        public void FinishWrite(Span<byte> span, SerializationContext context)
+        {
+            this.stringWriter.FlushStrings(this, span, context);
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteUOffset(Span<byte> span, int offset, int secondOffset, SerializationContext context)
@@ -121,7 +148,16 @@ namespace FlatSharp
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteString(Span<byte> span, string value, int offset, SerializationContext context)
+        public virtual void WriteString(Span<byte> span, string value, int offset, SerializationContext context)
+        {
+            this.stringWriter.WriteString(this, span, value, offset, context);
+        }
+
+        /// <summary>
+        /// Writes the string to the buffer, returning the absolute offset of the string.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int WriteAndProvisionString(Span<byte> span, string value, SerializationContext context)
         {
             checked
             {
@@ -142,8 +178,7 @@ namespace FlatSharp
                 // give back unused space.
                 context.Offset -= maxItems - bytesWritten;
 
-                // Write the UOffset where we were supposed to go.
-                this.WriteUOffset(span, offset, stringStartOffset, context);
+                return stringStartOffset;
             }
         }
 

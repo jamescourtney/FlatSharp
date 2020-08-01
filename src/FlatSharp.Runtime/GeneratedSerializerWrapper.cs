@@ -92,6 +92,7 @@ namespace FlatSharp
             try
             {
                 this.innerSerializer.Write(writer, destination, item, 0, serializationContext);
+                writer.FinishWrite(destination, serializationContext);
             }
             catch (BufferTooSmallException ex)
             {

@@ -21,171 +21,81 @@ namespace BenchmarkCore
     using System.Diagnostics;
     using System.Linq;
     using benchfb;
+    using BenchmarkDotNet.Attributes;
+    using BenchmarkDotNet.Running;
     using FlatSharp;
     using FlatSharp.Attributes;
     using FlatSharp.Unsafe;
 
-    [FlatBufferTable]
-    public class Test1<T>
-    {
-        [FlatBufferItem(0)]
-        public virtual T Item { get; set; }
-    }
-
+    [ShortRunJob]
     public class Program
     {
+        const int GuidCount = 100;
+
+        private static readonly byte[] buffer = new byte[10 * 1024 * 1024];
+        private static SimpleVector vector;
+
+        private static SpanWriter sharedWriter;
+        private static SpanWriter llWriter;
+
         public static void Main(string[] args)
-        {
-            Console.WriteLine($"x64={Environment.Is64BitProcess}");
-
-            FlatBufferSerializer inPlaceSorter = new FlatBufferSerializer(new FlatBufferSerializerOptions());
-
-            Random r = new Random();
-            SortedVector<int> intVector = new SortedVector<int>
-            {
-                Item = Enumerable.Range(0, 25).Select(x => new SortedVectorItem<int> { Item = r.Next() }).ToList()
-            };
-
-            SortedVector<string> stringVector = new SortedVector<string>
-            {
-                Item = Enumerable.Range(0, 25).Select(x => new SortedVectorItem<string> { Item = Guid.NewGuid().ToString() }).ToList()
-            };
-
-            UnsortedVector<string> unsortedString = new UnsortedVector<string> { Item = stringVector.Item };
-            UnsortedVector<int> unsortedInt = new UnsortedVector<int> { Item = intVector.Item };
-
-            byte[] buffer = new byte[10 * 1024 * 1024];
-            var items = new (string, Action)[]
-            {
-                //("ToArray", () => intVector.Item.Select(x => x.Item).ToArray()),
-                //("ArrayStringSort", () => Array.Sort(stringVector.Item.Select(x => x.Item).ToArray())),
-                //("ArrayIntSort", () => Array.Sort(intVector.Item.Select(x => x.Item).ToArray())),
-                ("InPlaceSortString", () => inPlaceSorter.Serialize(stringVector, buffer)),
-                ("UnsortedString", () => inPlaceSorter.Serialize(unsortedString, buffer)),
-                ("InPlaceSortInt", () => inPlaceSorter.Serialize(intVector, buffer)),
-                ("UnsortedInt", () => inPlaceSorter.Serialize(unsortedInt, buffer)),
-            };
-
-            RunBenchmarkSet(items);
+        { 
+            BenchmarkRunner.Run<Program>();
         }
 
-        private static void RunBenchmarkSet((string, Action)[] items)
+        [Params(true, false)]
+        public bool RandomDistribution { get; set; }
+
+        [Params(1, 10, 50, 100, 500)]
+        public int LruLookupSize { get; set; }
+
+        [GlobalSetup]
+        public void GlobalSetup()
         {
-            foreach (var tuple in items)
+            sharedWriter = new SpanWriter(new LruSharedStringWriter(LruLookupSize));
+            llWriter = new SpanWriter(new LruSharedStringWriter(10));
+
+            Random rng = new Random();
+            var guids = Enumerable.Range(0, GuidCount).Select(i => Guid.NewGuid().ToString()).ToList();
+
+            vector = new SimpleVector
             {
-                for (int loop = 0; loop < 5; ++loop)
-                {
-                    var action = tuple.Item2;
-                    var name = tuple.Item1;
+                Items = Enumerable.Range(0, 1000).Select(i => guids[rng.Next(0, guids.Count)]).ToList()
+            };
 
-                    for (int i = 0; i < 10000; ++i)
-                    {
-                        action();
-                    }
-
-                    var sw = Stopwatch.StartNew();
-                    int count = 1000000;
-                    for (int i = 0; i < count; ++i)
-                    {
-                        action();
-                    }
-                    sw.Stop();
-
-                    Console.WriteLine($"{name}: Took {sw.ElapsedMilliseconds} ({sw.ElapsedMilliseconds * 1000 / ((double)count)} us per op)");
-                    System.Threading.Thread.Sleep(250);
-                    GC.Collect();
-                }
-
-                Console.WriteLine();
+            if (!this.RandomDistribution)
+            {
+                vector.Items = Enumerable.Range(0, 1000).Select(i => guids[NextGaussianInt(rng, 0, guids.Count - 1)]).ToList();
             }
 
-            Console.WriteLine();
+            Console.WriteLine($"{nameof(SharedStringLinkedList)} = {this.SharedStringLinkedList()}");
+            Console.WriteLine($"{nameof(SharedStringLRU)} = {this.SharedStringLRU()}");
+            Console.WriteLine($"{nameof(NonSharedString)} = {this.NonSharedString()}");
         }
 
-        private static (string, Action)[] GetBenchmarkSet(
-            string runName, 
-            ISerializer<FooBarContainer> serializer, 
-            FooBarContainer container)
+        [Benchmark]
+        public int SharedStringLinkedList()
         {
-            int traversalCount = 5;
-            byte[] destination = new byte[serializer.GetMaxSize(container)];
-
-            SpanWriter spanWriter = new SpanWriter();
-            InputBuffer inputBuffer = new ArrayInputBuffer(destination);
-            serializer.Write(spanWriter, destination, container);
-
-            return new (string, Action)[]
-            {
-                ($"{runName}.GetMaxSize",       () => serializer.GetMaxSize(container)),
-                ($"{runName}.Serialize",        () => serializer.Write(spanWriter, destination, container)),
-                ($"{runName}.Parse",            () => serializer.Parse(inputBuffer)),
-                ($"{runName}.ParseAndTraverse x1", () => ParseAndTraverse(serializer, inputBuffer, 1)),
-                ($"{runName}.ParseAndTraverse x{traversalCount}", () => ParseAndTraverse(serializer, inputBuffer, traversalCount)),
-                ($"{runName}.ParseAndTraversePartial x1", () => ParseAndTraversePartial(serializer, inputBuffer, 1)),
-                ($"{runName}.ParseAndTraversePartial x{traversalCount}", () => ParseAndTraversePartial(serializer, inputBuffer, traversalCount)),
-            };
+            return FlatBufferSerializer.Default.Serialize(vector, buffer, llWriter);
         }
 
-        private static void ParseAndTraverse(ISerializer<FooBarContainer> serializer, InputBuffer inputBuffer, int traversalCount)
+        [Benchmark]
+        public int SharedStringLRU()
         {
-            FooBarContainer container = serializer.Parse(inputBuffer);
-            for (int i = 0; i < traversalCount; ++i)
-            {
-                var fruit = container.fruit;
-                var initialized = container.initialized;
-                var location = container.location;
-                var items = container.list;
-                int count = items.Count;
-
-                for (int j = 0; j < count; ++j)
-                {
-                    var item = items[j];
-                    var name = item.name;
-                    var postfix = item.postfix;
-                    var rating = item.rating;
-                    var sibling = item.sibling;
-
-                    var ratio = sibling.ratio;
-                    var size = sibling.size;
-                    var time = sibling.time;
-                    var parent = sibling.parent;
-                    var count2 = parent.count;
-                    var id = parent.id;
-                    var length = parent.length;
-                    var prefix = parent.prefix;
-                }
-            }
+            return FlatBufferSerializer.Default.Serialize(vector, buffer, sharedWriter);
         }
 
-        private static void ParseAndTraversePartial(ISerializer<FooBarContainer> serializer, InputBuffer inputBuffer, int traversalCount)
+        [Benchmark]
+        public int  NonSharedString()
         {
-            FooBarContainer container = serializer.Parse(inputBuffer);
-            for (int i = 0; i < traversalCount; ++i)
-            {
-                var fruit = container.fruit;
-                var initialized = container.initialized;
-                var location = container.location;
-                var items = container.list;
-                int count = items.Count;
+            return FlatBufferSerializer.Default.Serialize(vector, buffer, SpanWriter.Instance);
+        }
 
-                for (int j = 0; j < count; ++j)
-                {
-                    var item = items[j];
-                    var name = item.name;
-                    //var postfix = item.postfix;
-                    //var rating = item.rating;
-                    //var sibling = item.sibling;
-
-                    var ratio = item.sibling.ratio;
-                    //var size = sibling.size;
-                    //var time = sibling.time;
-                    //var parent = sibling.parent;
-                    //var count2 = parent.count;
-                    //var id = parent.id;
-                    //var length = parent.length;
-                    //var prefix = parent.prefix;
-                }
-            }
+        [FlatBufferTable]
+        public class SimpleVector
+        {
+            [FlatBufferItem(0)]
+            public virtual IList<string> Items { get; set; }
         }
 
         [FlatBufferTable]
@@ -207,6 +117,25 @@ namespace BenchmarkCore
         {
             [FlatBufferItem(0, Key = true)]
             public virtual T Item { get; set; }
+        }
+
+        public static int NextGaussianInt(Random r, int min, int max)
+        {
+            double random = NextGaussian(r, (max - min) / 2.0, (max - min) / 6.0); // from -2 to 2.
+            return Math.Max(min, Math.Min(max, (int)random));
+        }
+
+        public static double NextGaussian(Random r, double mu = 0, double sigma = 1)
+        {
+            var u1 = r.NextDouble();
+            var u2 = r.NextDouble();
+
+            var rand_std_normal = Math.Sqrt(-2.0 * Math.Log(u1)) *
+                                Math.Sin(2.0 * Math.PI * u2);
+
+            var rand_normal = mu + sigma * rand_std_normal;
+
+            return rand_normal;
         }
     }
 }

@@ -22,7 +22,11 @@ namespace FlatSharp.Unsafe
 
     public sealed unsafe class UnsafeSpanWriter : SpanWriter
     {
-        public UnsafeSpanWriter()
+        public UnsafeSpanWriter() : this(new SimpleStringWriter())
+        {
+        }
+
+        public UnsafeSpanWriter(IStringWriter stringWriter) : base(stringWriter)
         {
             if (!BitConverter.IsLittleEndian)
             {
