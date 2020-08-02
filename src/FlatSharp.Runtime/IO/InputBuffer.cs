@@ -53,6 +53,12 @@ namespace FlatSharp
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public virtual SharedString ReadSharedString(int offset)
+        {
+            return this.ReadString(offset);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int ReadUOffset(int offset)
         {
             uint uoffset = this.ReadUInt(offset);

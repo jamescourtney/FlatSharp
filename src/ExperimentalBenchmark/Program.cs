@@ -27,13 +27,14 @@ namespace BenchmarkCore
     using FlatSharp.Attributes;
     using FlatSharp.Unsafe;
 
-    [ShortRunJob]
+    [MediumRunJob]
     public class Program
     {
         const int GuidCount = 100;
 
         private static readonly byte[] buffer = new byte[10 * 1024 * 1024];
-        private static SimpleVector vector;
+        private static SimpleVector<string> nonSharedVector;
+        private static SimpleVector<SharedString> sharedVector;
 
         private static SpanWriter sharedWriter;
         private static SpanWriter llWriter;
@@ -58,15 +59,17 @@ namespace BenchmarkCore
             Random rng = new Random();
             var guids = Enumerable.Range(0, GuidCount).Select(i => Guid.NewGuid().ToString()).ToList();
 
-            vector = new SimpleVector
+            nonSharedVector = new SimpleVector<string>
             {
                 Items = Enumerable.Range(0, 1000).Select(i => guids[rng.Next(0, guids.Count)]).ToList()
             };
 
             if (!this.RandomDistribution)
             {
-                vector.Items = Enumerable.Range(0, 1000).Select(i => guids[NextGaussianInt(rng, 0, guids.Count - 1)]).ToList();
+                nonSharedVector.Items = Enumerable.Range(0, 1000).Select(i => guids[NextGaussianInt(rng, 0, guids.Count - 1)]).ToList();
             }
+
+            sharedVector = new SimpleVector<SharedString> { Items = nonSharedVector.Items.Select(SharedString.Create).ToList() };
 
             Console.WriteLine($"{nameof(SharedStringLinkedList)} = {this.SharedStringLinkedList()}");
             Console.WriteLine($"{nameof(SharedStringLRU)} = {this.SharedStringLRU()}");
@@ -76,26 +79,26 @@ namespace BenchmarkCore
         [Benchmark]
         public int SharedStringLinkedList()
         {
-            return FlatBufferSerializer.Default.Serialize(vector, buffer, llWriter);
+            return FlatBufferSerializer.Default.Serialize(sharedVector, buffer, llWriter);
         }
 
         [Benchmark]
         public int SharedStringLRU()
         {
-            return FlatBufferSerializer.Default.Serialize(vector, buffer, sharedWriter);
+            return FlatBufferSerializer.Default.Serialize(sharedVector, buffer, sharedWriter);
         }
 
         [Benchmark]
-        public int  NonSharedString()
+        public int NonSharedString()
         {
-            return FlatBufferSerializer.Default.Serialize(vector, buffer, SpanWriter.Instance);
+            return FlatBufferSerializer.Default.Serialize(nonSharedVector, buffer, SpanWriter.Instance);
         }
 
         [FlatBufferTable]
-        public class SimpleVector
+        public class SimpleVector<T>
         {
             [FlatBufferItem(0)]
-            public virtual IList<string> Items { get; set; }
+            public virtual IList<T> Items { get; set; }
         }
 
         [FlatBufferTable]

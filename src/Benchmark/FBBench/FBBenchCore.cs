@@ -26,7 +26,7 @@ namespace Benchmark.FBBench
     using FlatSharp.Attributes;
     using ProtoBuf;
 
-    [ShortRunJob]
+    [MediumRunJob]
     [CsvExporter(BenchmarkDotNet.Exporters.Csv.CsvSeparator.Comma)]
     public abstract class FBBenchCore
     {
@@ -38,6 +38,9 @@ namespace Benchmark.FBBench
         public SortedVectorTable<string> sortedStringContainer;
         public SortedVectorTable<int> sortedIntContainer;
         public UnsortedVectorTable<string> unsortedStringContainer;
+        public VectorTable<string> nonSharedStringVector;
+        public VectorTable<SharedString> randomSharedStringVector;
+        public VectorTable<SharedString> repeatedSharedStringVector;
         public UnsortedVectorTable<int> unsortedIntContainer;
 
         protected MemoryStream pbdn_writeBuffer = new MemoryStream(64 * 1024);
@@ -101,10 +104,17 @@ namespace Benchmark.FBBench
             Random rng = new Random();
             this.sortedIntContainer = new SortedVectorTable<int> { Vector = new List<SortedVectorTableItem<int>>() };
             this.sortedStringContainer = new SortedVectorTable<string> { Vector = new List<SortedVectorTableItem<string>>() };
+            this.repeatedSharedStringVector = new VectorTable<SharedString> { Vector = new List<SharedString>() };
+            this.randomSharedStringVector = new VectorTable<SharedString> { Vector = new List<SharedString>() };
+            this.nonSharedStringVector = new VectorTable<string> { Vector = new List<string>() };
+
             for (int i = 0; i < this.VectorLength; ++i)
             {
                 this.sortedIntContainer.Vector.Add(new SortedVectorTableItem<int> { Key = rng.Next() });
                 this.sortedStringContainer.Vector.Add(new SortedVectorTableItem<string> { Key = Guid.NewGuid().ToString() });
+                this.randomSharedStringVector.Vector.Add(Guid.NewGuid().ToString());
+                this.repeatedSharedStringVector.Vector.Add(Guid.Empty.ToString());
+                this.nonSharedStringVector.Vector.Add(Guid.NewGuid().ToString());
             }
 
             this.unsortedIntContainer = new UnsortedVectorTable<int> { Vector = this.sortedIntContainer.Vector };
@@ -441,6 +451,21 @@ namespace Benchmark.FBBench
             this.fs_serializer.Serialize(this.unsortedStringContainer, this.fs_writeMemory);
         }
 
+        public virtual void FlatSharp_Serialize_RepeatedSharedStringVector()
+        {
+            this.fs_serializer.Serialize(this.repeatedSharedStringVector, this.fs_writeMemory);
+        }
+
+        public virtual void FlatSharp_Serialize_RandomSharedStringVector()
+        {
+            this.fs_serializer.Serialize(this.randomSharedStringVector, this.fs_writeMemory);
+        }
+
+        public virtual void FlatSharp_Serialize_NonSharedStringVector()
+        {
+            this.fs_serializer.Serialize(this.nonSharedStringVector, this.fs_writeMemory);
+        }
+
         public virtual void FlatSharp_Serialize_IntVector_Unsorted()
         {
             this.fs_serializer.Serialize(this.unsortedIntContainer, this.fs_writeMemory);
@@ -622,6 +647,13 @@ namespace Benchmark.FBBench
     {
         [FlatBufferItem(0, SortedVector = true)]
         public virtual IList<SortedVectorTableItem<T>> Vector { get; set; }
+    }
+
+    [FlatBufferTable]
+    public class VectorTable<T>
+    {
+        [FlatBufferItem(0)]
+        public virtual IList<T> Vector { get; set; }
     }
 
     [FlatBufferTable]

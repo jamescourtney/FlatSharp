@@ -21,12 +21,10 @@ namespace FlatSharp
     using System.Runtime.CompilerServices;
 
     /// <summary>
-    /// Writes the given string to the given span using the given serialization context.
+    /// Defines a shared string writer, which can be used to 
+    /// create shared strings within a flat buffer.
     /// </summary>
-    /// <returns>The absolute offset of the string in the buffer.</returns>
-    public delegate int WriteStringCallback(SpanWriter writer, Span<byte> span, string value, SerializationContext context);
-
-    public interface IStringWriter
+    public interface ISharedStringWriter
     {
         /// <summary>
         /// Writes a string at the given offset.
@@ -34,45 +32,38 @@ namespace FlatSharp
         void WriteString(
             SpanWriter writer,
             Span<byte> span,
-            string value,
+            SharedString value,
             int offset,
             SerializationContext context);
 
+        /// <summary>
+        /// Flush any shared strings yet to be written.
+        /// </summary>
         void FlushStrings(SpanWriter spanWriter, Span<byte> span, SerializationContext context);
     }
 
-    public class SimpleStringWriter : IStringWriter
-    {
-        public void FlushStrings(SpanWriter spanWriter, Span<byte> span, SerializationContext context)
-        {
-            // Nothing for us to do here.
-        }
-
-        public void WriteString(
-            SpanWriter writer, 
-            Span<byte> span, 
-            string value, 
-            int offset, 
-            SerializationContext context)
-        {
-            int stringStartOffset = writer.WriteAndProvisionString(span, value, context);
-            writer.WriteUOffset(span, offset, stringStartOffset, context);
-        }
-    }
-
-    public class LruSharedStringWriter : IStringWriter
+    /// <summary>
+    /// LRU shared string writer.
+    /// </summary>
+    public class LruSharedStringWriter : ISharedStringWriter
     {
         private readonly LruManager manager;
 
+        /// <summary>
+        /// Defines a shared string writer with the given lookback capacity.
+        /// </summary>
         public LruSharedStringWriter(int lookbackCapacity)
         {
             this.manager = new LruManager(lookbackCapacity);
         }
 
+        /// <summary>
+        /// Writes the given string to the buffer.
+        /// </summary>
         public void WriteString(
             SpanWriter writer,
             Span<byte> span,
-            string value,
+            SharedString value,
             int offset,
             SerializationContext context)
         {
@@ -85,6 +76,9 @@ namespace FlatSharp
             }
         }
 
+        /// <summary>
+        /// Flushes any pending strings.
+        /// </summary>
         public void FlushStrings(
             SpanWriter spanWriter,
             Span<byte> span, 
@@ -100,7 +94,7 @@ namespace FlatSharp
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void Flush(
-            string value,
+            SharedString value,
             LinkedList<int> offsetList,
             SpanWriter writer,
             Span<byte> span,
@@ -118,15 +112,15 @@ namespace FlatSharp
 
         private class LruManager
         {
-            private readonly Dictionary<string, LinkedListNode<(string str, LinkedList<int> offsets)>> indexMap;
-            private readonly LinkedList<(string str, LinkedList<int> offsets)> lruList;
+            private readonly Dictionary<SharedString, LinkedListNode<(SharedString str, LinkedList<int> offsets)>> indexMap;
+            private readonly LinkedList<(SharedString str, LinkedList<int> offsets)> lruList;
             private int lookbackCount;
 
             public LruManager(int lookbackCapacity)
             {
                 this.lookbackCount = lookbackCapacity;
-                this.lruList = new LinkedList<(string, LinkedList<int>)>();
-                this.indexMap = new Dictionary<string, LinkedListNode<(string, LinkedList<int>)>>(lookbackCapacity);
+                this.lruList = new LinkedList<(SharedString, LinkedList<int>)>();
+                this.indexMap = new Dictionary<SharedString, LinkedListNode<(SharedString, LinkedList<int>)>>(lookbackCapacity);
             }
 
             public void Clear()
@@ -135,7 +129,7 @@ namespace FlatSharp
                 this.indexMap.Clear();
             }
 
-            public IEnumerable<(string, LinkedList<int>)> GetNodes()
+            public IEnumerable<(SharedString, LinkedList<int>)> GetNodes()
             {
                 var node = this.lruList.First;
 
@@ -146,7 +140,7 @@ namespace FlatSharp
                 }
             }
 
-            public (string str, LinkedList<int>)? Add(string @string, int offset)
+            public (SharedString str, LinkedList<int>)? Add(SharedString @string, int offset)
             {
                 var indexMap = this.indexMap;
                 var lruList = this.lruList;
@@ -157,7 +151,7 @@ namespace FlatSharp
                     return null;
                 }
 
-                (string, LinkedList<int>)? result = null;
+                (SharedString, LinkedList<int>)? result = null;
                 if (indexMap.Count >= lookbackCount)
                 {
                     // find the last node.
@@ -169,7 +163,7 @@ namespace FlatSharp
 
                 var offsetList = new LinkedList<int>();
                 offsetList.AddFirst(offset);
-                var lruNode = new LinkedListNode<(string, LinkedList<int>)>((@string, offsetList));
+                var lruNode = new LinkedListNode<(SharedString, LinkedList<int>)>((@string, offsetList));
 
                 lruList.AddLast(lruNode);
                 indexMap[@string] = lruNode;
@@ -179,15 +173,15 @@ namespace FlatSharp
         }
     }
 
-    public class LinkedListStringWriter : IStringWriter
+    public class LinkedListStringWriter : ISharedStringWriter
     {
         private readonly int capacity;
-        private readonly LinkedList<(string, LinkedList<int>)> list;
+        private readonly LinkedList<(SharedString, LinkedList<int>)> list;
 
         public LinkedListStringWriter(int capacity)
         {
             this.capacity = capacity;
-            this.list = new LinkedList<(string, LinkedList<int>)>();
+            this.list = new LinkedList<(SharedString, LinkedList<int>)>();
         }
 
         public void FlushStrings(SpanWriter spanWriter, Span<byte> span, SerializationContext context)
@@ -200,7 +194,7 @@ namespace FlatSharp
             }
         }
 
-        public void WriteString(SpanWriter writer, Span<byte> span, string value, int offset, SerializationContext context)
+        public void WriteString(SpanWriter writer, Span<byte> span, SharedString value, int offset, SerializationContext context)
         {
             var list = this.list;
 
@@ -234,7 +228,7 @@ namespace FlatSharp
             }
         }
 
-        private static void Flush(Span<byte> span, SpanWriter writer, string value, LinkedList<int> offsets, SerializationContext context)
+        private static void Flush(Span<byte> span, SpanWriter writer, SharedString value, LinkedList<int> offsets, SerializationContext context)
         {
             int stringOffset = writer.WriteAndProvisionString(span, value, context);
             var node = offsets.First;

@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2018 James Courtney
+ * Copyright 2020 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ namespace FlatSharp
     /// </summary>
     public class SpanWriter
     {
-        private readonly IStringWriter stringWriter;
+        private readonly ISharedStringWriter stringWriter;
 
         /// <summary>
         /// A default instance. Spanwriter is stateless and threadsafe.
@@ -38,7 +38,7 @@ namespace FlatSharp
         /// <summary>
         /// Initializes a new SpanWriter using default settings.
         /// </summary>
-        public SpanWriter() : this (new SimpleStringWriter())
+        public SpanWriter() : this (new LruSharedStringWriter(100))
         {
         }
 
@@ -47,7 +47,7 @@ namespace FlatSharp
         /// create a new span writer per thread or instance if using a custom StringWriter to avoid
         /// race conditions.
         /// </summary>
-        public SpanWriter(IStringWriter stringWriter)
+        public SpanWriter(ISharedStringWriter stringWriter)
         {
             this.stringWriter = stringWriter;
         }
@@ -149,6 +149,13 @@ namespace FlatSharp
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual void WriteString(Span<byte> span, string value, int offset, SerializationContext context)
+        {
+            int stringOffset = this.WriteAndProvisionString(span, value, context);
+            this.WriteUOffset(span, offset, stringOffset, context);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public virtual void WriteSharedString(Span<byte> span, SharedString value, int offset, SerializationContext context)
         {
             this.stringWriter.WriteString(this, span, value, offset, context);
         }
