@@ -403,6 +403,16 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
+        public void TypeModel_Union_StringAndSharedStringNotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(FlatBufferUnion<string, SharedString>)));
+
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(FlatBufferUnion<string, GenericTable<string>, SharedString>)));
+        }
+
+        [TestMethod]
         public void FlatBufferSerializer_OnlyTablesAllowedAsRootType()
         {
             Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>

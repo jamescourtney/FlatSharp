@@ -77,7 +77,9 @@ namespace FlatSharp.TypeModel
                 FlatBufferSchemaType.Struct
             };
 
+            bool containsString = false;
             HashSet<Type> uniqueTypes = new HashSet<Type>();
+
             foreach (var item in this.memberTypeModels)
             {
                 if (!validUnionMemberTypes.Contains(item.SchemaType))
@@ -87,6 +89,16 @@ namespace FlatSharp.TypeModel
                 else if (!uniqueTypes.Add(item.ClrType))
                 {
                     throw new InvalidFlatBufferDefinitionException($"Unions must consist of unique types. The type '{item.ClrType.Name}' was repeated.");
+                }
+
+                if (item.SchemaType == FlatBufferSchemaType.String)
+                {
+                    if (containsString)
+                    {
+                        throw new InvalidFlatBufferDefinitionException($"Unions may only contain one string type. String and SharedString cannot cohabit the union.");
+                    }
+
+                    containsString = true;
                 }
             }
         }

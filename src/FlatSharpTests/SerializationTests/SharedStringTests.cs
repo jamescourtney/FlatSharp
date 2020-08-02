@@ -110,7 +110,11 @@ namespace FlatSharpTests
             };
 
             byte[] destination = new byte[1024];
+
+            int maxBytes = FlatBufferSerializer.Default.GetMaxSize(t);
             int sharedBytesWritten = FlatBufferSerializer.Default.Serialize(t, destination, new SpanWriter(new LruSharedStringWriter(5)));
+
+            Assert.IsTrue(sharedBytesWritten <= maxBytes);
 
             byte[] expectedBytes = new byte[]
             {
@@ -124,8 +128,8 @@ namespace FlatSharpTests
                 8, 0, 0, 0,         // uoffset to second item
                 4, 0, 0, 0,         // uoffset to third item
                 6, 0, 0, 0,         // string length
-                (byte)'s', (byte)'t', (byte)'r', (byte)'i', (byte)'n', (byte)'g',
-                0 // null terminator.
+                (byte)'s', (byte)'t', (byte)'r', (byte)'i', 
+                (byte)'n', (byte)'g', 0 // null terminator.
             };
 
             Assert.IsTrue(expectedBytes.AsSpan().SequenceEqual(destination.AsSpan().Slice(0, sharedBytesWritten)));
@@ -161,7 +165,35 @@ namespace FlatSharpTests
 
             Assert.IsTrue(expectedBytes.AsSpan().SequenceEqual(destination.AsSpan().Slice(0, sharedBytesWritten)));
         }
-        
+
+        [TestMethod]
+        public void Test_TableSharedStringsWithNull()
+        {
+            var t = new StringsTable<SharedString>
+            {
+                String1 = null,
+                String2 = "string",
+                String3 = (string)null,
+            };
+
+            byte[] destination = new byte[1024];
+            int sharedBytesWritten = FlatBufferSerializer.Default.Serialize(t, destination, new SpanWriter(new LruSharedStringWriter(5)));
+
+            byte[] expectedBytes = new byte[]
+            {
+                4, 0, 0, 0,         // offset to table start
+                248, 255, 255, 255, // soffset to vtable.
+                12, 0, 0 ,0,        // uoffset to string
+                8, 0, 8, 0,         // vtable length, table length
+                0, 0, 4, 0,         // vtable(0), vtable(1)
+                6, 0, 0, 0,         // string length
+                (byte)'s', (byte)'t', (byte)'r', (byte)'i',
+                (byte)'n', (byte)'g', 0 // null terminator.
+            };
+
+            Assert.IsTrue(expectedBytes.AsSpan().SequenceEqual(destination.AsSpan().Slice(0, sharedBytesWritten)));
+        }
+
         /// <summary>
         /// Tests with an LRU string writer that can only hold onto one item at a time. Each new string it sees evicts the old one.
         /// </summary>
