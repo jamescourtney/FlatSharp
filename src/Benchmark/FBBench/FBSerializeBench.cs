@@ -58,15 +58,6 @@ namespace Benchmark.FBBench
         [Benchmark]
         public override void FlatSharp_Serialize_StringVector_Unsorted() => base.FlatSharp_Serialize_StringVector_Unsorted();
 
-        [Benchmark]
-        public override void FlatSharp_Serialize_RandomSharedStringVector() => base.FlatSharp_Serialize_RandomSharedStringVector();
-
-        [Benchmark]
-        public override void FlatSharp_Serialize_RepeatedSharedStringVector() => base.FlatSharp_Serialize_RepeatedSharedStringVector();
-
-        [Benchmark]
-        public override void FlatSharp_Serialize_NonSharedStringVector() => base.FlatSharp_Serialize_NonSharedStringVector();
-
         //[Benchmark]
         public override void FlatSharp_Serialize_IntVector_Sorted() => base.FlatSharp_Serialize_IntVector_Sorted();
 
