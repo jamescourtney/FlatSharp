@@ -24,7 +24,7 @@ namespace Benchmark.FBBench
     using System.Collections.Generic;
     using System.Linq;
 
-    [ShortRunJob]
+    [MediumRunJob]
     public class FBSharedStringBench
     {
         public VectorTable<string> nonSharedStringVector;
@@ -41,7 +41,8 @@ namespace Benchmark.FBBench
             100, 
             250, 
             500,
-            1001)]
+            1000,
+            2000)]
         public int LruLookbackSize { get; set; }
 
         [Params(1000)]
