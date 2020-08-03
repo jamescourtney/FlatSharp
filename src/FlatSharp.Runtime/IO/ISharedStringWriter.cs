@@ -173,70 +173,73 @@ namespace FlatSharp
         }
     }
 
-    public class LinkedListStringWriter : ISharedStringWriter
+    public class PLRUStringWriter : ISharedStringWriter
     {
-        private readonly int capacity;
-        private readonly LinkedList<(SharedString, LinkedList<int>)> list;
+        private readonly (SharedString str, LinkedList<int> offsets)?[] cache;
 
-        public LinkedListStringWriter(int capacity)
+        public PLRUStringWriter(int capacity)
         {
-            this.capacity = capacity;
-            this.list = new LinkedList<(SharedString, LinkedList<int>)>();
+            this.cache = new (SharedString str, LinkedList<int> offsets)?[capacity];
         }
 
         public void FlushStrings(SpanWriter spanWriter, Span<byte> span, SerializationContext context)
         {
-            var head = this.list.First;
-            while (head != null)
+            var cache = this.cache;
+            for (int i = 0; i < cache.Length; ++i)
             {
-                Flush(span, spanWriter, head.Value.Item1, head.Value.Item2, context);
-                head = head.Next;
+                var item = cache[i];
+                if (item != null)
+                {
+                    var value = item.Value;
+                    Flush(spanWriter, span, value.str, value.offsets, context);
+                }
             }
         }
 
         public void WriteString(SpanWriter writer, Span<byte> span, SharedString value, int offset, SerializationContext context)
         {
-            var list = this.list;
+            var cache = this.cache;
+            int index = GetIndex(value, cache.Length);
+            var tuple = cache[index];
 
-            // search
+            if (tuple != null)
             {
-                var node = list.Last;
-                while (node != null)
-                {
-                    if (node.Value.Item1 == value)
-                    {
-                        list.Remove(node);
-                        list.AddLast(node);
-                        node.Value.Item2.AddLast(offset);
-                        return;
-                    }
+                (SharedString str, LinkedList<int> offsetList) = tuple.Value;
 
-                    node = node.Previous;
+                if (str == value)
+                {
+                    offsetList.AddLast(offset);
+                }
+                else
+                {
+                    Flush(writer, span, str, offsetList, context);
+                    offsetList.Clear();
+                    cache[index] = (value, offsetList);
                 }
             }
-
-            // not found
-            var offsetList = new LinkedList<int>();
-            offsetList.AddLast(offset);
-            list.AddLast((value, offsetList));
-
-            if (list.Count > this.capacity)
+            else
             {
-                var removed = list.First;
-                list.RemoveFirst();
-                Flush(span, writer, removed.Value.Item1, removed.Value.Item2, context);
+                LinkedList<int> list = new LinkedList<int>();
+                list.AddLast(offset);
+                cache[index] = (value, list);
             }
         }
 
-        private static void Flush(Span<byte> span, SpanWriter writer, SharedString value, LinkedList<int> offsets, SerializationContext context)
+        private static void Flush(SpanWriter writer, Span<byte> span, string value, LinkedList<int> offsetList, SerializationContext context)
         {
             int stringOffset = writer.WriteAndProvisionString(span, value, context);
-            var node = offsets.First;
-            while (node != null)
+            var first = offsetList.First;
+
+            while (first != null)
             {
-                writer.WriteUOffset(span, node.Value, stringOffset, context);
-                node = node.Next;
+                writer.WriteUOffset(span, first.Value, stringOffset, context);
+                first = first.Next;
             }
+        }
+
+        private static int GetIndex(SharedString str, int length)
+        {
+            return (int.MaxValue & str.GetHashCode()) % length;
         }
     }
 }

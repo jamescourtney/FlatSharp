@@ -196,7 +196,7 @@ namespace FlatSharp
                 ReflectedMethods.GetMethod(typeof(InputBuffer), nameof(InputBuffer.ReadSharedString)),
                 typeof(StringSpanComparer),
                 new[] { "SharedString" },
-                "global::FlatSharp.Runtime.SharedString")
+                $"global::{typeof(SharedString).FullName}")
         };
 
         private BuiltInType(

@@ -36,10 +36,10 @@ namespace Benchmark.FBBench
         public byte[] serializedNonSharedStringVector = new byte[10 * 1024 * 1024];
 
         [Params(
-            //10, 
-            //50, 
-            //100, 
-            //250, 
+            10, 
+            50, 
+            100, 
+            250, 
             500,
             1001)]
         public int LruLookbackSize { get; set; }
@@ -84,15 +84,14 @@ namespace Benchmark.FBBench
                 SpanWriter.Instance);
         }
 
-        [Benchmark]
+        //[Benchmark]
         public int Serialize_RandomSharedString_LRU()
         {
             return FlatBufferSerializer.Default.Serialize(
                 randomSharedStringVector,
                 this.serializedRandomStringVector,
-                new SpanWriter(this.LruLookbackSize));
+                new SpanWriter(new LruSharedStringWriter(this.LruLookbackSize)));
         }
-
 
         [Benchmark]
         public int Serialize_RandomSharedString_PLRU()
@@ -100,18 +99,17 @@ namespace Benchmark.FBBench
             return FlatBufferSerializer.Default.Serialize(
                 randomSharedStringVector,
                 this.serializedRandomStringVector,
-                new SpanWriter(new SharedStringWriter(new JumerLru<string, LinkedList<int>>(this.LruLookbackSize))));
+                new SpanWriter(new PLRUStringWriter(this.LruLookbackSize)));
         }
 
-        [Benchmark]
+        //[Benchmark]
         public int Serialize_GuassianStringVector_LRU()
         {
             return FlatBufferSerializer.Default.Serialize(
                 guassianSharedStringVector,
                 this.serializedGuassianStringVector,
-                new SpanWriter(this.LruLookbackSize));
+                new SpanWriter(new LruSharedStringWriter(this.LruLookbackSize)));
         }
-
 
         [Benchmark]
         public int Serialize_GuassianStringVector_PLRU()
@@ -119,54 +117,37 @@ namespace Benchmark.FBBench
             return FlatBufferSerializer.Default.Serialize(
                 guassianSharedStringVector,
                 this.serializedGuassianStringVector,
-                new SpanWriter(new SharedStringWriter(new JumerLru<string, LinkedList<int>>(this.LruLookbackSize))));
+                new SpanWriter(new PLRUStringWriter(this.LruLookbackSize)));
         }
 
         [Benchmark]
-        public void Parse_NonSharedStringVector_FromNonSharedSource()
+        public void Parse_NonSharedStringVector_WithRegularString()
         {
-            FlatBufferSerializer.Default.Parse<VectorTable<string>>(
-                this.serializedNonSharedStringVector);
+            InputBuffer buffer = new ArrayInputBuffer(this.serializedNonSharedStringVector);
+            FlatBufferSerializer.Default.Parse<VectorTable<string>>(buffer);
         }
 
-        //[Benchmark]
-        public void Parse_NonSharedStringVector_FromRandomSharedSource()
+        [Benchmark]
+        public void Parse_NonSharedStringVector_WithSharedStringNoBuffer()
         {
-            FlatBufferSerializer.Default.Parse<VectorTable<string>>(
-                this.serializedRandomStringVector);
-        }
-
-        //[Benchmark]
-        public void Parse_NonSharedStringVector_FromGuassianRandomStringSource()
-        {
-            FlatBufferSerializer.Default.Parse<VectorTable<string>>(
-                this.serializedGuassianStringVector);
+            InputBuffer buffer = new ArrayInputBuffer(this.serializedNonSharedStringVector);
+            FlatBufferSerializer.Default.Parse<VectorTable<SharedString>>(buffer);
         }
 
         [Benchmark]
         public void Parse_SharedStringVector_FromNonSharedSource()
         {
-            InputBuffer buffer = new ArrayInputBuffer(this.serializedRandomStringVector);
-            buffer.SharedStringLruCache = new LruCache<int, SharedString>(this.LruLookbackSize);
+            InputBuffer buffer = new ArrayInputBuffer(this.serializedNonSharedStringVector);
+            buffer.SharedStringCache = new (int offset, SharedString str)?[this.LruLookbackSize];
 
             FlatBufferSerializer.Default.Parse<VectorTable<SharedString>>(buffer);
         }
-
-        [Benchmark]
-        public void Parse_SharedStringVector_FromGuassianRandomStringSource_LRU()
-        {
-            InputBuffer buffer = new ArrayInputBuffer(this.serializedGuassianStringVector);
-            buffer.SharedStringLruCache = new LruCache<int, SharedString>(this.LruLookbackSize);
-
-            FlatBufferSerializer.Default.Parse<VectorTable<SharedString>>(buffer);
-        }
-
 
         [Benchmark]
         public void Parse_SharedStringVector_FromGuassianRandomStringSource_PLRU()
         {
             InputBuffer buffer = new ArrayInputBuffer(this.serializedGuassianStringVector);
-            buffer.SharedStringLruCache = new JumerLru<int, SharedString>(this.LruLookbackSize);
+            buffer.SharedStringCache = new (int offset, SharedString str)?[this.LruLookbackSize];
 
             FlatBufferSerializer.Default.Parse<VectorTable<SharedString>>(buffer);
         }

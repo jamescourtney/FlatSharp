@@ -31,6 +31,8 @@ namespace FlatSharp
         internal const byte True = 1;
         internal const byte False = 0;
 
+        public (int offset, SharedString str)?[] SharedStringCache;
+
         #region Defined Methods
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -46,16 +48,51 @@ namespace FlatSharp
             {
                 // Strings are stored by reference.
                 offset += this.ReadUOffset(offset);
-                int numberOfBytes = (int)this.ReadUInt(offset);
-
-                return this.ReadStringProtected(offset + sizeof(int), numberOfBytes, Encoding);
+                return this.ReadStringFromUOffset(offset);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual SharedString ReadSharedString(int offset)
         {
-            return this.ReadString(offset);
+            checked
+            {
+                int uoffset = offset + this.ReadUOffset(offset);
+
+                var cache = this.SharedStringCache;
+                if (cache != null)
+                {
+                    int index = (int.MaxValue & uoffset.GetHashCode()) % cache.Length;
+                    var cacheItem = cache[index];
+
+                    if (cacheItem != null)
+                    {
+                        var value = cacheItem.Value;
+                        if (value.offset == uoffset)
+                        {
+                            return value.str;
+                        }
+                    }
+
+                    SharedString readValue = this.ReadStringFromUOffset(uoffset);
+                    cache[index] = (uoffset, readValue);
+                    return readValue;
+                }
+                else
+                {
+                    return this.ReadStringFromUOffset(uoffset);
+                }
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private string ReadStringFromUOffset(int uoffset)
+        {
+            checked
+            {
+                int numberOfBytes = (int)this.ReadUInt(uoffset);
+                return this.ReadStringProtected(uoffset + sizeof(int), numberOfBytes, Encoding);
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
