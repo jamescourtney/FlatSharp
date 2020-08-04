@@ -40,8 +40,16 @@ namespace BenchmarkCore
         private static SpanWriter llWriter;
 
         public static void Main(string[] args)
-        { 
-            BenchmarkRunner.Run<Program>();
+        {
+            FBSharedStringBench bench = new FBSharedStringBench();
+            bench.LruLookbackSize = 100;
+            bench.VectorLength = 1000;
+            bench.Setup();
+
+            while (true)
+            {
+                bench.Parse_NonSharedStringVector_WithSharedStringNoBuffer();
+            }
         }
 
         [Params(true, false)]
@@ -53,8 +61,7 @@ namespace BenchmarkCore
         [GlobalSetup]
         public void GlobalSetup()
         {
-            sharedWriter = new SpanWriter(new LruSharedStringWriter(LruLookupSize));
-            llWriter = new SpanWriter(new LruSharedStringWriter(10));
+            sharedWriter = new SpanWriter();
 
             Random rng = new Random();
             var guids = Enumerable.Range(0, GuidCount).Select(i => Guid.NewGuid().ToString()).ToList();

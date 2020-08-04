@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-namespace Benchmark.FBBench
+namespace BenchmarkCore
 {
     using BenchmarkDotNet.Attributes;
     using FlatSharp;
@@ -41,8 +41,7 @@ namespace Benchmark.FBBench
             100, 
             250, 
             500,
-            1000
-            )]
+            1000)]
         public int LruLookbackSize { get; set; }
 
         [Params(1000)]
@@ -51,7 +50,6 @@ namespace Benchmark.FBBench
         [GlobalSetup]
         public void Setup()
         {
-            System.Diagnostics.Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.High;
             Random random = new Random();
 
             List<string> guids =
@@ -69,9 +67,11 @@ namespace Benchmark.FBBench
             guassianSharedStringVector = new VectorTable<SharedString> { Vector = guassianGuids.Select(SharedString.Create).ToList() };
 
             int nonSharedSize = this.Serialize_NonSharedString();
+            int guassianLruSharedSize = this.Serialize_GuassianStringVector_LRU();
             int guassianPlruSharedSize = this.Serialize_GuassianStringVector_PLRU();
 
             Console.WriteLine($"NonShared: {nonSharedSize}");
+            Console.WriteLine($"GuassianLru: {guassianLruSharedSize}");
             Console.WriteLine($"GuassianPlru: {guassianPlruSharedSize}");
         }
 
@@ -84,6 +84,17 @@ namespace Benchmark.FBBench
                 SpanWriter.Instance);
         }
 
+        //[Benchmark]
+        public int Serialize_RandomSharedString_LRU()
+        {
+            var writer = new SpanWriter(this.LruLookbackSize);
+
+            return FlatBufferSerializer.Default.Serialize(
+                randomSharedStringVector,
+                this.serializedRandomStringVector,
+                writer);
+        }
+
         [Benchmark]
         public int Serialize_RandomSharedString_PLRU()
         {
@@ -92,6 +103,17 @@ namespace Benchmark.FBBench
             return FlatBufferSerializer.Default.Serialize(
                 randomSharedStringVector,
                 this.serializedRandomStringVector,
+                writer);
+        }
+
+        //[Benchmark]
+        public int Serialize_GuassianStringVector_LRU()
+        {
+            var writer = new SpanWriter(this.LruLookbackSize);
+
+            return FlatBufferSerializer.Default.Serialize(
+                guassianSharedStringVector,
+                this.serializedGuassianStringVector,
                 writer);
         }
 
@@ -114,21 +136,14 @@ namespace Benchmark.FBBench
         }
 
         [Benchmark]
-        public void Parse_GuassianSharedStringVector_WithRegularString()
-        {
-            InputBuffer buffer = new ArrayInputBuffer(this.serializedGuassianStringVector);
-            FlatBufferSerializer.Default.Parse<VectorTable<string>>(buffer);
-        }
-
-        [Benchmark]
-        public void Parse_NonSharedStringVector_WithSharedStringWithoutCache()
+        public void Parse_NonSharedStringVector_WithSharedStringNoBuffer()
         {
             InputBuffer buffer = new ArrayInputBuffer(this.serializedNonSharedStringVector);
             FlatBufferSerializer.Default.Parse<VectorTable<SharedString>>(buffer);
         }
 
         [Benchmark]
-        public void Parse_NonSharedStringVector_WithSharedStringWithCache()
+        public void Parse_SharedStringVector_FromNonSharedSource()
         {
             InputBuffer buffer = new ArrayInputBuffer(this.serializedNonSharedStringVector);
             buffer.SetSharedStringCacheSize(this.LruLookbackSize);
@@ -137,7 +152,7 @@ namespace Benchmark.FBBench
         }
 
         [Benchmark]
-        public void Parse_GuassianSharedStringVector_WithSharedStringWithCache()
+        public void Parse_SharedStringVector_FromGuassianRandomStringSource_PLRU()
         {
             InputBuffer buffer = new ArrayInputBuffer(this.serializedGuassianStringVector);
             buffer.SetSharedStringCacheSize(this.LruLookbackSize);

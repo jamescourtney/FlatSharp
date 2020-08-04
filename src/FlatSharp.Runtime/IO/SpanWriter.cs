@@ -28,36 +28,24 @@ namespace FlatSharp
     /// </summary>
     public class SpanWriter
     {
-        private readonly ISharedStringWriter stringWriter;
-
         /// <summary>
         /// A default instance. Spanwriter is stateless and threadsafe.
         /// </summary>
         public static SpanWriter Instance { get; } = new SpanWriter();
 
         /// <summary>
-        /// Initializes a new SpanWriter using default settings.
+        /// Initializes a new SpanWriter.
         /// </summary>
-        public SpanWriter() : this (new LruSharedStringWriter(100))
+        public SpanWriter() : this(1)
         {
         }
 
         /// <summary>
-        /// Initializes a new SpanWriter using the given sting writer. It is recommended to
-        /// create a new span writer per thread or instance if using a custom StringWriter to avoid
-        /// race conditions.
+        /// Initializes a new SpanWriter with the given cache size.
         /// </summary>
-        public SpanWriter(ISharedStringWriter stringWriter)
+        public SpanWriter(int maxSharedStringCount)
         {
-            this.stringWriter = stringWriter;
-        }
-
-        /// <summary>
-        /// Flushes any pending writes from the string writer.
-        /// </summary>
-        public void FinishWrite(Span<byte> span, SerializationContext context)
-        {
-            this.stringWriter.FlushStrings(this, span, context);
+            this.maxSharedStringCount = maxSharedStringCount;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -154,10 +142,102 @@ namespace FlatSharp
             this.WriteUOffset(span, offset, stringOffset, context);
         }
 
+        const int LINE_SIZE = 128;
+
+        [ThreadStatic]
+        private static CacheEntry[] ThreadLocalOffsetCache;
+        private CacheEntry[] sharedStringOffsetCache;
+        private int maxSharedStringCount;
+
+        protected internal virtual void PrepareWrite()
+        {
+            CacheEntry[] value = ThreadLocalOffsetCache;
+
+            if (value == null || value.Length < this.maxSharedStringCount)
+            {
+                value = new CacheEntry[this.maxSharedStringCount];
+                for (int i = 0; i < value.Length; ++i)
+                {
+                    var entry = new CacheEntry();
+                    entry.Offsets = new int[LINE_SIZE];
+
+                    value[i] = entry;
+                }
+
+                ThreadLocalOffsetCache = value;
+            }
+
+            this.sharedStringOffsetCache = value;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual void WriteSharedString(Span<byte> span, SharedString value, int offset, SerializationContext context)
         {
-            this.stringWriter.WriteString(this, span, value, offset, context);
+            var cache = this.sharedStringOffsetCache;
+
+            int index = (int.MaxValue & value.GetHashCode()) % cache.Length;
+
+            ref CacheEntry item = ref cache[index];
+
+            ref int offsetCount = ref item.OffsetsLength;
+            var offsets = item.Offsets;
+            SharedString sharedString = item.String;
+
+            if (value.FastEquals(sharedString))
+            {
+                if (offsetCount >= LINE_SIZE)
+                {
+                    this.FlushSharedString(span, sharedString, offsets.AsSpan(0, offsetCount), context);
+                }
+
+                offsets[offsetCount++] = offset;
+                return;
+            }
+
+            if (sharedString != null)
+            {
+                this.FlushSharedString(span, sharedString, offsets.AsSpan(0, offsetCount), context);
+                offsetCount = 0;
+            }
+
+            item.String = value;
+            offsets[offsetCount++] = offset;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void FlushSharedString(Span<byte> span, string value, Span<int> offsets, SerializationContext context)
+        {
+            int stringOffset = this.WriteAndProvisionString(span, value, context);
+
+            int length = offsets.Length;
+            for (int i = 0; i < length; ++i)
+            {
+                this.WriteUOffset(span, offsets[i], stringOffset, context);
+            }
+        }
+
+        /// <summary>
+        /// Flushes any pending writes.
+        /// </summary>
+        public void FinishWrite(Span<byte> span, SerializationContext context)
+        {
+            var cache = this.sharedStringOffsetCache;
+
+            for (int i = 0; i < cache.Length; ++i)
+            {
+                ref CacheEntry item = ref cache[i];
+                ref int offsetCount = ref item.OffsetsLength;
+
+                var str = item.String;
+                item.String = null;
+
+                if ((object)str != null)
+                {
+                    this.FlushSharedString(span, str, item.Offsets.AsSpan(0, offsetCount), context);
+                }
+
+                offsetCount = 0;
+            }
         }
 
         /// <summary>
@@ -243,6 +323,18 @@ namespace FlatSharp
             {
                 throw new InvalidOperationException($"BugCheck: attempted to read unaligned data at index: {offset}, expected alignment: {size}");
             }
+        }
+
+        private struct CacheEntry
+        {
+            // The string
+            public SharedString String;
+
+            // Array of offsets we need to write for this string.
+            public int[] Offsets;
+
+            // The number of offsets to write, starting from 0. Allows us "grow" the list.
+            public int OffsetsLength;
         }
     }
 }

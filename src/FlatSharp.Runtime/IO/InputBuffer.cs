@@ -31,9 +31,22 @@ namespace FlatSharp
         internal const byte True = 1;
         internal const byte False = 0;
 
-        public (int offset, SharedString str)?[] SharedStringCache;
+        private CacheEntry[] sharedStringCache;
 
         #region Defined Methods
+
+        protected InputBuffer()
+        {
+            this.SetSharedStringCacheSize(1);
+        }
+
+        /// <summary>
+        /// Sets the capacity of the shared string cache for this buffer.
+        /// </summary>
+        public void SetSharedStringCacheSize(int size)
+        {
+            this.sharedStringCache = new CacheEntry[size];
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool ReadBool(int offset)
@@ -52,36 +65,35 @@ namespace FlatSharp
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual SharedString ReadSharedString(int offset)
         {
-            checked
+            var cache = this.sharedStringCache;
+            int uoffset = checked(offset + this.ReadUOffset(offset));
+
+            // Unlike spanwriter, which sits inside a synchronous method,
+            // InputBuffer may be used concurrently on the same buffer.
+            // Coarse-grained locking isn't great on a critical path, but adding fine-grained
+            // locking adds quite a bit of initialization time and more time
+            // to try to grab the lock on the bucket.
+            // TODO: consider benchmarking effects of TryEnter
+            // where we just reparse the string if we fail to immediately
+            // enter the lock.
+            lock (cache)
             {
-                int uoffset = offset + this.ReadUOffset(offset);
+                // uoffset guaranteed to be aligned to a 4 byte boundary, so we can easily 
+                // divide by 4 as a quick and dirty hash.
+                ref CacheEntry cacheItem = ref cache[(uoffset >> 2) % cache.Length];
+                ref int cacheOffset = ref cacheItem.Offset;
 
-                var cache = this.SharedStringCache;
-                if (cache != null)
+                if (cacheOffset == uoffset)
                 {
-                    int index = (int.MaxValue & uoffset.GetHashCode()) % cache.Length;
-                    var cacheItem = cache[index];
-
-                    if (cacheItem != null)
-                    {
-                        var value = cacheItem.Value;
-                        if (value.offset == uoffset)
-                        {
-                            return value.str;
-                        }
-                    }
-
-                    SharedString readValue = this.ReadStringFromUOffset(uoffset);
-                    cache[index] = (uoffset, readValue);
-                    return readValue;
+                    return cacheItem.String;
                 }
-                else
-                {
-                    return this.ReadStringFromUOffset(uoffset);
-                }
+
+                SharedString readValue = SharedString.FromNonNullStr(this.ReadStringFromUOffset(uoffset));
+                cacheOffset = uoffset;
+                cacheItem.String = readValue;
+                return readValue;
             }
         }
 
@@ -273,6 +285,12 @@ namespace FlatSharp
             {
                 throw new InvalidOperationException($"BugCheck: attempted to read unaligned data at index: {offset}, expected alignment: {size}");
             }
+        }
+
+        private struct CacheEntry
+        {
+            public int Offset;
+            public SharedString String;
         }
     }
 }

@@ -22,9 +22,8 @@ namespace FlatSharp
     /// <summary>
     /// Represents a shared string
     /// </summary>
-    public class SharedString : IEquatable<SharedString>
+    public sealed class SharedString : IEquatable<SharedString>
     {
-        private bool hasHashCode;
         private int hashCode;
         private readonly string str;
 
@@ -43,32 +42,48 @@ namespace FlatSharp
             return new SharedString(str);
         }
 
+        internal static SharedString FromNonNullStr(string str)
+        {
+            return new SharedString(str);
+        }
+
         public string String => this.str;
 
-        public bool Equals(SharedString other) => StaticEquals(this, other);
+        public bool Equals(SharedString other)
+        {
+            if ((object)other == null)
+            {
+                return false;
+            }
+
+            return this.GetHashCode() == other.GetHashCode() && this.str == other.str;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool FastEquals(SharedString other)
+        {
+            if ((object)other == null)
+            {
+                return false;
+            }
+
+            return this.hashCode == other.hashCode && this.str == other.str;
+        }
 
         public override int GetHashCode()
         {
-            ref bool hasHashCode = ref this.hasHashCode;
-            if (hasHashCode)
+            ref int hashCode = ref this.hashCode;
+            if (hashCode == 0)
             {
-                return this.hashCode;
+                hashCode = this.str.GetHashCode();
             }
 
-            hasHashCode = true;
-            var hashCode = this.str.GetHashCode();
-            this.hashCode = hashCode;
             return hashCode;
         }
 
         public override bool Equals(object obj)
         {
-            if (obj is SharedString sharedStr)
-            {
-                return StaticEquals(this, sharedStr);
-            }
-
-            return false;
+            return this.Equals(obj as SharedString);
         }
 
         public static bool operator ==(SharedString x, SharedString y) => StaticEquals(x, y);
@@ -82,14 +97,12 @@ namespace FlatSharp
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static bool StaticEquals(SharedString x, SharedString y)
         {
-            if (object.ReferenceEquals(x, y))
-            {
-                return true;
-            }
+            bool xNull = (object)x == null;
+            bool yNull = (object)y == null;
 
-            if (object.ReferenceEquals(x, null) || object.ReferenceEquals(y, null))
+            if (xNull || yNull)
             {
-                return false;
+                return xNull && yNull;
             }
 
             return x.GetHashCode() == y.GetHashCode() &&

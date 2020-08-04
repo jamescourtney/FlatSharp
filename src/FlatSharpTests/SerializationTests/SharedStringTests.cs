@@ -21,6 +21,7 @@ namespace FlatSharpTests
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using System;
     using System.Collections.Generic;
+    using System.Text;
 
     /// <summary>
     /// Tests default values on a table.
@@ -37,7 +38,8 @@ namespace FlatSharpTests
             };
 
             byte[] destination = new byte[1024];
-            int bytesWritten = FlatBufferSerializer.Default.Serialize(t, destination, new SpanWriter(new LruSharedStringWriter(5)));
+            var writer = new SpanWriter(5);
+            int bytesWritten = FlatBufferSerializer.Default.Serialize(t, destination, writer);
 
             byte[] expectedBytes = new byte[]
             {
@@ -75,7 +77,8 @@ namespace FlatSharpTests
             };
 
             byte[] destination = new byte[1024];
-            int sharedBytesWritten = FlatBufferSerializer.Default.Serialize(t, destination, new SpanWriter(new LruSharedStringWriter(5)));
+            var writer = new SpanWriter(5);
+            int bytesWritten = FlatBufferSerializer.Default.Serialize(t, destination, writer);
 
             byte[] expectedBytes = new byte[]
             {
@@ -98,7 +101,7 @@ namespace FlatSharpTests
                 (byte)'n', (byte)'g', 0, // null terminator.
             };
 
-            Assert.IsTrue(expectedBytes.AsSpan().SequenceEqual(destination.AsSpan().Slice(0, sharedBytesWritten)));
+            Assert.IsTrue(expectedBytes.AsSpan().SequenceEqual(destination.AsSpan().Slice(0, bytesWritten)));
         }
 
         [TestMethod]
@@ -112,9 +115,10 @@ namespace FlatSharpTests
             byte[] destination = new byte[1024];
 
             int maxBytes = FlatBufferSerializer.Default.GetMaxSize(t);
-            int sharedBytesWritten = FlatBufferSerializer.Default.Serialize(t, destination, new SpanWriter(new LruSharedStringWriter(5)));
+            var writer = new SpanWriter(5);
+            int bytesWritten = FlatBufferSerializer.Default.Serialize(t, destination, writer);
 
-            Assert.IsTrue(sharedBytesWritten <= maxBytes);
+            Assert.IsTrue(bytesWritten <= maxBytes);
 
             byte[] expectedBytes = new byte[]
             {
@@ -132,7 +136,7 @@ namespace FlatSharpTests
                 (byte)'n', (byte)'g', 0 // null terminator.
             };
 
-            Assert.IsTrue(expectedBytes.AsSpan().SequenceEqual(destination.AsSpan().Slice(0, sharedBytesWritten)));
+            Assert.IsTrue(expectedBytes.AsSpan().SequenceEqual(destination.AsSpan().Slice(0, bytesWritten)));
         }
 
         [TestMethod]
@@ -146,7 +150,8 @@ namespace FlatSharpTests
             };
 
             byte[] destination = new byte[1024];
-            int sharedBytesWritten = FlatBufferSerializer.Default.Serialize(t, destination, new SpanWriter(new LruSharedStringWriter(5)));
+            var writer = new SpanWriter(5);
+            int bytesWritten = FlatBufferSerializer.Default.Serialize(t, destination, writer);
 
             byte[] expectedBytes = new byte[]
             {
@@ -163,7 +168,7 @@ namespace FlatSharpTests
                 0 // null terminator.
             };
 
-            Assert.IsTrue(expectedBytes.AsSpan().SequenceEqual(destination.AsSpan().Slice(0, sharedBytesWritten)));
+            Assert.IsTrue(expectedBytes.AsSpan().SequenceEqual(destination.AsSpan().Slice(0, bytesWritten)));
         }
 
         [TestMethod]
@@ -177,7 +182,8 @@ namespace FlatSharpTests
             };
 
             byte[] destination = new byte[1024];
-            int sharedBytesWritten = FlatBufferSerializer.Default.Serialize(t, destination, new SpanWriter(new LruSharedStringWriter(5)));
+            var writer = new SpanWriter(5);
+            int bytesWritten = FlatBufferSerializer.Default.Serialize(t, destination, writer);
 
             byte[] expectedBytes = new byte[]
             {
@@ -191,7 +197,7 @@ namespace FlatSharpTests
                 (byte)'n', (byte)'g', 0 // null terminator.
             };
 
-            Assert.IsTrue(expectedBytes.AsSpan().SequenceEqual(destination.AsSpan().Slice(0, sharedBytesWritten)));
+            Assert.IsTrue(expectedBytes.AsSpan().SequenceEqual(destination.AsSpan().Slice(0, bytesWritten)));
         }
 
         /// <summary>
@@ -208,7 +214,8 @@ namespace FlatSharpTests
             };
 
             byte[] destination = new byte[1024];
-            int sharedBytesWritten = FlatBufferSerializer.Default.Serialize(t, destination, new SpanWriter(new LruSharedStringWriter(1)));
+            var writer = new SpanWriter(1);
+            int bytesWritten = FlatBufferSerializer.Default.Serialize(t, destination, writer);
 
             byte[] expectedBytes = new byte[]
             {
@@ -230,7 +237,7 @@ namespace FlatSharpTests
                 (byte)'n', (byte)'g', 0 // null terminator
             };
 
-            Assert.IsTrue(expectedBytes.AsSpan().SequenceEqual(destination.AsSpan().Slice(0, sharedBytesWritten)));
+            Assert.IsTrue(expectedBytes.AsSpan().SequenceEqual(destination.AsSpan().Slice(0, bytesWritten)));
         }
 
         /// <summary>
@@ -247,26 +254,43 @@ namespace FlatSharpTests
             };
 
             byte[] destination = new byte[1024];
-            int sharedBytesWritten = FlatBufferSerializer.Default.Serialize(t, destination, new SpanWriter(new LruSharedStringWriter(2)));
+            var writer = new SpanWriter(5);
+            FlatBufferSerializer.Default.Serialize(t, destination, writer);
 
-            byte[] expectedBytes = new byte[]
+            byte[] stringBytes = Encoding.UTF8.GetBytes("string");
+
+            // We can't predict ordering since there is hashing under the hood.
+            int firstIndex = destination.AsSpan().IndexOf(stringBytes);
+            int secondIndex = destination.AsSpan().Slice(0, firstIndex + 1).IndexOf(stringBytes);
+            Assert.AreEqual(-1, secondIndex);
+        }
+
+        /// <summary>
+        /// Tests reading shared strings.
+        /// </summary>
+        [TestMethod]
+        public void Test_ReadSharedStrings()
+        {
+            var t = new StringsTable<SharedString>
             {
-                4, 0, 0, 0,         // offset to table start
-                240, 255, 255, 255, // soffset to vtable.
-                24, 0, 0, 0,        // uoffset to string 1
-                32, 0, 0 ,0,        // uoffset to string 2
-                16, 0, 0, 0,        // uoffset to string 3 
-                10, 0, 16, 0,       // vtable length, table length
-                4, 0, 8, 0,         // vtable(0), vtable(1)
-                12, 0, 0, 0,        // vtable(2), padding
-                6, 0, 0, 0,         // string0 length
-                (byte)'s', (byte)'t', (byte)'r', (byte)'i',
-                (byte)'n', (byte)'g', 0, 0, // null terminator + 1 byte padding
-                3, 0, 0, 0,         // string1 length
-                (byte)'f', (byte)'o', (byte)'o', 0, // string1 + null terminator
+                String1 = "string",
+                String2 = "foo",
+                String3 = "string",
             };
 
-            Assert.IsTrue(expectedBytes.AsSpan().SequenceEqual(destination.AsSpan().Slice(0, sharedBytesWritten)));
+            byte[] destination = new byte[1024];
+            var writer = new SpanWriter(5);
+            int bytesWritten = FlatBufferSerializer.Default.Serialize(t, destination, writer);
+
+            ArrayInputBuffer buffer = new ArrayInputBuffer(destination);
+            buffer.SetSharedStringCacheSize(5);
+
+            var table = FlatBufferSerializer.Default.Parse<StringsTable<SharedString>>(buffer);
+            Assert.AreEqual("string", (string)table.String1);
+            Assert.AreEqual("foo", (string)table.String2);
+            Assert.AreEqual("string", (string)table.String3);
+
+            Assert.IsTrue(object.ReferenceEquals(table.String1.String, table.String3.String));
         }
 
         [FlatBufferTable]
