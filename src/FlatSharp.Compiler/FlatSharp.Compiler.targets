@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Project>
-  <Target Name="FlatSharpFbsCompile" BeforeTargets="BeforeBuild">
+  <Target Name="FlatSharpFbsCompile" BeforeTargets="ResolveAssemblyReferences">
     <PropertyGroup Condition=" '$(TargetFrameworkIdentifier)' != '.NETFramework' ">
       <CompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\tools\netcoreapp2.1\FlatSharp.Compiler.dll'))</CompilerPath>
       <CompilerInvocation>dotnet $(CompilerPath)</CompilerInvocation>
