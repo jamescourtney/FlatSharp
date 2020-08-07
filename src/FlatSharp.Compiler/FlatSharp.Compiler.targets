@@ -12,6 +12,11 @@
     </PropertyGroup>
 
     <Message Text="$(CompilerInvocation) %(FlatSharpSchema.fullpath)" Importance="high" />
-    <Exec Command="$(CompilerInvocation) %(FlatSharpSchema.fullpath)" CustomErrorRegularExpression=".*" Condition=" '%(FlatSharpSchema.fullpath)' != '' " />
+    <Exec Command="$(CompilerInvocation) %(FlatSharpSchema.fullpath) $(IntermediateOutputPath)" CustomErrorRegularExpression=".*" Condition=" '%(FlatSharpSchema.fullpath)' != '' " />
+    <ItemGroup>
+      <GeneratedFbs Include="$(IntermediateOutputPath)*.generated.cs" />
+      <Compile Include="@(GeneratedFbs)" />
+      <FileWrites Include="@(GeneratedFbs)" />
+    </ItemGroup>
   </Target>
 </Project>
