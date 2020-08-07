@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\common.props" />
+  <Import Project="..\netfx.props" />
   
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.1;net47</TargetFrameworks>
