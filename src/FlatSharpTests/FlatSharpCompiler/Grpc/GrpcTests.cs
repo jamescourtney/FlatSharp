@@ -82,15 +82,26 @@ namespace routeguide;
             var rpcType = compiled.GetType("routeguide.RouteGuide");
             Assert.IsNotNull(rpcType);
 
-            var bindServiceMethod = rpcType.GetMethod("BindService", BindingFlags.Public | BindingFlags.Static);
-            Assert.IsNotNull(bindServiceMethod);
-
             var serverBaseClass = rpcType.GetNestedType("RouteGuideServerBase");
             Assert.IsTrue(serverBaseClass.IsAbstract);
             var attribute = serverBaseClass.GetCustomAttribute<Grpc.Core.BindServiceMethodAttribute>();
             Assert.IsNotNull(attribute);
+
+            var bindServiceMethod = rpcType.GetMethod("BindService", new [] {serverBaseClass});
+            Assert.IsNotNull(bindServiceMethod);
             Assert.AreEqual(bindServiceMethod.Name, attribute.BindMethodName);
             Assert.AreEqual(rpcType, attribute.BindType);
+            Assert.IsTrue(bindServiceMethod.IsPublic);
+            Assert.IsTrue(bindServiceMethod.IsStatic);
+
+            var bindServiceOverload =
+                rpcType.GetMethod("BindService", new[] {typeof(Grpc.Core.ServiceBinderBase), serverBaseClass});
+            Assert.IsNotNull(bindServiceOverload);
+            Assert.AreEqual(bindServiceOverload.Name, attribute.BindMethodName);
+            Assert.AreEqual(rpcType, attribute.BindType);
+            Assert.IsTrue(bindServiceOverload.IsPublic);
+            Assert.IsTrue(bindServiceOverload.IsStatic);
+            Assert.AreEqual(bindServiceOverload.ReturnType, typeof(void));
 
             var clientClass = rpcType.GetNestedType("RouteGuideClient");
             Assert.IsFalse(clientClass.IsAbstract);
