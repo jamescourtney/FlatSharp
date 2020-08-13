@@ -21,6 +21,7 @@ namespace BenchmarkCore
     using System.Diagnostics;
     using System.Linq;
     using benchfb;
+    using Benchmark.FBBench;
     using BenchmarkDotNet.Attributes;
     using BenchmarkDotNet.Running;
     using FlatSharp;
@@ -42,13 +43,13 @@ namespace BenchmarkCore
         public static void Main(string[] args)
         {
             FBSharedStringBench bench = new FBSharedStringBench();
-            bench.LruLookbackSize = 100;
+            bench.LruLookbackSize = 3803;
             bench.VectorLength = 1000;
             bench.Setup();
 
             while (true)
             {
-                bench.Parse_NonSharedStringVector_WithSharedStringNoBuffer();
+                bench.Parse_NonSharedStringVector_WithSharedStringWithoutCache();
             }
         }
 

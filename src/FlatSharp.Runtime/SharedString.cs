@@ -42,11 +42,6 @@ namespace FlatSharp
             return new SharedString(str);
         }
 
-        internal static SharedString FromNonNullStr(string str)
-        {
-            return new SharedString(str);
-        }
-
         public string String => this.str;
 
         public bool Equals(SharedString other)
@@ -57,17 +52,6 @@ namespace FlatSharp
             }
 
             return this.GetHashCode() == other.GetHashCode() && this.str == other.str;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool FastEquals(SharedString other)
-        {
-            if ((object)other == null)
-            {
-                return false;
-            }
-
-            return this.hashCode == other.hashCode && this.str == other.str;
         }
 
         public override int GetHashCode()

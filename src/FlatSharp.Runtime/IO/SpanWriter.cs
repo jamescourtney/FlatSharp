@@ -33,19 +33,21 @@ namespace FlatSharp
         /// </summary>
         public static SpanWriter Instance { get; } = new SpanWriter();
 
+        private readonly ISharedStringWriter sharedStringWriter;
+
         /// <summary>
         /// Initializes a new SpanWriter.
         /// </summary>
-        public SpanWriter() : this(1)
+        public SpanWriter() : this(null)
         {
         }
 
         /// <summary>
-        /// Initializes a new SpanWriter with the given cache size.
+        /// Initializes a new SpanWriter with the given shared string writer.
         /// </summary>
-        public SpanWriter(int maxSharedStringCount)
+        public SpanWriter(ISharedStringWriter sharedStringWriter)
         {
-            this.maxSharedStringCount = maxSharedStringCount;
+            this.sharedStringWriter = sharedStringWriter;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -142,78 +144,26 @@ namespace FlatSharp
             this.WriteUOffset(span, offset, stringOffset, context);
         }
 
-        const int LINE_SIZE = 128;
-
-        [ThreadStatic]
-        private static CacheEntry[] ThreadLocalOffsetCache;
-        private CacheEntry[] sharedStringOffsetCache;
-        private int maxSharedStringCount;
-
-        protected internal virtual void PrepareWrite()
-        {
-            CacheEntry[] value = ThreadLocalOffsetCache;
-
-            if (value == null || value.Length < this.maxSharedStringCount)
-            {
-                value = new CacheEntry[this.maxSharedStringCount];
-                for (int i = 0; i < value.Length; ++i)
-                {
-                    var entry = new CacheEntry();
-                    entry.Offsets = new int[LINE_SIZE];
-
-                    value[i] = entry;
-                }
-
-                ThreadLocalOffsetCache = value;
-            }
-
-            this.sharedStringOffsetCache = value;
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual void WriteSharedString(Span<byte> span, SharedString value, int offset, SerializationContext context)
         {
-            var cache = this.sharedStringOffsetCache;
-
-            int index = (int.MaxValue & value.GetHashCode()) % cache.Length;
-
-            ref CacheEntry item = ref cache[index];
-
-            ref int offsetCount = ref item.OffsetsLength;
-            var offsets = item.Offsets;
-            SharedString sharedString = item.String;
-
-            if (value.FastEquals(sharedString))
+            var manager = this.sharedStringWriter;
+            if (manager != null)
             {
-                if (offsetCount >= LINE_SIZE)
-                {
-                    this.FlushSharedString(span, sharedString, offsets.AsSpan(0, offsetCount), context);
-                }
-
-                offsets[offsetCount++] = offset;
-                return;
+                manager.WriteSharedString(this, span, offset, value, context);
             }
-
-            if (sharedString != null)
+            else
             {
-                this.FlushSharedString(span, sharedString, offsets.AsSpan(0, offsetCount), context);
-                offsetCount = 0;
+                this.WriteString(span, value, offset, context);
             }
-
-            item.String = value;
-            offsets[offsetCount++] = offset;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void FlushSharedString(Span<byte> span, string value, Span<int> offsets, SerializationContext context)
+        /// <summary>
+        /// Prepares to write.
+        /// </summary>
+        public void PrepareWrite()
         {
-            int stringOffset = this.WriteAndProvisionString(span, value, context);
-
-            int length = offsets.Length;
-            for (int i = 0; i < length; ++i)
-            {
-                this.WriteUOffset(span, offsets[i], stringOffset, context);
-            }
+            this.sharedStringWriter?.PrepareWrite();
         }
 
         /// <summary>
@@ -221,22 +171,10 @@ namespace FlatSharp
         /// </summary>
         public void FinishWrite(Span<byte> span, SerializationContext context)
         {
-            var cache = this.sharedStringOffsetCache;
-
-            for (int i = 0; i < cache.Length; ++i)
+            var manager = this.sharedStringWriter;
+            if (manager != null)
             {
-                ref CacheEntry item = ref cache[i];
-                ref int offsetCount = ref item.OffsetsLength;
-
-                var str = item.String;
-                item.String = null;
-
-                if ((object)str != null)
-                {
-                    this.FlushSharedString(span, str, item.Offsets.AsSpan(0, offsetCount), context);
-                }
-
-                offsetCount = 0;
+                manager.FlushWrites(this, span, context);
             }
         }
 
