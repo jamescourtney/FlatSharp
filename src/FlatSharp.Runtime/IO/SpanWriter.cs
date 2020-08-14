@@ -262,17 +262,5 @@ namespace FlatSharp
                 throw new InvalidOperationException($"BugCheck: attempted to read unaligned data at index: {offset}, expected alignment: {size}");
             }
         }
-
-        private struct CacheEntry
-        {
-            // The string
-            public SharedString String;
-
-            // Array of offsets we need to write for this string.
-            public int[] Offsets;
-
-            // The number of offsets to write, starting from 0. Allows us "grow" the list.
-            public int OffsetsLength;
-        }
     }
 }

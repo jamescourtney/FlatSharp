@@ -38,7 +38,7 @@ namespace FlatSharpTests
             };
 
             byte[] destination = new byte[1024];
-            var writer = new SpanWriter(new SharedStringWriter(5));
+            var writer = new SpanWriter(new SharedStringWriter(3));
             int bytesWritten = FlatBufferSerializer.Default.Serialize(t, destination, writer);
 
             byte[] expectedBytes = new byte[]
@@ -77,7 +77,7 @@ namespace FlatSharpTests
             };
 
             byte[] destination = new byte[1024];
-            var writer = new SpanWriter(new SharedStringWriter(5));
+            var writer = new SpanWriter(new SharedStringWriter());
             int bytesWritten = FlatBufferSerializer.Default.Serialize(t, destination, writer);
 
             byte[] expectedBytes = new byte[]
@@ -150,7 +150,7 @@ namespace FlatSharpTests
             };
 
             byte[] destination = new byte[1024];
-            var writer = new SpanWriter(new SharedStringWriter(5));
+            var writer = new SpanWriter(new SharedStringWriter());
             int bytesWritten = FlatBufferSerializer.Default.Serialize(t, destination, writer);
 
             byte[] expectedBytes = new byte[]
@@ -182,7 +182,7 @@ namespace FlatSharpTests
             };
 
             byte[] destination = new byte[1024];
-            var writer = new SpanWriter(new SharedStringWriter(5));
+            var writer = new SpanWriter(new SharedStringWriter());
             int bytesWritten = FlatBufferSerializer.Default.Serialize(t, destination, writer);
 
             byte[] expectedBytes = new byte[]
@@ -254,7 +254,7 @@ namespace FlatSharpTests
             };
 
             byte[] destination = new byte[1024];
-            var writer = new SpanWriter(new SharedStringWriter(5));
+            var writer = new SpanWriter(new SharedStringWriter());
             FlatBufferSerializer.Default.Serialize(t, destination, writer);
 
             byte[] stringBytes = Encoding.UTF8.GetBytes("string");
@@ -279,11 +279,11 @@ namespace FlatSharpTests
             };
 
             byte[] destination = new byte[1024];
-            var writer = new SpanWriter(new SharedStringWriter(5));
+            var writer = new SpanWriter(new SharedStringWriter());
             int bytesWritten = FlatBufferSerializer.Default.Serialize(t, destination, writer);
 
             ArrayInputBuffer buffer = new ArrayInputBuffer(destination); 
-            buffer.SetSharedStringReader(new PseudoLruSharedStringReader(1000));
+            buffer.SetSharedStringReader(new SharedStringReader());
 
             var table = FlatBufferSerializer.Default.Parse<StringsTable<SharedString>>(buffer);
             Assert.AreEqual("string", (string)table.String1);

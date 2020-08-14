@@ -17,23 +17,34 @@
 namespace FlatSharp
 {
     using System;
+    using System.Collections.Generic;
     using System.Runtime.CompilerServices;
 
     /// <summary>
-    /// A pseudo LRU string writer that uses a flat array as a hash table.
-    /// On conflict, a string is flushed to the span.
+    /// A shared string writer that uses a direct-map hash table.
     /// </summary>
     public class SharedStringWriter : ISharedStringWriter
     {
-       
-        const int LINE_SIZE = 128;
         private readonly WriteCacheEntry[] sharedStringOffsetCache;
 
         /// <summary>
-        /// Creates a new PseudoLruStringWriter with the given capacity.
+        /// Initializes a shared string writer with default settings.
         /// </summary>
+        public SharedStringWriter() : this(257)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new shared string writer with the given capacity.
+        /// </summary>
+        /// <param name="hashTableCapacity">The size of the hash table.</param>
         public SharedStringWriter(int hashTableCapacity)
         {
+            if (hashTableCapacity <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(hashTableCapacity));
+            }
+
             this.sharedStringOffsetCache = new WriteCacheEntry[hashTableCapacity];
         }
 
@@ -46,12 +57,14 @@ namespace FlatSharp
             for (int i = 0; i < cache.Length; ++i)
             {
                 ref WriteCacheEntry entry = ref cache[i];
-                entry.OffsetsLength = 0;
                 entry.String = null;
+
                 if (entry.Offsets == null)
                 {
-                    entry.Offsets = new int[LINE_SIZE];
+                    entry.Offsets = new List<int>();
                 }
+
+                entry.Offsets.Clear();
             }
         }
 
@@ -65,40 +78,25 @@ namespace FlatSharp
             SharedString value, 
             SerializationContext context)
         {
+            // Find the associative set that must contain our key.
             var cache = this.sharedStringOffsetCache;
-            int index = (int.MaxValue & value.GetHashCode()) % cache.Length;
+            int lineIndex = (int.MaxValue & value.GetHashCode()) % cache.Length;
+            ref WriteCacheEntry line = ref cache[lineIndex];
 
-            ref WriteCacheEntry item = ref cache[index];
-
-            ref int offsetCount = ref item.OffsetsLength;
-            var offsets = item.Offsets;
-            SharedString sharedString = item.String;
-
-            // Value is guaranteed non-null. Using .Equals is slightly faster than ==
-            // since it allows skipping a null check.
-            if (value.Equals(sharedString))
+            if (value.Equals(line.String))
             {
-                if (offsetCount >= LINE_SIZE)
-                {
-                    // If we're full, then flush.
-                    FlushSharedString(spanWriter, data, sharedString, offsets.AsSpan(0, offsetCount), context);
-                    offsetCount = 0;
-                }
-
-                offsets[offsetCount++] = offset;
+                line.Offsets.Add(offset);
+                return;
             }
-            else
+
+            var offsets = line.Offsets;
+            if (!object.ReferenceEquals(line.String, null))
             {
-                // The strings are not equal. So we need to evict the current one.
-                if (sharedString != null)
-                {
-                    FlushSharedString(spanWriter, data, sharedString, offsets.AsSpan(0, offsetCount), context);
-                    offsetCount = 0;
-                }
-
-                item.String = value;
-                offsets[offsetCount++] = offset;
+                FlushSharedString(spanWriter, data, line.String, offsets, context);
             }
+
+            line.String = value;
+            offsets.Add(offset);
         }
 
         /// <summary>
@@ -110,28 +108,27 @@ namespace FlatSharp
             for (int i = 0; i < cache.Length; ++i)
             {
                 ref WriteCacheEntry item = ref cache[i];
-                ref int offsetCount = ref item.OffsetsLength;
-
                 var str = item.String;
 
                 if (!object.ReferenceEquals(str, null))
                 {
-                    FlushSharedString(writer, data, str, item.Offsets.AsSpan(0, offsetCount), context);
+                    FlushSharedString(writer, data, str, item.Offsets, context);
                     item.String = null;
                 }
-
-                offsetCount = 0;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void FlushSharedString(SpanWriter spanWriter, Span<byte> span, string value, Span<int> offsets, SerializationContext context)
+        private static void FlushSharedString(SpanWriter spanWriter, Span<byte> span, string value, List<int> offsets, SerializationContext context)
         {
             int stringOffset = spanWriter.WriteAndProvisionString(span, value, context);
-            for (int i = 0; i < offsets.Length; ++i)
+            int count = offsets.Count;
+            for (int i = 0; i < count; ++i)
             {
                 spanWriter.WriteUOffset(span, offsets[i], stringOffset, context);
             }
+
+            offsets.Clear();
         }
 
         // Cache entry. Stored as struct to increase data locality in the array.
@@ -140,11 +137,7 @@ namespace FlatSharp
             // The string
             public SharedString String;
 
-            // Array of offsets we need to write for this string.
-            public int[] Offsets;
-
-            // The number of offsets to write, starting from 0. Allows us "grow" the list.
-            public int OffsetsLength;
+            public List<int> Offsets;
         }
     }
 }

@@ -18,15 +18,11 @@ namespace BenchmarkCore
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Linq;
-    using benchfb;
     using Benchmark.FBBench;
     using BenchmarkDotNet.Attributes;
-    using BenchmarkDotNet.Running;
     using FlatSharp;
     using FlatSharp.Attributes;
-    using FlatSharp.Unsafe;
 
     [MediumRunJob]
     public class Program
@@ -38,18 +34,17 @@ namespace BenchmarkCore
         private static SimpleVector<SharedString> sharedVector;
 
         private static SpanWriter sharedWriter;
-        private static SpanWriter llWriter;
 
         public static void Main(string[] args)
         {
             FBSharedStringBench bench = new FBSharedStringBench();
-            bench.LruLookbackSize = 3803;
+            bench.CacheSize = 53;
             bench.VectorLength = 1000;
             bench.Setup();
 
             while (true)
             {
-                bench.Parse_NonSharedStringVector_WithSharedStringWithoutCache();
+                bench.Parse_GuassianSharedStringVector_WithSharedStringWithCache_NonThreadSafe();
             }
         }
 
@@ -79,15 +74,8 @@ namespace BenchmarkCore
 
             sharedVector = new SimpleVector<SharedString> { Items = nonSharedVector.Items.Select(SharedString.Create).ToList() };
 
-            Console.WriteLine($"{nameof(SharedStringLinkedList)} = {this.SharedStringLinkedList()}");
             Console.WriteLine($"{nameof(SharedStringLRU)} = {this.SharedStringLRU()}");
             Console.WriteLine($"{nameof(NonSharedString)} = {this.NonSharedString()}");
-        }
-
-        [Benchmark]
-        public int SharedStringLinkedList()
-        {
-            return FlatBufferSerializer.Default.Serialize(sharedVector, buffer, llWriter);
         }
 
         [Benchmark]

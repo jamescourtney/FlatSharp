@@ -40,9 +40,14 @@ namespace FlatSharp
         }
 
         /// <summary>
-        /// Sets a shared string reader for use in this input buffer. Note that while
-        /// the FlatSharp <see cref="PseudoLruSharedStringReader"/> is threadsafe,
-        /// custom implementations may not be.
+        /// Gets or sets the Shared String reader for this InputBuffer instance.
+        /// Note that while the FlatSharp <see cref="FlatSharp.SharedStringReader"/> class is 
+        /// threadsafe, custom implementations may not be.
+        /// </summary>
+        public ISharedStringReader SharedStringReader { get; set; }
+
+        /// <summary>
+        /// Sets a shared string reader for use in this input buffer. 
         /// </summary>
         public void SetSharedStringReader(ISharedStringReader reader)
         {
@@ -66,6 +71,7 @@ namespace FlatSharp
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SharedString ReadSharedString(int offset)
         {
             checked
@@ -271,12 +277,6 @@ namespace FlatSharp
             {
                 throw new InvalidOperationException($"BugCheck: attempted to read unaligned data at index: {offset}, expected alignment: {size}");
             }
-        }
-
-        private struct CacheEntry
-        {
-            public int Offset;
-            public SharedString String;
         }
     }
 }
