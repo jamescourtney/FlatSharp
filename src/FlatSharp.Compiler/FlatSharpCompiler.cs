@@ -39,8 +39,11 @@ namespace FlatSharp.Compiler
                     context.PushScope("$");
 
                     // Read existing file to see if we even need to do any work.
-                    string outputFileName = args[0] + ".generated.cs";
-                    string fbsText = File.ReadAllText(args[0]);
+                    string fbsFileName = Path.GetFileName(args[0]);
+                    string outputFileName = fbsFileName + ".generated.cs";
+                    string outputPath = args.Length < 2 || string.IsNullOrEmpty(args[1]) ? Path.GetDirectoryName(args[0]) : args[1];
+                    string outputFullPath = Path.Combine(outputPath, outputFileName);
+                    // string fbsText = File.ReadAllText(args[0]);
 
                     int attemptCount = 0;
                     while (attemptCount++ <= 5)
@@ -49,9 +52,9 @@ namespace FlatSharp.Compiler
                         {
                             RootNodeDefinition rootNode = ParseSyntax(args[0], new IncludeFileLoader());
 
-                            if (File.Exists(outputFileName))
+                            if (File.Exists(outputFullPath))
                             {
-                                string existingOutput = File.ReadAllText(outputFileName);
+                                string existingOutput = File.ReadAllText(outputFullPath);
                                 if (existingOutput.Contains(rootNode.InputHash))
                                 {
                                     // Input file unchanged.
@@ -60,7 +63,7 @@ namespace FlatSharp.Compiler
                             }
 
                             string cSharp = CreateCSharp(rootNode);
-                            File.WriteAllText(outputFileName, cSharp);
+                            File.WriteAllText(outputFullPath, cSharp);
                         }
                         catch (IOException)
                         {

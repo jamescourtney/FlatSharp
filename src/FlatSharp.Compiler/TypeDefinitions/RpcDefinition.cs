@@ -253,6 +253,28 @@ namespace FlatSharp.Compiler
                     writer.AppendLine(".Build();");
                 }
             }
+
+            // Write bind service overload
+            writer.AppendLine();
+            writer.AppendLine($"public static void BindService({GrpcCore}.ServiceBinderBase serviceBinder, {baseClassName} serviceImpl)");
+            using (writer.WithBlock())
+            {
+                foreach (var method in methods)
+                {
+                    writer.AppendLine($"serviceBinder.AddMethod({methodNameMap[method.Key]},");
+                    using (writer.IncreaseIndent())
+                    {
+                        writer.AppendLine("serviceImpl == null");
+                        using (writer.IncreaseIndent())
+                        {
+                            writer.AppendLine("? null");
+                            string serverDelegate = GetServerHandlerDelegate(method.Key, method.Value.requestType,
+                                method.Value.responseType, method.Value.streamingType);
+                            writer.AppendLine($": {serverDelegate});");
+                        }
+                    }
+                }
+            }
         }
 
         private string GetServerMethodSignature(string name, string requestType, string responseType, RpcStreamingType streamingType)
@@ -379,6 +401,12 @@ namespace FlatSharp.Compiler
         protected override string OnGetCopyExpression(string source)
         {
             throw new NotImplementedException();
+        }
+
+        private string GetServerHandlerDelegate(string name, string requestType, string responseType, RpcStreamingType streamingType)
+        {
+            string methodType = GetGrpcMethodType(streamingType);
+            return $"new {GrpcCore}.{methodType}ServerMethod<{requestType}, {responseType}>(serviceImpl.{name})";
         }
     }
 }
