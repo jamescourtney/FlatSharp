@@ -26,7 +26,9 @@ namespace Benchmark.FBBench
     using FlatSharp.Attributes;
     using ProtoBuf;
 
-    [MediumRunJob]
+    //[MediumRunJob(BenchmarkDotNet.Jobs.RuntimeMoniker.NetCoreApp31)]
+    //[MediumRunJob(BenchmarkDotNet.Jobs.RuntimeMoniker.NetCoreApp21)]
+    [MediumRunJob(BenchmarkDotNet.Jobs.RuntimeMoniker.Net472)]
     [CsvExporter(BenchmarkDotNet.Exporters.Csv.CsvSeparator.Comma)]
     public abstract class FBBenchCore
     {

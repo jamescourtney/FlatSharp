@@ -24,9 +24,6 @@ namespace Benchmark.FBBench
     using System.Diagnostics;
     using System.Linq;
 
-    [MediumRunJob(BenchmarkDotNet.Jobs.RuntimeMoniker.NetCoreApp21)]
-    [MediumRunJob(BenchmarkDotNet.Jobs.RuntimeMoniker.NetCoreApp31)]
-    //[ShortRunJob]
     public class FBSharedStringBench
     {
         public VectorTable<string> nonSharedStringVector;
