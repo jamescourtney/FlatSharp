@@ -85,11 +85,6 @@ namespace FlatSharp
                 }
 
                 int bytesNeeded = numberOfItems * sizePerItem + sizeof(uint);
-                int alignment = sizeof(uint);
-                if (itemAlignment > alignment)
-                {
-                    alignment = itemAlignment;
-                }
 
                 // Vectors have a size uoffset_t, followed by N items. The uoffset_t needs to be 4 byte aligned, while the items need to be N byte aligned.
                 // So, if the items are double or long, the length field has 4 byte alignment, but the item field has 8 byte alignment.

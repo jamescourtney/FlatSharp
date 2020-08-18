@@ -18,6 +18,7 @@ namespace Benchmark.FBBench
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using BenchmarkDotNet.Attributes;
@@ -26,9 +27,11 @@ namespace Benchmark.FBBench
     using FlatSharp.Attributes;
     using ProtoBuf;
 
-    //[MediumRunJob(BenchmarkDotNet.Jobs.RuntimeMoniker.NetCoreApp31)]
-    //[MediumRunJob(BenchmarkDotNet.Jobs.RuntimeMoniker.NetCoreApp21)]
-    [MediumRunJob(BenchmarkDotNet.Jobs.RuntimeMoniker.Net472)]
+    using JobKind = BenchmarkDotNet.Attributes.MediumRunJobAttribute;
+
+    [JobKind(BenchmarkDotNet.Jobs.RuntimeMoniker.NetCoreApp31)]
+    [JobKind(BenchmarkDotNet.Jobs.RuntimeMoniker.NetCoreApp21)]
+    [JobKind(BenchmarkDotNet.Jobs.RuntimeMoniker.Net47)]
     [CsvExporter(BenchmarkDotNet.Exporters.Csv.CsvSeparator.Comma)]
     public abstract class FBBenchCore
     {
@@ -50,17 +53,22 @@ namespace Benchmark.FBBench
         protected readonly byte[] fs_writeMemory = new byte[64 * 1024];
         private InputBuffer inputBuffer;
 
+        public FBBenchCore()
+        {
+            Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.RealTime;
+        }
+
         [Params(3, 30)]
         public virtual int VectorLength { get; set; }
 
-        public abstract int TraversalCount { get; set; }
+        public virtual int TraversalCount { get; set; }
 
-        public abstract FlatBufferDeserializationOption DeserializeOption { get; set; }
+        public virtual FlatBufferDeserializationOption DeserializeOption { get; set; }
 
         protected virtual InputBuffer GetInputBuffer(byte[] data) => new ArrayInputBuffer(data);
 
         [GlobalSetup]
-        public void GlobalSetup()
+        public virtual void GlobalSetup()
         {
             FooBar[] fooBars = new FooBar[this.VectorLength];
             for (int i = 0; i < fooBars.Length; i++)

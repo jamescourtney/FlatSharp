@@ -12,10 +12,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\Benchmark\FBBench\FBSharedStringsBench.cs" Link="FBSharedStringsBench.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <FlatSharpSchema Include="Tests.fbs" />
   </ItemGroup>
 
@@ -32,6 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Benchmark\Benchmark.csproj" />
     <ProjectReference Include="..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
     <ProjectReference Include="..\FlatSharp.Unsafe\FlatSharp.Unsafe.csproj" />
     <ProjectReference Include="..\FlatSharp\FlatSharp.csproj" />

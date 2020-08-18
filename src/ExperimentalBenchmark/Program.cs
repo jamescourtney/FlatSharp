@@ -40,7 +40,7 @@ namespace BenchmarkCore
             FBSharedStringBench bench = new FBSharedStringBench();
             bench.CacheSize = 53;
             bench.VectorLength = 1000;
-            bench.Setup();
+            bench.GlobalSetup();
 
             while (true)
             {

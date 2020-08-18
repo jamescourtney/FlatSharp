@@ -22,46 +22,43 @@ namespace Benchmark.FBBench
 
     public class FBSerializeBench : FBBenchCore
     {
-        public override FlatBufferDeserializationOption DeserializeOption { get; set; }
-        public override int TraversalCount { get; set; }
-
-        //[Benchmark]
+        [Benchmark]
         public override void Google_FlatBuffers_Serialize() => base.Google_FlatBuffers_Serialize();
 
-        //[Benchmark]
+        [Benchmark]
         public override void Google_FlatBuffers_Serialize_ObjectApi() => base.Google_FlatBuffers_Serialize_ObjectApi();
 
-        //[Benchmark]
+        [Benchmark]
         public override void Google_Flatbuffers_StringVector_Sorted() => base.Google_Flatbuffers_StringVector_Sorted();
 
-        //[Benchmark]
+        [Benchmark]
         public override void Google_Flatbuffers_StringVector_Unsorted() => base.Google_Flatbuffers_StringVector_Unsorted();
 
-        //[Benchmark]
+        [Benchmark]
         public override void Google_Flatbuffers_IntVector_Sorted() => base.Google_Flatbuffers_IntVector_Sorted();
 
-        //[Benchmark]
+        [Benchmark]
         public override void Google_Flatbuffers_IntVector_Unsorted() => base.Google_Flatbuffers_IntVector_Unsorted();
 
-        //[Benchmark]
+        [Benchmark]
         public override void FlatSharp_GetMaxSize() => base.FlatSharp_GetMaxSize();
 
-        //[Benchmark]
+        [Benchmark]
         public override void FlatSharp_Serialize() => base.FlatSharp_Serialize();
 
-        //[Benchmark]
+        [Benchmark]
         public override void PBDN_Serialize() => base.PBDN_Serialize();
 
-        //[Benchmark]
+        [Benchmark]
         public override void FlatSharp_Serialize_StringVector_Sorted() => base.FlatSharp_Serialize_StringVector_Sorted();
 
         [Benchmark]
         public override void FlatSharp_Serialize_StringVector_Unsorted() => base.FlatSharp_Serialize_StringVector_Unsorted();
 
-        //[Benchmark]
+        [Benchmark]
         public override void FlatSharp_Serialize_IntVector_Sorted() => base.FlatSharp_Serialize_IntVector_Sorted();
 
-        //[Benchmark]
+        [Benchmark]
         public override void FlatSharp_Serialize_IntVector_Unsorted() => base.FlatSharp_Serialize_IntVector_Unsorted();
     }
 }

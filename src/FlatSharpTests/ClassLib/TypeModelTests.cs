@@ -337,6 +337,13 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
+        public void TypeModel_SortedVector_OfTableWithSharedStringKeyKey_NotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<SharedString>[]>)));
+        }
+
+        [TestMethod]
         public void TypeModel_SortedVector_OfTableWithMultipleKeys_NotAllowed()
         {
             Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>

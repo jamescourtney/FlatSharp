@@ -283,7 +283,7 @@ namespace FlatSharpTests
             int bytesWritten = FlatBufferSerializer.Default.Serialize(t, destination, writer);
 
             ArrayInputBuffer buffer = new ArrayInputBuffer(destination); 
-            buffer.SetSharedStringReader(new SharedStringReader());
+            buffer.SetSharedStringReader(SharedStringReader.CreateThreadSafe());
 
             var table = FlatBufferSerializer.Default.Parse<StringsTable<SharedString>>(buffer);
             Assert.AreEqual("string", (string)table.String1);
