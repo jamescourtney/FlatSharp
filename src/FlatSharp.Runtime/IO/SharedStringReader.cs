@@ -23,6 +23,8 @@ namespace FlatSharp
     /// </summary>
     public class SharedStringReader : ISharedStringReader
     {
+        private const int DefaultSize = 257;
+
         private readonly CacheEntry[] sharedStringCache;
         private readonly bool threadSafe;
 
@@ -47,7 +49,7 @@ namespace FlatSharp
         /// The returned instance is safe to use concurrently from multiple threads.
         /// </summary>
         /// <param name="hashTableCapacity">The size of the hash table.</param>
-        public static SharedStringReader CreateThreadSafe(int hashTableCapacity = 257)
+        public static SharedStringReader CreateThreadSafe(int hashTableCapacity = DefaultSize)
         {
             return new SharedStringReader(hashTableCapacity, threadSafe: true);
         }
@@ -55,9 +57,11 @@ namespace FlatSharp
         /// <summary>
         /// Initializes a new shared string reader with the given direct map cache capacity.
         /// The returned instance is not safe to use concurrently from multiple threads.
+        /// Note that objects deserialized with an <see cref="ISerializer{T}"/> when used with
+        /// <see cref="SharedStringReader"/> in non-threadsafe mode are also not threadsafe.
         /// </summary>
         /// <param name="hashTableCapacity">The size of the hash table.</param>
-        public static SharedStringReader Create(int hashTableCapacity = 257)
+        public static SharedStringReader Create(int hashTableCapacity = DefaultSize)
         {
             return new SharedStringReader(hashTableCapacity, threadSafe: false);
         }

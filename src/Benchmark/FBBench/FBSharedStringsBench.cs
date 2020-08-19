@@ -80,6 +80,9 @@ namespace Benchmark.FBBench
 
             int nonSharedSize = this.Serialize_RandomStringVector_WithRegularString();
             int cacheSize = this.Serialize_NonRandomStringVector_WithSharing();
+
+            Console.WriteLine($"NonSharedSize = {nonSharedSize}");
+            Console.WriteLine($"DirectMapSize = {cacheSize}");
         }
                 
         [Benchmark]
