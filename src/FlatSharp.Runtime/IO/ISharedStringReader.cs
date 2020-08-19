@@ -18,10 +18,8 @@ namespace FlatSharp
 {
     /// <summary>
     /// Defines an interface used to detect repeated strings in an input buffer and
-    /// return previously-computed instances. Unlike SpanWriter, it is highly recommended
-    /// to make implementations of ISharedStringReader threadsafe. This is because serializing a
-    /// FlatBuffer object is a synchronous method call, but deserialized objects may hold onto input buffers
-    /// and be used concurrently.
+    /// return previously-computed instances. It is highly recommended
+    /// to make implementations of ISharedStringReader threadsafe.
     /// </summary>
     public interface ISharedStringReader
     {

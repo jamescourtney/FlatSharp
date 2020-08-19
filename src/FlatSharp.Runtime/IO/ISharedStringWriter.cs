@@ -21,8 +21,7 @@ namespace FlatSharp
     /// <summary>
     /// Defines an interface capable of delay writing strings to a SpanWriter. Can be used to
     /// reduce the size of a FlatBuffer binary payload when there are many duplicate strings.
-    /// Implementations of ISharedStringWriter are not necessarily threadsafe, so it is recommended
-    /// to use one SpanWriter per thread if using shared strings.
+    /// Implementations of ISharedStringWriter need not be threadsafe.
     /// </summary>
     public interface ISharedStringWriter
     {
