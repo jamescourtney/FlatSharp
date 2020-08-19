@@ -189,6 +189,14 @@ namespace FlatSharp
                 typeof(StringSpanComparer),
                 new[] { "string" },
                 "string"),
+
+            [typeof(SharedString)] = new BuiltInType(
+                new SharedStringTypeModel(),
+                ReflectedMethods.GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteSharedString)),
+                ReflectedMethods.GetMethod(typeof(InputBuffer), nameof(InputBuffer.ReadSharedString)),
+                typeof(StringSpanComparer),
+                new string[0],
+                $"global::{typeof(SharedString).FullName}")
         };
 
         private BuiltInType(

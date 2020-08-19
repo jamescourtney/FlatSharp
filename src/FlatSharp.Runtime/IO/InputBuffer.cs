@@ -31,7 +31,21 @@ namespace FlatSharp
         internal const byte True = 1;
         internal const byte False = 0;
 
+        private ISharedStringReader sharedStringReader;
+
         #region Defined Methods
+
+        protected InputBuffer()
+        {
+        }
+
+        /// <summary>
+        /// Sets a shared string reader for use in this input buffer. 
+        /// </summary>
+        internal void SetSharedStringReader(ISharedStringReader reader)
+        {
+            this.sharedStringReader = reader;
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool ReadBool(int offset)
@@ -46,9 +60,35 @@ namespace FlatSharp
             {
                 // Strings are stored by reference.
                 offset += this.ReadUOffset(offset);
-                int numberOfBytes = (int)this.ReadUInt(offset);
+                return this.ReadStringFromUOffset(offset);
+            }
+        }
 
-                return this.ReadStringProtected(offset + sizeof(int), numberOfBytes, Encoding);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SharedString ReadSharedString(int offset)
+        {
+            checked
+            {
+                var reader = this.sharedStringReader;
+                if (reader != null)
+                {
+                    int uoffset = offset + this.ReadUOffset(offset);
+                    return reader.ReadSharedString(this, uoffset);
+                }
+                else
+                {
+                    return this.ReadString(offset);
+                }
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public string ReadStringFromUOffset(int uoffset)
+        {
+            checked
+            {
+                int numberOfBytes = (int)this.ReadUInt(uoffset);
+                return this.ReadStringProtected(uoffset + sizeof(int), numberOfBytes, Encoding);
             }
         }
 

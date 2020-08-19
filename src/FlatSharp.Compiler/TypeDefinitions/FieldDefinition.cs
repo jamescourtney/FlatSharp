@@ -36,6 +36,8 @@ namespace FlatSharp.Compiler
 
         public VectorType VectorType { get; set; }
 
+        public bool SharedString { get; set; }
+
         public string GetClrTypeName(BaseSchemaMember baseMember)
         {
             string clrType;
@@ -61,6 +63,11 @@ namespace FlatSharp.Compiler
                 {
                     clrType = this.FbsFieldType;
                 }
+            }
+
+            if (this.SharedString)
+            {
+                clrType = $"global::{typeof(SharedString).FullName}";
             }
 
             switch (this.VectorType)

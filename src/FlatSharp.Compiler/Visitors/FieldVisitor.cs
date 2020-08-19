@@ -86,6 +86,12 @@ namespace FlatSharp.Compiler
                     this.definition.SortedVector = true;
                 }
 
+                // override the given type and use shared string instead.
+                if (metadata.ContainsKey("sharedstring"))
+                {
+                    this.definition.SharedString = true;
+                }
+
                 // Attributes from FlatBuffers that we don't support.
                 string[] unsupportedAttributes =
                 {

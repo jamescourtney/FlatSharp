@@ -103,7 +103,6 @@ namespace FlatSharp
         /// <summary>
         /// Ends the current object, returning the absolute location of the appropriate vtable.
         /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int EndObject(Span<byte> buffer, SpanWriter writer, int tableLength)
         {
             checked

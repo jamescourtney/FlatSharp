@@ -22,9 +22,6 @@ namespace Benchmark.FBBench
 
     public class FBSerializeBench : FBBenchCore
     {
-        public override FlatBufferDeserializationOption DeserializeOption { get; set; }
-        public override int TraversalCount { get; set; }
-
         [Benchmark]
         public override void Google_FlatBuffers_Serialize() => base.Google_FlatBuffers_Serialize();
 

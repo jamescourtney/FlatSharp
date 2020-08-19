@@ -20,6 +20,7 @@ namespace FlatSharp
     using System.Diagnostics;
     using System.IO;
     using System.Reflection;
+    using System.Threading;
 
     /// <summary>
     /// An implementation of <see cref="ISerializer{T}"/> that wraps a <see cref="IGeneratedSerializer{T}"/>.
@@ -28,6 +29,9 @@ namespace FlatSharp
     {
         private readonly IGeneratedSerializer<T> innerSerializer;
         private readonly Lazy<string> lazyCSharp;
+
+        private ThreadLocal<ISharedStringWriter> sharedStringWriter;
+        private SerializerSettings settings;
 
         public GeneratedSerializerWrapper(
             IGeneratedSerializer<T> innerSerializer,
@@ -70,6 +74,7 @@ namespace FlatSharp
                 throw new ArgumentException("Buffer is too small to be valid!");
             }
 
+            buffer.SetSharedStringReader(this.settings?.SharedStringReaderFactory?.Invoke());
             return this.innerSerializer.Parse(buffer, 0);
         }
 
@@ -85,13 +90,18 @@ namespace FlatSharp
 #endif
 
             var serializationContext = SerializationContext.ThreadLocalContext.Value;
-
             serializationContext.Reset(destination.Length);
+
+            var sharedStringWriter = this.sharedStringWriter?.Value;
+            serializationContext.SharedStringWriter = sharedStringWriter;
+
             serializationContext.Offset = 4; // first 4 bytes are reserved for uoffset to the first table.
 
             try
             {
+                sharedStringWriter?.PrepareWrite();
                 this.innerSerializer.Write(writer, destination, item, 0, serializationContext);
+                sharedStringWriter?.FlushWrites(writer, destination, serializationContext);
             }
             catch (BufferTooSmallException ex)
             {
@@ -105,6 +115,25 @@ namespace FlatSharp
 #endif
 
             return serializationContext.Offset;
+        }
+
+        public ISerializer<T> WithSettings(SerializerSettings settings)
+        {
+            var clone = new GeneratedSerializerWrapper<T>(
+                   this.innerSerializer,
+                   this.Assembly,
+                   () => this.CSharp,
+                   this.AssemblyBytes);
+
+            clone.settings = settings;
+
+            var writerFactory = settings.SharedStringWriterFactory;
+            if (writerFactory != null)
+            {
+                clone.sharedStringWriter = new ThreadLocal<ISharedStringWriter>(writerFactory);
+            }
+
+            return clone;
         }
     }
 }

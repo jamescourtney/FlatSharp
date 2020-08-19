@@ -143,6 +143,11 @@
                         throw new InvalidFlatBufferDefinitionException($"Table {this.ClrType.Name} declares a key property on a type that is not built in. Only scalars and strings may be keys.");
                     }
 
+                    if (property.ItemTypeModel is SharedStringTypeModel)
+                    {
+                        throw new InvalidFlatBufferDefinitionException($"Table {this.ClrType.Name} declares a key property with a SharedString key. Shared Strings are not currently supported as keys in sorted vectors.");
+                    }
+
                     this.KeyProperty = property.Property;
                 }
 

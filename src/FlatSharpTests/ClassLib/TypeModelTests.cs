@@ -337,6 +337,13 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
+        public void TypeModel_SortedVector_OfTableWithSharedStringKeyKey_NotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<SharedString>[]>)));
+        }
+
+        [TestMethod]
         public void TypeModel_SortedVector_OfTableWithMultipleKeys_NotAllowed()
         {
             Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
@@ -400,6 +407,16 @@ namespace FlatSharpTests
         {
             Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, TaggedEnum>>)));
+        }
+
+        [TestMethod]
+        public void TypeModel_Union_StringAndSharedStringNotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(FlatBufferUnion<string, SharedString>)));
+
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(FlatBufferUnion<string, GenericTable<string>, SharedString>)));
         }
 
         [TestMethod]

@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2018 James Courtney
+ * Copyright 2020 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -121,7 +121,31 @@ namespace FlatSharp
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteString(Span<byte> span, string value, int offset, SerializationContext context)
+        public virtual void WriteString(Span<byte> span, string value, int offset, SerializationContext context)
+        {
+            int stringOffset = this.WriteAndProvisionString(span, value, context);
+            this.WriteUOffset(span, offset, stringOffset, context);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public virtual void WriteSharedString(Span<byte> span, SharedString value, int offset, SerializationContext context)
+        {
+            var manager = context.SharedStringWriter;
+            if (manager != null)
+            {
+                manager.WriteSharedString(this, span, offset, value, context);
+            }
+            else
+            {
+                this.WriteString(span, value, offset, context);
+            }
+        }
+
+        /// <summary>
+        /// Writes the string to the buffer, returning the absolute offset of the string.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int WriteAndProvisionString(Span<byte> span, string value, SerializationContext context)
         {
             checked
             {
@@ -142,8 +166,7 @@ namespace FlatSharp
                 // give back unused space.
                 context.Offset -= maxItems - bytesWritten;
 
-                // Write the UOffset where we were supposed to go.
-                this.WriteUOffset(span, offset, stringStartOffset, context);
+                return stringStartOffset;
             }
         }
 
