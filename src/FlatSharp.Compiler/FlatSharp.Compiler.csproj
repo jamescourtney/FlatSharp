@@ -10,10 +10,10 @@
     <Antlr4UseCSharpGenerator>True</Antlr4UseCSharpGenerator>
     <NuspecFile>FlatSharp.Compiler.nuspec</NuspecFile>
     <AntlrVersion>4.6.6</AntlrVersion>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <AntlrRuntimeRoot>$(NugetPackageRoot)\Antlr4.Runtime\$(AntlrVersion)</AntlrRuntimeRoot>
     <NuspecProperties>$(NuspecProperties);AntlrRuntime=$(AntlrRuntimeRoot);OutDir=$(MSBuildThisFileDirectory)\bin\$(Configuration)</NuspecProperties>
   </PropertyGroup>
-  
   
   <ItemGroup>
     <PackageReference Include="Antlr4.CodeGenerator" Version="$(AntlrVersion)">
