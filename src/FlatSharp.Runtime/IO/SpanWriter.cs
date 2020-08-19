@@ -33,23 +33,6 @@ namespace FlatSharp
         /// </summary>
         public static SpanWriter Instance { get; } = new SpanWriter();
 
-        private readonly ISharedStringWriter sharedStringWriter;
-
-        /// <summary>
-        /// Initializes a new SpanWriter.
-        /// </summary>
-        public SpanWriter() : this(null)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new SpanWriter with the given shared string writer.
-        /// </summary>
-        public SpanWriter(ISharedStringWriter sharedStringWriter)
-        {
-            this.sharedStringWriter = sharedStringWriter;
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteUOffset(Span<byte> span, int offset, int secondOffset, SerializationContext context)
         {
@@ -147,7 +130,7 @@ namespace FlatSharp
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual void WriteSharedString(Span<byte> span, SharedString value, int offset, SerializationContext context)
         {
-            var manager = this.sharedStringWriter;
+            var manager = context.SharedStringWriter;
             if (manager != null)
             {
                 manager.WriteSharedString(this, span, offset, value, context);
@@ -155,26 +138,6 @@ namespace FlatSharp
             else
             {
                 this.WriteString(span, value, offset, context);
-            }
-        }
-
-        /// <summary>
-        /// Prepares to write.
-        /// </summary>
-        public void PrepareWrite()
-        {
-            this.sharedStringWriter?.PrepareWrite();
-        }
-
-        /// <summary>
-        /// Flushes any pending writes.
-        /// </summary>
-        public void FinishWrite(Span<byte> span, SerializationContext context)
-        {
-            var manager = this.sharedStringWriter;
-            if (manager != null)
-            {
-                manager.FlushWrites(this, span, context);
             }
         }
 

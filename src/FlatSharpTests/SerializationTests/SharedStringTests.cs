@@ -38,8 +38,14 @@ namespace FlatSharpTests
             };
 
             byte[] destination = new byte[1024];
-            var writer = new SpanWriter(new SharedStringWriter(3));
-            int bytesWritten = FlatBufferSerializer.Default.Serialize(t, destination, writer);
+
+            var serializer = FlatBufferSerializer.Default.Compile<StringsVector<string>>()
+                .WithSettings(new SerializerSettings
+                {
+                    SharedStringWriterFactory = () => new SharedStringWriter(3)
+                });
+
+            int bytesWritten = serializer.Write(SpanWriter.Instance, destination, t);
 
             byte[] expectedBytes = new byte[]
             {
@@ -77,8 +83,14 @@ namespace FlatSharpTests
             };
 
             byte[] destination = new byte[1024];
-            var writer = new SpanWriter(new SharedStringWriter());
-            int bytesWritten = FlatBufferSerializer.Default.Serialize(t, destination, writer);
+
+            var serializer = FlatBufferSerializer.Default.Compile<StringsTable<string>>()
+                .WithSettings(new SerializerSettings
+                {
+                    SharedStringWriterFactory = () => new SharedStringWriter(5)
+                });
+
+            int bytesWritten = serializer.Write(SpanWriter.Instance, destination, t);
 
             byte[] expectedBytes = new byte[]
             {
@@ -115,8 +127,14 @@ namespace FlatSharpTests
             byte[] destination = new byte[1024];
 
             int maxBytes = FlatBufferSerializer.Default.GetMaxSize(t);
-            var writer = new SpanWriter(new SharedStringWriter(5));
-            int bytesWritten = FlatBufferSerializer.Default.Serialize(t, destination, writer);
+
+            var serializer = FlatBufferSerializer.Default.Compile<StringsVector<SharedString>>()
+                .WithSettings(new SerializerSettings
+                {
+                    SharedStringWriterFactory = () => new SharedStringWriter(5)
+                });
+
+            int bytesWritten = serializer.Write(SpanWriter.Instance, destination, t);
 
             Assert.IsTrue(bytesWritten <= maxBytes);
 
@@ -150,8 +168,14 @@ namespace FlatSharpTests
             };
 
             byte[] destination = new byte[1024];
-            var writer = new SpanWriter(new SharedStringWriter());
-            int bytesWritten = FlatBufferSerializer.Default.Serialize(t, destination, writer);
+
+            var serializer = FlatBufferSerializer.Default.Compile<StringsTable<SharedString>>()
+                .WithSettings(new SerializerSettings
+                {
+                    SharedStringWriterFactory = () => new SharedStringWriter(5)
+                });
+
+            int bytesWritten = serializer.Write(SpanWriter.Instance, destination, t);
 
             byte[] expectedBytes = new byte[]
             {
@@ -182,8 +206,14 @@ namespace FlatSharpTests
             };
 
             byte[] destination = new byte[1024];
-            var writer = new SpanWriter(new SharedStringWriter());
-            int bytesWritten = FlatBufferSerializer.Default.Serialize(t, destination, writer);
+
+            var serializer = FlatBufferSerializer.Default.Compile<StringsTable<SharedString>>()
+                .WithSettings(new SerializerSettings
+                {
+                    SharedStringWriterFactory = () => new SharedStringWriter(5)
+                });
+
+            int bytesWritten = serializer.Write(SpanWriter.Instance, destination, t);
 
             byte[] expectedBytes = new byte[]
             {
@@ -214,8 +244,13 @@ namespace FlatSharpTests
             };
 
             byte[] destination = new byte[1024];
-            var writer = new SpanWriter(new SharedStringWriter(1));
-            int bytesWritten = FlatBufferSerializer.Default.Serialize(t, destination, writer);
+            var serializer = FlatBufferSerializer.Default.Compile<StringsTable<SharedString>>()
+                .WithSettings(new SerializerSettings
+                {
+                    SharedStringWriterFactory = () => new SharedStringWriter(1)
+                });
+
+            int bytesWritten = serializer.Write(SpanWriter.Instance, destination, t);
 
             byte[] expectedBytes = new byte[]
             {
@@ -254,8 +289,13 @@ namespace FlatSharpTests
             };
 
             byte[] destination = new byte[1024];
-            var writer = new SpanWriter(new SharedStringWriter());
-            FlatBufferSerializer.Default.Serialize(t, destination, writer);
+            var serializer = FlatBufferSerializer.Default.Compile<StringsTable<SharedString>>()
+                .WithSettings(new SerializerSettings
+                {
+                    SharedStringWriterFactory = () => new SharedStringWriter(100)
+                });
+
+            int bytesWritten = serializer.Write(SpanWriter.Instance, destination, t);
 
             byte[] stringBytes = Encoding.UTF8.GetBytes("string");
 
@@ -279,13 +319,16 @@ namespace FlatSharpTests
             };
 
             byte[] destination = new byte[1024];
-            var writer = new SpanWriter(new SharedStringWriter());
-            int bytesWritten = FlatBufferSerializer.Default.Serialize(t, destination, writer);
+            var serializer = FlatBufferSerializer.Default.Compile<StringsTable<SharedString>>()
+                .WithSettings(new SerializerSettings
+                {
+                    SharedStringWriterFactory = () => new SharedStringWriter(100),
+                    SharedStringReaderFactory = () => SharedStringReader.Create(100),
+                });
 
-            ArrayInputBuffer buffer = new ArrayInputBuffer(destination); 
-            buffer.SetSharedStringReader(SharedStringReader.CreateThreadSafe());
+            int bytesWritten = serializer.Write(SpanWriter.Instance, destination, t);
 
-            var table = FlatBufferSerializer.Default.Parse<StringsTable<SharedString>>(buffer);
+            var table = serializer.Parse(destination);
             Assert.AreEqual("string", (string)table.String1);
             Assert.AreEqual("foo", (string)table.String2);
             Assert.AreEqual("string", (string)table.String3);

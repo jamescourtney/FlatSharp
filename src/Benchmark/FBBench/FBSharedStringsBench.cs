@@ -28,9 +28,11 @@ namespace Benchmark.FBBench
     {
         public VectorTable<string> nonSharedStringVector;
         public VectorTable<SharedString> randomSharedStringVector;
-        public VectorTable<SharedString> guassianSharedStringVector;
+        public VectorTable<SharedString> nonRandomSharedStringVector;
 
-        private SpanWriter AssociativeSpanWriter;
+        private ISerializer<VectorTable<string>> regularStringSerializer;
+        private ISerializer<VectorTable<SharedString>> sharedStringSerializer;
+        private ISerializer<VectorTable<SharedString>> sharedStringThreadSafeSerializer;
 
         public byte[] serializedGuassianStringVector = new byte[10 * 1024 * 1024];
         public byte[] serializedRandomStringVector = new byte[10 * 1024 * 1024];
@@ -44,7 +46,21 @@ namespace Benchmark.FBBench
 
         public override void GlobalSetup()
         {
-            this.AssociativeSpanWriter = new SpanWriter(new SharedStringWriter(this.CacheSize));
+            this.regularStringSerializer = FlatBufferSerializer.Default.Compile<VectorTable<string>>();
+
+            this.sharedStringSerializer = FlatBufferSerializer.Default.Compile<VectorTable<SharedString>>()
+                .WithSettings(new SerializerSettings
+                {
+                    SharedStringReaderFactory = () => SharedStringReader.Create(this.CacheSize),
+                    SharedStringWriterFactory = () => new SharedStringWriter(this.CacheSize),
+                });
+
+            this.sharedStringThreadSafeSerializer = FlatBufferSerializer.Default.Compile<VectorTable<SharedString>>()
+                .WithSettings(new SerializerSettings
+                {
+                    SharedStringReaderFactory = () => SharedStringReader.CreateThreadSafe(this.CacheSize),
+                    SharedStringWriterFactory = () => new SharedStringWriter(this.CacheSize),
+                });
 
             Random random = new Random();
 
@@ -60,69 +76,61 @@ namespace Benchmark.FBBench
 
             nonSharedStringVector = new VectorTable<string> { Vector = randomGuids.ToList() };
             randomSharedStringVector = new VectorTable<SharedString> { Vector = randomGuids.Select(SharedString.Create).ToList() };
-            guassianSharedStringVector = new VectorTable<SharedString> { Vector = guassianGuids.Select(SharedString.Create).ToList() };
+            nonRandomSharedStringVector = new VectorTable<SharedString> { Vector = guassianGuids.Select(SharedString.Create).ToList() };
 
-            int nonSharedSize = this.Serialize_NonSharedString();
-            int cacheSize = this.Serialize_GuassianStringVector_WithSharing();
+            int nonSharedSize = this.Serialize_RandomStringVector_WithRegularString();
+            int cacheSize = this.Serialize_NonRandomStringVector_WithSharing();
         }
                 
         [Benchmark]
-        public int Serialize_NonSharedString()
+        public int Serialize_RandomStringVector_WithRegularString()
         {
-            return FlatBufferSerializer.Default.Serialize(
-                nonSharedStringVector,
+            return this.regularStringSerializer.Write(
+                SpanWriter.Instance,
                 serializedNonSharedStringVector,
-                SpanWriter.Instance);
+                nonSharedStringVector);
         }
 
         [Benchmark]
-        public int Serialize_RandomSharedString_PLRU()
+        public int Serialize_RandomStringVector_WithSharing()
         {
-            return FlatBufferSerializer.Default.Serialize(
-                randomSharedStringVector,
+            return this.sharedStringSerializer.Write(
+                SpanWriter.Instance,
                 this.serializedRandomStringVector,
-                this.AssociativeSpanWriter);
+                randomSharedStringVector);
         }
 
         [Benchmark]
-        public int Serialize_GuassianStringVector_WithSharing()
+        public int Serialize_NonRandomStringVector_WithSharing()
         {
-            return FlatBufferSerializer.Default.Serialize(
-                guassianSharedStringVector,
-                this.serializedGuassianStringVector,
-                this.AssociativeSpanWriter);
+            return this.sharedStringSerializer.Write(
+                SpanWriter.Instance, 
+                this.serializedGuassianStringVector, 
+                this.nonRandomSharedStringVector);
         }
 
         [Benchmark]
-        public void Parse_NonSharedStringVector_WithRegularString()
+        public void Parse_RepeatedStringVector_WithRegularString()
         {
-            InputBuffer buffer = new ArrayInputBuffer(this.serializedNonSharedStringVector);
-            FlatBufferSerializer.Default.Parse<VectorTable<string>>(buffer);
+            this.regularStringSerializer.Parse(this.serializedNonSharedStringVector);
         }
 
         [Benchmark]
-        public void Parse_NonSharedStringVector_WithSharedString()
+        public void Parse_RepeatedStringVector_WithSharedStrings()
         {
-            InputBuffer buffer = new ArrayInputBuffer(this.serializedNonSharedStringVector);
-            FlatBufferSerializer.Default.Parse<VectorTable<SharedString>>(buffer);
+            this.sharedStringSerializer.Parse(this.serializedNonSharedStringVector);
         }
 
         [Benchmark]
-        public void Parse_GuassianSharedStringVector_WithSharedStringWithCache_NonThreadSafe()
+        public void Parse_NonRandomSharedStringVector_WithSharedStrings_NonThreadSafe()
         {
-            InputBuffer buffer = new ArrayInputBuffer(this.serializedGuassianStringVector); 
-            buffer.SetSharedStringReader(SharedStringReader.Create(this.CacheSize));
-
-            FlatBufferSerializer.Default.Parse<VectorTable<SharedString>>(buffer);
+            this.sharedStringSerializer.Parse(this.serializedGuassianStringVector);
         }
 
         [Benchmark]
-        public void Parse_GuassianSharedStringVector_WithSharedStringWithCache_ThreadSafe()
+        public void Parse_NonRandomSharedStringVector_WithSharedStrings_ThreadSafe()
         {
-            InputBuffer buffer = new ArrayInputBuffer(this.serializedGuassianStringVector);
-            buffer.SetSharedStringReader(SharedStringReader.CreateThreadSafe(this.CacheSize));
-
-            FlatBufferSerializer.Default.Parse<VectorTable<SharedString>>(buffer);
+            this.sharedStringThreadSafeSerializer.Parse(this.serializedGuassianStringVector);
         }
 
         [FlatBufferTable]

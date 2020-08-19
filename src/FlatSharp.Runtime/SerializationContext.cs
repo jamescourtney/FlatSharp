@@ -62,12 +62,25 @@ namespace FlatSharp
         }
 
         /// <summary>
+        /// The shared string writer used for this serialization operation.
+        /// </summary>
+        public ISharedStringWriter SharedStringWriter
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set;
+        }
+
+        /// <summary>
         /// Resets the context.
         /// </summary>
         public void Reset(int capacity)
         {
             this.offset = 0;
             this.capacity = capacity;
+            this.SharedStringWriter = null;
             this.VTableBuilder.Reset();
         }
 

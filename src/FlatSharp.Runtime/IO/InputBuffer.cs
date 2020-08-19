@@ -40,16 +40,9 @@ namespace FlatSharp
         }
 
         /// <summary>
-        /// Gets or sets the Shared String reader for this InputBuffer instance.
-        /// Note that while the FlatSharp <see cref="FlatSharp.SharedStringReader"/> class is 
-        /// threadsafe, custom implementations may not be.
-        /// </summary>
-        public ISharedStringReader SharedStringReader { get; set; }
-
-        /// <summary>
         /// Sets a shared string reader for use in this input buffer. 
         /// </summary>
-        public void SetSharedStringReader(ISharedStringReader reader)
+        internal void SetSharedStringReader(ISharedStringReader reader)
         {
             this.sharedStringReader = reader;
         }
