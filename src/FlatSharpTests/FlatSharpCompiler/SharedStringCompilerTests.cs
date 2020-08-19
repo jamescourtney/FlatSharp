@@ -27,7 +27,7 @@ namespace FlatSharpTests.Compiler
     [TestClass]
     public class SharedStringCompilerTests
     {
-        [TestMethod]
+        [TestMethod, Ignore]
         public void SharedStringInlineTypeTest()
         {
             string schema = @"
