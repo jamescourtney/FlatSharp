@@ -12,6 +12,8 @@
             CopyConstructorsExample.CopyConstructorsExample.Run();
             IncludesExample.IncludesExample.Run();
             SortedVectors.SortedVectorsExample.Run();
+            Unions.UnionsExample.Run();
+            SharedStrings.SharedStringsExample.Run();
         }
     }
 }

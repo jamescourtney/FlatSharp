@@ -101,15 +101,19 @@ namespace FlatSharp
 					System.Action defaultCase,
 					<#= string.Join(",\r\n", range.Select(x => $"System.Action<T{x}> case{x}")) #>)
 				{
+					switch (this.discriminator)
+					{
 					<# foreach (var genericType in range) { #>
-						if (this.discriminator == <#= genericType #> && case<#= genericType #> != null)
+						case <#= genericType #>:
 						{
 							case<#= genericType #>(this.item<#= genericType #>);
-							return;
+							break;
 						}
 					<# } #>
-
-					defaultCase();
+						default:
+							defaultCase();
+							break;
+					}
 				}
 
 				public void Switch<TState>(
@@ -117,15 +121,19 @@ namespace FlatSharp
 					System.Action<TState> defaultCase,
 					<#= string.Join(",\r\n", range.Select(x => $"System.Action<TState, T{x}> case{x}")) #>)
 				{
+					switch (this.discriminator)
+					{
 					<# foreach (var genericType in range) { #>
-						if (this.discriminator == <#= genericType #> && case<#= genericType #> != null)
+						case <#= genericType #>:
 						{
 							case<#= genericType #>(state, this.item<#= genericType #>);
-							return;
+							break;
 						}
 					<# } #>
-
-					defaultCase(state);
+						default:
+							defaultCase(state);
+							break;
+					}
 				}
 
 				
@@ -133,14 +141,17 @@ namespace FlatSharp
 					System.Func<TResult> defaultCase,
 					<#= string.Join(",\r\n", range.Select(x => $"System.Func<T{x}, TResult> case{x}")) #>)
 				{
+					switch (this.discriminator)
+					{
 					<# foreach (var genericType in range) { #>
-						if (this.discriminator == <#= genericType #>)
+						case <#= genericType #>:
 						{
 							return case<#= genericType #>(this.item<#= genericType #>);
 						}
 					<# } #>
-					
-					return defaultCase();
+						default:
+							return defaultCase();
+					}
 				}
 
 				public TResult Switch<TState, TResult>(
@@ -148,14 +159,17 @@ namespace FlatSharp
 					System.Func<TState, TResult> defaultCase,
 					<#= string.Join(",\r\n", range.Select(x => $"System.Func<TState, T{x}, TResult> case{x}")) #>)
 				{
+					switch (this.discriminator)
+					{
 					<# foreach (var genericType in range) { #>
-						if (this.discriminator == <#= genericType #>)
+						case <#= genericType #>:
 						{
 							return case<#= genericType #>(state, this.item<#= genericType #>);
 						}
 					<# } #>
-					
-					return defaultCase(state);
+						default:
+							return defaultCase(state);
+					}
 				}
 			}
 	<#

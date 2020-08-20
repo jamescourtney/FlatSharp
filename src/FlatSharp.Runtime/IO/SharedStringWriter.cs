@@ -25,20 +25,14 @@ namespace FlatSharp
     /// </summary>
     public class SharedStringWriter : ISharedStringWriter
     {
+        private const int DefaultCapacity = 257;
         private readonly WriteCacheEntry[] sharedStringOffsetCache;
-
-        /// <summary>
-        /// Initializes a shared string writer with default settings.
-        /// </summary>
-        public SharedStringWriter() : this(257)
-        {
-        }
 
         /// <summary>
         /// Initializes a new shared string writer with the given capacity.
         /// </summary>
         /// <param name="hashTableCapacity">The size of the hash table.</param>
-        public SharedStringWriter(int hashTableCapacity)
+        public SharedStringWriter(int hashTableCapacity = DefaultCapacity)
         {
             if (hashTableCapacity <= 0)
             {

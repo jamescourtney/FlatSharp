@@ -98,6 +98,8 @@ FlatSharp supports some interesting features not covered here. Please visit the 
 - [Copy Constructors](samples/Example6-CopyConstructors/)
 - [FBS Includes](samples/Example7-Includes/)
 - [Sorted Vectors](samples/Example8-SortedVectors/)
+- [Unions](samples/Example9-Unions/)
+- [String deduplication](samples/Example10-SharedStrings/)
 
 ### Internals
 FlatSharp works by generating subclasses of your data contracts based on the schema that you define. That is, when you attempt to deserialize a ```MonsterTable``` object, you actually get back a subclass of ```MonsterTable```, which has properties defined in such a way as to index into the buffer, according to the deserialization mode specified (greedy, lazy, etc).
@@ -114,26 +116,24 @@ At its core, FlatSharp is a tool to convert a FlatBuffer schema into a pile of s
 ### Performance & Benchmarks
 FlatSharp is really fast. This is primarily thanks to new changes in C# with Memory and Span, as well as FlatBuffers itself exposing a very simple type system that makes optimization simple. FlatSharp has a default serializer instance (```FlatBuffersSerializer.Default```), however it is possible to tune the serializer by creating your own with a custom ```FlatBufferSerializerOptions``` instance. More details are available in the [samples solution](samples/Example1-SerializerOptions/SerializerOptionsExample.cs).
 
-The FlatSharp benchmarks were run on .NET Core 2.1, using a C# approximation of [Google's FlatBuffer benchmark](https://github.com/google/flatbuffers/tree/benchmarks/benchmarks/cpp/FB), which can be found [here](src/Benchmark).The FlatSharp benchmarks use this schema, but with the following parameters:
+The FlatSharp benchmarks were run on .NET Core 3.1, using a C# approximation of [Google's FlatBuffer benchmark](https://github.com/google/flatbuffers/tree/benchmarks/benchmarks/cpp/FB), which can be found [here](src/Benchmark).The FlatSharp benchmarks use this schema, but with the following parameters:
 - Vector length = 3 or 30
 - Traversal count = 1 or 5
 
-The full results for each version of FlatSharp can be viewed in the [benchmarks folder](benchmarks).
+The full results for each version of FlatSharp can be viewed in the [benchmarks folder](benchmarks), which also contains benchmarks for .NET Framework 4.7 and .NET Core 2.1. Additionally, the benchmark data contains performance data for many different configurations of FlatSharp and other features, such as sorted vectors.
 
-The benchmarks test 4 different serialization frameworks:
+The benchmarks test 3 different serialization frameworks:
 - FlatSharp
 - Protobuf.NET
-- Google's C# Flatbuffers implementation
-- ZeroFormatter
+- Google's C# Flatbuffers implementation (both standard and Object API flavors)
+
+The graphs below are generated using the default settings from each library.
 
 #### Serialization
-![image](doc/s_3.png) | ![image](doc/s_30.png)
-----------------------|-----------------------
+![image](doc/serialize.png)
 
 #### Deserialization
-![image](doc/d_1_3.png) | ![image](doc/d_5_3.png)
-------------------------|-------------------------
-![image](doc/d_1_30.png)|![image](doc/d_5_30.png)
+![image](doc/parse.png)
 
 ### Roadmap
 - [ ] Security hardening and fuzzing

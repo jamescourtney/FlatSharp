@@ -77,13 +77,17 @@ namespace FlatSharp
 					System.Action defaultCase,
 					System.Action<T1> case1)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(this.item1);
-							return;
+							break;
 						}
-					
-					defaultCase();
+											default:
+							defaultCase();
+							break;
+					}
 				}
 
 				public void Switch<TState>(
@@ -91,13 +95,17 @@ namespace FlatSharp
 					System.Action<TState> defaultCase,
 					System.Action<TState, T1> case1)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(state, this.item1);
-							return;
+							break;
 						}
-					
-					defaultCase(state);
+											default:
+							defaultCase(state);
+							break;
+					}
 				}
 
 				
@@ -105,12 +113,15 @@ namespace FlatSharp
 					System.Func<TResult> defaultCase,
 					System.Func<T1, TResult> case1)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(this.item1);
 						}
-										
-					return defaultCase();
+											default:
+							return defaultCase();
+					}
 				}
 
 				public TResult Switch<TState, TResult>(
@@ -118,12 +129,15 @@ namespace FlatSharp
 					System.Func<TState, TResult> defaultCase,
 					System.Func<TState, T1, TResult> case1)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(state, this.item1);
 						}
-										
-					return defaultCase(state);
+											default:
+							return defaultCase(state);
+					}
 				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -243,18 +257,22 @@ System.Func<T2, T2> cloneT2
 					System.Action<T1> case1,
 System.Action<T2> case2)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(this.item2);
-							return;
+							break;
 						}
-					
-					defaultCase();
+											default:
+							defaultCase();
+							break;
+					}
 				}
 
 				public void Switch<TState>(
@@ -263,18 +281,22 @@ System.Action<T2> case2)
 					System.Action<TState, T1> case1,
 System.Action<TState, T2> case2)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(state, this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(state, this.item2);
-							return;
+							break;
 						}
-					
-					defaultCase(state);
+											default:
+							defaultCase(state);
+							break;
+					}
 				}
 
 				
@@ -283,16 +305,19 @@ System.Action<TState, T2> case2)
 					System.Func<T1, TResult> case1,
 System.Func<T2, TResult> case2)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(this.item2);
 						}
-										
-					return defaultCase();
+											default:
+							return defaultCase();
+					}
 				}
 
 				public TResult Switch<TState, TResult>(
@@ -301,16 +326,19 @@ System.Func<T2, TResult> case2)
 					System.Func<TState, T1, TResult> case1,
 System.Func<TState, T2, TResult> case2)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(state, this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(state, this.item2);
 						}
-										
-					return defaultCase(state);
+											default:
+							return defaultCase(state);
+					}
 				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -477,23 +505,27 @@ System.Func<T3, T3> cloneT3
 System.Action<T2> case2,
 System.Action<T3> case3)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(this.item3);
-							return;
+							break;
 						}
-					
-					defaultCase();
+											default:
+							defaultCase();
+							break;
+					}
 				}
 
 				public void Switch<TState>(
@@ -503,23 +535,27 @@ System.Action<T3> case3)
 System.Action<TState, T2> case2,
 System.Action<TState, T3> case3)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(state, this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(state, this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(state, this.item3);
-							return;
+							break;
 						}
-					
-					defaultCase(state);
+											default:
+							defaultCase(state);
+							break;
+					}
 				}
 
 				
@@ -529,20 +565,23 @@ System.Action<TState, T3> case3)
 System.Func<T2, TResult> case2,
 System.Func<T3, TResult> case3)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(this.item3);
 						}
-										
-					return defaultCase();
+											default:
+							return defaultCase();
+					}
 				}
 
 				public TResult Switch<TState, TResult>(
@@ -552,20 +591,23 @@ System.Func<T3, TResult> case3)
 System.Func<TState, T2, TResult> case2,
 System.Func<TState, T3, TResult> case3)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(state, this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(state, this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(state, this.item3);
 						}
-										
-					return defaultCase(state);
+											default:
+							return defaultCase(state);
+					}
 				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -779,28 +821,32 @@ System.Action<T2> case2,
 System.Action<T3> case3,
 System.Action<T4> case4)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(this.item4);
-							return;
+							break;
 						}
-					
-					defaultCase();
+											default:
+							defaultCase();
+							break;
+					}
 				}
 
 				public void Switch<TState>(
@@ -811,28 +857,32 @@ System.Action<TState, T2> case2,
 System.Action<TState, T3> case3,
 System.Action<TState, T4> case4)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(state, this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(state, this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(state, this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(state, this.item4);
-							return;
+							break;
 						}
-					
-					defaultCase(state);
+											default:
+							defaultCase(state);
+							break;
+					}
 				}
 
 				
@@ -843,24 +893,27 @@ System.Func<T2, TResult> case2,
 System.Func<T3, TResult> case3,
 System.Func<T4, TResult> case4)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(this.item4);
 						}
-										
-					return defaultCase();
+											default:
+							return defaultCase();
+					}
 				}
 
 				public TResult Switch<TState, TResult>(
@@ -871,24 +924,27 @@ System.Func<TState, T2, TResult> case2,
 System.Func<TState, T3, TResult> case3,
 System.Func<TState, T4, TResult> case4)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(state, this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(state, this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(state, this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(state, this.item4);
 						}
-										
-					return defaultCase(state);
+											default:
+							return defaultCase(state);
+					}
 				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -1149,33 +1205,37 @@ System.Action<T3> case3,
 System.Action<T4> case4,
 System.Action<T5> case5)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(this.item5);
-							return;
+							break;
 						}
-					
-					defaultCase();
+											default:
+							defaultCase();
+							break;
+					}
 				}
 
 				public void Switch<TState>(
@@ -1187,33 +1247,37 @@ System.Action<TState, T3> case3,
 System.Action<TState, T4> case4,
 System.Action<TState, T5> case5)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(state, this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(state, this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(state, this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(state, this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(state, this.item5);
-							return;
+							break;
 						}
-					
-					defaultCase(state);
+											default:
+							defaultCase(state);
+							break;
+					}
 				}
 
 				
@@ -1225,28 +1289,31 @@ System.Func<T3, TResult> case3,
 System.Func<T4, TResult> case4,
 System.Func<T5, TResult> case5)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(this.item5);
 						}
-										
-					return defaultCase();
+											default:
+							return defaultCase();
+					}
 				}
 
 				public TResult Switch<TState, TResult>(
@@ -1258,28 +1325,31 @@ System.Func<TState, T3, TResult> case3,
 System.Func<TState, T4, TResult> case4,
 System.Func<TState, T5, TResult> case5)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(state, this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(state, this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(state, this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(state, this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(state, this.item5);
 						}
-										
-					return defaultCase(state);
+											default:
+							return defaultCase(state);
+					}
 				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -1587,38 +1657,42 @@ System.Action<T4> case4,
 System.Action<T5> case5,
 System.Action<T6> case6)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(this.item6);
-							return;
+							break;
 						}
-					
-					defaultCase();
+											default:
+							defaultCase();
+							break;
+					}
 				}
 
 				public void Switch<TState>(
@@ -1631,38 +1705,42 @@ System.Action<TState, T4> case4,
 System.Action<TState, T5> case5,
 System.Action<TState, T6> case6)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(state, this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(state, this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(state, this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(state, this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(state, this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(state, this.item6);
-							return;
+							break;
 						}
-					
-					defaultCase(state);
+											default:
+							defaultCase(state);
+							break;
+					}
 				}
 
 				
@@ -1675,32 +1753,35 @@ System.Func<T4, TResult> case4,
 System.Func<T5, TResult> case5,
 System.Func<T6, TResult> case6)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(this.item6);
 						}
-										
-					return defaultCase();
+											default:
+							return defaultCase();
+					}
 				}
 
 				public TResult Switch<TState, TResult>(
@@ -1713,32 +1794,35 @@ System.Func<TState, T4, TResult> case4,
 System.Func<TState, T5, TResult> case5,
 System.Func<TState, T6, TResult> case6)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(state, this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(state, this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(state, this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(state, this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(state, this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(state, this.item6);
 						}
-										
-					return defaultCase(state);
+											default:
+							return defaultCase(state);
+					}
 				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -2093,43 +2177,47 @@ System.Action<T5> case5,
 System.Action<T6> case6,
 System.Action<T7> case7)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(this.item7);
-							return;
+							break;
 						}
-					
-					defaultCase();
+											default:
+							defaultCase();
+							break;
+					}
 				}
 
 				public void Switch<TState>(
@@ -2143,43 +2231,47 @@ System.Action<TState, T5> case5,
 System.Action<TState, T6> case6,
 System.Action<TState, T7> case7)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(state, this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(state, this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(state, this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(state, this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(state, this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(state, this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(state, this.item7);
-							return;
+							break;
 						}
-					
-					defaultCase(state);
+											default:
+							defaultCase(state);
+							break;
+					}
 				}
 
 				
@@ -2193,36 +2285,39 @@ System.Func<T5, TResult> case5,
 System.Func<T6, TResult> case6,
 System.Func<T7, TResult> case7)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(this.item7);
 						}
-										
-					return defaultCase();
+											default:
+							return defaultCase();
+					}
 				}
 
 				public TResult Switch<TState, TResult>(
@@ -2236,36 +2331,39 @@ System.Func<TState, T5, TResult> case5,
 System.Func<TState, T6, TResult> case6,
 System.Func<TState, T7, TResult> case7)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(state, this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(state, this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(state, this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(state, this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(state, this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(state, this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(state, this.item7);
 						}
-										
-					return defaultCase(state);
+											default:
+							return defaultCase(state);
+					}
 				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -2667,48 +2765,52 @@ System.Action<T6> case6,
 System.Action<T7> case7,
 System.Action<T8> case8)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(this.item8);
-							return;
+							break;
 						}
-					
-					defaultCase();
+											default:
+							defaultCase();
+							break;
+					}
 				}
 
 				public void Switch<TState>(
@@ -2723,48 +2825,52 @@ System.Action<TState, T6> case6,
 System.Action<TState, T7> case7,
 System.Action<TState, T8> case8)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(state, this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(state, this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(state, this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(state, this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(state, this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(state, this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(state, this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(state, this.item8);
-							return;
+							break;
 						}
-					
-					defaultCase(state);
+											default:
+							defaultCase(state);
+							break;
+					}
 				}
 
 				
@@ -2779,40 +2885,43 @@ System.Func<T6, TResult> case6,
 System.Func<T7, TResult> case7,
 System.Func<T8, TResult> case8)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(this.item8);
 						}
-										
-					return defaultCase();
+											default:
+							return defaultCase();
+					}
 				}
 
 				public TResult Switch<TState, TResult>(
@@ -2827,40 +2936,43 @@ System.Func<TState, T6, TResult> case6,
 System.Func<TState, T7, TResult> case7,
 System.Func<TState, T8, TResult> case8)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(state, this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(state, this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(state, this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(state, this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(state, this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(state, this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(state, this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(state, this.item8);
 						}
-										
-					return defaultCase(state);
+											default:
+							return defaultCase(state);
+					}
 				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -3309,53 +3421,57 @@ System.Action<T7> case7,
 System.Action<T8> case8,
 System.Action<T9> case9)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(this.item9);
-							return;
+							break;
 						}
-					
-					defaultCase();
+											default:
+							defaultCase();
+							break;
+					}
 				}
 
 				public void Switch<TState>(
@@ -3371,53 +3487,57 @@ System.Action<TState, T7> case7,
 System.Action<TState, T8> case8,
 System.Action<TState, T9> case9)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(state, this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(state, this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(state, this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(state, this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(state, this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(state, this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(state, this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(state, this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(state, this.item9);
-							return;
+							break;
 						}
-					
-					defaultCase(state);
+											default:
+							defaultCase(state);
+							break;
+					}
 				}
 
 				
@@ -3433,44 +3553,47 @@ System.Func<T7, TResult> case7,
 System.Func<T8, TResult> case8,
 System.Func<T9, TResult> case9)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(this.item9);
 						}
-										
-					return defaultCase();
+											default:
+							return defaultCase();
+					}
 				}
 
 				public TResult Switch<TState, TResult>(
@@ -3486,44 +3609,47 @@ System.Func<TState, T7, TResult> case7,
 System.Func<TState, T8, TResult> case8,
 System.Func<TState, T9, TResult> case9)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(state, this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(state, this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(state, this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(state, this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(state, this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(state, this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(state, this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(state, this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(state, this.item9);
 						}
-										
-					return defaultCase(state);
+											default:
+							return defaultCase(state);
+					}
 				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -4019,58 +4145,62 @@ System.Action<T8> case8,
 System.Action<T9> case9,
 System.Action<T10> case10)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(this.item10);
-							return;
+							break;
 						}
-					
-					defaultCase();
+											default:
+							defaultCase();
+							break;
+					}
 				}
 
 				public void Switch<TState>(
@@ -4087,58 +4217,62 @@ System.Action<TState, T8> case8,
 System.Action<TState, T9> case9,
 System.Action<TState, T10> case10)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(state, this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(state, this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(state, this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(state, this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(state, this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(state, this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(state, this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(state, this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(state, this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(state, this.item10);
-							return;
+							break;
 						}
-					
-					defaultCase(state);
+											default:
+							defaultCase(state);
+							break;
+					}
 				}
 
 				
@@ -4155,48 +4289,51 @@ System.Func<T8, TResult> case8,
 System.Func<T9, TResult> case9,
 System.Func<T10, TResult> case10)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(this.item10);
 						}
-										
-					return defaultCase();
+											default:
+							return defaultCase();
+					}
 				}
 
 				public TResult Switch<TState, TResult>(
@@ -4213,48 +4350,51 @@ System.Func<TState, T8, TResult> case8,
 System.Func<TState, T9, TResult> case9,
 System.Func<TState, T10, TResult> case10)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(state, this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(state, this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(state, this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(state, this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(state, this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(state, this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(state, this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(state, this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(state, this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(state, this.item10);
 						}
-										
-					return defaultCase(state);
+											default:
+							return defaultCase(state);
+					}
 				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -4797,63 +4937,67 @@ System.Action<T9> case9,
 System.Action<T10> case10,
 System.Action<T11> case11)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(this.item11);
-							return;
+							break;
 						}
-					
-					defaultCase();
+											default:
+							defaultCase();
+							break;
+					}
 				}
 
 				public void Switch<TState>(
@@ -4871,63 +5015,67 @@ System.Action<TState, T9> case9,
 System.Action<TState, T10> case10,
 System.Action<TState, T11> case11)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(state, this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(state, this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(state, this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(state, this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(state, this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(state, this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(state, this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(state, this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(state, this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(state, this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(state, this.item11);
-							return;
+							break;
 						}
-					
-					defaultCase(state);
+											default:
+							defaultCase(state);
+							break;
+					}
 				}
 
 				
@@ -4945,52 +5093,55 @@ System.Func<T9, TResult> case9,
 System.Func<T10, TResult> case10,
 System.Func<T11, TResult> case11)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(this.item11);
 						}
-										
-					return defaultCase();
+											default:
+							return defaultCase();
+					}
 				}
 
 				public TResult Switch<TState, TResult>(
@@ -5008,52 +5159,55 @@ System.Func<TState, T9, TResult> case9,
 System.Func<TState, T10, TResult> case10,
 System.Func<TState, T11, TResult> case11)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(state, this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(state, this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(state, this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(state, this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(state, this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(state, this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(state, this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(state, this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(state, this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(state, this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(state, this.item11);
 						}
-										
-					return defaultCase(state);
+											default:
+							return defaultCase(state);
+					}
 				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -5643,68 +5797,72 @@ System.Action<T10> case10,
 System.Action<T11> case11,
 System.Action<T12> case12)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(this.item11);
-							return;
+							break;
 						}
-											if (this.discriminator == 12 && case12 != null)
+											case 12:
 						{
 							case12(this.item12);
-							return;
+							break;
 						}
-					
-					defaultCase();
+											default:
+							defaultCase();
+							break;
+					}
 				}
 
 				public void Switch<TState>(
@@ -5723,68 +5881,72 @@ System.Action<TState, T10> case10,
 System.Action<TState, T11> case11,
 System.Action<TState, T12> case12)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(state, this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(state, this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(state, this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(state, this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(state, this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(state, this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(state, this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(state, this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(state, this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(state, this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(state, this.item11);
-							return;
+							break;
 						}
-											if (this.discriminator == 12 && case12 != null)
+											case 12:
 						{
 							case12(state, this.item12);
-							return;
+							break;
 						}
-					
-					defaultCase(state);
+											default:
+							defaultCase(state);
+							break;
+					}
 				}
 
 				
@@ -5803,56 +5965,59 @@ System.Func<T10, TResult> case10,
 System.Func<T11, TResult> case11,
 System.Func<T12, TResult> case12)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(this.item11);
 						}
-											if (this.discriminator == 12)
+											case 12:
 						{
 							return case12(this.item12);
 						}
-										
-					return defaultCase();
+											default:
+							return defaultCase();
+					}
 				}
 
 				public TResult Switch<TState, TResult>(
@@ -5871,56 +6036,59 @@ System.Func<TState, T10, TResult> case10,
 System.Func<TState, T11, TResult> case11,
 System.Func<TState, T12, TResult> case12)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(state, this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(state, this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(state, this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(state, this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(state, this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(state, this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(state, this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(state, this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(state, this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(state, this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(state, this.item11);
 						}
-											if (this.discriminator == 12)
+											case 12:
 						{
 							return case12(state, this.item12);
 						}
-										
-					return defaultCase(state);
+											default:
+							return defaultCase(state);
+					}
 				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -6557,73 +6725,77 @@ System.Action<T11> case11,
 System.Action<T12> case12,
 System.Action<T13> case13)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(this.item11);
-							return;
+							break;
 						}
-											if (this.discriminator == 12 && case12 != null)
+											case 12:
 						{
 							case12(this.item12);
-							return;
+							break;
 						}
-											if (this.discriminator == 13 && case13 != null)
+											case 13:
 						{
 							case13(this.item13);
-							return;
+							break;
 						}
-					
-					defaultCase();
+											default:
+							defaultCase();
+							break;
+					}
 				}
 
 				public void Switch<TState>(
@@ -6643,73 +6815,77 @@ System.Action<TState, T11> case11,
 System.Action<TState, T12> case12,
 System.Action<TState, T13> case13)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(state, this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(state, this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(state, this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(state, this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(state, this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(state, this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(state, this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(state, this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(state, this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(state, this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(state, this.item11);
-							return;
+							break;
 						}
-											if (this.discriminator == 12 && case12 != null)
+											case 12:
 						{
 							case12(state, this.item12);
-							return;
+							break;
 						}
-											if (this.discriminator == 13 && case13 != null)
+											case 13:
 						{
 							case13(state, this.item13);
-							return;
+							break;
 						}
-					
-					defaultCase(state);
+											default:
+							defaultCase(state);
+							break;
+					}
 				}
 
 				
@@ -6729,60 +6905,63 @@ System.Func<T11, TResult> case11,
 System.Func<T12, TResult> case12,
 System.Func<T13, TResult> case13)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(this.item11);
 						}
-											if (this.discriminator == 12)
+											case 12:
 						{
 							return case12(this.item12);
 						}
-											if (this.discriminator == 13)
+											case 13:
 						{
 							return case13(this.item13);
 						}
-										
-					return defaultCase();
+											default:
+							return defaultCase();
+					}
 				}
 
 				public TResult Switch<TState, TResult>(
@@ -6802,60 +6981,63 @@ System.Func<TState, T11, TResult> case11,
 System.Func<TState, T12, TResult> case12,
 System.Func<TState, T13, TResult> case13)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(state, this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(state, this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(state, this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(state, this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(state, this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(state, this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(state, this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(state, this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(state, this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(state, this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(state, this.item11);
 						}
-											if (this.discriminator == 12)
+											case 12:
 						{
 							return case12(state, this.item12);
 						}
-											if (this.discriminator == 13)
+											case 13:
 						{
 							return case13(state, this.item13);
 						}
-										
-					return defaultCase(state);
+											default:
+							return defaultCase(state);
+					}
 				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -7539,78 +7721,82 @@ System.Action<T12> case12,
 System.Action<T13> case13,
 System.Action<T14> case14)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(this.item11);
-							return;
+							break;
 						}
-											if (this.discriminator == 12 && case12 != null)
+											case 12:
 						{
 							case12(this.item12);
-							return;
+							break;
 						}
-											if (this.discriminator == 13 && case13 != null)
+											case 13:
 						{
 							case13(this.item13);
-							return;
+							break;
 						}
-											if (this.discriminator == 14 && case14 != null)
+											case 14:
 						{
 							case14(this.item14);
-							return;
+							break;
 						}
-					
-					defaultCase();
+											default:
+							defaultCase();
+							break;
+					}
 				}
 
 				public void Switch<TState>(
@@ -7631,78 +7817,82 @@ System.Action<TState, T12> case12,
 System.Action<TState, T13> case13,
 System.Action<TState, T14> case14)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(state, this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(state, this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(state, this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(state, this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(state, this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(state, this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(state, this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(state, this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(state, this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(state, this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(state, this.item11);
-							return;
+							break;
 						}
-											if (this.discriminator == 12 && case12 != null)
+											case 12:
 						{
 							case12(state, this.item12);
-							return;
+							break;
 						}
-											if (this.discriminator == 13 && case13 != null)
+											case 13:
 						{
 							case13(state, this.item13);
-							return;
+							break;
 						}
-											if (this.discriminator == 14 && case14 != null)
+											case 14:
 						{
 							case14(state, this.item14);
-							return;
+							break;
 						}
-					
-					defaultCase(state);
+											default:
+							defaultCase(state);
+							break;
+					}
 				}
 
 				
@@ -7723,64 +7913,67 @@ System.Func<T12, TResult> case12,
 System.Func<T13, TResult> case13,
 System.Func<T14, TResult> case14)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(this.item11);
 						}
-											if (this.discriminator == 12)
+											case 12:
 						{
 							return case12(this.item12);
 						}
-											if (this.discriminator == 13)
+											case 13:
 						{
 							return case13(this.item13);
 						}
-											if (this.discriminator == 14)
+											case 14:
 						{
 							return case14(this.item14);
 						}
-										
-					return defaultCase();
+											default:
+							return defaultCase();
+					}
 				}
 
 				public TResult Switch<TState, TResult>(
@@ -7801,64 +7994,67 @@ System.Func<TState, T12, TResult> case12,
 System.Func<TState, T13, TResult> case13,
 System.Func<TState, T14, TResult> case14)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(state, this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(state, this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(state, this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(state, this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(state, this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(state, this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(state, this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(state, this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(state, this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(state, this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(state, this.item11);
 						}
-											if (this.discriminator == 12)
+											case 12:
 						{
 							return case12(state, this.item12);
 						}
-											if (this.discriminator == 13)
+											case 13:
 						{
 							return case13(state, this.item13);
 						}
-											if (this.discriminator == 14)
+											case 14:
 						{
 							return case14(state, this.item14);
 						}
-										
-					return defaultCase(state);
+											default:
+							return defaultCase(state);
+					}
 				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -8589,83 +8785,87 @@ System.Action<T13> case13,
 System.Action<T14> case14,
 System.Action<T15> case15)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(this.item11);
-							return;
+							break;
 						}
-											if (this.discriminator == 12 && case12 != null)
+											case 12:
 						{
 							case12(this.item12);
-							return;
+							break;
 						}
-											if (this.discriminator == 13 && case13 != null)
+											case 13:
 						{
 							case13(this.item13);
-							return;
+							break;
 						}
-											if (this.discriminator == 14 && case14 != null)
+											case 14:
 						{
 							case14(this.item14);
-							return;
+							break;
 						}
-											if (this.discriminator == 15 && case15 != null)
+											case 15:
 						{
 							case15(this.item15);
-							return;
+							break;
 						}
-					
-					defaultCase();
+											default:
+							defaultCase();
+							break;
+					}
 				}
 
 				public void Switch<TState>(
@@ -8687,83 +8887,87 @@ System.Action<TState, T13> case13,
 System.Action<TState, T14> case14,
 System.Action<TState, T15> case15)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(state, this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(state, this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(state, this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(state, this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(state, this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(state, this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(state, this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(state, this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(state, this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(state, this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(state, this.item11);
-							return;
+							break;
 						}
-											if (this.discriminator == 12 && case12 != null)
+											case 12:
 						{
 							case12(state, this.item12);
-							return;
+							break;
 						}
-											if (this.discriminator == 13 && case13 != null)
+											case 13:
 						{
 							case13(state, this.item13);
-							return;
+							break;
 						}
-											if (this.discriminator == 14 && case14 != null)
+											case 14:
 						{
 							case14(state, this.item14);
-							return;
+							break;
 						}
-											if (this.discriminator == 15 && case15 != null)
+											case 15:
 						{
 							case15(state, this.item15);
-							return;
+							break;
 						}
-					
-					defaultCase(state);
+											default:
+							defaultCase(state);
+							break;
+					}
 				}
 
 				
@@ -8785,68 +8989,71 @@ System.Func<T13, TResult> case13,
 System.Func<T14, TResult> case14,
 System.Func<T15, TResult> case15)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(this.item11);
 						}
-											if (this.discriminator == 12)
+											case 12:
 						{
 							return case12(this.item12);
 						}
-											if (this.discriminator == 13)
+											case 13:
 						{
 							return case13(this.item13);
 						}
-											if (this.discriminator == 14)
+											case 14:
 						{
 							return case14(this.item14);
 						}
-											if (this.discriminator == 15)
+											case 15:
 						{
 							return case15(this.item15);
 						}
-										
-					return defaultCase();
+											default:
+							return defaultCase();
+					}
 				}
 
 				public TResult Switch<TState, TResult>(
@@ -8868,68 +9075,71 @@ System.Func<TState, T13, TResult> case13,
 System.Func<TState, T14, TResult> case14,
 System.Func<TState, T15, TResult> case15)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(state, this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(state, this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(state, this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(state, this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(state, this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(state, this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(state, this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(state, this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(state, this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(state, this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(state, this.item11);
 						}
-											if (this.discriminator == 12)
+											case 12:
 						{
 							return case12(state, this.item12);
 						}
-											if (this.discriminator == 13)
+											case 13:
 						{
 							return case13(state, this.item13);
 						}
-											if (this.discriminator == 14)
+											case 14:
 						{
 							return case14(state, this.item14);
 						}
-											if (this.discriminator == 15)
+											case 15:
 						{
 							return case15(state, this.item15);
 						}
-										
-					return defaultCase(state);
+											default:
+							return defaultCase(state);
+					}
 				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -9707,88 +9917,92 @@ System.Action<T14> case14,
 System.Action<T15> case15,
 System.Action<T16> case16)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(this.item11);
-							return;
+							break;
 						}
-											if (this.discriminator == 12 && case12 != null)
+											case 12:
 						{
 							case12(this.item12);
-							return;
+							break;
 						}
-											if (this.discriminator == 13 && case13 != null)
+											case 13:
 						{
 							case13(this.item13);
-							return;
+							break;
 						}
-											if (this.discriminator == 14 && case14 != null)
+											case 14:
 						{
 							case14(this.item14);
-							return;
+							break;
 						}
-											if (this.discriminator == 15 && case15 != null)
+											case 15:
 						{
 							case15(this.item15);
-							return;
+							break;
 						}
-											if (this.discriminator == 16 && case16 != null)
+											case 16:
 						{
 							case16(this.item16);
-							return;
+							break;
 						}
-					
-					defaultCase();
+											default:
+							defaultCase();
+							break;
+					}
 				}
 
 				public void Switch<TState>(
@@ -9811,88 +10025,92 @@ System.Action<TState, T14> case14,
 System.Action<TState, T15> case15,
 System.Action<TState, T16> case16)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(state, this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(state, this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(state, this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(state, this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(state, this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(state, this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(state, this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(state, this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(state, this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(state, this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(state, this.item11);
-							return;
+							break;
 						}
-											if (this.discriminator == 12 && case12 != null)
+											case 12:
 						{
 							case12(state, this.item12);
-							return;
+							break;
 						}
-											if (this.discriminator == 13 && case13 != null)
+											case 13:
 						{
 							case13(state, this.item13);
-							return;
+							break;
 						}
-											if (this.discriminator == 14 && case14 != null)
+											case 14:
 						{
 							case14(state, this.item14);
-							return;
+							break;
 						}
-											if (this.discriminator == 15 && case15 != null)
+											case 15:
 						{
 							case15(state, this.item15);
-							return;
+							break;
 						}
-											if (this.discriminator == 16 && case16 != null)
+											case 16:
 						{
 							case16(state, this.item16);
-							return;
+							break;
 						}
-					
-					defaultCase(state);
+											default:
+							defaultCase(state);
+							break;
+					}
 				}
 
 				
@@ -9915,72 +10133,75 @@ System.Func<T14, TResult> case14,
 System.Func<T15, TResult> case15,
 System.Func<T16, TResult> case16)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(this.item11);
 						}
-											if (this.discriminator == 12)
+											case 12:
 						{
 							return case12(this.item12);
 						}
-											if (this.discriminator == 13)
+											case 13:
 						{
 							return case13(this.item13);
 						}
-											if (this.discriminator == 14)
+											case 14:
 						{
 							return case14(this.item14);
 						}
-											if (this.discriminator == 15)
+											case 15:
 						{
 							return case15(this.item15);
 						}
-											if (this.discriminator == 16)
+											case 16:
 						{
 							return case16(this.item16);
 						}
-										
-					return defaultCase();
+											default:
+							return defaultCase();
+					}
 				}
 
 				public TResult Switch<TState, TResult>(
@@ -10003,72 +10224,75 @@ System.Func<TState, T14, TResult> case14,
 System.Func<TState, T15, TResult> case15,
 System.Func<TState, T16, TResult> case16)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(state, this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(state, this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(state, this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(state, this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(state, this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(state, this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(state, this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(state, this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(state, this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(state, this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(state, this.item11);
 						}
-											if (this.discriminator == 12)
+											case 12:
 						{
 							return case12(state, this.item12);
 						}
-											if (this.discriminator == 13)
+											case 13:
 						{
 							return case13(state, this.item13);
 						}
-											if (this.discriminator == 14)
+											case 14:
 						{
 							return case14(state, this.item14);
 						}
-											if (this.discriminator == 15)
+											case 15:
 						{
 							return case15(state, this.item15);
 						}
-											if (this.discriminator == 16)
+											case 16:
 						{
 							return case16(state, this.item16);
 						}
-										
-					return defaultCase(state);
+											default:
+							return defaultCase(state);
+					}
 				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -10893,93 +11117,97 @@ System.Action<T15> case15,
 System.Action<T16> case16,
 System.Action<T17> case17)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(this.item11);
-							return;
+							break;
 						}
-											if (this.discriminator == 12 && case12 != null)
+											case 12:
 						{
 							case12(this.item12);
-							return;
+							break;
 						}
-											if (this.discriminator == 13 && case13 != null)
+											case 13:
 						{
 							case13(this.item13);
-							return;
+							break;
 						}
-											if (this.discriminator == 14 && case14 != null)
+											case 14:
 						{
 							case14(this.item14);
-							return;
+							break;
 						}
-											if (this.discriminator == 15 && case15 != null)
+											case 15:
 						{
 							case15(this.item15);
-							return;
+							break;
 						}
-											if (this.discriminator == 16 && case16 != null)
+											case 16:
 						{
 							case16(this.item16);
-							return;
+							break;
 						}
-											if (this.discriminator == 17 && case17 != null)
+											case 17:
 						{
 							case17(this.item17);
-							return;
+							break;
 						}
-					
-					defaultCase();
+											default:
+							defaultCase();
+							break;
+					}
 				}
 
 				public void Switch<TState>(
@@ -11003,93 +11231,97 @@ System.Action<TState, T15> case15,
 System.Action<TState, T16> case16,
 System.Action<TState, T17> case17)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(state, this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(state, this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(state, this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(state, this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(state, this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(state, this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(state, this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(state, this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(state, this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(state, this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(state, this.item11);
-							return;
+							break;
 						}
-											if (this.discriminator == 12 && case12 != null)
+											case 12:
 						{
 							case12(state, this.item12);
-							return;
+							break;
 						}
-											if (this.discriminator == 13 && case13 != null)
+											case 13:
 						{
 							case13(state, this.item13);
-							return;
+							break;
 						}
-											if (this.discriminator == 14 && case14 != null)
+											case 14:
 						{
 							case14(state, this.item14);
-							return;
+							break;
 						}
-											if (this.discriminator == 15 && case15 != null)
+											case 15:
 						{
 							case15(state, this.item15);
-							return;
+							break;
 						}
-											if (this.discriminator == 16 && case16 != null)
+											case 16:
 						{
 							case16(state, this.item16);
-							return;
+							break;
 						}
-											if (this.discriminator == 17 && case17 != null)
+											case 17:
 						{
 							case17(state, this.item17);
-							return;
+							break;
 						}
-					
-					defaultCase(state);
+											default:
+							defaultCase(state);
+							break;
+					}
 				}
 
 				
@@ -11113,76 +11345,79 @@ System.Func<T15, TResult> case15,
 System.Func<T16, TResult> case16,
 System.Func<T17, TResult> case17)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(this.item11);
 						}
-											if (this.discriminator == 12)
+											case 12:
 						{
 							return case12(this.item12);
 						}
-											if (this.discriminator == 13)
+											case 13:
 						{
 							return case13(this.item13);
 						}
-											if (this.discriminator == 14)
+											case 14:
 						{
 							return case14(this.item14);
 						}
-											if (this.discriminator == 15)
+											case 15:
 						{
 							return case15(this.item15);
 						}
-											if (this.discriminator == 16)
+											case 16:
 						{
 							return case16(this.item16);
 						}
-											if (this.discriminator == 17)
+											case 17:
 						{
 							return case17(this.item17);
 						}
-										
-					return defaultCase();
+											default:
+							return defaultCase();
+					}
 				}
 
 				public TResult Switch<TState, TResult>(
@@ -11206,76 +11441,79 @@ System.Func<TState, T15, TResult> case15,
 System.Func<TState, T16, TResult> case16,
 System.Func<TState, T17, TResult> case17)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(state, this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(state, this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(state, this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(state, this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(state, this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(state, this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(state, this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(state, this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(state, this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(state, this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(state, this.item11);
 						}
-											if (this.discriminator == 12)
+											case 12:
 						{
 							return case12(state, this.item12);
 						}
-											if (this.discriminator == 13)
+											case 13:
 						{
 							return case13(state, this.item13);
 						}
-											if (this.discriminator == 14)
+											case 14:
 						{
 							return case14(state, this.item14);
 						}
-											if (this.discriminator == 15)
+											case 15:
 						{
 							return case15(state, this.item15);
 						}
-											if (this.discriminator == 16)
+											case 16:
 						{
 							return case16(state, this.item16);
 						}
-											if (this.discriminator == 17)
+											case 17:
 						{
 							return case17(state, this.item17);
 						}
-										
-					return defaultCase(state);
+											default:
+							return defaultCase(state);
+					}
 				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -12147,98 +12385,102 @@ System.Action<T16> case16,
 System.Action<T17> case17,
 System.Action<T18> case18)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(this.item11);
-							return;
+							break;
 						}
-											if (this.discriminator == 12 && case12 != null)
+											case 12:
 						{
 							case12(this.item12);
-							return;
+							break;
 						}
-											if (this.discriminator == 13 && case13 != null)
+											case 13:
 						{
 							case13(this.item13);
-							return;
+							break;
 						}
-											if (this.discriminator == 14 && case14 != null)
+											case 14:
 						{
 							case14(this.item14);
-							return;
+							break;
 						}
-											if (this.discriminator == 15 && case15 != null)
+											case 15:
 						{
 							case15(this.item15);
-							return;
+							break;
 						}
-											if (this.discriminator == 16 && case16 != null)
+											case 16:
 						{
 							case16(this.item16);
-							return;
+							break;
 						}
-											if (this.discriminator == 17 && case17 != null)
+											case 17:
 						{
 							case17(this.item17);
-							return;
+							break;
 						}
-											if (this.discriminator == 18 && case18 != null)
+											case 18:
 						{
 							case18(this.item18);
-							return;
+							break;
 						}
-					
-					defaultCase();
+											default:
+							defaultCase();
+							break;
+					}
 				}
 
 				public void Switch<TState>(
@@ -12263,98 +12505,102 @@ System.Action<TState, T16> case16,
 System.Action<TState, T17> case17,
 System.Action<TState, T18> case18)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(state, this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(state, this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(state, this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(state, this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(state, this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(state, this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(state, this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(state, this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(state, this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(state, this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(state, this.item11);
-							return;
+							break;
 						}
-											if (this.discriminator == 12 && case12 != null)
+											case 12:
 						{
 							case12(state, this.item12);
-							return;
+							break;
 						}
-											if (this.discriminator == 13 && case13 != null)
+											case 13:
 						{
 							case13(state, this.item13);
-							return;
+							break;
 						}
-											if (this.discriminator == 14 && case14 != null)
+											case 14:
 						{
 							case14(state, this.item14);
-							return;
+							break;
 						}
-											if (this.discriminator == 15 && case15 != null)
+											case 15:
 						{
 							case15(state, this.item15);
-							return;
+							break;
 						}
-											if (this.discriminator == 16 && case16 != null)
+											case 16:
 						{
 							case16(state, this.item16);
-							return;
+							break;
 						}
-											if (this.discriminator == 17 && case17 != null)
+											case 17:
 						{
 							case17(state, this.item17);
-							return;
+							break;
 						}
-											if (this.discriminator == 18 && case18 != null)
+											case 18:
 						{
 							case18(state, this.item18);
-							return;
+							break;
 						}
-					
-					defaultCase(state);
+											default:
+							defaultCase(state);
+							break;
+					}
 				}
 
 				
@@ -12379,80 +12625,83 @@ System.Func<T16, TResult> case16,
 System.Func<T17, TResult> case17,
 System.Func<T18, TResult> case18)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(this.item11);
 						}
-											if (this.discriminator == 12)
+											case 12:
 						{
 							return case12(this.item12);
 						}
-											if (this.discriminator == 13)
+											case 13:
 						{
 							return case13(this.item13);
 						}
-											if (this.discriminator == 14)
+											case 14:
 						{
 							return case14(this.item14);
 						}
-											if (this.discriminator == 15)
+											case 15:
 						{
 							return case15(this.item15);
 						}
-											if (this.discriminator == 16)
+											case 16:
 						{
 							return case16(this.item16);
 						}
-											if (this.discriminator == 17)
+											case 17:
 						{
 							return case17(this.item17);
 						}
-											if (this.discriminator == 18)
+											case 18:
 						{
 							return case18(this.item18);
 						}
-										
-					return defaultCase();
+											default:
+							return defaultCase();
+					}
 				}
 
 				public TResult Switch<TState, TResult>(
@@ -12477,80 +12726,83 @@ System.Func<TState, T16, TResult> case16,
 System.Func<TState, T17, TResult> case17,
 System.Func<TState, T18, TResult> case18)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(state, this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(state, this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(state, this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(state, this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(state, this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(state, this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(state, this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(state, this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(state, this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(state, this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(state, this.item11);
 						}
-											if (this.discriminator == 12)
+											case 12:
 						{
 							return case12(state, this.item12);
 						}
-											if (this.discriminator == 13)
+											case 13:
 						{
 							return case13(state, this.item13);
 						}
-											if (this.discriminator == 14)
+											case 14:
 						{
 							return case14(state, this.item14);
 						}
-											if (this.discriminator == 15)
+											case 15:
 						{
 							return case15(state, this.item15);
 						}
-											if (this.discriminator == 16)
+											case 16:
 						{
 							return case16(state, this.item16);
 						}
-											if (this.discriminator == 17)
+											case 17:
 						{
 							return case17(state, this.item17);
 						}
-											if (this.discriminator == 18)
+											case 18:
 						{
 							return case18(state, this.item18);
 						}
-										
-					return defaultCase(state);
+											default:
+							return defaultCase(state);
+					}
 				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -13469,103 +13721,107 @@ System.Action<T17> case17,
 System.Action<T18> case18,
 System.Action<T19> case19)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(this.item11);
-							return;
+							break;
 						}
-											if (this.discriminator == 12 && case12 != null)
+											case 12:
 						{
 							case12(this.item12);
-							return;
+							break;
 						}
-											if (this.discriminator == 13 && case13 != null)
+											case 13:
 						{
 							case13(this.item13);
-							return;
+							break;
 						}
-											if (this.discriminator == 14 && case14 != null)
+											case 14:
 						{
 							case14(this.item14);
-							return;
+							break;
 						}
-											if (this.discriminator == 15 && case15 != null)
+											case 15:
 						{
 							case15(this.item15);
-							return;
+							break;
 						}
-											if (this.discriminator == 16 && case16 != null)
+											case 16:
 						{
 							case16(this.item16);
-							return;
+							break;
 						}
-											if (this.discriminator == 17 && case17 != null)
+											case 17:
 						{
 							case17(this.item17);
-							return;
+							break;
 						}
-											if (this.discriminator == 18 && case18 != null)
+											case 18:
 						{
 							case18(this.item18);
-							return;
+							break;
 						}
-											if (this.discriminator == 19 && case19 != null)
+											case 19:
 						{
 							case19(this.item19);
-							return;
+							break;
 						}
-					
-					defaultCase();
+											default:
+							defaultCase();
+							break;
+					}
 				}
 
 				public void Switch<TState>(
@@ -13591,103 +13847,107 @@ System.Action<TState, T17> case17,
 System.Action<TState, T18> case18,
 System.Action<TState, T19> case19)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(state, this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(state, this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(state, this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(state, this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(state, this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(state, this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(state, this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(state, this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(state, this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(state, this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(state, this.item11);
-							return;
+							break;
 						}
-											if (this.discriminator == 12 && case12 != null)
+											case 12:
 						{
 							case12(state, this.item12);
-							return;
+							break;
 						}
-											if (this.discriminator == 13 && case13 != null)
+											case 13:
 						{
 							case13(state, this.item13);
-							return;
+							break;
 						}
-											if (this.discriminator == 14 && case14 != null)
+											case 14:
 						{
 							case14(state, this.item14);
-							return;
+							break;
 						}
-											if (this.discriminator == 15 && case15 != null)
+											case 15:
 						{
 							case15(state, this.item15);
-							return;
+							break;
 						}
-											if (this.discriminator == 16 && case16 != null)
+											case 16:
 						{
 							case16(state, this.item16);
-							return;
+							break;
 						}
-											if (this.discriminator == 17 && case17 != null)
+											case 17:
 						{
 							case17(state, this.item17);
-							return;
+							break;
 						}
-											if (this.discriminator == 18 && case18 != null)
+											case 18:
 						{
 							case18(state, this.item18);
-							return;
+							break;
 						}
-											if (this.discriminator == 19 && case19 != null)
+											case 19:
 						{
 							case19(state, this.item19);
-							return;
+							break;
 						}
-					
-					defaultCase(state);
+											default:
+							defaultCase(state);
+							break;
+					}
 				}
 
 				
@@ -13713,84 +13973,87 @@ System.Func<T17, TResult> case17,
 System.Func<T18, TResult> case18,
 System.Func<T19, TResult> case19)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(this.item11);
 						}
-											if (this.discriminator == 12)
+											case 12:
 						{
 							return case12(this.item12);
 						}
-											if (this.discriminator == 13)
+											case 13:
 						{
 							return case13(this.item13);
 						}
-											if (this.discriminator == 14)
+											case 14:
 						{
 							return case14(this.item14);
 						}
-											if (this.discriminator == 15)
+											case 15:
 						{
 							return case15(this.item15);
 						}
-											if (this.discriminator == 16)
+											case 16:
 						{
 							return case16(this.item16);
 						}
-											if (this.discriminator == 17)
+											case 17:
 						{
 							return case17(this.item17);
 						}
-											if (this.discriminator == 18)
+											case 18:
 						{
 							return case18(this.item18);
 						}
-											if (this.discriminator == 19)
+											case 19:
 						{
 							return case19(this.item19);
 						}
-										
-					return defaultCase();
+											default:
+							return defaultCase();
+					}
 				}
 
 				public TResult Switch<TState, TResult>(
@@ -13816,84 +14079,87 @@ System.Func<TState, T17, TResult> case17,
 System.Func<TState, T18, TResult> case18,
 System.Func<TState, T19, TResult> case19)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(state, this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(state, this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(state, this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(state, this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(state, this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(state, this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(state, this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(state, this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(state, this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(state, this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(state, this.item11);
 						}
-											if (this.discriminator == 12)
+											case 12:
 						{
 							return case12(state, this.item12);
 						}
-											if (this.discriminator == 13)
+											case 13:
 						{
 							return case13(state, this.item13);
 						}
-											if (this.discriminator == 14)
+											case 14:
 						{
 							return case14(state, this.item14);
 						}
-											if (this.discriminator == 15)
+											case 15:
 						{
 							return case15(state, this.item15);
 						}
-											if (this.discriminator == 16)
+											case 16:
 						{
 							return case16(state, this.item16);
 						}
-											if (this.discriminator == 17)
+											case 17:
 						{
 							return case17(state, this.item17);
 						}
-											if (this.discriminator == 18)
+											case 18:
 						{
 							return case18(state, this.item18);
 						}
-											if (this.discriminator == 19)
+											case 19:
 						{
 							return case19(state, this.item19);
 						}
-										
-					return defaultCase(state);
+											default:
+							return defaultCase(state);
+					}
 				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -14859,108 +15125,112 @@ System.Action<T18> case18,
 System.Action<T19> case19,
 System.Action<T20> case20)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(this.item11);
-							return;
+							break;
 						}
-											if (this.discriminator == 12 && case12 != null)
+											case 12:
 						{
 							case12(this.item12);
-							return;
+							break;
 						}
-											if (this.discriminator == 13 && case13 != null)
+											case 13:
 						{
 							case13(this.item13);
-							return;
+							break;
 						}
-											if (this.discriminator == 14 && case14 != null)
+											case 14:
 						{
 							case14(this.item14);
-							return;
+							break;
 						}
-											if (this.discriminator == 15 && case15 != null)
+											case 15:
 						{
 							case15(this.item15);
-							return;
+							break;
 						}
-											if (this.discriminator == 16 && case16 != null)
+											case 16:
 						{
 							case16(this.item16);
-							return;
+							break;
 						}
-											if (this.discriminator == 17 && case17 != null)
+											case 17:
 						{
 							case17(this.item17);
-							return;
+							break;
 						}
-											if (this.discriminator == 18 && case18 != null)
+											case 18:
 						{
 							case18(this.item18);
-							return;
+							break;
 						}
-											if (this.discriminator == 19 && case19 != null)
+											case 19:
 						{
 							case19(this.item19);
-							return;
+							break;
 						}
-											if (this.discriminator == 20 && case20 != null)
+											case 20:
 						{
 							case20(this.item20);
-							return;
+							break;
 						}
-					
-					defaultCase();
+											default:
+							defaultCase();
+							break;
+					}
 				}
 
 				public void Switch<TState>(
@@ -14987,108 +15257,112 @@ System.Action<TState, T18> case18,
 System.Action<TState, T19> case19,
 System.Action<TState, T20> case20)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(state, this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(state, this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(state, this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(state, this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(state, this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(state, this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(state, this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(state, this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(state, this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(state, this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(state, this.item11);
-							return;
+							break;
 						}
-											if (this.discriminator == 12 && case12 != null)
+											case 12:
 						{
 							case12(state, this.item12);
-							return;
+							break;
 						}
-											if (this.discriminator == 13 && case13 != null)
+											case 13:
 						{
 							case13(state, this.item13);
-							return;
+							break;
 						}
-											if (this.discriminator == 14 && case14 != null)
+											case 14:
 						{
 							case14(state, this.item14);
-							return;
+							break;
 						}
-											if (this.discriminator == 15 && case15 != null)
+											case 15:
 						{
 							case15(state, this.item15);
-							return;
+							break;
 						}
-											if (this.discriminator == 16 && case16 != null)
+											case 16:
 						{
 							case16(state, this.item16);
-							return;
+							break;
 						}
-											if (this.discriminator == 17 && case17 != null)
+											case 17:
 						{
 							case17(state, this.item17);
-							return;
+							break;
 						}
-											if (this.discriminator == 18 && case18 != null)
+											case 18:
 						{
 							case18(state, this.item18);
-							return;
+							break;
 						}
-											if (this.discriminator == 19 && case19 != null)
+											case 19:
 						{
 							case19(state, this.item19);
-							return;
+							break;
 						}
-											if (this.discriminator == 20 && case20 != null)
+											case 20:
 						{
 							case20(state, this.item20);
-							return;
+							break;
 						}
-					
-					defaultCase(state);
+											default:
+							defaultCase(state);
+							break;
+					}
 				}
 
 				
@@ -15115,88 +15389,91 @@ System.Func<T18, TResult> case18,
 System.Func<T19, TResult> case19,
 System.Func<T20, TResult> case20)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(this.item11);
 						}
-											if (this.discriminator == 12)
+											case 12:
 						{
 							return case12(this.item12);
 						}
-											if (this.discriminator == 13)
+											case 13:
 						{
 							return case13(this.item13);
 						}
-											if (this.discriminator == 14)
+											case 14:
 						{
 							return case14(this.item14);
 						}
-											if (this.discriminator == 15)
+											case 15:
 						{
 							return case15(this.item15);
 						}
-											if (this.discriminator == 16)
+											case 16:
 						{
 							return case16(this.item16);
 						}
-											if (this.discriminator == 17)
+											case 17:
 						{
 							return case17(this.item17);
 						}
-											if (this.discriminator == 18)
+											case 18:
 						{
 							return case18(this.item18);
 						}
-											if (this.discriminator == 19)
+											case 19:
 						{
 							return case19(this.item19);
 						}
-											if (this.discriminator == 20)
+											case 20:
 						{
 							return case20(this.item20);
 						}
-										
-					return defaultCase();
+											default:
+							return defaultCase();
+					}
 				}
 
 				public TResult Switch<TState, TResult>(
@@ -15223,88 +15500,91 @@ System.Func<TState, T18, TResult> case18,
 System.Func<TState, T19, TResult> case19,
 System.Func<TState, T20, TResult> case20)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(state, this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(state, this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(state, this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(state, this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(state, this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(state, this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(state, this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(state, this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(state, this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(state, this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(state, this.item11);
 						}
-											if (this.discriminator == 12)
+											case 12:
 						{
 							return case12(state, this.item12);
 						}
-											if (this.discriminator == 13)
+											case 13:
 						{
 							return case13(state, this.item13);
 						}
-											if (this.discriminator == 14)
+											case 14:
 						{
 							return case14(state, this.item14);
 						}
-											if (this.discriminator == 15)
+											case 15:
 						{
 							return case15(state, this.item15);
 						}
-											if (this.discriminator == 16)
+											case 16:
 						{
 							return case16(state, this.item16);
 						}
-											if (this.discriminator == 17)
+											case 17:
 						{
 							return case17(state, this.item17);
 						}
-											if (this.discriminator == 18)
+											case 18:
 						{
 							return case18(state, this.item18);
 						}
-											if (this.discriminator == 19)
+											case 19:
 						{
 							return case19(state, this.item19);
 						}
-											if (this.discriminator == 20)
+											case 20:
 						{
 							return case20(state, this.item20);
 						}
-										
-					return defaultCase(state);
+											default:
+							return defaultCase(state);
+					}
 				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -16317,113 +16597,117 @@ System.Action<T19> case19,
 System.Action<T20> case20,
 System.Action<T21> case21)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(this.item11);
-							return;
+							break;
 						}
-											if (this.discriminator == 12 && case12 != null)
+											case 12:
 						{
 							case12(this.item12);
-							return;
+							break;
 						}
-											if (this.discriminator == 13 && case13 != null)
+											case 13:
 						{
 							case13(this.item13);
-							return;
+							break;
 						}
-											if (this.discriminator == 14 && case14 != null)
+											case 14:
 						{
 							case14(this.item14);
-							return;
+							break;
 						}
-											if (this.discriminator == 15 && case15 != null)
+											case 15:
 						{
 							case15(this.item15);
-							return;
+							break;
 						}
-											if (this.discriminator == 16 && case16 != null)
+											case 16:
 						{
 							case16(this.item16);
-							return;
+							break;
 						}
-											if (this.discriminator == 17 && case17 != null)
+											case 17:
 						{
 							case17(this.item17);
-							return;
+							break;
 						}
-											if (this.discriminator == 18 && case18 != null)
+											case 18:
 						{
 							case18(this.item18);
-							return;
+							break;
 						}
-											if (this.discriminator == 19 && case19 != null)
+											case 19:
 						{
 							case19(this.item19);
-							return;
+							break;
 						}
-											if (this.discriminator == 20 && case20 != null)
+											case 20:
 						{
 							case20(this.item20);
-							return;
+							break;
 						}
-											if (this.discriminator == 21 && case21 != null)
+											case 21:
 						{
 							case21(this.item21);
-							return;
+							break;
 						}
-					
-					defaultCase();
+											default:
+							defaultCase();
+							break;
+					}
 				}
 
 				public void Switch<TState>(
@@ -16451,113 +16735,117 @@ System.Action<TState, T19> case19,
 System.Action<TState, T20> case20,
 System.Action<TState, T21> case21)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(state, this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(state, this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(state, this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(state, this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(state, this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(state, this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(state, this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(state, this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(state, this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(state, this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(state, this.item11);
-							return;
+							break;
 						}
-											if (this.discriminator == 12 && case12 != null)
+											case 12:
 						{
 							case12(state, this.item12);
-							return;
+							break;
 						}
-											if (this.discriminator == 13 && case13 != null)
+											case 13:
 						{
 							case13(state, this.item13);
-							return;
+							break;
 						}
-											if (this.discriminator == 14 && case14 != null)
+											case 14:
 						{
 							case14(state, this.item14);
-							return;
+							break;
 						}
-											if (this.discriminator == 15 && case15 != null)
+											case 15:
 						{
 							case15(state, this.item15);
-							return;
+							break;
 						}
-											if (this.discriminator == 16 && case16 != null)
+											case 16:
 						{
 							case16(state, this.item16);
-							return;
+							break;
 						}
-											if (this.discriminator == 17 && case17 != null)
+											case 17:
 						{
 							case17(state, this.item17);
-							return;
+							break;
 						}
-											if (this.discriminator == 18 && case18 != null)
+											case 18:
 						{
 							case18(state, this.item18);
-							return;
+							break;
 						}
-											if (this.discriminator == 19 && case19 != null)
+											case 19:
 						{
 							case19(state, this.item19);
-							return;
+							break;
 						}
-											if (this.discriminator == 20 && case20 != null)
+											case 20:
 						{
 							case20(state, this.item20);
-							return;
+							break;
 						}
-											if (this.discriminator == 21 && case21 != null)
+											case 21:
 						{
 							case21(state, this.item21);
-							return;
+							break;
 						}
-					
-					defaultCase(state);
+											default:
+							defaultCase(state);
+							break;
+					}
 				}
 
 				
@@ -16585,92 +16873,95 @@ System.Func<T19, TResult> case19,
 System.Func<T20, TResult> case20,
 System.Func<T21, TResult> case21)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(this.item11);
 						}
-											if (this.discriminator == 12)
+											case 12:
 						{
 							return case12(this.item12);
 						}
-											if (this.discriminator == 13)
+											case 13:
 						{
 							return case13(this.item13);
 						}
-											if (this.discriminator == 14)
+											case 14:
 						{
 							return case14(this.item14);
 						}
-											if (this.discriminator == 15)
+											case 15:
 						{
 							return case15(this.item15);
 						}
-											if (this.discriminator == 16)
+											case 16:
 						{
 							return case16(this.item16);
 						}
-											if (this.discriminator == 17)
+											case 17:
 						{
 							return case17(this.item17);
 						}
-											if (this.discriminator == 18)
+											case 18:
 						{
 							return case18(this.item18);
 						}
-											if (this.discriminator == 19)
+											case 19:
 						{
 							return case19(this.item19);
 						}
-											if (this.discriminator == 20)
+											case 20:
 						{
 							return case20(this.item20);
 						}
-											if (this.discriminator == 21)
+											case 21:
 						{
 							return case21(this.item21);
 						}
-										
-					return defaultCase();
+											default:
+							return defaultCase();
+					}
 				}
 
 				public TResult Switch<TState, TResult>(
@@ -16698,92 +16989,95 @@ System.Func<TState, T19, TResult> case19,
 System.Func<TState, T20, TResult> case20,
 System.Func<TState, T21, TResult> case21)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(state, this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(state, this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(state, this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(state, this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(state, this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(state, this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(state, this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(state, this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(state, this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(state, this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(state, this.item11);
 						}
-											if (this.discriminator == 12)
+											case 12:
 						{
 							return case12(state, this.item12);
 						}
-											if (this.discriminator == 13)
+											case 13:
 						{
 							return case13(state, this.item13);
 						}
-											if (this.discriminator == 14)
+											case 14:
 						{
 							return case14(state, this.item14);
 						}
-											if (this.discriminator == 15)
+											case 15:
 						{
 							return case15(state, this.item15);
 						}
-											if (this.discriminator == 16)
+											case 16:
 						{
 							return case16(state, this.item16);
 						}
-											if (this.discriminator == 17)
+											case 17:
 						{
 							return case17(state, this.item17);
 						}
-											if (this.discriminator == 18)
+											case 18:
 						{
 							return case18(state, this.item18);
 						}
-											if (this.discriminator == 19)
+											case 19:
 						{
 							return case19(state, this.item19);
 						}
-											if (this.discriminator == 20)
+											case 20:
 						{
 							return case20(state, this.item20);
 						}
-											if (this.discriminator == 21)
+											case 21:
 						{
 							return case21(state, this.item21);
 						}
-										
-					return defaultCase(state);
+											default:
+							return defaultCase(state);
+					}
 				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -17843,118 +18137,122 @@ System.Action<T20> case20,
 System.Action<T21> case21,
 System.Action<T22> case22)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(this.item11);
-							return;
+							break;
 						}
-											if (this.discriminator == 12 && case12 != null)
+											case 12:
 						{
 							case12(this.item12);
-							return;
+							break;
 						}
-											if (this.discriminator == 13 && case13 != null)
+											case 13:
 						{
 							case13(this.item13);
-							return;
+							break;
 						}
-											if (this.discriminator == 14 && case14 != null)
+											case 14:
 						{
 							case14(this.item14);
-							return;
+							break;
 						}
-											if (this.discriminator == 15 && case15 != null)
+											case 15:
 						{
 							case15(this.item15);
-							return;
+							break;
 						}
-											if (this.discriminator == 16 && case16 != null)
+											case 16:
 						{
 							case16(this.item16);
-							return;
+							break;
 						}
-											if (this.discriminator == 17 && case17 != null)
+											case 17:
 						{
 							case17(this.item17);
-							return;
+							break;
 						}
-											if (this.discriminator == 18 && case18 != null)
+											case 18:
 						{
 							case18(this.item18);
-							return;
+							break;
 						}
-											if (this.discriminator == 19 && case19 != null)
+											case 19:
 						{
 							case19(this.item19);
-							return;
+							break;
 						}
-											if (this.discriminator == 20 && case20 != null)
+											case 20:
 						{
 							case20(this.item20);
-							return;
+							break;
 						}
-											if (this.discriminator == 21 && case21 != null)
+											case 21:
 						{
 							case21(this.item21);
-							return;
+							break;
 						}
-											if (this.discriminator == 22 && case22 != null)
+											case 22:
 						{
 							case22(this.item22);
-							return;
+							break;
 						}
-					
-					defaultCase();
+											default:
+							defaultCase();
+							break;
+					}
 				}
 
 				public void Switch<TState>(
@@ -17983,118 +18281,122 @@ System.Action<TState, T20> case20,
 System.Action<TState, T21> case21,
 System.Action<TState, T22> case22)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(state, this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(state, this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(state, this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(state, this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(state, this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(state, this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(state, this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(state, this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(state, this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(state, this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(state, this.item11);
-							return;
+							break;
 						}
-											if (this.discriminator == 12 && case12 != null)
+											case 12:
 						{
 							case12(state, this.item12);
-							return;
+							break;
 						}
-											if (this.discriminator == 13 && case13 != null)
+											case 13:
 						{
 							case13(state, this.item13);
-							return;
+							break;
 						}
-											if (this.discriminator == 14 && case14 != null)
+											case 14:
 						{
 							case14(state, this.item14);
-							return;
+							break;
 						}
-											if (this.discriminator == 15 && case15 != null)
+											case 15:
 						{
 							case15(state, this.item15);
-							return;
+							break;
 						}
-											if (this.discriminator == 16 && case16 != null)
+											case 16:
 						{
 							case16(state, this.item16);
-							return;
+							break;
 						}
-											if (this.discriminator == 17 && case17 != null)
+											case 17:
 						{
 							case17(state, this.item17);
-							return;
+							break;
 						}
-											if (this.discriminator == 18 && case18 != null)
+											case 18:
 						{
 							case18(state, this.item18);
-							return;
+							break;
 						}
-											if (this.discriminator == 19 && case19 != null)
+											case 19:
 						{
 							case19(state, this.item19);
-							return;
+							break;
 						}
-											if (this.discriminator == 20 && case20 != null)
+											case 20:
 						{
 							case20(state, this.item20);
-							return;
+							break;
 						}
-											if (this.discriminator == 21 && case21 != null)
+											case 21:
 						{
 							case21(state, this.item21);
-							return;
+							break;
 						}
-											if (this.discriminator == 22 && case22 != null)
+											case 22:
 						{
 							case22(state, this.item22);
-							return;
+							break;
 						}
-					
-					defaultCase(state);
+											default:
+							defaultCase(state);
+							break;
+					}
 				}
 
 				
@@ -18123,96 +18425,99 @@ System.Func<T20, TResult> case20,
 System.Func<T21, TResult> case21,
 System.Func<T22, TResult> case22)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(this.item11);
 						}
-											if (this.discriminator == 12)
+											case 12:
 						{
 							return case12(this.item12);
 						}
-											if (this.discriminator == 13)
+											case 13:
 						{
 							return case13(this.item13);
 						}
-											if (this.discriminator == 14)
+											case 14:
 						{
 							return case14(this.item14);
 						}
-											if (this.discriminator == 15)
+											case 15:
 						{
 							return case15(this.item15);
 						}
-											if (this.discriminator == 16)
+											case 16:
 						{
 							return case16(this.item16);
 						}
-											if (this.discriminator == 17)
+											case 17:
 						{
 							return case17(this.item17);
 						}
-											if (this.discriminator == 18)
+											case 18:
 						{
 							return case18(this.item18);
 						}
-											if (this.discriminator == 19)
+											case 19:
 						{
 							return case19(this.item19);
 						}
-											if (this.discriminator == 20)
+											case 20:
 						{
 							return case20(this.item20);
 						}
-											if (this.discriminator == 21)
+											case 21:
 						{
 							return case21(this.item21);
 						}
-											if (this.discriminator == 22)
+											case 22:
 						{
 							return case22(this.item22);
 						}
-										
-					return defaultCase();
+											default:
+							return defaultCase();
+					}
 				}
 
 				public TResult Switch<TState, TResult>(
@@ -18241,96 +18546,99 @@ System.Func<TState, T20, TResult> case20,
 System.Func<TState, T21, TResult> case21,
 System.Func<TState, T22, TResult> case22)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(state, this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(state, this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(state, this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(state, this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(state, this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(state, this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(state, this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(state, this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(state, this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(state, this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(state, this.item11);
 						}
-											if (this.discriminator == 12)
+											case 12:
 						{
 							return case12(state, this.item12);
 						}
-											if (this.discriminator == 13)
+											case 13:
 						{
 							return case13(state, this.item13);
 						}
-											if (this.discriminator == 14)
+											case 14:
 						{
 							return case14(state, this.item14);
 						}
-											if (this.discriminator == 15)
+											case 15:
 						{
 							return case15(state, this.item15);
 						}
-											if (this.discriminator == 16)
+											case 16:
 						{
 							return case16(state, this.item16);
 						}
-											if (this.discriminator == 17)
+											case 17:
 						{
 							return case17(state, this.item17);
 						}
-											if (this.discriminator == 18)
+											case 18:
 						{
 							return case18(state, this.item18);
 						}
-											if (this.discriminator == 19)
+											case 19:
 						{
 							return case19(state, this.item19);
 						}
-											if (this.discriminator == 20)
+											case 20:
 						{
 							return case20(state, this.item20);
 						}
-											if (this.discriminator == 21)
+											case 21:
 						{
 							return case21(state, this.item21);
 						}
-											if (this.discriminator == 22)
+											case 22:
 						{
 							return case22(state, this.item22);
 						}
-										
-					return defaultCase(state);
+											default:
+							return defaultCase(state);
+					}
 				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -19437,123 +19745,127 @@ System.Action<T21> case21,
 System.Action<T22> case22,
 System.Action<T23> case23)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(this.item11);
-							return;
+							break;
 						}
-											if (this.discriminator == 12 && case12 != null)
+											case 12:
 						{
 							case12(this.item12);
-							return;
+							break;
 						}
-											if (this.discriminator == 13 && case13 != null)
+											case 13:
 						{
 							case13(this.item13);
-							return;
+							break;
 						}
-											if (this.discriminator == 14 && case14 != null)
+											case 14:
 						{
 							case14(this.item14);
-							return;
+							break;
 						}
-											if (this.discriminator == 15 && case15 != null)
+											case 15:
 						{
 							case15(this.item15);
-							return;
+							break;
 						}
-											if (this.discriminator == 16 && case16 != null)
+											case 16:
 						{
 							case16(this.item16);
-							return;
+							break;
 						}
-											if (this.discriminator == 17 && case17 != null)
+											case 17:
 						{
 							case17(this.item17);
-							return;
+							break;
 						}
-											if (this.discriminator == 18 && case18 != null)
+											case 18:
 						{
 							case18(this.item18);
-							return;
+							break;
 						}
-											if (this.discriminator == 19 && case19 != null)
+											case 19:
 						{
 							case19(this.item19);
-							return;
+							break;
 						}
-											if (this.discriminator == 20 && case20 != null)
+											case 20:
 						{
 							case20(this.item20);
-							return;
+							break;
 						}
-											if (this.discriminator == 21 && case21 != null)
+											case 21:
 						{
 							case21(this.item21);
-							return;
+							break;
 						}
-											if (this.discriminator == 22 && case22 != null)
+											case 22:
 						{
 							case22(this.item22);
-							return;
+							break;
 						}
-											if (this.discriminator == 23 && case23 != null)
+											case 23:
 						{
 							case23(this.item23);
-							return;
+							break;
 						}
-					
-					defaultCase();
+											default:
+							defaultCase();
+							break;
+					}
 				}
 
 				public void Switch<TState>(
@@ -19583,123 +19895,127 @@ System.Action<TState, T21> case21,
 System.Action<TState, T22> case22,
 System.Action<TState, T23> case23)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(state, this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(state, this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(state, this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(state, this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(state, this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(state, this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(state, this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(state, this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(state, this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(state, this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(state, this.item11);
-							return;
+							break;
 						}
-											if (this.discriminator == 12 && case12 != null)
+											case 12:
 						{
 							case12(state, this.item12);
-							return;
+							break;
 						}
-											if (this.discriminator == 13 && case13 != null)
+											case 13:
 						{
 							case13(state, this.item13);
-							return;
+							break;
 						}
-											if (this.discriminator == 14 && case14 != null)
+											case 14:
 						{
 							case14(state, this.item14);
-							return;
+							break;
 						}
-											if (this.discriminator == 15 && case15 != null)
+											case 15:
 						{
 							case15(state, this.item15);
-							return;
+							break;
 						}
-											if (this.discriminator == 16 && case16 != null)
+											case 16:
 						{
 							case16(state, this.item16);
-							return;
+							break;
 						}
-											if (this.discriminator == 17 && case17 != null)
+											case 17:
 						{
 							case17(state, this.item17);
-							return;
+							break;
 						}
-											if (this.discriminator == 18 && case18 != null)
+											case 18:
 						{
 							case18(state, this.item18);
-							return;
+							break;
 						}
-											if (this.discriminator == 19 && case19 != null)
+											case 19:
 						{
 							case19(state, this.item19);
-							return;
+							break;
 						}
-											if (this.discriminator == 20 && case20 != null)
+											case 20:
 						{
 							case20(state, this.item20);
-							return;
+							break;
 						}
-											if (this.discriminator == 21 && case21 != null)
+											case 21:
 						{
 							case21(state, this.item21);
-							return;
+							break;
 						}
-											if (this.discriminator == 22 && case22 != null)
+											case 22:
 						{
 							case22(state, this.item22);
-							return;
+							break;
 						}
-											if (this.discriminator == 23 && case23 != null)
+											case 23:
 						{
 							case23(state, this.item23);
-							return;
+							break;
 						}
-					
-					defaultCase(state);
+											default:
+							defaultCase(state);
+							break;
+					}
 				}
 
 				
@@ -19729,100 +20045,103 @@ System.Func<T21, TResult> case21,
 System.Func<T22, TResult> case22,
 System.Func<T23, TResult> case23)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(this.item11);
 						}
-											if (this.discriminator == 12)
+											case 12:
 						{
 							return case12(this.item12);
 						}
-											if (this.discriminator == 13)
+											case 13:
 						{
 							return case13(this.item13);
 						}
-											if (this.discriminator == 14)
+											case 14:
 						{
 							return case14(this.item14);
 						}
-											if (this.discriminator == 15)
+											case 15:
 						{
 							return case15(this.item15);
 						}
-											if (this.discriminator == 16)
+											case 16:
 						{
 							return case16(this.item16);
 						}
-											if (this.discriminator == 17)
+											case 17:
 						{
 							return case17(this.item17);
 						}
-											if (this.discriminator == 18)
+											case 18:
 						{
 							return case18(this.item18);
 						}
-											if (this.discriminator == 19)
+											case 19:
 						{
 							return case19(this.item19);
 						}
-											if (this.discriminator == 20)
+											case 20:
 						{
 							return case20(this.item20);
 						}
-											if (this.discriminator == 21)
+											case 21:
 						{
 							return case21(this.item21);
 						}
-											if (this.discriminator == 22)
+											case 22:
 						{
 							return case22(this.item22);
 						}
-											if (this.discriminator == 23)
+											case 23:
 						{
 							return case23(this.item23);
 						}
-										
-					return defaultCase();
+											default:
+							return defaultCase();
+					}
 				}
 
 				public TResult Switch<TState, TResult>(
@@ -19852,100 +20171,103 @@ System.Func<TState, T21, TResult> case21,
 System.Func<TState, T22, TResult> case22,
 System.Func<TState, T23, TResult> case23)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(state, this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(state, this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(state, this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(state, this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(state, this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(state, this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(state, this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(state, this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(state, this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(state, this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(state, this.item11);
 						}
-											if (this.discriminator == 12)
+											case 12:
 						{
 							return case12(state, this.item12);
 						}
-											if (this.discriminator == 13)
+											case 13:
 						{
 							return case13(state, this.item13);
 						}
-											if (this.discriminator == 14)
+											case 14:
 						{
 							return case14(state, this.item14);
 						}
-											if (this.discriminator == 15)
+											case 15:
 						{
 							return case15(state, this.item15);
 						}
-											if (this.discriminator == 16)
+											case 16:
 						{
 							return case16(state, this.item16);
 						}
-											if (this.discriminator == 17)
+											case 17:
 						{
 							return case17(state, this.item17);
 						}
-											if (this.discriminator == 18)
+											case 18:
 						{
 							return case18(state, this.item18);
 						}
-											if (this.discriminator == 19)
+											case 19:
 						{
 							return case19(state, this.item19);
 						}
-											if (this.discriminator == 20)
+											case 20:
 						{
 							return case20(state, this.item20);
 						}
-											if (this.discriminator == 21)
+											case 21:
 						{
 							return case21(state, this.item21);
 						}
-											if (this.discriminator == 22)
+											case 22:
 						{
 							return case22(state, this.item22);
 						}
-											if (this.discriminator == 23)
+											case 23:
 						{
 							return case23(state, this.item23);
 						}
-										
-					return defaultCase(state);
+											default:
+							return defaultCase(state);
+					}
 				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -21099,128 +21421,132 @@ System.Action<T22> case22,
 System.Action<T23> case23,
 System.Action<T24> case24)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(this.item11);
-							return;
+							break;
 						}
-											if (this.discriminator == 12 && case12 != null)
+											case 12:
 						{
 							case12(this.item12);
-							return;
+							break;
 						}
-											if (this.discriminator == 13 && case13 != null)
+											case 13:
 						{
 							case13(this.item13);
-							return;
+							break;
 						}
-											if (this.discriminator == 14 && case14 != null)
+											case 14:
 						{
 							case14(this.item14);
-							return;
+							break;
 						}
-											if (this.discriminator == 15 && case15 != null)
+											case 15:
 						{
 							case15(this.item15);
-							return;
+							break;
 						}
-											if (this.discriminator == 16 && case16 != null)
+											case 16:
 						{
 							case16(this.item16);
-							return;
+							break;
 						}
-											if (this.discriminator == 17 && case17 != null)
+											case 17:
 						{
 							case17(this.item17);
-							return;
+							break;
 						}
-											if (this.discriminator == 18 && case18 != null)
+											case 18:
 						{
 							case18(this.item18);
-							return;
+							break;
 						}
-											if (this.discriminator == 19 && case19 != null)
+											case 19:
 						{
 							case19(this.item19);
-							return;
+							break;
 						}
-											if (this.discriminator == 20 && case20 != null)
+											case 20:
 						{
 							case20(this.item20);
-							return;
+							break;
 						}
-											if (this.discriminator == 21 && case21 != null)
+											case 21:
 						{
 							case21(this.item21);
-							return;
+							break;
 						}
-											if (this.discriminator == 22 && case22 != null)
+											case 22:
 						{
 							case22(this.item22);
-							return;
+							break;
 						}
-											if (this.discriminator == 23 && case23 != null)
+											case 23:
 						{
 							case23(this.item23);
-							return;
+							break;
 						}
-											if (this.discriminator == 24 && case24 != null)
+											case 24:
 						{
 							case24(this.item24);
-							return;
+							break;
 						}
-					
-					defaultCase();
+											default:
+							defaultCase();
+							break;
+					}
 				}
 
 				public void Switch<TState>(
@@ -21251,128 +21577,132 @@ System.Action<TState, T22> case22,
 System.Action<TState, T23> case23,
 System.Action<TState, T24> case24)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(state, this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(state, this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(state, this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(state, this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(state, this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(state, this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(state, this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(state, this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(state, this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(state, this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(state, this.item11);
-							return;
+							break;
 						}
-											if (this.discriminator == 12 && case12 != null)
+											case 12:
 						{
 							case12(state, this.item12);
-							return;
+							break;
 						}
-											if (this.discriminator == 13 && case13 != null)
+											case 13:
 						{
 							case13(state, this.item13);
-							return;
+							break;
 						}
-											if (this.discriminator == 14 && case14 != null)
+											case 14:
 						{
 							case14(state, this.item14);
-							return;
+							break;
 						}
-											if (this.discriminator == 15 && case15 != null)
+											case 15:
 						{
 							case15(state, this.item15);
-							return;
+							break;
 						}
-											if (this.discriminator == 16 && case16 != null)
+											case 16:
 						{
 							case16(state, this.item16);
-							return;
+							break;
 						}
-											if (this.discriminator == 17 && case17 != null)
+											case 17:
 						{
 							case17(state, this.item17);
-							return;
+							break;
 						}
-											if (this.discriminator == 18 && case18 != null)
+											case 18:
 						{
 							case18(state, this.item18);
-							return;
+							break;
 						}
-											if (this.discriminator == 19 && case19 != null)
+											case 19:
 						{
 							case19(state, this.item19);
-							return;
+							break;
 						}
-											if (this.discriminator == 20 && case20 != null)
+											case 20:
 						{
 							case20(state, this.item20);
-							return;
+							break;
 						}
-											if (this.discriminator == 21 && case21 != null)
+											case 21:
 						{
 							case21(state, this.item21);
-							return;
+							break;
 						}
-											if (this.discriminator == 22 && case22 != null)
+											case 22:
 						{
 							case22(state, this.item22);
-							return;
+							break;
 						}
-											if (this.discriminator == 23 && case23 != null)
+											case 23:
 						{
 							case23(state, this.item23);
-							return;
+							break;
 						}
-											if (this.discriminator == 24 && case24 != null)
+											case 24:
 						{
 							case24(state, this.item24);
-							return;
+							break;
 						}
-					
-					defaultCase(state);
+											default:
+							defaultCase(state);
+							break;
+					}
 				}
 
 				
@@ -21403,104 +21733,107 @@ System.Func<T22, TResult> case22,
 System.Func<T23, TResult> case23,
 System.Func<T24, TResult> case24)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(this.item11);
 						}
-											if (this.discriminator == 12)
+											case 12:
 						{
 							return case12(this.item12);
 						}
-											if (this.discriminator == 13)
+											case 13:
 						{
 							return case13(this.item13);
 						}
-											if (this.discriminator == 14)
+											case 14:
 						{
 							return case14(this.item14);
 						}
-											if (this.discriminator == 15)
+											case 15:
 						{
 							return case15(this.item15);
 						}
-											if (this.discriminator == 16)
+											case 16:
 						{
 							return case16(this.item16);
 						}
-											if (this.discriminator == 17)
+											case 17:
 						{
 							return case17(this.item17);
 						}
-											if (this.discriminator == 18)
+											case 18:
 						{
 							return case18(this.item18);
 						}
-											if (this.discriminator == 19)
+											case 19:
 						{
 							return case19(this.item19);
 						}
-											if (this.discriminator == 20)
+											case 20:
 						{
 							return case20(this.item20);
 						}
-											if (this.discriminator == 21)
+											case 21:
 						{
 							return case21(this.item21);
 						}
-											if (this.discriminator == 22)
+											case 22:
 						{
 							return case22(this.item22);
 						}
-											if (this.discriminator == 23)
+											case 23:
 						{
 							return case23(this.item23);
 						}
-											if (this.discriminator == 24)
+											case 24:
 						{
 							return case24(this.item24);
 						}
-										
-					return defaultCase();
+											default:
+							return defaultCase();
+					}
 				}
 
 				public TResult Switch<TState, TResult>(
@@ -21531,104 +21864,107 @@ System.Func<TState, T22, TResult> case22,
 System.Func<TState, T23, TResult> case23,
 System.Func<TState, T24, TResult> case24)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(state, this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(state, this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(state, this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(state, this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(state, this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(state, this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(state, this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(state, this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(state, this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(state, this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(state, this.item11);
 						}
-											if (this.discriminator == 12)
+											case 12:
 						{
 							return case12(state, this.item12);
 						}
-											if (this.discriminator == 13)
+											case 13:
 						{
 							return case13(state, this.item13);
 						}
-											if (this.discriminator == 14)
+											case 14:
 						{
 							return case14(state, this.item14);
 						}
-											if (this.discriminator == 15)
+											case 15:
 						{
 							return case15(state, this.item15);
 						}
-											if (this.discriminator == 16)
+											case 16:
 						{
 							return case16(state, this.item16);
 						}
-											if (this.discriminator == 17)
+											case 17:
 						{
 							return case17(state, this.item17);
 						}
-											if (this.discriminator == 18)
+											case 18:
 						{
 							return case18(state, this.item18);
 						}
-											if (this.discriminator == 19)
+											case 19:
 						{
 							return case19(state, this.item19);
 						}
-											if (this.discriminator == 20)
+											case 20:
 						{
 							return case20(state, this.item20);
 						}
-											if (this.discriminator == 21)
+											case 21:
 						{
 							return case21(state, this.item21);
 						}
-											if (this.discriminator == 22)
+											case 22:
 						{
 							return case22(state, this.item22);
 						}
-											if (this.discriminator == 23)
+											case 23:
 						{
 							return case23(state, this.item23);
 						}
-											if (this.discriminator == 24)
+											case 24:
 						{
 							return case24(state, this.item24);
 						}
-										
-					return defaultCase(state);
+											default:
+							return defaultCase(state);
+					}
 				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -22829,133 +23165,137 @@ System.Action<T23> case23,
 System.Action<T24> case24,
 System.Action<T25> case25)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(this.item11);
-							return;
+							break;
 						}
-											if (this.discriminator == 12 && case12 != null)
+											case 12:
 						{
 							case12(this.item12);
-							return;
+							break;
 						}
-											if (this.discriminator == 13 && case13 != null)
+											case 13:
 						{
 							case13(this.item13);
-							return;
+							break;
 						}
-											if (this.discriminator == 14 && case14 != null)
+											case 14:
 						{
 							case14(this.item14);
-							return;
+							break;
 						}
-											if (this.discriminator == 15 && case15 != null)
+											case 15:
 						{
 							case15(this.item15);
-							return;
+							break;
 						}
-											if (this.discriminator == 16 && case16 != null)
+											case 16:
 						{
 							case16(this.item16);
-							return;
+							break;
 						}
-											if (this.discriminator == 17 && case17 != null)
+											case 17:
 						{
 							case17(this.item17);
-							return;
+							break;
 						}
-											if (this.discriminator == 18 && case18 != null)
+											case 18:
 						{
 							case18(this.item18);
-							return;
+							break;
 						}
-											if (this.discriminator == 19 && case19 != null)
+											case 19:
 						{
 							case19(this.item19);
-							return;
+							break;
 						}
-											if (this.discriminator == 20 && case20 != null)
+											case 20:
 						{
 							case20(this.item20);
-							return;
+							break;
 						}
-											if (this.discriminator == 21 && case21 != null)
+											case 21:
 						{
 							case21(this.item21);
-							return;
+							break;
 						}
-											if (this.discriminator == 22 && case22 != null)
+											case 22:
 						{
 							case22(this.item22);
-							return;
+							break;
 						}
-											if (this.discriminator == 23 && case23 != null)
+											case 23:
 						{
 							case23(this.item23);
-							return;
+							break;
 						}
-											if (this.discriminator == 24 && case24 != null)
+											case 24:
 						{
 							case24(this.item24);
-							return;
+							break;
 						}
-											if (this.discriminator == 25 && case25 != null)
+											case 25:
 						{
 							case25(this.item25);
-							return;
+							break;
 						}
-					
-					defaultCase();
+											default:
+							defaultCase();
+							break;
+					}
 				}
 
 				public void Switch<TState>(
@@ -22987,133 +23327,137 @@ System.Action<TState, T23> case23,
 System.Action<TState, T24> case24,
 System.Action<TState, T25> case25)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(state, this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(state, this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(state, this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(state, this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(state, this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(state, this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(state, this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(state, this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(state, this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(state, this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(state, this.item11);
-							return;
+							break;
 						}
-											if (this.discriminator == 12 && case12 != null)
+											case 12:
 						{
 							case12(state, this.item12);
-							return;
+							break;
 						}
-											if (this.discriminator == 13 && case13 != null)
+											case 13:
 						{
 							case13(state, this.item13);
-							return;
+							break;
 						}
-											if (this.discriminator == 14 && case14 != null)
+											case 14:
 						{
 							case14(state, this.item14);
-							return;
+							break;
 						}
-											if (this.discriminator == 15 && case15 != null)
+											case 15:
 						{
 							case15(state, this.item15);
-							return;
+							break;
 						}
-											if (this.discriminator == 16 && case16 != null)
+											case 16:
 						{
 							case16(state, this.item16);
-							return;
+							break;
 						}
-											if (this.discriminator == 17 && case17 != null)
+											case 17:
 						{
 							case17(state, this.item17);
-							return;
+							break;
 						}
-											if (this.discriminator == 18 && case18 != null)
+											case 18:
 						{
 							case18(state, this.item18);
-							return;
+							break;
 						}
-											if (this.discriminator == 19 && case19 != null)
+											case 19:
 						{
 							case19(state, this.item19);
-							return;
+							break;
 						}
-											if (this.discriminator == 20 && case20 != null)
+											case 20:
 						{
 							case20(state, this.item20);
-							return;
+							break;
 						}
-											if (this.discriminator == 21 && case21 != null)
+											case 21:
 						{
 							case21(state, this.item21);
-							return;
+							break;
 						}
-											if (this.discriminator == 22 && case22 != null)
+											case 22:
 						{
 							case22(state, this.item22);
-							return;
+							break;
 						}
-											if (this.discriminator == 23 && case23 != null)
+											case 23:
 						{
 							case23(state, this.item23);
-							return;
+							break;
 						}
-											if (this.discriminator == 24 && case24 != null)
+											case 24:
 						{
 							case24(state, this.item24);
-							return;
+							break;
 						}
-											if (this.discriminator == 25 && case25 != null)
+											case 25:
 						{
 							case25(state, this.item25);
-							return;
+							break;
 						}
-					
-					defaultCase(state);
+											default:
+							defaultCase(state);
+							break;
+					}
 				}
 
 				
@@ -23145,108 +23489,111 @@ System.Func<T23, TResult> case23,
 System.Func<T24, TResult> case24,
 System.Func<T25, TResult> case25)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(this.item11);
 						}
-											if (this.discriminator == 12)
+											case 12:
 						{
 							return case12(this.item12);
 						}
-											if (this.discriminator == 13)
+											case 13:
 						{
 							return case13(this.item13);
 						}
-											if (this.discriminator == 14)
+											case 14:
 						{
 							return case14(this.item14);
 						}
-											if (this.discriminator == 15)
+											case 15:
 						{
 							return case15(this.item15);
 						}
-											if (this.discriminator == 16)
+											case 16:
 						{
 							return case16(this.item16);
 						}
-											if (this.discriminator == 17)
+											case 17:
 						{
 							return case17(this.item17);
 						}
-											if (this.discriminator == 18)
+											case 18:
 						{
 							return case18(this.item18);
 						}
-											if (this.discriminator == 19)
+											case 19:
 						{
 							return case19(this.item19);
 						}
-											if (this.discriminator == 20)
+											case 20:
 						{
 							return case20(this.item20);
 						}
-											if (this.discriminator == 21)
+											case 21:
 						{
 							return case21(this.item21);
 						}
-											if (this.discriminator == 22)
+											case 22:
 						{
 							return case22(this.item22);
 						}
-											if (this.discriminator == 23)
+											case 23:
 						{
 							return case23(this.item23);
 						}
-											if (this.discriminator == 24)
+											case 24:
 						{
 							return case24(this.item24);
 						}
-											if (this.discriminator == 25)
+											case 25:
 						{
 							return case25(this.item25);
 						}
-										
-					return defaultCase();
+											default:
+							return defaultCase();
+					}
 				}
 
 				public TResult Switch<TState, TResult>(
@@ -23278,108 +23625,111 @@ System.Func<TState, T23, TResult> case23,
 System.Func<TState, T24, TResult> case24,
 System.Func<TState, T25, TResult> case25)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(state, this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(state, this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(state, this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(state, this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(state, this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(state, this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(state, this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(state, this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(state, this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(state, this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(state, this.item11);
 						}
-											if (this.discriminator == 12)
+											case 12:
 						{
 							return case12(state, this.item12);
 						}
-											if (this.discriminator == 13)
+											case 13:
 						{
 							return case13(state, this.item13);
 						}
-											if (this.discriminator == 14)
+											case 14:
 						{
 							return case14(state, this.item14);
 						}
-											if (this.discriminator == 15)
+											case 15:
 						{
 							return case15(state, this.item15);
 						}
-											if (this.discriminator == 16)
+											case 16:
 						{
 							return case16(state, this.item16);
 						}
-											if (this.discriminator == 17)
+											case 17:
 						{
 							return case17(state, this.item17);
 						}
-											if (this.discriminator == 18)
+											case 18:
 						{
 							return case18(state, this.item18);
 						}
-											if (this.discriminator == 19)
+											case 19:
 						{
 							return case19(state, this.item19);
 						}
-											if (this.discriminator == 20)
+											case 20:
 						{
 							return case20(state, this.item20);
 						}
-											if (this.discriminator == 21)
+											case 21:
 						{
 							return case21(state, this.item21);
 						}
-											if (this.discriminator == 22)
+											case 22:
 						{
 							return case22(state, this.item22);
 						}
-											if (this.discriminator == 23)
+											case 23:
 						{
 							return case23(state, this.item23);
 						}
-											if (this.discriminator == 24)
+											case 24:
 						{
 							return case24(state, this.item24);
 						}
-											if (this.discriminator == 25)
+											case 25:
 						{
 							return case25(state, this.item25);
 						}
-										
-					return defaultCase(state);
+											default:
+							return defaultCase(state);
+					}
 				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -24627,138 +24977,142 @@ System.Action<T24> case24,
 System.Action<T25> case25,
 System.Action<T26> case26)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(this.item11);
-							return;
+							break;
 						}
-											if (this.discriminator == 12 && case12 != null)
+											case 12:
 						{
 							case12(this.item12);
-							return;
+							break;
 						}
-											if (this.discriminator == 13 && case13 != null)
+											case 13:
 						{
 							case13(this.item13);
-							return;
+							break;
 						}
-											if (this.discriminator == 14 && case14 != null)
+											case 14:
 						{
 							case14(this.item14);
-							return;
+							break;
 						}
-											if (this.discriminator == 15 && case15 != null)
+											case 15:
 						{
 							case15(this.item15);
-							return;
+							break;
 						}
-											if (this.discriminator == 16 && case16 != null)
+											case 16:
 						{
 							case16(this.item16);
-							return;
+							break;
 						}
-											if (this.discriminator == 17 && case17 != null)
+											case 17:
 						{
 							case17(this.item17);
-							return;
+							break;
 						}
-											if (this.discriminator == 18 && case18 != null)
+											case 18:
 						{
 							case18(this.item18);
-							return;
+							break;
 						}
-											if (this.discriminator == 19 && case19 != null)
+											case 19:
 						{
 							case19(this.item19);
-							return;
+							break;
 						}
-											if (this.discriminator == 20 && case20 != null)
+											case 20:
 						{
 							case20(this.item20);
-							return;
+							break;
 						}
-											if (this.discriminator == 21 && case21 != null)
+											case 21:
 						{
 							case21(this.item21);
-							return;
+							break;
 						}
-											if (this.discriminator == 22 && case22 != null)
+											case 22:
 						{
 							case22(this.item22);
-							return;
+							break;
 						}
-											if (this.discriminator == 23 && case23 != null)
+											case 23:
 						{
 							case23(this.item23);
-							return;
+							break;
 						}
-											if (this.discriminator == 24 && case24 != null)
+											case 24:
 						{
 							case24(this.item24);
-							return;
+							break;
 						}
-											if (this.discriminator == 25 && case25 != null)
+											case 25:
 						{
 							case25(this.item25);
-							return;
+							break;
 						}
-											if (this.discriminator == 26 && case26 != null)
+											case 26:
 						{
 							case26(this.item26);
-							return;
+							break;
 						}
-					
-					defaultCase();
+											default:
+							defaultCase();
+							break;
+					}
 				}
 
 				public void Switch<TState>(
@@ -24791,138 +25145,142 @@ System.Action<TState, T24> case24,
 System.Action<TState, T25> case25,
 System.Action<TState, T26> case26)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(state, this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(state, this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(state, this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(state, this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(state, this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(state, this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(state, this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(state, this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(state, this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(state, this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(state, this.item11);
-							return;
+							break;
 						}
-											if (this.discriminator == 12 && case12 != null)
+											case 12:
 						{
 							case12(state, this.item12);
-							return;
+							break;
 						}
-											if (this.discriminator == 13 && case13 != null)
+											case 13:
 						{
 							case13(state, this.item13);
-							return;
+							break;
 						}
-											if (this.discriminator == 14 && case14 != null)
+											case 14:
 						{
 							case14(state, this.item14);
-							return;
+							break;
 						}
-											if (this.discriminator == 15 && case15 != null)
+											case 15:
 						{
 							case15(state, this.item15);
-							return;
+							break;
 						}
-											if (this.discriminator == 16 && case16 != null)
+											case 16:
 						{
 							case16(state, this.item16);
-							return;
+							break;
 						}
-											if (this.discriminator == 17 && case17 != null)
+											case 17:
 						{
 							case17(state, this.item17);
-							return;
+							break;
 						}
-											if (this.discriminator == 18 && case18 != null)
+											case 18:
 						{
 							case18(state, this.item18);
-							return;
+							break;
 						}
-											if (this.discriminator == 19 && case19 != null)
+											case 19:
 						{
 							case19(state, this.item19);
-							return;
+							break;
 						}
-											if (this.discriminator == 20 && case20 != null)
+											case 20:
 						{
 							case20(state, this.item20);
-							return;
+							break;
 						}
-											if (this.discriminator == 21 && case21 != null)
+											case 21:
 						{
 							case21(state, this.item21);
-							return;
+							break;
 						}
-											if (this.discriminator == 22 && case22 != null)
+											case 22:
 						{
 							case22(state, this.item22);
-							return;
+							break;
 						}
-											if (this.discriminator == 23 && case23 != null)
+											case 23:
 						{
 							case23(state, this.item23);
-							return;
+							break;
 						}
-											if (this.discriminator == 24 && case24 != null)
+											case 24:
 						{
 							case24(state, this.item24);
-							return;
+							break;
 						}
-											if (this.discriminator == 25 && case25 != null)
+											case 25:
 						{
 							case25(state, this.item25);
-							return;
+							break;
 						}
-											if (this.discriminator == 26 && case26 != null)
+											case 26:
 						{
 							case26(state, this.item26);
-							return;
+							break;
 						}
-					
-					defaultCase(state);
+											default:
+							defaultCase(state);
+							break;
+					}
 				}
 
 				
@@ -24955,112 +25313,115 @@ System.Func<T24, TResult> case24,
 System.Func<T25, TResult> case25,
 System.Func<T26, TResult> case26)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(this.item11);
 						}
-											if (this.discriminator == 12)
+											case 12:
 						{
 							return case12(this.item12);
 						}
-											if (this.discriminator == 13)
+											case 13:
 						{
 							return case13(this.item13);
 						}
-											if (this.discriminator == 14)
+											case 14:
 						{
 							return case14(this.item14);
 						}
-											if (this.discriminator == 15)
+											case 15:
 						{
 							return case15(this.item15);
 						}
-											if (this.discriminator == 16)
+											case 16:
 						{
 							return case16(this.item16);
 						}
-											if (this.discriminator == 17)
+											case 17:
 						{
 							return case17(this.item17);
 						}
-											if (this.discriminator == 18)
+											case 18:
 						{
 							return case18(this.item18);
 						}
-											if (this.discriminator == 19)
+											case 19:
 						{
 							return case19(this.item19);
 						}
-											if (this.discriminator == 20)
+											case 20:
 						{
 							return case20(this.item20);
 						}
-											if (this.discriminator == 21)
+											case 21:
 						{
 							return case21(this.item21);
 						}
-											if (this.discriminator == 22)
+											case 22:
 						{
 							return case22(this.item22);
 						}
-											if (this.discriminator == 23)
+											case 23:
 						{
 							return case23(this.item23);
 						}
-											if (this.discriminator == 24)
+											case 24:
 						{
 							return case24(this.item24);
 						}
-											if (this.discriminator == 25)
+											case 25:
 						{
 							return case25(this.item25);
 						}
-											if (this.discriminator == 26)
+											case 26:
 						{
 							return case26(this.item26);
 						}
-										
-					return defaultCase();
+											default:
+							return defaultCase();
+					}
 				}
 
 				public TResult Switch<TState, TResult>(
@@ -25093,112 +25454,115 @@ System.Func<TState, T24, TResult> case24,
 System.Func<TState, T25, TResult> case25,
 System.Func<TState, T26, TResult> case26)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(state, this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(state, this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(state, this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(state, this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(state, this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(state, this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(state, this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(state, this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(state, this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(state, this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(state, this.item11);
 						}
-											if (this.discriminator == 12)
+											case 12:
 						{
 							return case12(state, this.item12);
 						}
-											if (this.discriminator == 13)
+											case 13:
 						{
 							return case13(state, this.item13);
 						}
-											if (this.discriminator == 14)
+											case 14:
 						{
 							return case14(state, this.item14);
 						}
-											if (this.discriminator == 15)
+											case 15:
 						{
 							return case15(state, this.item15);
 						}
-											if (this.discriminator == 16)
+											case 16:
 						{
 							return case16(state, this.item16);
 						}
-											if (this.discriminator == 17)
+											case 17:
 						{
 							return case17(state, this.item17);
 						}
-											if (this.discriminator == 18)
+											case 18:
 						{
 							return case18(state, this.item18);
 						}
-											if (this.discriminator == 19)
+											case 19:
 						{
 							return case19(state, this.item19);
 						}
-											if (this.discriminator == 20)
+											case 20:
 						{
 							return case20(state, this.item20);
 						}
-											if (this.discriminator == 21)
+											case 21:
 						{
 							return case21(state, this.item21);
 						}
-											if (this.discriminator == 22)
+											case 22:
 						{
 							return case22(state, this.item22);
 						}
-											if (this.discriminator == 23)
+											case 23:
 						{
 							return case23(state, this.item23);
 						}
-											if (this.discriminator == 24)
+											case 24:
 						{
 							return case24(state, this.item24);
 						}
-											if (this.discriminator == 25)
+											case 25:
 						{
 							return case25(state, this.item25);
 						}
-											if (this.discriminator == 26)
+											case 26:
 						{
 							return case26(state, this.item26);
 						}
-										
-					return defaultCase(state);
+											default:
+							return defaultCase(state);
+					}
 				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -26493,143 +26857,147 @@ System.Action<T25> case25,
 System.Action<T26> case26,
 System.Action<T27> case27)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(this.item11);
-							return;
+							break;
 						}
-											if (this.discriminator == 12 && case12 != null)
+											case 12:
 						{
 							case12(this.item12);
-							return;
+							break;
 						}
-											if (this.discriminator == 13 && case13 != null)
+											case 13:
 						{
 							case13(this.item13);
-							return;
+							break;
 						}
-											if (this.discriminator == 14 && case14 != null)
+											case 14:
 						{
 							case14(this.item14);
-							return;
+							break;
 						}
-											if (this.discriminator == 15 && case15 != null)
+											case 15:
 						{
 							case15(this.item15);
-							return;
+							break;
 						}
-											if (this.discriminator == 16 && case16 != null)
+											case 16:
 						{
 							case16(this.item16);
-							return;
+							break;
 						}
-											if (this.discriminator == 17 && case17 != null)
+											case 17:
 						{
 							case17(this.item17);
-							return;
+							break;
 						}
-											if (this.discriminator == 18 && case18 != null)
+											case 18:
 						{
 							case18(this.item18);
-							return;
+							break;
 						}
-											if (this.discriminator == 19 && case19 != null)
+											case 19:
 						{
 							case19(this.item19);
-							return;
+							break;
 						}
-											if (this.discriminator == 20 && case20 != null)
+											case 20:
 						{
 							case20(this.item20);
-							return;
+							break;
 						}
-											if (this.discriminator == 21 && case21 != null)
+											case 21:
 						{
 							case21(this.item21);
-							return;
+							break;
 						}
-											if (this.discriminator == 22 && case22 != null)
+											case 22:
 						{
 							case22(this.item22);
-							return;
+							break;
 						}
-											if (this.discriminator == 23 && case23 != null)
+											case 23:
 						{
 							case23(this.item23);
-							return;
+							break;
 						}
-											if (this.discriminator == 24 && case24 != null)
+											case 24:
 						{
 							case24(this.item24);
-							return;
+							break;
 						}
-											if (this.discriminator == 25 && case25 != null)
+											case 25:
 						{
 							case25(this.item25);
-							return;
+							break;
 						}
-											if (this.discriminator == 26 && case26 != null)
+											case 26:
 						{
 							case26(this.item26);
-							return;
+							break;
 						}
-											if (this.discriminator == 27 && case27 != null)
+											case 27:
 						{
 							case27(this.item27);
-							return;
+							break;
 						}
-					
-					defaultCase();
+											default:
+							defaultCase();
+							break;
+					}
 				}
 
 				public void Switch<TState>(
@@ -26663,143 +27031,147 @@ System.Action<TState, T25> case25,
 System.Action<TState, T26> case26,
 System.Action<TState, T27> case27)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(state, this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(state, this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(state, this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(state, this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(state, this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(state, this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(state, this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(state, this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(state, this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(state, this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(state, this.item11);
-							return;
+							break;
 						}
-											if (this.discriminator == 12 && case12 != null)
+											case 12:
 						{
 							case12(state, this.item12);
-							return;
+							break;
 						}
-											if (this.discriminator == 13 && case13 != null)
+											case 13:
 						{
 							case13(state, this.item13);
-							return;
+							break;
 						}
-											if (this.discriminator == 14 && case14 != null)
+											case 14:
 						{
 							case14(state, this.item14);
-							return;
+							break;
 						}
-											if (this.discriminator == 15 && case15 != null)
+											case 15:
 						{
 							case15(state, this.item15);
-							return;
+							break;
 						}
-											if (this.discriminator == 16 && case16 != null)
+											case 16:
 						{
 							case16(state, this.item16);
-							return;
+							break;
 						}
-											if (this.discriminator == 17 && case17 != null)
+											case 17:
 						{
 							case17(state, this.item17);
-							return;
+							break;
 						}
-											if (this.discriminator == 18 && case18 != null)
+											case 18:
 						{
 							case18(state, this.item18);
-							return;
+							break;
 						}
-											if (this.discriminator == 19 && case19 != null)
+											case 19:
 						{
 							case19(state, this.item19);
-							return;
+							break;
 						}
-											if (this.discriminator == 20 && case20 != null)
+											case 20:
 						{
 							case20(state, this.item20);
-							return;
+							break;
 						}
-											if (this.discriminator == 21 && case21 != null)
+											case 21:
 						{
 							case21(state, this.item21);
-							return;
+							break;
 						}
-											if (this.discriminator == 22 && case22 != null)
+											case 22:
 						{
 							case22(state, this.item22);
-							return;
+							break;
 						}
-											if (this.discriminator == 23 && case23 != null)
+											case 23:
 						{
 							case23(state, this.item23);
-							return;
+							break;
 						}
-											if (this.discriminator == 24 && case24 != null)
+											case 24:
 						{
 							case24(state, this.item24);
-							return;
+							break;
 						}
-											if (this.discriminator == 25 && case25 != null)
+											case 25:
 						{
 							case25(state, this.item25);
-							return;
+							break;
 						}
-											if (this.discriminator == 26 && case26 != null)
+											case 26:
 						{
 							case26(state, this.item26);
-							return;
+							break;
 						}
-											if (this.discriminator == 27 && case27 != null)
+											case 27:
 						{
 							case27(state, this.item27);
-							return;
+							break;
 						}
-					
-					defaultCase(state);
+											default:
+							defaultCase(state);
+							break;
+					}
 				}
 
 				
@@ -26833,116 +27205,119 @@ System.Func<T25, TResult> case25,
 System.Func<T26, TResult> case26,
 System.Func<T27, TResult> case27)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(this.item11);
 						}
-											if (this.discriminator == 12)
+											case 12:
 						{
 							return case12(this.item12);
 						}
-											if (this.discriminator == 13)
+											case 13:
 						{
 							return case13(this.item13);
 						}
-											if (this.discriminator == 14)
+											case 14:
 						{
 							return case14(this.item14);
 						}
-											if (this.discriminator == 15)
+											case 15:
 						{
 							return case15(this.item15);
 						}
-											if (this.discriminator == 16)
+											case 16:
 						{
 							return case16(this.item16);
 						}
-											if (this.discriminator == 17)
+											case 17:
 						{
 							return case17(this.item17);
 						}
-											if (this.discriminator == 18)
+											case 18:
 						{
 							return case18(this.item18);
 						}
-											if (this.discriminator == 19)
+											case 19:
 						{
 							return case19(this.item19);
 						}
-											if (this.discriminator == 20)
+											case 20:
 						{
 							return case20(this.item20);
 						}
-											if (this.discriminator == 21)
+											case 21:
 						{
 							return case21(this.item21);
 						}
-											if (this.discriminator == 22)
+											case 22:
 						{
 							return case22(this.item22);
 						}
-											if (this.discriminator == 23)
+											case 23:
 						{
 							return case23(this.item23);
 						}
-											if (this.discriminator == 24)
+											case 24:
 						{
 							return case24(this.item24);
 						}
-											if (this.discriminator == 25)
+											case 25:
 						{
 							return case25(this.item25);
 						}
-											if (this.discriminator == 26)
+											case 26:
 						{
 							return case26(this.item26);
 						}
-											if (this.discriminator == 27)
+											case 27:
 						{
 							return case27(this.item27);
 						}
-										
-					return defaultCase();
+											default:
+							return defaultCase();
+					}
 				}
 
 				public TResult Switch<TState, TResult>(
@@ -26976,116 +27351,119 @@ System.Func<TState, T25, TResult> case25,
 System.Func<TState, T26, TResult> case26,
 System.Func<TState, T27, TResult> case27)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(state, this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(state, this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(state, this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(state, this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(state, this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(state, this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(state, this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(state, this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(state, this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(state, this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(state, this.item11);
 						}
-											if (this.discriminator == 12)
+											case 12:
 						{
 							return case12(state, this.item12);
 						}
-											if (this.discriminator == 13)
+											case 13:
 						{
 							return case13(state, this.item13);
 						}
-											if (this.discriminator == 14)
+											case 14:
 						{
 							return case14(state, this.item14);
 						}
-											if (this.discriminator == 15)
+											case 15:
 						{
 							return case15(state, this.item15);
 						}
-											if (this.discriminator == 16)
+											case 16:
 						{
 							return case16(state, this.item16);
 						}
-											if (this.discriminator == 17)
+											case 17:
 						{
 							return case17(state, this.item17);
 						}
-											if (this.discriminator == 18)
+											case 18:
 						{
 							return case18(state, this.item18);
 						}
-											if (this.discriminator == 19)
+											case 19:
 						{
 							return case19(state, this.item19);
 						}
-											if (this.discriminator == 20)
+											case 20:
 						{
 							return case20(state, this.item20);
 						}
-											if (this.discriminator == 21)
+											case 21:
 						{
 							return case21(state, this.item21);
 						}
-											if (this.discriminator == 22)
+											case 22:
 						{
 							return case22(state, this.item22);
 						}
-											if (this.discriminator == 23)
+											case 23:
 						{
 							return case23(state, this.item23);
 						}
-											if (this.discriminator == 24)
+											case 24:
 						{
 							return case24(state, this.item24);
 						}
-											if (this.discriminator == 25)
+											case 25:
 						{
 							return case25(state, this.item25);
 						}
-											if (this.discriminator == 26)
+											case 26:
 						{
 							return case26(state, this.item26);
 						}
-											if (this.discriminator == 27)
+											case 27:
 						{
 							return case27(state, this.item27);
 						}
-										
-					return defaultCase(state);
+											default:
+							return defaultCase(state);
+					}
 				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -28427,148 +28805,152 @@ System.Action<T26> case26,
 System.Action<T27> case27,
 System.Action<T28> case28)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(this.item11);
-							return;
+							break;
 						}
-											if (this.discriminator == 12 && case12 != null)
+											case 12:
 						{
 							case12(this.item12);
-							return;
+							break;
 						}
-											if (this.discriminator == 13 && case13 != null)
+											case 13:
 						{
 							case13(this.item13);
-							return;
+							break;
 						}
-											if (this.discriminator == 14 && case14 != null)
+											case 14:
 						{
 							case14(this.item14);
-							return;
+							break;
 						}
-											if (this.discriminator == 15 && case15 != null)
+											case 15:
 						{
 							case15(this.item15);
-							return;
+							break;
 						}
-											if (this.discriminator == 16 && case16 != null)
+											case 16:
 						{
 							case16(this.item16);
-							return;
+							break;
 						}
-											if (this.discriminator == 17 && case17 != null)
+											case 17:
 						{
 							case17(this.item17);
-							return;
+							break;
 						}
-											if (this.discriminator == 18 && case18 != null)
+											case 18:
 						{
 							case18(this.item18);
-							return;
+							break;
 						}
-											if (this.discriminator == 19 && case19 != null)
+											case 19:
 						{
 							case19(this.item19);
-							return;
+							break;
 						}
-											if (this.discriminator == 20 && case20 != null)
+											case 20:
 						{
 							case20(this.item20);
-							return;
+							break;
 						}
-											if (this.discriminator == 21 && case21 != null)
+											case 21:
 						{
 							case21(this.item21);
-							return;
+							break;
 						}
-											if (this.discriminator == 22 && case22 != null)
+											case 22:
 						{
 							case22(this.item22);
-							return;
+							break;
 						}
-											if (this.discriminator == 23 && case23 != null)
+											case 23:
 						{
 							case23(this.item23);
-							return;
+							break;
 						}
-											if (this.discriminator == 24 && case24 != null)
+											case 24:
 						{
 							case24(this.item24);
-							return;
+							break;
 						}
-											if (this.discriminator == 25 && case25 != null)
+											case 25:
 						{
 							case25(this.item25);
-							return;
+							break;
 						}
-											if (this.discriminator == 26 && case26 != null)
+											case 26:
 						{
 							case26(this.item26);
-							return;
+							break;
 						}
-											if (this.discriminator == 27 && case27 != null)
+											case 27:
 						{
 							case27(this.item27);
-							return;
+							break;
 						}
-											if (this.discriminator == 28 && case28 != null)
+											case 28:
 						{
 							case28(this.item28);
-							return;
+							break;
 						}
-					
-					defaultCase();
+											default:
+							defaultCase();
+							break;
+					}
 				}
 
 				public void Switch<TState>(
@@ -28603,148 +28985,152 @@ System.Action<TState, T26> case26,
 System.Action<TState, T27> case27,
 System.Action<TState, T28> case28)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(state, this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(state, this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(state, this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(state, this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(state, this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(state, this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(state, this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(state, this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(state, this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(state, this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(state, this.item11);
-							return;
+							break;
 						}
-											if (this.discriminator == 12 && case12 != null)
+											case 12:
 						{
 							case12(state, this.item12);
-							return;
+							break;
 						}
-											if (this.discriminator == 13 && case13 != null)
+											case 13:
 						{
 							case13(state, this.item13);
-							return;
+							break;
 						}
-											if (this.discriminator == 14 && case14 != null)
+											case 14:
 						{
 							case14(state, this.item14);
-							return;
+							break;
 						}
-											if (this.discriminator == 15 && case15 != null)
+											case 15:
 						{
 							case15(state, this.item15);
-							return;
+							break;
 						}
-											if (this.discriminator == 16 && case16 != null)
+											case 16:
 						{
 							case16(state, this.item16);
-							return;
+							break;
 						}
-											if (this.discriminator == 17 && case17 != null)
+											case 17:
 						{
 							case17(state, this.item17);
-							return;
+							break;
 						}
-											if (this.discriminator == 18 && case18 != null)
+											case 18:
 						{
 							case18(state, this.item18);
-							return;
+							break;
 						}
-											if (this.discriminator == 19 && case19 != null)
+											case 19:
 						{
 							case19(state, this.item19);
-							return;
+							break;
 						}
-											if (this.discriminator == 20 && case20 != null)
+											case 20:
 						{
 							case20(state, this.item20);
-							return;
+							break;
 						}
-											if (this.discriminator == 21 && case21 != null)
+											case 21:
 						{
 							case21(state, this.item21);
-							return;
+							break;
 						}
-											if (this.discriminator == 22 && case22 != null)
+											case 22:
 						{
 							case22(state, this.item22);
-							return;
+							break;
 						}
-											if (this.discriminator == 23 && case23 != null)
+											case 23:
 						{
 							case23(state, this.item23);
-							return;
+							break;
 						}
-											if (this.discriminator == 24 && case24 != null)
+											case 24:
 						{
 							case24(state, this.item24);
-							return;
+							break;
 						}
-											if (this.discriminator == 25 && case25 != null)
+											case 25:
 						{
 							case25(state, this.item25);
-							return;
+							break;
 						}
-											if (this.discriminator == 26 && case26 != null)
+											case 26:
 						{
 							case26(state, this.item26);
-							return;
+							break;
 						}
-											if (this.discriminator == 27 && case27 != null)
+											case 27:
 						{
 							case27(state, this.item27);
-							return;
+							break;
 						}
-											if (this.discriminator == 28 && case28 != null)
+											case 28:
 						{
 							case28(state, this.item28);
-							return;
+							break;
 						}
-					
-					defaultCase(state);
+											default:
+							defaultCase(state);
+							break;
+					}
 				}
 
 				
@@ -28779,120 +29165,123 @@ System.Func<T26, TResult> case26,
 System.Func<T27, TResult> case27,
 System.Func<T28, TResult> case28)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(this.item11);
 						}
-											if (this.discriminator == 12)
+											case 12:
 						{
 							return case12(this.item12);
 						}
-											if (this.discriminator == 13)
+											case 13:
 						{
 							return case13(this.item13);
 						}
-											if (this.discriminator == 14)
+											case 14:
 						{
 							return case14(this.item14);
 						}
-											if (this.discriminator == 15)
+											case 15:
 						{
 							return case15(this.item15);
 						}
-											if (this.discriminator == 16)
+											case 16:
 						{
 							return case16(this.item16);
 						}
-											if (this.discriminator == 17)
+											case 17:
 						{
 							return case17(this.item17);
 						}
-											if (this.discriminator == 18)
+											case 18:
 						{
 							return case18(this.item18);
 						}
-											if (this.discriminator == 19)
+											case 19:
 						{
 							return case19(this.item19);
 						}
-											if (this.discriminator == 20)
+											case 20:
 						{
 							return case20(this.item20);
 						}
-											if (this.discriminator == 21)
+											case 21:
 						{
 							return case21(this.item21);
 						}
-											if (this.discriminator == 22)
+											case 22:
 						{
 							return case22(this.item22);
 						}
-											if (this.discriminator == 23)
+											case 23:
 						{
 							return case23(this.item23);
 						}
-											if (this.discriminator == 24)
+											case 24:
 						{
 							return case24(this.item24);
 						}
-											if (this.discriminator == 25)
+											case 25:
 						{
 							return case25(this.item25);
 						}
-											if (this.discriminator == 26)
+											case 26:
 						{
 							return case26(this.item26);
 						}
-											if (this.discriminator == 27)
+											case 27:
 						{
 							return case27(this.item27);
 						}
-											if (this.discriminator == 28)
+											case 28:
 						{
 							return case28(this.item28);
 						}
-										
-					return defaultCase();
+											default:
+							return defaultCase();
+					}
 				}
 
 				public TResult Switch<TState, TResult>(
@@ -28927,120 +29316,123 @@ System.Func<TState, T26, TResult> case26,
 System.Func<TState, T27, TResult> case27,
 System.Func<TState, T28, TResult> case28)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(state, this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(state, this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(state, this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(state, this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(state, this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(state, this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(state, this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(state, this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(state, this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(state, this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(state, this.item11);
 						}
-											if (this.discriminator == 12)
+											case 12:
 						{
 							return case12(state, this.item12);
 						}
-											if (this.discriminator == 13)
+											case 13:
 						{
 							return case13(state, this.item13);
 						}
-											if (this.discriminator == 14)
+											case 14:
 						{
 							return case14(state, this.item14);
 						}
-											if (this.discriminator == 15)
+											case 15:
 						{
 							return case15(state, this.item15);
 						}
-											if (this.discriminator == 16)
+											case 16:
 						{
 							return case16(state, this.item16);
 						}
-											if (this.discriminator == 17)
+											case 17:
 						{
 							return case17(state, this.item17);
 						}
-											if (this.discriminator == 18)
+											case 18:
 						{
 							return case18(state, this.item18);
 						}
-											if (this.discriminator == 19)
+											case 19:
 						{
 							return case19(state, this.item19);
 						}
-											if (this.discriminator == 20)
+											case 20:
 						{
 							return case20(state, this.item20);
 						}
-											if (this.discriminator == 21)
+											case 21:
 						{
 							return case21(state, this.item21);
 						}
-											if (this.discriminator == 22)
+											case 22:
 						{
 							return case22(state, this.item22);
 						}
-											if (this.discriminator == 23)
+											case 23:
 						{
 							return case23(state, this.item23);
 						}
-											if (this.discriminator == 24)
+											case 24:
 						{
 							return case24(state, this.item24);
 						}
-											if (this.discriminator == 25)
+											case 25:
 						{
 							return case25(state, this.item25);
 						}
-											if (this.discriminator == 26)
+											case 26:
 						{
 							return case26(state, this.item26);
 						}
-											if (this.discriminator == 27)
+											case 27:
 						{
 							return case27(state, this.item27);
 						}
-											if (this.discriminator == 28)
+											case 28:
 						{
 							return case28(state, this.item28);
 						}
-										
-					return defaultCase(state);
+											default:
+							return defaultCase(state);
+					}
 				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -30429,153 +30821,157 @@ System.Action<T27> case27,
 System.Action<T28> case28,
 System.Action<T29> case29)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(this.item11);
-							return;
+							break;
 						}
-											if (this.discriminator == 12 && case12 != null)
+											case 12:
 						{
 							case12(this.item12);
-							return;
+							break;
 						}
-											if (this.discriminator == 13 && case13 != null)
+											case 13:
 						{
 							case13(this.item13);
-							return;
+							break;
 						}
-											if (this.discriminator == 14 && case14 != null)
+											case 14:
 						{
 							case14(this.item14);
-							return;
+							break;
 						}
-											if (this.discriminator == 15 && case15 != null)
+											case 15:
 						{
 							case15(this.item15);
-							return;
+							break;
 						}
-											if (this.discriminator == 16 && case16 != null)
+											case 16:
 						{
 							case16(this.item16);
-							return;
+							break;
 						}
-											if (this.discriminator == 17 && case17 != null)
+											case 17:
 						{
 							case17(this.item17);
-							return;
+							break;
 						}
-											if (this.discriminator == 18 && case18 != null)
+											case 18:
 						{
 							case18(this.item18);
-							return;
+							break;
 						}
-											if (this.discriminator == 19 && case19 != null)
+											case 19:
 						{
 							case19(this.item19);
-							return;
+							break;
 						}
-											if (this.discriminator == 20 && case20 != null)
+											case 20:
 						{
 							case20(this.item20);
-							return;
+							break;
 						}
-											if (this.discriminator == 21 && case21 != null)
+											case 21:
 						{
 							case21(this.item21);
-							return;
+							break;
 						}
-											if (this.discriminator == 22 && case22 != null)
+											case 22:
 						{
 							case22(this.item22);
-							return;
+							break;
 						}
-											if (this.discriminator == 23 && case23 != null)
+											case 23:
 						{
 							case23(this.item23);
-							return;
+							break;
 						}
-											if (this.discriminator == 24 && case24 != null)
+											case 24:
 						{
 							case24(this.item24);
-							return;
+							break;
 						}
-											if (this.discriminator == 25 && case25 != null)
+											case 25:
 						{
 							case25(this.item25);
-							return;
+							break;
 						}
-											if (this.discriminator == 26 && case26 != null)
+											case 26:
 						{
 							case26(this.item26);
-							return;
+							break;
 						}
-											if (this.discriminator == 27 && case27 != null)
+											case 27:
 						{
 							case27(this.item27);
-							return;
+							break;
 						}
-											if (this.discriminator == 28 && case28 != null)
+											case 28:
 						{
 							case28(this.item28);
-							return;
+							break;
 						}
-											if (this.discriminator == 29 && case29 != null)
+											case 29:
 						{
 							case29(this.item29);
-							return;
+							break;
 						}
-					
-					defaultCase();
+											default:
+							defaultCase();
+							break;
+					}
 				}
 
 				public void Switch<TState>(
@@ -30611,153 +31007,157 @@ System.Action<TState, T27> case27,
 System.Action<TState, T28> case28,
 System.Action<TState, T29> case29)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(state, this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(state, this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(state, this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(state, this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(state, this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(state, this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(state, this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(state, this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(state, this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(state, this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(state, this.item11);
-							return;
+							break;
 						}
-											if (this.discriminator == 12 && case12 != null)
+											case 12:
 						{
 							case12(state, this.item12);
-							return;
+							break;
 						}
-											if (this.discriminator == 13 && case13 != null)
+											case 13:
 						{
 							case13(state, this.item13);
-							return;
+							break;
 						}
-											if (this.discriminator == 14 && case14 != null)
+											case 14:
 						{
 							case14(state, this.item14);
-							return;
+							break;
 						}
-											if (this.discriminator == 15 && case15 != null)
+											case 15:
 						{
 							case15(state, this.item15);
-							return;
+							break;
 						}
-											if (this.discriminator == 16 && case16 != null)
+											case 16:
 						{
 							case16(state, this.item16);
-							return;
+							break;
 						}
-											if (this.discriminator == 17 && case17 != null)
+											case 17:
 						{
 							case17(state, this.item17);
-							return;
+							break;
 						}
-											if (this.discriminator == 18 && case18 != null)
+											case 18:
 						{
 							case18(state, this.item18);
-							return;
+							break;
 						}
-											if (this.discriminator == 19 && case19 != null)
+											case 19:
 						{
 							case19(state, this.item19);
-							return;
+							break;
 						}
-											if (this.discriminator == 20 && case20 != null)
+											case 20:
 						{
 							case20(state, this.item20);
-							return;
+							break;
 						}
-											if (this.discriminator == 21 && case21 != null)
+											case 21:
 						{
 							case21(state, this.item21);
-							return;
+							break;
 						}
-											if (this.discriminator == 22 && case22 != null)
+											case 22:
 						{
 							case22(state, this.item22);
-							return;
+							break;
 						}
-											if (this.discriminator == 23 && case23 != null)
+											case 23:
 						{
 							case23(state, this.item23);
-							return;
+							break;
 						}
-											if (this.discriminator == 24 && case24 != null)
+											case 24:
 						{
 							case24(state, this.item24);
-							return;
+							break;
 						}
-											if (this.discriminator == 25 && case25 != null)
+											case 25:
 						{
 							case25(state, this.item25);
-							return;
+							break;
 						}
-											if (this.discriminator == 26 && case26 != null)
+											case 26:
 						{
 							case26(state, this.item26);
-							return;
+							break;
 						}
-											if (this.discriminator == 27 && case27 != null)
+											case 27:
 						{
 							case27(state, this.item27);
-							return;
+							break;
 						}
-											if (this.discriminator == 28 && case28 != null)
+											case 28:
 						{
 							case28(state, this.item28);
-							return;
+							break;
 						}
-											if (this.discriminator == 29 && case29 != null)
+											case 29:
 						{
 							case29(state, this.item29);
-							return;
+							break;
 						}
-					
-					defaultCase(state);
+											default:
+							defaultCase(state);
+							break;
+					}
 				}
 
 				
@@ -30793,124 +31193,127 @@ System.Func<T27, TResult> case27,
 System.Func<T28, TResult> case28,
 System.Func<T29, TResult> case29)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(this.item11);
 						}
-											if (this.discriminator == 12)
+											case 12:
 						{
 							return case12(this.item12);
 						}
-											if (this.discriminator == 13)
+											case 13:
 						{
 							return case13(this.item13);
 						}
-											if (this.discriminator == 14)
+											case 14:
 						{
 							return case14(this.item14);
 						}
-											if (this.discriminator == 15)
+											case 15:
 						{
 							return case15(this.item15);
 						}
-											if (this.discriminator == 16)
+											case 16:
 						{
 							return case16(this.item16);
 						}
-											if (this.discriminator == 17)
+											case 17:
 						{
 							return case17(this.item17);
 						}
-											if (this.discriminator == 18)
+											case 18:
 						{
 							return case18(this.item18);
 						}
-											if (this.discriminator == 19)
+											case 19:
 						{
 							return case19(this.item19);
 						}
-											if (this.discriminator == 20)
+											case 20:
 						{
 							return case20(this.item20);
 						}
-											if (this.discriminator == 21)
+											case 21:
 						{
 							return case21(this.item21);
 						}
-											if (this.discriminator == 22)
+											case 22:
 						{
 							return case22(this.item22);
 						}
-											if (this.discriminator == 23)
+											case 23:
 						{
 							return case23(this.item23);
 						}
-											if (this.discriminator == 24)
+											case 24:
 						{
 							return case24(this.item24);
 						}
-											if (this.discriminator == 25)
+											case 25:
 						{
 							return case25(this.item25);
 						}
-											if (this.discriminator == 26)
+											case 26:
 						{
 							return case26(this.item26);
 						}
-											if (this.discriminator == 27)
+											case 27:
 						{
 							return case27(this.item27);
 						}
-											if (this.discriminator == 28)
+											case 28:
 						{
 							return case28(this.item28);
 						}
-											if (this.discriminator == 29)
+											case 29:
 						{
 							return case29(this.item29);
 						}
-										
-					return defaultCase();
+											default:
+							return defaultCase();
+					}
 				}
 
 				public TResult Switch<TState, TResult>(
@@ -30946,124 +31349,127 @@ System.Func<TState, T27, TResult> case27,
 System.Func<TState, T28, TResult> case28,
 System.Func<TState, T29, TResult> case29)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(state, this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(state, this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(state, this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(state, this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(state, this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(state, this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(state, this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(state, this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(state, this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(state, this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(state, this.item11);
 						}
-											if (this.discriminator == 12)
+											case 12:
 						{
 							return case12(state, this.item12);
 						}
-											if (this.discriminator == 13)
+											case 13:
 						{
 							return case13(state, this.item13);
 						}
-											if (this.discriminator == 14)
+											case 14:
 						{
 							return case14(state, this.item14);
 						}
-											if (this.discriminator == 15)
+											case 15:
 						{
 							return case15(state, this.item15);
 						}
-											if (this.discriminator == 16)
+											case 16:
 						{
 							return case16(state, this.item16);
 						}
-											if (this.discriminator == 17)
+											case 17:
 						{
 							return case17(state, this.item17);
 						}
-											if (this.discriminator == 18)
+											case 18:
 						{
 							return case18(state, this.item18);
 						}
-											if (this.discriminator == 19)
+											case 19:
 						{
 							return case19(state, this.item19);
 						}
-											if (this.discriminator == 20)
+											case 20:
 						{
 							return case20(state, this.item20);
 						}
-											if (this.discriminator == 21)
+											case 21:
 						{
 							return case21(state, this.item21);
 						}
-											if (this.discriminator == 22)
+											case 22:
 						{
 							return case22(state, this.item22);
 						}
-											if (this.discriminator == 23)
+											case 23:
 						{
 							return case23(state, this.item23);
 						}
-											if (this.discriminator == 24)
+											case 24:
 						{
 							return case24(state, this.item24);
 						}
-											if (this.discriminator == 25)
+											case 25:
 						{
 							return case25(state, this.item25);
 						}
-											if (this.discriminator == 26)
+											case 26:
 						{
 							return case26(state, this.item26);
 						}
-											if (this.discriminator == 27)
+											case 27:
 						{
 							return case27(state, this.item27);
 						}
-											if (this.discriminator == 28)
+											case 28:
 						{
 							return case28(state, this.item28);
 						}
-											if (this.discriminator == 29)
+											case 29:
 						{
 							return case29(state, this.item29);
 						}
-										
-					return defaultCase(state);
+											default:
+							return defaultCase(state);
+					}
 				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -32499,158 +32905,162 @@ System.Action<T28> case28,
 System.Action<T29> case29,
 System.Action<T30> case30)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(this.item11);
-							return;
+							break;
 						}
-											if (this.discriminator == 12 && case12 != null)
+											case 12:
 						{
 							case12(this.item12);
-							return;
+							break;
 						}
-											if (this.discriminator == 13 && case13 != null)
+											case 13:
 						{
 							case13(this.item13);
-							return;
+							break;
 						}
-											if (this.discriminator == 14 && case14 != null)
+											case 14:
 						{
 							case14(this.item14);
-							return;
+							break;
 						}
-											if (this.discriminator == 15 && case15 != null)
+											case 15:
 						{
 							case15(this.item15);
-							return;
+							break;
 						}
-											if (this.discriminator == 16 && case16 != null)
+											case 16:
 						{
 							case16(this.item16);
-							return;
+							break;
 						}
-											if (this.discriminator == 17 && case17 != null)
+											case 17:
 						{
 							case17(this.item17);
-							return;
+							break;
 						}
-											if (this.discriminator == 18 && case18 != null)
+											case 18:
 						{
 							case18(this.item18);
-							return;
+							break;
 						}
-											if (this.discriminator == 19 && case19 != null)
+											case 19:
 						{
 							case19(this.item19);
-							return;
+							break;
 						}
-											if (this.discriminator == 20 && case20 != null)
+											case 20:
 						{
 							case20(this.item20);
-							return;
+							break;
 						}
-											if (this.discriminator == 21 && case21 != null)
+											case 21:
 						{
 							case21(this.item21);
-							return;
+							break;
 						}
-											if (this.discriminator == 22 && case22 != null)
+											case 22:
 						{
 							case22(this.item22);
-							return;
+							break;
 						}
-											if (this.discriminator == 23 && case23 != null)
+											case 23:
 						{
 							case23(this.item23);
-							return;
+							break;
 						}
-											if (this.discriminator == 24 && case24 != null)
+											case 24:
 						{
 							case24(this.item24);
-							return;
+							break;
 						}
-											if (this.discriminator == 25 && case25 != null)
+											case 25:
 						{
 							case25(this.item25);
-							return;
+							break;
 						}
-											if (this.discriminator == 26 && case26 != null)
+											case 26:
 						{
 							case26(this.item26);
-							return;
+							break;
 						}
-											if (this.discriminator == 27 && case27 != null)
+											case 27:
 						{
 							case27(this.item27);
-							return;
+							break;
 						}
-											if (this.discriminator == 28 && case28 != null)
+											case 28:
 						{
 							case28(this.item28);
-							return;
+							break;
 						}
-											if (this.discriminator == 29 && case29 != null)
+											case 29:
 						{
 							case29(this.item29);
-							return;
+							break;
 						}
-											if (this.discriminator == 30 && case30 != null)
+											case 30:
 						{
 							case30(this.item30);
-							return;
+							break;
 						}
-					
-					defaultCase();
+											default:
+							defaultCase();
+							break;
+					}
 				}
 
 				public void Switch<TState>(
@@ -32687,158 +33097,162 @@ System.Action<TState, T28> case28,
 System.Action<TState, T29> case29,
 System.Action<TState, T30> case30)
 				{
-											if (this.discriminator == 1 && case1 != null)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							case1(state, this.item1);
-							return;
+							break;
 						}
-											if (this.discriminator == 2 && case2 != null)
+											case 2:
 						{
 							case2(state, this.item2);
-							return;
+							break;
 						}
-											if (this.discriminator == 3 && case3 != null)
+											case 3:
 						{
 							case3(state, this.item3);
-							return;
+							break;
 						}
-											if (this.discriminator == 4 && case4 != null)
+											case 4:
 						{
 							case4(state, this.item4);
-							return;
+							break;
 						}
-											if (this.discriminator == 5 && case5 != null)
+											case 5:
 						{
 							case5(state, this.item5);
-							return;
+							break;
 						}
-											if (this.discriminator == 6 && case6 != null)
+											case 6:
 						{
 							case6(state, this.item6);
-							return;
+							break;
 						}
-											if (this.discriminator == 7 && case7 != null)
+											case 7:
 						{
 							case7(state, this.item7);
-							return;
+							break;
 						}
-											if (this.discriminator == 8 && case8 != null)
+											case 8:
 						{
 							case8(state, this.item8);
-							return;
+							break;
 						}
-											if (this.discriminator == 9 && case9 != null)
+											case 9:
 						{
 							case9(state, this.item9);
-							return;
+							break;
 						}
-											if (this.discriminator == 10 && case10 != null)
+											case 10:
 						{
 							case10(state, this.item10);
-							return;
+							break;
 						}
-											if (this.discriminator == 11 && case11 != null)
+											case 11:
 						{
 							case11(state, this.item11);
-							return;
+							break;
 						}
-											if (this.discriminator == 12 && case12 != null)
+											case 12:
 						{
 							case12(state, this.item12);
-							return;
+							break;
 						}
-											if (this.discriminator == 13 && case13 != null)
+											case 13:
 						{
 							case13(state, this.item13);
-							return;
+							break;
 						}
-											if (this.discriminator == 14 && case14 != null)
+											case 14:
 						{
 							case14(state, this.item14);
-							return;
+							break;
 						}
-											if (this.discriminator == 15 && case15 != null)
+											case 15:
 						{
 							case15(state, this.item15);
-							return;
+							break;
 						}
-											if (this.discriminator == 16 && case16 != null)
+											case 16:
 						{
 							case16(state, this.item16);
-							return;
+							break;
 						}
-											if (this.discriminator == 17 && case17 != null)
+											case 17:
 						{
 							case17(state, this.item17);
-							return;
+							break;
 						}
-											if (this.discriminator == 18 && case18 != null)
+											case 18:
 						{
 							case18(state, this.item18);
-							return;
+							break;
 						}
-											if (this.discriminator == 19 && case19 != null)
+											case 19:
 						{
 							case19(state, this.item19);
-							return;
+							break;
 						}
-											if (this.discriminator == 20 && case20 != null)
+											case 20:
 						{
 							case20(state, this.item20);
-							return;
+							break;
 						}
-											if (this.discriminator == 21 && case21 != null)
+											case 21:
 						{
 							case21(state, this.item21);
-							return;
+							break;
 						}
-											if (this.discriminator == 22 && case22 != null)
+											case 22:
 						{
 							case22(state, this.item22);
-							return;
+							break;
 						}
-											if (this.discriminator == 23 && case23 != null)
+											case 23:
 						{
 							case23(state, this.item23);
-							return;
+							break;
 						}
-											if (this.discriminator == 24 && case24 != null)
+											case 24:
 						{
 							case24(state, this.item24);
-							return;
+							break;
 						}
-											if (this.discriminator == 25 && case25 != null)
+											case 25:
 						{
 							case25(state, this.item25);
-							return;
+							break;
 						}
-											if (this.discriminator == 26 && case26 != null)
+											case 26:
 						{
 							case26(state, this.item26);
-							return;
+							break;
 						}
-											if (this.discriminator == 27 && case27 != null)
+											case 27:
 						{
 							case27(state, this.item27);
-							return;
+							break;
 						}
-											if (this.discriminator == 28 && case28 != null)
+											case 28:
 						{
 							case28(state, this.item28);
-							return;
+							break;
 						}
-											if (this.discriminator == 29 && case29 != null)
+											case 29:
 						{
 							case29(state, this.item29);
-							return;
+							break;
 						}
-											if (this.discriminator == 30 && case30 != null)
+											case 30:
 						{
 							case30(state, this.item30);
-							return;
+							break;
 						}
-					
-					defaultCase(state);
+											default:
+							defaultCase(state);
+							break;
+					}
 				}
 
 				
@@ -32875,128 +33289,131 @@ System.Func<T28, TResult> case28,
 System.Func<T29, TResult> case29,
 System.Func<T30, TResult> case30)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(this.item11);
 						}
-											if (this.discriminator == 12)
+											case 12:
 						{
 							return case12(this.item12);
 						}
-											if (this.discriminator == 13)
+											case 13:
 						{
 							return case13(this.item13);
 						}
-											if (this.discriminator == 14)
+											case 14:
 						{
 							return case14(this.item14);
 						}
-											if (this.discriminator == 15)
+											case 15:
 						{
 							return case15(this.item15);
 						}
-											if (this.discriminator == 16)
+											case 16:
 						{
 							return case16(this.item16);
 						}
-											if (this.discriminator == 17)
+											case 17:
 						{
 							return case17(this.item17);
 						}
-											if (this.discriminator == 18)
+											case 18:
 						{
 							return case18(this.item18);
 						}
-											if (this.discriminator == 19)
+											case 19:
 						{
 							return case19(this.item19);
 						}
-											if (this.discriminator == 20)
+											case 20:
 						{
 							return case20(this.item20);
 						}
-											if (this.discriminator == 21)
+											case 21:
 						{
 							return case21(this.item21);
 						}
-											if (this.discriminator == 22)
+											case 22:
 						{
 							return case22(this.item22);
 						}
-											if (this.discriminator == 23)
+											case 23:
 						{
 							return case23(this.item23);
 						}
-											if (this.discriminator == 24)
+											case 24:
 						{
 							return case24(this.item24);
 						}
-											if (this.discriminator == 25)
+											case 25:
 						{
 							return case25(this.item25);
 						}
-											if (this.discriminator == 26)
+											case 26:
 						{
 							return case26(this.item26);
 						}
-											if (this.discriminator == 27)
+											case 27:
 						{
 							return case27(this.item27);
 						}
-											if (this.discriminator == 28)
+											case 28:
 						{
 							return case28(this.item28);
 						}
-											if (this.discriminator == 29)
+											case 29:
 						{
 							return case29(this.item29);
 						}
-											if (this.discriminator == 30)
+											case 30:
 						{
 							return case30(this.item30);
 						}
-										
-					return defaultCase();
+											default:
+							return defaultCase();
+					}
 				}
 
 				public TResult Switch<TState, TResult>(
@@ -33033,128 +33450,131 @@ System.Func<TState, T28, TResult> case28,
 System.Func<TState, T29, TResult> case29,
 System.Func<TState, T30, TResult> case30)
 				{
-											if (this.discriminator == 1)
+					switch (this.discriminator)
+					{
+											case 1:
 						{
 							return case1(state, this.item1);
 						}
-											if (this.discriminator == 2)
+											case 2:
 						{
 							return case2(state, this.item2);
 						}
-											if (this.discriminator == 3)
+											case 3:
 						{
 							return case3(state, this.item3);
 						}
-											if (this.discriminator == 4)
+											case 4:
 						{
 							return case4(state, this.item4);
 						}
-											if (this.discriminator == 5)
+											case 5:
 						{
 							return case5(state, this.item5);
 						}
-											if (this.discriminator == 6)
+											case 6:
 						{
 							return case6(state, this.item6);
 						}
-											if (this.discriminator == 7)
+											case 7:
 						{
 							return case7(state, this.item7);
 						}
-											if (this.discriminator == 8)
+											case 8:
 						{
 							return case8(state, this.item8);
 						}
-											if (this.discriminator == 9)
+											case 9:
 						{
 							return case9(state, this.item9);
 						}
-											if (this.discriminator == 10)
+											case 10:
 						{
 							return case10(state, this.item10);
 						}
-											if (this.discriminator == 11)
+											case 11:
 						{
 							return case11(state, this.item11);
 						}
-											if (this.discriminator == 12)
+											case 12:
 						{
 							return case12(state, this.item12);
 						}
-											if (this.discriminator == 13)
+											case 13:
 						{
 							return case13(state, this.item13);
 						}
-											if (this.discriminator == 14)
+											case 14:
 						{
 							return case14(state, this.item14);
 						}
-											if (this.discriminator == 15)
+											case 15:
 						{
 							return case15(state, this.item15);
 						}
-											if (this.discriminator == 16)
+											case 16:
 						{
 							return case16(state, this.item16);
 						}
-											if (this.discriminator == 17)
+											case 17:
 						{
 							return case17(state, this.item17);
 						}
-											if (this.discriminator == 18)
+											case 18:
 						{
 							return case18(state, this.item18);
 						}
-											if (this.discriminator == 19)
+											case 19:
 						{
 							return case19(state, this.item19);
 						}
-											if (this.discriminator == 20)
+											case 20:
 						{
 							return case20(state, this.item20);
 						}
-											if (this.discriminator == 21)
+											case 21:
 						{
 							return case21(state, this.item21);
 						}
-											if (this.discriminator == 22)
+											case 22:
 						{
 							return case22(state, this.item22);
 						}
-											if (this.discriminator == 23)
+											case 23:
 						{
 							return case23(state, this.item23);
 						}
-											if (this.discriminator == 24)
+											case 24:
 						{
 							return case24(state, this.item24);
 						}
-											if (this.discriminator == 25)
+											case 25:
 						{
 							return case25(state, this.item25);
 						}
-											if (this.discriminator == 26)
+											case 26:
 						{
 							return case26(state, this.item26);
 						}
-											if (this.discriminator == 27)
+											case 27:
 						{
 							return case27(state, this.item27);
 						}
-											if (this.discriminator == 28)
+											case 28:
 						{
 							return case28(state, this.item28);
 						}
-											if (this.discriminator == 29)
+											case 29:
 						{
 							return case29(state, this.item29);
 						}
-											if (this.discriminator == 30)
+											case 30:
 						{
 							return case30(state, this.item30);
 						}
-										
-					return defaultCase(state);
+											default:
+							return defaultCase(state);
+					}
 				}
 			}
 	
