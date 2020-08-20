@@ -25,6 +25,10 @@ table Row {
 }
 
 table Cell {
-	ColumnName:string (sharedstring);
+	// the shared string metadata is necessary to enable shared strings. Specifying it in the schema
+	// allows you to choose which strings should be shared and which should not, rather than a global
+	// setting one way or the other. This metadata also works with vectors of strings, shown below.
+	ColumnName:string (sharedstring); 
 	Value:string;
+	Vector:[string] (sharedstring);
 }
