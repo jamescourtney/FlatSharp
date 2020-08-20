@@ -120,22 +120,20 @@ The FlatSharp benchmarks were run on .NET Core 3.1, using a C# approximation of 
 - Vector length = 3 or 30
 - Traversal count = 1 or 5
 
-The full results for each version of FlatSharp can be viewed in the [benchmarks folder](benchmarks).
+The full results for each version of FlatSharp can be viewed in the [benchmarks folder](benchmarks), which also contains benchmarks for .NET Framework 4.7 and .NET Core 2.1. Additionally, the benchmark data contains performance data for many different configurations of FlatSharp and other features, such as sorted vectors.
 
-The benchmarks test 4 different serialization frameworks:
+The benchmarks test 3 different serialization frameworks:
 - FlatSharp
 - Protobuf.NET
-- Google's C# Flatbuffers implementation
-- ZeroFormatter
+- Google's C# Flatbuffers implementation (both standard and Object API flavors)
+
+The graphs below are generated using the default settings from each library.
 
 #### Serialization
-![image](doc/s_3.png) | ![image](doc/s_30.png)
-----------------------|-----------------------
+![image](doc/serialize.png)
 
 #### Deserialization
-![image](doc/d_1_3.png) | ![image](doc/d_5_3.png)
-------------------------|-------------------------
-![image](doc/d_1_30.png)|![image](doc/d_5_30.png)
+![image](doc/parse.png)
 
 ### Roadmap
 - [ ] Security hardening and fuzzing
