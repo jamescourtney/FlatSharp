@@ -336,6 +336,48 @@ namespace FlatSharpTests
             Assert.IsTrue(object.ReferenceEquals(table.String1.String, table.String3.String));
         }
 
+        [TestMethod]
+        public void Test_SharedStringEqualityOverloads()
+        {
+            void AssertEqual(SharedString sharedStr, string str)
+            {
+                Assert.IsTrue(sharedStr == str);
+                Assert.IsTrue(str == sharedStr);
+                Assert.IsFalse(sharedStr != str);
+                Assert.IsFalse(str != sharedStr);
+
+                Assert.IsTrue(sharedStr?.Equals(str) ?? true);
+                Assert.IsTrue(sharedStr?.Equals((object)str) ?? true);
+                Assert.IsTrue(sharedStr?.Equals((object)(SharedString)str) ?? true);
+                Assert.IsTrue(sharedStr?.Equals((SharedString)str) ?? true);
+            }
+
+            void AssertNotEqual(SharedString sharedStr, string str)
+            {
+                Assert.IsTrue(sharedStr != str);
+                Assert.IsTrue(str != sharedStr);
+                Assert.IsFalse(sharedStr == str);
+                Assert.IsFalse(str == sharedStr);
+
+                Assert.IsFalse(sharedStr?.Equals(str) ?? false);
+                Assert.IsFalse(sharedStr?.Equals((object)str) ?? false);
+                Assert.IsFalse(sharedStr?.Equals((object)(SharedString)str) ?? false);
+                Assert.IsFalse(sharedStr?.Equals((SharedString)str) ?? false);
+            }
+
+            const string foo = "foo";
+            const string bar = "bar";
+
+            SharedString sharedFoo = foo;
+
+            // sharedstring == string
+            AssertEqual(sharedFoo, foo);
+            AssertNotEqual(sharedFoo, bar);
+            AssertNotEqual(null, foo);
+            AssertNotEqual(sharedFoo, null);
+            AssertEqual(null, null);
+        }
+
         [FlatBufferTable]
         public class StringsVector<T> : object
         {
