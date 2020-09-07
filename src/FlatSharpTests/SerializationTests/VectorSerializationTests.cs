@@ -516,6 +516,45 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
+        public void SortedVector_SharedStringKey()
+        {
+            var root = new RootTableSorted<IList<TableWithKey<SharedString>>>();
+
+            root.Vector = new List<TableWithKey<SharedString>>
+            {
+                new TableWithKey<SharedString> { Key = "d", Value = "0" },
+                new TableWithKey<SharedString> { Key = "c", Value = "1" },
+                new TableWithKey<SharedString> { Key = "b", Value = "2" },
+                new TableWithKey<SharedString> { Key = "a", Value = "3" },
+                new TableWithKey<SharedString> { Key = "", Value = "4" },
+                new TableWithKey<SharedString> { Key = "a", Value = "5" },
+            };
+
+            byte[] data = new byte[1024];
+            var serializer = FlatBufferSerializer.Default.Compile<RootTableSorted<IList<TableWithKey<SharedString>>>>()
+                .WithSettings(new SerializerSettings
+                {
+                    SharedStringReaderFactory = () => SharedStringReader.CreateThreadSafe(),
+                    SharedStringWriterFactory = () => new SharedStringWriter(),
+                });
+
+            serializer.Write(SpanWriter.Instance, data, root);
+
+            var parsed = serializer.Parse(data);
+
+            Assert.AreEqual(parsed.Vector[0].Key.String, "");
+            Assert.AreEqual(parsed.Vector[1].Key.String, "a");
+            Assert.AreEqual(parsed.Vector[2].Key.String, "a");
+            Assert.AreEqual(parsed.Vector[3].Key.String, "b");
+            Assert.AreEqual(parsed.Vector[4].Key.String, "c");
+            Assert.AreEqual(parsed.Vector[5].Key.String, "d");
+
+            Assert.IsNotNull(parsed.Vector.BinarySearchByFlatBufferKey((SharedString)"b"));
+
+            Assert.IsTrue(object.ReferenceEquals(parsed.Vector[1].Key, parsed.Vector[2].Key));
+        }
+
+        [TestMethod]
         public void SortedVector_StringKey_Null()
         {
             var root = new RootTableSorted<IList<TableWithKey<string>>>();

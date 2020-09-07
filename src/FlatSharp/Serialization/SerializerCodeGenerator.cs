@@ -267,7 +267,9 @@ $@"
                 string inlineSize = builtInType.TypeModel.SchemaType == FlatBufferSchemaType.Scalar ? builtInType.TypeModel.InlineSize.ToString() : "null";
 
                 sortInvocation = $"{nameof(SortedVectorHelpers)}.{nameof(SortedVectorHelpers.SortVector)}(" +
-                                    $"span, {offsetVariableName}, {keyMember.Index}, {inlineSize}, {CSharpHelpers.GetCompilableTypeName(builtInType.SpanComparerType)}.Instance);";
+                                    $"span, {offsetVariableName}, {keyMember.Index}, {inlineSize}, {CSharpHelpers.GetCompilableTypeName(builtInType.SpanComparerType)}.Instance)";
+
+                sortInvocation = $"context.{nameof(SerializationContext.AddPostSerializeAction)}((span, ctx) => {sortInvocation});";
             }
 
             string serializeBlock =

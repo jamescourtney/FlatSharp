@@ -164,11 +164,20 @@ namespace FlatSharp
             {
                 return (Func<T, int>)(object)GetStringComparerFunc(comparison as string);
             }
+            else if (typeof(T) == typeof(SharedString))
+            {
+                return (Func<T, int>)(object)GetShare
+            }
             else
             {
                 IComparer<T> comparer = Comparer<T>.Default;
                 return left => comparer.Compare(left, comparison);
             }
+        }
+
+        private static Func<SharedString, int> GetSharedStringComparerFunc(SharedString right)
+        {
+
         }
 
         private static Func<string, int> GetStringComparerFunc(string right)
@@ -191,8 +200,8 @@ namespace FlatSharp
 
 #if NETSTANDARD
                byte[] leftBytes = enc.GetBytes(left);
-                int leftLength = leftBytes.Length;
-                Span<byte> leftSpan = leftBytes;
+               int leftLength = leftBytes.Length;
+               Span<byte> leftSpan = leftBytes;
 #else
                Span<byte> leftSpan = maxLength < 1024 ? stackalloc byte[maxLength] : new byte[maxLength];
                int leftLength = enc.GetBytes(left, leftSpan);

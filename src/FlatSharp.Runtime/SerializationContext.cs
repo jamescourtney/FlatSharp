@@ -17,6 +17,7 @@
 namespace FlatSharp
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics;
     using System.Runtime.CompilerServices;
     using System.Threading;
@@ -27,10 +28,13 @@ namespace FlatSharp
     /// </summary>
     public sealed class SerializationContext
     {
+        public delegate void PostSerializeAction(Span<byte> span, SerializationContext context);
+
         internal static readonly ThreadLocal<SerializationContext> ThreadLocalContext = new ThreadLocal<SerializationContext>(() => new SerializationContext());
 
         private int offset;
         private int capacity;
+        private readonly List<PostSerializeAction> postSerializeActions;
 
         /// <summary>
         /// Initializes a new serialization context.
@@ -38,6 +42,7 @@ namespace FlatSharp
         public SerializationContext()
         {
             this.VTableBuilder = new VTableBuilder(this);
+            this.postSerializeActions = new List<PostSerializeAction>();
         }
 
         /// <summary>
@@ -82,6 +87,26 @@ namespace FlatSharp
             this.capacity = capacity;
             this.SharedStringWriter = null;
             this.VTableBuilder.Reset();
+            this.postSerializeActions.Clear();
+        }
+
+        /// <summary>
+        /// Invokes any post-serialize actions.
+        /// </summary>
+        public void InvokePostSerializeActions(Span<byte> span)
+        {
+            var actions = this.postSerializeActions;
+            int count = actions.Count;
+
+            for (int i = 0; i < count; ++i)
+            {
+                actions[i](span, this);
+            }
+        }
+
+        public void AddPostSerializeAction(PostSerializeAction action)
+        {
+            this.postSerializeActions.Add(action);
         }
 
         /// <summary>
