@@ -108,7 +108,7 @@ namespace FlatSharp
                 statements.Add($"var {variableName} = item.{member.PropertyInfo.Name};");
 
                 string statement = $"runningSum += {this.InvokeGetMaxSizeMethod(member.ItemTypeModel, variableName)};";
-                string condition = $"if ({variableName} != null)";
+                string condition = $"if (!object.ReferenceEquals({variableName}, null))";
                 if (member.ItemTypeModel is VectorTypeModel vectorModel && vectorModel.IsMemoryVector)
                 {
                     condition = string.Empty;
