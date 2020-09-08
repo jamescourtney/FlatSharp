@@ -166,7 +166,7 @@ namespace FlatSharp
             }
             else if (typeof(T) == typeof(SharedString))
             {
-                return (Func<T, int>)(object)GetShare
+                return (Func<T, int>)(object)GetSharedStringComparerFunc(comparison as SharedString);
             }
             else
             {
@@ -177,7 +177,11 @@ namespace FlatSharp
 
         private static Func<SharedString, int> GetSharedStringComparerFunc(SharedString right)
         {
-
+            Func<string, int> nonSharedCallback = GetStringComparerFunc(right?.String);
+            return ss =>
+            {
+                return nonSharedCallback(ss?.String);
+            };
         }
 
         private static Func<string, int> GetStringComparerFunc(string right)
