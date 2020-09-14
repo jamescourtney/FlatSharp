@@ -28,6 +28,9 @@ namespace FlatSharp
     /// </summary>
     public sealed class SerializationContext
     {
+        /// <summary>
+        /// A delegate to invoke after the serialization process has completed. Used for sorting vectors.
+        /// </summary>
         public delegate void PostSerializeAction(Span<byte> span, SerializationContext context);
 
         internal static readonly ThreadLocal<SerializationContext> ThreadLocalContext = new ThreadLocal<SerializationContext>(() => new SerializationContext());

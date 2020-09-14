@@ -550,7 +550,6 @@ namespace FlatSharpTests
             Assert.AreEqual(parsed.Vector[5].Key.String, "d");
 
             Assert.IsNotNull(parsed.Vector.BinarySearchByFlatBufferKey((SharedString)"b"));
-
             Assert.IsTrue(object.ReferenceEquals(parsed.Vector[1].Key, parsed.Vector[2].Key));
         }
 
