@@ -55,6 +55,26 @@ namespace FlatSharp.TypeModel
         public override bool IsFixedSize => false;
 
         /// <summary>
+        /// Vectors can't be part of structs.
+        /// </summary>
+        public override bool IsValidStructMember => false;
+
+        /// <summary>
+        /// Vectors can be part of tables.
+        /// </summary>
+        public override bool IsValidTableMember => true;
+
+        /// <summary>
+        /// Vectors can't be part of unions.
+        /// </summary>
+        public override bool IsValidUnionMember => false;
+
+        /// <summary>
+        /// Vectors can't be part of vectors.
+        /// </summary>
+        public override bool IsValidVectorMember => false;
+
+        /// <summary>
         /// Gets the type model for this vector's elements.
         /// </summary>
         public RuntimeTypeModel ItemTypeModel => this.memberTypeModel;
@@ -152,14 +172,9 @@ namespace FlatSharp.TypeModel
             }
 
             this.memberTypeModel = RuntimeTypeModel.CreateFrom(innerType);
-            if (this.memberTypeModel.SchemaType == FlatBufferSchemaType.Vector)
+            if (!this.memberTypeModel.IsValidVectorMember)
             {
-                throw new InvalidFlatBufferDefinitionException("Vectors may not contain other vectors.");
-            }
-
-            if (this.memberTypeModel.SchemaType == FlatBufferSchemaType.Union)
-            {
-                throw new InvalidFlatBufferDefinitionException("Vectors of unions are not supported.");
+                throw new InvalidFlatBufferDefinitionException($"Vectors may not contain {this.memberTypeModel.SchemaType}.");
             }
 
             if (this.isMemory)

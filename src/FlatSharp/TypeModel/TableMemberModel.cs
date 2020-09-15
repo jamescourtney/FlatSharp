@@ -37,6 +37,11 @@
             this.DefaultValue = defaultValue;
             this.IsSortedVector = isSortedVector;
             this.IsKey = isKey;
+
+            if (!propertyModel.IsValidTableMember)
+            {
+                throw new InvalidFlatBufferDefinitionException($"Table property {propertyInfo.Name} with type {propertyInfo.PropertyType.Name} cannot be part of a flatbuffer table.");
+            }
             
             if (this.HasDefaultValue)
             {

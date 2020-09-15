@@ -49,5 +49,25 @@
         /// String are built in.
         /// </summary>
         public override bool IsBuiltInType => true;
+
+        /// <summary>
+        /// Strings can't be part of structs.
+        /// </summary>
+        public override bool IsValidStructMember => false;
+
+        /// <summary>
+        /// Strings can be part of tables.
+        /// </summary>
+        public override bool IsValidTableMember => true;
+
+        /// <summary>
+        /// Strings can be part of unions.
+        /// </summary>
+        public override bool IsValidUnionMember => true;
+
+        /// <summary>
+        /// Strings can be part of vectors.
+        /// </summary>
+        public override bool IsValidVectorMember => true;
     }
 }

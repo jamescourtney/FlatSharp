@@ -57,6 +57,26 @@
         public override bool IsBuiltInType => true;
 
         /// <summary>
+        /// Scalars can be part of Structs.
+        /// </summary>
+        public override bool IsValidStructMember => true;
+
+        /// <summary>
+        /// Scalars can be part of Tables.
+        /// </summary>
+        public override bool IsValidTableMember => true;
+
+        /// <summary>
+        /// Scalars can't be part of Unions.
+        /// </summary>
+        public override bool IsValidUnionMember => false;
+
+        /// <summary>
+        /// Scalars can be part of Vectors.
+        /// </summary>
+        public override bool IsValidVectorMember => true;
+
+        /// <summary>
         /// Indicates if we can natively read this scalar by referencing memory directly.
         /// </summary>
         /// <remarks>
