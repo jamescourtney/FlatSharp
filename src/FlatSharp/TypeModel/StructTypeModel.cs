@@ -58,6 +58,26 @@
         public override bool IsFixedSize => true;
 
         /// <summary>
+        /// Structs can be part of structs.
+        /// </summary>
+        public override bool IsValidStructMember => true;
+
+        /// <summary>
+        /// Structs can be part of tables.
+        /// </summary>
+        public override bool IsValidTableMember => true;
+
+        /// <summary>
+        /// Structs can be part of unions.
+        /// </summary>
+        public override bool IsValidUnionMember => true;
+
+        /// <summary>
+        /// Structs can be part of vectors.
+        /// </summary>
+        public override bool IsValidVectorMember => true;
+
+        /// <summary>
         /// Gets the members of this struct.
         /// </summary>
         public IReadOnlyList<StructMemberModel> Members => this.memberTypes;
@@ -114,10 +134,6 @@
 
                 expectedIndex++;
                 RuntimeTypeModel propertyModel = RuntimeTypeModel.CreateFrom(property.PropertyType);
-                if (propertyModel.SchemaType != FlatBufferSchemaType.Scalar && propertyModel.SchemaType != FlatBufferSchemaType.Struct)
-                {
-                    throw new InvalidFlatBufferDefinitionException($"FlatBuffer struct {this.ClrType.Name} may only contain scalars and other structs. Property = {property.Name}");
-                }
 
                 int propertySize = propertyModel.InlineSize;
                 int propertyAlignment = propertyModel.Alignment;
