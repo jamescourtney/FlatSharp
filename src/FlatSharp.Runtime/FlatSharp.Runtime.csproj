@@ -9,6 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Update="SpanComparers.tt">
+      <LastGenOutput>SpanComparers.cs</LastGenOutput>
+      <Generator>TextTemplatingFileGenerator</Generator>
+    </None>
     <None Update="UnionTypes.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>UnionTypes.cs</LastGenOutput>
@@ -20,6 +24,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="SpanComparers.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SpanComparers.tt</DependentUpon>
+    </Compile>
+    <Compile Update="UnionTypes - Copy.cs">
+      <DependentUpon>UnionTypes.tt</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
     <Compile Update="UnionTypes.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>

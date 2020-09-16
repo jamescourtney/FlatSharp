@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 namespace FlatSharp
 {
     using FlatSharp.TypeModel;
@@ -21,7 +21,6 @@ namespace FlatSharp
     using System.Collections.Generic;
     using System.Globalization;
     using System.Linq;
-    using System.Numerics;
     using System.Reflection;
 
     /// <summary>
@@ -97,6 +96,14 @@ namespace FlatSharp
                 "bool",
                 b => b.ToString().ToLowerInvariant()),
 
+            [typeof(bool?)] = new ScalarBuiltInType<bool?>(
+                new ScalarTypeModel(typeof(bool?), sizeof(bool)),
+                ReflectedMethods.GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteNullableBool)),
+                ReflectedMethods.GetMethod(typeof(InputBuffer), nameof(InputBuffer.ReadBool)),
+                typeof(BoolSpanComparer),
+                new string[0],
+                "bool?"),
+
             [typeof(byte)] = new ScalarBuiltInType<byte>(
                 new ScalarTypeModel(typeof(byte), sizeof(byte)),
                 ReflectedMethods.GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteByte)),
@@ -104,6 +111,14 @@ namespace FlatSharp
                 typeof(ByteSpanComparer),
                 new[] { "ubyte", "uint8" },
                 "byte"),
+
+            [typeof(byte?)] = new ScalarBuiltInType<byte?>(
+                new ScalarTypeModel(typeof(byte?), sizeof(byte)),
+                ReflectedMethods.GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteNullableByte)),
+                ReflectedMethods.GetMethod(typeof(InputBuffer), nameof(InputBuffer.ReadByte)),
+                typeof(NullableByteSpanComparer),
+                new string[0],
+                "bool?"),
 
             [typeof(sbyte)] = new ScalarBuiltInType<sbyte>(
                 new ScalarTypeModel(typeof(sbyte), sizeof(sbyte)),

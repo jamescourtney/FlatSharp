@@ -70,7 +70,7 @@ namespace FlatSharpTests
         [TestMethod]
         public void TestBoolComparer()
         {
-            BoolSpanComparer comparer = new BoolSpanComparer();
+            BoolSpanComparer comparer = new BoolSpanComparer(default);
 
             Span<byte> f = new byte[1] { InputBuffer.False };
             Span<byte> t = new byte[1] { InputBuffer.True };
@@ -82,34 +82,34 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
-        public void TestByteComparer() => this.Compare<byte>(ByteSpanComparer.Instance, sizeof(byte));
+        public void TestByteComparer() => this.Compare<byte>(new ByteSpanComparer(default), sizeof(byte));
 
         [TestMethod]
-        public void TestSByteComparer() => this.Compare<sbyte>(SByteSpanComparer.Instance, sizeof(sbyte));
+        public void TestSByteComparer() => this.Compare<sbyte>(new SByteSpanComparer(default), sizeof(sbyte));
 
         [TestMethod]
-        public void TestUShortComparer() => this.Compare<ushort>(UShortSpanComparer.Instance, sizeof(ushort));
+        public void TestUShortComparer() => this.Compare<ushort>(new UShortSpanComparer(default), sizeof(ushort));
 
         [TestMethod]
-        public void TestShortComparer() => this.Compare<short>(ShortSpanComparer.Instance, sizeof(short));
+        public void TestShortComparer() => this.Compare<short>(new ShortSpanComparer(default), sizeof(short));
 
         [TestMethod]
-        public void TestUIntComaprer() => this.Compare<uint>(UIntSpanComparer.Instance, sizeof(uint));
+        public void TestUIntComaprer() => this.Compare<uint>(new UIntSpanComparer(default), sizeof(uint));
 
         [TestMethod]
-        public void TestIntComparer() => this.Compare<int>(IntSpanComparer.Instance, sizeof(int));
+        public void TestIntComparer() => this.Compare<int>(new IntSpanComparer(default), sizeof(int));
 
         [TestMethod]
-        public void TestULongComparer() => this.Compare<ulong>(ULongSpanComparer.Instance, sizeof(ulong));
+        public void TestULongComparer() => this.Compare<ulong>(new ULongSpanComparer(default), sizeof(ulong));
 
         [TestMethod]
-        public void TestLongComparer() => this.Compare<long>(LongSpanComparer.Instance, sizeof(long));
+        public void TestLongComparer() => this.Compare<long>(new LongSpanComparer(default), sizeof(long));
 
         [TestMethod]
-        public void TestDoubleComparer() => this.Compare<double>(DoubleSpanComparer.Instance, sizeof(double));
+        public void TestDoubleComparer() => this.Compare<double>(new DoubleSpanComparer(default), sizeof(double));
 
         [TestMethod]
-        public void TestFloatComparer() => this.Compare<float>(FloatSpanComparer.Instance, sizeof(float));
+        public void TestFloatComparer() => this.Compare<float>(new FloatSpanComparer(default), sizeof(float));
 
         private void Compare<T>(ISpanComparer comparer, int size) where T : struct, IComparable<T>
         {

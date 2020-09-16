@@ -227,13 +227,10 @@ $@"
             string offsetVariableName = $"index{index}Offset";
 
             string condition = $"if ({valueVariableName} != {CSharpHelpers.GetDefaultValueToken(memberModel)})";
-            if ((memberModel.ItemTypeModel is VectorTypeModel vector && vector.IsMemoryVector) || memberModel.IsKey)
+            if (memberModel.ItemTypeModel is VectorTypeModel vector && vector.IsMemoryVector)
             {
                 // 1) Memory is a struct and can't be null, and 0-length vectors are valid.
                 //    Therefore, we just need to omit the conditional check entirely.
-
-                // 2) For sorted vector keys, we must include the value since some other 
-                //    libraries cannot do binary search with omitted keys.
                 condition = string.Empty;
             }
 
@@ -266,8 +263,15 @@ $@"
                 var builtInType = BuiltInType.BuiltInTypes[keyMember.ItemTypeModel.ClrType];
                 string inlineSize = builtInType.TypeModel.SchemaType == FlatBufferSchemaType.Scalar ? builtInType.TypeModel.InlineSize.ToString() : "null";
 
+                string defaultValue = "default";
+                if (keyMember.HasDefaultValue)
+                {
+                    var scalarType = (IBuiltInScalarType)builtInType;
+                    defaultValue = scalarType.FormatObject(keyMember.DefaultValue);
+                }
+                
                 sortInvocation = $"{nameof(SortedVectorHelpers)}.{nameof(SortedVectorHelpers.SortVector)}(" +
-                                    $"span, {offsetVariableName}, {keyMember.Index}, {inlineSize}, {CSharpHelpers.GetCompilableTypeName(builtInType.SpanComparerType)}.Instance)";
+                                    $"span, {offsetVariableName}, {keyMember.Index}, {inlineSize}, new {CSharpHelpers.GetCompilableTypeName(builtInType.SpanComparerType)}({defaultValue}))";
 
                 sortInvocation = $"context.{nameof(SerializationContext.AddPostSerializeAction)}((span, ctx) => {sortInvocation});";
             }

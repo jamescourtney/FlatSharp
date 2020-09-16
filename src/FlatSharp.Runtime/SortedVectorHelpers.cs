@@ -488,8 +488,7 @@ namespace FlatSharp
 
                 if (vtableIndex >= vtableLengthEntries)
                 {
-                    // Undefined.
-                    throw new InvalidOperationException("Key of table member is undefined.");
+                    return (0, 0, tableOffset);
                 }
 
                 // Absolute offset of the field within the table.

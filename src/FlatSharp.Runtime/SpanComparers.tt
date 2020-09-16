@@ -1,0 +1,90 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension=".cs" #>
+
+<#
+	(string casedName, string typeName)[] types = 
+	{
+		("Bool", "bool"),
+		("Byte", "byte"),
+		("SByte", "sbyte"),
+		("UShort", "ushort"),
+		("Short", "short"),
+		("Int", "int"),
+		("UInt", "uint"),
+		("Long", "long"),
+		("ULong", "ulong"),
+		("Float", "float"),
+		("Double", "double"),
+	};
+#>
+
+namespace FlatSharp
+{
+	using System;
+	using System.ComponentModel;
+
+	<#
+		foreach (var pair in types)
+		{
+			var casedName = pair.casedName;
+			var typeName = pair.typeName;
+			var className = $"{casedName}SpanComparer";
+	#>
+	
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public class <#=className#> : ISpanComparer
+    {
+		private readonly <#=typeName#> defaultValue;
+
+		public <#=className#>(<#=typeName#> defaultValue)
+		{
+			this.defaultValue = defaultValue;
+		}
+
+        public int Compare(ReadOnlySpan<byte> left, ReadOnlySpan<byte> right)
+        {
+			<#=typeName#> leftValue = this.defaultValue;
+			<#=typeName#> rightValue = this.defaultValue;
+
+			if (left.Length > 0)
+			{
+				leftValue = ScalarSpanReader.Read<#=casedName#>(left);
+			}
+
+			if (right.Length > 0)
+			{
+				rightValue = ScalarSpanReader.Read<#=casedName#>(right);
+			}
+
+			return leftValue.CompareTo(rightValue);
+        }
+    }
+	
+    [EditorBrowsable(EditorBrowsableState.Never)]
+	public class Nullable<#=className#> : ISpanComparer
+    {
+		public Nullable<#=className#>(<#=typeName#>? notUsed)
+		{
+		}
+
+        public int Compare(ReadOnlySpan<byte> left, ReadOnlySpan<byte> right)
+        {
+			bool leftNull = left.Length == 0;
+			bool rightNull = right.Length == 0;
+
+			if (leftNull || rightNull)
+			{
+				return rightNull.CompareTo(leftNull);
+			}
+
+			return ScalarSpanReader.Read<#=casedName#>(left).CompareTo(ScalarSpanReader.Read<#=casedName#>(right));
+        }
+    }
+
+	<# } #>
+}

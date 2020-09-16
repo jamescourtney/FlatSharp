@@ -23,12 +23,15 @@
     /// </summary>
     public class ScalarTypeModel : RuntimeTypeModel
     {
+        private bool isNullable;
+
         internal ScalarTypeModel(
             Type type,
             int size) : base(type)
         {
             this.Alignment = size;
             this.InlineSize = size;
+            this.isNullable = Nullable.GetUnderlyingType(type) != null;
         }
 
         /// <summary>
@@ -59,7 +62,7 @@
         /// <summary>
         /// Scalars can be part of Structs.
         /// </summary>
-        public override bool IsValidStructMember => true;
+        public override bool IsValidStructMember => !this.isNullable;
 
         /// <summary>
         /// Scalars can be part of Tables.
@@ -74,29 +77,24 @@
         /// <summary>
         /// Scalars can be part of Vectors.
         /// </summary>
-        public override bool IsValidVectorMember => true;
+        public override bool IsValidVectorMember => !this.isNullable;
 
         /// <summary>
         /// Scalars can be sorted vector keys.
         /// </summary>
-        public override bool IsValidSortedVectorKey => true;
+        public override bool IsValidSortedVectorKey => !this.isNullable;
 
         /// <summary>
         /// Validates a default value.
         /// </summary>
         public override bool ValidateDefaultValue(object defaultValue)
         {
+            if (this.isNullable)
+            {
+                return false;
+            }
+
             return defaultValue.GetType() == this.ClrType;
         }
-
-        /// <summary>
-        /// Indicates if we can natively read this scalar by referencing memory directly.
-        /// </summary>
-        /// <remarks>
-        /// When size is 1 (ie, a byte), it can always be read. FlatBuffers stores data as little endian,
-        /// so on compatible systems we have the ability to simply dereference an address and read the value
-        /// without additional parsing.
-        /// </remarks>
-        public bool NativelyReadableFromMemory => this.InlineSize == 1 || BitConverter.IsLittleEndian;
     }
 }

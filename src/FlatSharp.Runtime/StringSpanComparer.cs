@@ -31,7 +31,11 @@ namespace FlatSharp
         /// <summary>
         /// Singleton access.
         /// </summary>
-        public static StringSpanComparer Instance { get; } = new StringSpanComparer();
+        public static StringSpanComparer Instance { get; } = new StringSpanComparer(null);
+
+        public StringSpanComparer(string notUsed)
+        {
+        }
 
         public int Compare(ReadOnlySpan<byte> x, ReadOnlySpan<byte> y)
         {
