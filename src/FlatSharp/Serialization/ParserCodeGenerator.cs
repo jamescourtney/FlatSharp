@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 namespace FlatSharp
 {
     using System;
@@ -125,7 +124,6 @@ namespace FlatSharp
             string classDefinition = this.CreateClass(
                 className,
                 typeModel.ClrType,
-                typeModel.IndexToMemberMap.Values.Select(x => x.PropertyInfo.Name),
                 propertyOverrides);
 
             var node = CSharpSyntaxTree.ParseText(classDefinition, ParseOptions);
@@ -144,7 +142,7 @@ namespace FlatSharp
             property.ReadValueMethodDefinition =
 $@"
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {property.ReadValueMethodName}(InputBuffer buffer, int offset)
+                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {property.ReadValueMethodName}({nameof(InputBuffer)} buffer, int offset)
                     {{
                         int absoluteLocation = buffer.{nameof(InputBuffer.GetAbsoluteTableFieldLocation)}(offset, {index});
                         if (absoluteLocation == 0) {{
@@ -199,7 +197,7 @@ $@"
             generatedProperty.ReadValueMethodDefinition =
 $@"
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {generatedProperty.ReadValueMethodName}(InputBuffer buffer, int offset)
+                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {generatedProperty.ReadValueMethodName}({nameof(InputBuffer)} buffer, int offset)
                     {{
                         int discriminatorLocation = buffer.{nameof(InputBuffer.GetAbsoluteTableFieldLocation)}(offset, {index});
                         int offsetLocation = buffer.{nameof(InputBuffer.GetAbsoluteTableFieldLocation)}(offset, {index + 1});
@@ -259,8 +257,8 @@ $@"
                 string classDefinition = this.CreateClass(
                     className,
                     typeModel.ClrType,
-                    typeModel.Members.Select(x => x.PropertyInfo.Name),
                     propertyOverrides);
+
                 var node = CSharpSyntaxTree.ParseText(classDefinition, ParseOptions);
                 this.methodDeclarations.Add(node.GetRoot());
             }
@@ -269,7 +267,6 @@ $@"
         private string CreateClass(
             string className,
             Type baseType,
-            IEnumerable<string> propertyNames,
             IEnumerable<GeneratedProperty> propertyOverrides)
         {
             string inputBufferFieldDef = "private readonly InputBuffer buffer;";
@@ -295,7 +292,7 @@ $@"
                     {inputBufferFieldDef}
                     {offsetFieldDef}
         
-                    public {className}(InputBuffer buffer, int offset)
+                    public {className}({nameof(InputBuffer)} buffer, int offset)
                     {{
                         {ctorBody}
                     }}
@@ -413,7 +410,7 @@ $@"
             string methodDef =
 $@"
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static {CSharpHelpers.GetCompilableTypeName(type)} {this.MethodNames[type]} (InputBuffer memory, int offset)
+            private static {CSharpHelpers.GetCompilableTypeName(type)} {this.MethodNames[type]} ({nameof(InputBuffer)} memory, int offset)
             {{
                 {body}
             }}

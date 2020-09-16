@@ -84,6 +84,11 @@ namespace FlatSharp.TypeModel
         public override bool IsValidVectorMember => false;
 
         /// <summary>
+        /// Unions can't be keys of sorted vectors.
+        /// </summary>
+        public override bool IsValidSortedVectorKey => false;
+
+        /// <summary>
         /// Gets the type model for this union's members. Index 0 corresponds to discriminator 1.
         /// </summary>
         public RuntimeTypeModel[] UnionElementTypeModel => this.memberTypeModels;

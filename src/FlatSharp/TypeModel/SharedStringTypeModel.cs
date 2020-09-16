@@ -69,5 +69,10 @@
         /// Strings can be part of vectors.
         /// </summary>
         public override bool IsValidVectorMember => true;
+
+        /// <summary>
+        /// Strings can be sorted vector keys.
+        /// </summary>
+        public override bool IsValidSortedVectorKey => true;
     }
 }

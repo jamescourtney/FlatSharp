@@ -17,11 +17,13 @@
 namespace FlatSharp
 {
     using System;
+    using System.Diagnostics;
     using System.Runtime.CompilerServices;
 
     /// <summary>
     /// Represents a shared string
     /// </summary>
+    [DebuggerDisplay("{String}")]
     public sealed class SharedString : IEquatable<SharedString>
     {
         private int hashCode;
@@ -52,6 +54,11 @@ namespace FlatSharp
             }
 
             return this.GetHashCode() == other.GetHashCode() && this.str == other.str;
+        }
+
+        public override string ToString()
+        {
+            return this.str;
         }
 
         public override int GetHashCode()

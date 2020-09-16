@@ -102,6 +102,7 @@ namespace FlatSharp
                 sharedStringWriter?.PrepareWrite();
                 this.innerSerializer.Write(writer, destination, item, 0, serializationContext);
                 sharedStringWriter?.FlushWrites(writer, destination, serializationContext);
+                serializationContext.InvokePostSerializeActions(destination);
             }
             catch (BufferTooSmallException ex)
             {

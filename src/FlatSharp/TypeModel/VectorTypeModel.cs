@@ -75,6 +75,11 @@ namespace FlatSharp.TypeModel
         public override bool IsValidVectorMember => false;
 
         /// <summary>
+        /// Vector's can't be keys of sorted vectors.
+        /// </summary>
+        public override bool IsValidSortedVectorKey => false;
+
+        /// <summary>
         /// Gets the type model for this vector's elements.
         /// </summary>
         public RuntimeTypeModel ItemTypeModel => this.memberTypeModel;

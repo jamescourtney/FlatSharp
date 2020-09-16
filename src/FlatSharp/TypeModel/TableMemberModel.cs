@@ -43,19 +43,9 @@
                 throw new InvalidFlatBufferDefinitionException($"Table property {propertyInfo.Name} with type {propertyInfo.PropertyType.Name} cannot be part of a flatbuffer table.");
             }
             
-            if (this.HasDefaultValue)
+            if (this.HasDefaultValue && !propertyModel.ValidateDefaultValue(this.DefaultValue))
             {
-                if (propertyModel is ScalarTypeModel)
-                {
-                    if (defaultValue?.GetType() != propertyModel.ClrType)
-                    {
-                        throw new InvalidFlatBufferDefinitionException($"Table property {propertyInfo.Name} declared default value of type {propertyModel.ClrType.Name}, but the value was of type {defaultValue?.GetType()?.Name}.");
-                    }
-                }
-                else
-                {
-                    throw new InvalidFlatBufferDefinitionException($"Table property {propertyInfo.Name} declared default value, but this type is not allowed to have one. Only scalar types and enums may have default values.");
-                }
+                throw new InvalidFlatBufferDefinitionException($"Table property {propertyInfo.Name} declared default value of type {propertyModel.ClrType.Name}, but the value was of type {defaultValue?.GetType()?.Name}. Please ensure that the property is allowed to have a default value and that the types match.");
             }
         }
         

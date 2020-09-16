@@ -78,14 +78,14 @@
         public override bool IsValidVectorMember => true;
 
         /// <summary>
+        /// Structs can't be keys of sorted vectors.
+        /// </summary>
+        public override bool IsValidSortedVectorKey => false;
+
+        /// <summary>
         /// Gets the members of this struct.
         /// </summary>
         public IReadOnlyList<StructMemberModel> Members => this.memberTypes;
-
-        /// <summary>
-        /// Gets the default constructor for this type.
-        /// </summary>
-        internal ConstructorInfo DefaultConstructor { get; private set; }
 
         protected override void Initialize()
         {
@@ -96,7 +96,6 @@
             }
 
             TableTypeModel.EnsureClassCanBeInheritedByOutsideAssembly(this.ClrType, out var ctor);
-            this.DefaultConstructor = ctor;
 
             var properties = this.ClrType
                 .GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
@@ -126,10 +125,10 @@
                 {
                     throw new InvalidFlatBufferDefinitionException($"FlatBuffer struct {this.ClrType.Name} does not declare an item with index {expectedIndex}. Structs must have sequenential indexes starting at 0.");
                 }
-
+                
                 if (!object.ReferenceEquals(propertyAttribute.DefaultValue, null))
                 {
-                    throw new InvalidFlatBufferDefinitionException($"FlatBuffer struct {this.ClrType.Name} declares default value on {expectedIndex}. Structs may not have default values.");
+                    throw new InvalidFlatBufferDefinitionException($"FlatBuffer struct {this.ClrType.Name} declares default value on index {expectedIndex}. Structs may not have default values.");
                 }
 
                 expectedIndex++;
