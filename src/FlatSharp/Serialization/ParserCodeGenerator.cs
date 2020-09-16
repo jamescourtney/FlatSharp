@@ -304,27 +304,13 @@ $@"
 
         private void ImplementMemoryVectorReadMethod(VectorTypeModel typeModel)
         {
-            string invocation;
-            if (typeModel.ItemTypeModel.ClrType == typeof(byte))
+            string invocation = nameof(InputBuffer.ReadByteMemoryBlock);
+            if (typeModel.IsReadOnly)
             {
-                invocation = nameof(InputBuffer.ReadByteMemoryBlock);
-                if (typeModel.IsReadOnly)
-                {
-                    invocation = nameof(InputBuffer.ReadByteReadOnlyMemoryBlock);
-                }
-            }
-            else
-            {
-                string methodName = nameof(InputBuffer.ReadMemoryBlock);
-                if (typeModel.IsReadOnly)
-                {
-                    methodName = nameof(InputBuffer.ReadReadOnlyMemoryBlock);
-                }
-
-                invocation =  $"{methodName}<{CSharpHelpers.GetCompilableTypeName(typeModel.ItemTypeModel.ClrType)}>";
+                invocation = nameof(InputBuffer.ReadByteReadOnlyMemoryBlock);
             }
 
-            string body = $"memory.{invocation}(offset, {typeModel.ItemTypeModel.InlineSize})";
+            string body = $"memory.{invocation}(offset)";
 
             // Greedy deserialize has the invariant that we no longer touch the
             // original buffer. This means a memory copy here.
@@ -361,10 +347,10 @@ $@"
             var itemTypeModel = typeModel.ItemTypeModel;
 
             string statement;
-            if (itemTypeModel is ScalarTypeModel scalarModel && scalarModel.NativelyReadableFromMemory)
+            if (itemTypeModel is ScalarTypeModel scalarModel && scalarModel.ClrType == typeof(byte))
             {
                 // Memory is faster in situations where we can get away with it.
-                statement = $"memory.{nameof(InputBuffer.ReadMemoryBlock)}<{CSharpHelpers.GetCompilableTypeName(itemTypeModel.ClrType)}>(offset, {itemTypeModel.InlineSize}).ToArray()";
+                statement = $"memory.{nameof(InputBuffer.ReadByteMemoryBlock)}(offset).ToArray()";
             }
             else
             {

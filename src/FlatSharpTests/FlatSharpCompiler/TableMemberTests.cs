@@ -118,7 +118,7 @@ namespace FlatSharpTests.Compiler
             this.RunSingleTest<T[]>($"[{fbsType}]  (vectortype: Array)");
             this.RunSingleTest<IReadOnlyList<T>>($"[{fbsType}]  (vectortype: IReadOnlyList)");
 
-            if (typeof(T).IsValueType)
+            if (typeof(T) == typeof(byte))
             {
                 this.RunSingleTest<Memory<T>>($"[{fbsType}]  (vectortype: Memory)");
                 this.RunSingleTest<ReadOnlyMemory<T>>($"[{fbsType}]  (vectortype: ReadOnlyMemory)");

@@ -230,30 +230,49 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
-        public void TypeModel_Vector_MemoryOfScalar()
+        public void TypeModel_Vector_MemoryOfByte()
         {
-            var model = this.VectorTest(typeof(Memory<>), typeof(int));
+            var model = this.VectorTest(typeof(Memory<>), typeof(byte));
             Assert.IsFalse(model.IsList);
             Assert.IsTrue(model.IsMemoryVector);
             Assert.IsFalse(model.IsReadOnly);
         }
 
         [TestMethod]
-        public void TypeModel_Vector_MemoryOfEnum()
+        public void TypeModel_Vector_MemoryOfScalar_NotAllowed()
         {
-            var model = this.VectorTest(typeof(Memory<>), typeof(TaggedEnum));
-            Assert.IsFalse(model.IsList);
-            Assert.IsTrue(model.IsMemoryVector);
-            Assert.IsFalse(model.IsReadOnly);
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => RuntimeTypeModel.CreateFrom(typeof(Memory<int>)));
         }
 
         [TestMethod]
-        public void TypeModel_Vector_ReadOnlyMemoryOfScalar()
+        public void TypeModel_Vector_MemoryOfEnum_NotAllowed()
         {
-            var model = this.VectorTest(typeof(ReadOnlyMemory<>), typeof(double));
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => RuntimeTypeModel.CreateFrom(typeof(Memory<TaggedEnum>)));
+        }
+
+        [TestMethod]
+        public void TypeModel_Vector_ReadOnlyMemoryOfByte()
+        {
+            var model = this.VectorTest(typeof(ReadOnlyMemory<>), typeof(byte));
             Assert.IsFalse(model.IsList);
             Assert.IsTrue(model.IsMemoryVector);
             Assert.IsTrue(model.IsReadOnly);
+        }
+
+        [TestMethod]
+        public void TypeModel_Vector_ReadOnlyMemoryOfScalar_NotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => RuntimeTypeModel.CreateFrom(typeof(ReadOnlyMemory<int>)));
+        }
+
+        [TestMethod]
+        public void TypeModel_Vector_ReadOnlyMemoryOfEnum_NotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => RuntimeTypeModel.CreateFrom(typeof(ReadOnlyMemory<TaggedEnum>)));
         }
 
         [TestMethod]

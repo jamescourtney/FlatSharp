@@ -184,17 +184,13 @@ namespace FlatSharp.TypeModel
 
             if (this.isMemory)
             {
-                if (this.memberTypeModel.SchemaType != FlatBufferSchemaType.Scalar)
+                if (this.memberTypeModel is ScalarTypeModel scalarModel && scalarModel.ClrType == typeof(byte))
                 {
-                    throw new InvalidFlatBufferDefinitionException("Vectors may only be Memory<T> or ReadOnlyMemory<T> when the type is a scalar.");
+                    // allowed
                 }
-
-                // We can play some tricks on little-endian machines that allow us to store other types inside our vectors.
-                // 1 byte types (bool, byte, sbyte) are always allowed. However, anything larger is subject to endianness issues.
-                ScalarTypeModel scalarModel = (ScalarTypeModel)this.memberTypeModel;
-                if (!scalarModel.NativelyReadableFromMemory)
+                else
                 {
-                    throw new InvalidFlatBufferDefinitionException("Memory<T> vectors may only use 1-byte sized elements on big-endian architectures. Consider using IList<T> instead.");
+                    throw new InvalidFlatBufferDefinitionException("Vectors may only be Memory<T> or ReadOnlyMemory<T> when the type is an unsigned byte.");
                 }
             }
         }

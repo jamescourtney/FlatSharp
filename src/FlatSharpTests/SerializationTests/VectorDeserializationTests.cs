@@ -107,7 +107,7 @@ namespace FlatSharpTests
                 0, 0, 0, 0,  // vector length
             };
             
-            var item = FlatBufferSerializer.Default.Parse<RootTable<Memory<bool>>>(data);
+            var item = FlatBufferSerializer.Default.Parse<RootTable<Memory<byte>>>(data);
             Assert.IsTrue(item.Vector.IsEmpty);
         }
 
@@ -124,14 +124,14 @@ namespace FlatSharpTests
                 8, 0, 0, 0,  // soffset to vtable
                 4, 0, 0, 0,  // uoffset_t to vector
                 3, 0, 0, 0,  // vector length
-                1, 0, 1,     // True false true
+                1, 2, 3,     // True false true
             };
 
-            var item = FlatBufferSerializer.Default.Parse<RootTable<Memory<bool>>>(data);
+            var item = FlatBufferSerializer.Default.Parse<RootTable<Memory<byte>>>(data);
             Assert.AreEqual(3, item.Vector.Length);
-            Assert.IsTrue(item.Vector.Span[0]);
-            Assert.IsFalse(item.Vector.Span[1]);
-            Assert.IsTrue(item.Vector.Span[2]);
+            Assert.AreEqual((byte)1, item.Vector.Span[0]);
+            Assert.AreEqual((byte)2, item.Vector.Span[1]);
+            Assert.AreEqual((byte)3, item.Vector.Span[2]);
         }
 
         [TestMethod]
