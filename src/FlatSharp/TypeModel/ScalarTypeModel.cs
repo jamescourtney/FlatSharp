@@ -77,6 +77,19 @@
         public override bool IsValidVectorMember => true;
 
         /// <summary>
+        /// Scalars can be sorted vector keys.
+        /// </summary>
+        public override bool IsValidSortedVectorKey => true;
+
+        /// <summary>
+        /// Validates a default value.
+        /// </summary>
+        public override bool ValidateDefaultValue(object defaultValue)
+        {
+            return defaultValue.GetType() == this.ClrType;
+        }
+
+        /// <summary>
         /// Indicates if we can natively read this scalar by referencing memory directly.
         /// </summary>
         /// <remarks>

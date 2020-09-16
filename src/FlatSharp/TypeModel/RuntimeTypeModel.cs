@@ -88,6 +88,11 @@ namespace FlatSharp.TypeModel
         public abstract bool IsValidUnionMember { get; }
 
         /// <summary>
+        /// Indicates if this type model can be a sorted vector key.
+        /// </summary>
+        public abstract bool IsValidSortedVectorKey { get; }
+
+        /// <summary>
         /// Gets the maximum inline size of this item when padded for alignment, when stored in a table or vector.
         /// </summary>
         public virtual int MaxInlineSize
@@ -101,6 +106,14 @@ namespace FlatSharp.TypeModel
         public virtual bool IsBuiltInType
         {
             get => false;
+        }
+
+        /// <summary>
+        /// Validates a default value.
+        /// </summary>
+        public virtual bool ValidateDefaultValue(object defaultValue)
+        {
+            return false;
         }
 
         /// <summary>

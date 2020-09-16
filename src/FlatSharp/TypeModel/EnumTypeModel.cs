@@ -44,5 +44,18 @@
         /// Enums are not built in, even though scalars are.
         /// </summary>
         public override bool IsBuiltInType => false;
+
+        /// <summary>
+        /// Enums can't be sorted vector keys.
+        /// </summary>
+        public override bool IsValidSortedVectorKey => false;
+
+        /// <summary>
+        /// Validates that the default value is of the same type as this enum.
+        /// </summary>
+        public override bool ValidateDefaultValue(object defaultValue)
+        {
+            return defaultValue.GetType() == this.ClrType;
+        }
     }
 }

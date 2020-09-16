@@ -84,6 +84,11 @@
         public override bool IsValidVectorMember => true;
 
         /// <summary>
+        /// Tables can't be keys of sorted vectors.
+        /// </summary>
+        public override bool IsValidSortedVectorKey => false;
+
+        /// <summary>
         /// Gets the maximum used index in this vtable.
         /// </summary>
         public int MaxIndex => this.occupiedVtableSlots.Max();
@@ -158,40 +163,17 @@
                         throw new InvalidFlatBufferDefinitionException($"Table {this.ClrType.Name} has more than one [FlatBufferItemAttribute] with Key set to true.");
                     }
                     
-                    if (!property.ItemTypeModel.IsBuiltInType)
+                    if (!property.ItemTypeModel.IsValidSortedVectorKey)
                     {
-                        throw new InvalidFlatBufferDefinitionException($"Table {this.ClrType.Name} declares a key property on a type that is not built in. Only scalars and strings may be keys.");
+                        throw new InvalidFlatBufferDefinitionException($"Table {this.ClrType.Name} declares a key property on a type that That does not support being a key in a sorted vector.");
                     }
 
                     this.KeyProperty = property.Property;
                 }
 
-                if (property.Attribute.SortedVector)
-                {
-                    // This must be a vector, and the inner model must have an item with the 'key' property.
-                    if (property.ItemTypeModel is VectorTypeModel vectorTypeModel)
-                    {
-                        var vectorMemberModel = vectorTypeModel.ItemTypeModel;
-                        if (vectorMemberModel is TableTypeModel tableModel)
-                        {
-                            if (tableModel.KeyProperty == null)
-                            {
-                                throw new InvalidFlatBufferDefinitionException($"Property '{property.Property.Name}' declares a sorted vector, but the member is a table that does not have a key.");
-                            }
-                        }
-                        else
-                        {
-                            throw new InvalidFlatBufferDefinitionException($"Property '{property.Property.Name}' declares a sorted vector, but the member is not a table.");
-                        }
-                    }
-                    else
-                    {
-                        throw new InvalidFlatBufferDefinitionException($"Property '{property.Property.Name}' declares the sortedVector option, but the property is not a vector type.");
-                    }
-                }
+                ValidateSortedVector(property.Attribute, property.ItemTypeModel, property.Property);
 
                 object defaultValue = null;
-
                 if (!object.ReferenceEquals(property.Attribute.DefaultValue, null))
                 {
                     hasDefaultValue = true;
@@ -219,6 +201,33 @@
                 }
 
                 this.memberTypes[index] = model;
+            }
+        }
+
+        private static void ValidateSortedVector(FlatBufferItemAttribute itemAttribute, RuntimeTypeModel itemTypeModel, PropertyInfo propertyInfo)
+        {
+            if (itemAttribute.SortedVector)
+            {
+                // This must be a vector, and the inner model must have an item with the 'key' property.
+                if (itemTypeModel is VectorTypeModel vectorTypeModel)
+                {
+                    var vectorMemberModel = vectorTypeModel.ItemTypeModel;
+                    if (vectorMemberModel is TableTypeModel tableModel)
+                    {
+                        if (tableModel.KeyProperty == null)
+                        {
+                            throw new InvalidFlatBufferDefinitionException($"Property '{propertyInfo.Name}' declares a sorted vector, but the member is a table that does not have a key.");
+                        }
+                    }
+                    else
+                    {
+                        throw new InvalidFlatBufferDefinitionException($"Property '{propertyInfo.Name}' declares a sorted vector, but the member is not a table.");
+                    }
+                }
+                else
+                {
+                    throw new InvalidFlatBufferDefinitionException($"Property '{propertyInfo.Name}' declares the sortedVector option, but the property is not a vector type.");
+                }
             }
         }
 
