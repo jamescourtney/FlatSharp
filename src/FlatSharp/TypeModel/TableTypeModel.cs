@@ -64,6 +64,26 @@
         public override bool IsFixedSize => false;
 
         /// <summary>
+        /// Tables can't be part of structs.
+        /// </summary>
+        public override bool IsValidStructMember => false;
+
+        /// <summary>
+        /// Tables can be part of tables.
+        /// </summary>
+        public override bool IsValidTableMember => true;
+
+        /// <summary>
+        /// Tables can be part of unions.
+        /// </summary>
+        public override bool IsValidUnionMember => true;
+
+        /// <summary>
+        /// Tables can be part of vectors.
+        /// </summary>
+        public override bool IsValidVectorMember => true;
+
+        /// <summary>
         /// Gets the maximum used index in this vtable.
         /// </summary>
         public int MaxIndex => this.occupiedVtableSlots.Max();

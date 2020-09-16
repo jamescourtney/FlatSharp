@@ -64,25 +64,38 @@ namespace FlatSharp.TypeModel
         public override bool IsFixedSize => false;
 
         /// <summary>
+        /// Unions can't be part of structs.
+        /// </summary>
+        public override bool IsValidStructMember => false;
+
+        /// <summary>
+        /// Unions can be part of tables.
+        /// </summary>
+        public override bool IsValidTableMember => true;
+
+        /// <summary>
+        /// Unions can't be part of unions.
+        /// </summary>
+        public override bool IsValidUnionMember => false;
+
+        /// <summary>
+        /// Unions can't be part of vectors.
+        /// </summary>
+        public override bool IsValidVectorMember => false;
+
+        /// <summary>
         /// Gets the type model for this union's members. Index 0 corresponds to discriminator 1.
         /// </summary>
         public RuntimeTypeModel[] UnionElementTypeModel => this.memberTypeModels;
 
         protected override void Initialize()
         {
-            FlatBufferSchemaType[] validUnionMemberTypes = 
-            {
-                FlatBufferSchemaType.String,
-                FlatBufferSchemaType.Table,
-                FlatBufferSchemaType.Struct
-            };
-
             bool containsString = false;
             HashSet<Type> uniqueTypes = new HashSet<Type>();
 
             foreach (var item in this.memberTypeModels)
             {
-                if (!validUnionMemberTypes.Contains(item.SchemaType))
+                if (!item.IsValidUnionMember)
                 {
                     throw new InvalidFlatBufferDefinitionException($"Unions may not store '{item.SchemaType}'.");
                 }

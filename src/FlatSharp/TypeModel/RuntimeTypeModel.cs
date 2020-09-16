@@ -68,6 +68,26 @@ namespace FlatSharp.TypeModel
         public abstract bool IsFixedSize { get; }
 
         /// <summary>
+        /// Indicates if this type model can be part of a struct.
+        /// </summary>
+        public abstract bool IsValidStructMember { get; }
+
+        /// <summary>
+        /// Indicates if this type model can be part of a table.
+        /// </summary>
+        public abstract bool IsValidTableMember { get; }
+
+        /// <summary>
+        /// Indicates if this type model can be part of a vector.
+        /// </summary>
+        public abstract bool IsValidVectorMember { get; }
+
+        /// <summary>
+        /// Indicates if this type model can be part of a union.
+        /// </summary>
+        public abstract bool IsValidUnionMember { get; }
+
+        /// <summary>
         /// Gets the maximum inline size of this item when padded for alignment, when stored in a table or vector.
         /// </summary>
         public virtual int MaxInlineSize

@@ -31,6 +31,11 @@
             int offset) : base(propertyModel, propertyInfo, index)
         {
             this.Offset = offset;
+
+            if (!propertyModel.IsValidStructMember)
+            {
+                throw new InvalidFlatBufferDefinitionException($"Struct property {propertyInfo.Name} with type {propertyInfo.PropertyType.Name} cannot be part of a flatbuffer struct.");
+            }
         }
 
         /// <summary>

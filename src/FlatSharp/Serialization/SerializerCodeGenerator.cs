@@ -162,7 +162,7 @@ $@"
                     int {valueOffsetVariableName} = 0;
                     byte {discriminatorValueVariableName} = 0;
 
-                    if ({valueVariableName} != null && {valueVariableName}.Discriminator != 0)
+                    if (!object.ReferenceEquals({valueVariableName}, null) && {valueVariableName}.Discriminator != 0)
                     {{
                             {discriminatorValueVariableName} = {valueVariableName}.Discriminator;
                             {discriminatorOffsetVariableName} = currentOffset;

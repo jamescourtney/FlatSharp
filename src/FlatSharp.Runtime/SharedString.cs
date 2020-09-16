@@ -67,12 +67,30 @@ namespace FlatSharp
 
         public override bool Equals(object obj)
         {
-            return this.Equals(obj as SharedString);
+            return obj switch 
+            { 
+                SharedString sharedString => this.Equals(sharedString),
+                string str => this.Equals(str),
+                _ => false
+            };
+        }
+
+        public bool Equals(string other)
+        {
+            return this.str == other;
         }
 
         public static bool operator ==(SharedString x, SharedString y) => StaticEquals(x, y);
 
+        public static bool operator ==(SharedString x, string y) => x?.str == y;
+
+        public static bool operator ==(string x, SharedString y) => y?.str == x;
+
         public static bool operator !=(SharedString x, SharedString y) => !StaticEquals(x, y);
+
+        public static bool operator !=(SharedString x, string y) => !(x == y);
+
+        public static bool operator !=(string x, SharedString y) => !(x == y);
 
         public static implicit operator string(SharedString sharedString) => sharedString?.str;
 
