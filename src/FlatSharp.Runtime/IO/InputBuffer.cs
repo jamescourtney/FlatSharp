@@ -146,31 +146,23 @@ namespace FlatSharp
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Memory<byte> ReadByteMemoryBlock(
-           int uoffset,
-           int sizePerItem)
+        public Memory<byte> ReadByteMemoryBlock(int uoffset)
         {
             return this.ReadByteMemoryBlockImpl(
                 uoffset,
-                sizePerItem,
                 this.GetByteMemory);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReadOnlyMemory<byte> ReadByteReadOnlyMemoryBlock(
-           int uoffset,
-           int sizePerItem)
+        public ReadOnlyMemory<byte> ReadByteReadOnlyMemoryBlock(int uoffset)
         {
             return this.ReadByteMemoryBlockImpl(
                 uoffset,
-                sizePerItem,
                 this.GetReadOnlyByteMemory);
         }
 
-        private T ReadByteMemoryBlockImpl<T>(int uoffset, int sizePerItem, Func<int, int, T> callback)
+        private T ReadByteMemoryBlockImpl<T>(int uoffset, Func<int, int, T> callback)
         {
-            Debug.Assert(sizePerItem == 1);
-
             checked
             {
                 // The local value stores a uoffset_t, so follow that now.
@@ -180,42 +172,6 @@ namespace FlatSharp
                 return callback(
                     uoffset + sizeof(uint),
                     (int)this.ReadUInt(uoffset));
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Memory<T> ReadMemoryBlock<T>(
-           int uoffset,
-           int sizePerItem) where T : struct
-        {
-            return this.ReadMemoryBlockImpl<T>(uoffset, sizePerItem, (s, l) => this.GetByteMemory(s, l));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReadOnlyMemory<T> ReadReadOnlyMemoryBlock<T>(
-           int uoffset,
-           int sizePerItem) where T : struct
-        {
-            return this.ReadMemoryBlockImpl<T>(uoffset, sizePerItem, this.GetReadOnlyByteMemory);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Memory<T> ReadMemoryBlockImpl<T>(
-           int uoffset,
-           int sizePerItem,
-           Func<int, int, ReadOnlyMemory<byte>> callback) where T : struct
-        {
-            checked
-            {
-                // The local value stores a uoffset_t, so follow that now.
-                uoffset = uoffset + this.ReadUOffset(uoffset);
-
-                ReadOnlyMemory<byte> innerMemory = callback(
-                    uoffset + sizeof(uint),
-                    ((int)this.ReadUInt(uoffset)) * sizePerItem);
-
-                MemoryTypeChanger<T> typeChanger = new MemoryTypeChanger<T>(MemoryMarshal.AsMemory(innerMemory));
-                return typeChanger.Memory;
             }
         }
 

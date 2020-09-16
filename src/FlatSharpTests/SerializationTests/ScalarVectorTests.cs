@@ -142,6 +142,7 @@ namespace FlatSharpTests
 
         private void TestType<T>(Func<T> generator, int length)
         {
+            if (typeof(T) == typeof(byte))
             {
                 var memoryTable = new RootTable<Memory<T>>
                 {
@@ -163,6 +164,7 @@ namespace FlatSharpTests
                 }
             }
 
+            if (typeof(T) == typeof(byte))
             {
                 var memoryTable = new RootTable<ReadOnlyMemory<T>>
                 {

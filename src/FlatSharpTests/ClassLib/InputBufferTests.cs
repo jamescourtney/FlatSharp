@@ -168,8 +168,7 @@ namespace FlatSharpTests
 
             byte[] expected = new byte[] { 1, 2, 3, 4, 5, 6, 7, };
 
-            Assert.IsTrue(inputBuffer.ReadReadOnlyMemoryBlock<byte>(0, 1).Span.SequenceEqual(expected));
-            Assert.IsTrue(inputBuffer.ReadByteReadOnlyMemoryBlock(0, 1).Span.SequenceEqual(expected));
+            Assert.IsTrue(inputBuffer.ReadByteReadOnlyMemoryBlock(0).Span.SequenceEqual(expected));
         }
 
         private void TestDeserialize<TBuffer, TType>(Func<byte[], TBuffer> bufferBuilder) 
@@ -178,7 +177,6 @@ namespace FlatSharpTests
         {
             TType table = new TType
             {
-                IntMemory = new int[] { 1, 2, 3, 4, 5, },
                 Memory = new byte[] { 6, 7, 8, 9, 10 }
             };
 
@@ -189,15 +187,12 @@ namespace FlatSharpTests
             var parsed = FlatBufferSerializer.Default.Parse<TType>(buffer);
             for (int i = 1; i <= 5; ++i)
             {
-                Assert.AreEqual(i, parsed.IntMemory.Span[i - 1]);
                 Assert.AreEqual(i + 5, parsed.Memory.Span[i - 1]);
             }
         }
 
         private interface IMemoryTable
         {
-            ReadOnlyMemory<int> IntMemory { get; set; }
-
             ReadOnlyMemory<byte> Memory { get; set; }
         }
 
@@ -205,9 +200,6 @@ namespace FlatSharpTests
         public class ReadOnlyMemoryTable : IMemoryTable
         {
             [FlatBufferItem(0)]
-            public virtual ReadOnlyMemory<int> IntMemory { get; set; }
-
-            [FlatBufferItem(1)]
             public virtual ReadOnlyMemory<byte> Memory { get; set; }
         }
 
@@ -215,12 +207,7 @@ namespace FlatSharpTests
         public class MemoryTable : IMemoryTable
         {
             [FlatBufferItem(0)]
-            public virtual Memory<int> IntMemory { get; set; }
-
-            [FlatBufferItem(1)]
             public virtual Memory<byte> Memory { get; set; }
-
-            ReadOnlyMemory<int> IMemoryTable.IntMemory { get => this.IntMemory; set => this.IntMemory = MemoryMarshal.AsMemory(value); }
 
             ReadOnlyMemory<byte> IMemoryTable.Memory { get => this.Memory; set => this.Memory = MemoryMarshal.AsMemory(value); }
         }

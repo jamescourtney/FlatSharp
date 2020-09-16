@@ -117,7 +117,7 @@ namespace FlatSharpTests
         [TestMethod]
         public void EmptyMemoryVector()
         {
-            var root = new RootTable<Memory<bool>>
+            var root = new RootTable<Memory<byte>>
             {
                 Vector = default,
             };
@@ -144,9 +144,9 @@ namespace FlatSharpTests
         [TestMethod]
         public void SimpleMemoryVector()
         {
-            var root = new RootTable<Memory<bool>>
+            var root = new RootTable<Memory<byte>>
             {
-                Vector = new bool[] { true, false, true },
+                Vector = new byte[] { 1, 2, 3 },
             };
 
             Span<byte> target = new byte[10240];
@@ -163,7 +163,7 @@ namespace FlatSharpTests
                 4, 0,                // offset of index 0 field
                 0, 0,                // padding to 4-byte alignment
                 3, 0, 0, 0,          // vector length
-                1, 0, 1,             // True false true
+                1, 2, 3,             // True false true
             };
 
             Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(target));
