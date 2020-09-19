@@ -65,8 +65,12 @@ namespace FlatSharp.Compiler
 
                 this.definition.FbsFieldType = fbsFieldType;
 
-                string defaultValue = context.scalar()?.GetText();
-                if (!string.IsNullOrEmpty(defaultValue))
+                string defaultValue = context.defaultValue_decl()?.GetText();
+                if (defaultValue == "null")
+                {
+                    this.definition.IsOptionalScalar = true;
+                }
+                else if (!string.IsNullOrEmpty(defaultValue))
                 {
                     this.definition.DefaultValue = defaultValue;
                 }
