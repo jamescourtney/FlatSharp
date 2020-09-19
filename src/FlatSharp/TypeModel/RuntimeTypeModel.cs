@@ -151,7 +151,7 @@ namespace FlatSharp.TypeModel
                     // Keep this above the "isgeneric" check since our union types are generic.
                     newModel = new UnionTypeModel(type);
                 }
-                else if (type.IsGenericType)
+                else if (type.IsGenericType && type.GetGenericTypeDefinition() != typeof(Nullable<>))
                 {
                     var genericDefinition = type.GetGenericTypeDefinition();
                     if (genericDefinition == typeof(IList<>) ||
@@ -170,6 +170,15 @@ namespace FlatSharp.TypeModel
                 {
                     ScalarTypeModel scalarModel = (ScalarTypeModel)RuntimeTypeModel.CreateFrom(Enum.GetUnderlyingType(type));
                     newModel = new EnumTypeModel(type, scalarModel.InlineSize);
+                }
+                else if (Nullable.GetUnderlyingType(type) != null)
+                {
+                    Type underlyingNullable = Nullable.GetUnderlyingType(type);
+                    if (underlyingNullable.GetCustomAttribute<FlatBufferEnumAttribute>() != null)
+                    {
+                        ScalarTypeModel scalarModel = (ScalarTypeModel)RuntimeTypeModel.CreateFrom(typeof(Nullable<>).MakeGenericType(Enum.GetUnderlyingType(underlyingNullable)));
+                        newModel = new NullableEnumTypeModel(type, scalarModel.InlineSize);
+                    }
                 }
 
                 if (newModel == null)

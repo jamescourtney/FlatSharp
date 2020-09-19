@@ -86,6 +86,10 @@ namespace FlatSharp
             {
                 this.ImplementEnumInlineWriteMethod(enumModel);
             }
+            else if (typeModel is NullableEnumTypeModel nullableEnumModel)
+            {
+                this.ImplementNullableEnumInlineWriteMethod(nullableEnumModel);
+            }
             else if (typeModel is UnionTypeModel unionModel)
             {
                 // Skip
@@ -227,10 +231,13 @@ $@"
             string offsetVariableName = $"index{index}Offset";
 
             string condition = $"if ({valueVariableName} != {CSharpHelpers.GetDefaultValueToken(memberModel)})";
-            if (memberModel.ItemTypeModel is VectorTypeModel vector && vector.IsMemoryVector)
+            if ((memberModel.ItemTypeModel is VectorTypeModel vector && vector.IsMemoryVector) || memberModel.IsKey)
             {
                 // 1) Memory is a struct and can't be null, and 0-length vectors are valid.
                 //    Therefore, we just need to omit the conditional check entirely.
+
+                // 2) For sorted vector keys, we must include the value since some other 
+                //    libraries cannot do binary search with omitted keys.
                 condition = string.Empty;
             }
 
@@ -356,6 +363,12 @@ $@"
             var underlyingType = Enum.GetUnderlyingType(type);
             string body = this.GetSerializeInvocation(underlyingType, $"({CSharpHelpers.GetCompilableTypeName(underlyingType)})item", "originalOffset");
             this.GenerateSerializeMethod(type, body);
+        }
+
+        private void ImplementNullableEnumInlineWriteMethod(NullableEnumTypeModel enumModel)
+        {
+            string body = this.GetSerializeInvocation(enumModel.UnderlyingType, $"({CSharpHelpers.GetCompilableTypeName(enumModel.UnderlyingType)})item.Value", "originalOffset");
+            this.GenerateSerializeMethod(enumModel.ClrType, body);
         }
 
         private string GetSerializeInvocation(

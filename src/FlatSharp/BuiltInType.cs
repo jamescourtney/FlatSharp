@@ -100,7 +100,7 @@ namespace FlatSharp
                 new ScalarTypeModel(typeof(bool?), sizeof(bool)),
                 ReflectedMethods.GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteNullableBool)),
                 ReflectedMethods.GetMethod(typeof(InputBuffer), nameof(InputBuffer.ReadBool)),
-                typeof(BoolSpanComparer),
+                typeof(NullableBoolSpanComparer),
                 new string[0],
                 "bool?"),
 
@@ -128,6 +128,14 @@ namespace FlatSharp
                 new[] { "byte", "int8" },
                 "sbyte"),
 
+            [typeof(sbyte?)] = new ScalarBuiltInType<sbyte?>(
+                new ScalarTypeModel(typeof(sbyte?), sizeof(sbyte)),
+                ReflectedMethods.GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteNullableSByte)),
+                ReflectedMethods.GetMethod(typeof(InputBuffer), nameof(InputBuffer.ReadSByte)),
+                typeof(NullableSByteSpanComparer),
+                new string[0],
+                "sbyte?"),
+
             [typeof(ushort)] = new ScalarBuiltInType<ushort>(
                 new ScalarTypeModel(typeof(ushort), sizeof(ushort)),
                 ReflectedMethods.GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteUShort)),
@@ -135,6 +143,14 @@ namespace FlatSharp
                 typeof(UShortSpanComparer),
                 new[] { "uint16", "ushort" },
                 "ushort"),
+
+            [typeof(ushort?)] = new ScalarBuiltInType<ushort?>(
+                new ScalarTypeModel(typeof(ushort?), sizeof(ushort)),
+                ReflectedMethods.GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteNullableUShort)),
+                ReflectedMethods.GetMethod(typeof(InputBuffer), nameof(InputBuffer.ReadUShort)),
+                typeof(NullableUShortSpanComparer),
+                new string[0],
+                "ushort?"),
 
             [typeof(short)] = new ScalarBuiltInType<short>(
                 new ScalarTypeModel(typeof(short), sizeof(short)),
@@ -144,6 +160,14 @@ namespace FlatSharp
                 new[] { "int16", "short" },
                 "short"),
 
+            [typeof(short?)] = new ScalarBuiltInType<short?>(
+                new ScalarTypeModel(typeof(short?), sizeof(short)),
+                ReflectedMethods.GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteNullableShort)),
+                ReflectedMethods.GetMethod(typeof(InputBuffer), nameof(InputBuffer.ReadShort)),
+                typeof(NullableShortSpanComparer),
+                new string[0],
+                "short?"),
+
             [typeof(uint)] = new ScalarBuiltInType<uint>(
                 new ScalarTypeModel(typeof(uint), sizeof(uint)),
                 ReflectedMethods.GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteUInt)),
@@ -151,6 +175,14 @@ namespace FlatSharp
                 typeof(UIntSpanComparer),
                 new[] { "uint", "uint32" },
                 "uint"),
+
+            [typeof(uint?)] = new ScalarBuiltInType<uint?>(
+                new ScalarTypeModel(typeof(uint?), sizeof(uint)),
+                ReflectedMethods.GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteNullableUInt)),
+                ReflectedMethods.GetMethod(typeof(InputBuffer), nameof(InputBuffer.ReadUInt)),
+                typeof(NullableUIntSpanComparer),
+                new string[0],
+                "uint?"),
 
             [typeof(int)] = new ScalarBuiltInType<int>(
                 new ScalarTypeModel(typeof(int), sizeof(int)),
@@ -160,6 +192,14 @@ namespace FlatSharp
                 new[] { "int", "int32" },
                 "int"),
 
+            [typeof(int?)] = new ScalarBuiltInType<int?>(
+                new ScalarTypeModel(typeof(int?), sizeof(int)),
+                ReflectedMethods.GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteNullableInt)),
+                ReflectedMethods.GetMethod(typeof(InputBuffer), nameof(InputBuffer.ReadInt)),
+                typeof(NullableIntSpanComparer),
+                new string[0],
+                "int?"),
+
             [typeof(ulong)] = new ScalarBuiltInType<ulong>(
                 new ScalarTypeModel(typeof(ulong), sizeof(ulong)),
                 ReflectedMethods.GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteULong)),
@@ -168,6 +208,14 @@ namespace FlatSharp
                 new[] { "ulong", "uint64" },
                 "ulong"),
 
+            [typeof(ulong?)] = new ScalarBuiltInType<ulong?>(
+                new ScalarTypeModel(typeof(ulong?), sizeof(ulong)),
+                ReflectedMethods.GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteNullableULong)),
+                ReflectedMethods.GetMethod(typeof(InputBuffer), nameof(InputBuffer.ReadULong)),
+                typeof(NullableULongSpanComparer),
+                new string[0],
+                "ulong?"),
+
             [typeof(long)] = new ScalarBuiltInType<long>(
                 new ScalarTypeModel(typeof(long), sizeof(long)),
                 ReflectedMethods.GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteLong)),
@@ -175,6 +223,14 @@ namespace FlatSharp
                 typeof(LongSpanComparer),
                 new[] { "long", "int64" },
                 "long"),
+
+            [typeof(long?)] = new ScalarBuiltInType<long?>(
+                new ScalarTypeModel(typeof(long?), sizeof(long)),
+                ReflectedMethods.GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteNullableLong)),
+                ReflectedMethods.GetMethod(typeof(InputBuffer), nameof(InputBuffer.ReadLong)),
+                typeof(NullableLongSpanComparer),
+                new string[0],
+                "long?"),
 
             [typeof(float)] = new ScalarBuiltInType<float>(
                 new ScalarTypeModel(typeof(float), sizeof(float)),
@@ -185,6 +241,14 @@ namespace FlatSharp
                 "float",
                 f => f.ToString("G17")),
 
+            [typeof(float?)] = new ScalarBuiltInType<float?>(
+                new ScalarTypeModel(typeof(float?), sizeof(float)),
+                ReflectedMethods.GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteNullableFloat)),
+                ReflectedMethods.GetMethod(typeof(InputBuffer), nameof(InputBuffer.ReadFloat)),
+                typeof(NullableFloatSpanComparer),
+                new string[0],
+                "float?"),
+
             [typeof(double)] = new ScalarBuiltInType<double>(
                 new ScalarTypeModel(typeof(double), sizeof(double)),
                 ReflectedMethods.GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteDouble)),
@@ -193,6 +257,14 @@ namespace FlatSharp
                 new[] { "double", "float64" },
                 "double",
                 d => d.ToString("G17")),
+
+            [typeof(double?)] = new ScalarBuiltInType<double?>(
+                new ScalarTypeModel(typeof(double?), sizeof(double)),
+                ReflectedMethods.GetMethod(typeof(SpanWriter), nameof(SpanWriter.WriteNullableDouble)),
+                ReflectedMethods.GetMethod(typeof(InputBuffer), nameof(InputBuffer.ReadDouble)),
+                typeof(NullableDoubleSpanComparer),
+                new string[0],
+                "double?"),
         };
 
         public static readonly IReadOnlyDictionary<Type, IBuiltInType> BuiltInTypes = new Dictionary<Type, IBuiltInType>(BuiltInScalars.ToDictionary(x => x.Key, x => (IBuiltInType)x.Value))

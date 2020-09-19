@@ -172,6 +172,13 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
+        public void TypeModel_Struct_OptionalField_NotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(GenericStruct<int?>)));
+        }
+
+        [TestMethod]
         public void TypeModel_TypeCantBeTableAndStruct()
         {
             Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
@@ -193,10 +200,31 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
+        public void TypeModel_Vector_OptionalScalarNotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(GenericTable<IList<int?>>)));
+        }
+
+        [TestMethod]
+        public void TypeModel_Vector_OptionalEnumNotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(GenericTable<IList<TaggedEnum?>>)));
+        }
+
+        [TestMethod]
         public void TypeModel_Enum_UntaggedEnumNotAllowed()
         {
             Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(UntaggedEnum)));
+        }
+
+        [TestMethod]
+        public void TypeModel_Enum_NullableUntaggedEnumNotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(UntaggedEnum?)));
         }
 
         [TestMethod]
@@ -206,6 +234,18 @@ namespace FlatSharpTests
 
             Assert.IsTrue(model is EnumTypeModel enumModel);
             Assert.AreEqual(typeof(TaggedEnum), model.ClrType);
+            Assert.IsFalse(model.IsBuiltInType);
+            Assert.IsTrue(model.IsFixedSize);
+            Assert.AreEqual(FlatBufferSchemaType.Scalar, model.SchemaType);
+        }
+
+        [TestMethod]
+        public void TypeModel_Enum_NullableTaggedEnum()
+        {
+            var model = RuntimeTypeModel.CreateFrom(typeof(TaggedEnum?));
+
+            Assert.IsTrue(model is NullableEnumTypeModel enumModel);
+            Assert.AreEqual(typeof(TaggedEnum?), model.ClrType);
             Assert.IsFalse(model.IsBuiltInType);
             Assert.IsTrue(model.IsFixedSize);
             Assert.AreEqual(FlatBufferSchemaType.Scalar, model.SchemaType);
@@ -290,6 +330,13 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
+        public void TypeModel_SortedVector_OfNullableEnum_NotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                   RuntimeTypeModel.CreateFrom(typeof(SortedVector<TaggedEnum?[]>)));
+        }
+
+        [TestMethod]
         public void TypeModel_SortedVector_OfString_NotAllowed()
         {
             Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
@@ -301,6 +348,13 @@ namespace FlatSharpTests
         {
             Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                    RuntimeTypeModel.CreateFrom(typeof(SortedVector<int[]>)));
+        }
+
+        [TestMethod]
+        public void TypeModel_SortedVector_OfNullableScalar_NotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                   RuntimeTypeModel.CreateFrom(typeof(SortedVector<int?[]>)));
         }
 
         [TestMethod]
@@ -318,6 +372,23 @@ namespace FlatSharpTests
             RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<long>[]>));
             RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<float>[]>));
             RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<double>[]>));
+        }
+
+        [TestMethod]
+        public void TypeModel_SortedVector_OfTableWithOptionalKey_NotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<IReadOnlyList<SortedVectorKeyTable<bool?>>>)));
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<byte?>[]>)));
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<sbyte?>[]>)));
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<ushort?>[]>)));
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<short?>[]>)));
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<uint?>[]>)));
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<int?>[]>)));
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<ulong?>[]>)));
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<long?>[]>)));
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<float?>[]>)));
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<double?>[]>)));
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<TaggedEnum?>[]>)));
         }
 
         [TestMethod]
@@ -346,6 +417,13 @@ namespace FlatSharpTests
         {
             Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(SortedVector<IList<SortedVectorKeyTable<TaggedEnum>>>)));
+        }
+
+        [TestMethod]
+        public void TypeModel_SortedVector_OfTableWithNullableEnumKey_NotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(SortedVector<IList<SortedVectorKeyTable<TaggedEnum?>>>)));
         }
 
         [TestMethod]
@@ -421,10 +499,24 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
+        public void TypeModel_Union_OptionalScalarsNotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, int?>>)));
+        }
+
+        [TestMethod]
         public void TypeModel_Union_EnumsNotAllowed()
         {
             Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, TaggedEnum>>)));
+        }
+
+        [TestMethod]
+        public void TypeModel_Union_OptionalEnumsNotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, TaggedEnum?>>)));
         }
 
         [TestMethod]

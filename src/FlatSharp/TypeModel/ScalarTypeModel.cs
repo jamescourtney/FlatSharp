@@ -23,7 +23,7 @@
     /// </summary>
     public class ScalarTypeModel : RuntimeTypeModel
     {
-        private bool isNullable;
+        protected readonly bool isNullable;
 
         internal ScalarTypeModel(
             Type type,
