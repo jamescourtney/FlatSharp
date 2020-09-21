@@ -29,11 +29,6 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>SpanComparers.tt</DependentUpon>
     </Compile>
-    <Compile Update="UnionTypes - Copy.cs">
-      <DependentUpon>UnionTypes.tt</DependentUpon>
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-    </Compile>
     <Compile Update="UnionTypes.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
