@@ -18,7 +18,9 @@ union_decl : 'union' IDENT metadata '{' commasep_unionval_decl '}' ;
 
 root_decl : 'root_type' IDENT ';' ;
 
-field_decl : IDENT ':' type ( '=' scalar )? metadata ';' ;
+field_decl : IDENT ':' type ( '=' defaultValue_decl )? metadata ';' ;
+
+defaultValue_decl : scalar | 'null';
 
 rpc_decl : 'rpc_service' IDENT '{' rpc_method+ '}' ;
 

@@ -78,6 +78,10 @@ namespace FlatSharp
             {
                 this.ImplementEnumGetMaxSizeMethod(enumModel);
             }
+            else if (typeModel is NullableEnumTypeModel nullableEnumModel)
+            {
+                this.ImplementEnumGetMaxSizeMethod(nullableEnumModel);
+            }
             else
             {
                 throw new InvalidOperationException();
@@ -140,7 +144,7 @@ $@"
             this.GenerateGetMaxSizeMethod(structModel.ClrType, body);
         }
 
-        private void ImplementEnumGetMaxSizeMethod(EnumTypeModel enumModel)
+        private void ImplementEnumGetMaxSizeMethod(ScalarTypeModel enumModel)
         {
             string body = $"return {enumModel.MaxInlineSize};";
             this.GenerateGetMaxSizeMethod(enumModel.ClrType, body);

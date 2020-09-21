@@ -302,7 +302,7 @@ $@"
             {
                 this.DefineUnionMethods(unionModel);
             }
-            else if (model is EnumTypeModel)
+            else if (model is EnumTypeModel || model is NullableEnumTypeModel)
             {
                 // Nothing to define for enums as they don't
                 // contain references to other types.

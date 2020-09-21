@@ -86,6 +86,10 @@ namespace FlatSharp
             {
                 this.ImplementEnumInlineWriteMethod(enumModel);
             }
+            else if (typeModel is NullableEnumTypeModel nullableEnumModel)
+            {
+                this.ImplementNullableEnumInlineWriteMethod(nullableEnumModel);
+            }
             else if (typeModel is UnionTypeModel unionModel)
             {
                 // Skip
@@ -266,8 +270,15 @@ $@"
                 var builtInType = BuiltInType.BuiltInTypes[keyMember.ItemTypeModel.ClrType];
                 string inlineSize = builtInType.TypeModel.SchemaType == FlatBufferSchemaType.Scalar ? builtInType.TypeModel.InlineSize.ToString() : "null";
 
+                string defaultValue = "default";
+                if (keyMember.HasDefaultValue)
+                {
+                    var scalarType = (IBuiltInScalarType)builtInType;
+                    defaultValue = scalarType.FormatObject(keyMember.DefaultValue);
+                }
+                
                 sortInvocation = $"{nameof(SortedVectorHelpers)}.{nameof(SortedVectorHelpers.SortVector)}(" +
-                                    $"span, {offsetVariableName}, {keyMember.Index}, {inlineSize}, {CSharpHelpers.GetCompilableTypeName(builtInType.SpanComparerType)}.Instance)";
+                                    $"span, {offsetVariableName}, {keyMember.Index}, {inlineSize}, new {CSharpHelpers.GetCompilableTypeName(builtInType.SpanComparerType)}({defaultValue}))";
 
                 sortInvocation = $"context.{nameof(SerializationContext.AddPostSerializeAction)}((span, ctx) => {sortInvocation});";
             }
@@ -352,6 +363,12 @@ $@"
             var underlyingType = Enum.GetUnderlyingType(type);
             string body = this.GetSerializeInvocation(underlyingType, $"({CSharpHelpers.GetCompilableTypeName(underlyingType)})item", "originalOffset");
             this.GenerateSerializeMethod(type, body);
+        }
+
+        private void ImplementNullableEnumInlineWriteMethod(NullableEnumTypeModel enumModel)
+        {
+            string body = this.GetSerializeInvocation(enumModel.UnderlyingType, $"({CSharpHelpers.GetCompilableTypeName(enumModel.UnderlyingType)})item.Value", "originalOffset");
+            this.GenerateSerializeMethod(enumModel.ClrType, body);
         }
 
         private string GetSerializeInvocation(

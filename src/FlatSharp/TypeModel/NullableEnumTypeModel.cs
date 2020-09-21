@@ -21,23 +21,29 @@
     using System.Reflection;
 
     /// <summary>
-    /// Defines an Enum FlatSharp type model, which derives from the scalar type model.
+    /// Defines an optional (nullable) Enum FlatSharp type model, which derives from the scalar type model.
     /// </summary>
-    public class EnumTypeModel : ScalarTypeModel
+    public class NullableEnumTypeModel : ScalarTypeModel
     {
-        internal EnumTypeModel(Type type, int size) : base(type, size)
+        internal NullableEnumTypeModel(Type type, int size) : base(type, size)
         {
         }
+
+        public Type EnumType { get; private set; }
+
+        public Type UnderlyingType { get; private set; }
 
         protected override void Initialize()
         {
             base.Initialize();
 
-            Type enumType = this.ClrType;
-            var attribute = enumType.GetCustomAttribute<FlatBufferEnumAttribute>();
-            if (attribute.DeclaredUnderlyingType != Enum.GetUnderlyingType(enumType))
+            this.EnumType = Nullable.GetUnderlyingType(this.ClrType);
+            var attribute = this.EnumType.GetCustomAttribute<FlatBufferEnumAttribute>();
+            this.UnderlyingType = Enum.GetUnderlyingType(this.EnumType);
+
+            if (attribute.DeclaredUnderlyingType != this.UnderlyingType)
             {
-                throw new InvalidFlatBufferDefinitionException($"Enum '{enumType.Name}' declared underlying type '{attribute.DeclaredUnderlyingType}', but was actually '{Enum.GetUnderlyingType(enumType)}'");
+                throw new InvalidFlatBufferDefinitionException($"Enum '{this.EnumType.Name}' declared underlying type '{attribute.DeclaredUnderlyingType}', but was actually '{this.UnderlyingType}'");
             }
         }
 

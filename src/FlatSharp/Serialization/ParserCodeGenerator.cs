@@ -84,6 +84,10 @@ namespace FlatSharp
             {
                 this.ImplementEnumReadMethod(enumModel);
             }
+            else if (typeModel is NullableEnumTypeModel nullableEnumModel)
+            {
+                this.ImplementNullableEnumReadMethod(nullableEnumModel);
+            }
             else if (typeModel is UnionTypeModel)
             {
                 // Explicitly left empty.
@@ -367,6 +371,12 @@ $@"
 
             string body = $"return ({CSharpHelpers.GetCompilableTypeName(enumType)}){this.GetReadInvocation(underlyingType, "memory", "offset")};";
             this.GenerateMethodDefinition(enumType, body);
+        }
+
+        private void ImplementNullableEnumReadMethod(NullableEnumTypeModel typeModel)
+        {
+            string body = $"return ({CSharpHelpers.GetCompilableTypeName(typeModel.EnumType)}){this.GetReadInvocation(typeModel.UnderlyingType, "memory", "offset")};";
+            this.GenerateMethodDefinition(typeModel.ClrType, body);
         }
 
         private string CreateFlatBufferVector(VectorTypeModel typeModel)

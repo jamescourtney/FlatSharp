@@ -55,6 +55,17 @@ namespace FlatSharpTests
             Assert.AreEqual(long.MinValue, parsed.Long);
             Assert.AreEqual(3.14159d, parsed.Double);
             Assert.AreEqual(SimpleEnum.B, parsed.Enum);
+
+            Assert.AreEqual(null, parsed.OptBool);
+            Assert.AreEqual(null, parsed.OptShort);
+            Assert.AreEqual(null, parsed.OptUShort);
+            Assert.AreEqual(null, parsed.OptInt);
+            Assert.AreEqual(null, parsed.OptUInt);
+            Assert.AreEqual(null, parsed.OptLong);
+            Assert.AreEqual(null, parsed.OptULong);
+            Assert.AreEqual(null, parsed.OptDouble);
+            Assert.AreEqual(null, parsed.OptFloat);
+            Assert.AreEqual(null, parsed.OptEnum);
         }
 
         [TestMethod]
@@ -76,7 +87,7 @@ namespace FlatSharpTests
                 Enum = SimpleEnum.B,
             };
 
-            Span<byte> buffer = new byte[100];
+            Span<byte> buffer = new byte[1024];
             int count = FlatBufferSerializer.Default.Serialize(all, buffer);
 
             buffer = buffer.Slice(0, count);
@@ -130,6 +141,42 @@ namespace FlatSharpTests
 
             [FlatBufferItem(11, DefaultValue = SimpleEnum.B)]
             public virtual SimpleEnum Enum { get; set; }
+
+            [FlatBufferItem(12)]
+            public virtual bool? OptBool { get; set; }
+
+            [FlatBufferItem(13)]
+            public virtual byte? OptByte { get; set; }
+
+            [FlatBufferItem(14)]
+            public virtual sbyte? OptSByte { get; set; }
+
+            [FlatBufferItem(15)]
+            public virtual ushort? OptUShort { get; set; }
+
+            [FlatBufferItem(16)]
+            public virtual short? OptShort { get; set; }
+
+            [FlatBufferItem(17)]
+            public virtual uint? OptUInt { get; set; }
+
+            [FlatBufferItem(18)]
+            public virtual int? OptInt { get; set; }
+
+            [FlatBufferItem(19)]
+            public virtual float? OptFloat { get; set; }
+
+            [FlatBufferItem(20)]
+            public virtual ulong? OptULong { get; set; }
+
+            [FlatBufferItem(21)]
+            public virtual long? OptLong { get; set; }
+
+            [FlatBufferItem(22)]
+            public virtual double? OptDouble { get; set; }
+
+            [FlatBufferItem(23)]
+            public virtual SimpleEnum? OptEnum { get; set; }
         }
     }
 }

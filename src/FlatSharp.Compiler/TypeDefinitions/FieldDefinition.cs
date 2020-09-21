@@ -34,6 +34,8 @@ namespace FlatSharp.Compiler
 
         public string DefaultValue { get; set; }
 
+        public bool IsOptionalScalar { get; set; }
+
         public VectorType VectorType { get; set; }
 
         public bool SharedString { get; set; }
@@ -65,7 +67,12 @@ namespace FlatSharp.Compiler
                 }
             }
 
-            if (this.SharedString)
+            if (this.IsOptionalScalar)
+            {
+                // nullable.
+                clrType = $"System.Nullable<{clrType}>";
+            }
+            else if (this.SharedString)
             {
                 clrType = $"global::{typeof(SharedString).FullName}";
             }
