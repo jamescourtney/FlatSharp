@@ -30,11 +30,6 @@ namespace FlatSharp.TypeModel
         Type ClrType { get; }
 
         /// <summary>
-        /// The schema type of this item.
-        /// </summary>
-        FlatBufferSchemaType SchemaType { get; }
-
-        /// <summary>
         /// The alignment of this runtime type.
         /// </summary>
         int Alignment { get; }

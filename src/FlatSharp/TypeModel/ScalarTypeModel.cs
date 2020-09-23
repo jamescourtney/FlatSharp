@@ -22,7 +22,7 @@
     /// <summary>
     /// Defines a scalar FlatSharp type model.
     /// </summary>
-    public class ScalarTypeModel : RuntimeTypeModel, ITypeModel
+    public class ScalarTypeModel : RuntimeTypeModel
     {
         protected readonly bool isNullable;
 
@@ -34,11 +34,6 @@
             this.InlineSize = size;
             this.isNullable = Nullable.GetUnderlyingType(type) != null;
         }
-
-        /// <summary>
-        /// The schema type.
-        /// </summary>
-        public override FlatBufferSchemaType SchemaType => FlatBufferSchemaType.Scalar;
 
         /// <summary>
         /// The alignment of this scalar. Will be equal to the size.

@@ -36,11 +36,6 @@ namespace FlatSharp.TypeModel
         }
 
         /// <summary>
-        /// Gets the schema type of this element.
-        /// </summary>
-        public override FlatBufferSchemaType SchemaType => FlatBufferSchemaType.Vector;
-
-        /// <summary>
         /// Gets the required alignment of this element.
         /// </summary>
         public override int Alignment => sizeof(uint);
@@ -350,7 +345,7 @@ namespace FlatSharp.TypeModel
             this.memberTypeModel = (ITypeModel)RuntimeTypeModel.CreateFrom(innerType);
             if (!this.memberTypeModel.IsValidVectorMember)
             {
-                throw new InvalidFlatBufferDefinitionException($"Vectors may not contain {this.memberTypeModel.SchemaType}.");
+                throw new InvalidFlatBufferDefinitionException($"Vectors may not contain {this.memberTypeModel.GetType().Name}.");
             }
 
             if (this.isMemory)

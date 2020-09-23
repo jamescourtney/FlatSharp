@@ -18,14 +18,12 @@ namespace FlatSharp.TypeModel
 {
     using System;
 
-    /// <summary>
-    /// Provides a type model to FlatSharp.
-    /// </summary>
-    public interface ITypeModelProvider
+    internal class InternalTypeModelProvider : ITypeModelProvider
     {
-        /// <summary>
-        /// Creates a type model for the given type. Will only be invoked if <see cref="CanProvide(Type)"/> returns true.0
-        /// </summary>
-        bool TryCreateTypeModel(Type type, out ITypeModel typeModel);
+        public bool TryCreateTypeModel(Type type, out ITypeModel typeModel)
+        {
+            typeModel = default;
+            return false;
+        }
     }
 }

@@ -38,11 +38,6 @@
         }
 
         /// <summary>
-        /// Gets the schema type of this element.
-        /// </summary>
-        public override FlatBufferSchemaType SchemaType => FlatBufferSchemaType.Struct;
-
-        /// <summary>
         /// Gets the alignment of this element.
         /// </summary>
         public override int Alignment => this.maxAlignment;

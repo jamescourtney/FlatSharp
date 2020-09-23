@@ -44,11 +44,6 @@
         }
 
         /// <summary>
-        /// Schema type.
-        /// </summary>
-        public override FlatBufferSchemaType SchemaType => FlatBufferSchemaType.Table;
-
-        /// <summary>
         /// Tables are always addressed by reference, so the alignment is uoffset_t.
         /// </summary>
         public override int Alignment => sizeof(uint);
@@ -294,7 +289,7 @@ $@"
             foreach (var kvp in this.IndexToMemberMap)
             {
                 string prepare, write;
-                if (kvp.Value.ItemTypeModel.SchemaType == FlatBufferSchemaType.Union)
+                if (kvp.Value.ItemTypeModel is UnionTypeModel)
                 {
                     (prepare, write) = GetUnionSerializeBlocks(kvp.Key, kvp.Value, context);
                 }
@@ -371,7 +366,7 @@ $@"
                 TableMemberModel keyMember = tableModel.IndexToMemberMap.Single(x => x.Value.PropertyInfo == tableModel.KeyProperty).Value;
 
                 var builtInType = BuiltInType.BuiltInTypes[keyMember.ItemTypeModel.ClrType];
-                string inlineSize = builtInType.TypeModel.SchemaType == FlatBufferSchemaType.Scalar ? builtInType.TypeModel.InlineSize.ToString() : "null";
+                string inlineSize = builtInType.TypeModel is ScalarTypeModel ? builtInType.TypeModel.InlineSize.ToString() : "null";
 
                 string defaultValue = "default";
                 if (keyMember.HasDefaultValue)
@@ -437,7 +432,7 @@ $@"
                 var unionIndex = i + 1;
 
                 string structAdjustment = string.Empty;
-                if (elementModel.SchemaType == FlatBufferSchemaType.Struct)
+                if (elementModel is StructTypeModel)
                 {
                     // Structs are generally written in-line, with the exception of unions.
                     // So, we need to do the normal allocate space dance here, since we're writing

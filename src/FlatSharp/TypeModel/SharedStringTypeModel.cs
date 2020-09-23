@@ -29,11 +29,6 @@ namespace FlatSharp.TypeModel
         }
 
         /// <summary>
-        /// Gets the schema type.
-        /// </summary>
-        public override FlatBufferSchemaType SchemaType => FlatBufferSchemaType.String;
-
-        /// <summary>
         /// The alignment of the string values. Note that this is aligned by the uoffset_t.
         /// </summary>
         public override int Alignment => sizeof(uint);

@@ -236,7 +236,6 @@ namespace FlatSharpTests
             Assert.AreEqual(typeof(TaggedEnum), model.ClrType);
             Assert.IsFalse(model.IsBuiltInType);
             Assert.IsTrue(model.IsFixedSize);
-            Assert.AreEqual(FlatBufferSchemaType.Scalar, model.SchemaType);
         }
 
         [TestMethod]
@@ -248,7 +247,6 @@ namespace FlatSharpTests
             Assert.AreEqual(typeof(TaggedEnum?), model.ClrType);
             Assert.IsFalse(model.IsBuiltInType);
             Assert.IsTrue(model.IsFixedSize);
-            Assert.AreEqual(FlatBufferSchemaType.Scalar, model.SchemaType);
         }
 
         [TestMethod]
@@ -450,7 +448,6 @@ namespace FlatSharpTests
         {
             var model = (VectorTypeModel)RuntimeTypeModel.CreateFrom(vectorDefinition.MakeGenericType(innerType));
 
-            Assert.AreEqual(FlatBufferSchemaType.Vector, model.SchemaType);
             Assert.AreEqual(model.ClrType.GetGenericTypeDefinition(), vectorDefinition);
             Assert.AreEqual(model.InlineSize, 4);
             Assert.AreEqual(model.Alignment, 4);
@@ -553,11 +550,10 @@ namespace FlatSharpTests
 
             var model = (UnionTypeModel)tableModel.IndexToMemberMap[0].ItemTypeModel;
 
-            Assert.AreEqual(FlatBufferSchemaType.Union, model.SchemaType);
             Assert.AreEqual(3, model.UnionElementTypeModel.Length);
-            Assert.AreEqual(FlatBufferSchemaType.String, model.UnionElementTypeModel[0].SchemaType);
-            Assert.AreEqual(FlatBufferSchemaType.Table, model.UnionElementTypeModel[1].SchemaType);
-            Assert.AreEqual(FlatBufferSchemaType.Struct, model.UnionElementTypeModel[2].SchemaType);
+            Assert.IsInstanceOfType(model.UnionElementTypeModel[0], typeof(StringTypeModel));
+            Assert.IsInstanceOfType(model.UnionElementTypeModel[1], typeof(TableTypeModel));
+            Assert.IsInstanceOfType(model.UnionElementTypeModel[2], typeof(StructTypeModel));
         }
 
         [TestMethod]
@@ -569,24 +565,24 @@ namespace FlatSharpTests
             RuntimeTypeModel typeModel = RuntimeTypeModel.CreateFrom(type);
 
             Assert.AreEqual(typeModel.ClrType, type);
-            Assert.AreEqual(FlatBufferSchemaType.Struct, typeModel.SchemaType);
+            Assert.IsInstanceOfType(typeModel, typeof(StructTypeModel));
 
             var structModel = (StructTypeModel)typeModel;
             Assert.AreEqual(3, structModel.Members.Count);
 
-            Assert.AreEqual(FlatBufferSchemaType.Struct, structModel.Members[0].ItemTypeModel.SchemaType);
+            Assert.IsInstanceOfType(structModel.Members[0].ItemTypeModel, typeof(StructTypeModel));
             Assert.AreEqual(0, structModel.Members[0].Index);
             Assert.AreEqual(0, structModel.Members[0].Offset);
             Assert.AreEqual(8, structModel.Members[0].ItemTypeModel.Alignment);
             Assert.AreEqual(17, structModel.Members[0].ItemTypeModel.InlineSize);
 
-            Assert.AreEqual(FlatBufferSchemaType.Scalar, structModel.Members[1].ItemTypeModel.SchemaType);
+            Assert.IsInstanceOfType(structModel.Members[1].ItemTypeModel, typeof(ScalarTypeModel));
             Assert.AreEqual(1, structModel.Members[1].Index);
             Assert.AreEqual(24, structModel.Members[1].Offset);
             Assert.AreEqual(8, structModel.Members[1].ItemTypeModel.Alignment);
             Assert.AreEqual(8, structModel.Members[1].ItemTypeModel.InlineSize);
 
-            Assert.AreEqual(FlatBufferSchemaType.Scalar, structModel.Members[2].ItemTypeModel.SchemaType);
+            Assert.IsInstanceOfType(structModel.Members[2].ItemTypeModel, typeof(ScalarTypeModel));
             Assert.AreEqual(2, structModel.Members[2].Index);
             Assert.AreEqual(32, structModel.Members[2].Offset);
             Assert.AreEqual(1, structModel.Members[2].ItemTypeModel.Alignment);

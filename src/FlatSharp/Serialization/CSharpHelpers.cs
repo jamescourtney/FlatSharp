@@ -64,16 +64,6 @@ namespace FlatSharp
             return name;
         }
 
-        internal static string GetNonNullCheckInvocation(RuntimeTypeModel typeModel, string variableName)
-        {
-            if (typeModel.SchemaType == FlatBufferSchemaType.Scalar)
-            {
-                return string.Empty;
-            }
-
-            return $"{GetFullMethodName(ReflectedMethods.SerializationHelpers_EnsureNonNull(typeModel.ClrType))}({variableName})";
-        }
-
         internal static string GetDefaultValueToken(TableMemberModel memberModel)
         {
             var itemTypeModel = memberModel.ItemTypeModel;

@@ -72,6 +72,6 @@
         /// <summary>
         /// Indicates how "wide" this element is in the table's vtable. Unions consume 2 slots in the vtable.
         /// </summary>
-        public int VTableSlotCount => this.ItemTypeModel.SchemaType == FlatBufferSchemaType.Union ? 2 : 1;
+        public int VTableSlotCount => this.ItemTypeModel is UnionTypeModel ? 2 : 1;
     }
 }

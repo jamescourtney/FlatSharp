@@ -39,11 +39,6 @@ namespace FlatSharp.TypeModel
         }
 
         /// <summary>
-        /// Gets the schema type of this element.
-        /// </summary>
-        public override FlatBufferSchemaType SchemaType => FlatBufferSchemaType.Union;
-
-        /// <summary>
         /// Gets the required alignment of this element.
         /// </summary>
         public override int Alignment => sizeof(uint);
@@ -150,14 +145,14 @@ $@"
             {
                 if (!item.IsValidUnionMember)
                 {
-                    throw new InvalidFlatBufferDefinitionException($"Unions may not store '{item.SchemaType}'.");
+                    throw new InvalidFlatBufferDefinitionException($"Unions may not store '{item.GetType().Name}'.");
                 }
                 else if (!uniqueTypes.Add(item.ClrType))
                 {
                     throw new InvalidFlatBufferDefinitionException($"Unions must consist of unique types. The type '{item.ClrType.Name}' was repeated.");
                 }
 
-                if (item.SchemaType == FlatBufferSchemaType.String)
+                if (item.ClrType == typeof(string) || item.ClrType == typeof(SharedString))
                 {
                     if (containsString)
                     {
