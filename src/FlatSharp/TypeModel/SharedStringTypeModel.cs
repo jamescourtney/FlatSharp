@@ -13,13 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
- namespace FlatSharp.TypeModel
+
+using System;
+using System.Collections.Generic;
+
+namespace FlatSharp.TypeModel
 {
     /// <summary>
     /// Defines a FlatBuffer string type.
     /// </summary>
-    public class SharedStringTypeModel : RuntimeTypeModel
+    public class SharedStringTypeModel : RuntimeTypeModel, ITypeModel
     {
         internal SharedStringTypeModel() : base(typeof(SharedString))
         {
@@ -74,5 +77,44 @@
         /// Strings can be sorted vector keys.
         /// </summary>
         public override bool IsValidSortedVectorKey => true;
+
+        public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
+        {
+            return new CodeGeneratedMethod
+            {
+                MethodBody = $"return {nameof(SerializationHelpers)}.{nameof(SerializationHelpers.GetMaxSize)}({context.ValueVariableName});",
+            };
+        }
+
+        public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
+        {
+            return new CodeGeneratedMethod
+            {
+                MethodBody = $"return {context.InputBufferVariableName}.{nameof(InputBuffer.ReadSharedString)}({context.OffsetVariableName});",
+            };
+        }
+
+        public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
+        {
+            return new CodeGeneratedMethod
+            {
+                MethodBody = $"{context.SpanWriterVariableName}.{nameof(SpanWriter.WriteSharedString)}({context.SpanVariableName}, {context.ValueVariableName}, {context.OffsetVariableName}, {context.SerializationContextVariableName});",
+            };
+        }
+
+        public override string GetNonNullConditionExpression(string itemVariableName)
+        {
+            return $"!object.ReferenceEquals({itemVariableName}, null)";
+        }
+
+        public override string GetThrowIfNullInvocation(string itemVariableName)
+        {
+            return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
+        }
+
+        public override void TraverseObjectGraph(HashSet<Type> seenTypes)
+        {
+            seenTypes.Add(this.ClrType);
+        }
     }
 }

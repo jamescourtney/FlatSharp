@@ -47,9 +47,6 @@ namespace FlatSharp
         private readonly Dictionary<Type, string> writeMethods = new Dictionary<Type, string>();
         private readonly Dictionary<Type, string> readMethods = new Dictionary<Type, string>();
 
-        private readonly SerializerCodeGenerator serializerCodeGenerator;
-        private readonly ParserCodeGenerator parserCodeGenerator;
-        private readonly GetMaxSizeCodeGenerator maxSizeCodeGenerator;
         private readonly FlatBufferSerializerOptions options;
         private readonly List<SyntaxNode> methodDeclarations = new List<SyntaxNode>();
 
@@ -80,9 +77,6 @@ namespace FlatSharp
         public RoslynSerializerGenerator(FlatBufferSerializerOptions options)
         {
             this.options = options;
-            this.serializerCodeGenerator = new SerializerCodeGenerator(options, this.writeMethods);
-            this.parserCodeGenerator = new ParserCodeGenerator(options, this.readMethods);
-            this.maxSizeCodeGenerator = new GetMaxSizeCodeGenerator(options, this.maxSizeMethods);
         }
 
         public ISerializer<TRoot> Compile<TRoot>() where TRoot : class
@@ -197,6 +191,7 @@ $@"
             Func<string> formattedTextFactory = GetFormattedTextFactory(tree);
 
 #if DEBUG
+            string actualCSharp = tree.ToString();
             var debugCSharp = formattedTextFactory();
 #endif
 
@@ -272,82 +267,15 @@ $@"
         /// </summary>
         private void DefineMethods(RuntimeTypeModel model)
         {
-            if (model.IsBuiltInType)
-            {
-                // Built in; we can call out to those when we need to.
-                return;
-            }
+            HashSet<Type> types = new HashSet<Type>();
+            model.TraverseObjectGraph(types);
 
-            if (this.writeMethods.ContainsKey(model.ClrType))
+            foreach (var type in types)
             {
-                // Already done.
-                return;
-            }
-
-            this.DefineNameBase(model);
-
-            if (model is TableTypeModel tableModel)
-            {
-                this.DefineTableMethods(tableModel);
-            }
-            else if (model is StructTypeModel structModel)
-            {
-                this.DefineStructMethods(structModel);
-            }
-            else if (model is VectorTypeModel vectorModel)
-            {
-                this.DefineVectorMethods(vectorModel);
-            }
-            else if (model is UnionTypeModel unionModel)
-            {
-                this.DefineUnionMethods(unionModel);
-            }
-            else if (model is EnumTypeModel || model is NullableEnumTypeModel)
-            {
-                // Nothing to define for enums as they don't
-                // contain references to other types.
-            }
-            else
-            {
-                throw new InvalidOperationException("Unexepcted type model: " + model?.GetType());
-            }
-        }
-
-        private void DefineNameBase(RuntimeTypeModel model)
-        {
-            string nameBase = Guid.NewGuid().ToString("n");
-
-            this.writeMethods[model.ClrType] = $"WriteInlineValueOf_{nameBase}";
-            this.maxSizeMethods[model.ClrType] = $"GetMaxSizeOf_{nameBase}";
-            this.readMethods[model.ClrType] = $"Read_{nameBase}";
-        }
-
-        private void DefineTableMethods(TableTypeModel tableModel)
-        {
-            foreach (var member in tableModel.IndexToMemberMap.Values)
-            {
-                this.DefineMethods(member.ItemTypeModel);
-            }
-        }
-
-        private void DefineStructMethods(StructTypeModel structModel)
-        {
-            foreach (var member in structModel.Members)
-            {
-                this.DefineMethods(member.ItemTypeModel);
-            }
-        }
-
-        private void DefineVectorMethods(VectorTypeModel vectorModel)
-        {
-            this.DefineMethods(vectorModel.ItemTypeModel);
-        }
-
-        private void DefineUnionMethods(UnionTypeModel unionModel)
-        {
-            foreach (var member in unionModel.UnionElementTypeModel)
-            {
-                this.DefineMethods(member);
+                string nameBase = Guid.NewGuid().ToString("n");
+                this.writeMethods[type] = $"WriteInlineValueOf_{nameBase}";
+                this.maxSizeMethods[type] = $"GetMaxSizeOf_{nameBase}";
+                this.readMethods[type] = $"Read_{nameBase}";
             }
         }
 
@@ -392,14 +320,23 @@ $@"
 
         private void ImplementMethods()
         {
-            this.serializerCodeGenerator.ImplementMethods();
-            this.methodDeclarations.AddRange(this.serializerCodeGenerator.MethodDeclarations);
+            List<CodeGeneratedMethod> methods = new List<CodeGeneratedMethod>();
 
-            this.parserCodeGenerator.ImplementMethods();
-            this.methodDeclarations.AddRange(this.parserCodeGenerator.MethodDeclarations);
+            foreach (var type in this.writeMethods.Keys)
+            {
+                ITypeModel typeModel = RuntimeTypeModel.CreateFrom(type);
+                var maxSizeContext = new GetMaxSizeCodeGenContext("value", this.maxSizeMethods, this.options);
+                var parseContext = new ParserCodeGenContext("buffer", "offset", this.readMethods, this.options);
+                var serializeContext = new SerializationCodeGenContext("context", "span", "spanWriter", "value", "offset", this.writeMethods, this.options);
 
-            this.maxSizeCodeGenerator.ImplementMethods();
-            this.methodDeclarations.AddRange(this.maxSizeCodeGenerator.MethodDeclarations);
+                var maxSizeMethod = typeModel.CreateGetMaxSizeMethodBody(maxSizeContext);
+                var parseMethod = typeModel.CreateParseMethodBody(parseContext);
+                var writeMethod = typeModel.CreateSerializeMethodBody(serializeContext);
+
+                this.GenerateGetMaxSizeMethod(type, maxSizeMethod, maxSizeContext);
+                this.GenerateParseMethod(type, parseMethod, parseContext);
+                this.GenerateSerializeMethod(type, writeMethod, serializeContext);
+            }
         }
 
         /// <summary>
@@ -439,6 +376,87 @@ $@"
                 });
 
             return rootNode;
+        }
+
+        /// <summary>
+        /// Gets a method to serialize the given type with the given body.
+        /// </summary>
+        private void GenerateGetMaxSizeMethod(Type type, CodeGeneratedMethod method, GetMaxSizeCodeGenContext context)
+        {
+            string inlineDeclaration = "[MethodImpl(MethodImplOptions.AggressiveInlining)]";
+            if (!method.IsMethodInline)
+            {
+                inlineDeclaration = string.Empty;
+            }
+
+            string declaration =
+$@"
+            {inlineDeclaration}
+            private static int {this.maxSizeMethods[type]}({CSharpHelpers.GetCompilableTypeName(type)} {context.ValueVariableName})
+            {{
+                {method.MethodBody}
+            }}";
+
+            var node = CSharpSyntaxTree.ParseText(declaration, ParseOptions);
+            this.methodDeclarations.Add(node.GetRoot());
+            
+            if (!string.IsNullOrEmpty(method.ClassDefinition))
+            {
+                node = CSharpSyntaxTree.ParseText(method.ClassDefinition, ParseOptions);
+                this.methodDeclarations.Add(node.GetRoot());
+            }
+        }
+
+        private void GenerateParseMethod(Type type, CodeGeneratedMethod method, ParserCodeGenContext context)
+        {
+            string inlineDeclaration = "[MethodImpl(MethodImplOptions.AggressiveInlining)]";
+            if (!method.IsMethodInline)
+            {
+                inlineDeclaration = string.Empty;
+            }
+
+            string declaration =
+$@"
+            {inlineDeclaration}
+            private static {CSharpHelpers.GetCompilableTypeName(type)} {this.readMethods[type]}({nameof(InputBuffer)} {context.InputBufferVariableName}, int {context.OffsetVariableName})
+            {{
+                {method.MethodBody}
+            }}";
+
+            var node = CSharpSyntaxTree.ParseText(declaration, ParseOptions);
+            this.methodDeclarations.Add(node.GetRoot());
+
+            if (!string.IsNullOrEmpty(method.ClassDefinition))
+            {
+                node = CSharpSyntaxTree.ParseText(method.ClassDefinition, ParseOptions);
+                this.methodDeclarations.Add(node.GetRoot());
+            }
+        }
+
+        private void GenerateSerializeMethod(Type type, CodeGeneratedMethod method, SerializationCodeGenContext context)
+        {
+            string inlineDeclaration = "[MethodImpl(MethodImplOptions.AggressiveInlining)]";
+            if (!method.IsMethodInline)
+            {
+                inlineDeclaration = string.Empty;
+            }
+
+            string declaration =
+$@"
+            {inlineDeclaration}
+            private static void {this.writeMethods[type]}({nameof(SpanWriter)} {context.SpanWriterVariableName}, Span<byte> {context.SpanVariableName}, {CSharpHelpers.GetCompilableTypeName(type)} {context.ValueVariableName}, int {context.OffsetVariableName}, {nameof(SerializationContext)} {context.SerializationContextVariableName})
+            {{
+                {method.MethodBody}
+            }}";
+
+            var node = CSharpSyntaxTree.ParseText(declaration, ParseOptions);
+            this.methodDeclarations.Add(node.GetRoot());
+
+            if (!string.IsNullOrEmpty(method.ClassDefinition))
+            {
+                node = CSharpSyntaxTree.ParseText(method.ClassDefinition, ParseOptions);
+                this.methodDeclarations.Add(node.GetRoot());
+            }
         }
     }
 }

@@ -18,13 +18,14 @@ namespace FlatSharp.TypeModel
 {
     using System;
     using System.Collections.Generic;
+    using System.Text;
 
     /// <summary>
     /// Defines a vector type model.
     /// </summary>
-    public class VectorTypeModel : RuntimeTypeModel
+    public class VectorTypeModel : RuntimeTypeModel, ITypeModel
     {
-        private RuntimeTypeModel memberTypeModel;
+        private ITypeModel memberTypeModel;
         private bool isList;
         private bool isMemory;
         private bool isArray;
@@ -82,7 +83,7 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// Gets the type model for this vector's elements.
         /// </summary>
-        public RuntimeTypeModel ItemTypeModel => this.memberTypeModel;
+        public ITypeModel ItemTypeModel => this.memberTypeModel;
 
         /// <summary>
         /// Indicates whether this vector's type is <see cref="System.Memory{T}"/> or <see cref="System.ReadOnlyMemory{T}"/>.
@@ -141,6 +142,176 @@ namespace FlatSharp.TypeModel
             }
         }
 
+        public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
+        {
+            // count of items + padding(uoffset_t);
+            int fixedSize = sizeof(uint) + SerializationHelpers.GetMaxPadding(sizeof(uint));
+            string lengthProperty = $"{context.ValueVariableName}.{this.LengthPropertyName}";
+
+            string body;
+            if (this.ItemTypeModel.IsFixedSize)
+            {
+                // Constant size items. We can reduce these reasonably well.
+                body = $"return {fixedSize} + {SerializationHelpers.GetMaxPadding(this.ItemTypeModel.Alignment)} + ({this.PaddedMemberInlineSize} * {lengthProperty});";
+            }
+            else
+            {
+                var itemContext = context.With(valueVariableName: "itemTemp");
+
+                body =
+    $@"
+                    int length = {lengthProperty};
+                    int runningSum = {fixedSize} + {SerializationHelpers.GetMaxPadding(this.ItemTypeModel.Alignment)} + ({this.PaddedMemberInlineSize} * length);
+                    for (int i = 0; i < length; ++i)
+                    {{
+                        var itemTemp = {context.ValueVariableName}[i];
+                        {this.ItemTypeModel.GetThrowIfNullInvocation("itemTemp")};
+                        runningSum += {itemContext.GetMaxSizeInvocation(this.ItemTypeModel.ClrType)};
+                    }}
+                    return runningSum;";
+            }
+
+            return new CodeGeneratedMethod
+            {
+                MethodBody = body,
+            };
+        }
+
+        public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
+        {
+            var type = this.ClrType;
+            var itemTypeModel = this.ItemTypeModel;
+
+            // Params: Buffer, UOffset after following, Padded size of each member, delegate invocation for parsing individual items.
+            string createFlatBufferVector = 
+            $@"new {nameof(FlatBufferVector<int>)}<{CSharpHelpers.GetCompilableTypeName(itemTypeModel.ClrType)}>(
+                    {context.InputBufferVariableName}, 
+                    {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBuffer.ReadUOffset)}({context.OffsetVariableName}), 
+                    {this.PaddedMemberInlineSize}, 
+                    (b, o) => {context.MethodNameMap[itemTypeModel.ClrType]}(b, o))";
+
+            string body;
+            if (this.isMemory)
+            {
+                string method = nameof(InputBuffer.ReadByteMemoryBlock);
+                if (this.ClrType == typeof(ReadOnlyMemory<byte>))
+                {
+                    method = nameof(InputBuffer.ReadByteReadOnlyMemoryBlock);
+                }
+
+                string memoryVectorRead = $"{context.InputBufferVariableName}.{method}({context.OffsetVariableName})";
+
+                // Memory is faster in situations where we can get away with it.
+                if (context.Options.GreedyDeserialize)
+                {
+                    body = $"return {memoryVectorRead}.ToArray().AsMemory();";
+                }
+                else
+                {
+                    body = $"return {memoryVectorRead};";
+                }
+            }
+            else if (this.isArray)
+            {
+                string method = nameof(InputBuffer.ReadByteMemoryBlock);
+                if (this.ClrType == typeof(ReadOnlyMemory<byte>))
+                {
+                    method = nameof(InputBuffer.ReadByteReadOnlyMemoryBlock);
+                }
+
+                string memoryVectorRead = $"{context.InputBufferVariableName}.{method}({context.OffsetVariableName})";
+
+                if (itemTypeModel.ClrType == typeof(byte))
+                {
+                    // can handle this as memory.
+                    body = $"return {memoryVectorRead}.ToArray();";
+                }
+                else
+                {
+                    body = $"return ({createFlatBufferVector}).ToArray();";
+                }
+            }
+            else
+            {
+                if (context.Options.PreallocateVectors)
+                {
+                    // We just call .ToList(). Noe that when full greedy mode is on, these items will be 
+                    // greedily initialized as we traverse the list. Otherwise, they'll be allocated lazily.
+                    body = $"({createFlatBufferVector}).{nameof(SerializationHelpers.FlatBufferVectorToList)}()";
+                    
+                    if (!context.Options.GenerateMutableObjects)
+                    {
+                        // Finally, if we're not in the business of making mutable objects, then convert the list to read only.
+                        body += ".AsReadOnly()";
+                    }
+
+                    body = $"return {body};";
+                }
+                else
+                {
+                    body = $"return {createFlatBufferVector};";
+                }
+            }
+
+            return new CodeGeneratedMethod { MethodBody = body };
+        }
+
+        public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
+        {
+            var type = this.ClrType;
+            var itemTypeModel = this.ItemTypeModel;
+
+            string body;
+            if (this.isMemory)
+            {
+                body = $"{context.SpanWriterVariableName}.{nameof(SpanWriter.WriteReadOnlyByteMemoryBlock)}({context.SpanVariableName}, {context.ValueVariableName}, {context.OffsetVariableName}, {itemTypeModel.Alignment}, {itemTypeModel.InlineSize}, {context.SerializationContextVariableName});";
+            }
+            else
+            {
+                string propertyName = this.LengthPropertyName;
+
+                body = $@"
+                int count = {context.ValueVariableName}.{propertyName};
+                int vectorOffset = {context.SerializationContextVariableName}.{nameof(SerializationContext.AllocateVector)}({itemTypeModel.Alignment}, count, {this.PaddedMemberInlineSize});
+                {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteUOffset)}({context.SpanVariableName}, {context.OffsetVariableName}, vectorOffset, {context.SerializationContextVariableName});
+                {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteInt)}({context.SpanVariableName}, count, vectorOffset, {context.SerializationContextVariableName});
+                vectorOffset += sizeof(int);
+                for (int i = 0; i < count; ++i)
+                {{
+                      var current = {context.ValueVariableName}[i];
+                      {itemTypeModel.GetThrowIfNullInvocation("current")};
+                      {context.MethodNameMap[itemTypeModel.ClrType]}({context.SpanWriterVariableName}, {context.SpanVariableName}, current, vectorOffset, {context.SerializationContextVariableName});
+                      vectorOffset += {this.PaddedMemberInlineSize};
+                }}";
+            }
+
+            return new CodeGeneratedMethod { MethodBody = body };
+        }
+
+        public override string GetNonNullConditionExpression(string itemVariableName)
+        {
+            if (this.isMemory)
+            {
+                return "true";
+            }
+            else
+            {
+                return $"{itemVariableName} != null";
+            }
+        }
+
+        public override string GetThrowIfNullInvocation(string itemVariableName)
+        {
+            if (this.isMemory)
+            {
+                return string.Empty;
+            }
+            else
+            {
+                return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
+            }
+        }
+
         protected override void Initialize()
         {
             bool isValidType = false;
@@ -176,7 +347,7 @@ namespace FlatSharp.TypeModel
                 throw new InvalidFlatBufferDefinitionException($"Cannot build a vector from type: {this.ClrType}. Only List, ReadOnlyList, Memory, ReadOnlyMemory, and Arrays are supported.");
             }
 
-            this.memberTypeModel = RuntimeTypeModel.CreateFrom(innerType);
+            this.memberTypeModel = (ITypeModel)RuntimeTypeModel.CreateFrom(innerType);
             if (!this.memberTypeModel.IsValidVectorMember)
             {
                 throw new InvalidFlatBufferDefinitionException($"Vectors may not contain {this.memberTypeModel.SchemaType}.");
@@ -192,6 +363,14 @@ namespace FlatSharp.TypeModel
                 {
                     throw new InvalidFlatBufferDefinitionException("Vectors may only be Memory<T> or ReadOnlyMemory<T> when the type is an unsigned byte.");
                 }
+            }
+        }
+        public override void TraverseObjectGraph(HashSet<Type> seenTypes)
+        {
+            seenTypes.Add(this.ClrType);
+            if (seenTypes.Add(this.memberTypeModel.ClrType))
+            {
+                this.memberTypeModel.TraverseObjectGraph(seenTypes);
             }
         }
     }

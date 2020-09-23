@@ -27,7 +27,7 @@ namespace FlatSharp.TypeModel
     /// Defines a type model for an object that can be parsed and serialized to/from a FlatBuffer. While generally most useful to the 
     /// FlatSharp codegen, this can be used to introspect on how FlatSharp interprets your schema.
     /// </summary>
-    public abstract class RuntimeTypeModel
+    public abstract class RuntimeTypeModel : ITypeModel
     {
         private static readonly ConcurrentDictionary<Type, RuntimeTypeModel> ModelMap = new ConcurrentDictionary<Type, RuntimeTypeModel>();
 
@@ -200,5 +200,17 @@ namespace FlatSharp.TypeModel
                 return newModel;
             }
         }
+
+        public abstract CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context);
+
+        public abstract CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context);
+
+        public abstract CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context);
+
+        public abstract string GetThrowIfNullInvocation(string itemVariableName);
+
+        public abstract string GetNonNullConditionExpression(string itemVariableName);
+
+        public abstract void TraverseObjectGraph(HashSet<Type> seenTypes);
     }
 }

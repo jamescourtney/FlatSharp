@@ -18,6 +18,7 @@ namespace FlatSharp
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Reflection;
     using FlatSharp.TypeModel;
     using Microsoft.CodeAnalysis.CSharp;
@@ -108,6 +109,45 @@ namespace FlatSharp
             }
 
             throw new InvalidOperationException("Unexpected method visibility: " + method.Name);
+        }
+
+        internal static string CreateDeserializeClass(
+            string className, 
+            Type baseType, 
+            IEnumerable<GeneratedProperty> propertyOverrides,
+            FlatBufferSerializerOptions options)
+        {
+            string inputBufferFieldDef = "private readonly InputBuffer buffer;";
+            string offsetFieldDef = "private readonly int offset;";
+
+            string ctorBody =
+$@"
+                this.buffer = buffer;
+                this.offset = offset;
+";
+
+            if (options.GreedyDeserialize)
+            {
+                inputBufferFieldDef = string.Empty;
+                offsetFieldDef = string.Empty;
+                ctorBody = string.Join("\r\n", propertyOverrides.Select(x => $"this.{x.BackingFieldName} = {x.ReadValueMethodName}(buffer, offset);"));
+            }
+
+            return
+$@"
+                private sealed class {className} : {CSharpHelpers.GetCompilableTypeName(baseType)}
+                {{
+                    {inputBufferFieldDef}
+                    {offsetFieldDef}
+        
+                    public {className}({nameof(InputBuffer)} buffer, int offset)
+                    {{
+                        {ctorBody}
+                    }}
+
+                    {string.Join("\r\n", propertyOverrides)}
+                }}
+";
         }
     }
 }

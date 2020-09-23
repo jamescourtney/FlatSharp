@@ -18,6 +18,7 @@
 {
     using FlatSharp.Attributes;
     using System;
+    using System.Collections.Generic;
     using System.Reflection;
 
     /// <summary>
@@ -56,5 +57,42 @@
         /// Enums can't be sorted vector keys.
         /// </summary>
         public override bool IsValidSortedVectorKey => false;
+
+        public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
+        {
+            Type underlyingType = Nullable.GetUnderlyingType(this.ClrType);
+            return new CodeGeneratedMethod
+            {
+                MethodBody = $"return {context.MethodNameMap[underlyingType]}({context.ValueVariableName}.Value);"
+            };
+        }
+
+        public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
+        {
+            Type underlyingType = Nullable.GetUnderlyingType(this.ClrType);
+
+            return new CodeGeneratedMethod
+            {
+                MethodBody = $"return {context.MethodNameMap[underlyingType]}({context.InputBufferVariableName}, {context.OffsetVariableName});"
+            };
+        }
+
+        public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
+        {
+            Type underlyingType = Nullable.GetUnderlyingType(this.ClrType);
+
+            return new CodeGeneratedMethod
+            {
+                MethodBody = $"{context.MethodNameMap[underlyingType]}({context.SpanWriterVariableName}, {context.SpanVariableName}, {context.ValueVariableName}.Value, {context.OffsetVariableName}, {context.SerializationContextVariableName});"
+            };
+        }
+
+        public override void TraverseObjectGraph(HashSet<Type> seenTypes)
+        {
+            base.TraverseObjectGraph(seenTypes);
+            seenTypes.Add(this.ClrType);
+            seenTypes.Add(Nullable.GetUnderlyingType(this.ClrType));
+            seenTypes.Add(Enum.GetUnderlyingType(Nullable.GetUnderlyingType(this.ClrType)));
+        }
     }
 }

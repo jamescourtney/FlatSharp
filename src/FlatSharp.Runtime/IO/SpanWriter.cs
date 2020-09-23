@@ -203,19 +203,6 @@ namespace FlatSharp
             memory.Span.CopyTo(span.Slice(vectorStartOffset + sizeof(uint)));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteReadOnlyMemoryBlock<T>(Span<byte> span, ReadOnlyMemory<T> memory, int offset, int alignment, int inlineSize, SerializationContext ctx) where T : struct
-        {
-            Debug.Assert(alignment == inlineSize);
-
-            int numberOfItems = memory.Length;
-            int vectorStartOffset = ctx.AllocateVector(alignment, numberOfItems, inlineSize);
-
-            this.WriteUOffset(span, offset, vectorStartOffset, ctx);
-            this.WriteInt(span, numberOfItems, vectorStartOffset, ctx);
-            MemoryMarshal.Cast<T, byte>(memory.Span).CopyTo(span.Slice(vectorStartOffset + sizeof(uint)));
-        }
-
         #region Nullable Scalar Writers
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

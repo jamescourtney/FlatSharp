@@ -93,6 +93,54 @@ namespace FlatSharp.TypeModel
         /// </summary>
         public RuntimeTypeModel[] UnionElementTypeModel => this.memberTypeModels;
 
+        public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
+        {
+            List<string> switchCases = new List<string>();
+            for (int i = 0; i < this.UnionElementTypeModel.Length; ++i)
+            {
+                var unionMember = this.UnionElementTypeModel[i];
+                int unionIndex = i + 1;
+                string @case =
+$@"
+                    case {unionIndex}:
+                        return {context.MethodNameMap[unionMember.ClrType]}({context.ValueVariableName}.Item{unionIndex});";
+
+                switchCases.Add(@case);
+            }
+            string discriminatorPropertyName = nameof(FlatBufferUnion<int, int>.Discriminator);
+
+            string body =
+$@"
+            switch ({context.ValueVariableName}.{discriminatorPropertyName})
+            {{
+                {string.Join("\r\n", switchCases)}
+                default:
+                    throw new System.InvalidOperationException(""Exception determining type of union. Discriminator = "" + {context.ValueVariableName}.{discriminatorPropertyName});
+            }}
+";
+            return new CodeGeneratedMethod { MethodBody = body };
+        }
+
+        public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
+        {
+            return new CodeGeneratedMethod { MethodBody = "throw new NotImplementedException();" };
+        }
+
+        public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
+        {
+            return new CodeGeneratedMethod { MethodBody = "throw new NotImplementedException();" };
+        }
+
+        public override string GetNonNullConditionExpression(string itemVariableName)
+        {
+            return $"{itemVariableName} != null";
+        }
+
+        public override string GetThrowIfNullInvocation(string itemVariableName)
+        {
+            return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
+        }
+
         protected override void Initialize()
         {
             bool containsString = false;
@@ -117,6 +165,18 @@ namespace FlatSharp.TypeModel
                     }
 
                     containsString = true;
+                }
+            }
+        }
+
+        public override void TraverseObjectGraph(HashSet<Type> seenTypes)
+        {
+            seenTypes.Add(this.ClrType);
+            foreach (var member in this.memberTypeModels)
+            {
+                if (seenTypes.Add(member.ClrType))
+                {
+                    member.TraverseObjectGraph(seenTypes);
                 }
             }
         }

@@ -18,6 +18,7 @@
 {
     using FlatSharp.Attributes;
     using System;
+    using System.Collections.Generic;
     using System.Reflection;
 
     /// <summary>
@@ -50,5 +51,45 @@
         /// Enums can't be sorted vector keys.
         /// </summary>
         public override bool IsValidSortedVectorKey => false;
+
+        public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
+        {
+            Type underlyingType = Enum.GetUnderlyingType(this.ClrType);
+            string underlyingTypeName = CSharpHelpers.GetCompilableTypeName(underlyingType);
+
+            return new CodeGeneratedMethod 
+            { 
+                MethodBody = $"return {context.MethodNameMap[underlyingType]}(({underlyingTypeName}){context.ValueVariableName});" 
+            };
+        }
+
+        public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
+        {
+            Type underlyingType = Enum.GetUnderlyingType(this.ClrType);
+            string typeName = CSharpHelpers.GetCompilableTypeName(this.ClrType);
+
+            return new CodeGeneratedMethod
+            {
+                MethodBody = $"return ({typeName}){context.MethodNameMap[underlyingType]}({context.InputBufferVariableName}, {context.OffsetVariableName});"
+            };
+        }
+
+        public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
+        {
+            Type underlyingType = Enum.GetUnderlyingType(this.ClrType);
+            string underlyingTypeName = CSharpHelpers.GetCompilableTypeName(underlyingType);
+
+            return new CodeGeneratedMethod
+            {
+                MethodBody = $"{context.MethodNameMap[underlyingType]}({context.SpanWriterVariableName}, {context.SpanVariableName}, ({underlyingTypeName}){context.ValueVariableName}, {context.OffsetVariableName}, {context.SerializationContextVariableName});"
+            };
+        }
+
+        public override void TraverseObjectGraph(HashSet<Type> seenTypes)
+        {
+            base.TraverseObjectGraph(seenTypes);
+            seenTypes.Add(this.ClrType);
+            seenTypes.Add(Enum.GetUnderlyingType(this.ClrType));
+        }
     }
 }

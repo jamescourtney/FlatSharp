@@ -269,5 +269,413 @@
                 throw new InvalidFlatBufferDefinitionException($"Can't find a public/protected default default constructor for {type.Name}");
             }
         }
+
+        public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
+        {
+            var type = this.ClrType;
+            int maxIndex = this.MaxIndex;
+            int maxInlineSize = this.NonPaddedMaxTableInlineSize;
+
+            // Start by asking for the worst-case number of bytes from the serializationcontext.
+            string methodStart =
+$@"
+                int tableStart = {context.SerializationContextVariableName}.{nameof(SerializationContext.AllocateSpace)}({maxInlineSize}, sizeof(int));
+                {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteUOffset)}({context.SpanVariableName}, {context.OffsetVariableName}, tableStart, {context.SerializationContextVariableName});
+                int currentOffset = tableStart + sizeof(int); // skip past vtable soffset_t.
+
+                var vtable = {context.SerializationContextVariableName}.{nameof(SerializationContext.VTableBuilder)};
+                vtable.StartObject({maxIndex});
+";
+
+            List<string> body = new List<string>();
+            List<string> writers = new List<string>();
+
+            // load the properties of the object into locals.
+            foreach (var kvp in this.IndexToMemberMap)
+            {
+                string prepare, write;
+                if (kvp.Value.ItemTypeModel.SchemaType == FlatBufferSchemaType.Union)
+                {
+                    (prepare, write) = GetUnionSerializeBlocks(kvp.Key, kvp.Value, context);
+                }
+                else
+                {
+                    (prepare, write) = GetStandardSerializeBlocks(kvp.Key, kvp.Value, context);
+                }
+
+                body.Add(prepare);
+                writers.Add(write);
+            }
+
+            // We probably over-allocated. Figure out by how much and back up the cursor.
+            // Then we can write the vtable.
+            body.Add("int tableLength = currentOffset - tableStart;");
+            body.Add($"context.{nameof(SerializationContext.Offset)} -= {maxInlineSize} - tableLength;");
+            body.Add($"int vtablePosition = vtable.{nameof(VTableBuilder.EndObject)}(span, {context.SpanWriterVariableName}, tableLength);");
+            body.Add($"{context.SpanWriterVariableName}.{nameof(SpanWriter.WriteInt)}(span, tableStart - vtablePosition, tableStart, context);");
+
+            body.AddRange(writers);
+
+            // These methods are often enormous, and inlining can have a detrimental effect on perf.
+            return new CodeGeneratedMethod
+            {
+                MethodBody = $"{methodStart} \r\n {string.Join("\r\n", body)}",
+                IsMethodInline = false,
+            };
+        }
+
+        private static (string prepareBlock, string serializeBlock) GetStandardSerializeBlocks(
+            int index, 
+            TableMemberModel memberModel,
+            SerializationCodeGenContext context)
+
+        {
+            string valueVariableName = $"index{index}Value";
+            string offsetVariableName = $"index{index}Offset";
+
+            string condition = $"if ({valueVariableName} != {CSharpHelpers.GetDefaultValueToken(memberModel)})";
+            if ((memberModel.ItemTypeModel is VectorTypeModel vector && vector.IsMemoryVector) || memberModel.IsKey)
+            {
+                // 1) Memory is a struct and can't be null, and 0-length vectors are valid.
+                //    Therefore, we just need to omit the conditional check entirely.
+
+                // 2) For sorted vector keys, we must include the value since some other 
+                //    libraries cannot do binary search with omitted keys.
+                condition = string.Empty;
+            }
+
+            string keyCheckMethodCall = string.Empty;
+            if (memberModel.IsKey)
+            {
+                keyCheckMethodCall = $"{nameof(SortedVectorHelpers)}.{nameof(SortedVectorHelpers.EnsureKeyNonNull)}({valueVariableName});";
+            }
+
+            string prepareBlock =
+$@"
+                    var {valueVariableName} = {context.ValueVariableName}.{memberModel.PropertyInfo.Name};
+                    int {offsetVariableName} = 0;
+                    {keyCheckMethodCall}
+                    {condition} 
+                    {{
+                            currentOffset += {CSharpHelpers.GetFullMethodName(ReflectedMethods.SerializationHelpers_GetAlignmentErrorMethod)}(currentOffset, {memberModel.ItemTypeModel.Alignment});
+                            {offsetVariableName} = currentOffset;
+                            vtable.{nameof(VTableBuilder.SetOffset)}({index}, currentOffset - tableStart);
+                            currentOffset += {memberModel.ItemTypeModel.InlineSize};
+                    }}";
+
+            string sortInvocation = string.Empty;
+            if (memberModel.IsSortedVector)
+            {
+                VectorTypeModel vectorModel = (VectorTypeModel)memberModel.ItemTypeModel;
+                TableTypeModel tableModel = (TableTypeModel)vectorModel.ItemTypeModel;
+                TableMemberModel keyMember = tableModel.IndexToMemberMap.Single(x => x.Value.PropertyInfo == tableModel.KeyProperty).Value;
+
+                var builtInType = BuiltInType.BuiltInTypes[keyMember.ItemTypeModel.ClrType];
+                string inlineSize = builtInType.TypeModel.SchemaType == FlatBufferSchemaType.Scalar ? builtInType.TypeModel.InlineSize.ToString() : "null";
+
+                string defaultValue = "default";
+                if (keyMember.HasDefaultValue)
+                {
+                    var scalarType = (IBuiltInScalarType)builtInType;
+                    defaultValue = scalarType.FormatObject(keyMember.DefaultValue);
+                }
+
+                sortInvocation = $"{nameof(SortedVectorHelpers)}.{nameof(SortedVectorHelpers.SortVector)}(" +
+                                    $"span, {offsetVariableName}, {keyMember.Index}, {inlineSize}, new {CSharpHelpers.GetCompilableTypeName(builtInType.SpanComparerType)}({defaultValue}))";
+
+                sortInvocation = $"{context.SerializationContextVariableName}.{nameof(SerializationContext.AddPostSerializeAction)}((span, ctx) => {sortInvocation});";
+            }
+
+            string serializeBlock =
+$@"
+                    if ({offsetVariableName} != 0)
+                    {{
+                        {context.With(valueVariableName: valueVariableName, offsetVariableName: offsetVariableName)
+                                .GetSerializeInvocation(memberModel.ItemTypeModel.ClrType)};
+                        {sortInvocation}
+                    }}";
+
+            return (prepareBlock, serializeBlock);
+        }
+
+        private static (string prepareBlock, string serializeBlock) GetUnionSerializeBlocks(
+            int index, 
+            TableMemberModel memberModel, 
+            SerializationCodeGenContext context)
+        {
+            UnionTypeModel unionModel = (UnionTypeModel)memberModel.ItemTypeModel;
+
+            string valueVariableName = $"index{index}Value";
+            string discriminatorOffsetVariableName = $"index{index}DiscriminatorOffset";
+            string valueOffsetVariableName = $"index{index}ValueOffset";
+            string discriminatorValueVariableName = $"index{index}Discriminator";
+
+            string prepareBlock =
+$@"
+                    var {valueVariableName} = {context.ValueVariableName}.{memberModel.PropertyInfo.Name};
+                    int {discriminatorOffsetVariableName} = 0;
+                    int {valueOffsetVariableName} = 0;
+                    byte {discriminatorValueVariableName} = 0;
+
+                    if (!object.ReferenceEquals({valueVariableName}, null) && {valueVariableName}.Discriminator != 0)
+                    {{
+                            {discriminatorValueVariableName} = {valueVariableName}.Discriminator;
+                            {discriminatorOffsetVariableName} = currentOffset;
+                            vtable.{nameof(VTableBuilder.SetOffset)}({index}, currentOffset - tableStart);
+                            currentOffset++;
+
+                            currentOffset += {CSharpHelpers.GetFullMethodName(ReflectedMethods.SerializationHelpers_GetAlignmentErrorMethod)}(currentOffset, sizeof(uint));
+                            {valueOffsetVariableName} = currentOffset;
+                            vtable.{nameof(VTableBuilder.SetOffset)}({index + 1}, currentOffset - tableStart);
+                            currentOffset += sizeof(uint);
+                    }}";
+
+            List<string> switchCases = new List<string>();
+            for (int i = 0; i < unionModel.UnionElementTypeModel.Length; ++i)
+            {
+                var elementModel = unionModel.UnionElementTypeModel[i];
+                var unionIndex = i + 1;
+
+                string structAdjustment = string.Empty;
+                if (elementModel.SchemaType == FlatBufferSchemaType.Struct)
+                {
+                    // Structs are generally written in-line, with the exception of unions.
+                    // So, we need to do the normal allocate space dance here, since we're writing
+                    // a pointer to a struct.
+                    structAdjustment =
+$@"
+                        var writeOffset = context.{nameof(SerializationContext.AllocateSpace)}({elementModel.InlineSize}, {elementModel.Alignment});
+                        {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteUOffset)}(span, {valueOffsetVariableName}, writeOffset, context);
+                        {valueOffsetVariableName} = writeOffset;";
+                }
+
+                string @case =
+$@"
+                    case {unionIndex}:
+                    {{
+                        {structAdjustment}
+                        {context.MethodNameMap[elementModel.ClrType]}({context.SpanWriterVariableName}, {context.SpanVariableName}, {valueVariableName}.Item{unionIndex}, {valueOffsetVariableName}, {context.SerializationContextVariableName});
+                    }}
+                        break;";
+
+                switchCases.Add(@case);
+            }
+
+            string serializeBlock =
+$@"
+                    if ({discriminatorOffsetVariableName} != 0)
+                    {{
+                        {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteByte)}({context.SpanVariableName}, {discriminatorValueVariableName}, {discriminatorOffsetVariableName}, {context.SerializationContextVariableName});
+                        switch ({discriminatorValueVariableName})
+                        {{
+                            {string.Join("\r\n", switchCases)}
+                            default: throw new InvalidOperationException(""Unexpected"");
+                        }}
+                    }}";
+
+            return (prepareBlock, serializeBlock);
+        }
+
+        public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
+        {
+            // We have to implement two items: The table class and the overall "read" method.
+            // Let's start with the read method.
+            string className = "tableReader_" + Guid.NewGuid().ToString("n");
+
+            // Build up a list of property overrides.
+            var propertyOverrides = new List<GeneratedProperty>();
+            foreach (var item in this.IndexToMemberMap)
+            {
+                int index = item.Key;
+                var value = item.Value;
+
+                GeneratedProperty propertyStuff;
+                if (value.ItemTypeModel is UnionTypeModel)
+                {
+                    propertyStuff = CreateUnionTableGetter(value, index, context);
+                }
+                else
+                {
+                    propertyStuff = CreateStandardTableProperty(value, index, context);
+                }
+
+                propertyOverrides.Add(propertyStuff);
+            }
+
+            string classDefinition = CSharpHelpers.CreateDeserializeClass(
+                className,
+                this.ClrType,
+                propertyOverrides,
+                context.Options);
+
+            return new CodeGeneratedMethod
+            {
+                ClassDefinition = classDefinition,
+                MethodBody = $"return new {className}({context.InputBufferVariableName}, {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBuffer.ReadUOffset)}({context.OffsetVariableName}));"
+            };
+        }
+
+        /// <summary>
+        /// Generates a standard getter for a normal vtable entry.
+        /// </summary>
+        private static GeneratedProperty CreateStandardTableProperty(
+            TableMemberModel memberModel, 
+            int index, 
+            ParserCodeGenContext context)
+        {
+            Type propertyType = memberModel.ItemTypeModel.ClrType;
+            string defaultValue = CSharpHelpers.GetDefaultValueToken(memberModel);
+            GeneratedProperty property = new GeneratedProperty(context.Options, index, memberModel.PropertyInfo);
+
+            property.ReadValueMethodDefinition =
+$@"
+                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {property.ReadValueMethodName}({nameof(InputBuffer)} buffer, int offset)
+                    {{
+                        int absoluteLocation = buffer.{nameof(InputBuffer.GetAbsoluteTableFieldLocation)}(offset, {index});
+                        if (absoluteLocation == 0) {{
+                            return {defaultValue};
+                        }}
+                        else {{
+                            return {context.MethodNameMap[propertyType]}(buffer, absoluteLocation);
+                        }}
+                    }}
+";
+
+            return property;
+        }
+
+        /// <summary>
+        /// Generates a special property getter for union types. This stems from
+        /// the fact that unions occupy two spots in the table's vtable to deserialize one
+        /// logical field. This means that the logic to read them must also be special.
+        /// </summary>
+        private static GeneratedProperty CreateUnionTableGetter(
+            TableMemberModel memberModel, 
+            int index, 
+            ParserCodeGenContext context)
+        {
+            Type propertyType = memberModel.ItemTypeModel.ClrType;
+            string defaultValue = CSharpHelpers.GetDefaultValueToken(memberModel);
+            UnionTypeModel unionModel = (UnionTypeModel)memberModel.ItemTypeModel;
+
+            GeneratedProperty generatedProperty = new GeneratedProperty(context.Options, index, memberModel.PropertyInfo);
+
+            // Start by generating switch cases. The codegen'ed union types have
+            // well-defined constructors for each constituent type, so this .ctor
+            // will always be available.
+            List<string> switchCases = new List<string>();
+            for (int i = 0; i < unionModel.UnionElementTypeModel.Length; ++i)
+            {
+                var unionMember = unionModel.UnionElementTypeModel[i];
+                int unionIndex = i + 1;
+
+                string structOffsetAdjustment = string.Empty;
+                if (unionMember is StructTypeModel)
+                {
+                    structOffsetAdjustment = $"offsetLocation += buffer.{nameof(InputBuffer.ReadUOffset)}(offsetLocation);";
+                }
+
+                string @case =
+$@"
+                    case {unionIndex}:
+                        {structOffsetAdjustment}
+                        return new {CSharpHelpers.GetCompilableTypeName(unionModel.ClrType)}({context.MethodNameMap[unionMember.ClrType]}(buffer, offsetLocation));
+";
+                switchCases.Add(@case);
+            }
+
+
+            generatedProperty.ReadValueMethodDefinition =
+$@"
+                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {generatedProperty.ReadValueMethodName}({nameof(InputBuffer)} buffer, int offset)
+                    {{
+                        int discriminatorLocation = buffer.{nameof(InputBuffer.GetAbsoluteTableFieldLocation)}(offset, {index});
+                        int offsetLocation = buffer.{nameof(InputBuffer.GetAbsoluteTableFieldLocation)}(offset, {index + 1});
+                            
+                        if (discriminatorLocation == 0) {{
+                            return {defaultValue};
+                        }}
+                        else {{
+                            byte discriminator = buffer.{nameof(InputBuffer.ReadByte)}(discriminatorLocation);
+                            if (discriminator == 0 && offsetLocation != 0)
+                                throw new System.IO.InvalidDataException(""FlatBuffer union had discriminator set but no offset."");
+                            switch (discriminator)
+                            {{
+                                {string.Join("\r\n", switchCases)}
+                                default:
+                                    return {defaultValue};
+                            }}
+                        }}
+                    }}
+";
+            return generatedProperty;
+        }
+
+        public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
+        {
+            int vtableEntryCount = this.MaxIndex + 1;
+
+            // vtable length + table length + 2 * entryCount + padding to 2-byte alignment.
+            int maxVtableSize = sizeof(ushort) * (2 + vtableEntryCount) + SerializationHelpers.GetMaxPadding(sizeof(ushort));
+            int maxTableSize = this.NonPaddedMaxTableInlineSize + SerializationHelpers.GetMaxPadding(this.Alignment);
+
+            List<string> statements = new List<string>();
+            foreach (var kvp in this.IndexToMemberMap)
+            {
+                int index = kvp.Key;
+                var member = kvp.Value;
+                var itemModel = member.ItemTypeModel;
+
+                if (itemModel.IsFixedSize)
+                {
+                    // This should already be accounted for in table.NonPaddedMax size above.
+                    continue;
+                }
+
+                string variableName = $"index{index}Value";
+                statements.Add($"var {variableName} = {context.ValueVariableName}.{member.PropertyInfo.Name};");
+
+                string statement =
+$@" 
+                    if ({itemModel.GetNonNullConditionExpression(variableName)})
+                    {{
+                        runningSum += {context.MethodNameMap[itemModel.ClrType]}({variableName});
+                    }}";
+
+                statements.Add(statement);
+            }
+
+            string body =
+$@"
+            int runningSum = {maxTableSize} + {maxVtableSize};
+            {string.Join("\r\n", statements)};
+            return runningSum;
+";
+            return new CodeGeneratedMethod { MethodBody = body };
+        }
+
+        public override string GetNonNullConditionExpression(string itemVariableName)
+        {
+            return $"{itemVariableName} != null";
+        }
+
+        public override string GetThrowIfNullInvocation(string itemVariableName)
+        {
+            return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
+        }
+
+        public override void TraverseObjectGraph(HashSet<Type> seenTypes)
+        {
+            seenTypes.Add(this.ClrType);
+            foreach (var member in this.memberTypes.Values)
+            {
+                if (seenTypes.Add(member.ItemTypeModel.ClrType))
+                {
+                    member.ItemTypeModel.TraverseObjectGraph(seenTypes);
+                }
+            }
+        }
     }
 }

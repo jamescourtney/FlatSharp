@@ -87,6 +87,100 @@
         /// </summary>
         public IReadOnlyList<StructMemberModel> Members => this.memberTypes;
 
+        public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
+        {
+            return new CodeGeneratedMethod
+            {
+                MethodBody = $"return {this.MaxInlineSize};",
+            };
+        }
+
+        public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
+        {
+            // We have to implement two items: The table class and the overall "read" method.
+            // Let's start with the read method.
+            string className = "structReader_" + Guid.NewGuid().ToString("n");
+
+            string classDefinition;
+            // Implement the class
+            {
+                // Build up a list of property overrides.
+                var propertyOverrides = new List<GeneratedProperty>();
+                for (int index = 0; index < this.Members.Count; ++index)
+                {
+                    var value = this.Members[index];
+                    PropertyInfo propertyInfo = value.PropertyInfo;
+                    Type propertyType = propertyInfo.PropertyType;
+                    string compilableTypeName = CSharpHelpers.GetCompilableTypeName(propertyType);
+
+                    GeneratedProperty generatedProperty = new GeneratedProperty(context.Options, index, propertyInfo);
+
+                    var propContext = context.With(offset: $"({context.OffsetVariableName} + {value.Offset})", inputBuffer: "buffer");
+
+                    generatedProperty.ReadValueMethodDefinition =
+$@"
+                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {generatedProperty.ReadValueMethodName}(InputBuffer buffer, int offset)
+                    {{
+                        return {propContext.GetParseInvocation(propertyType)};
+                    }}
+";
+
+                    propertyOverrides.Add(generatedProperty);
+                }
+
+                classDefinition = CSharpHelpers.CreateDeserializeClass(
+                    className,
+                    this.ClrType,
+                    propertyOverrides,
+                    context.Options);
+            }
+
+            return new CodeGeneratedMethod
+            {
+                ClassDefinition = classDefinition,
+                MethodBody = $"return new {className}({context.InputBufferVariableName}, {context.OffsetVariableName});",
+            };
+        }
+
+        public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
+        {
+            List<string> body = new List<string>();
+            for (int i = 0; i < this.Members.Count; ++i)
+            {
+                var memberInfo = this.Members[i];
+
+                string propertyAccessor = $"{context.ValueVariableName}.{memberInfo.PropertyInfo.Name}";
+                if (memberInfo.ItemTypeModel is StructTypeModel)
+                {
+                    // Force structs to be non-null. FlatSharp doesn't declare structs as structs,
+                    // so we need to be careful that structs-within-structs are not null.
+                    propertyAccessor += $" ?? new {CSharpHelpers.GetCompilableTypeName(memberInfo.ItemTypeModel.ClrType)}()";
+                }
+
+                var propContext = context.With(
+                    offsetVariableName: $"({memberInfo.Offset} + {context.OffsetVariableName})",
+                    valueVariableName: $"({propertyAccessor})");
+
+                body.Add(propContext.GetSerializeInvocation(memberInfo.ItemTypeModel.ClrType) + ";");
+            }
+
+            return new CodeGeneratedMethod
+            {
+                MethodBody = string.Join("\r\n", body)
+            };
+        }
+
+        public override string GetNonNullConditionExpression(string itemVariableName)
+        {
+            return $"{itemVariableName} != null";
+        }
+
+        public override string GetThrowIfNullInvocation(string itemVariableName)
+        {
+            return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
+        }
+
         protected override void Initialize()
         {
             var structAttribute = this.ClrType.GetCustomAttribute<FlatBufferStructAttribute>();
@@ -149,6 +243,18 @@
 
                 this.memberTypes.Add(model);
                 this.inlineSize += propertyModel.InlineSize;
+            }
+        }
+
+        public override void TraverseObjectGraph(HashSet<Type> seenTypes)
+        {
+            seenTypes.Add(this.ClrType);
+            foreach (var member in this.memberTypes)
+            {
+                if (seenTypes.Add(member.ItemTypeModel.ClrType))
+                {
+                    member.ItemTypeModel.TraverseObjectGraph(seenTypes);
+                }
             }
         }
     }
