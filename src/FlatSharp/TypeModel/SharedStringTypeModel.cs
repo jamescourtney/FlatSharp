@@ -22,9 +22,9 @@ namespace FlatSharp.TypeModel
     /// <summary>
     /// Defines a FlatBuffer string type.
     /// </summary>
-    public class SharedStringTypeModel : RuntimeTypeModel, ITypeModel
+    public class SharedStringTypeModel : RuntimeTypeModel, ITypeModel, ISpanComparerProvider
     {
-        internal SharedStringTypeModel() : base(typeof(SharedString))
+        internal SharedStringTypeModel() : base(typeof(SharedString), null)
         {
         }
 
@@ -72,6 +72,11 @@ namespace FlatSharp.TypeModel
         /// Strings can be sorted vector keys.
         /// </summary>
         public override bool IsValidSortedVectorKey => true;
+
+        /// <summary>
+        /// Gets the type of span comparer for this type.
+        /// </summary>
+        public Type SpanComparerType => typeof(StringSpanComparer);
 
         public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
         {

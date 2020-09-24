@@ -1,0 +1,104 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension=".cs" #>
+
+<#
+	(string casedName, string typeName)[] types = 
+	{
+		("Bool", "bool"),
+		("Byte", "byte"),
+		("SByte", "sbyte"),
+		("UShort", "ushort"),
+		("Short", "short"),
+		("Int", "int"),
+		("UInt", "uint"),
+		("Long", "long"),
+		("ULong", "ulong"),
+		("Float", "float"),
+		("Double", "double"),
+	};
+#>
+
+namespace FlatSharp.TypeModel
+{
+	using System;
+	using System.ComponentModel;
+
+	<#
+		foreach (var pair in types)
+		{
+			var casedName = pair.casedName;
+			var typeName = pair.typeName;
+			var className = $"{casedName}TypeModel";
+	#>
+	
+    /// <summary>
+    /// Type Model for <see cref="<#= typeName #>"/>.
+    /// </summary>
+    public partial class <#= className #> : ScalarTypeModel
+    {
+        public <#= className #>() : base(typeof(<#=typeName#>), sizeof(<#=typeName#>)) 
+        {
+        }
+		
+        public override Type SpanComparerType => typeof(<#= casedName #>SpanComparer);
+
+        protected override string InputBufferReadMethodName => nameof(InputBuffer.Read<#= casedName #>);
+
+        protected override string SpanWriterWriteMethodName => nameof(SpanWriter.Write<#= casedName #>);
+    }
+
+	
+    /// <summary>
+    /// Type Model for <see cref="<#= typeName #>?"/>.
+    /// </summary>
+    public partial class Nullable<#= className #> : ScalarTypeModel
+    {
+        public Nullable<#= className #>() : base(typeof(<#=typeName#>?), sizeof(<#=typeName#>)) 
+        {
+        }
+		
+		public override Type SpanComparerType => typeof(Nullable<#= casedName #>SpanComparer);
+
+        protected override string InputBufferReadMethodName => nameof(InputBuffer.Read<#= casedName #>);
+
+        protected override string SpanWriterWriteMethodName => nameof(SpanWriter.Write<#= casedName #>);
+    }
+
+	<# } #>
+
+	public class ScalarTypeModelProvider : ITypeModelProvider
+	{
+        public bool TryCreateTypeModel(Type type, out ITypeModel typeModel)
+		{
+			typeModel = null;
+		<#
+			foreach (var pair in types)
+			{
+				var casedName = pair.casedName;
+				var typeName = pair.typeName;
+				var className = $"{casedName}TypeModel";
+		#>
+
+			if (type == typeof(<#= typeName #>))
+			{
+				typeModel = new <#= className #>(); 
+				return true;
+			}
+
+			if (type == typeof(<#= typeName #>?))
+			{
+				typeModel = new Nullable<#= className #>(); 
+				return true;
+			}
+
+		<# } #>
+
+			return false;
+		}
+	}
+}

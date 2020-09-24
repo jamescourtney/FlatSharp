@@ -64,31 +64,6 @@ namespace FlatSharp
             return name;
         }
 
-        internal static string GetDefaultValueToken(TableMemberModel memberModel)
-        {
-            var itemTypeModel = memberModel.ItemTypeModel;
-            var clrType = itemTypeModel.ClrType;
-
-            string defaultValue = $"default({GetCompilableTypeName(memberModel.ItemTypeModel.ClrType)})";
-            if (memberModel.HasDefaultValue)
-            {
-                if (BuiltInType.BuiltInScalars.TryGetValue(clrType, out IBuiltInScalarType builtInType))
-                {
-                    return builtInType.FormatObject(memberModel.DefaultValue);
-                }
-                else if (clrType.IsEnum)
-                {
-                    return $"{CSharpHelpers.GetCompilableTypeName(clrType)}.{memberModel.DefaultValue}";
-                }
-                else
-                {
-                    throw new InvalidOperationException("Unexpected default value type: " + clrType.FullName);
-                }
-            }
-
-            return defaultValue;
-        }
-
         internal static string GetAccessModifier(PropertyInfo property)
         {
             var method = property.GetGetMethod() ?? property.GetMethod;

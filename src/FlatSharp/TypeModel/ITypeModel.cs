@@ -118,5 +118,26 @@ namespace FlatSharp.TypeModel
         /// Travses the object graph to identify types needed to build a serializer.
         /// </summary>
         void TraverseObjectGraph(HashSet<Type> seenTypes);
+
+        /// <summary>
+        /// Formats the given default value into a C# literal.
+        /// </summary>
+        string FormatDefaultValueAsLiteral(object defaultValue);
+
+        /// <summary>
+        /// Initializes and validates the type model.
+        /// </summary>
+        void Initialize();
+    }
+
+    /// <summary>
+    /// Some type models can specify that they supply a span comparer.
+    /// </summary>
+    public interface ISpanComparerProvider
+    {
+        /// <summary>
+        /// The type of the span comaprer used for this type model.
+        /// </summary>
+        Type SpanComparerType { get; }
     }
 }

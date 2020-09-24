@@ -179,6 +179,13 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
+        public void TypeModel_Struct_OptionalEnum_NotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(GenericStruct<TaggedEnum?>)));
+        }
+
+        [TestMethod]
         public void TypeModel_TypeCantBeTableAndStruct()
         {
             Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
@@ -253,27 +260,21 @@ namespace FlatSharpTests
         public void TypeModel_Vector_ListVectorOfStruct()
         {
             var model = this.VectorTest(typeof(IList<>), typeof(GenericStruct<bool>));
-            Assert.IsTrue(model.IsList);
-            Assert.IsFalse(model.IsMemoryVector);
-            Assert.IsFalse(model.IsReadOnly);
+            Assert.IsInstanceOfType(model, typeof(ListVectorTypeModel));
         }
 
         [TestMethod]
         public void TypeModel_Vector_ReadOnlyListOfTable()
         {
             var model = this.VectorTest(typeof(IReadOnlyList<>), typeof(GenericTable<bool>));
-            Assert.IsTrue(model.IsList);
-            Assert.IsFalse(model.IsMemoryVector);
-            Assert.IsTrue(model.IsReadOnly);
+            Assert.IsInstanceOfType(model, typeof(ListVectorTypeModel));
         }
 
         [TestMethod]
         public void TypeModel_Vector_MemoryOfByte()
         {
             var model = this.VectorTest(typeof(Memory<>), typeof(byte));
-            Assert.IsFalse(model.IsList);
-            Assert.IsTrue(model.IsMemoryVector);
-            Assert.IsFalse(model.IsReadOnly);
+            Assert.IsInstanceOfType(model, typeof(MemoryVectorTypeModel));
         }
 
         [TestMethod]
@@ -294,9 +295,7 @@ namespace FlatSharpTests
         public void TypeModel_Vector_ReadOnlyMemoryOfByte()
         {
             var model = this.VectorTest(typeof(ReadOnlyMemory<>), typeof(byte));
-            Assert.IsFalse(model.IsList);
-            Assert.IsTrue(model.IsMemoryVector);
-            Assert.IsTrue(model.IsReadOnly);
+            Assert.IsInstanceOfType(model, typeof(MemoryVectorTypeModel));
         }
 
         [TestMethod]
@@ -444,16 +443,16 @@ namespace FlatSharpTests
                 RuntimeTypeModel.CreateFrom(typeof(SortedVector<IList<SortedVectorMultiKeyTable<string>>>)));
         }
 
-        private VectorTypeModel VectorTest(Type vectorDefinition, Type innerType)
+        private BaseVectorTypeModel VectorTest(Type vectorDefinition, Type innerType)
         {
-            var model = (VectorTypeModel)RuntimeTypeModel.CreateFrom(vectorDefinition.MakeGenericType(innerType));
+            var model = (BaseVectorTypeModel)RuntimeTypeModel.CreateFrom(vectorDefinition.MakeGenericType(innerType));
 
             Assert.AreEqual(model.ClrType.GetGenericTypeDefinition(), vectorDefinition);
             Assert.AreEqual(model.InlineSize, 4);
             Assert.AreEqual(model.Alignment, 4);
 
             var innerModel = RuntimeTypeModel.CreateFrom(innerType);
-            Assert.AreEqual(innerModel, model.ItemTypeModel);
+            Assert.AreEqual(innerModel.ClrType, model.ItemTypeModel.ClrType);
 
             return model;
         }
@@ -562,7 +561,7 @@ namespace FlatSharpTests
             // inner strut is float + double + bool = 4x float + 4x padding + 8x double + 1 bool = 17.
             // outer struct is inner + double + bool = 17x inner + 7x padding + 8x double + 1x bool = 33
             Type type = typeof(GenericStruct<GenericStruct<float>>);
-            RuntimeTypeModel typeModel = RuntimeTypeModel.CreateFrom(type);
+            var typeModel = RuntimeTypeModel.CreateFrom(type);
 
             Assert.AreEqual(typeModel.ClrType, type);
             Assert.IsInstanceOfType(typeModel, typeof(StructTypeModel));

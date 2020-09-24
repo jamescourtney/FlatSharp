@@ -25,7 +25,7 @@
     public class TableMemberModel : ItemMemberModel
     {
         internal TableMemberModel(
-            RuntimeTypeModel propertyModel, 
+            ITypeModel propertyModel, 
             PropertyInfo propertyInfo, 
             ushort index, 
             bool hasDefaultValue,
@@ -73,5 +73,19 @@
         /// Indicates how "wide" this element is in the table's vtable. Unions consume 2 slots in the vtable.
         /// </summary>
         public int VTableSlotCount => this.ItemTypeModel is UnionTypeModel ? 2 : 1;
+
+        public string DefaultValueToken
+        {
+            get
+            {
+                string defaultValue = $"default({CSharpHelpers.GetCompilableTypeName(this.ItemTypeModel.ClrType)})";
+                if (this.HasDefaultValue)
+                {
+                    defaultValue = this.ItemTypeModel.FormatDefaultValueAsLiteral(this.DefaultValue);
+                }
+
+                return defaultValue;
+            }
+        }
     }
 }

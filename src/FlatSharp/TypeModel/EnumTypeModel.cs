@@ -24,23 +24,52 @@
     /// <summary>
     /// Defines an Enum FlatSharp type model, which derives from the scalar type model.
     /// </summary>
-    public class EnumTypeModel : ScalarTypeModel
+    public class EnumTypeModel : RuntimeTypeModel
     {
-        internal EnumTypeModel(Type type, int size) : base(type, size)
+        private ITypeModel underlyingTypeModel;
+
+        internal EnumTypeModel(Type type, ITypeModelProvider typeModelProvider) : base(type, typeModelProvider)
         {
         }
 
-        protected override void Initialize()
+        public override void Initialize()
         {
             base.Initialize();
 
             Type enumType = this.ClrType;
+            Type underlyingType = Enum.GetUnderlyingType(enumType);
+
+            this.underlyingTypeModel = this.typeModelProvider.CreateTypeModel(underlyingType);
+            if (!(this.underlyingTypeModel is ScalarTypeModel))
+            {
+                throw new InvalidFlatBufferDefinitionException("Enums must have a Scalar as their underlying type.");
+            }
+
             var attribute = enumType.GetCustomAttribute<FlatBufferEnumAttribute>();
+            if (attribute == null)
+            {
+                throw new InvalidFlatBufferDefinitionException($"Enums '{enumType.Name}' is not tagged with a [FlatBufferEnum] attribute.");
+            }
+
             if (attribute.DeclaredUnderlyingType != Enum.GetUnderlyingType(enumType))
             {
                 throw new InvalidFlatBufferDefinitionException($"Enum '{enumType.Name}' declared underlying type '{attribute.DeclaredUnderlyingType}', but was actually '{Enum.GetUnderlyingType(enumType)}'");
             }
         }
+
+        public override int Alignment => this.underlyingTypeModel.Alignment;
+
+        public override int InlineSize => this.underlyingTypeModel.InlineSize;
+
+        public override bool IsFixedSize => this.underlyingTypeModel.IsFixedSize;
+
+        public override bool IsValidStructMember => true;
+
+        public override bool IsValidTableMember => true;
+
+        public override bool IsValidVectorMember => true;
+
+        public override bool IsValidUnionMember => false;
 
         /// <summary>
         /// Enums are not built in, even though scalars are.
@@ -54,7 +83,7 @@
 
         public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
         {
-            Type underlyingType = Enum.GetUnderlyingType(this.ClrType);
+            Type underlyingType = this.underlyingTypeModel.ClrType;
             string underlyingTypeName = CSharpHelpers.GetCompilableTypeName(underlyingType);
 
             return new CodeGeneratedMethod 
@@ -65,7 +94,7 @@
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
-            Type underlyingType = Enum.GetUnderlyingType(this.ClrType);
+            Type underlyingType = this.underlyingTypeModel.ClrType;
             string typeName = CSharpHelpers.GetCompilableTypeName(this.ClrType);
 
             return new CodeGeneratedMethod
@@ -76,7 +105,7 @@
 
         public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
         {
-            Type underlyingType = Enum.GetUnderlyingType(this.ClrType);
+            Type underlyingType = this.underlyingTypeModel.ClrType;
             string underlyingTypeName = CSharpHelpers.GetCompilableTypeName(underlyingType);
 
             return new CodeGeneratedMethod
@@ -87,9 +116,34 @@
 
         public override void TraverseObjectGraph(HashSet<Type> seenTypes)
         {
-            base.TraverseObjectGraph(seenTypes);
             seenTypes.Add(this.ClrType);
             seenTypes.Add(Enum.GetUnderlyingType(this.ClrType));
+        }
+
+        public override string GetThrowIfNullInvocation(string itemVariableName)
+        {
+            // Enums are value types.
+            return string.Empty;
+        }
+
+        public override string GetNonNullConditionExpression(string itemVariableName)
+        {
+            // Enums are value types.
+            return "true";
+        }
+
+        public override string FormatDefaultValueAsLiteral(object defaultValue)
+        {
+            string numericValue = this.underlyingTypeModel.FormatDefaultValueAsLiteral(Convert.ChangeType(defaultValue, this.underlyingTypeModel.ClrType));
+            return $"({CSharpHelpers.GetCompilableTypeName(this.ClrType)}){numericValue}";
+        }
+
+        /// <summary>
+        /// Validates a default value.
+        /// </summary>
+        public override bool ValidateDefaultValue(object defaultValue)
+        {
+            return defaultValue.GetType() == this.ClrType;
         }
     }
 }

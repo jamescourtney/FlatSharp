@@ -186,59 +186,17 @@ namespace FlatSharp
         public void WriteReadOnlyByteMemoryBlock(
             Span<byte> span,
             ReadOnlyMemory<byte> memory,
-            int offset, 
-            int alignment, 
-            int inlineSize, 
+            int offset,
             SerializationContext ctx)
         {
-            Debug.Assert(alignment == 1);
-            Debug.Assert(inlineSize == 1);
-
             int numberOfItems = memory.Length;
-            int vectorStartOffset = ctx.AllocateVector(alignment, numberOfItems, inlineSize);
+            int vectorStartOffset = ctx.AllocateVector(itemAlignment: sizeof(byte), numberOfItems, sizePerItem: sizeof(byte));
 
             this.WriteUOffset(span, offset, vectorStartOffset, ctx);
             this.WriteInt(span, numberOfItems, vectorStartOffset, ctx);
 
             memory.Span.CopyTo(span.Slice(vectorStartOffset + sizeof(uint)));
         }
-
-        #region Nullable Scalar Writers
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteNullableBool(Span<byte> span, bool? b, int offset, SerializationContext context) => this.WriteBool(span, b.Value, offset, context);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteNullableByte(Span<byte> span, byte? b, int offset, SerializationContext context) => this.WriteByte(span, b.Value, offset, context);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteNullableSByte(Span<byte> span, sbyte? b, int offset, SerializationContext context) => this.WriteSByte(span, b.Value, offset, context);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteNullableShort(Span<byte> span, short? b, int offset, SerializationContext context) => this.WriteShort(span, b.Value, offset, context);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteNullableUShort(Span<byte> span, ushort? b, int offset, SerializationContext context) => this.WriteUShort(span, b.Value, offset, context);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteNullableInt(Span<byte> span, int? b, int offset, SerializationContext context) => this.WriteInt(span, b.Value, offset, context);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteNullableUInt(Span<byte> span, uint? b, int offset, SerializationContext context) => this.WriteUInt(span, b.Value, offset, context);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteNullableLong(Span<byte> span, long? b, int offset, SerializationContext context) => this.WriteLong(span, b.Value, offset, context);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteNullableULong(Span<byte> span, ulong? b, int offset, SerializationContext context) => this.WriteULong(span, b.Value, offset, context);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteNullableFloat(Span<byte> span, float? b, int offset, SerializationContext context) => this.WriteFloat(span, b.Value, offset, context);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteNullableDouble(Span<byte> span, double? b, int offset, SerializationContext context) => this.WriteDouble(span, b.Value, offset, context);
-
-        #endregion
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [Conditional("DEBUG")]

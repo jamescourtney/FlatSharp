@@ -13,40 +13,67 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
- namespace FlatSharp.TypeModel
+
+namespace FlatSharp.TypeModel
 {
-    using FlatSharp.Attributes;
     using System;
     using System.Collections.Generic;
     using System.Reflection;
 
+    using FlatSharp.Attributes;
+
     /// <summary>
-    /// Defines an optional (nullable) Enum FlatSharp type model, which derives from the scalar type model.
+    /// Defines a Nullable Enum FlatSharp type model, which derives from the scalar type model.
     /// </summary>
-    public class NullableEnumTypeModel : ScalarTypeModel
+    public class NullableEnumTypeModel : RuntimeTypeModel
     {
-        internal NullableEnumTypeModel(Type type, int size) : base(type, size)
+        private ITypeModel underlyingTypeModel;
+        private Type enumType;
+
+        internal NullableEnumTypeModel(Type type, ITypeModelProvider typeModelProvider) : base(type, typeModelProvider)
         {
         }
 
-        public Type EnumType { get; private set; }
-
-        public Type UnderlyingType { get; private set; }
-
-        protected override void Initialize()
+        public override void Initialize()
         {
             base.Initialize();
 
-            this.EnumType = Nullable.GetUnderlyingType(this.ClrType);
-            var attribute = this.EnumType.GetCustomAttribute<FlatBufferEnumAttribute>();
-            this.UnderlyingType = Enum.GetUnderlyingType(this.EnumType);
+            Type nullableType = this.ClrType;
+            this.enumType = Nullable.GetUnderlyingType(nullableType);
+            Type underlyingType = Enum.GetUnderlyingType(this.enumType);
 
-            if (attribute.DeclaredUnderlyingType != this.UnderlyingType)
+            this.underlyingTypeModel = this.typeModelProvider.CreateTypeModel(underlyingType);
+
+            if (!(this.underlyingTypeModel is ScalarTypeModel))
             {
-                throw new InvalidFlatBufferDefinitionException($"Enum '{this.EnumType.Name}' declared underlying type '{attribute.DeclaredUnderlyingType}', but was actually '{this.UnderlyingType}'");
+                throw new InvalidFlatBufferDefinitionException("Enums must have a Scalar as their underlying type.");
+            }
+
+            var attribute = this.enumType.GetCustomAttribute<FlatBufferEnumAttribute>();
+            if (attribute == null)
+            {
+                throw new InvalidFlatBufferDefinitionException($"Enums '{enumType.Name}' is not tagged with a [FlatBufferEnum] attribute.");
+            }
+
+            if (attribute.DeclaredUnderlyingType != underlyingType)
+            {
+                throw new InvalidFlatBufferDefinitionException($"Enum '{this.enumType.Name}' declared underlying type '{attribute.DeclaredUnderlyingType}', but was actually '{underlyingType}'");
             }
         }
+
+        public override int Alignment => this.underlyingTypeModel.Alignment;
+
+        public override int InlineSize => this.underlyingTypeModel.InlineSize;
+
+        public override bool IsFixedSize => this.underlyingTypeModel.IsFixedSize;
+
+        public override bool IsValidStructMember => false;
+
+        public override bool IsValidTableMember => true;
+
+        public override bool IsValidVectorMember => false;
+
+        public override bool IsValidUnionMember => false;
 
         /// <summary>
         /// Enums are not built in, even though scalars are.
@@ -60,39 +87,57 @@
 
         public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
         {
-            Type underlyingType = Nullable.GetUnderlyingType(this.ClrType);
+            Type underlyingType = this.underlyingTypeModel.ClrType;
+            string underlyingTypeName = CSharpHelpers.GetCompilableTypeName(underlyingType);
+
             return new CodeGeneratedMethod
             {
-                MethodBody = $"return {context.MethodNameMap[underlyingType]}({context.ValueVariableName}.Value);"
+                MethodBody = $"return {context.MethodNameMap[underlyingType]}(({underlyingTypeName}){context.ValueVariableName}.Value);"
             };
         }
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
-            Type underlyingType = Nullable.GetUnderlyingType(this.ClrType);
+            Type underlyingType = this.underlyingTypeModel.ClrType;
+            string typeName = CSharpHelpers.GetCompilableTypeName(this.ClrType);
 
             return new CodeGeneratedMethod
             {
-                MethodBody = $"return {context.MethodNameMap[underlyingType]}({context.InputBufferVariableName}, {context.OffsetVariableName});"
+                MethodBody = $"return ({typeName}){context.MethodNameMap[underlyingType]}({context.InputBufferVariableName}, {context.OffsetVariableName});"
             };
         }
 
         public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
         {
-            Type underlyingType = Nullable.GetUnderlyingType(this.ClrType);
+            Type underlyingType = this.underlyingTypeModel.ClrType;
+            string underlyingTypeName = CSharpHelpers.GetCompilableTypeName(underlyingType);
 
             return new CodeGeneratedMethod
             {
-                MethodBody = $"{context.MethodNameMap[underlyingType]}({context.SpanWriterVariableName}, {context.SpanVariableName}, {context.ValueVariableName}.Value, {context.OffsetVariableName}, {context.SerializationContextVariableName});"
+                MethodBody = $"{context.MethodNameMap[underlyingType]}({context.SpanWriterVariableName}, {context.SpanVariableName}, ({underlyingTypeName}){context.ValueVariableName}.Value, {context.OffsetVariableName}, {context.SerializationContextVariableName});"
             };
         }
 
         public override void TraverseObjectGraph(HashSet<Type> seenTypes)
         {
-            base.TraverseObjectGraph(seenTypes);
             seenTypes.Add(this.ClrType);
-            seenTypes.Add(Nullable.GetUnderlyingType(this.ClrType));
-            seenTypes.Add(Enum.GetUnderlyingType(Nullable.GetUnderlyingType(this.ClrType)));
+            seenTypes.Add(this.enumType);
+            seenTypes.Add(this.underlyingTypeModel.ClrType);
+        }
+
+        public override string GetThrowIfNullInvocation(string itemVariableName)
+        {
+            return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
+        }
+
+        public override string GetNonNullConditionExpression(string itemVariableName)
+        {
+            return $"{itemVariableName} != null";
+        }
+
+        public override string FormatDefaultValueAsLiteral(object defaultValue)
+        {
+            throw new InvalidOperationException("Unexpected.");
         }
     }
 }

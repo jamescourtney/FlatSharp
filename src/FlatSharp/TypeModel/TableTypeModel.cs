@@ -18,7 +18,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.ComponentModel;
     using System.Linq;
     using System.Reflection;
     using FlatSharp.Attributes;
@@ -39,7 +38,7 @@
         /// </summary>
         private readonly HashSet<int> occupiedVtableSlots = new HashSet<int>();
 
-        internal TableTypeModel(Type clrType) : base(clrType)
+        internal TableTypeModel(Type clrType, ITypeModelProvider typeModelProvider) : base(clrType, typeModelProvider)
         {
         }
 
@@ -113,7 +112,7 @@
             get => this.IndexToMemberMap.Values.Sum(x => x.ItemTypeModel.MaxInlineSize) + sizeof(int);
         }
 
-        protected override void Initialize()
+        public override void Initialize()
         {
             var tableAttribute = this.ClrType.GetCustomAttribute<FlatBufferTableAttribute>();
             if (tableAttribute == null)
@@ -136,7 +135,7 @@
                 {
                     x.Property,
                     x.Attribute,
-                    ItemTypeModel = RuntimeTypeModel.CreateFrom(x.Property.PropertyType),
+                    ItemTypeModel = this.typeModelProvider.CreateTypeModel(x.Property.PropertyType),
                 })
                 .ToList();
 
@@ -199,12 +198,12 @@
             }
         }
 
-        private static void ValidateSortedVector(FlatBufferItemAttribute itemAttribute, RuntimeTypeModel itemTypeModel, PropertyInfo propertyInfo)
+        private static void ValidateSortedVector(FlatBufferItemAttribute itemAttribute, ITypeModel itemTypeModel, PropertyInfo propertyInfo)
         {
             if (itemAttribute.SortedVector)
             {
                 // This must be a vector, and the inner model must have an item with the 'key' property.
-                if (itemTypeModel is VectorTypeModel vectorTypeModel)
+                if (itemTypeModel is BaseVectorTypeModel vectorTypeModel)
                 {
                     var vectorMemberModel = vectorTypeModel.ItemTypeModel;
                     if (vectorMemberModel is TableTypeModel tableModel)
@@ -319,17 +318,16 @@ $@"
             };
         }
 
-        private static (string prepareBlock, string serializeBlock) GetStandardSerializeBlocks(
+        private (string prepareBlock, string serializeBlock) GetStandardSerializeBlocks(
             int index, 
             TableMemberModel memberModel,
             SerializationCodeGenContext context)
-
         {
             string valueVariableName = $"index{index}Value";
             string offsetVariableName = $"index{index}Offset";
 
-            string condition = $"if ({valueVariableName} != {CSharpHelpers.GetDefaultValueToken(memberModel)})";
-            if ((memberModel.ItemTypeModel is VectorTypeModel vector && vector.IsMemoryVector) || memberModel.IsKey)
+            string condition = $"if ({valueVariableName} != {memberModel.DefaultValueToken})";
+            if ((memberModel.ItemTypeModel is MemoryVectorTypeModel) || memberModel.IsKey)
             {
                 // 1) Memory is a struct and can't be null, and 0-length vectors are valid.
                 //    Therefore, we just need to omit the conditional check entirely.
@@ -361,22 +359,23 @@ $@"
             string sortInvocation = string.Empty;
             if (memberModel.IsSortedVector)
             {
-                VectorTypeModel vectorModel = (VectorTypeModel)memberModel.ItemTypeModel;
+                BaseVectorTypeModel vectorModel = (BaseVectorTypeModel)memberModel.ItemTypeModel;
                 TableTypeModel tableModel = (TableTypeModel)vectorModel.ItemTypeModel;
                 TableMemberModel keyMember = tableModel.IndexToMemberMap.Single(x => x.Value.PropertyInfo == tableModel.KeyProperty).Value;
+                ITypeModel keyTypeModel = keyMember.ItemTypeModel;
+                ISpanComparerProvider spanComparerProvider = keyTypeModel as ISpanComparerProvider;
 
-                var builtInType = BuiltInType.BuiltInTypes[keyMember.ItemTypeModel.ClrType];
-                string inlineSize = builtInType.TypeModel is ScalarTypeModel ? builtInType.TypeModel.InlineSize.ToString() : "null";
-
-                string defaultValue = "default";
-                if (keyMember.HasDefaultValue)
+                if (spanComparerProvider == null)
                 {
-                    var scalarType = (IBuiltInScalarType)builtInType;
-                    defaultValue = scalarType.FormatObject(keyMember.DefaultValue);
+                    throw new InvalidFlatBufferDefinitionException("Key type models must implement the 'ISpanComparerProvider' interface.");
                 }
 
+                string inlineSize = keyTypeModel is ScalarTypeModel ? keyTypeModel.InlineSize.ToString() : "null";
+
+                string defaultValue = keyMember.DefaultValueToken;
+
                 sortInvocation = $"{nameof(SortedVectorHelpers)}.{nameof(SortedVectorHelpers.SortVector)}(" +
-                                    $"span, {offsetVariableName}, {keyMember.Index}, {inlineSize}, new {CSharpHelpers.GetCompilableTypeName(builtInType.SpanComparerType)}({defaultValue}))";
+                                    $"span, {offsetVariableName}, {keyMember.Index}, {inlineSize}, new {CSharpHelpers.GetCompilableTypeName(spanComparerProvider.SpanComparerType)}({defaultValue}))";
 
                 sortInvocation = $"{context.SerializationContextVariableName}.{nameof(SerializationContext.AddPostSerializeAction)}((span, ctx) => {sortInvocation});";
             }
@@ -519,7 +518,6 @@ $@"
             ParserCodeGenContext context)
         {
             Type propertyType = memberModel.ItemTypeModel.ClrType;
-            string defaultValue = CSharpHelpers.GetDefaultValueToken(memberModel);
             GeneratedProperty property = new GeneratedProperty(context.Options, index, memberModel.PropertyInfo);
 
             property.ReadValueMethodDefinition =
@@ -529,7 +527,7 @@ $@"
                     {{
                         int absoluteLocation = buffer.{nameof(InputBuffer.GetAbsoluteTableFieldLocation)}(offset, {index});
                         if (absoluteLocation == 0) {{
-                            return {defaultValue};
+                            return {memberModel.DefaultValueToken};
                         }}
                         else {{
                             return {context.MethodNameMap[propertyType]}(buffer, absoluteLocation);
@@ -551,7 +549,6 @@ $@"
             ParserCodeGenContext context)
         {
             Type propertyType = memberModel.ItemTypeModel.ClrType;
-            string defaultValue = CSharpHelpers.GetDefaultValueToken(memberModel);
             UnionTypeModel unionModel = (UnionTypeModel)memberModel.ItemTypeModel;
 
             GeneratedProperty generatedProperty = new GeneratedProperty(context.Options, index, memberModel.PropertyInfo);
@@ -590,7 +587,7 @@ $@"
                         int offsetLocation = buffer.{nameof(InputBuffer.GetAbsoluteTableFieldLocation)}(offset, {index + 1});
                             
                         if (discriminatorLocation == 0) {{
-                            return {defaultValue};
+                            return {memberModel.DefaultValueToken};
                         }}
                         else {{
                             byte discriminator = buffer.{nameof(InputBuffer.ReadByte)}(discriminatorLocation);
@@ -600,7 +597,7 @@ $@"
                             {{
                                 {string.Join("\r\n", switchCases)}
                                 default:
-                                    return {defaultValue};
+                                    return {memberModel.DefaultValueToken};
                             }}
                         }}
                     }}

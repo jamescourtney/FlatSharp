@@ -29,17 +29,18 @@ namespace FlatSharp.TypeModel
     /// </summary>
     public abstract class RuntimeTypeModel : ITypeModel
     {
-        private static readonly ConcurrentDictionary<Type, RuntimeTypeModel> ModelMap = new ConcurrentDictionary<Type, RuntimeTypeModel>();
+        protected readonly ITypeModelProvider typeModelProvider;
 
-        internal RuntimeTypeModel(Type clrType)
+        internal RuntimeTypeModel(Type clrType, ITypeModelProvider typeModelProvider)
         {
             this.ClrType = clrType;
+            this.typeModelProvider = typeModelProvider;
         }
 
         /// <summary>
         /// Initializes this runtime type model instance.
         /// </summary>
-        protected virtual void Initialize() { }
+        public virtual void Initialize() { }
 
         /// <summary>
         /// The type of the item in the CLR.
@@ -114,86 +115,9 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// Gets or creates a runtime type model from the given type.
         /// </summary>
-        public static RuntimeTypeModel CreateFrom(Type type)
+        internal static ITypeModel CreateFrom(Type type)
         {
-            if (ModelMap.TryGetValue(type, out var value))
-            {
-                return value;
-            }
-
-            lock (SharedLock.Instance)
-            {
-                RuntimeTypeModel newModel = null;
-
-                if (BuiltInType.BuiltInTypes.TryGetValue(type, out IBuiltInType builtInType))
-                {
-                    newModel = builtInType.TypeModel;
-                }
-                else if (type.GetCustomAttribute<FlatBufferStructAttribute>() != null && type.GetCustomAttribute<FlatBufferTableAttribute>() != null)
-                {
-                    throw new InvalidFlatBufferDefinitionException($"A type cannot be both a class and a struct Type = '{type}'.");
-                }
-                else if (type.GetCustomAttribute<FlatBufferTableAttribute>() != null)
-                {
-                    newModel = new TableTypeModel(type);
-                }
-                else if (type.GetCustomAttribute<FlatBufferStructAttribute>() != null)
-                {
-                    newModel = new StructTypeModel(type);
-                }
-                else if (typeof(IUnion).IsAssignableFrom(type))
-                {
-                    // Keep this above the "isgeneric" check since our union types are generic.
-                    newModel = new UnionTypeModel(type);
-                }
-                else if (type.IsGenericType && type.GetGenericTypeDefinition() != typeof(Nullable<>))
-                {
-                    var genericDefinition = type.GetGenericTypeDefinition();
-                    if (genericDefinition == typeof(IList<>) ||
-                        genericDefinition == typeof(Memory<>) ||
-                        genericDefinition == typeof(ReadOnlyMemory<>) ||
-                        genericDefinition == typeof(IReadOnlyList<>))
-                    {
-                        newModel = new VectorTypeModel(type);
-                    }
-                }
-                else if (type.IsArray)
-                {
-                    newModel = new VectorTypeModel(type);
-                }
-                else if (type.GetCustomAttribute<FlatBufferEnumAttribute>() != null)
-                {
-                    ScalarTypeModel scalarModel = (ScalarTypeModel)RuntimeTypeModel.CreateFrom(Enum.GetUnderlyingType(type));
-                    newModel = new EnumTypeModel(type, scalarModel.InlineSize);
-                }
-                else if (Nullable.GetUnderlyingType(type) != null)
-                {
-                    Type underlyingNullable = Nullable.GetUnderlyingType(type);
-                    if (underlyingNullable.GetCustomAttribute<FlatBufferEnumAttribute>() != null)
-                    {
-                        ScalarTypeModel scalarModel = (ScalarTypeModel)RuntimeTypeModel.CreateFrom(typeof(Nullable<>).MakeGenericType(Enum.GetUnderlyingType(underlyingNullable)));
-                        newModel = new NullableEnumTypeModel(type, scalarModel.InlineSize);
-                    }
-                }
-
-                if (newModel == null)
-                {
-                    throw new InvalidFlatBufferDefinitionException($"Unable to create runtime type model for '{type.Name}'. This type is not supported. Please consult the documentation for a list of supported types.");
-                }
-
-                ModelMap[type] = newModel;
-                try
-                {
-                    newModel.Initialize();
-                }
-                catch
-                {
-                    ModelMap.TryRemove(type, out _);
-                    throw;
-                }
-
-                return newModel;
-            }
+            return new InternalTypeModelProvider().CreateTypeModel(type);
         }
 
         public abstract CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context);
@@ -207,5 +131,7 @@ namespace FlatSharp.TypeModel
         public abstract string GetNonNullConditionExpression(string itemVariableName);
 
         public abstract void TraverseObjectGraph(HashSet<Type> seenTypes);
+
+        public virtual string FormatDefaultValueAsLiteral(object defaultValue) => throw new InvalidOperationException();
     }
 }

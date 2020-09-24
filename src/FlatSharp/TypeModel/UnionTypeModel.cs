@@ -25,17 +25,10 @@ namespace FlatSharp.TypeModel
     /// </summary>
     public class UnionTypeModel : RuntimeTypeModel
     {
-        private RuntimeTypeModel[] memberTypeModels;
+        private ITypeModel[] memberTypeModels;
 
-        internal UnionTypeModel(Type unionType) : base(unionType)
+        internal UnionTypeModel(Type unionType, ITypeModelProvider provider) : base(unionType, provider)
         {
-            // Look for the actual FlatBufferUnion.
-            while (unionType.BaseType != typeof(object))
-            {
-                unionType = unionType.BaseType;
-            }
-
-            this.memberTypeModels = unionType.GetGenericArguments().Select(RuntimeTypeModel.CreateFrom).ToArray();
         }
 
         /// <summary>
@@ -86,7 +79,7 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// Gets the type model for this union's members. Index 0 corresponds to discriminator 1.
         /// </summary>
-        public RuntimeTypeModel[] UnionElementTypeModel => this.memberTypeModels;
+        public ITypeModel[] UnionElementTypeModel => this.memberTypeModels;
 
         public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
         {
@@ -136,10 +129,19 @@ $@"
             return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
         }
 
-        protected override void Initialize()
+        public override void Initialize()
         {
             bool containsString = false;
             HashSet<Type> uniqueTypes = new HashSet<Type>();
+
+            // Look for the actual FlatBufferUnion.
+            Type unionType = this.ClrType;
+            while (unionType.BaseType != typeof(object))
+            {
+                unionType = unionType.BaseType;
+            }
+
+            this.memberTypeModels = unionType.GetGenericArguments().Select(this.typeModelProvider.CreateTypeModel).ToArray();
 
             foreach (var item in this.memberTypeModels)
             {

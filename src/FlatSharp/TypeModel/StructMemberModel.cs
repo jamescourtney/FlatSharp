@@ -25,7 +25,7 @@
     public class StructMemberModel : ItemMemberModel
     {
         internal StructMemberModel(
-            RuntimeTypeModel propertyModel,
+            ITypeModel propertyModel,
             PropertyInfo propertyInfo,
             ushort index,
             int offset) : base(propertyModel, propertyInfo, index)

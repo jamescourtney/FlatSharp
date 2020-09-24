@@ -28,4 +28,20 @@ namespace FlatSharp.TypeModel
         /// </summary>
         bool TryCreateTypeModel(Type type, out ITypeModel typeModel);
     }
+
+    /// <summary>
+    /// Extensions for ITypeModelProvider.
+    /// </summary>
+    public static class TypeModelProviderExtensions
+    {
+        public static ITypeModel CreateTypeModel(this ITypeModelProvider provider, Type type)
+        {
+            if (!provider.TryCreateTypeModel(type, out var typeModel))
+            {
+                throw new InvalidFlatBufferDefinitionException($"Failed to create or find type model for type '{type.FullName}'.");
+            }
+
+            return typeModel;
+        }
+    }
 }

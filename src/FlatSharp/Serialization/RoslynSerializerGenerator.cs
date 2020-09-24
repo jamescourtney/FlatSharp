@@ -48,6 +48,8 @@ namespace FlatSharp
         private readonly Dictionary<Type, string> readMethods = new Dictionary<Type, string>();
 
         private readonly FlatBufferSerializerOptions options;
+        private readonly ITypeModelProvider typeModelProvider;
+
         private readonly List<SyntaxNode> methodDeclarations = new List<SyntaxNode>();
 
         private static readonly List<MetadataReference> commonReferences;
@@ -74,9 +76,10 @@ namespace FlatSharp
             }
         }
 
-        public RoslynSerializerGenerator(FlatBufferSerializerOptions options)
+        public RoslynSerializerGenerator(FlatBufferSerializerOptions options, ITypeModelProvider typeModelProvider)
         {
             this.options = options;
+            this.typeModelProvider = typeModelProvider;
         }
 
         public ISerializer<TRoot> Compile<TRoot>() where TRoot : class
@@ -111,13 +114,13 @@ $@"
 
         internal string GenerateCSharp<TRoot>(string visibility = "public")
         {
-            var runtimeModel = RuntimeTypeModel.CreateFrom(typeof(TRoot));
-            if (!(runtimeModel is TableTypeModel))
+            ITypeModel rootModel = this.typeModelProvider.CreateTypeModel(typeof(TRoot));
+            if (!(rootModel is TableTypeModel))
             {
-                throw new InvalidFlatBufferDefinitionException($"Can only compile [FlatBufferTable] elements as root types. Type '{typeof(TRoot).Name}' is a '{runtimeModel.GetType().Name}'.");
+                throw new InvalidFlatBufferDefinitionException($"Can only compile [FlatBufferTable] elements as root types. Type '{typeof(TRoot).Name}' is a '{rootModel.GetType().Name}'.");
             }
 
-            this.DefineMethods(runtimeModel);
+            this.DefineMethods(rootModel);
             this.ImplementInterfaceMethod(typeof(TRoot));
             this.ImplementMethods();
 
@@ -265,7 +268,7 @@ $@"
         /// <summary>
         /// Recursively crawls through the object graph and looks for methods to define.
         /// </summary>
-        private void DefineMethods(RuntimeTypeModel model)
+        private void DefineMethods(ITypeModel model)
         {
             HashSet<Type> types = new HashSet<Type>();
             model.TraverseObjectGraph(types);
@@ -324,7 +327,7 @@ $@"
 
             foreach (var type in this.writeMethods.Keys)
             {
-                ITypeModel typeModel = RuntimeTypeModel.CreateFrom(type);
+                ITypeModel typeModel = this.typeModelProvider.CreateTypeModel(type);
                 var maxSizeContext = new GetMaxSizeCodeGenContext("value", this.maxSizeMethods, this.options);
                 var parseContext = new ParserCodeGenContext("buffer", "offset", this.readMethods, this.options);
                 var serializeContext = new SerializationCodeGenContext("context", "span", "spanWriter", "value", "offset", this.writeMethods, this.options);

@@ -16,14 +16,114 @@
 
 namespace FlatSharp.TypeModel
 {
+    using FlatSharp.Attributes;
     using System;
+    using System.Collections;
+    using System.Collections.Concurrent;
+    using System.Collections.Generic;
+    using System.Reflection;
 
     internal class InternalTypeModelProvider : ITypeModelProvider
     {
+        private readonly ITypeModelProvider scalarProvider = new ScalarTypeModelProvider();
+        private readonly ConcurrentDictionary<Type, ITypeModel> cache = new ConcurrentDictionary<Type, ITypeModel>();
+
         public bool TryCreateTypeModel(Type type, out ITypeModel typeModel)
         {
-            typeModel = default;
-            return false;
+            if (this.cache.TryGetValue(type, out typeModel))
+            {
+                return true;
+            }
+
+            typeModel = this.GetTypeModel(type);
+            if (typeModel != null)
+            {
+                this.cache[type] = typeModel;
+                try
+                {
+                    typeModel.Initialize();
+                    return true;
+                }
+                catch
+                {
+                    this.cache.TryRemove(type, out _);
+                    throw;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        private ITypeModel GetTypeModel(Type type)
+        {
+            if (this.scalarProvider.TryCreateTypeModel(type, out var typeModel))
+            {
+                return typeModel;
+            }
+
+            if (type == typeof(string))
+            {
+                return new StringTypeModel();
+            }
+
+            if (type == typeof(SharedString))
+            {
+                return new SharedStringTypeModel();
+            }
+
+            if (type.IsArray)
+            {
+                return new ArrayVectorTypeModel(type, this);
+            }
+
+            if (type.IsGenericType)
+            {
+                var genericDef = type.GetGenericTypeDefinition();
+                if (genericDef == typeof(IList<>) || genericDef == typeof(IReadOnlyList<>))
+                {
+                    return new ListVectorTypeModel(type, this);
+                }
+
+                if (genericDef == typeof(Memory<>) || genericDef == typeof(ReadOnlyMemory<>))
+                {
+                    return new MemoryVectorTypeModel(type, this);
+                }
+            }
+
+            if (typeof(IUnion).IsAssignableFrom(type))
+            {
+                return new UnionTypeModel(type, this);
+            }
+
+            if (type.IsEnum)
+            {
+                return new EnumTypeModel(type, this);
+            }
+
+            if (Nullable.GetUnderlyingType(type) != null)
+            {
+                var underlyingType = Nullable.GetUnderlyingType(type);
+                if (underlyingType.IsEnum)
+                {
+                    return new NullableEnumTypeModel(type, this);
+                }
+            }
+
+            var tableAttribute = type.GetCustomAttribute<FlatBufferTableAttribute>();
+            if (tableAttribute != null)
+            {
+                return new TableTypeModel(type, this);
+            }
+
+            var structAttribute = type.GetCustomAttribute<FlatBufferStructAttribute>();
+            if (structAttribute != null)
+            {
+                return new StructTypeModel(type, this);
+            }
+
+            return null;
         }
     }
 }

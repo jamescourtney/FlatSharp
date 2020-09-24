@@ -33,7 +33,7 @@
         private int inlineSize;
         private int maxAlignment = 1;
 
-        internal StructTypeModel(Type clrType) : base(clrType)
+        internal StructTypeModel(Type clrType, ITypeModelProvider typeModelProvider) : base(clrType, typeModelProvider)
         {
         }
 
@@ -106,7 +106,6 @@
                     var value = this.Members[index];
                     PropertyInfo propertyInfo = value.PropertyInfo;
                     Type propertyType = propertyInfo.PropertyType;
-                    string compilableTypeName = CSharpHelpers.GetCompilableTypeName(propertyType);
 
                     GeneratedProperty generatedProperty = new GeneratedProperty(context.Options, index, propertyInfo);
 
@@ -176,7 +175,7 @@ $@"
             return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
         }
 
-        protected override void Initialize()
+        public override void Initialize()
         {
             var structAttribute = this.ClrType.GetCustomAttribute<FlatBufferStructAttribute>();
             if (structAttribute == null)
@@ -221,7 +220,7 @@ $@"
                 }
 
                 expectedIndex++;
-                RuntimeTypeModel propertyModel = RuntimeTypeModel.CreateFrom(property.PropertyType);
+                ITypeModel propertyModel = this.typeModelProvider.CreateTypeModel(property.PropertyType);
 
                 int propertySize = propertyModel.InlineSize;
                 int propertyAlignment = propertyModel.Alignment;
