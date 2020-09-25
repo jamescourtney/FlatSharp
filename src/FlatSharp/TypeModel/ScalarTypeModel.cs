@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2018 James Courtney
+ * Copyright 2020 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -176,7 +176,7 @@
 
         public override string FormatDefaultValueAsLiteral(object defaultValue)
         {
-            return defaultValue.ToString();
+            return $"({CSharpHelpers.GetCompilableTypeName(this.ClrType)})({defaultValue})";
         }
     }
 }

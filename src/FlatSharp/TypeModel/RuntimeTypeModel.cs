@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2018 James Courtney
+ * Copyright 2020 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -133,5 +133,7 @@ namespace FlatSharp.TypeModel
         public abstract void TraverseObjectGraph(HashSet<Type> seenTypes);
 
         public virtual string FormatDefaultValueAsLiteral(object defaultValue) => throw new InvalidOperationException();
+
+        public virtual string FormatStringAsLiteral(string value) => throw new InvalidOperationException();
     }
 }

@@ -1,4 +1,20 @@
-﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+﻿/*
+ * Copyright 2020 James Courtney
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+<#@ template debug="false" hostspecific="false" language="C#" #>
 <#@ assembly name="System.Core" #>
 <#@ import namespace="System" #>
 <#@ import namespace="System.Linq" #>
@@ -7,19 +23,19 @@
 <#@ output extension=".cs" #>
 
 <#
-	(string casedName, string typeName)[] types = 
+	(string casedName, string typeName, string literalSpecifier, string[] fbsAliases)[] types = 
 	{
-		("Bool", "bool"),
-		("Byte", "byte"),
-		("SByte", "sbyte"),
-		("UShort", "ushort"),
-		("Short", "short"),
-		("Int", "int"),
-		("UInt", "uint"),
-		("Long", "long"),
-		("ULong", "ulong"),
-		("Float", "float"),
-		("Double", "double"),
+		("Bool", "bool", "", new[] { "bool" }),
+		("Byte", "byte", "", new[] { "ubyte", "uint8" }),
+		("SByte", "sbyte", "", new[] { "byte", "int8" }),
+		("UShort", "ushort", "", new[] { "ushort", "uint16" }),
+		("Short", "short", "", new[] { "short", "int16" }),
+		("Int", "int", "", new[] { "int", "int32" }),
+		("UInt", "uint", "u", new[] { "uint", "uint32" }),
+		("Long", "long", "L", new[] { "long", "int64" }),
+		("ULong", "ulong", "ul", new[] { "ulong", "uint64" }),
+		("Float", "float", "f", new[] { "float", "float32" }),
+		("Double", "double", "d", new[] { "double", "float64" }),
 	};
 #>
 
@@ -46,6 +62,11 @@ namespace FlatSharp.TypeModel
         }
 		
         public override Type SpanComparerType => typeof(<#= casedName #>SpanComparer);
+		
+        public override string FormatStringAsLiteral(string value)
+		{
+			return $"(<#= pair.typeName #>)({value}<#= pair.literalSpecifier #>)";
+		}
 
         protected override string InputBufferReadMethodName => nameof(InputBuffer.Read<#= casedName #>);
 
@@ -99,6 +120,33 @@ namespace FlatSharp.TypeModel
 		<# } #>
 
 			return false;
+		}
+		
+        public bool TryResolveFbsAlias(string alias, out ITypeModel typeModel)
+		{
+			typeModel = null;
+			switch (alias)
+			{
+		<#
+			foreach (var pair in types)
+			{
+				var casedName = pair.casedName;
+				var typeName = pair.typeName;
+				var className = $"{casedName}TypeModel";
+				foreach (var alias in pair.fbsAliases)
+				{
+		#>
+				case "<#= alias #>":
+		<# 
+			} 
+		#>
+					typeModel = new <#= className #>();
+					break;
+
+		<# } #>
+			}
+
+			return typeModel != null;
 		}
 	}
 }

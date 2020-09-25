@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using FlatSharp.TypeModel;
 using System;
 
 namespace FlatSharp.Compiler
@@ -44,9 +45,9 @@ namespace FlatSharp.Compiler
         {
             string clrType;
 
-            if (SchemaDefinition.TryResolveBuiltInScalarType(this.FbsFieldType, out IBuiltInScalarType builtInType))
+            if (SchemaDefinition.TryResolve(this.FbsFieldType, out ITypeModel builtInType))
             {
-                clrType = builtInType.CSharpTypeName;
+                clrType = builtInType.ClrType.FullName;
             }
             else
             {
@@ -104,7 +105,7 @@ namespace FlatSharp.Compiler
 
         public void WriteCopyConstructorLine(CodeWriter writer, string sourceName, BaseSchemaMember parent)
         {
-            bool isBuiltIn = SchemaDefinition.TryResolveBuiltInType(this.FbsFieldType, out _);
+            bool isBuiltIn = SchemaDefinition.TryResolve(this.FbsFieldType, out _);
 
             bool foundNodeType = parent.TryResolveName(this.FbsFieldType, out var nodeType);
             if (!isBuiltIn && !foundNodeType)
@@ -159,7 +160,7 @@ namespace FlatSharp.Compiler
 
         public void WriteField(CodeWriter writer, BaseSchemaMember schemaDefinition)
         {
-            ErrorContext.Current.WithScope(this.Name, () =>
+            ErrorContext.Current.WithScope(this.Name, (Action)(() =>
             {
                 bool isVector = this.VectorType != VectorType.None;
                 EnumDefinition enumDefinition = null;
@@ -171,11 +172,11 @@ namespace FlatSharp.Compiler
 
                 string defaultValue = string.Empty;
                 string clrType;
-                bool isPrimitive = SchemaDefinition.TryResolveBuiltInScalarType(this.FbsFieldType, out IBuiltInScalarType builtInType);
+                bool isPrimitive = SchemaDefinition.TryResolve((string)this.FbsFieldType, out ITypeModel builtInType);
 
                 if (isPrimitive)
                 {
-                    clrType = builtInType.CSharpTypeName;
+                    clrType = builtInType.ClrType.FullName;
                 }
                 else
                 {
@@ -186,7 +187,7 @@ namespace FlatSharp.Compiler
                 {
                     if (isPrimitive)
                     {
-                        defaultValue = builtInType.FormatLiteral(this.DefaultValue);
+                        defaultValue = builtInType.FormatStringAsLiteral(this.DefaultValue);
                     }
                     else if (enumDefinition != null)
                     {
@@ -197,7 +198,7 @@ namespace FlatSharp.Compiler
                         }
                         else
                         {
-                            defaultValue = $"({clrType}){enumDefinition.UnderlyingType.FormatLiteral(this.DefaultValue)}";
+                            defaultValue = $"({clrType}){enumDefinition.UnderlyingType.FormatStringAsLiteral(this.DefaultValue)}";
                         }
                     }
                     else
@@ -207,7 +208,7 @@ namespace FlatSharp.Compiler
                 }
 
                 this.WriteField(writer, this.GetClrTypeName(schemaDefinition), defaultValue, this.Name);
-            });
+            }));
         }
 
         private void WriteField(

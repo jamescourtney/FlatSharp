@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2018 James Courtney
+ * Copyright 2020 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -120,9 +120,14 @@ namespace FlatSharp.TypeModel
         void TraverseObjectGraph(HashSet<Type> seenTypes);
 
         /// <summary>
-        /// Formats the given default value into a C# literal.
+        /// Formats the given default value into a C# literal. Not all implementations support this.
         /// </summary>
         string FormatDefaultValueAsLiteral(object defaultValue);
+
+        /// <summary>
+        /// Formats the given string as a literal of this type. Not all implementations support this.
+        /// </summary>
+        string FormatStringAsLiteral(string value);
 
         /// <summary>
         /// Initializes and validates the type model.

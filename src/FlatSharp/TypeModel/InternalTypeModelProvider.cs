@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2018 James Courtney
+ * Copyright 2020 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,12 @@
 
 namespace FlatSharp.TypeModel
 {
-    using FlatSharp.Attributes;
     using System;
-    using System.Collections;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Reflection;
+
+    using FlatSharp.Attributes;
 
     internal class InternalTypeModelProvider : ITypeModelProvider
     {
@@ -124,6 +124,17 @@ namespace FlatSharp.TypeModel
             }
 
             return null;
+        }
+
+        public bool TryResolveFbsAlias(string alias, out ITypeModel typeModel)
+        {
+            if (alias == "string")
+            {
+                typeModel = new StringTypeModel();
+                return true;
+            }
+
+            return this.scalarProvider.TryResolveFbsAlias(alias, out typeModel);
         }
     }
 }

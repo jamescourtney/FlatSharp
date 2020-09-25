@@ -16,6 +16,7 @@
 
 namespace FlatSharp.Compiler
 {
+    using FlatSharp.TypeModel;
     using System.Collections.Generic;
     using System.Globalization;
     using System.Linq;
@@ -40,7 +41,7 @@ namespace FlatSharp.Compiler
 
         public string FbsUnderlyingType { get; }
 
-        public IBuiltInScalarType UnderlyingType { get; }
+        public ITypeModel UnderlyingType { get; }
 
         public IReadOnlyDictionary<string, string> NameValuePairs => this.nameValuePairs;
 
@@ -56,7 +57,7 @@ namespace FlatSharp.Compiler
                     ErrorContext.Current?.RegisterError($"Enum '{this.Name}' must declare values sorted in ascending order.");
                 }
 
-                string standardizedString = this.UnderlyingType.FormatLiteral(bigInt.ToString());
+                string standardizedString = this.UnderlyingType.FormatStringAsLiteral(bigInt.ToString());
 
                 // C# compiler won't complain about duplicate values.
                 if (this.nameValuePairs.Values.Any(x => x == standardizedString))
@@ -70,16 +71,16 @@ namespace FlatSharp.Compiler
             else
             {
                 value = this.nextValue.ToString();
-                this.nameValuePairs[name] = this.UnderlyingType.FormatLiteral(value);
+                this.nameValuePairs[name] = this.UnderlyingType.FormatStringAsLiteral(value);
                 this.nextValue++;
             }
         }
 
         protected override void OnWriteCode(CodeWriter writer, CodeWritingPass pass, string forFile, IReadOnlyDictionary<string, string> precompiledSerailizers)
         {
-            writer.AppendLine($"[FlatBufferEnum(typeof({this.UnderlyingType.CSharpTypeName}))]");
+            writer.AppendLine($"[FlatBufferEnum(typeof({this.UnderlyingType.ClrType.FullName}))]");
             writer.AppendLine("[System.Runtime.CompilerServices.CompilerGenerated]");
-            writer.AppendLine($"public enum {this.Name} : {this.UnderlyingType.CSharpTypeName}");
+            writer.AppendLine($"public enum {this.Name} : {this.UnderlyingType.ClrType.FullName}");
             writer.AppendLine($"{{");
             using (writer.IncreaseIndent())
             {

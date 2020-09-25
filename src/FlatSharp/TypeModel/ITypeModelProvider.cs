@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2018 James Courtney
+ * Copyright 2020 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,11 @@ namespace FlatSharp.TypeModel
         /// Creates a type model for the given type. Will only be invoked if <see cref="CanProvide(Type)"/> returns true.0
         /// </summary>
         bool TryCreateTypeModel(Type type, out ITypeModel typeModel);
+
+        /// <summary>
+        /// Attempts to resolve the given alias from an FBS schema as a type model element.
+        /// </summary>
+        bool TryResolveFbsAlias(string alias, out ITypeModel typeModel);
     }
 
     /// <summary>
