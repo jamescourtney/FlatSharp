@@ -51,11 +51,6 @@
         public override bool IsFixedSize => true;
 
         /// <summary>
-        /// Scalars are built-into FlatSharp.
-        /// </summary>
-        public override bool IsBuiltInType => true;
-
-        /// <summary>
         /// Scalars can be part of Structs.
         /// </summary>
         public override bool IsValidStructMember => !this.isNullable;

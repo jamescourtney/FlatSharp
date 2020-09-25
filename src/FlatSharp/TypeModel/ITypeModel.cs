@@ -76,11 +76,6 @@ namespace FlatSharp.TypeModel
         int MaxInlineSize { get; }
 
         /// <summary>
-        /// Indicates if this type is built into FlatSharp and no parser needs to be generated.
-        /// </summary>
-        bool IsBuiltInType { get; }
-
-        /// <summary>
         /// Validates a default value.
         /// </summary>
         bool ValidateDefaultValue(object defaultValue);

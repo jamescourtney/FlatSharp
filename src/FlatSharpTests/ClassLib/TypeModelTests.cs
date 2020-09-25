@@ -241,7 +241,6 @@ namespace FlatSharpTests
 
             Assert.IsTrue(model is EnumTypeModel enumModel);
             Assert.AreEqual(typeof(TaggedEnum), model.ClrType);
-            Assert.IsFalse(model.IsBuiltInType);
             Assert.IsTrue(model.IsFixedSize);
         }
 
@@ -252,7 +251,6 @@ namespace FlatSharpTests
 
             Assert.IsTrue(model is NullableEnumTypeModel enumModel);
             Assert.AreEqual(typeof(TaggedEnum?), model.ClrType);
-            Assert.IsFalse(model.IsBuiltInType);
             Assert.IsTrue(model.IsFixedSize);
         }
 

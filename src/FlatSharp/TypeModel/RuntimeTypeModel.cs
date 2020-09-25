@@ -97,14 +97,6 @@ namespace FlatSharp.TypeModel
         }
 
         /// <summary>
-        /// Indicates if this type is built into FlatSharp and no parser needs to be generated.
-        /// </summary>
-        public virtual bool IsBuiltInType
-        {
-            get => false;
-        }
-
-        /// <summary>
         /// Validates a default value.
         /// </summary>
         public virtual bool ValidateDefaultValue(object defaultValue)

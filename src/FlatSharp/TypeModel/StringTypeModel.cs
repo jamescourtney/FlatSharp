@@ -44,11 +44,6 @@ namespace FlatSharp.TypeModel
         public override bool IsFixedSize => false;
 
         /// <summary>
-        /// String are built in.
-        /// </summary>
-        public override bool IsBuiltInType => true;
-
-        /// <summary>
         /// Strings can't be part of structs.
         /// </summary>
         public override bool IsValidStructMember => false;

@@ -72,11 +72,6 @@
         public override bool IsValidUnionMember => false;
 
         /// <summary>
-        /// Enums are not built in, even though scalars are.
-        /// </summary>
-        public override bool IsBuiltInType => false;
-
-        /// <summary>
         /// Enums can't be sorted vector keys.
         /// </summary>
         public override bool IsValidSortedVectorKey => false;
