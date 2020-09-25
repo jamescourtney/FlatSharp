@@ -28,6 +28,6 @@ namespace FlatSharp
         /// <summary>
         /// Compares the two spans.
         /// </summary>
-        int Compare(ReadOnlySpan<byte> left, ReadOnlySpan<byte> right);
+        int Compare(bool leftExists, ReadOnlySpan<byte> left, bool rightExists, ReadOnlySpan<byte> right);
     }
 }

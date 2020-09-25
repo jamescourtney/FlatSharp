@@ -327,27 +327,17 @@ $@"
             string offsetVariableName = $"index{index}Offset";
 
             string condition = $"if ({valueVariableName} != {memberModel.DefaultValueToken})";
-            if ((memberModel.ItemTypeModel is MemoryVectorTypeModel) || memberModel.IsKey)
+            if (memberModel.ItemTypeModel is MemoryVectorTypeModel)
             {
                 // 1) Memory is a struct and can't be null, and 0-length vectors are valid.
                 //    Therefore, we just need to omit the conditional check entirely.
-
-                // 2) For sorted vector keys, we must include the value since some other 
-                //    libraries cannot do binary search with omitted keys.
                 condition = string.Empty;
-            }
-
-            string keyCheckMethodCall = string.Empty;
-            if (memberModel.IsKey)
-            {
-                keyCheckMethodCall = $"{nameof(SortedVectorHelpers)}.{nameof(SortedVectorHelpers.EnsureKeyNonNull)}({valueVariableName});";
             }
 
             string prepareBlock =
 $@"
                     var {valueVariableName} = {context.ValueVariableName}.{memberModel.PropertyInfo.Name};
                     int {offsetVariableName} = 0;
-                    {keyCheckMethodCall}
                     {condition} 
                     {{
                             currentOffset += {CSharpHelpers.GetFullMethodName(ReflectedMethods.SerializationHelpers_GetAlignmentErrorMethod)}(currentOffset, {memberModel.ItemTypeModel.Alignment});

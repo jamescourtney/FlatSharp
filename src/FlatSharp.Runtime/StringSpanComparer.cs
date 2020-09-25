@@ -18,6 +18,7 @@ namespace FlatSharp
 {
     using System;
     using System.ComponentModel;
+    using System.Xml.Schema;
 
     /// <summary>
     /// Implements string comparison for flatbuffers.
@@ -37,8 +38,13 @@ namespace FlatSharp
         {
         }
 
-        public int Compare(ReadOnlySpan<byte> x, ReadOnlySpan<byte> y)
+        public int Compare(bool leftExists, ReadOnlySpan<byte> x, bool rightExists, ReadOnlySpan<byte> y)
         {
+            if (!leftExists || !rightExists)
+            {
+                throw new InvalidOperationException($"Strings may not be null when used as sorted vector keys.");
+            }
+
             int minLength = Math.Min(x.Length, y.Length);
 
             for (int i = 0; i < minLength; ++i)

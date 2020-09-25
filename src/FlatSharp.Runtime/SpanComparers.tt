@@ -62,20 +62,10 @@ namespace FlatSharp
 			this.defaultValue = defaultValue;
 		}
 
-        public int Compare(ReadOnlySpan<byte> left, ReadOnlySpan<byte> right)
+        public int Compare(bool leftExists, ReadOnlySpan<byte> left, bool rightExists, ReadOnlySpan<byte> right)
         {
-			<#=typeName#> leftValue = this.defaultValue;
-			<#=typeName#> rightValue = this.defaultValue;
-
-			if (left.Length > 0)
-			{
-				leftValue = ScalarSpanReader.Read<#=casedName#>(left);
-			}
-
-			if (right.Length > 0)
-			{
-				rightValue = ScalarSpanReader.Read<#=casedName#>(right);
-			}
+			<#=typeName#> leftValue = leftExists ? ScalarSpanReader.Read<#=casedName#>(left) : this.defaultValue;
+			<#=typeName#> rightValue = rightExists ? ScalarSpanReader.Read<#=casedName#>(right) : this.defaultValue;
 
 			return leftValue.CompareTo(rightValue);
         }
@@ -87,15 +77,12 @@ namespace FlatSharp
 		public Nullable<#=className#>(<#=typeName#>? notUsed)
 		{
 		}
-
-        public int Compare(ReadOnlySpan<byte> left, ReadOnlySpan<byte> right)
+		
+        public int Compare(bool leftExists, ReadOnlySpan<byte> left, bool rightExists, ReadOnlySpan<byte> right)
         {
-			bool leftNull = left.Length == 0;
-			bool rightNull = right.Length == 0;
-
-			if (leftNull || rightNull)
+			if (!leftExists || !rightExists)
 			{
-				return rightNull.CompareTo(leftNull);
+				return leftExists.CompareTo(rightExists);
 			}
 
 			return ScalarSpanReader.Read<#=casedName#>(left).CompareTo(ScalarSpanReader.Read<#=casedName#>(right));

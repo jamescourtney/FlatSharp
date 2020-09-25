@@ -323,8 +323,6 @@ $@"
 
         private void ImplementMethods()
         {
-            List<CodeGeneratedMethod> methods = new List<CodeGeneratedMethod>();
-
             foreach (var type in this.writeMethods.Keys)
             {
                 ITypeModel typeModel = this.typeModelProvider.CreateTypeModel(type);

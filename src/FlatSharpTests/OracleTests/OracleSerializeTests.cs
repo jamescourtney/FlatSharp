@@ -471,7 +471,9 @@ namespace FlatSharpTests
                 Assert.IsTrue(comparer.Compare(previous, current) <= 0);
                 Assert.IsTrue(comparer.Compare(previous, oracle) <= 0);
                 Assert.IsTrue(comparer.Compare(current, oracle) == 0);
-                Assert.IsTrue(oracleContains(current));
+
+                // FlatBuffers c# has a bug where binary search is broken when using default values.
+                // Assert.IsTrue(oracleContains(current));
             }
         }
 

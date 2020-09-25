@@ -51,18 +51,18 @@ namespace FlatSharpTests
                 Span<byte> span2 = InputBuffer.Encoding.GetBytes(str2);
 
                 Utf8StringComparer utf8Comparer = new Utf8StringComparer();
-                Assert.AreEqual(0, StringSpanComparer.Instance.Compare(span, span));
+                Assert.AreEqual(0, StringSpanComparer.Instance.Compare(true, span, true, span));
                 Assert.AreEqual(0, utf8Comparer.Compare(str, str));
 
-                Assert.AreEqual(0, StringSpanComparer.Instance.Compare(span2, span2));
+                Assert.AreEqual(0, StringSpanComparer.Instance.Compare(true, span2, true, span2));
                 Assert.AreEqual(0, utf8Comparer.Compare(str2, str2));
 
                 int expected = utf8Comparer.Compare(str, str2);
-                int actual = StringSpanComparer.Instance.Compare(span, span2);
+                int actual = StringSpanComparer.Instance.Compare(true, span, true, span2);
                 Assert.AreEqual(expected, actual);
 
                 expected = utf8Comparer.Compare(str2, str);
-                actual = StringSpanComparer.Instance.Compare(span2, span);
+                actual = StringSpanComparer.Instance.Compare(true, span2, true, span);
                 Assert.AreEqual(expected, actual);
             }
         }
@@ -75,10 +75,10 @@ namespace FlatSharpTests
             Span<byte> f = new byte[1] { InputBuffer.False };
             Span<byte> t = new byte[1] { InputBuffer.True };
 
-            Assert.AreEqual(false.CompareTo(true), comparer.Compare(f, t));
-            Assert.AreEqual(false.CompareTo(false), comparer.Compare(f, f));
-            Assert.AreEqual(true.CompareTo(true), comparer.Compare(t, t));
-            Assert.AreEqual(true.CompareTo(false), comparer.Compare(t, f));
+            Assert.AreEqual(false.CompareTo(true), comparer.Compare(true, f, true, t));
+            Assert.AreEqual(false.CompareTo(false), comparer.Compare(true, f, true, f));
+            Assert.AreEqual(true.CompareTo(true), comparer.Compare(true, t, true, t));
+            Assert.AreEqual(true.CompareTo(false), comparer.Compare(true, t, true, f));
         }
 
         [TestMethod]
@@ -130,14 +130,14 @@ namespace FlatSharpTests
 
                 Assert.AreEqual(
                     a.CompareTo(b),
-                    comparer.Compare(leftSpan, rightSpan));
+                    comparer.Compare(true, leftSpan, true, rightSpan));
 
                 Assert.AreEqual(
                     b.CompareTo(a),
-                    comparer.Compare(rightSpan, leftSpan));
+                    comparer.Compare(true, rightSpan, true, leftSpan));
 
-                Assert.AreEqual(0, comparer.Compare(leftSpan, leftSpan));
-                Assert.AreEqual(0, comparer.Compare(rightSpan, rightSpan));
+                Assert.AreEqual(0, comparer.Compare(true, leftSpan, true, leftSpan));
+                Assert.AreEqual(0, comparer.Compare(true, rightSpan, true, rightSpan));
             }
         }
     }
