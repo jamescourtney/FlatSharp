@@ -159,7 +159,7 @@
                     
                     if (!property.ItemTypeModel.IsValidSortedVectorKey)
                     {
-                        throw new InvalidFlatBufferDefinitionException($"Table {this.ClrType.Name} declares a key property on a type that That does not support being a key in a sorted vector.");
+                        throw new InvalidFlatBufferDefinitionException($"Table {this.ClrType.Name} declares a key property on a type that that does not support being a key in a sorted vector.");
                     }
 
                     this.KeyProperty = property.Property;
@@ -304,7 +304,7 @@ $@"
             // We probably over-allocated. Figure out by how much and back up the cursor.
             // Then we can write the vtable.
             body.Add("int tableLength = currentOffset - tableStart;");
-            body.Add($"context.{nameof(SerializationContext.Offset)} -= {maxInlineSize} - tableLength;");
+            body.Add($"{context.SerializationContextVariableName}.{nameof(SerializationContext.Offset)} -= {maxInlineSize} - tableLength;");
             body.Add($"int vtablePosition = vtable.{nameof(VTableBuilder.EndObject)}(span, {context.SpanWriterVariableName}, tableLength);");
             body.Add($"{context.SpanWriterVariableName}.{nameof(SpanWriter.WriteInt)}(span, tableStart - vtablePosition, tableStart, context);");
 
@@ -411,9 +411,9 @@ $@"
                     int {valueOffsetVariableName} = 0;
                     byte {discriminatorValueVariableName} = 0;
 
-                    if (!object.ReferenceEquals({valueVariableName}, null) && {valueVariableName}.Discriminator != 0)
+                    if (!object.ReferenceEquals({valueVariableName}, null) && {valueVariableName}.{nameof(FlatBufferUnion<int>.Discriminator)} != 0)
                     {{
-                            {discriminatorValueVariableName} = {valueVariableName}.Discriminator;
+                            {discriminatorValueVariableName} = {valueVariableName}.{nameof(FlatBufferUnion<int>.Discriminator)};
                             {discriminatorOffsetVariableName} = currentOffset;
                             vtable.{nameof(VTableBuilder.SetOffset)}({index}, currentOffset - tableStart);
                             currentOffset++;

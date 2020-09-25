@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
-
 namespace FlatSharp.TypeModel
 {
+    using System;
+    using System.Collections.Generic;
+
     /// <summary>
     /// Defines a FlatBuffer string type.
     /// </summary>
@@ -100,11 +100,6 @@ namespace FlatSharp.TypeModel
             {
                 MethodBody = $"{context.SpanWriterVariableName}.{nameof(SpanWriter.WriteSharedString)}({context.SpanVariableName}, {context.ValueVariableName}, {context.OffsetVariableName}, {context.SerializationContextVariableName});",
             };
-        }
-
-        public override string GetNonNullConditionExpression(string itemVariableName)
-        {
-            return $"!object.ReferenceEquals({itemVariableName}, null)";
         }
 
         public override string GetThrowIfNullInvocation(string itemVariableName)

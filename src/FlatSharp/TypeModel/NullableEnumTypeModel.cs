@@ -132,7 +132,7 @@ namespace FlatSharp.TypeModel
 
         public override string GetNonNullConditionExpression(string itemVariableName)
         {
-            return $"{itemVariableName} != null";
+            return $"{itemVariableName}.HasValue";
         }
 
         public override string FormatDefaultValueAsLiteral(object defaultValue)

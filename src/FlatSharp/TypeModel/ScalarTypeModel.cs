@@ -157,7 +157,7 @@
         {
             if (this.isNullable)
             {
-                return $"{itemVariableName} != null";
+                return $"{itemVariableName}.HasValue";
             }
             else
             {

@@ -119,11 +119,6 @@ $@"
             return new CodeGeneratedMethod { MethodBody = "throw new NotImplementedException();" };
         }
 
-        public override string GetNonNullConditionExpression(string itemVariableName)
-        {
-            return $"{itemVariableName} != null";
-        }
-
         public override string GetThrowIfNullInvocation(string itemVariableName)
         {
             return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
