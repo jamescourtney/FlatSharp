@@ -61,9 +61,7 @@ namespace FlatSharp.TypeModel
             }
         }
 
-        public override int Alignment => this.underlyingTypeModel.Alignment;
-
-        public override int InlineSize => this.underlyingTypeModel.InlineSize;
+        public override VTableEntry[] VTableLayout => this.underlyingTypeModel.VTableLayout;
 
         public override bool IsFixedSize => this.underlyingTypeModel.IsFixedSize;
 
@@ -75,9 +73,6 @@ namespace FlatSharp.TypeModel
 
         public override bool IsValidUnionMember => false;
 
-        /// <summary>
-        /// Enums can't be sorted vector keys.
-        /// </summary>
         public override bool IsValidSortedVectorKey => false;
 
         public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)

@@ -35,7 +35,7 @@ namespace FlatSharp.TypeModel
 
         public override string LengthPropertyName => nameof(IList<byte>.Count);
 
-        public override void Initialize()
+        public override void OnInitialize()
         {
             var genericDef = this.ClrType.GetGenericTypeDefinition();
             if (genericDef != typeof(IList<>) && genericDef != typeof(IReadOnlyList<>))

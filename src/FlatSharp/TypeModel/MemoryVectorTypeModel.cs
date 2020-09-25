@@ -34,7 +34,7 @@ namespace FlatSharp.TypeModel
 
         public override string LengthPropertyName => nameof(Memory<byte>.Length);
 
-        public override void Initialize()
+        public override void OnInitialize()
         {
             if (this.ClrType != typeof(Memory<byte>) && this.ClrType != typeof(ReadOnlyMemory<byte>))
             {

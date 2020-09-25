@@ -48,15 +48,9 @@ namespace FlatSharp.TypeModel
         public Type ClrType { get; }
 
         /// <summary>
-        /// The alignment of this runtime type.
+        /// Gets the layout of this type model's vtable.
         /// </summary>
-        public abstract int Alignment { get; }
-
-        /// <summary>
-        /// The inline size of this runtime type. For references, this will be the size of a reference.
-        /// For scalars and structs, this will be the total size of the object.
-        /// </summary>
-        public abstract int InlineSize { get; }
+        public abstract VTableEntry[] VTableLayout { get; }
 
         /// <summary>
         /// Indicates if this item is fixed size or not.
@@ -91,10 +85,7 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// Gets the maximum inline size of this item when padded for alignment, when stored in a table or vector.
         /// </summary>
-        public virtual int MaxInlineSize
-        {
-            get => this.InlineSize + SerializationHelpers.GetMaxPadding(this.Alignment);
-        }
+        public virtual int MaxInlineSize => this.VTableLayout.Sum(x => x.InlineSize + SerializationHelpers.GetMaxPadding(x.Alignment));
 
         /// <summary>
         /// Validates a default value.

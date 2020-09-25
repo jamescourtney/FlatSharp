@@ -33,7 +33,7 @@ namespace FlatSharp.TypeModel
 
         public override string LengthPropertyName => nameof(Array.Length);
 
-        public override void Initialize()
+        public override void OnInitialize()
         {
             if (!this.ClrType.IsArray)
             {

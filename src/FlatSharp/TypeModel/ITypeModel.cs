@@ -30,15 +30,9 @@ namespace FlatSharp.TypeModel
         Type ClrType { get; }
 
         /// <summary>
-        /// The alignment of this runtime type.
+        /// Layout when in a vtable.
         /// </summary>
-        int Alignment { get; }
-
-        /// <summary>
-        /// The inline size of this runtime type. For references, this will be the size of a reference.
-        /// For scalars and structs, this will be the total size of the object.
-        /// </summary>
-        int InlineSize { get; }
+        VTableEntry[] VTableLayout { get; }
 
         /// <summary>
         /// Indicates if this item is fixed size or not.
@@ -139,5 +133,18 @@ namespace FlatSharp.TypeModel
         /// The type of the span comaprer used for this type model.
         /// </summary>
         Type SpanComparerType { get; }
+    }
+
+    public class VTableEntry
+    {
+        public VTableEntry(int size, int alignment)
+        {
+            this.InlineSize = size;
+            this.Alignment = alignment;
+        }
+
+        public int InlineSize { get; }
+
+        public int Alignment { get; }
     }
 }

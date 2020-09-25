@@ -335,8 +335,8 @@ $@"
                 var writeMethod = typeModel.CreateSerializeMethodBody(serializeContext);
 
                 this.GenerateGetMaxSizeMethod(type, maxSizeMethod, maxSizeContext);
-                this.GenerateParseMethod(type, parseMethod, parseContext);
-                this.GenerateSerializeMethod(type, writeMethod, serializeContext);
+                this.GenerateParseMethod(typeModel, parseMethod, parseContext);
+                this.GenerateSerializeMethod(typeModel, writeMethod, serializeContext);
             }
         }
 
@@ -408,7 +408,7 @@ $@"
             }
         }
 
-        private void GenerateParseMethod(Type type, CodeGeneratedMethod method, ParserCodeGenContext context)
+        private void GenerateParseMethod(ITypeModel typeModel, CodeGeneratedMethod method, ParserCodeGenContext context)
         {
             string inlineDeclaration = "[MethodImpl(MethodImplOptions.AggressiveInlining)]";
             if (!method.IsMethodInline)
@@ -416,10 +416,18 @@ $@"
                 inlineDeclaration = string.Empty;
             }
 
+            string offsetVariableType = "int";
+            if (typeModel.VTableLayout.Length > 1)
+            {
+                offsetVariableType = "Span<int>";
+            }
+
             string declaration =
 $@"
             {inlineDeclaration}
-            private static {CSharpHelpers.GetCompilableTypeName(type)} {this.readMethods[type]}({nameof(InputBuffer)} {context.InputBufferVariableName}, int {context.OffsetVariableName})
+            private static {CSharpHelpers.GetCompilableTypeName(typeModel.ClrType)} {this.readMethods[typeModel.ClrType]}(
+                {nameof(InputBuffer)} {context.InputBufferVariableName}, 
+                {offsetVariableType} {context.OffsetVariableName})
             {{
                 {method.MethodBody}
             }}";
@@ -434,7 +442,7 @@ $@"
             }
         }
 
-        private void GenerateSerializeMethod(Type type, CodeGeneratedMethod method, SerializationCodeGenContext context)
+        private void GenerateSerializeMethod(ITypeModel typeModel, CodeGeneratedMethod method, SerializationCodeGenContext context)
         {
             string inlineDeclaration = "[MethodImpl(MethodImplOptions.AggressiveInlining)]";
             if (!method.IsMethodInline)
@@ -442,10 +450,21 @@ $@"
                 inlineDeclaration = string.Empty;
             }
 
+            string offsetVariableType = "int";
+            if (typeModel.VTableLayout.Length > 1)
+            {
+                offsetVariableType = "Span<int>";
+            }
+
             string declaration =
 $@"
             {inlineDeclaration}
-            private static void {this.writeMethods[type]}({nameof(SpanWriter)} {context.SpanWriterVariableName}, Span<byte> {context.SpanVariableName}, {CSharpHelpers.GetCompilableTypeName(type)} {context.ValueVariableName}, int {context.OffsetVariableName}, {nameof(SerializationContext)} {context.SerializationContextVariableName})
+            private static void {this.writeMethods[typeModel.ClrType]}(
+                {nameof(SpanWriter)} {context.SpanWriterVariableName}, 
+                Span<byte> {context.SpanVariableName}, 
+                {CSharpHelpers.GetCompilableTypeName(typeModel.ClrType)} {context.ValueVariableName}, 
+                {offsetVariableType} {context.OffsetVariableName}, 
+                {nameof(SerializationContext)} {context.SerializationContextVariableName})
             {{
                 {method.MethodBody}
             }}";

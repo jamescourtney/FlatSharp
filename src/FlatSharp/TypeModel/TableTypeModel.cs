@@ -43,14 +43,9 @@
         }
 
         /// <summary>
-        /// Tables are always addressed by reference, so the alignment is uoffset_t.
+        /// Layout when in a vtable.
         /// </summary>
-        public override int Alignment => sizeof(uint);
-
-        /// <summary>
-        /// The inline size. Tables are always "reference" types, so this is a fixed uoffset_t.
-        /// </summary>
-        public override int InlineSize => sizeof(uint);
+        public override VTableEntry[] VTableLayout { get; } = new VTableEntry[] { new VTableEntry(sizeof(uint), sizeof(uint)) };
 
         /// <summary>
         /// Tables can have vectors and other arbitrary data.
@@ -186,7 +181,7 @@
                     property.Attribute.SortedVector,
                     property.Attribute.Key);
 
-                for (int i = 0; i < model.VTableSlotCount; ++i)
+                for (int i = 0; i < model.ItemTypeModel.VTableLayout.Length; ++i)
                 {
                     if (!this.occupiedVtableSlots.Add(index + i))
                     {
@@ -279,6 +274,8 @@ $@"
 
                 var vtable = {context.SerializationContextVariableName}.{nameof(SerializationContext.VTableBuilder)};
                 vtable.StartObject({maxIndex});
+                Span<int> offsets = stackalloc int[{maxIndex + 1}];
+                int offsetTemp;
 ";
 
             List<string> body = new List<string>();
@@ -287,16 +284,7 @@ $@"
             // load the properties of the object into locals.
             foreach (var kvp in this.IndexToMemberMap)
             {
-                string prepare, write;
-                if (kvp.Value.ItemTypeModel is UnionTypeModel)
-                {
-                    (prepare, write) = GetUnionSerializeBlocks(kvp.Key, kvp.Value, context);
-                }
-                else
-                {
-                    (prepare, write) = GetStandardSerializeBlocks(kvp.Key, kvp.Value, context);
-                }
-
+                var (prepare, write) = GetStandardSerializeBlocks(kvp.Key, kvp.Value, context);
                 body.Add(prepare);
                 writers.Add(write);
             }
@@ -324,7 +312,6 @@ $@"
             SerializationCodeGenContext context)
         {
             string valueVariableName = $"index{index}Value";
-            string offsetVariableName = $"index{index}Offset";
 
             string condition = $"if ({valueVariableName} != {memberModel.DefaultValueToken})";
             if (memberModel.ItemTypeModel is MemoryVectorTypeModel)
@@ -334,16 +321,25 @@ $@"
                 condition = string.Empty;
             }
 
+            List<string> prepareBlockComponents = new List<string>();
+            for (int i = 0; i < memberModel.ItemTypeModel.VTableLayout.Length; ++i)
+            {
+                var layout = memberModel.ItemTypeModel.VTableLayout[i];
+
+                prepareBlockComponents.Add($@"
+                            currentOffset += {CSharpHelpers.GetFullMethodName(ReflectedMethods.SerializationHelpers_GetAlignmentErrorMethod)}(currentOffset, {layout.Alignment});
+                            offsets[{index + i}] = currentOffset;
+                            vtable.{nameof(VTableBuilder.SetOffset)}({index + i}, currentOffset - tableStart);
+                            currentOffset += {layout.InlineSize};
+                ");
+            }
+
             string prepareBlock =
 $@"
                     var {valueVariableName} = {context.ValueVariableName}.{memberModel.PropertyInfo.Name};
-                    int {offsetVariableName} = 0;
                     {condition} 
                     {{
-                            currentOffset += {CSharpHelpers.GetFullMethodName(ReflectedMethods.SerializationHelpers_GetAlignmentErrorMethod)}(currentOffset, {memberModel.ItemTypeModel.Alignment});
-                            {offsetVariableName} = currentOffset;
-                            vtable.{nameof(VTableBuilder.SetOffset)}({index}, currentOffset - tableStart);
-                            currentOffset += {memberModel.ItemTypeModel.InlineSize};
+                            {string.Join("\r\n", prepareBlockComponents)}
                     }}";
 
             string sortInvocation = string.Empty;
@@ -360,101 +356,46 @@ $@"
                     throw new InvalidFlatBufferDefinitionException("Key type models must implement the 'ISpanComparerProvider' interface.");
                 }
 
-                string inlineSize = keyTypeModel is ScalarTypeModel ? keyTypeModel.InlineSize.ToString() : "null";
+                if (keyTypeModel.VTableLayout.Length != 1)
+                {
+                    throw new InvalidFlatBufferDefinitionException($"'{keyTypeModel.ClrType.Name}' cannot be used as a sorted vector key (wrong vtable layout).");
+                }
+
+                string inlineSize = keyTypeModel is ScalarTypeModel ? keyTypeModel.VTableLayout[0].InlineSize.ToString() : "null";
 
                 string defaultValue = keyMember.DefaultValueToken;
 
-                sortInvocation = $"{nameof(SortedVectorHelpers)}.{nameof(SortedVectorHelpers.SortVector)}(" +
-                                    $"span, {offsetVariableName}, {keyMember.Index}, {inlineSize}, new {CSharpHelpers.GetCompilableTypeName(spanComparerProvider.SpanComparerType)}({defaultValue}))";
-
-                sortInvocation = $"{context.SerializationContextVariableName}.{nameof(SerializationContext.AddPostSerializeAction)}((span, ctx) => {sortInvocation});";
+                sortInvocation = @$"
+                    int index{index}Offset0 = offsets[{index}];
+                    {context.SerializationContextVariableName}.{nameof(SerializationContext.AddPostSerializeAction)}(
+                        (span, ctx) =>
+                        {nameof(SortedVectorHelpers)}.{nameof(SortedVectorHelpers.SortVector)}(
+                            span, 
+                            index{index}Offset0, 
+                            {keyMember.Index}, 
+                            {inlineSize}, 
+                            new {CSharpHelpers.GetCompilableTypeName(spanComparerProvider.SpanComparerType)}({defaultValue})));";
             }
 
-            string serializeBlock =
-$@"
-                    if ({offsetVariableName} != 0)
-                    {{
-                        {context.With(valueVariableName: valueVariableName, offsetVariableName: offsetVariableName)
-                                .GetSerializeInvocation(memberModel.ItemTypeModel.ClrType)};
-                        {sortInvocation}
-                    }}";
-
-            return (prepareBlock, serializeBlock);
-        }
-
-        private static (string prepareBlock, string serializeBlock) GetUnionSerializeBlocks(
-            int index, 
-            TableMemberModel memberModel, 
-            SerializationCodeGenContext context)
-        {
-            UnionTypeModel unionModel = (UnionTypeModel)memberModel.ItemTypeModel;
-
-            string valueVariableName = $"index{index}Value";
-            string discriminatorOffsetVariableName = $"index{index}DiscriminatorOffset";
-            string valueOffsetVariableName = $"index{index}ValueOffset";
-            string discriminatorValueVariableName = $"index{index}Discriminator";
-
-            string prepareBlock =
-$@"
-                    var {valueVariableName} = {context.ValueVariableName}.{memberModel.PropertyInfo.Name};
-                    int {discriminatorOffsetVariableName} = 0;
-                    int {valueOffsetVariableName} = 0;
-                    byte {discriminatorValueVariableName} = 0;
-
-                    if (!object.ReferenceEquals({valueVariableName}, null) && {valueVariableName}.{nameof(FlatBufferUnion<int>.Discriminator)} != 0)
-                    {{
-                            {discriminatorValueVariableName} = {valueVariableName}.{nameof(FlatBufferUnion<int>.Discriminator)};
-                            {discriminatorOffsetVariableName} = currentOffset;
-                            vtable.{nameof(VTableBuilder.SetOffset)}({index}, currentOffset - tableStart);
-                            currentOffset++;
-
-                            currentOffset += {CSharpHelpers.GetFullMethodName(ReflectedMethods.SerializationHelpers_GetAlignmentErrorMethod)}(currentOffset, sizeof(uint));
-                            {valueOffsetVariableName} = currentOffset;
-                            vtable.{nameof(VTableBuilder.SetOffset)}({index + 1}, currentOffset - tableStart);
-                            currentOffset += sizeof(uint);
-                    }}";
-
-            List<string> switchCases = new List<string>();
-            for (int i = 0; i < unionModel.UnionElementTypeModel.Length; ++i)
+            string adjustedOffsetVariableName = "offsetTemp";
+            if (memberModel.ItemTypeModel.VTableLayout.Length != 1)
             {
-                var elementModel = unionModel.UnionElementTypeModel[i];
-                var unionIndex = i + 1;
-
-                string structAdjustment = string.Empty;
-                if (elementModel is StructTypeModel)
-                {
-                    // Structs are generally written in-line, with the exception of unions.
-                    // So, we need to do the normal allocate space dance here, since we're writing
-                    // a pointer to a struct.
-                    structAdjustment =
-$@"
-                        var writeOffset = context.{nameof(SerializationContext.AllocateSpace)}({elementModel.InlineSize}, {elementModel.Alignment});
-                        {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteUOffset)}(span, {valueOffsetVariableName}, writeOffset, context);
-                        {valueOffsetVariableName} = writeOffset;";
-                }
-
-                string @case =
-$@"
-                    case {unionIndex}:
-                    {{
-                        {structAdjustment}
-                        {context.MethodNameMap[elementModel.ClrType]}({context.SpanWriterVariableName}, {context.SpanVariableName}, {valueVariableName}.Item{unionIndex}, {valueOffsetVariableName}, {context.SerializationContextVariableName});
-                    }}
-                        break;";
-
-                switchCases.Add(@case);
+                // simplify implementation for normal-width vtables.
+                adjustedOffsetVariableName = $"offsets.Slice({index}, {memberModel.ItemTypeModel.VTableLayout.Length})";
             }
 
             string serializeBlock =
-$@"
-                    if ({discriminatorOffsetVariableName} != 0)
+                $@"
+                    offsetTemp = offsets[{index}];
+                    if (offsetTemp != 0)
                     {{
-                        {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteByte)}({context.SpanVariableName}, {discriminatorValueVariableName}, {discriminatorOffsetVariableName}, {context.SerializationContextVariableName});
-                        switch ({discriminatorValueVariableName})
-                        {{
-                            {string.Join("\r\n", switchCases)}
-                            default: throw new InvalidOperationException(""Unexpected"");
-                        }}
+                        {context.MethodNameMap[memberModel.ItemTypeModel.ClrType]}(
+                            {context.SpanWriterVariableName},
+                            {context.SpanVariableName},
+                            {valueVariableName},
+                            {adjustedOffsetVariableName},
+                            {context.SerializationContextVariableName});
+                        {sortInvocation}
                     }}";
 
             return (prepareBlock, serializeBlock);
@@ -474,9 +415,9 @@ $@"
                 var value = item.Value;
 
                 GeneratedProperty propertyStuff;
-                if (value.ItemTypeModel is UnionTypeModel)
+                if (value.ItemTypeModel.VTableLayout.Length > 1)
                 {
-                    propertyStuff = CreateUnionTableGetter(value, index, context);
+                    propertyStuff = CreateWideTableProperty(value, index, context);
                 }
                 else
                 {
@@ -528,71 +469,40 @@ $@"
             return property;
         }
 
-        /// <summary>
-        /// Generates a special property getter for union types. This stems from
-        /// the fact that unions occupy two spots in the table's vtable to deserialize one
-        /// logical field. This means that the logic to read them must also be special.
-        /// </summary>
-        private static GeneratedProperty CreateUnionTableGetter(
-            TableMemberModel memberModel, 
-            int index, 
+        private static GeneratedProperty CreateWideTableProperty(
+            TableMemberModel memberModel,
+            int index,
             ParserCodeGenContext context)
         {
             Type propertyType = memberModel.ItemTypeModel.ClrType;
-            UnionTypeModel unionModel = (UnionTypeModel)memberModel.ItemTypeModel;
+            GeneratedProperty property = new GeneratedProperty(context.Options, index, memberModel.PropertyInfo);
 
-            GeneratedProperty generatedProperty = new GeneratedProperty(context.Options, index, memberModel.PropertyInfo);
-
-            // Start by generating switch cases. The codegen'ed union types have
-            // well-defined constructors for each constituent type, so this .ctor
-            // will always be available.
-            List<string> switchCases = new List<string>();
-            for (int i = 0; i < unionModel.UnionElementTypeModel.Length; ++i)
+            List<string> locationGetters = new List<string>();
+            for (int i = 1; i < memberModel.ItemTypeModel.VTableLayout.Length; ++i)
             {
-                var unionMember = unionModel.UnionElementTypeModel[i];
-                int unionIndex = i + 1;
-
-                string structOffsetAdjustment = string.Empty;
-                if (unionMember is StructTypeModel)
-                {
-                    structOffsetAdjustment = $"offsetLocation += buffer.{nameof(InputBuffer.ReadUOffset)}(offsetLocation);";
-                }
-
-                string @case =
-$@"
-                    case {unionIndex}:
-                        {structOffsetAdjustment}
-                        return new {CSharpHelpers.GetCompilableTypeName(unionModel.ClrType)}({context.MethodNameMap[unionMember.ClrType]}(buffer, offsetLocation));
-";
-                switchCases.Add(@case);
+                locationGetters.Add($"absoluteLocations[{i}] = buffer.{nameof(InputBuffer.GetAbsoluteTableFieldLocation)}(offset, {index + i});");
             }
 
-
-            generatedProperty.ReadValueMethodDefinition =
+            property.ReadValueMethodDefinition =
 $@"
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {generatedProperty.ReadValueMethodName}({nameof(InputBuffer)} buffer, int offset)
+                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {property.ReadValueMethodName}({nameof(InputBuffer)} buffer, int offset)
                     {{
-                        int discriminatorLocation = buffer.{nameof(InputBuffer.GetAbsoluteTableFieldLocation)}(offset, {index});
-                        int offsetLocation = buffer.{nameof(InputBuffer.GetAbsoluteTableFieldLocation)}(offset, {index + 1});
-                            
-                        if (discriminatorLocation == 0) {{
+                        int firstLocation = buffer.{nameof(InputBuffer.GetAbsoluteTableFieldLocation)}(offset, {index});
+                        if (firstLocation == 0)
+                        {{
                             return {memberModel.DefaultValueToken};
                         }}
-                        else {{
-                            byte discriminator = buffer.{nameof(InputBuffer.ReadByte)}(discriminatorLocation);
-                            if (discriminator == 0 && offsetLocation != 0)
-                                throw new System.IO.InvalidDataException(""FlatBuffer union had discriminator set but no offset."");
-                            switch (discriminator)
-                            {{
-                                {string.Join("\r\n", switchCases)}
-                                default:
-                                    return {memberModel.DefaultValueToken};
-                            }}
-                        }}
+
+                        Span<int> absoluteLocations = stackalloc int[{memberModel.ItemTypeModel.VTableLayout.Length}];
+                        absoluteLocations[0] = firstLocation;
+
+                        {string.Join("\r\n", locationGetters)}
+                        return {context.MethodNameMap[propertyType]}(buffer, absoluteLocations);
                     }}
 ";
-            return generatedProperty;
+
+            return property;
         }
 
         public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
@@ -601,7 +511,7 @@ $@"
 
             // vtable length + table length + 2 * entryCount + padding to 2-byte alignment.
             int maxVtableSize = sizeof(ushort) * (2 + vtableEntryCount) + SerializationHelpers.GetMaxPadding(sizeof(ushort));
-            int maxTableSize = this.NonPaddedMaxTableInlineSize + SerializationHelpers.GetMaxPadding(this.Alignment);
+            int maxTableSize = this.NonPaddedMaxTableInlineSize + SerializationHelpers.GetMaxPadding(this.VTableLayout.Single().Alignment);
 
             List<string> statements = new List<string>();
             foreach (var kvp in this.IndexToMemberMap)

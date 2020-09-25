@@ -32,14 +32,9 @@ namespace FlatSharp.TypeModel
         }
 
         /// <summary>
-        /// Gets the required alignment of this element.
+        /// Layout of the vtable.
         /// </summary>
-        public override int Alignment => sizeof(uint);
-
-        /// <summary>
-        /// Gets the inline size of this element.
-        /// </summary>
-        public override int InlineSize => sizeof(uint);
+        public override VTableEntry[] VTableLayout { get; } = new VTableEntry[] { new VTableEntry(sizeof(uint), sizeof(uint)) };
 
         /// <summary>
         /// Vectors are arbitrary in length.
@@ -88,8 +83,8 @@ namespace FlatSharp.TypeModel
         {
             get
             {
-                int itemInlineSize = this.ItemTypeModel.InlineSize;
-                int itemAlignment = this.ItemTypeModel.Alignment;
+                int itemInlineSize = this.ItemTypeModel.VTableLayout[0].InlineSize;
+                int itemAlignment = this.ItemTypeModel.VTableLayout[0].Alignment;
 
                 return itemInlineSize + SerializationHelpers.GetAlignmentError(itemInlineSize, itemAlignment); 
             }
@@ -103,7 +98,7 @@ namespace FlatSharp.TypeModel
             if (this.ItemTypeModel.IsFixedSize)
             {
                 // Constant size items. We can reduce these reasonably well.
-                body = $"return {VectorMinSize} + {SerializationHelpers.GetMaxPadding(this.ItemTypeModel.Alignment)} + ({this.PaddedMemberInlineSize} * {lengthProperty});";
+                body = $"return {VectorMinSize} + {SerializationHelpers.GetMaxPadding(this.ItemTypeModel.VTableLayout[0].Alignment)} + ({this.PaddedMemberInlineSize} * {lengthProperty});";
             }
             else
             {
@@ -112,7 +107,7 @@ namespace FlatSharp.TypeModel
                 body =
     $@"
                     int length = {lengthProperty};
-                    int runningSum = {VectorMinSize} + {SerializationHelpers.GetMaxPadding(this.ItemTypeModel.Alignment)} + ({this.PaddedMemberInlineSize} * length);
+                    int runningSum = {VectorMinSize} + {SerializationHelpers.GetMaxPadding(this.ItemTypeModel.VTableLayout[0].Alignment)} + ({this.PaddedMemberInlineSize} * length);
                     for (int i = 0; i < length; ++i)
                     {{
                         var itemTemp = {context.ValueVariableName}[i];
@@ -135,7 +130,7 @@ namespace FlatSharp.TypeModel
 
             string body = $@"
                 int count = {context.ValueVariableName}.{this.LengthPropertyName};
-                int vectorOffset = {context.SerializationContextVariableName}.{nameof(SerializationContext.AllocateVector)}({itemTypeModel.Alignment}, count, {this.PaddedMemberInlineSize});
+                int vectorOffset = {context.SerializationContextVariableName}.{nameof(SerializationContext.AllocateVector)}({itemTypeModel.VTableLayout[0].Alignment}, count, {this.PaddedMemberInlineSize});
                 {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteUOffset)}({context.SpanVariableName}, {context.OffsetVariableName}, vectorOffset, {context.SerializationContextVariableName});
                 {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteInt)}({context.SpanVariableName}, count, vectorOffset, {context.SerializationContextVariableName});
                 vectorOffset += sizeof(int);
@@ -155,7 +150,17 @@ namespace FlatSharp.TypeModel
             return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
         }
 
-        public abstract override void Initialize();
+        public sealed override void Initialize()
+        {
+            this.OnInitialize();
+
+            if (this.ItemTypeModel.VTableLayout.Length != 1)
+            {
+                throw new InvalidFlatBufferDefinitionException($"Vectors may only store vtable layouts with one item. Consider a custom vector type model for other vector kinds.");
+            }
+        }
+
+        public abstract void OnInitialize();
 
         public override void TraverseObjectGraph(HashSet<Type> seenTypes)
         {

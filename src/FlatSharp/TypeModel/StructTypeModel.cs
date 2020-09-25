@@ -38,14 +38,9 @@
         }
 
         /// <summary>
-        /// Gets the alignment of this element.
+        /// Layout of the vtable.
         /// </summary>
-        public override int Alignment => this.maxAlignment;
-
-        /// <summary>
-        /// Gets the size of this element, with padding taken into account.
-        /// </summary>
-        public override int InlineSize => this.inlineSize;
+        public override VTableEntry[] VTableLayout => new VTableEntry[] { new VTableEntry(this.inlineSize, this.maxAlignment) };
 
         /// <summary>
         /// Structs are composed of scalars.
@@ -217,8 +212,13 @@ $@"
                 expectedIndex++;
                 ITypeModel propertyModel = this.typeModelProvider.CreateTypeModel(property.PropertyType);
 
-                int propertySize = propertyModel.InlineSize;
-                int propertyAlignment = propertyModel.Alignment;
+                if (!propertyModel.IsValidStructMember || propertyModel.VTableLayout.Length > 1)
+                {
+                    throw new InvalidFlatBufferDefinitionException($"Struct property {property.Name} with type {property.PropertyType.Name} cannot be part of a flatbuffer struct.");
+                }
+
+                int propertySize = propertyModel.VTableLayout[0].InlineSize;
+                int propertyAlignment = propertyModel.VTableLayout[0].Alignment;
                 this.maxAlignment = Math.Max(propertyAlignment, this.maxAlignment);
 
                 // Pad for alignment.
@@ -231,7 +231,7 @@ $@"
                     this.inlineSize);
 
                 this.memberTypes.Add(model);
-                this.inlineSize += propertyModel.InlineSize;
+                this.inlineSize += propertyModel.VTableLayout[0].InlineSize;
             }
         }
 

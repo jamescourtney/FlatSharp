@@ -30,20 +30,14 @@
             Type type,
             int size) : base(type, null)
         {
-            this.Alignment = size;
-            this.InlineSize = size;
+            this.VTableLayout = new[] { new VTableEntry(size, size) };
             this.isNullable = Nullable.GetUnderlyingType(type) != null;
         }
 
         /// <summary>
-        /// The alignment of this scalar. Will be equal to the size.
+        /// Layout when in a vtable.
         /// </summary>
-        public override int Alignment { get; }
-
-        /// <summary>
-        /// The size of this scalar. Equal to the alignment.
-        /// </summary>
-        public override int InlineSize { get; }
+        public override VTableEntry[] VTableLayout { get; }
 
         /// <summary>
         /// Scalars are fixed size.

@@ -29,14 +29,9 @@ namespace FlatSharp.TypeModel
         }
 
         /// <summary>
-        /// The alignment of the string values. Note that this is aligned by the uoffset_t.
+        /// Layout when in a vtable.
         /// </summary>
-        public override int Alignment => sizeof(uint);
-
-        /// <summary>
-        /// The inline size of the string (uoffset_t).
-        /// </summary>
-        public override int InlineSize => sizeof(uint);
+        public override VTableEntry[] VTableLayout { get; } = new VTableEntry[] { new VTableEntry(sizeof(uint), sizeof(uint)) };
 
         /// <summary>
         /// Strings are arbitrary in length.

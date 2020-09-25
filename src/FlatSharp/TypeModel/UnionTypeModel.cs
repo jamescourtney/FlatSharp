@@ -32,19 +32,13 @@ namespace FlatSharp.TypeModel
         }
 
         /// <summary>
-        /// Gets the required alignment of this element.
+        /// Unions are "double-wide" vtable items.
         /// </summary>
-        public override int Alignment => sizeof(uint);
-
-        /// <summary>
-        /// Gets the inline size of this element. 1 byte for discriminator and 4 for the uoffset.
-        /// </summary>
-        public override int InlineSize => sizeof(uint) + sizeof(byte);
-
-        /// <summary>
-        /// The discriminator byte is always aligned, since it's a byte. However, the offset may need to be aligned.
-        /// </summary>
-        public override int MaxInlineSize => this.InlineSize + SerializationHelpers.GetMaxPadding(sizeof(uint));
+        public override VTableEntry[] VTableLayout { get; } = new[]
+        {
+            new VTableEntry(sizeof(byte), sizeof(byte)),
+            new VTableEntry(sizeof(uint), sizeof(uint))
+        };
 
         /// <summary>
         /// Unions are not fixed because they contain tables.
@@ -111,12 +105,92 @@ $@"
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
-            return new CodeGeneratedMethod { MethodBody = "throw new NotImplementedException();" };
+            List<string> switchCases = new List<string>();
+            for (int i = 0; i < this.UnionElementTypeModel.Length; ++i)
+            {
+                var unionMember = this.UnionElementTypeModel[i];
+                int unionIndex = i + 1;
+
+                string structOffsetAdjustment = string.Empty;
+                if (unionMember is StructTypeModel)
+                {
+                    structOffsetAdjustment = $"offsetLocation += buffer.{nameof(InputBuffer.ReadUOffset)}(offsetLocation);";
+                }
+
+                string @case =
+$@"
+                    case {unionIndex}:
+                        {structOffsetAdjustment}
+                        return new {CSharpHelpers.GetCompilableTypeName(this.ClrType)}({context.MethodNameMap[unionMember.ClrType]}(buffer, offsetLocation));
+";
+                switchCases.Add(@case);
+            }
+
+            string body = $@"
+                byte discriminator = {context.InputBufferVariableName}.{nameof(InputBuffer.ReadByte)}({context.OffsetVariableName}[0]);
+                int offsetLocation = {context.OffsetVariableName}[1];
+                if (discriminator == 0 && offsetLocation != 0)
+                    throw new System.IO.InvalidDataException(""FlatBuffer union had discriminator set but no offset."");
+
+                switch (discriminator)
+                {{
+                    {string.Join("\r\n", switchCases)}
+                    default:
+                        return null;
+                }}
+            ";
+
+            return new CodeGeneratedMethod { MethodBody = body };
         }
 
         public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
         {
-            return new CodeGeneratedMethod { MethodBody = "throw new NotImplementedException();" };
+            List<string> switchCases = new List<string>();
+            for (int i = 0; i < this.UnionElementTypeModel.Length; ++i)
+            {
+                var elementModel = this.UnionElementTypeModel[i];
+                var unionIndex = i + 1;
+
+                string structAdjustment = string.Empty;
+                if (elementModel is StructTypeModel)
+                {
+                    // Structs are generally written in-line, with the exception of unions.
+                    // So, we need to do the normal allocate space dance here, since we're writing
+                    // a pointer to a struct.
+                    structAdjustment =
+$@"
+                        var writeOffset = context.{nameof(SerializationContext.AllocateSpace)}({elementModel.VTableLayout.Single().InlineSize}, {elementModel.VTableLayout.Single().Alignment});
+                        {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteUOffset)}(span, {context.OffsetVariableName}[1], writeOffset, context);
+                        {context.OffsetVariableName}[1] = writeOffset;";
+                }
+
+                string @case =
+$@"
+                    case {unionIndex}:
+                    {{
+                        {structAdjustment}
+                        {context.MethodNameMap[elementModel.ClrType]}({context.SpanWriterVariableName}, {context.SpanVariableName}, {context.ValueVariableName}.Item{unionIndex}, {context.OffsetVariableName}[1], {context.SerializationContextVariableName});
+                    }}
+                        break;";
+
+                switchCases.Add(@case);
+            }
+
+            string serializeBlock = $@"
+                byte discriminatorValue = {context.ValueVariableName}.Discriminator;
+                {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteByte)}(
+                    {context.SpanVariableName}, 
+                    discriminatorValue, 
+                    {context.OffsetVariableName}[0], 
+                    {context.SerializationContextVariableName});
+
+                switch (discriminatorValue)
+                {{
+                    {string.Join("\r\n", switchCases)}
+                    default: throw new InvalidOperationException(""Unexpected"");
+                }}";
+
+            return new CodeGeneratedMethod { IsMethodInline = false, MethodBody = serializeBlock };
         }
 
         public override string GetThrowIfNullInvocation(string itemVariableName)
