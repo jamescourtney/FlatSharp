@@ -18,7 +18,6 @@ namespace FlatSharp.TypeModel
 {
     using System;
     using System.Collections.Generic;
-    using System.Reflection;
 
     /// <summary>
     /// A type model. Declares both properties of a type and how to serialize/parse that type.
@@ -133,51 +132,5 @@ namespace FlatSharp.TypeModel
         /// Initializes and validates the type model.
         /// </summary>
         void Initialize();
-    }
-
-    /// <summary>
-    /// Some type models can specify that they supply a span comparer.
-    /// </summary>
-    public interface ISpanComparerProvider
-    {
-        /// <summary>
-        /// The type of the span comaprer used for this type model.
-        /// </summary>
-        Type SpanComparerType { get; }
-    }
-
-    /// <summary>
-    /// A vector type model.
-    /// </summary>
-    public interface IVectorTypeModel : ITypeModel
-    {
-        /// <summary>
-        /// The type model of the items within this vector.
-        /// </summary>
-        ITypeModel ItemTypeModel { get; }
-    }
-
-    /// <summary>
-    /// A table type model.
-    /// </summary>
-    public interface ITableTypeModel : ITypeModel
-    {
-        /// <summary>
-        /// When set, indicates the table member that acts as the key for sorting vectors containing this table.
-        /// </summary>
-        TableMemberModel KeyMember { get; }
-    }
-
-    public class VTableEntry
-    {
-        public VTableEntry(int size, int alignment)
-        {
-            this.InlineSize = size;
-            this.Alignment = alignment;
-        }
-
-        public int InlineSize { get; }
-
-        public int Alignment { get; }
     }
 }
