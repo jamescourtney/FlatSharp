@@ -31,13 +31,17 @@ namespace FlatSharp.TypeModel
         {
         }
 		
-        public override Type SpanComparerType => typeof(BoolSpanComparer);
-		
         public override bool TryFormatStringAsLiteral(string value, out string literal)
 		{
 			literal = $"(bool)({value})";
 			return true;
 		}
+
+        public override bool TryGetSpanComparerType(out Type comparerType)
+        {
+            comparerType = typeof(BoolSpanComparer);;
+            return true;
+        }
 
         protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadBool);
 
@@ -53,8 +57,12 @@ namespace FlatSharp.TypeModel
         public NullableBoolTypeModel() : base(typeof(bool?), sizeof(bool)) 
         {
         }
-		
-		public override Type SpanComparerType => typeof(NullableBoolSpanComparer);
+
+        public override bool TryGetSpanComparerType(out Type comparerType)
+        {
+            comparerType = null;
+            return false;
+        }
 
         protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadBool);
 
@@ -71,13 +79,17 @@ namespace FlatSharp.TypeModel
         {
         }
 		
-        public override Type SpanComparerType => typeof(ByteSpanComparer);
-		
         public override bool TryFormatStringAsLiteral(string value, out string literal)
 		{
 			literal = $"(byte)({value})";
 			return true;
 		}
+
+        public override bool TryGetSpanComparerType(out Type comparerType)
+        {
+            comparerType = typeof(ByteSpanComparer);;
+            return true;
+        }
 
         protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadByte);
 
@@ -93,8 +105,12 @@ namespace FlatSharp.TypeModel
         public NullableByteTypeModel() : base(typeof(byte?), sizeof(byte)) 
         {
         }
-		
-		public override Type SpanComparerType => typeof(NullableByteSpanComparer);
+
+        public override bool TryGetSpanComparerType(out Type comparerType)
+        {
+            comparerType = null;
+            return false;
+        }
 
         protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadByte);
 
@@ -111,13 +127,17 @@ namespace FlatSharp.TypeModel
         {
         }
 		
-        public override Type SpanComparerType => typeof(SByteSpanComparer);
-		
         public override bool TryFormatStringAsLiteral(string value, out string literal)
 		{
 			literal = $"(sbyte)({value})";
 			return true;
 		}
+
+        public override bool TryGetSpanComparerType(out Type comparerType)
+        {
+            comparerType = typeof(SByteSpanComparer);;
+            return true;
+        }
 
         protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadSByte);
 
@@ -133,8 +153,12 @@ namespace FlatSharp.TypeModel
         public NullableSByteTypeModel() : base(typeof(sbyte?), sizeof(sbyte)) 
         {
         }
-		
-		public override Type SpanComparerType => typeof(NullableSByteSpanComparer);
+
+        public override bool TryGetSpanComparerType(out Type comparerType)
+        {
+            comparerType = null;
+            return false;
+        }
 
         protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadSByte);
 
@@ -151,13 +175,17 @@ namespace FlatSharp.TypeModel
         {
         }
 		
-        public override Type SpanComparerType => typeof(UShortSpanComparer);
-		
         public override bool TryFormatStringAsLiteral(string value, out string literal)
 		{
 			literal = $"(ushort)({value})";
 			return true;
 		}
+
+        public override bool TryGetSpanComparerType(out Type comparerType)
+        {
+            comparerType = typeof(UShortSpanComparer);;
+            return true;
+        }
 
         protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadUShort);
 
@@ -173,8 +201,12 @@ namespace FlatSharp.TypeModel
         public NullableUShortTypeModel() : base(typeof(ushort?), sizeof(ushort)) 
         {
         }
-		
-		public override Type SpanComparerType => typeof(NullableUShortSpanComparer);
+
+        public override bool TryGetSpanComparerType(out Type comparerType)
+        {
+            comparerType = null;
+            return false;
+        }
 
         protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadUShort);
 
@@ -191,13 +223,17 @@ namespace FlatSharp.TypeModel
         {
         }
 		
-        public override Type SpanComparerType => typeof(ShortSpanComparer);
-		
         public override bool TryFormatStringAsLiteral(string value, out string literal)
 		{
 			literal = $"(short)({value})";
 			return true;
 		}
+
+        public override bool TryGetSpanComparerType(out Type comparerType)
+        {
+            comparerType = typeof(ShortSpanComparer);;
+            return true;
+        }
 
         protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadShort);
 
@@ -213,8 +249,12 @@ namespace FlatSharp.TypeModel
         public NullableShortTypeModel() : base(typeof(short?), sizeof(short)) 
         {
         }
-		
-		public override Type SpanComparerType => typeof(NullableShortSpanComparer);
+
+        public override bool TryGetSpanComparerType(out Type comparerType)
+        {
+            comparerType = null;
+            return false;
+        }
 
         protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadShort);
 
@@ -231,13 +271,17 @@ namespace FlatSharp.TypeModel
         {
         }
 		
-        public override Type SpanComparerType => typeof(IntSpanComparer);
-		
         public override bool TryFormatStringAsLiteral(string value, out string literal)
 		{
 			literal = $"(int)({value})";
 			return true;
 		}
+
+        public override bool TryGetSpanComparerType(out Type comparerType)
+        {
+            comparerType = typeof(IntSpanComparer);;
+            return true;
+        }
 
         protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadInt);
 
@@ -253,8 +297,12 @@ namespace FlatSharp.TypeModel
         public NullableIntTypeModel() : base(typeof(int?), sizeof(int)) 
         {
         }
-		
-		public override Type SpanComparerType => typeof(NullableIntSpanComparer);
+
+        public override bool TryGetSpanComparerType(out Type comparerType)
+        {
+            comparerType = null;
+            return false;
+        }
 
         protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadInt);
 
@@ -271,13 +319,17 @@ namespace FlatSharp.TypeModel
         {
         }
 		
-        public override Type SpanComparerType => typeof(UIntSpanComparer);
-		
         public override bool TryFormatStringAsLiteral(string value, out string literal)
 		{
 			literal = $"(uint)({value}u)";
 			return true;
 		}
+
+        public override bool TryGetSpanComparerType(out Type comparerType)
+        {
+            comparerType = typeof(UIntSpanComparer);;
+            return true;
+        }
 
         protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadUInt);
 
@@ -293,8 +345,12 @@ namespace FlatSharp.TypeModel
         public NullableUIntTypeModel() : base(typeof(uint?), sizeof(uint)) 
         {
         }
-		
-		public override Type SpanComparerType => typeof(NullableUIntSpanComparer);
+
+        public override bool TryGetSpanComparerType(out Type comparerType)
+        {
+            comparerType = null;
+            return false;
+        }
 
         protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadUInt);
 
@@ -311,13 +367,17 @@ namespace FlatSharp.TypeModel
         {
         }
 		
-        public override Type SpanComparerType => typeof(LongSpanComparer);
-		
         public override bool TryFormatStringAsLiteral(string value, out string literal)
 		{
 			literal = $"(long)({value}L)";
 			return true;
 		}
+
+        public override bool TryGetSpanComparerType(out Type comparerType)
+        {
+            comparerType = typeof(LongSpanComparer);;
+            return true;
+        }
 
         protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadLong);
 
@@ -333,8 +393,12 @@ namespace FlatSharp.TypeModel
         public NullableLongTypeModel() : base(typeof(long?), sizeof(long)) 
         {
         }
-		
-		public override Type SpanComparerType => typeof(NullableLongSpanComparer);
+
+        public override bool TryGetSpanComparerType(out Type comparerType)
+        {
+            comparerType = null;
+            return false;
+        }
 
         protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadLong);
 
@@ -351,13 +415,17 @@ namespace FlatSharp.TypeModel
         {
         }
 		
-        public override Type SpanComparerType => typeof(ULongSpanComparer);
-		
         public override bool TryFormatStringAsLiteral(string value, out string literal)
 		{
 			literal = $"(ulong)({value}ul)";
 			return true;
 		}
+
+        public override bool TryGetSpanComparerType(out Type comparerType)
+        {
+            comparerType = typeof(ULongSpanComparer);;
+            return true;
+        }
 
         protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadULong);
 
@@ -373,8 +441,12 @@ namespace FlatSharp.TypeModel
         public NullableULongTypeModel() : base(typeof(ulong?), sizeof(ulong)) 
         {
         }
-		
-		public override Type SpanComparerType => typeof(NullableULongSpanComparer);
+
+        public override bool TryGetSpanComparerType(out Type comparerType)
+        {
+            comparerType = null;
+            return false;
+        }
 
         protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadULong);
 
@@ -391,13 +463,17 @@ namespace FlatSharp.TypeModel
         {
         }
 		
-        public override Type SpanComparerType => typeof(FloatSpanComparer);
-		
         public override bool TryFormatStringAsLiteral(string value, out string literal)
 		{
 			literal = $"(float)({value}f)";
 			return true;
 		}
+
+        public override bool TryGetSpanComparerType(out Type comparerType)
+        {
+            comparerType = typeof(FloatSpanComparer);;
+            return true;
+        }
 
         protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadFloat);
 
@@ -413,8 +489,12 @@ namespace FlatSharp.TypeModel
         public NullableFloatTypeModel() : base(typeof(float?), sizeof(float)) 
         {
         }
-		
-		public override Type SpanComparerType => typeof(NullableFloatSpanComparer);
+
+        public override bool TryGetSpanComparerType(out Type comparerType)
+        {
+            comparerType = null;
+            return false;
+        }
 
         protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadFloat);
 
@@ -431,13 +511,17 @@ namespace FlatSharp.TypeModel
         {
         }
 		
-        public override Type SpanComparerType => typeof(DoubleSpanComparer);
-		
         public override bool TryFormatStringAsLiteral(string value, out string literal)
 		{
 			literal = $"(double)({value}d)";
 			return true;
 		}
+
+        public override bool TryGetSpanComparerType(out Type comparerType)
+        {
+            comparerType = typeof(DoubleSpanComparer);;
+            return true;
+        }
 
         protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadDouble);
 
@@ -453,8 +537,12 @@ namespace FlatSharp.TypeModel
         public NullableDoubleTypeModel() : base(typeof(double?), sizeof(double)) 
         {
         }
-		
-		public override Type SpanComparerType => typeof(NullableDoubleSpanComparer);
+
+        public override bool TryGetSpanComparerType(out Type comparerType)
+        {
+            comparerType = null;
+            return false;
+        }
 
         protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadDouble);
 

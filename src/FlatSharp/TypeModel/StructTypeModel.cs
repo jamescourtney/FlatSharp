@@ -38,6 +38,11 @@
         }
 
         /// <summary>
+        /// Gets the schema type.
+        /// </summary>
+        public override FlatBufferSchemaType SchemaType => FlatBufferSchemaType.Struct;
+
+        /// <summary>
         /// Layout of the vtable.
         /// </summary>
         public override VTableEntry[] VTableLayout => new VTableEntry[] { new VTableEntry(this.inlineSize, this.maxAlignment) };

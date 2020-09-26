@@ -25,6 +25,12 @@ namespace FlatSharp.TypeModel
     public interface ITypeModel
     {
         /// <summary>
+        /// Gets the schema element type that this type model represents. Note that this is not a 1:1 relationship with the type of class. There can
+        /// be multiple implementations of ITypeModel that satisfy a particular schema type.
+        /// </summary>
+        FlatBufferSchemaType SchemaType { get; }
+
+        /// <summary>
         /// The type of the item in the CLR.
         /// </summary>
         Type ClrType { get; }
@@ -127,6 +133,21 @@ namespace FlatSharp.TypeModel
         /// Attempts to format the given string as a literal of this type. Not all implementations support this.
         /// </summary>
         bool TryFormatStringAsLiteral(string value, out string literal);
+
+        /// <summary>
+        /// For vectors, retrieves the inner type model. Other types return false.
+        /// </summary>
+        bool TryGetUnderlyingVectorType(out ITypeModel typeModel);
+
+        /// <summary>
+        /// Attempts to get the type implementing <see cref="ISpanComparer"/> for the type model.
+        /// </summary>
+        bool TryGetSpanComparerType(out Type comparerType);
+
+        /// <summary>
+        /// Attempts to get the key of the table. Will return false when there is no key or the type model does not represent a table.
+        /// </summary>
+        bool TryGetTableKeyMember(out TableMemberModel tableMember);
 
         /// <summary>
         /// Initializes and validates the type model.

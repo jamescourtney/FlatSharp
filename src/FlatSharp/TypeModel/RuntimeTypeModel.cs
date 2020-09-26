@@ -45,6 +45,11 @@ namespace FlatSharp.TypeModel
         public Type ClrType { get; }
 
         /// <summary>
+        /// Gets the schema type.
+        /// </summary>
+        public abstract FlatBufferSchemaType SchemaType { get; }
+
+        /// <summary>
         /// Gets the layout of this type model's vtable.
         /// </summary>
         public abstract VTableEntry[] VTableLayout { get; }
@@ -107,7 +112,7 @@ namespace FlatSharp.TypeModel
         /// </summary>
         internal static ITypeModel CreateFrom(Type type)
         {
-            return new InternalTypeModelProvider().CreateTypeModel(type);
+            return new FlatSharpTypeModelProvider().CreateTypeModel(type);
         }
 
         public abstract CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context);
@@ -134,6 +139,24 @@ namespace FlatSharp.TypeModel
         public virtual bool TryFormatStringAsLiteral(string value, out string literal)
         {
             literal = null;
+            return false;
+        }
+
+        public virtual bool TryGetUnderlyingVectorType(out ITypeModel typeModel)
+        {
+            typeModel = null;
+            return false;
+        }
+
+        public virtual bool TryGetSpanComparerType(out Type comparerType)
+        {
+            comparerType = null;
+            return false;
+        }
+
+        public virtual bool TryGetTableKeyMember(out TableMemberModel tableMember)
+        {
+            tableMember = null;
             return false;
         }
     }

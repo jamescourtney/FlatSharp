@@ -53,6 +53,8 @@
             }
         }
 
+        public override FlatBufferSchemaType SchemaType => FlatBufferSchemaType.Scalar;
+
         public override VTableEntry[] VTableLayout => this.underlyingTypeModel.VTableLayout;
 
         public override bool IsFixedSize => this.underlyingTypeModel.IsFixedSize;

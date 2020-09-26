@@ -32,9 +32,14 @@ namespace FlatSharp.TypeModel
         }
 
         /// <summary>
+        /// Gets the schema type.
+        /// </summary>
+        public override FlatBufferSchemaType SchemaType => FlatBufferSchemaType.Union;
+
+        /// <summary>
         /// Unions are "double-wide" vtable items.
         /// </summary>
-        public override VTableEntry[] VTableLayout { get; } = new[]
+        public override VTableEntry[] VTableLayout => new[]
         {
             new VTableEntry(sizeof(byte), sizeof(byte)),
             new VTableEntry(sizeof(uint), sizeof(uint))
@@ -116,16 +121,16 @@ $@"
                 var unionMember = this.UnionElementTypeModel[i];
                 int unionIndex = i + 1;
 
-                string structOffsetAdjustment = string.Empty;
+                string inlineAdjustment = string.Empty;
                 if (unionMember.SerializesInline)
                 {
-                    structOffsetAdjustment = $"offsetLocation += buffer.{nameof(InputBuffer.ReadUOffset)}(offsetLocation);";
+                    inlineAdjustment = $"offsetLocation += buffer.{nameof(InputBuffer.ReadUOffset)}(offsetLocation);";
                 }
 
                 string @case =
 $@"
                     case {unionIndex}:
-                        {structOffsetAdjustment}
+                        {inlineAdjustment}
                         return new {CSharpHelpers.GetCompilableTypeName(this.ClrType)}({context.MethodNameMap[unionMember.ClrType]}(buffer, offsetLocation));
 ";
                 switchCases.Add(@case);
@@ -156,13 +161,13 @@ $@"
                 var elementModel = this.UnionElementTypeModel[i];
                 var unionIndex = i + 1;
 
-                string structAdjustment = string.Empty;
+                string inlineAdjustment = string.Empty;
                 if (elementModel.SerializesInline)
                 {
                     // Structs are generally written in-line, with the exception of unions.
                     // So, we need to do the normal allocate space dance here, since we're writing
                     // a pointer to a struct.
-                    structAdjustment =
+                    inlineAdjustment =
 $@"
                         var writeOffset = context.{nameof(SerializationContext.AllocateSpace)}({elementModel.VTableLayout.Single().InlineSize}, {elementModel.VTableLayout.Single().Alignment});
                         {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteUOffset)}(span, {context.OffsetVariableName}[1], writeOffset, context);
@@ -173,7 +178,7 @@ $@"
 $@"
                     case {unionIndex}:
                     {{
-                        {structAdjustment}
+                        {inlineAdjustment}
                         {context.MethodNameMap[elementModel.ClrType]}({context.SpanWriterVariableName}, {context.SpanVariableName}, {context.ValueVariableName}.Item{unionIndex}, {context.OffsetVariableName}[1], {context.SerializationContextVariableName});
                     }}
                         break;";

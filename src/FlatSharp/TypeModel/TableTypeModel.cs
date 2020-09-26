@@ -26,7 +26,7 @@
     /// Describes the schema of a FlatBuffer table. Tables, analgous to classes, provide for mutable schema definitions over time
     /// by declaring a vatble mapping of field indexes to offsets.
     /// </summary>
-    public class TableTypeModel : RuntimeTypeModel, ITableTypeModel
+    public class TableTypeModel : RuntimeTypeModel
     {
         /// <summary>
         /// Maps vtable index -> type model.
@@ -43,9 +43,14 @@
         }
 
         /// <summary>
+        /// Gets the schema type.
+        /// </summary>
+        public override FlatBufferSchemaType SchemaType => FlatBufferSchemaType.Table;
+
+        /// <summary>
         /// Layout when in a vtable.
         /// </summary>
-        public override VTableEntry[] VTableLayout { get; } = new VTableEntry[] { new VTableEntry(sizeof(uint), sizeof(uint)) };
+        public override VTableEntry[] VTableLayout => new VTableEntry[] { new VTableEntry(sizeof(uint), sizeof(uint)) };
 
         /// <summary>
         /// Tables can have vectors and other arbitrary data.
@@ -181,6 +186,11 @@
                         throw new InvalidFlatBufferDefinitionException($"Table {this.ClrType.Name} declares a key property on a type that that does not support being a key in a sorted vector.");
                     }
 
+                    if (!property.ItemTypeModel.TryGetSpanComparerType(out _))
+                    {
+                        throw new InvalidFlatBufferDefinitionException($"Table {this.ClrType.Name} declares a key property on a type whose type model does not supply a ISpanComparer type.");
+                    }
+
                     this.KeyMember = model;
                 }
 
@@ -202,25 +212,34 @@
         {
             if (itemAttribute.SortedVector)
             {
-                // This must be a vector, and the inner model must have an item with the 'key' property.
-                if (itemTypeModel is IVectorTypeModel vectorTypeModel)
+                if (itemTypeModel.SchemaType != FlatBufferSchemaType.Vector)
                 {
-                    var vectorMemberModel = vectorTypeModel.ItemTypeModel;
-                    if (vectorMemberModel is ITableTypeModel tableModel)
-                    {
-                        if (tableModel.KeyMember == null)
-                        {
-                            throw new InvalidFlatBufferDefinitionException($"Property '{propertyInfo.Name}' declares a sorted vector, but the member is a table that does not have a key.");
-                        }
-                    }
-                    else
-                    {
-                        throw new InvalidFlatBufferDefinitionException($"Property '{propertyInfo.Name}' declares a sorted vector, but the member is not a table. Type = {itemTypeModel?.ClrType.Name}.");
-                    }
+                    throw new InvalidFlatBufferDefinitionException($"Property '{propertyInfo.Name}' declares the sortedVector option, but the underlying type was not a vector.");
                 }
-                else
+
+                if (!itemTypeModel.TryGetUnderlyingVectorType(out ITypeModel memberTypeModel))
                 {
-                    throw new InvalidFlatBufferDefinitionException($"Property '{propertyInfo.Name}' declares the sortedVector option, but the property is not a vector type.");
+                    throw new InvalidFlatBufferDefinitionException($"Property '{propertyInfo.Name}' declares the sortedVector option, but the underlying type model did not report the underlying vector type.");
+                }
+
+                if (memberTypeModel.SchemaType != FlatBufferSchemaType.Table)
+                {
+                    throw new InvalidFlatBufferDefinitionException($"Property '{propertyInfo.Name}' declares a sorted vector, but the member is not a table. Type = {itemTypeModel?.ClrType.FullName}.");
+                }
+
+                if (!memberTypeModel.TryGetTableKeyMember(out TableMemberModel member))
+                {
+                    throw new InvalidFlatBufferDefinitionException($"Property '{propertyInfo.Name}' declares a sorted vector, but the member does not have a key defined. Type = {itemTypeModel?.ClrType.FullName}.");
+                }
+
+                if (!member.ItemTypeModel.TryGetSpanComparerType(out _))
+                {
+                    throw new InvalidFlatBufferDefinitionException($"Property '{propertyInfo.Name}' declares a sorted vector, but the key does not have an implementation of ISpanComparer. Keys must be non-nullable scalars or strings. KeyType = {member.ItemTypeModel.ClrType.FullName}");
+                }
+
+                if (member.ItemTypeModel.VTableLayout.Length != 1)
+                {
+                    throw new InvalidFlatBufferDefinitionException($"Property '{propertyInfo.Name}' declares a sorted vector, but the sort key's vtable is not compatible with sorting. KeyType = {member.ItemTypeModel.ClrType.FullName}");
                 }
             }
         }
@@ -349,24 +368,19 @@ $@"
             string sortInvocation = string.Empty;
             if (memberModel.IsSortedVector)
             {
-                IVectorTypeModel vectorModel = (IVectorTypeModel)memberModel.ItemTypeModel;
-                ITableTypeModel tableModel = (ITableTypeModel)vectorModel.ItemTypeModel;
-                TableMemberModel keyMember = tableModel.KeyMember;
-
-                ITypeModel keyTypeModel = keyMember.ItemTypeModel;
-                ISpanComparerProvider spanComparerProvider = keyTypeModel as ISpanComparerProvider;
-
-                if (spanComparerProvider == null)
+                if (!memberModel.ItemTypeModel.TryGetUnderlyingVectorType(out ITypeModel tableModel) ||
+                    !tableModel.TryGetTableKeyMember(out TableMemberModel keyMember) ||
+                    !keyMember.ItemTypeModel.TryGetSpanComparerType(out Type spanComparerType) ||
+                    keyMember.ItemTypeModel.VTableLayout.Length != 1)
                 {
-                    throw new InvalidFlatBufferDefinitionException("Key type models must implement the 'ISpanComparerProvider' interface.");
+                    string vtm = memberModel.ItemTypeModel.ClrType.FullName;
+                    string ttm = tableModel?.GetType().FullName;
+                    string ttn = tableModel?.ClrType.FullName;
+
+                    throw new InvalidOperationException($"Internal error: Validation failed when writing sorted vector. VTM={vtm}, TTM={ttm}, TTN={ttn}");
                 }
 
-                if (keyTypeModel.VTableLayout.Length != 1)
-                {
-                    throw new InvalidFlatBufferDefinitionException($"'{keyTypeModel.ClrType.Name}' cannot be used as a sorted vector key (wrong vtable layout).");
-                }
-
-                string inlineSize = keyTypeModel.IsFixedSize ? keyTypeModel.VTableLayout[0].InlineSize.ToString() : "null";
+                string inlineSize = keyMember.ItemTypeModel.IsFixedSize ? keyMember.ItemTypeModel.VTableLayout[0].InlineSize.ToString() : "null";
                 string defaultValue = keyMember.DefaultValueToken;
 
                 sortInvocation = @$"
@@ -378,7 +392,7 @@ $@"
                             index{index}Offset0, 
                             {keyMember.Index}, 
                             {inlineSize}, 
-                            new {CSharpHelpers.GetCompilableTypeName(spanComparerProvider.SpanComparerType)}({defaultValue})));";
+                            new {CSharpHelpers.GetCompilableTypeName(spanComparerType)}({defaultValue})));";
             }
 
             string adjustedOffsetVariableName = "offsetTemp";
@@ -560,6 +574,12 @@ $@"
         public override string GetThrowIfNullInvocation(string itemVariableName)
         {
             return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
+        }
+
+        public override bool TryGetTableKeyMember(out TableMemberModel tableMember)
+        {
+            tableMember = this.KeyMember;
+            return tableMember != null;
         }
 
         public override void TraverseObjectGraph(HashSet<Type> seenTypes)

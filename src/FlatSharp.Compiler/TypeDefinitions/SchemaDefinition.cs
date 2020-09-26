@@ -22,7 +22,7 @@ namespace FlatSharp.Compiler
 
     internal static class SchemaDefinition
     {
-        internal static readonly ITypeModelProvider BuiltInTypeModelProvider = new InternalTypeModelProvider();
+        internal static readonly ITypeModelProvider BuiltInTypeModelProvider = new FlatSharpTypeModelProvider();
 
         public static ITypeModel ResolveBuiltInScalarType(string type)
         {

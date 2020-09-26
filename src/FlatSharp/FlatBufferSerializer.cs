@@ -46,7 +46,7 @@ namespace FlatSharp
         /// Creates a new FlatBufferSerializer using the given options.
         /// </summary>
         public FlatBufferSerializer(FlatBufferSerializerOptions options) 
-            : this(options, new InternalTypeModelProvider())
+            : this(options, new FlatSharpTypeModelProvider())
         {
         }
 

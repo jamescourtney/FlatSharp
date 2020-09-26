@@ -22,7 +22,7 @@ namespace FlatSharp.TypeModel
     /// <summary>
     /// Defines a vector type model.
     /// </summary>
-    public abstract class BaseVectorTypeModel : RuntimeTypeModel, IVectorTypeModel
+    public abstract class BaseVectorTypeModel : RuntimeTypeModel
     {
         // count of items + padding(uoffset_t);
         protected static readonly int VectorMinSize = sizeof(uint) + SerializationHelpers.GetMaxPadding(sizeof(uint));
@@ -32,9 +32,14 @@ namespace FlatSharp.TypeModel
         }
 
         /// <summary>
+        /// Gets the schema type.
+        /// </summary>
+        public override FlatBufferSchemaType SchemaType => FlatBufferSchemaType.Vector;
+
+        /// <summary>
         /// Layout of the vtable.
         /// </summary>
-        public override VTableEntry[] VTableLayout { get; } = new VTableEntry[] { new VTableEntry(sizeof(uint), sizeof(uint)) };
+        public override VTableEntry[] VTableLayout => new VTableEntry[] { new VTableEntry(sizeof(uint), sizeof(uint)) };
 
         /// <summary>
         /// Vectors are arbitrary in length.
@@ -93,6 +98,12 @@ namespace FlatSharp.TypeModel
 
                 return itemInlineSize + SerializationHelpers.GetAlignmentError(itemInlineSize, itemAlignment); 
             }
+        }
+
+        public override bool TryGetUnderlyingVectorType(out ITypeModel typeModel)
+        {
+            typeModel = this.ItemTypeModel;
+            return true;
         }
 
         public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)

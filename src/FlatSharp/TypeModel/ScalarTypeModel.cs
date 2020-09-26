@@ -22,22 +22,28 @@
     /// <summary>
     /// Defines a scalar FlatSharp type model.
     /// </summary>
-    public abstract class ScalarTypeModel : RuntimeTypeModel, ISpanComparerProvider
+    public abstract class ScalarTypeModel : RuntimeTypeModel
     {
         protected readonly bool isNullable;
+        private readonly int size;
 
         internal ScalarTypeModel(
             Type type,
             int size) : base(type, null)
         {
-            this.VTableLayout = new[] { new VTableEntry(size, size) };
+            this.size = size;
             this.isNullable = Nullable.GetUnderlyingType(type) != null;
         }
 
         /// <summary>
+        /// Gets the schema type.
+        /// </summary>
+        public override FlatBufferSchemaType SchemaType => FlatBufferSchemaType.Scalar;
+
+        /// <summary>
         /// Layout when in a vtable.
         /// </summary>
-        public override VTableEntry[] VTableLayout { get; }
+        public override VTableEntry[] VTableLayout => new[] { new VTableEntry(this.size, this.size) };
 
         /// <summary>
         /// Scalars are fixed size.
@@ -75,11 +81,6 @@
         public override bool SerializesInline => true;
 
         /// <summary>
-        /// Gets the type of the span comparer for this scalar.
-        /// </summary>
-        public abstract Type SpanComparerType { get; }
-
-        /// <summary>
         /// The name of the read method for an input buffer.
         /// </summary>
         protected abstract string InputBufferReadMethodName { get; }
@@ -88,6 +89,11 @@
         /// The name of a write method for an input buffer.
         /// </summary>
         protected abstract string SpanWriterWriteMethodName { get; }
+
+        /// <summary>
+        /// Force children to reimplement.
+        /// </summary>
+        public abstract override bool TryGetSpanComparerType(out Type comparerType);
 
         /// <summary>
         /// Validates a default value.

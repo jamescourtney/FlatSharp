@@ -22,16 +22,21 @@ namespace FlatSharp.TypeModel
     /// <summary>
     /// Defines a FlatBuffer string type.
     /// </summary>
-    public class SharedStringTypeModel : RuntimeTypeModel, ITypeModel, ISpanComparerProvider
+    public class SharedStringTypeModel : RuntimeTypeModel, ITypeModel
     {
         internal SharedStringTypeModel() : base(typeof(SharedString), null)
         {
         }
 
         /// <summary>
+        /// Gets the schema type.
+        /// </summary>
+        public override FlatBufferSchemaType SchemaType => FlatBufferSchemaType.String;
+
+        /// <summary>
         /// Layout when in a vtable.
         /// </summary>
-        public override VTableEntry[] VTableLayout { get; } = new VTableEntry[] { new VTableEntry(sizeof(uint), sizeof(uint)) };
+        public override VTableEntry[] VTableLayout => new VTableEntry[] { new VTableEntry(sizeof(uint), sizeof(uint)) };
 
         /// <summary>
         /// Strings are arbitrary in length.
@@ -105,6 +110,12 @@ namespace FlatSharp.TypeModel
         public override void TraverseObjectGraph(HashSet<Type> seenTypes)
         {
             seenTypes.Add(this.ClrType);
+        }
+
+        public override bool TryGetSpanComparerType(out Type comparerType)
+        {
+            comparerType = typeof(StringSpanComparer);
+            return true;
         }
     }
 }

@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2020 James Courtney
+ * Copyright 2018 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,38 @@
 namespace FlatSharp.TypeModel
 {
     /// <summary>
-    /// A table type model.
+    /// Defines flat buffer schema type elements.
     /// </summary>
-    public interface ITableTypeModel : ITypeModel
+    public enum FlatBufferSchemaType
     {
         /// <summary>
-        /// When set, indicates the table member that acts as the key for sorting vectors containing this table.
+        /// A flat buffer table.
         /// </summary>
-        TableMemberModel KeyMember { get; }
+        Table = 1,
+
+        /// <summary>
+        /// A flat buffer struct.
+        /// </summary>
+        Struct = 2,
+
+        /// <summary>
+        /// A vector.
+        /// </summary>
+        Vector = 3,
+
+        /// <summary>
+        /// A scalar.
+        /// </summary>
+        Scalar = 4,
+
+        /// <summary>
+        /// A string.
+        /// </summary>
+        String = 5,
+
+        /// <summary>
+        /// A union.
+        /// </summary>
+        Union = 6,
     }
 }

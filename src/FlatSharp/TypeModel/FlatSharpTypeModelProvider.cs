@@ -23,11 +23,18 @@ namespace FlatSharp.TypeModel
 
     using FlatSharp.Attributes;
 
-    internal class InternalTypeModelProvider : ITypeModelProvider
+    /// <summary>
+    /// The default type model provider for FlatSharp.
+    /// </summary>
+    public class FlatSharpTypeModelProvider : ITypeModelProvider
     {
-        private readonly ITypeModelProvider scalarProvider = new ScalarTypeModelProvider();
         private readonly ConcurrentDictionary<Type, ITypeModel> cache = new ConcurrentDictionary<Type, ITypeModel>();
+        private readonly List<ITypeModelProvider> providers = new List<ITypeModelProvider> { new ScalarTypeModelProvider() };
+        private readonly List<Func<ITypeModel, ITypeModel>> decorators = new List<Func<ITypeModel, ITypeModel>>();
 
+        /// <summary>
+        /// Tries to create a type model based on the given type.
+        /// </summary>
         public bool TryCreateTypeModel(Type type, out ITypeModel typeModel)
         {
             if (this.cache.TryGetValue(type, out typeModel))
@@ -35,10 +42,11 @@ namespace FlatSharp.TypeModel
                 return true;
             }
 
-            typeModel = this.GetTypeModel(type);
+            typeModel = this.ApplyDecorators(this.GetTypeModel(type));
             if (typeModel != null)
             {
                 this.cache[type] = typeModel;
+
                 try
                 {
                     typeModel.Initialize();
@@ -56,11 +64,84 @@ namespace FlatSharp.TypeModel
             }
         }
 
+        /// <summary>
+        /// Tries to resolve an FBS alias into a type model.
+        /// </summary>
+        public bool TryResolveFbsAlias(string alias, out ITypeModel typeModel)
+        {
+            typeModel = null;
+
+            foreach (var provider in this.providers)
+            {
+                if (provider.TryResolveFbsAlias(alias, out typeModel))
+                {
+                    typeModel = this.ApplyDecorators(typeModel);
+                    return true;
+                }
+            }
+
+            if (alias == "string")
+            {
+                typeModel = this.ApplyDecorators(new StringTypeModel());
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Registers a custom type model provider. Custom providers can be thorught of
+        /// as plugins and used to extend FlatSharp or alter properties of the 
+        /// serialization system. Custom providers are a very advanced feature and 
+        /// shouldn't be used without extensive testing and knowledge of FlatBuffers.
+        /// 
+        /// Use of this API almost certainly means that the binary format of FlatSharp
+        /// will no longer be compatible with the official FlatBuffers library.
+        /// </summary>
+        public void RegisterCustomModelProvider(ITypeModelProvider provider)
+        {
+            this.providers.Add(provider);
+        }
+
+        /// <summary>
+        /// Registers a custom type model decorator that is invoked after a type
+        /// model has been resolved. A decorator can be thought of as a hook to allow
+        /// callers to "wrap" an existing type model to apply some custom logic, validation,
+        /// or otherwise.
+        /// 
+        /// Use of this API almost certainly means that the binary format of FlatSharp
+        /// will no longer be compatible with the official FlatBuffers library.
+        /// </summary>
+        public void RegisterDecorator(Func<ITypeModel, ITypeModel> callback)
+        {
+            this.decorators.Add(callback);
+        }
+
+        private ITypeModel ApplyDecorators(ITypeModel input)
+        {
+            if (input != null)
+            {
+                foreach (var handler in this.decorators)
+                {
+                    ITypeModel wrapped = handler(input);
+                    if (wrapped != null)
+                    {
+                        return wrapped;
+                    }
+                }
+            }
+
+            return input;
+        }
+
         private ITypeModel GetTypeModel(Type type)
         {
-            if (this.scalarProvider.TryCreateTypeModel(type, out var typeModel))
+            foreach (var provider in this.providers)
             {
-                return typeModel;
+                if (provider.TryCreateTypeModel(type, out ITypeModel model))
+                {
+                    return model;
+                }
             }
 
             if (type == typeof(string))
@@ -124,17 +205,6 @@ namespace FlatSharp.TypeModel
             }
 
             return null;
-        }
-
-        public bool TryResolveFbsAlias(string alias, out ITypeModel typeModel)
-        {
-            if (alias == "string")
-            {
-                typeModel = new StringTypeModel();
-                return true;
-            }
-
-            return this.scalarProvider.TryResolveFbsAlias(alias, out typeModel);
         }
     }
 }

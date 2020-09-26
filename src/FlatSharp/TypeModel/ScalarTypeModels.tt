@@ -61,13 +61,17 @@ namespace FlatSharp.TypeModel
         {
         }
 		
-        public override Type SpanComparerType => typeof(<#= casedName #>SpanComparer);
-		
         public override bool TryFormatStringAsLiteral(string value, out string literal)
 		{
 			literal = $"(<#= pair.typeName #>)({value}<#= pair.literalSpecifier #>)";
 			return true;
 		}
+
+        public override bool TryGetSpanComparerType(out Type comparerType)
+        {
+            comparerType = typeof(<#= casedName #>SpanComparer);;
+            return true;
+        }
 
         protected override string InputBufferReadMethodName => nameof(InputBuffer.Read<#= casedName #>);
 
@@ -83,8 +87,12 @@ namespace FlatSharp.TypeModel
         public Nullable<#= className #>() : base(typeof(<#=typeName#>?), sizeof(<#=typeName#>)) 
         {
         }
-		
-		public override Type SpanComparerType => typeof(Nullable<#= casedName #>SpanComparer);
+
+        public override bool TryGetSpanComparerType(out Type comparerType)
+        {
+            comparerType = null;
+            return false;
+        }
 
         protected override string InputBufferReadMethodName => nameof(InputBuffer.Read<#= casedName #>);
 
