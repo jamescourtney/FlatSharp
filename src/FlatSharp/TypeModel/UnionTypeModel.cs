@@ -71,6 +71,11 @@ namespace FlatSharp.TypeModel
         public override bool IsValidSortedVectorKey => false;
 
         /// <summary>
+        /// Unions are written inline (though they are really just a pointer).
+        /// </summary>
+        public override bool SerializesInline => true;
+
+        /// <summary>
         /// Gets the type model for this union's members. Index 0 corresponds to discriminator 1.
         /// </summary>
         public ITypeModel[] UnionElementTypeModel => this.memberTypeModels;
@@ -112,7 +117,7 @@ $@"
                 int unionIndex = i + 1;
 
                 string structOffsetAdjustment = string.Empty;
-                if (unionMember is StructTypeModel)
+                if (unionMember.SerializesInline)
                 {
                     structOffsetAdjustment = $"offsetLocation += buffer.{nameof(InputBuffer.ReadUOffset)}(offsetLocation);";
                 }
@@ -152,7 +157,7 @@ $@"
                 var unionIndex = i + 1;
 
                 string structAdjustment = string.Empty;
-                if (elementModel is StructTypeModel)
+                if (elementModel.SerializesInline)
                 {
                     // Structs are generally written in-line, with the exception of unions.
                     // So, we need to do the normal allocate space dance here, since we're writing

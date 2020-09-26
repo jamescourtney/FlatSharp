@@ -73,6 +73,11 @@
         public override bool IsValidSortedVectorKey => false;
 
         /// <summary>
+        /// Structs are written inline.
+        /// </summary>
+        public override bool SerializesInline => true;
+
+        /// <summary>
         /// Gets the members of this struct.
         /// </summary>
         public IReadOnlyList<StructMemberModel> Members => this.memberTypes;
@@ -140,10 +145,9 @@ $@"
                 var memberInfo = this.Members[i];
 
                 string propertyAccessor = $"{context.ValueVariableName}.{memberInfo.PropertyInfo.Name}";
-                if (memberInfo.ItemTypeModel is StructTypeModel)
+                if (!memberInfo.ItemTypeModel.ClrType.IsValueType)
                 {
-                    // Force structs to be non-null. FlatSharp doesn't declare structs as structs,
-                    // so we need to be careful that structs-within-structs are not null.
+                    // Force members of structs to be non-null.
                     propertyAccessor += $" ?? new {CSharpHelpers.GetCompilableTypeName(memberInfo.ItemTypeModel.ClrType)}()";
                 }
 

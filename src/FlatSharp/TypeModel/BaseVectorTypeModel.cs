@@ -22,7 +22,7 @@ namespace FlatSharp.TypeModel
     /// <summary>
     /// Defines a vector type model.
     /// </summary>
-    public abstract class BaseVectorTypeModel : RuntimeTypeModel, ITypeModel
+    public abstract class BaseVectorTypeModel : RuntimeTypeModel, IVectorTypeModel
     {
         // count of items + padding(uoffset_t);
         protected static readonly int VectorMinSize = sizeof(uint) + SerializationHelpers.GetMaxPadding(sizeof(uint));
@@ -75,6 +75,11 @@ namespace FlatSharp.TypeModel
         /// The name of the length property of this vector type.
         /// </summary>
         public abstract string LengthPropertyName { get; }
+
+        /// <summary>
+        /// Vectors are by-reference.
+        /// </summary>
+        public override bool SerializesInline => false;
 
         /// <summary>
         /// Gets the size of each member of this vector, with padding for alignment.

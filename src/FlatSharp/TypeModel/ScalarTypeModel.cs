@@ -70,6 +70,11 @@
         public override bool IsValidSortedVectorKey => !this.isNullable;
 
         /// <summary>
+        /// Scalars are written inline.
+        /// </summary>
+        public override bool SerializesInline => true;
+
+        /// <summary>
         /// Gets the type of the span comparer for this scalar.
         /// </summary>
         public abstract Type SpanComparerType { get; }

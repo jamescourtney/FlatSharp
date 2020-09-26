@@ -64,6 +64,11 @@ namespace FlatSharp.TypeModel
         public override bool IsValidSortedVectorKey => true;
 
         /// <summary>
+        /// Strings are written by reference.
+        /// </summary>
+        public override bool SerializesInline => false;
+
+        /// <summary>
         /// Gets the type of span comparer for this type.
         /// </summary>
         public Type SpanComparerType => typeof(StringSpanComparer);

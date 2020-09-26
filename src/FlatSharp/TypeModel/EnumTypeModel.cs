@@ -40,10 +40,6 @@
             Type underlyingType = Enum.GetUnderlyingType(enumType);
 
             this.underlyingTypeModel = this.typeModelProvider.CreateTypeModel(underlyingType);
-            if (!(this.underlyingTypeModel is ScalarTypeModel))
-            {
-                throw new InvalidFlatBufferDefinitionException("Enums must have a Scalar as their underlying type.");
-            }
 
             var attribute = enumType.GetCustomAttribute<FlatBufferEnumAttribute>();
             if (attribute == null)
@@ -70,6 +66,8 @@
         public override bool IsValidUnionMember => false;
 
         public override bool IsValidSortedVectorKey => false;
+
+        public override bool SerializesInline => true;
 
         public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
         {

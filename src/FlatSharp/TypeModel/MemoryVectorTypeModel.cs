@@ -30,6 +30,11 @@ namespace FlatSharp.TypeModel
         {
         }
 
+        /// <summary>
+        /// Memory vectors are always serialized because they are structs and vector's can't have default values.
+        /// </summary>
+        public override bool MustAlwaysSerialize => true;
+
         public override ITypeModel ItemTypeModel => this.itemTypeModel;
 
         public override string LengthPropertyName => nameof(Memory<byte>.Length);

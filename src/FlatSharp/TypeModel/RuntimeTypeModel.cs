@@ -83,9 +83,19 @@ namespace FlatSharp.TypeModel
         public abstract bool IsValidSortedVectorKey { get; }
 
         /// <summary>
+        /// When true, indicates that this type model's serialize method writes inline, rather than by offset.
+        /// </summary>
+        public abstract bool SerializesInline { get; }
+
+        /// <summary>
         /// Gets the maximum inline size of this item when padded for alignment, when stored in a table or vector.
         /// </summary>
         public virtual int MaxInlineSize => this.VTableLayout.Sum(x => x.InlineSize + SerializationHelpers.GetMaxPadding(x.Alignment));
+
+        /// <summary>
+        /// In general, we don't set this to true.
+        /// </summary>
+        public virtual bool MustAlwaysSerialize => false;
 
         /// <summary>
         /// Validates a default value.

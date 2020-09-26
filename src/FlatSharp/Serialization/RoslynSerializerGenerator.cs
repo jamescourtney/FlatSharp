@@ -115,7 +115,7 @@ $@"
         internal string GenerateCSharp<TRoot>(string visibility = "public")
         {
             ITypeModel rootModel = this.typeModelProvider.CreateTypeModel(typeof(TRoot));
-            if (!(rootModel is TableTypeModel))
+            if (!(rootModel is ITableTypeModel))
             {
                 throw new InvalidFlatBufferDefinitionException($"Can only compile [FlatBufferTable] elements as root types. Type '{typeof(TRoot).Name}' is a '{rootModel.GetType().Name}'.");
             }

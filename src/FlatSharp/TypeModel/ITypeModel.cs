@@ -18,6 +18,7 @@ namespace FlatSharp.TypeModel
 {
     using System;
     using System.Collections.Generic;
+    using System.Reflection;
 
     /// <summary>
     /// A type model. Declares both properties of a type and how to serialize/parse that type.
@@ -68,6 +69,16 @@ namespace FlatSharp.TypeModel
         /// Gets the maximum inline size of this item when padded for alignment, when stored in a table or vector.
         /// </summary>
         int MaxInlineSize { get; }
+
+        /// <summary>
+        /// When true, indicates that this type model must always be written to the buffer. This suppresses null checks and default value checks.
+        /// </summary>
+        bool MustAlwaysSerialize { get; }
+
+        /// <summary>
+        /// When true, indicates that this type model serializes directly at the offset provided (ie, it does not write a uoffset).
+        /// </summary>
+        bool SerializesInline { get; }
 
         /// <summary>
         /// Validates a default value.
@@ -133,6 +144,28 @@ namespace FlatSharp.TypeModel
         /// The type of the span comaprer used for this type model.
         /// </summary>
         Type SpanComparerType { get; }
+    }
+
+    /// <summary>
+    /// A vector type model.
+    /// </summary>
+    public interface IVectorTypeModel : ITypeModel
+    {
+        /// <summary>
+        /// The type model of the items within this vector.
+        /// </summary>
+        ITypeModel ItemTypeModel { get; }
+    }
+
+    /// <summary>
+    /// A table type model.
+    /// </summary>
+    public interface ITableTypeModel : ITypeModel
+    {
+        /// <summary>
+        /// When set, indicates the table member that acts as the key for sorting vectors containing this table.
+        /// </summary>
+        TableMemberModel KeyMember { get; }
     }
 
     public class VTableEntry

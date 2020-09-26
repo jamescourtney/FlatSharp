@@ -26,7 +26,7 @@
     /// Describes the schema of a FlatBuffer table. Tables, analgous to classes, provide for mutable schema definitions over time
     /// by declaring a vatble mapping of field indexes to offsets.
     /// </summary>
-    public class TableTypeModel : RuntimeTypeModel
+    public class TableTypeModel : RuntimeTypeModel, ITableTypeModel
     {
         /// <summary>
         /// Maps vtable index -> type model.
@@ -78,6 +78,11 @@
         public override bool IsValidSortedVectorKey => false;
 
         /// <summary>
+        /// Tables are written by reference.
+        /// </summary>
+        public override bool SerializesInline => false;
+
+        /// <summary>
         /// Gets the maximum used index in this vtable.
         /// </summary>
         public int MaxIndex => this.occupiedVtableSlots.Max();
@@ -95,7 +100,7 @@
         /// <summary>
         /// The property type used as a key.
         /// </summary>
-        public PropertyInfo KeyProperty { get; private set; }
+        public TableMemberModel KeyMember { get; private set; }
         
         /// <summary>
         /// Gets the maximum size of a table assuming all members are populated include the vtable offset. 
@@ -144,31 +149,14 @@
             foreach (var property in properties)
             {
                 bool hasDefaultValue = false;
-
-                if (property.Attribute.Key)
-                {
-                    if (this.KeyProperty != null)
-                    {
-                        throw new InvalidFlatBufferDefinitionException($"Table {this.ClrType.Name} has more than one [FlatBufferItemAttribute] with Key set to true.");
-                    }
-                    
-                    if (!property.ItemTypeModel.IsValidSortedVectorKey)
-                    {
-                        throw new InvalidFlatBufferDefinitionException($"Table {this.ClrType.Name} declares a key property on a type that that does not support being a key in a sorted vector.");
-                    }
-
-                    this.KeyProperty = property.Property;
-                }
-
-                ValidateSortedVector(property.Attribute, property.ItemTypeModel, property.Property);
-
                 object defaultValue = null;
+
                 if (!object.ReferenceEquals(property.Attribute.DefaultValue, null))
                 {
                     hasDefaultValue = true;
                     defaultValue = property.Attribute.DefaultValue;
                 }
-                
+
                 ushort index = property.Attribute.Index;
                 maxIndex = Math.Max(index, maxIndex);
 
@@ -180,6 +168,23 @@
                     defaultValue,
                     property.Attribute.SortedVector,
                     property.Attribute.Key);
+
+                if (property.Attribute.Key)
+                {
+                    if (this.KeyMember != null)
+                    {
+                        throw new InvalidFlatBufferDefinitionException($"Table {this.ClrType.Name} has more than one [FlatBufferItemAttribute] with Key set to true.");
+                    }
+                    
+                    if (!property.ItemTypeModel.IsValidSortedVectorKey)
+                    {
+                        throw new InvalidFlatBufferDefinitionException($"Table {this.ClrType.Name} declares a key property on a type that that does not support being a key in a sorted vector.");
+                    }
+
+                    this.KeyMember = model;
+                }
+
+                ValidateSortedVector(property.Attribute, property.ItemTypeModel, property.Property);
 
                 for (int i = 0; i < model.ItemTypeModel.VTableLayout.Length; ++i)
                 {
@@ -198,19 +203,19 @@
             if (itemAttribute.SortedVector)
             {
                 // This must be a vector, and the inner model must have an item with the 'key' property.
-                if (itemTypeModel is BaseVectorTypeModel vectorTypeModel)
+                if (itemTypeModel is IVectorTypeModel vectorTypeModel)
                 {
                     var vectorMemberModel = vectorTypeModel.ItemTypeModel;
-                    if (vectorMemberModel is TableTypeModel tableModel)
+                    if (vectorMemberModel is ITableTypeModel tableModel)
                     {
-                        if (tableModel.KeyProperty == null)
+                        if (tableModel.KeyMember == null)
                         {
                             throw new InvalidFlatBufferDefinitionException($"Property '{propertyInfo.Name}' declares a sorted vector, but the member is a table that does not have a key.");
                         }
                     }
                     else
                     {
-                        throw new InvalidFlatBufferDefinitionException($"Property '{propertyInfo.Name}' declares a sorted vector, but the member is not a table.");
+                        throw new InvalidFlatBufferDefinitionException($"Property '{propertyInfo.Name}' declares a sorted vector, but the member is not a table. Type = {itemTypeModel?.ClrType.Name}.");
                     }
                 }
                 else
@@ -313,11 +318,10 @@ $@"
         {
             string valueVariableName = $"index{index}Value";
 
+            // Set up a condition for serializing, unless the type model tells us not to.
             string condition = $"if ({valueVariableName} != {memberModel.DefaultValueToken})";
-            if (memberModel.ItemTypeModel is MemoryVectorTypeModel)
+            if (memberModel.ItemTypeModel.MustAlwaysSerialize)
             {
-                // 1) Memory is a struct and can't be null, and 0-length vectors are valid.
-                //    Therefore, we just need to omit the conditional check entirely.
                 condition = string.Empty;
             }
 
@@ -345,9 +349,10 @@ $@"
             string sortInvocation = string.Empty;
             if (memberModel.IsSortedVector)
             {
-                BaseVectorTypeModel vectorModel = (BaseVectorTypeModel)memberModel.ItemTypeModel;
-                TableTypeModel tableModel = (TableTypeModel)vectorModel.ItemTypeModel;
-                TableMemberModel keyMember = tableModel.IndexToMemberMap.Single(x => x.Value.PropertyInfo == tableModel.KeyProperty).Value;
+                IVectorTypeModel vectorModel = (IVectorTypeModel)memberModel.ItemTypeModel;
+                ITableTypeModel tableModel = (ITableTypeModel)vectorModel.ItemTypeModel;
+                TableMemberModel keyMember = tableModel.KeyMember;
+
                 ITypeModel keyTypeModel = keyMember.ItemTypeModel;
                 ISpanComparerProvider spanComparerProvider = keyTypeModel as ISpanComparerProvider;
 
@@ -361,8 +366,7 @@ $@"
                     throw new InvalidFlatBufferDefinitionException($"'{keyTypeModel.ClrType.Name}' cannot be used as a sorted vector key (wrong vtable layout).");
                 }
 
-                string inlineSize = keyTypeModel is ScalarTypeModel ? keyTypeModel.VTableLayout[0].InlineSize.ToString() : "null";
-
+                string inlineSize = keyTypeModel.IsFixedSize ? keyTypeModel.VTableLayout[0].InlineSize.ToString() : "null";
                 string defaultValue = keyMember.DefaultValueToken;
 
                 sortInvocation = @$"
