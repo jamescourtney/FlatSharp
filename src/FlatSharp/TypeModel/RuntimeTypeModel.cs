@@ -16,12 +16,9 @@
 
 namespace FlatSharp.TypeModel
 {
-    using FlatSharp.Attributes;
     using System;
-    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Reflection;
 
     /// <summary>
     /// Defines a type model for an object that can be parsed and serialized to/from a FlatBuffer. While generally most useful to the 
@@ -128,8 +125,16 @@ namespace FlatSharp.TypeModel
 
         public abstract void TraverseObjectGraph(HashSet<Type> seenTypes);
 
-        public virtual string FormatDefaultValueAsLiteral(object defaultValue) => throw new InvalidOperationException();
+        public virtual bool TryFormatDefaultValueAsLiteral(object defaultValue, out string literal)
+        {
+            literal = null;
+            return false;
+        }
 
-        public virtual string FormatStringAsLiteral(string value) => throw new InvalidOperationException();
+        public virtual bool TryFormatStringAsLiteral(string value, out string literal)
+        {
+            literal = null;
+            return false;
+        }
     }
 }

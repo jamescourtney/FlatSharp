@@ -119,14 +119,14 @@ namespace FlatSharp.TypeModel
         void TraverseObjectGraph(HashSet<Type> seenTypes);
 
         /// <summary>
-        /// Formats the given default value into a C# literal. Not all implementations support this.
+        /// Attempts to format the given default value into a C# literal. Not all implementations support this.
         /// </summary>
-        string FormatDefaultValueAsLiteral(object defaultValue);
+        bool TryFormatDefaultValueAsLiteral(object defaultValue, out string literal);
 
         /// <summary>
-        /// Formats the given string as a literal of this type. Not all implementations support this.
+        /// Attempts to format the given string as a literal of this type. Not all implementations support this.
         /// </summary>
-        string FormatStringAsLiteral(string value);
+        bool TryFormatStringAsLiteral(string value, out string literal);
 
         /// <summary>
         /// Initializes and validates the type model.

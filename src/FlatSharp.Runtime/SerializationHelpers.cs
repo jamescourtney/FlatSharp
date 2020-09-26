@@ -74,6 +74,21 @@ namespace FlatSharp
         }
 
         /// <summary>
+        /// Throws an InvalidDataException if the given item is null.
+        /// </summary>
+        /// <remarks>
+        /// Add generic constraint to catch errors calling this for value types.
+        /// </remarks>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void EnsureNonNull<T>(T? item) where T : struct
+        {
+            if (!item.HasValue)
+            {
+                throw new InvalidDataException("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.");
+            }
+        }
+
+        /// <summary>
         /// Efficiently converts a <see cref="FlatBufferVector{T}"/> object
         /// into a <see cref="List{T}"/>.
         /// </summary>

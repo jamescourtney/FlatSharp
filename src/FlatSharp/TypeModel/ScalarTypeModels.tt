@@ -63,9 +63,10 @@ namespace FlatSharp.TypeModel
 		
         public override Type SpanComparerType => typeof(<#= casedName #>SpanComparer);
 		
-        public override string FormatStringAsLiteral(string value)
+        public override bool TryFormatStringAsLiteral(string value, out string literal)
 		{
-			return $"(<#= pair.typeName #>)({value}<#= pair.literalSpecifier #>)";
+			literal = $"(<#= pair.typeName #>)({value}<#= pair.literalSpecifier #>)";
+			return true;
 		}
 
         protected override string InputBufferReadMethodName => nameof(InputBuffer.Read<#= casedName #>);

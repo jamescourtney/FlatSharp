@@ -168,9 +168,17 @@
             }
         }
 
-        public override string FormatDefaultValueAsLiteral(object defaultValue)
+        public override bool TryFormatDefaultValueAsLiteral(object defaultValue, out string literal)
         {
-            return $"({CSharpHelpers.GetCompilableTypeName(this.ClrType)})({defaultValue})";
+            literal = null;
+
+            if (defaultValue.GetType() == this.ClrType)
+            {
+                literal = $"({CSharpHelpers.GetCompilableTypeName(this.ClrType)})({defaultValue})";
+                return true;
+            }
+
+            return false;
         }
     }
 }

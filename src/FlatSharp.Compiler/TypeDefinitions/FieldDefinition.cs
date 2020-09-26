@@ -172,9 +172,9 @@ namespace FlatSharp.Compiler
 
                 string defaultValue = string.Empty;
                 string clrType;
-                bool isPrimitive = SchemaDefinition.TryResolve((string)this.FbsFieldType, out ITypeModel builtInType);
+                bool isBuiltInType = SchemaDefinition.TryResolve(this.FbsFieldType, out ITypeModel builtInType);
 
-                if (isPrimitive)
+                if (isBuiltInType)
                 {
                     clrType = builtInType.ClrType.FullName;
                 }
@@ -185,21 +185,18 @@ namespace FlatSharp.Compiler
 
                 if (!string.IsNullOrEmpty(this.DefaultValue))
                 {
-                    if (isPrimitive)
+                    if (isBuiltInType && builtInType.TryFormatStringAsLiteral(this.DefaultValue, out defaultValue))
                     {
-                        defaultValue = builtInType.FormatStringAsLiteral(this.DefaultValue);
+                        // intentionally left blank.
                     }
-                    else if (enumDefinition != null)
+                    else if (enumDefinition?.NameValuePairs.ContainsKey(this.DefaultValue) == true)
                     {
-                        if (enumDefinition.NameValuePairs.ContainsKey(this.DefaultValue))
-                        {
-                            // Referenced by name.
-                            defaultValue = $"{clrType}.{this.DefaultValue}";
-                        }
-                        else
-                        {
-                            defaultValue = $"({clrType}){enumDefinition.UnderlyingType.FormatStringAsLiteral(this.DefaultValue)}";
-                        }
+                        // Also ok.
+                        defaultValue = $"{clrType}.{this.DefaultValue}";
+                    }
+                    else if (enumDefinition?.UnderlyingType.TryFormatStringAsLiteral(this.DefaultValue, out defaultValue) == true)
+                    { 
+                        defaultValue = $"({clrType})({defaultValue})";
                     }
                     else
                     {

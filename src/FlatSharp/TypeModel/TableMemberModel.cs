@@ -76,7 +76,10 @@
                 string defaultValue = $"default({CSharpHelpers.GetCompilableTypeName(this.ItemTypeModel.ClrType)})";
                 if (this.HasDefaultValue)
                 {
-                    defaultValue = this.ItemTypeModel.FormatDefaultValueAsLiteral(this.DefaultValue);
+                    if (!this.ItemTypeModel.TryFormatDefaultValueAsLiteral(this.DefaultValue, out defaultValue))
+                    {
+                        throw new InvalidFlatBufferDefinitionException($"Unable to format {this.DefaultValue} (type {this.DefaultValue.GetType().Name}) as a literal.");
+                    }
                 }
 
                 return defaultValue;

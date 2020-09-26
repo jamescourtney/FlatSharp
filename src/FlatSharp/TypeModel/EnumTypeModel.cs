@@ -120,10 +120,15 @@
             return "true";
         }
 
-        public override string FormatDefaultValueAsLiteral(object defaultValue)
+        public override bool TryFormatDefaultValueAsLiteral(object defaultValue, out string literal)
         {
-            string numericValue = this.underlyingTypeModel.FormatDefaultValueAsLiteral(Convert.ChangeType(defaultValue, this.underlyingTypeModel.ClrType));
-            return $"({CSharpHelpers.GetCompilableTypeName(this.ClrType)}){numericValue}";
+            if (this.underlyingTypeModel.TryFormatDefaultValueAsLiteral(Convert.ChangeType(defaultValue, this.underlyingTypeModel.ClrType), out literal))
+            {
+                literal = $"({CSharpHelpers.GetCompilableTypeName(this.ClrType)}){literal}";
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>

@@ -121,10 +121,5 @@ namespace FlatSharp.TypeModel
         {
             return $"{itemVariableName}.HasValue";
         }
-
-        public override string FormatDefaultValueAsLiteral(object defaultValue)
-        {
-            throw new InvalidOperationException("Unexpected.");
-        }
     }
 }

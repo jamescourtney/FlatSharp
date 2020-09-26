@@ -57,7 +57,10 @@ namespace FlatSharp.Compiler
                     ErrorContext.Current?.RegisterError($"Enum '{this.Name}' must declare values sorted in ascending order.");
                 }
 
-                string standardizedString = this.UnderlyingType.FormatStringAsLiteral(bigInt.ToString());
+                if (!this.UnderlyingType.TryFormatStringAsLiteral(bigInt.ToString(), out string standardizedString))
+                {
+                    ErrorContext.Current?.RegisterError($"Could not format value for enum '{this.Name}'. Value = {bigInt}.");
+                }
 
                 // C# compiler won't complain about duplicate values.
                 if (this.nameValuePairs.Values.Any(x => x == standardizedString))
@@ -71,7 +74,13 @@ namespace FlatSharp.Compiler
             else
             {
                 value = this.nextValue.ToString();
-                this.nameValuePairs[name] = this.UnderlyingType.FormatStringAsLiteral(value);
+
+                if (!this.UnderlyingType.TryFormatStringAsLiteral(value, out string standardizedString))
+                {
+                    ErrorContext.Current?.RegisterError($"Could not format value for enum '{this.Name}'. Value = {value}.");
+                }
+
+                this.nameValuePairs[name] = standardizedString;
                 this.nextValue++;
             }
         }

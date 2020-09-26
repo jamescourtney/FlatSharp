@@ -21,25 +21,49 @@
 
     public partial class DoubleTypeModel
     {
-        public override string FormatDefaultValueAsLiteral(object defaultValue)
+        public override bool TryFormatDefaultValueAsLiteral(object defaultValue, out string literal)
         {
-            return ((double)defaultValue).ToString("G17");
+            literal = null;
+
+            if (defaultValue is double d)
+            {
+                literal = d.ToString("G17");
+                return true;
+            }
+
+            return false;
         }
     }
 
     public partial class FloatTypeModel
     {
-        public override string FormatDefaultValueAsLiteral(object defaultValue)
+        public override bool TryFormatDefaultValueAsLiteral(object defaultValue, out string literal)
         {
-            return ((float)defaultValue).ToString("G17") + "f";
+            literal = null;
+
+            if (defaultValue is float f)
+            {
+                literal = $"{f:G17}f";
+                return true;
+            }
+
+            return false;
         }
     }
 
     public partial class BoolTypeModel
     {
-        public override string FormatDefaultValueAsLiteral(object defaultValue)
+        public override bool TryFormatDefaultValueAsLiteral(object defaultValue, out string literal)
         {
-            return defaultValue.ToString().ToLower();
+            literal = null;
+
+            if (defaultValue is bool b)
+            {
+                literal = b.ToString().ToLower();
+                return true;
+            }
+
+            return false;
         }
     }
 }
