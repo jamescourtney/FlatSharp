@@ -16,15 +16,17 @@
 
 namespace FlatSharp.Compiler
 {
-
+    using FlatSharp.TypeModel;
     using System;
     using System.Collections.Generic;
 
-    internal class SchemaDefinition
+    internal static class SchemaDefinition
     {
-        public static IBuiltInScalarType ResolveBuiltInScalarType(string type)
+        internal static readonly ITypeModelProvider BuiltInTypeModelProvider = new FlatSharpTypeModelProvider();
+
+        public static ITypeModel ResolveBuiltInScalarType(string type)
         {
-            if (!TryResolveBuiltInScalarType(type, out IBuiltInScalarType builtInType))
+            if (!TryResolve(type, out ITypeModel builtInType))
             {
                 ErrorContext.Current?.RegisterError("Unexpected primitive type: " + type);
             }
@@ -32,29 +34,14 @@ namespace FlatSharp.Compiler
             return builtInType;
         }
 
-        public static bool TryResolveBuiltInType(string type, out IBuiltInType builtInType)
+        public static bool TryResolve(string type, out ITypeModel builtInType)
         {
-            return TryResolve(type, BuiltInType.BuiltInTypes, out builtInType);
+            return TryResolve(type, BuiltInTypeModelProvider, out builtInType);
         }
 
-        public static bool TryResolveBuiltInScalarType(string type, out IBuiltInScalarType builtInType)
+        private static bool TryResolve(string type, ITypeModelProvider provider, out ITypeModel builtInType)
         {
-            return TryResolve(type, BuiltInType.BuiltInScalars, out builtInType);
-        }
-
-        private static bool TryResolve<T>(string type, IReadOnlyDictionary<Type, T> dict, out T builtInType) where T : class, IBuiltInType
-        {
-            foreach (var t in dict.Values)
-            {
-                if (t.FbsAliases.Contains(type))
-                {
-                    builtInType = t;
-                    return true;
-                }
-            }
-
-            builtInType = null;
-            return false;
+            return provider.TryResolveFbsAlias(type, out builtInType);
         }
     }
 }

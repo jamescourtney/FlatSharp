@@ -33,24 +33,19 @@
         private int inlineSize;
         private int maxAlignment = 1;
 
-        internal StructTypeModel(Type clrType) : base(clrType)
+        internal StructTypeModel(Type clrType, ITypeModelProvider typeModelProvider) : base(clrType, typeModelProvider)
         {
         }
 
         /// <summary>
-        /// Gets the schema type of this element.
+        /// Gets the schema type.
         /// </summary>
         public override FlatBufferSchemaType SchemaType => FlatBufferSchemaType.Struct;
 
         /// <summary>
-        /// Gets the alignment of this element.
+        /// Layout of the vtable.
         /// </summary>
-        public override int Alignment => this.maxAlignment;
-
-        /// <summary>
-        /// Gets the size of this element, with padding taken into account.
-        /// </summary>
-        public override int InlineSize => this.inlineSize;
+        public override VTableEntry[] VTableLayout => new VTableEntry[] { new VTableEntry(this.inlineSize, this.maxAlignment) };
 
         /// <summary>
         /// Structs are composed of scalars.
@@ -83,11 +78,103 @@
         public override bool IsValidSortedVectorKey => false;
 
         /// <summary>
+        /// Structs are written inline.
+        /// </summary>
+        public override bool SerializesInline => true;
+
+        /// <summary>
         /// Gets the members of this struct.
         /// </summary>
         public IReadOnlyList<StructMemberModel> Members => this.memberTypes;
 
-        protected override void Initialize()
+        public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
+        {
+            return new CodeGeneratedMethod
+            {
+                MethodBody = $"return {this.MaxInlineSize};",
+            };
+        }
+
+        public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
+        {
+            // We have to implement two items: The table class and the overall "read" method.
+            // Let's start with the read method.
+            string className = "structReader_" + Guid.NewGuid().ToString("n");
+
+            string classDefinition;
+            // Implement the class
+            {
+                // Build up a list of property overrides.
+                var propertyOverrides = new List<GeneratedProperty>();
+                for (int index = 0; index < this.Members.Count; ++index)
+                {
+                    var value = this.Members[index];
+                    PropertyInfo propertyInfo = value.PropertyInfo;
+                    Type propertyType = propertyInfo.PropertyType;
+
+                    GeneratedProperty generatedProperty = new GeneratedProperty(context.Options, index, propertyInfo);
+
+                    var propContext = context.With(offset: $"({context.OffsetVariableName} + {value.Offset})", inputBuffer: "buffer");
+
+                    generatedProperty.ReadValueMethodDefinition =
+$@"
+                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {generatedProperty.ReadValueMethodName}(InputBuffer buffer, int offset)
+                    {{
+                        return {propContext.GetParseInvocation(propertyType)};
+                    }}
+";
+
+                    propertyOverrides.Add(generatedProperty);
+                }
+
+                classDefinition = CSharpHelpers.CreateDeserializeClass(
+                    className,
+                    this.ClrType,
+                    propertyOverrides,
+                    context.Options);
+            }
+
+            return new CodeGeneratedMethod
+            {
+                ClassDefinition = classDefinition,
+                MethodBody = $"return new {className}({context.InputBufferVariableName}, {context.OffsetVariableName});",
+            };
+        }
+
+        public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
+        {
+            List<string> body = new List<string>();
+            for (int i = 0; i < this.Members.Count; ++i)
+            {
+                var memberInfo = this.Members[i];
+
+                string propertyAccessor = $"{context.ValueVariableName}.{memberInfo.PropertyInfo.Name}";
+                if (!memberInfo.ItemTypeModel.ClrType.IsValueType)
+                {
+                    // Force members of structs to be non-null.
+                    propertyAccessor += $" ?? new {CSharpHelpers.GetCompilableTypeName(memberInfo.ItemTypeModel.ClrType)}()";
+                }
+
+                var propContext = context.With(
+                    offsetVariableName: $"({memberInfo.Offset} + {context.OffsetVariableName})",
+                    valueVariableName: $"({propertyAccessor})");
+
+                body.Add(propContext.GetSerializeInvocation(memberInfo.ItemTypeModel.ClrType) + ";");
+            }
+
+            return new CodeGeneratedMethod
+            {
+                MethodBody = string.Join("\r\n", body)
+            };
+        }
+
+        public override string GetThrowIfNullInvocation(string itemVariableName)
+        {
+            return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
+        }
+
+        public override void Initialize()
         {
             var structAttribute = this.ClrType.GetCustomAttribute<FlatBufferStructAttribute>();
             if (structAttribute == null)
@@ -132,10 +219,15 @@
                 }
 
                 expectedIndex++;
-                RuntimeTypeModel propertyModel = RuntimeTypeModel.CreateFrom(property.PropertyType);
+                ITypeModel propertyModel = this.typeModelProvider.CreateTypeModel(property.PropertyType);
 
-                int propertySize = propertyModel.InlineSize;
-                int propertyAlignment = propertyModel.Alignment;
+                if (!propertyModel.IsValidStructMember || propertyModel.VTableLayout.Length > 1)
+                {
+                    throw new InvalidFlatBufferDefinitionException($"Struct property {property.Name} with type {property.PropertyType.Name} cannot be part of a flatbuffer struct.");
+                }
+
+                int propertySize = propertyModel.VTableLayout[0].InlineSize;
+                int propertyAlignment = propertyModel.VTableLayout[0].Alignment;
                 this.maxAlignment = Math.Max(propertyAlignment, this.maxAlignment);
 
                 // Pad for alignment.
@@ -148,7 +240,19 @@
                     this.inlineSize);
 
                 this.memberTypes.Add(model);
-                this.inlineSize += propertyModel.InlineSize;
+                this.inlineSize += propertyModel.VTableLayout[0].InlineSize;
+            }
+        }
+
+        public override void TraverseObjectGraph(HashSet<Type> seenTypes)
+        {
+            seenTypes.Add(this.ClrType);
+            foreach (var member in this.memberTypes)
+            {
+                if (seenTypes.Add(member.ItemTypeModel.ClrType))
+                {
+                    member.ItemTypeModel.TraverseObjectGraph(seenTypes);
+                }
             }
         }
     }

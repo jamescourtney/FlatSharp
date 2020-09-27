@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2018 James Courtney
+ * Copyright 2020 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,30 +16,28 @@
 
 namespace FlatSharp.TypeModel
 {
-    using FlatSharp.Attributes;
     using System;
-    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Reflection;
 
     /// <summary>
     /// Defines a type model for an object that can be parsed and serialized to/from a FlatBuffer. While generally most useful to the 
     /// FlatSharp codegen, this can be used to introspect on how FlatSharp interprets your schema.
     /// </summary>
-    public abstract class RuntimeTypeModel
+    public abstract class RuntimeTypeModel : ITypeModel
     {
-        private static readonly ConcurrentDictionary<Type, RuntimeTypeModel> ModelMap = new ConcurrentDictionary<Type, RuntimeTypeModel>();
+        protected readonly ITypeModelProvider typeModelProvider;
 
-        internal RuntimeTypeModel(Type clrType)
+        internal RuntimeTypeModel(Type clrType, ITypeModelProvider typeModelProvider)
         {
             this.ClrType = clrType;
+            this.typeModelProvider = typeModelProvider;
         }
 
         /// <summary>
         /// Initializes this runtime type model instance.
         /// </summary>
-        protected virtual void Initialize() { }
+        public virtual void Initialize() { }
 
         /// <summary>
         /// The type of the item in the CLR.
@@ -47,20 +45,14 @@ namespace FlatSharp.TypeModel
         public Type ClrType { get; }
 
         /// <summary>
-        /// The schema type of this item.
+        /// Gets the schema type.
         /// </summary>
         public abstract FlatBufferSchemaType SchemaType { get; }
 
         /// <summary>
-        /// The alignment of this runtime type.
+        /// Gets the layout of this type model's vtable.
         /// </summary>
-        public abstract int Alignment { get; }
-
-        /// <summary>
-        /// The inline size of this runtime type. For references, this will be the size of a reference.
-        /// For scalars and structs, this will be the total size of the object.
-        /// </summary>
-        public abstract int InlineSize { get; }
+        public abstract VTableEntry[] VTableLayout { get; }
 
         /// <summary>
         /// Indicates if this item is fixed size or not.
@@ -93,20 +85,19 @@ namespace FlatSharp.TypeModel
         public abstract bool IsValidSortedVectorKey { get; }
 
         /// <summary>
-        /// Gets the maximum inline size of this item when padded for alignment, when stored in a table or vector.
+        /// When true, indicates that this type model's serialize method writes inline, rather than by offset.
         /// </summary>
-        public virtual int MaxInlineSize
-        {
-            get => this.InlineSize + SerializationHelpers.GetMaxPadding(this.Alignment);
-        }
+        public abstract bool SerializesInline { get; }
 
         /// <summary>
-        /// Indicates if this type is built into FlatSharp and no parser needs to be generated.
+        /// Gets the maximum inline size of this item when padded for alignment, when stored in a table or vector.
         /// </summary>
-        public virtual bool IsBuiltInType
-        {
-            get => false;
-        }
+        public virtual int MaxInlineSize => this.VTableLayout.Sum(x => x.InlineSize + SerializationHelpers.GetMaxPadding(x.Alignment));
+
+        /// <summary>
+        /// In general, we don't set this to true.
+        /// </summary>
+        public virtual bool MustAlwaysSerialize => false;
 
         /// <summary>
         /// Validates a default value.
@@ -119,86 +110,54 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// Gets or creates a runtime type model from the given type.
         /// </summary>
-        public static RuntimeTypeModel CreateFrom(Type type)
+        internal static ITypeModel CreateFrom(Type type)
         {
-            if (ModelMap.TryGetValue(type, out var value))
-            {
-                return value;
-            }
+            return new FlatSharpTypeModelProvider().CreateTypeModel(type);
+        }
 
-            lock (SharedLock.Instance)
-            {
-                RuntimeTypeModel newModel = null;
+        public abstract CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context);
 
-                if (BuiltInType.BuiltInTypes.TryGetValue(type, out IBuiltInType builtInType))
-                {
-                    newModel = builtInType.TypeModel;
-                }
-                else if (type.GetCustomAttribute<FlatBufferStructAttribute>() != null && type.GetCustomAttribute<FlatBufferTableAttribute>() != null)
-                {
-                    throw new InvalidFlatBufferDefinitionException($"A type cannot be both a class and a struct Type = '{type}'.");
-                }
-                else if (type.GetCustomAttribute<FlatBufferTableAttribute>() != null)
-                {
-                    newModel = new TableTypeModel(type);
-                }
-                else if (type.GetCustomAttribute<FlatBufferStructAttribute>() != null)
-                {
-                    newModel = new StructTypeModel(type);
-                }
-                else if (typeof(IUnion).IsAssignableFrom(type))
-                {
-                    // Keep this above the "isgeneric" check since our union types are generic.
-                    newModel = new UnionTypeModel(type);
-                }
-                else if (type.IsGenericType && type.GetGenericTypeDefinition() != typeof(Nullable<>))
-                {
-                    var genericDefinition = type.GetGenericTypeDefinition();
-                    if (genericDefinition == typeof(IList<>) ||
-                        genericDefinition == typeof(Memory<>) ||
-                        genericDefinition == typeof(ReadOnlyMemory<>) ||
-                        genericDefinition == typeof(IReadOnlyList<>))
-                    {
-                        newModel = new VectorTypeModel(type);
-                    }
-                }
-                else if (type.IsArray)
-                {
-                    newModel = new VectorTypeModel(type);
-                }
-                else if (type.GetCustomAttribute<FlatBufferEnumAttribute>() != null)
-                {
-                    ScalarTypeModel scalarModel = (ScalarTypeModel)RuntimeTypeModel.CreateFrom(Enum.GetUnderlyingType(type));
-                    newModel = new EnumTypeModel(type, scalarModel.InlineSize);
-                }
-                else if (Nullable.GetUnderlyingType(type) != null)
-                {
-                    Type underlyingNullable = Nullable.GetUnderlyingType(type);
-                    if (underlyingNullable.GetCustomAttribute<FlatBufferEnumAttribute>() != null)
-                    {
-                        ScalarTypeModel scalarModel = (ScalarTypeModel)RuntimeTypeModel.CreateFrom(typeof(Nullable<>).MakeGenericType(Enum.GetUnderlyingType(underlyingNullable)));
-                        newModel = new NullableEnumTypeModel(type, scalarModel.InlineSize);
-                    }
-                }
+        public abstract CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context);
 
-                if (newModel == null)
-                {
-                    throw new InvalidFlatBufferDefinitionException($"Unable to create runtime type model for '{type.Name}'. This type is not supported. Please consult the documentation for a list of supported types.");
-                }
+        public abstract CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context);
 
-                ModelMap[type] = newModel;
-                try
-                {
-                    newModel.Initialize();
-                }
-                catch
-                {
-                    ModelMap.TryRemove(type, out _);
-                    throw;
-                }
+        public abstract string GetThrowIfNullInvocation(string itemVariableName);
 
-                return newModel;
-            }
+        public virtual string GetNonNullConditionExpression(string itemVariableName)
+        {
+            return $"!object.ReferenceEquals({itemVariableName}, null)";
+        }
+
+        public abstract void TraverseObjectGraph(HashSet<Type> seenTypes);
+
+        public virtual bool TryFormatDefaultValueAsLiteral(object defaultValue, out string literal)
+        {
+            literal = null;
+            return false;
+        }
+
+        public virtual bool TryFormatStringAsLiteral(string value, out string literal)
+        {
+            literal = null;
+            return false;
+        }
+
+        public virtual bool TryGetUnderlyingVectorType(out ITypeModel typeModel)
+        {
+            typeModel = null;
+            return false;
+        }
+
+        public virtual bool TryGetSpanComparerType(out Type comparerType)
+        {
+            comparerType = null;
+            return false;
+        }
+
+        public virtual bool TryGetTableKeyMember(out TableMemberModel tableMember)
+        {
+            tableMember = null;
+            return false;
         }
     }
 }

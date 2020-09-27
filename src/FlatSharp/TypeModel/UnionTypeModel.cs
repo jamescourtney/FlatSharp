@@ -25,38 +25,25 @@ namespace FlatSharp.TypeModel
     /// </summary>
     public class UnionTypeModel : RuntimeTypeModel
     {
-        private RuntimeTypeModel[] memberTypeModels;
+        private ITypeModel[] memberTypeModels;
 
-        internal UnionTypeModel(Type unionType) : base(unionType)
+        internal UnionTypeModel(Type unionType, ITypeModelProvider provider) : base(unionType, provider)
         {
-            // Look for the actual FlatBufferUnion.
-            while (unionType.BaseType != typeof(object))
-            {
-                unionType = unionType.BaseType;
-            }
-
-            this.memberTypeModels = unionType.GetGenericArguments().Select(RuntimeTypeModel.CreateFrom).ToArray();
         }
 
         /// <summary>
-        /// Gets the schema type of this element.
+        /// Gets the schema type.
         /// </summary>
         public override FlatBufferSchemaType SchemaType => FlatBufferSchemaType.Union;
 
         /// <summary>
-        /// Gets the required alignment of this element.
+        /// Unions are "double-wide" vtable items.
         /// </summary>
-        public override int Alignment => sizeof(uint);
-
-        /// <summary>
-        /// Gets the inline size of this element. 1 byte for discriminator and 4 for the uoffset.
-        /// </summary>
-        public override int InlineSize => sizeof(uint) + sizeof(byte);
-
-        /// <summary>
-        /// The discriminator byte is always aligned, since it's a byte. However, the offset may need to be aligned.
-        /// </summary>
-        public override int MaxInlineSize => this.InlineSize + SerializationHelpers.GetMaxPadding(sizeof(uint));
+        public override VTableEntry[] VTableLayout => new[]
+        {
+            new VTableEntry(sizeof(byte), sizeof(byte)),
+            new VTableEntry(sizeof(uint), sizeof(uint))
+        };
 
         /// <summary>
         /// Unions are not fixed because they contain tables.
@@ -89,27 +76,168 @@ namespace FlatSharp.TypeModel
         public override bool IsValidSortedVectorKey => false;
 
         /// <summary>
+        /// Unions are written inline (though they are really just a pointer).
+        /// </summary>
+        public override bool SerializesInline => true;
+
+        /// <summary>
         /// Gets the type model for this union's members. Index 0 corresponds to discriminator 1.
         /// </summary>
-        public RuntimeTypeModel[] UnionElementTypeModel => this.memberTypeModels;
+        public ITypeModel[] UnionElementTypeModel => this.memberTypeModels;
 
-        protected override void Initialize()
+        public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
+        {
+            List<string> switchCases = new List<string>();
+            for (int i = 0; i < this.UnionElementTypeModel.Length; ++i)
+            {
+                var unionMember = this.UnionElementTypeModel[i];
+                int unionIndex = i + 1;
+                string @case =
+$@"
+                    case {unionIndex}:
+                        return {context.MethodNameMap[unionMember.ClrType]}({context.ValueVariableName}.Item{unionIndex});";
+
+                switchCases.Add(@case);
+            }
+            string discriminatorPropertyName = nameof(FlatBufferUnion<int, int>.Discriminator);
+
+            string body =
+$@"
+            switch ({context.ValueVariableName}.{discriminatorPropertyName})
+            {{
+                {string.Join("\r\n", switchCases)}
+                default:
+                    throw new System.InvalidOperationException(""Exception determining type of union. Discriminator = "" + {context.ValueVariableName}.{discriminatorPropertyName});
+            }}
+";
+            return new CodeGeneratedMethod { MethodBody = body };
+        }
+
+        public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
+        {
+            List<string> switchCases = new List<string>();
+            for (int i = 0; i < this.UnionElementTypeModel.Length; ++i)
+            {
+                var unionMember = this.UnionElementTypeModel[i];
+                int unionIndex = i + 1;
+
+                string inlineAdjustment = string.Empty;
+                if (unionMember.SerializesInline)
+                {
+                    inlineAdjustment = $"offsetLocation += buffer.{nameof(InputBuffer.ReadUOffset)}(offsetLocation);";
+                }
+
+                string @case =
+$@"
+                    case {unionIndex}:
+                        {inlineAdjustment}
+                        return new {CSharpHelpers.GetCompilableTypeName(this.ClrType)}({context.MethodNameMap[unionMember.ClrType]}(buffer, offsetLocation));
+";
+                switchCases.Add(@case);
+            }
+
+            string body = $@"
+                byte discriminator = {context.InputBufferVariableName}.{nameof(InputBuffer.ReadByte)}({context.OffsetVariableName}.offset0);
+                int offsetLocation = {context.OffsetVariableName}.offset1;
+                if (discriminator == 0 && offsetLocation != 0)
+                    throw new System.IO.InvalidDataException(""FlatBuffer union had discriminator set but no offset."");
+
+                switch (discriminator)
+                {{
+                    {string.Join("\r\n", switchCases)}
+                    default:
+                        return null;
+                }}
+            ";
+
+            return new CodeGeneratedMethod { MethodBody = body };
+        }
+
+        public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
+        {
+            List<string> switchCases = new List<string>();
+            for (int i = 0; i < this.UnionElementTypeModel.Length; ++i)
+            {
+                var elementModel = this.UnionElementTypeModel[i];
+                var unionIndex = i + 1;
+
+                string inlineAdjustment;
+
+                if (elementModel.SerializesInline)
+                {
+                    // Structs are generally written in-line, with the exception of unions.
+                    // So, we need to do the normal allocate space dance here, since we're writing
+                    // a pointer to a struct.
+                    inlineAdjustment =
+$@"
+                        var writeOffset = context.{nameof(SerializationContext.AllocateSpace)}({elementModel.VTableLayout.Single().InlineSize}, {elementModel.VTableLayout.Single().Alignment});
+                        {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteUOffset)}(span, {context.OffsetVariableName}.offset1, writeOffset, context);";
+                }
+                else
+                {
+                    inlineAdjustment = $"var writeOffset = {context.OffsetVariableName}.offset1;";
+                }
+
+                string @case =
+$@"
+                    case {unionIndex}:
+                    {{
+                        {inlineAdjustment}
+                        {context.MethodNameMap[elementModel.ClrType]}({context.SpanWriterVariableName}, {context.SpanVariableName}, {context.ValueVariableName}.Item{unionIndex}, writeOffset, {context.SerializationContextVariableName});
+                    }}
+                        break;";
+
+                switchCases.Add(@case);
+            }
+
+            string serializeBlock = $@"
+                byte discriminatorValue = {context.ValueVariableName}.Discriminator;
+                {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteByte)}(
+                    {context.SpanVariableName}, 
+                    discriminatorValue, 
+                    {context.OffsetVariableName}.offset0, 
+                    {context.SerializationContextVariableName});
+
+                switch (discriminatorValue)
+                {{
+                    {string.Join("\r\n", switchCases)}
+                    default: throw new InvalidOperationException(""Unexpected"");
+                }}";
+
+            return new CodeGeneratedMethod { IsMethodInline = false, MethodBody = serializeBlock };
+        }
+
+        public override string GetThrowIfNullInvocation(string itemVariableName)
+        {
+            return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
+        }
+
+        public override void Initialize()
         {
             bool containsString = false;
             HashSet<Type> uniqueTypes = new HashSet<Type>();
+
+            // Look for the actual FlatBufferUnion.
+            Type unionType = this.ClrType;
+            while (unionType.BaseType != typeof(object))
+            {
+                unionType = unionType.BaseType;
+            }
+
+            this.memberTypeModels = unionType.GetGenericArguments().Select(this.typeModelProvider.CreateTypeModel).ToArray();
 
             foreach (var item in this.memberTypeModels)
             {
                 if (!item.IsValidUnionMember)
                 {
-                    throw new InvalidFlatBufferDefinitionException($"Unions may not store '{item.SchemaType}'.");
+                    throw new InvalidFlatBufferDefinitionException($"Unions may not store '{item.GetType().Name}'.");
                 }
                 else if (!uniqueTypes.Add(item.ClrType))
                 {
                     throw new InvalidFlatBufferDefinitionException($"Unions must consist of unique types. The type '{item.ClrType.Name}' was repeated.");
                 }
 
-                if (item.SchemaType == FlatBufferSchemaType.String)
+                if (item.ClrType == typeof(string) || item.ClrType == typeof(SharedString))
                 {
                     if (containsString)
                     {
@@ -117,6 +245,18 @@ namespace FlatSharp.TypeModel
                     }
 
                     containsString = true;
+                }
+            }
+        }
+
+        public override void TraverseObjectGraph(HashSet<Type> seenTypes)
+        {
+            seenTypes.Add(this.ClrType);
+            foreach (var member in this.memberTypeModels)
+            {
+                if (seenTypes.Add(member.ClrType))
+                {
+                    member.TraverseObjectGraph(seenTypes);
                 }
             }
         }

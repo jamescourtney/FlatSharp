@@ -85,7 +85,7 @@ namespace FlatSharpTests
             table.Value = default(T);
             int actualBytesWritten = FlatBufferSerializer.Default.Serialize(table, data);
 
-            Assert.IsTrue(actualBytesWritten >= defaultBytesWritten + RuntimeTypeModel.CreateFrom(typeof(T)).InlineSize);
+            Assert.IsTrue(actualBytesWritten >= defaultBytesWritten + RuntimeTypeModel.CreateFrom(typeof(T)).VTableLayout.Single().InlineSize);
             Assert.AreEqual(default(T), FlatBufferSerializer.Default.Parse<OptionalTypeTable<T>>(data).Value);
         }
 

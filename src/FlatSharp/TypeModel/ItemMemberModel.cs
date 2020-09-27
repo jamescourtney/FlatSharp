@@ -25,7 +25,7 @@ namespace FlatSharp.TypeModel
     public class ItemMemberModel
     {
         internal ItemMemberModel(
-            RuntimeTypeModel propertyModel,
+            ITypeModel propertyModel,
             PropertyInfo propertyInfo,
             ushort index)
         {
@@ -81,7 +81,7 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// The type model of the item.
         /// </summary>
-        public RuntimeTypeModel ItemTypeModel { get; }
+        public ITypeModel ItemTypeModel { get; }
 
         /// <summary>
         /// The property is read only (ie, does not have a setter).

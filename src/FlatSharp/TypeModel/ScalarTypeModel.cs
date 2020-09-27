@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2018 James Courtney
+ * Copyright 2020 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,47 +17,38 @@
  namespace FlatSharp.TypeModel
 {
     using System;
+    using System.Collections.Generic;
 
     /// <summary>
     /// Defines a scalar FlatSharp type model.
     /// </summary>
-    public class ScalarTypeModel : RuntimeTypeModel
+    public abstract class ScalarTypeModel : RuntimeTypeModel
     {
         protected readonly bool isNullable;
+        private readonly int size;
 
         internal ScalarTypeModel(
             Type type,
-            int size) : base(type)
+            int size) : base(type, null)
         {
-            this.Alignment = size;
-            this.InlineSize = size;
+            this.size = size;
             this.isNullable = Nullable.GetUnderlyingType(type) != null;
         }
 
         /// <summary>
-        /// The schema type.
+        /// Gets the schema type.
         /// </summary>
         public override FlatBufferSchemaType SchemaType => FlatBufferSchemaType.Scalar;
 
         /// <summary>
-        /// The alignment of this scalar. Will be equal to the size.
+        /// Layout when in a vtable.
         /// </summary>
-        public override int Alignment { get; }
-
-        /// <summary>
-        /// The size of this scalar. Equal to the alignment.
-        /// </summary>
-        public override int InlineSize { get; }
+        public override VTableEntry[] VTableLayout => new[] { new VTableEntry(this.size, this.size) };
 
         /// <summary>
         /// Scalars are fixed size.
         /// </summary>
         public override bool IsFixedSize => true;
-
-        /// <summary>
-        /// Scalars are built-into FlatSharp.
-        /// </summary>
-        public override bool IsBuiltInType => true;
 
         /// <summary>
         /// Scalars can be part of Structs.
@@ -85,6 +76,26 @@
         public override bool IsValidSortedVectorKey => !this.isNullable;
 
         /// <summary>
+        /// Scalars are written inline.
+        /// </summary>
+        public override bool SerializesInline => true;
+
+        /// <summary>
+        /// The name of the read method for an input buffer.
+        /// </summary>
+        protected abstract string InputBufferReadMethodName { get; }
+
+        /// <summary>
+        /// The name of a write method for an input buffer.
+        /// </summary>
+        protected abstract string SpanWriterWriteMethodName { get; }
+
+        /// <summary>
+        /// Force children to reimplement.
+        /// </summary>
+        public abstract override bool TryGetSpanComparerType(out Type comparerType);
+
+        /// <summary>
         /// Validates a default value.
         /// </summary>
         public override bool ValidateDefaultValue(object defaultValue)
@@ -95,6 +106,85 @@
             }
 
             return defaultValue.GetType() == this.ClrType;
+        }
+
+        public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
+        {
+            return new CodeGeneratedMethod
+            {
+                IsMethodInline = true,
+                MethodBody = $"return {this.MaxInlineSize};"
+            };
+        }
+
+        public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
+        {
+            return new CodeGeneratedMethod
+            {
+                IsMethodInline = true,
+                MethodBody = $"return {context.InputBufferVariableName}.{this.InputBufferReadMethodName}({context.OffsetVariableName});"
+            };
+        }
+
+        public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
+        {
+            string variableName = context.ValueVariableName;
+            if (this.isNullable)
+            {
+                variableName += ".Value";
+            }
+
+            return new CodeGeneratedMethod 
+            {
+                MethodBody = $"{context.SpanWriterVariableName}.{this.SpanWriterWriteMethodName}({context.SpanVariableName}, {variableName}, {context.OffsetVariableName}, {context.SerializationContextVariableName});",
+                IsMethodInline = true,
+            };
+        }
+
+        public override string GetThrowIfNullInvocation(string itemVariableName)
+        {
+            if (this.isNullable)
+            {
+                return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
+        public override string GetNonNullConditionExpression(string itemVariableName)
+        {
+            if (this.isNullable)
+            {
+                return $"{itemVariableName}.HasValue";
+            }
+            else
+            {
+                return "true";
+            }
+        }
+
+        public override void TraverseObjectGraph(HashSet<Type> seenTypes)
+        {
+            seenTypes.Add(this.ClrType);
+            if (this.isNullable)
+            {
+                seenTypes.Add(Nullable.GetUnderlyingType(this.ClrType));
+            }
+        }
+
+        public override bool TryFormatDefaultValueAsLiteral(object defaultValue, out string literal)
+        {
+            literal = null;
+
+            if (defaultValue.GetType() == this.ClrType)
+            {
+                literal = $"({CSharpHelpers.GetCompilableTypeName(this.ClrType)})({defaultValue})";
+                return true;
+            }
+
+            return false;
         }
     }
 }

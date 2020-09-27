@@ -18,37 +18,127 @@
 {
     using FlatSharp.Attributes;
     using System;
+    using System.Collections.Generic;
     using System.Reflection;
 
     /// <summary>
     /// Defines an Enum FlatSharp type model, which derives from the scalar type model.
     /// </summary>
-    public class EnumTypeModel : ScalarTypeModel
+    public class EnumTypeModel : RuntimeTypeModel
     {
-        internal EnumTypeModel(Type type, int size) : base(type, size)
+        private ITypeModel underlyingTypeModel;
+
+        internal EnumTypeModel(Type type, ITypeModelProvider typeModelProvider) : base(type, typeModelProvider)
         {
         }
 
-        protected override void Initialize()
+        public override void Initialize()
         {
             base.Initialize();
 
             Type enumType = this.ClrType;
+            Type underlyingType = Enum.GetUnderlyingType(enumType);
+
+            this.underlyingTypeModel = this.typeModelProvider.CreateTypeModel(underlyingType);
+
             var attribute = enumType.GetCustomAttribute<FlatBufferEnumAttribute>();
+            if (attribute == null)
+            {
+                throw new InvalidFlatBufferDefinitionException($"Enums '{enumType.Name}' is not tagged with a [FlatBufferEnum] attribute.");
+            }
+
             if (attribute.DeclaredUnderlyingType != Enum.GetUnderlyingType(enumType))
             {
                 throw new InvalidFlatBufferDefinitionException($"Enum '{enumType.Name}' declared underlying type '{attribute.DeclaredUnderlyingType}', but was actually '{Enum.GetUnderlyingType(enumType)}'");
             }
         }
 
-        /// <summary>
-        /// Enums are not built in, even though scalars are.
-        /// </summary>
-        public override bool IsBuiltInType => false;
+        public override FlatBufferSchemaType SchemaType => FlatBufferSchemaType.Scalar;
+
+        public override VTableEntry[] VTableLayout => this.underlyingTypeModel.VTableLayout;
+
+        public override bool IsFixedSize => this.underlyingTypeModel.IsFixedSize;
+
+        public override bool IsValidStructMember => true;
+
+        public override bool IsValidTableMember => true;
+
+        public override bool IsValidVectorMember => true;
+
+        public override bool IsValidUnionMember => false;
+
+        public override bool IsValidSortedVectorKey => false;
+
+        public override bool SerializesInline => true;
+
+        public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
+        {
+            Type underlyingType = this.underlyingTypeModel.ClrType;
+            string underlyingTypeName = CSharpHelpers.GetCompilableTypeName(underlyingType);
+
+            return new CodeGeneratedMethod 
+            { 
+                MethodBody = $"return {context.MethodNameMap[underlyingType]}(({underlyingTypeName}){context.ValueVariableName});" 
+            };
+        }
+
+        public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
+        {
+            Type underlyingType = this.underlyingTypeModel.ClrType;
+            string typeName = CSharpHelpers.GetCompilableTypeName(this.ClrType);
+
+            return new CodeGeneratedMethod
+            {
+                MethodBody = $"return ({typeName}){context.MethodNameMap[underlyingType]}({context.InputBufferVariableName}, {context.OffsetVariableName});"
+            };
+        }
+
+        public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
+        {
+            Type underlyingType = this.underlyingTypeModel.ClrType;
+            string underlyingTypeName = CSharpHelpers.GetCompilableTypeName(underlyingType);
+
+            return new CodeGeneratedMethod
+            {
+                MethodBody = $"{context.MethodNameMap[underlyingType]}({context.SpanWriterVariableName}, {context.SpanVariableName}, ({underlyingTypeName}){context.ValueVariableName}, {context.OffsetVariableName}, {context.SerializationContextVariableName});"
+            };
+        }
+
+        public override void TraverseObjectGraph(HashSet<Type> seenTypes)
+        {
+            seenTypes.Add(this.ClrType);
+            seenTypes.Add(Enum.GetUnderlyingType(this.ClrType));
+        }
+
+        public override string GetThrowIfNullInvocation(string itemVariableName)
+        {
+            // Enums are value types.
+            return string.Empty;
+        }
+
+        public override string GetNonNullConditionExpression(string itemVariableName)
+        {
+            // Enums are value types.
+            return "true";
+        }
+
+        public override bool TryFormatDefaultValueAsLiteral(object defaultValue, out string literal)
+        {
+            if (this.underlyingTypeModel.TryFormatDefaultValueAsLiteral(Convert.ChangeType(defaultValue, this.underlyingTypeModel.ClrType), out literal))
+            {
+                literal = $"({CSharpHelpers.GetCompilableTypeName(this.ClrType)}){literal}";
+                return true;
+            }
+
+            return false;
+        }
 
         /// <summary>
-        /// Enums can't be sorted vector keys.
+        /// Validates a default value.
         /// </summary>
-        public override bool IsValidSortedVectorKey => false;
+        public override bool ValidateDefaultValue(object defaultValue)
+        {
+            return defaultValue.GetType() == this.ClrType;
+        }
     }
 }

@@ -18,6 +18,7 @@ namespace FlatSharp
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Reflection;
     using FlatSharp.TypeModel;
     using Microsoft.CodeAnalysis.CSharp;
@@ -63,41 +64,6 @@ namespace FlatSharp
             return name;
         }
 
-        internal static string GetNonNullCheckInvocation(RuntimeTypeModel typeModel, string variableName)
-        {
-            if (typeModel.SchemaType == FlatBufferSchemaType.Scalar)
-            {
-                return string.Empty;
-            }
-
-            return $"{GetFullMethodName(ReflectedMethods.SerializationHelpers_EnsureNonNull(typeModel.ClrType))}({variableName})";
-        }
-
-        internal static string GetDefaultValueToken(TableMemberModel memberModel)
-        {
-            var itemTypeModel = memberModel.ItemTypeModel;
-            var clrType = itemTypeModel.ClrType;
-
-            string defaultValue = $"default({GetCompilableTypeName(memberModel.ItemTypeModel.ClrType)})";
-            if (memberModel.HasDefaultValue)
-            {
-                if (BuiltInType.BuiltInScalars.TryGetValue(clrType, out IBuiltInScalarType builtInType))
-                {
-                    return builtInType.FormatObject(memberModel.DefaultValue);
-                }
-                else if (clrType.IsEnum)
-                {
-                    return $"{CSharpHelpers.GetCompilableTypeName(clrType)}.{memberModel.DefaultValue}";
-                }
-                else
-                {
-                    throw new InvalidOperationException("Unexpected default value type: " + clrType.FullName);
-                }
-            }
-
-            return defaultValue;
-        }
-
         internal static string GetAccessModifier(PropertyInfo property)
         {
             var method = property.GetGetMethod() ?? property.GetMethod;
@@ -108,6 +74,45 @@ namespace FlatSharp
             }
 
             throw new InvalidOperationException("Unexpected method visibility: " + method.Name);
+        }
+
+        internal static string CreateDeserializeClass(
+            string className, 
+            Type baseType, 
+            IEnumerable<GeneratedProperty> propertyOverrides,
+            FlatBufferSerializerOptions options)
+        {
+            string inputBufferFieldDef = "private readonly InputBuffer buffer;";
+            string offsetFieldDef = "private readonly int offset;";
+
+            string ctorBody =
+$@"
+                this.buffer = buffer;
+                this.offset = offset;
+";
+
+            if (options.GreedyDeserialize)
+            {
+                inputBufferFieldDef = string.Empty;
+                offsetFieldDef = string.Empty;
+                ctorBody = string.Join("\r\n", propertyOverrides.Select(x => $"this.{x.BackingFieldName} = {x.ReadValueMethodName}(buffer, offset);"));
+            }
+
+            return
+$@"
+                private sealed class {className} : {CSharpHelpers.GetCompilableTypeName(baseType)}
+                {{
+                    {inputBufferFieldDef}
+                    {offsetFieldDef}
+        
+                    public {className}({nameof(InputBuffer)} buffer, int offset)
+                    {{
+                        {ctorBody}
+                    }}
+
+                    {string.Join("\r\n", propertyOverrides)}
+                }}
+";
         }
     }
 }

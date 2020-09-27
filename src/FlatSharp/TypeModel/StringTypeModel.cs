@@ -13,15 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
- namespace FlatSharp.TypeModel
+
+using System;
+using System.Collections.Generic;
+
+namespace FlatSharp.TypeModel
 {
     /// <summary>
     /// Defines a FlatBuffer string type.
     /// </summary>
-    public class StringTypeModel : RuntimeTypeModel
+    public class StringTypeModel : RuntimeTypeModel, ITypeModel
     {
-        internal StringTypeModel() : base(typeof(string))
+        internal StringTypeModel() : base(typeof(string), null)
         {
         }
 
@@ -31,24 +34,14 @@
         public override FlatBufferSchemaType SchemaType => FlatBufferSchemaType.String;
 
         /// <summary>
-        /// The alignment of the string values. Note that this is aligned by the uoffset_t.
+        /// Layout when in a vtable.
         /// </summary>
-        public override int Alignment => sizeof(uint);
-
-        /// <summary>
-        /// The inline size of the string (uoffset_t).
-        /// </summary>
-        public override int InlineSize => sizeof(uint);
+        public override VTableEntry[] VTableLayout => new VTableEntry[] { new VTableEntry(sizeof(uint), sizeof(uint)) };
 
         /// <summary>
         /// Strings are arbitrary in length.
         /// </summary>
         public override bool IsFixedSize => false;
-
-        /// <summary>
-        /// String are built in.
-        /// </summary>
-        public override bool IsBuiltInType => true;
 
         /// <summary>
         /// Strings can't be part of structs.
@@ -74,5 +67,55 @@
         /// Strings can be sorted vector keys.
         /// </summary>
         public override bool IsValidSortedVectorKey => true;
+
+        /// <summary>
+        /// Strings are written by reference.
+        /// </summary>
+        public override bool SerializesInline => false;
+
+        /// <summary>
+        /// Gets the type of span comparer for this type.
+        /// </summary>
+        public Type SpanComparerType => typeof(StringSpanComparer);
+
+        public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
+        {
+            return new CodeGeneratedMethod
+            {
+                MethodBody = $"return {nameof(SerializationHelpers)}.{nameof(SerializationHelpers.GetMaxSize)}({context.ValueVariableName});",
+            };
+        }
+
+        public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
+        {
+            return new CodeGeneratedMethod
+            {
+                MethodBody = $"return {context.InputBufferVariableName}.{nameof(InputBuffer.ReadString)}({context.OffsetVariableName});",
+            };
+        }
+
+        public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
+        {
+            return new CodeGeneratedMethod
+            {
+                MethodBody = $"{context.SpanWriterVariableName}.{nameof(SpanWriter.WriteString)}({context.SpanVariableName}, {context.ValueVariableName}, {context.OffsetVariableName}, {context.SerializationContextVariableName});",
+            };
+        }
+
+        public override string GetThrowIfNullInvocation(string itemVariableName)
+        {
+            return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
+        }
+
+        public override void TraverseObjectGraph(HashSet<Type> seenTypes)
+        {
+            seenTypes.Add(this.ClrType);
+        }
+
+        public override bool TryGetSpanComparerType(out Type comparerType)
+        {
+            comparerType = typeof(StringSpanComparer);
+            return true;
+        }
     }
 }

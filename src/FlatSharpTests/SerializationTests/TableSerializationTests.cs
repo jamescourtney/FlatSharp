@@ -26,6 +26,7 @@ namespace FlatSharpTests
     using System.Text;
     using FlatSharp;
     using FlatSharp.Attributes;
+    using FlatSharp.TypeModel;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     /// <summary>
@@ -243,5 +244,10 @@ namespace FlatSharpTests
             [FlatBufferItem(2)]
             public virtual uint Uint { get; set; }
         }
+
+        //private class NoPaddingTypeModel : ITypeModel
+        //{
+        //    private readonly ITypeModel typeModel;
+        //}
     }
 }

@@ -13,21 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-namespace FlatSharp
-{
-    using System;
-    using System.ComponentModel;
 
-    /// <summary>
-    /// An analog of IComparer for Spans. The implementation performs comparison consistent with the type the span represents.
-    /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public interface ISpanComparer
+namespace FlatSharp.TypeModel
+{
+    public class VTableEntry
     {
-        /// <summary>
-        /// Compares the two spans.
-        /// </summary>
-        int Compare(bool leftExists, ReadOnlySpan<byte> left, bool rightExists, ReadOnlySpan<byte> right);
+        public VTableEntry(int size, int alignment)
+        {
+            this.InlineSize = size;
+            this.Alignment = alignment;
+        }
+
+        public int InlineSize { get; }
+
+        public int Alignment { get; }
     }
 }

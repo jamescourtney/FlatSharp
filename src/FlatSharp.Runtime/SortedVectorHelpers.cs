@@ -49,31 +49,6 @@ namespace FlatSharp
     public static class SortedVectorHelpers
     {
         /// <summary>
-        /// A method that will be optimized out. Left in place to keep logic simple 
-        /// for the serializer codegen (so it doesn't need to think about string vs struct).
-        /// </summary>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [Conditional("NEVER")]
-        public static void EnsureKeyNonNull<TKey>(TKey key) where TKey : struct
-        {
-        }
-
-        /// <summary>
-        /// String keys cannot be null in a sorted vector. We use this method as a hook to throw a rational
-        /// exception before a nullref.
-        /// </summary>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void EnsureKeyNonNull(string key)
-        {
-            if (key == null)
-            {
-                throw new InvalidOperationException("Unable to serialize object. String keys in sorted vectors may not be null.");
-            }
-        }
-
-        /// <summary>
         /// Sorts the given flatbuffer vector. This method, used incorrectly, is a fantastic way to corrupt your buffer.
         /// </summary>
         /// <remarks>
@@ -212,7 +187,7 @@ namespace FlatSharp
                leftSpan = leftSpan.Slice(0, leftLength);
 #endif
 
-               return StringSpanComparer.Instance.Compare(leftSpan, rightData);
+               return StringSpanComparer.Instance.Compare(true, leftSpan, true, rightData);
             };
         }
 
@@ -344,6 +319,7 @@ namespace FlatSharp
                     // Move the pivot to hi - 1 (since we know hi is already larger than the pivot).
                     SwapVectorPositions(middle, hi - 1, keyLocations);
                     var (pivotOffset, pivotLength, _) = keyLocations[hi - 1];
+                    bool pivotExists = pivotOffset != 0;
                     var pivotSpan = buffer.Slice(pivotOffset, pivotLength);
 
                     // Partition
@@ -355,7 +331,7 @@ namespace FlatSharp
                         {
                             var (keyOffset, keyLength, _) = keyLocations[++num2];
                             var keySpan = buffer.Slice(keyOffset, keyLength);
-                            if (keyComparer.Compare(keySpan, pivotSpan) >= 0)
+                            if (keyComparer.Compare(keyOffset != 0, keySpan, pivotExists, pivotSpan) >= 0)
                             {
                                 break;
                             }
@@ -365,7 +341,7 @@ namespace FlatSharp
                         {
                             var (keyOffset, keyLength, _) = keyLocations[--num3];
                             var keySpan = buffer.Slice(keyOffset, keyLength);
-                            if (keyComparer.Compare(pivotSpan, keySpan) >= 0)
+                            if (keyComparer.Compare(pivotExists, pivotSpan, keyOffset != 0, keySpan) >= 0)
                             {
                                 break;
                             }
@@ -410,7 +386,7 @@ namespace FlatSharp
                     (int keyOffset, int keyLength, _) = keyLocations[num];
                     ReadOnlySpan<byte> keySpan = buffer.Slice(keyOffset, keyLength);
 
-                    if (comparer.Compare(valSpan, keySpan) < 0)
+                    if (comparer.Compare(valTuple.offset != 0, valSpan, keyOffset != 0, keySpan) < 0)
                     {
                         keyLocations[num + 1] = keyLocations[num];
                         num--;
@@ -437,10 +413,13 @@ namespace FlatSharp
                 (int leftOffset, int leftLength, _) = keyOffsets[leftIndex];
                 (int rightOffset, int rightLength, _) = keyOffsets[rightIndex];
 
+                bool leftExists = leftOffset != 0;
+                bool rightExists = rightOffset != 0;
+
                 var leftSpan = vector.Slice(leftOffset, leftLength);
                 var rightSpan = vector.Slice(rightOffset, rightLength);
 
-                if (comparer.Compare(leftSpan, rightSpan) > 0)
+                if (comparer.Compare(leftExists, leftSpan, rightExists, rightSpan) > 0)
                 {
                     SwapVectorPositions(leftIndex, rightIndex, keyOffsets);
                 }
@@ -496,6 +475,11 @@ namespace FlatSharp
                 if (inlineItemSize != null)
                 {
                     return (fieldOffset, inlineItemSize.Value, tableOffset);
+                }
+
+                if (fieldOffset == 0)
+                {
+                    return (0, 0, tableOffset);
                 }
 
                 // Strings are stored as a uoffset reference. Follow the indirection one more time.

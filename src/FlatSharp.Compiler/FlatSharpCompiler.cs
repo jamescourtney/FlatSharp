@@ -304,7 +304,7 @@ namespace FlatSharp.Compiler
         {
             Type type = assembly.GetType(tableOrStruct.FullName);
             var options = new FlatBufferSerializerOptions(tableOrStruct.RequestedSerializer.Value);
-            var generator = new RoslynSerializerGenerator(options);
+            var generator = new RoslynSerializerGenerator(options, SchemaDefinition.BuiltInTypeModelProvider);
 
             var method = generator
                 .GetType()

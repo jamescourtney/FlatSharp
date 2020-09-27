@@ -16,6 +16,7 @@
  
 namespace FlatSharp
 {
+    using FlatSharp.TypeModel;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -28,8 +29,10 @@ namespace FlatSharp
     public sealed class FlatBufferSerializer
     {
         public static FlatBufferSerializer Default { get; } = new FlatBufferSerializer(new FlatBufferSerializerOptions());
-        
+
         private readonly Dictionary<Type, object> serializerCache = new Dictionary<Type, object>();
+
+        private ITypeModelProvider typeModelProvider;
 
         /// <summary>
         /// Creates a new flatbuffer serializer using the default options.
@@ -42,14 +45,18 @@ namespace FlatSharp
         /// <summary>
         /// Creates a new FlatBufferSerializer using the given options.
         /// </summary>
-        public FlatBufferSerializer(FlatBufferSerializerOptions options)
+        public FlatBufferSerializer(FlatBufferSerializerOptions options) 
+            : this(options, new FlatSharpTypeModelProvider())
         {
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
+        }
 
-            this.Options = options;
+        /// <summary>
+        /// Creates a new FlatBufferSerializer using the given options and type model provider.
+        /// </summary>
+        public FlatBufferSerializer(FlatBufferSerializerOptions options, ITypeModelProvider typeModelProvider)
+        {
+            this.typeModelProvider = typeModelProvider ?? throw new ArgumentNullException(nameof(typeModelProvider));
+            this.Options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
         /// <summary>
@@ -183,7 +190,7 @@ namespace FlatSharp
                 {
                     if (!this.serializerCache.TryGetValue(typeof(TRoot), out serializer))
                     {
-                        serializer = new RoslynSerializerGenerator(this.Options).Compile<TRoot>();
+                        serializer = new RoslynSerializerGenerator(this.Options, this.typeModelProvider).Compile<TRoot>();
                         this.serializerCache[typeof(TRoot)] = serializer;
                     }
                 }

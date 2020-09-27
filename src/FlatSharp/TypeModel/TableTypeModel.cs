@@ -18,7 +18,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.ComponentModel;
     using System.Linq;
     using System.Reflection;
     using FlatSharp.Attributes;
@@ -39,24 +38,19 @@
         /// </summary>
         private readonly HashSet<int> occupiedVtableSlots = new HashSet<int>();
 
-        internal TableTypeModel(Type clrType) : base(clrType)
+        internal TableTypeModel(Type clrType, ITypeModelProvider typeModelProvider) : base(clrType, typeModelProvider)
         {
         }
 
         /// <summary>
-        /// Schema type.
+        /// Gets the schema type.
         /// </summary>
         public override FlatBufferSchemaType SchemaType => FlatBufferSchemaType.Table;
 
         /// <summary>
-        /// Tables are always addressed by reference, so the alignment is uoffset_t.
+        /// Layout when in a vtable.
         /// </summary>
-        public override int Alignment => sizeof(uint);
-
-        /// <summary>
-        /// The inline size. Tables are always "reference" types, so this is a fixed uoffset_t.
-        /// </summary>
-        public override int InlineSize => sizeof(uint);
+        public override VTableEntry[] VTableLayout => new VTableEntry[] { new VTableEntry(sizeof(uint), sizeof(uint)) };
 
         /// <summary>
         /// Tables can have vectors and other arbitrary data.
@@ -89,6 +83,11 @@
         public override bool IsValidSortedVectorKey => false;
 
         /// <summary>
+        /// Tables are written by reference.
+        /// </summary>
+        public override bool SerializesInline => false;
+
+        /// <summary>
         /// Gets the maximum used index in this vtable.
         /// </summary>
         public int MaxIndex => this.occupiedVtableSlots.Max();
@@ -106,7 +105,7 @@
         /// <summary>
         /// The property type used as a key.
         /// </summary>
-        public PropertyInfo KeyProperty { get; private set; }
+        public TableMemberModel KeyMember { get; private set; }
         
         /// <summary>
         /// Gets the maximum size of a table assuming all members are populated include the vtable offset. 
@@ -118,7 +117,7 @@
             get => this.IndexToMemberMap.Values.Sum(x => x.ItemTypeModel.MaxInlineSize) + sizeof(int);
         }
 
-        protected override void Initialize()
+        public override void Initialize()
         {
             var tableAttribute = this.ClrType.GetCustomAttribute<FlatBufferTableAttribute>();
             if (tableAttribute == null)
@@ -141,7 +140,7 @@
                 {
                     x.Property,
                     x.Attribute,
-                    ItemTypeModel = RuntimeTypeModel.CreateFrom(x.Property.PropertyType),
+                    ItemTypeModel = this.typeModelProvider.CreateTypeModel(x.Property.PropertyType),
                 })
                 .ToList();
 
@@ -155,31 +154,14 @@
             foreach (var property in properties)
             {
                 bool hasDefaultValue = false;
-
-                if (property.Attribute.Key)
-                {
-                    if (this.KeyProperty != null)
-                    {
-                        throw new InvalidFlatBufferDefinitionException($"Table {this.ClrType.Name} has more than one [FlatBufferItemAttribute] with Key set to true.");
-                    }
-                    
-                    if (!property.ItemTypeModel.IsValidSortedVectorKey)
-                    {
-                        throw new InvalidFlatBufferDefinitionException($"Table {this.ClrType.Name} declares a key property on a type that That does not support being a key in a sorted vector.");
-                    }
-
-                    this.KeyProperty = property.Property;
-                }
-
-                ValidateSortedVector(property.Attribute, property.ItemTypeModel, property.Property);
-
                 object defaultValue = null;
+
                 if (!object.ReferenceEquals(property.Attribute.DefaultValue, null))
                 {
                     hasDefaultValue = true;
                     defaultValue = property.Attribute.DefaultValue;
                 }
-                
+
                 ushort index = property.Attribute.Index;
                 maxIndex = Math.Max(index, maxIndex);
 
@@ -192,7 +174,29 @@
                     property.Attribute.SortedVector,
                     property.Attribute.Key);
 
-                for (int i = 0; i < model.VTableSlotCount; ++i)
+                if (property.Attribute.Key)
+                {
+                    if (this.KeyMember != null)
+                    {
+                        throw new InvalidFlatBufferDefinitionException($"Table {this.ClrType.Name} has more than one [FlatBufferItemAttribute] with Key set to true.");
+                    }
+                    
+                    if (!property.ItemTypeModel.IsValidSortedVectorKey)
+                    {
+                        throw new InvalidFlatBufferDefinitionException($"Table {this.ClrType.Name} declares a key property on a type that that does not support being a key in a sorted vector.");
+                    }
+
+                    if (!property.ItemTypeModel.TryGetSpanComparerType(out _))
+                    {
+                        throw new InvalidFlatBufferDefinitionException($"Table {this.ClrType.Name} declares a key property on a type whose type model does not supply a ISpanComparer type.");
+                    }
+
+                    this.KeyMember = model;
+                }
+
+                ValidateSortedVector(property.Attribute, property.ItemTypeModel, property.Property);
+
+                for (int i = 0; i < model.ItemTypeModel.VTableLayout.Length; ++i)
                 {
                     if (!this.occupiedVtableSlots.Add(index + i))
                     {
@@ -204,29 +208,38 @@
             }
         }
 
-        private static void ValidateSortedVector(FlatBufferItemAttribute itemAttribute, RuntimeTypeModel itemTypeModel, PropertyInfo propertyInfo)
+        private static void ValidateSortedVector(FlatBufferItemAttribute itemAttribute, ITypeModel itemTypeModel, PropertyInfo propertyInfo)
         {
             if (itemAttribute.SortedVector)
             {
-                // This must be a vector, and the inner model must have an item with the 'key' property.
-                if (itemTypeModel is VectorTypeModel vectorTypeModel)
+                if (itemTypeModel.SchemaType != FlatBufferSchemaType.Vector)
                 {
-                    var vectorMemberModel = vectorTypeModel.ItemTypeModel;
-                    if (vectorMemberModel is TableTypeModel tableModel)
-                    {
-                        if (tableModel.KeyProperty == null)
-                        {
-                            throw new InvalidFlatBufferDefinitionException($"Property '{propertyInfo.Name}' declares a sorted vector, but the member is a table that does not have a key.");
-                        }
-                    }
-                    else
-                    {
-                        throw new InvalidFlatBufferDefinitionException($"Property '{propertyInfo.Name}' declares a sorted vector, but the member is not a table.");
-                    }
+                    throw new InvalidFlatBufferDefinitionException($"Property '{propertyInfo.Name}' declares the sortedVector option, but the underlying type was not a vector.");
                 }
-                else
+
+                if (!itemTypeModel.TryGetUnderlyingVectorType(out ITypeModel memberTypeModel))
                 {
-                    throw new InvalidFlatBufferDefinitionException($"Property '{propertyInfo.Name}' declares the sortedVector option, but the property is not a vector type.");
+                    throw new InvalidFlatBufferDefinitionException($"Property '{propertyInfo.Name}' declares the sortedVector option, but the underlying type model did not report the underlying vector type.");
+                }
+
+                if (memberTypeModel.SchemaType != FlatBufferSchemaType.Table)
+                {
+                    throw new InvalidFlatBufferDefinitionException($"Property '{propertyInfo.Name}' declares a sorted vector, but the member is not a table. Type = {itemTypeModel?.ClrType.FullName}.");
+                }
+
+                if (!memberTypeModel.TryGetTableKeyMember(out TableMemberModel member))
+                {
+                    throw new InvalidFlatBufferDefinitionException($"Property '{propertyInfo.Name}' declares a sorted vector, but the member does not have a key defined. Type = {itemTypeModel?.ClrType.FullName}.");
+                }
+
+                if (!member.ItemTypeModel.TryGetSpanComparerType(out _))
+                {
+                    throw new InvalidFlatBufferDefinitionException($"Property '{propertyInfo.Name}' declares a sorted vector, but the key does not have an implementation of ISpanComparer. Keys must be non-nullable scalars or strings. KeyType = {member.ItemTypeModel.ClrType.FullName}");
+                }
+
+                if (member.ItemTypeModel.VTableLayout.Length != 1)
+                {
+                    throw new InvalidFlatBufferDefinitionException($"Property '{propertyInfo.Name}' declares a sorted vector, but the sort key's vtable is not compatible with sorting. KeyType = {member.ItemTypeModel.ClrType.FullName}");
                 }
             }
         }
@@ -267,6 +280,329 @@
             if (defaultConstructor == null)
             {
                 throw new InvalidFlatBufferDefinitionException($"Can't find a public/protected default default constructor for {type.Name}");
+            }
+        }
+
+        public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
+        {
+            var type = this.ClrType;
+            int maxIndex = this.MaxIndex;
+            int maxInlineSize = this.NonPaddedMaxTableInlineSize;
+
+            // Start by asking for the worst-case number of bytes from the serializationcontext.
+            string methodStart =
+$@"
+                int tableStart = {context.SerializationContextVariableName}.{nameof(SerializationContext.AllocateSpace)}({maxInlineSize}, sizeof(int));
+                {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteUOffset)}({context.SpanVariableName}, {context.OffsetVariableName}, tableStart, {context.SerializationContextVariableName});
+                int currentOffset = tableStart + sizeof(int); // skip past vtable soffset_t.
+
+                var vtable = {context.SerializationContextVariableName}.{nameof(SerializationContext.VTableBuilder)};
+                vtable.StartObject({maxIndex});
+";
+
+            List<string> body = new List<string>();
+            List<string> writers = new List<string>();
+
+            // load the properties of the object into locals.
+            foreach (var kvp in this.IndexToMemberMap)
+            {
+                var (prepare, write) = GetStandardSerializeBlocks(kvp.Key, kvp.Value, context);
+                body.Add(prepare);
+                writers.Add(write);
+            }
+
+            // We probably over-allocated. Figure out by how much and back up the cursor.
+            // Then we can write the vtable.
+            body.Add("int tableLength = currentOffset - tableStart;");
+            body.Add($"{context.SerializationContextVariableName}.{nameof(SerializationContext.Offset)} -= {maxInlineSize} - tableLength;");
+            body.Add($"int vtablePosition = vtable.{nameof(VTableBuilder.EndObject)}(span, {context.SpanWriterVariableName}, tableLength);");
+            body.Add($"{context.SpanWriterVariableName}.{nameof(SpanWriter.WriteInt)}(span, tableStart - vtablePosition, tableStart, context);");
+
+            body.AddRange(writers);
+
+            // These methods are often enormous, and inlining can have a detrimental effect on perf.
+            return new CodeGeneratedMethod
+            {
+                MethodBody = $"{methodStart} \r\n {string.Join("\r\n", body)}",
+                IsMethodInline = false,
+            };
+        }
+
+        private (string prepareBlock, string serializeBlock) GetStandardSerializeBlocks(
+            int index, 
+            TableMemberModel memberModel,
+            SerializationCodeGenContext context)
+        {
+            string OffsetVariableName(int i) => $"index{index + i}Offset";
+
+            string valueVariableName = $"index{index}Value";
+
+            // Set up a condition for serializing, unless the type model tells us not to.
+            string condition = $"if ({valueVariableName} != {memberModel.DefaultValueToken})";
+            if (memberModel.ItemTypeModel.MustAlwaysSerialize)
+            {
+                condition = string.Empty;
+            }
+
+            List<string> prepareBlockComponents = new List<string>();
+            int vtableEntries = memberModel.ItemTypeModel.VTableLayout.Length;
+            for (int i = 0; i < vtableEntries; ++i)
+            {
+                var layout = memberModel.ItemTypeModel.VTableLayout[i];
+
+                prepareBlockComponents.Add($@"
+                            currentOffset += {CSharpHelpers.GetFullMethodName(ReflectedMethods.SerializationHelpers_GetAlignmentErrorMethod)}(currentOffset, {layout.Alignment});
+                            {OffsetVariableName(i)} = currentOffset;
+                            vtable.{nameof(VTableBuilder.SetOffset)}({index + i}, currentOffset - tableStart);
+                            currentOffset += {layout.InlineSize};
+                ");
+            }
+
+            string prepareBlock =
+$@"
+                    var {valueVariableName} = {context.ValueVariableName}.{memberModel.PropertyInfo.Name};
+                    {string.Join("\r\n", Enumerable.Range(0, vtableEntries).Select(x => $"var {OffsetVariableName(x)} = 0;"))}
+                    {condition} 
+                    {{
+                            {string.Join("\r\n", prepareBlockComponents)}
+                    }}";
+
+            string sortInvocation = string.Empty;
+            if (memberModel.IsSortedVector)
+            {
+                if (!memberModel.ItemTypeModel.TryGetUnderlyingVectorType(out ITypeModel tableModel) ||
+                    !tableModel.TryGetTableKeyMember(out TableMemberModel keyMember) ||
+                    !keyMember.ItemTypeModel.TryGetSpanComparerType(out Type spanComparerType) ||
+                    keyMember.ItemTypeModel.VTableLayout.Length != 1)
+                {
+                    string vtm = memberModel.ItemTypeModel.ClrType.FullName;
+                    string ttm = tableModel?.GetType().FullName;
+                    string ttn = tableModel?.ClrType.FullName;
+
+                    throw new InvalidOperationException($"Internal error: Validation failed when writing sorted vector. VTM={vtm}, TTM={ttm}, TTN={ttn}");
+                }
+
+                string inlineSize = keyMember.ItemTypeModel.IsFixedSize ? keyMember.ItemTypeModel.VTableLayout[0].InlineSize.ToString() : "null";
+                string defaultValue = keyMember.DefaultValueToken;
+
+                sortInvocation = @$"
+                    {context.SerializationContextVariableName}.{nameof(SerializationContext.AddPostSerializeAction)}(
+                        (span, ctx) =>
+                        {nameof(SortedVectorHelpers)}.{nameof(SortedVectorHelpers.SortVector)}(
+                            span, 
+                            {OffsetVariableName(0)}, 
+                            {keyMember.Index}, 
+                            {inlineSize}, 
+                            new {CSharpHelpers.GetCompilableTypeName(spanComparerType)}({defaultValue})));";
+            }
+
+            string serializeBlock;
+            if (vtableEntries == 1)
+            {
+                serializeBlock =
+                    $@"
+                    if ({OffsetVariableName(0)} != 0)
+                    {{
+                        {context.MethodNameMap[memberModel.ItemTypeModel.ClrType]}(
+                            {context.SpanWriterVariableName},
+                            {context.SpanVariableName},
+                            {valueVariableName},
+                            {OffsetVariableName(0)},
+                            {context.SerializationContextVariableName});
+                        {sortInvocation}
+                    }}";
+            }
+            else
+            {
+                serializeBlock =
+                    $@"
+                    if ({OffsetVariableName(0)} != 0)
+                    {{
+                        var offsetTuple = ({string.Join(", ", Enumerable.Range(0, vtableEntries).Select(x => OffsetVariableName(x)))});
+                        {context.MethodNameMap[memberModel.ItemTypeModel.ClrType]}(
+                            {context.SpanWriterVariableName},
+                            {context.SpanVariableName},
+                            {valueVariableName},
+                            ref offsetTuple,
+                            {context.SerializationContextVariableName});
+                        {sortInvocation}
+                    }}";
+            }
+
+            return (prepareBlock, serializeBlock);
+        }
+
+        public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
+        {
+            // We have to implement two items: The table class and the overall "read" method.
+            // Let's start with the read method.
+            string className = "tableReader_" + Guid.NewGuid().ToString("n");
+
+            // Build up a list of property overrides.
+            var propertyOverrides = new List<GeneratedProperty>();
+            foreach (var item in this.IndexToMemberMap)
+            {
+                int index = item.Key;
+                var value = item.Value;
+
+                GeneratedProperty propertyStuff;
+                if (value.ItemTypeModel.VTableLayout.Length > 1)
+                {
+                    propertyStuff = CreateWideTableProperty(value, index, context);
+                }
+                else
+                {
+                    propertyStuff = CreateStandardTableProperty(value, index, context);
+                }
+
+                propertyOverrides.Add(propertyStuff);
+            }
+
+            string classDefinition = CSharpHelpers.CreateDeserializeClass(
+                className,
+                this.ClrType,
+                propertyOverrides,
+                context.Options);
+
+            return new CodeGeneratedMethod
+            {
+                ClassDefinition = classDefinition,
+                MethodBody = $"return new {className}({context.InputBufferVariableName}, {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBuffer.ReadUOffset)}({context.OffsetVariableName}));"
+            };
+        }
+
+        /// <summary>
+        /// Generates a standard getter for a normal vtable entry.
+        /// </summary>
+        private static GeneratedProperty CreateStandardTableProperty(
+            TableMemberModel memberModel, 
+            int index, 
+            ParserCodeGenContext context)
+        {
+            Type propertyType = memberModel.ItemTypeModel.ClrType;
+            GeneratedProperty property = new GeneratedProperty(context.Options, index, memberModel.PropertyInfo);
+
+            property.ReadValueMethodDefinition =
+$@"
+                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {property.ReadValueMethodName}({nameof(InputBuffer)} buffer, int offset)
+                    {{
+                        int absoluteLocation = buffer.{nameof(InputBuffer.GetAbsoluteTableFieldLocation)}(offset, {index});
+                        if (absoluteLocation == 0) {{
+                            return {memberModel.DefaultValueToken};
+                        }}
+                        else {{
+                            return {context.MethodNameMap[propertyType]}(buffer, absoluteLocation);
+                        }}
+                    }}
+";
+
+            return property;
+        }
+
+        private static GeneratedProperty CreateWideTableProperty(
+            TableMemberModel memberModel,
+            int index,
+            ParserCodeGenContext context)
+        {
+            const string FirstLocationVariableName = "firstLocation";
+
+            Type propertyType = memberModel.ItemTypeModel.ClrType;
+            GeneratedProperty property = new GeneratedProperty(context.Options, index, memberModel.PropertyInfo);
+
+            List<string> locationGetters = new List<string> { FirstLocationVariableName };
+            for (int i = 1; i < memberModel.ItemTypeModel.VTableLayout.Length; ++i)
+            {
+                locationGetters.Add($"buffer.{nameof(InputBuffer.GetAbsoluteTableFieldLocation)}(offset, {index + i})");
+            }
+
+            property.ReadValueMethodDefinition =
+$@"
+                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {property.ReadValueMethodName}({nameof(InputBuffer)} buffer, int offset)
+                    {{
+                        int {FirstLocationVariableName} = buffer.{nameof(InputBuffer.GetAbsoluteTableFieldLocation)}(offset, {index});
+                        if ({FirstLocationVariableName} == 0)
+                        {{
+                            return {memberModel.DefaultValueToken};
+                        }}
+
+                        var absoluteLocations = ({string.Join(", ", locationGetters)});
+                        return {context.MethodNameMap[propertyType]}(buffer, ref absoluteLocations);
+                    }}
+";
+
+            return property;
+        }
+
+        public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
+        {
+            int vtableEntryCount = this.MaxIndex + 1;
+
+            // vtable length + table length + 2 * entryCount + padding to 2-byte alignment.
+            int maxVtableSize = sizeof(ushort) * (2 + vtableEntryCount) + SerializationHelpers.GetMaxPadding(sizeof(ushort));
+            int maxTableSize = this.NonPaddedMaxTableInlineSize + SerializationHelpers.GetMaxPadding(this.VTableLayout.Single().Alignment);
+
+            List<string> statements = new List<string>();
+            foreach (var kvp in this.IndexToMemberMap)
+            {
+                int index = kvp.Key;
+                var member = kvp.Value;
+                var itemModel = member.ItemTypeModel;
+
+                if (itemModel.IsFixedSize)
+                {
+                    // This should already be accounted for in table.NonPaddedMax size above.
+                    continue;
+                }
+
+                string variableName = $"index{index}Value";
+                statements.Add($"var {variableName} = {context.ValueVariableName}.{member.PropertyInfo.Name};");
+
+                string statement =
+$@" 
+                    if ({itemModel.GetNonNullConditionExpression(variableName)})
+                    {{
+                        runningSum += {context.MethodNameMap[itemModel.ClrType]}({variableName});
+                    }}";
+
+                statements.Add(statement);
+            }
+
+            string body =
+$@"
+            int runningSum = {maxTableSize} + {maxVtableSize};
+            {string.Join("\r\n", statements)};
+            return runningSum;
+";
+            return new CodeGeneratedMethod { MethodBody = body };
+        }
+
+        public override string GetNonNullConditionExpression(string itemVariableName)
+        {
+            return $"{itemVariableName} != null";
+        }
+
+        public override string GetThrowIfNullInvocation(string itemVariableName)
+        {
+            return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
+        }
+
+        public override bool TryGetTableKeyMember(out TableMemberModel tableMember)
+        {
+            tableMember = this.KeyMember;
+            return tableMember != null;
+        }
+
+        public override void TraverseObjectGraph(HashSet<Type> seenTypes)
+        {
+            seenTypes.Add(this.ClrType);
+            foreach (var member in this.memberTypes.Values)
+            {
+                if (seenTypes.Add(member.ItemTypeModel.ClrType))
+                {
+                    member.ItemTypeModel.TraverseObjectGraph(seenTypes);
+                }
             }
         }
     }

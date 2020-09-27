@@ -25,7 +25,7 @@
     public class TableMemberModel : ItemMemberModel
     {
         internal TableMemberModel(
-            RuntimeTypeModel propertyModel, 
+            ITypeModel propertyModel, 
             PropertyInfo propertyInfo, 
             ushort index, 
             bool hasDefaultValue,
@@ -69,9 +69,21 @@
         /// </summary>
         public bool IsKey { get; }
 
-        /// <summary>
-        /// Indicates how "wide" this element is in the table's vtable. Unions consume 2 slots in the vtable.
-        /// </summary>
-        public int VTableSlotCount => this.ItemTypeModel.SchemaType == FlatBufferSchemaType.Union ? 2 : 1;
+        public string DefaultValueToken
+        {
+            get
+            {
+                string defaultValue = $"default({CSharpHelpers.GetCompilableTypeName(this.ItemTypeModel.ClrType)})";
+                if (this.HasDefaultValue)
+                {
+                    if (!this.ItemTypeModel.TryFormatDefaultValueAsLiteral(this.DefaultValue, out defaultValue))
+                    {
+                        throw new InvalidFlatBufferDefinitionException($"Unable to format {this.DefaultValue} (type {this.DefaultValue.GetType().Name}) as a literal.");
+                    }
+                }
+
+                return defaultValue;
+            }
+        }
     }
 }
