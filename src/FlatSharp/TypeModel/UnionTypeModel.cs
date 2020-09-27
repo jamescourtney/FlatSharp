@@ -137,8 +137,8 @@ $@"
             }
 
             string body = $@"
-                byte discriminator = {context.InputBufferVariableName}.{nameof(InputBuffer.ReadByte)}({context.OffsetVariableName}[0]);
-                int offsetLocation = {context.OffsetVariableName}[1];
+                byte discriminator = {context.InputBufferVariableName}.{nameof(InputBuffer.ReadByte)}({context.OffsetVariableName}.offset0);
+                int offsetLocation = {context.OffsetVariableName}.offset1;
                 if (discriminator == 0 && offsetLocation != 0)
                     throw new System.IO.InvalidDataException(""FlatBuffer union had discriminator set but no offset."");
 
@@ -161,7 +161,8 @@ $@"
                 var elementModel = this.UnionElementTypeModel[i];
                 var unionIndex = i + 1;
 
-                string inlineAdjustment = string.Empty;
+                string inlineAdjustment;
+
                 if (elementModel.SerializesInline)
                 {
                     // Structs are generally written in-line, with the exception of unions.
@@ -170,8 +171,11 @@ $@"
                     inlineAdjustment =
 $@"
                         var writeOffset = context.{nameof(SerializationContext.AllocateSpace)}({elementModel.VTableLayout.Single().InlineSize}, {elementModel.VTableLayout.Single().Alignment});
-                        {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteUOffset)}(span, {context.OffsetVariableName}[1], writeOffset, context);
-                        {context.OffsetVariableName}[1] = writeOffset;";
+                        {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteUOffset)}(span, {context.OffsetVariableName}.offset1, writeOffset, context);";
+                }
+                else
+                {
+                    inlineAdjustment = $"var writeOffset = {context.OffsetVariableName}.offset1;";
                 }
 
                 string @case =
@@ -179,7 +183,7 @@ $@"
                     case {unionIndex}:
                     {{
                         {inlineAdjustment}
-                        {context.MethodNameMap[elementModel.ClrType]}({context.SpanWriterVariableName}, {context.SpanVariableName}, {context.ValueVariableName}.Item{unionIndex}, {context.OffsetVariableName}[1], {context.SerializationContextVariableName});
+                        {context.MethodNameMap[elementModel.ClrType]}({context.SpanWriterVariableName}, {context.SpanVariableName}, {context.ValueVariableName}.Item{unionIndex}, writeOffset, {context.SerializationContextVariableName});
                     }}
                         break;";
 
@@ -191,7 +195,7 @@ $@"
                 {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteByte)}(
                     {context.SpanVariableName}, 
                     discriminatorValue, 
-                    {context.OffsetVariableName}[0], 
+                    {context.OffsetVariableName}.offset0, 
                     {context.SerializationContextVariableName});
 
                 switch (discriminatorValue)

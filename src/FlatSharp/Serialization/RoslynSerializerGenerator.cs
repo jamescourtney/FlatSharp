@@ -415,19 +415,12 @@ $@"
             {
                 inlineDeclaration = string.Empty;
             }
-
-            string offsetVariableType = "int";
-            if (typeModel.VTableLayout.Length > 1)
-            {
-                offsetVariableType = "Span<int>";
-            }
-
             string declaration =
 $@"
             {inlineDeclaration}
             private static {CSharpHelpers.GetCompilableTypeName(typeModel.ClrType)} {this.readMethods[typeModel.ClrType]}(
                 {nameof(InputBuffer)} {context.InputBufferVariableName}, 
-                {offsetVariableType} {context.OffsetVariableName})
+                {GetVTableOffsetVariableType(typeModel.VTableLayout.Length)} {context.OffsetVariableName})
             {{
                 {method.MethodBody}
             }}";
@@ -450,12 +443,6 @@ $@"
                 inlineDeclaration = string.Empty;
             }
 
-            string offsetVariableType = "int";
-            if (typeModel.VTableLayout.Length > 1)
-            {
-                offsetVariableType = "Span<int>";
-            }
-
             string declaration =
 $@"
             {inlineDeclaration}
@@ -463,7 +450,7 @@ $@"
                 {nameof(SpanWriter)} {context.SpanWriterVariableName}, 
                 Span<byte> {context.SpanVariableName}, 
                 {CSharpHelpers.GetCompilableTypeName(typeModel.ClrType)} {context.ValueVariableName}, 
-                {offsetVariableType} {context.OffsetVariableName}, 
+                {GetVTableOffsetVariableType(typeModel.VTableLayout.Length)} {context.OffsetVariableName}, 
                 {nameof(SerializationContext)} {context.SerializationContextVariableName})
             {{
                 {method.MethodBody}
@@ -476,6 +463,21 @@ $@"
             {
                 node = CSharpSyntaxTree.ParseText(method.ClassDefinition, ParseOptions);
                 this.methodDeclarations.Add(node.GetRoot());
+            }
+        }
+
+        /// <summary>
+        /// Returns a flat int for single-entry vtables, and a ref tuple otherwise.
+        /// </summary>
+        private static string GetVTableOffsetVariableType(int vtableLength)
+        {
+            if (vtableLength == 1)
+            {
+                return "int";
+            }
+            else
+            {
+                return $"ref ({string.Join(", ", Enumerable.Range(0, vtableLength).Select(x => $"int offset{x}"))})";
             }
         }
     }

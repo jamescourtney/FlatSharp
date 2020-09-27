@@ -298,8 +298,6 @@ $@"
 
                 var vtable = {context.SerializationContextVariableName}.{nameof(SerializationContext.VTableBuilder)};
                 vtable.StartObject({maxIndex});
-                Span<int> offsets = stackalloc int[{maxIndex + 1}];
-                int offsetTemp;
 ";
 
             List<string> body = new List<string>();
@@ -335,6 +333,8 @@ $@"
             TableMemberModel memberModel,
             SerializationCodeGenContext context)
         {
+            string OffsetVariableName(int i) => $"index{index + i}Offset";
+
             string valueVariableName = $"index{index}Value";
 
             // Set up a condition for serializing, unless the type model tells us not to.
@@ -345,13 +345,14 @@ $@"
             }
 
             List<string> prepareBlockComponents = new List<string>();
-            for (int i = 0; i < memberModel.ItemTypeModel.VTableLayout.Length; ++i)
+            int vtableEntries = memberModel.ItemTypeModel.VTableLayout.Length;
+            for (int i = 0; i < vtableEntries; ++i)
             {
                 var layout = memberModel.ItemTypeModel.VTableLayout[i];
 
                 prepareBlockComponents.Add($@"
                             currentOffset += {CSharpHelpers.GetFullMethodName(ReflectedMethods.SerializationHelpers_GetAlignmentErrorMethod)}(currentOffset, {layout.Alignment});
-                            offsets[{index + i}] = currentOffset;
+                            {OffsetVariableName(i)} = currentOffset;
                             vtable.{nameof(VTableBuilder.SetOffset)}({index + i}, currentOffset - tableStart);
                             currentOffset += {layout.InlineSize};
                 ");
@@ -360,6 +361,7 @@ $@"
             string prepareBlock =
 $@"
                     var {valueVariableName} = {context.ValueVariableName}.{memberModel.PropertyInfo.Name};
+                    {string.Join("\r\n", Enumerable.Range(0, vtableEntries).Select(x => $"var {OffsetVariableName(x)} = 0;"))}
                     {condition} 
                     {{
                             {string.Join("\r\n", prepareBlockComponents)}
@@ -384,37 +386,48 @@ $@"
                 string defaultValue = keyMember.DefaultValueToken;
 
                 sortInvocation = @$"
-                    int index{index}Offset0 = offsets[{index}];
                     {context.SerializationContextVariableName}.{nameof(SerializationContext.AddPostSerializeAction)}(
                         (span, ctx) =>
                         {nameof(SortedVectorHelpers)}.{nameof(SortedVectorHelpers.SortVector)}(
                             span, 
-                            index{index}Offset0, 
+                            {OffsetVariableName(0)}, 
                             {keyMember.Index}, 
                             {inlineSize}, 
                             new {CSharpHelpers.GetCompilableTypeName(spanComparerType)}({defaultValue})));";
             }
 
-            string adjustedOffsetVariableName = "offsetTemp";
-            if (memberModel.ItemTypeModel.VTableLayout.Length != 1)
+            string serializeBlock;
+            if (vtableEntries == 1)
             {
-                // simplify implementation for normal-width vtables.
-                adjustedOffsetVariableName = $"offsets.Slice({index}, {memberModel.ItemTypeModel.VTableLayout.Length})";
-            }
-
-            string serializeBlock =
-                $@"
-                    offsetTemp = offsets[{index}];
-                    if (offsetTemp != 0)
+                serializeBlock =
+                    $@"
+                    if ({OffsetVariableName(0)} != 0)
                     {{
                         {context.MethodNameMap[memberModel.ItemTypeModel.ClrType]}(
                             {context.SpanWriterVariableName},
                             {context.SpanVariableName},
                             {valueVariableName},
-                            {adjustedOffsetVariableName},
+                            {OffsetVariableName(0)},
                             {context.SerializationContextVariableName});
                         {sortInvocation}
                     }}";
+            }
+            else
+            {
+                serializeBlock =
+                    $@"
+                    if ({OffsetVariableName(0)} != 0)
+                    {{
+                        var offsetTuple = ({string.Join(", ", Enumerable.Range(0, vtableEntries).Select(x => OffsetVariableName(x)))});
+                        {context.MethodNameMap[memberModel.ItemTypeModel.ClrType]}(
+                            {context.SpanWriterVariableName},
+                            {context.SpanVariableName},
+                            {valueVariableName},
+                            ref offsetTuple,
+                            {context.SerializationContextVariableName});
+                        {sortInvocation}
+                    }}";
+            }
 
             return (prepareBlock, serializeBlock);
         }
@@ -492,13 +505,15 @@ $@"
             int index,
             ParserCodeGenContext context)
         {
+            const string FirstLocationVariableName = "firstLocation";
+
             Type propertyType = memberModel.ItemTypeModel.ClrType;
             GeneratedProperty property = new GeneratedProperty(context.Options, index, memberModel.PropertyInfo);
 
-            List<string> locationGetters = new List<string>();
+            List<string> locationGetters = new List<string> { FirstLocationVariableName };
             for (int i = 1; i < memberModel.ItemTypeModel.VTableLayout.Length; ++i)
             {
-                locationGetters.Add($"absoluteLocations[{i}] = buffer.{nameof(InputBuffer.GetAbsoluteTableFieldLocation)}(offset, {index + i});");
+                locationGetters.Add($"buffer.{nameof(InputBuffer.GetAbsoluteTableFieldLocation)}(offset, {index + i})");
             }
 
             property.ReadValueMethodDefinition =
@@ -506,17 +521,14 @@ $@"
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
                     private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {property.ReadValueMethodName}({nameof(InputBuffer)} buffer, int offset)
                     {{
-                        int firstLocation = buffer.{nameof(InputBuffer.GetAbsoluteTableFieldLocation)}(offset, {index});
-                        if (firstLocation == 0)
+                        int {FirstLocationVariableName} = buffer.{nameof(InputBuffer.GetAbsoluteTableFieldLocation)}(offset, {index});
+                        if ({FirstLocationVariableName} == 0)
                         {{
                             return {memberModel.DefaultValueToken};
                         }}
 
-                        Span<int> absoluteLocations = stackalloc int[{memberModel.ItemTypeModel.VTableLayout.Length}];
-                        absoluteLocations[0] = firstLocation;
-
-                        {string.Join("\r\n", locationGetters)}
-                        return {context.MethodNameMap[propertyType]}(buffer, absoluteLocations);
+                        var absoluteLocations = ({string.Join(", ", locationGetters)});
+                        return {context.MethodNameMap[propertyType]}(buffer, ref absoluteLocations);
                     }}
 ";
 
