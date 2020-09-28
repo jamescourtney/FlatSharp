@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 
 namespace FlatSharp.TypeModel
 {
@@ -36,7 +37,7 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// Layout when in a vtable.
         /// </summary>
-        public override VTableEntry[] VTableLayout => new VTableEntry[] { new VTableEntry(sizeof(uint), sizeof(uint)) };
+        public override ImmutableArray<PhysicalLayoutElement> PhysicalLayout => new PhysicalLayoutElement[] { new PhysicalLayoutElement(sizeof(uint), sizeof(uint)) }.ToImmutableArray();
 
         /// <summary>
         /// Strings are arbitrary in length.

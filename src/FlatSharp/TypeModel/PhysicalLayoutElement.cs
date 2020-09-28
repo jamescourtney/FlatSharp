@@ -16,9 +16,15 @@
 
 namespace FlatSharp.TypeModel
 {
-    public class VTableEntry
+    /// <summary>
+    /// An element of the physical layout of a Type Model. Types are serialized according to this layout, which represents the inline size
+    /// when serializing the item. For tables, this is simply a tuple of (size: sizeof(uint), alignment: sizeof(uint)) since
+    /// tables are written by reference instead of by value, but for structs 
+    /// the layout depends on the inner members. This layout is widely used when serializing vectors, tables, structs and others.
+    /// </summary>
+    public class PhysicalLayoutElement
     {
-        public VTableEntry(int size, int alignment)
+        public PhysicalLayoutElement(int size, int alignment)
         {
             this.InlineSize = size;
             this.Alignment = alignment;

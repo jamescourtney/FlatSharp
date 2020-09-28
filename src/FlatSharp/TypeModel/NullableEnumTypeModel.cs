@@ -18,6 +18,7 @@ namespace FlatSharp.TypeModel
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.Immutable;
     using System.Reflection;
 
     using FlatSharp.Attributes;
@@ -61,7 +62,7 @@ namespace FlatSharp.TypeModel
             }
         }
 
-        public override VTableEntry[] VTableLayout => this.underlyingTypeModel.VTableLayout;
+        public override ImmutableArray<PhysicalLayoutElement> PhysicalLayout => this.underlyingTypeModel.PhysicalLayout;
 
         public override bool IsFixedSize => this.underlyingTypeModel.IsFixedSize;
 

@@ -18,6 +18,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.Immutable;
     using System.Linq;
     using System.Reflection;
     using FlatSharp.Attributes;
@@ -50,7 +51,7 @@
         /// <summary>
         /// Layout when in a vtable.
         /// </summary>
-        public override VTableEntry[] VTableLayout => new VTableEntry[] { new VTableEntry(sizeof(uint), sizeof(uint)) };
+        public override ImmutableArray<PhysicalLayoutElement> PhysicalLayout => new PhysicalLayoutElement[] { new PhysicalLayoutElement(sizeof(uint), sizeof(uint)) }.ToImmutableArray();
 
         /// <summary>
         /// Tables can have vectors and other arbitrary data.
@@ -196,7 +197,7 @@
 
                 ValidateSortedVector(property.Attribute, property.ItemTypeModel, property.Property);
 
-                for (int i = 0; i < model.ItemTypeModel.VTableLayout.Length; ++i)
+                for (int i = 0; i < model.ItemTypeModel.PhysicalLayout.Length; ++i)
                 {
                     if (!this.occupiedVtableSlots.Add(index + i))
                     {
@@ -237,7 +238,7 @@
                     throw new InvalidFlatBufferDefinitionException($"Property '{propertyInfo.Name}' declares a sorted vector, but the key does not have an implementation of ISpanComparer. Keys must be non-nullable scalars or strings. KeyType = {member.ItemTypeModel.ClrType.FullName}");
                 }
 
-                if (member.ItemTypeModel.VTableLayout.Length != 1)
+                if (member.ItemTypeModel.PhysicalLayout.Length != 1)
                 {
                     throw new InvalidFlatBufferDefinitionException($"Property '{propertyInfo.Name}' declares a sorted vector, but the sort key's vtable is not compatible with sorting. KeyType = {member.ItemTypeModel.ClrType.FullName}");
                 }
@@ -345,10 +346,10 @@ $@"
             }
 
             List<string> prepareBlockComponents = new List<string>();
-            int vtableEntries = memberModel.ItemTypeModel.VTableLayout.Length;
+            int vtableEntries = memberModel.ItemTypeModel.PhysicalLayout.Length;
             for (int i = 0; i < vtableEntries; ++i)
             {
-                var layout = memberModel.ItemTypeModel.VTableLayout[i];
+                var layout = memberModel.ItemTypeModel.PhysicalLayout[i];
 
                 prepareBlockComponents.Add($@"
                             currentOffset += {CSharpHelpers.GetFullMethodName(ReflectedMethods.SerializationHelpers_GetAlignmentErrorMethod)}(currentOffset, {layout.Alignment});
@@ -373,7 +374,7 @@ $@"
                 if (!memberModel.ItemTypeModel.TryGetUnderlyingVectorType(out ITypeModel tableModel) ||
                     !tableModel.TryGetTableKeyMember(out TableMemberModel keyMember) ||
                     !keyMember.ItemTypeModel.TryGetSpanComparerType(out Type spanComparerType) ||
-                    keyMember.ItemTypeModel.VTableLayout.Length != 1)
+                    keyMember.ItemTypeModel.PhysicalLayout.Length != 1)
                 {
                     string vtm = memberModel.ItemTypeModel.ClrType.FullName;
                     string ttm = tableModel?.GetType().FullName;
@@ -382,7 +383,7 @@ $@"
                     throw new InvalidOperationException($"Internal error: Validation failed when writing sorted vector. VTM={vtm}, TTM={ttm}, TTN={ttn}");
                 }
 
-                string inlineSize = keyMember.ItemTypeModel.IsFixedSize ? keyMember.ItemTypeModel.VTableLayout[0].InlineSize.ToString() : "null";
+                string inlineSize = keyMember.ItemTypeModel.IsFixedSize ? keyMember.ItemTypeModel.PhysicalLayout[0].InlineSize.ToString() : "null";
                 string defaultValue = keyMember.DefaultValueToken;
 
                 sortInvocation = @$"
@@ -446,7 +447,7 @@ $@"
                 var value = item.Value;
 
                 GeneratedProperty propertyStuff;
-                if (value.ItemTypeModel.VTableLayout.Length > 1)
+                if (value.ItemTypeModel.PhysicalLayout.Length > 1)
                 {
                     propertyStuff = CreateWideTableProperty(value, index, context);
                 }
@@ -511,7 +512,7 @@ $@"
             GeneratedProperty property = new GeneratedProperty(context.Options, index, memberModel.PropertyInfo);
 
             List<string> locationGetters = new List<string> { FirstLocationVariableName };
-            for (int i = 1; i < memberModel.ItemTypeModel.VTableLayout.Length; ++i)
+            for (int i = 1; i < memberModel.ItemTypeModel.PhysicalLayout.Length; ++i)
             {
                 locationGetters.Add($"buffer.{nameof(InputBuffer.GetAbsoluteTableFieldLocation)}(offset, {index + i})");
             }
@@ -541,7 +542,7 @@ $@"
 
             // vtable length + table length + 2 * entryCount + padding to 2-byte alignment.
             int maxVtableSize = sizeof(ushort) * (2 + vtableEntryCount) + SerializationHelpers.GetMaxPadding(sizeof(ushort));
-            int maxTableSize = this.NonPaddedMaxTableInlineSize + SerializationHelpers.GetMaxPadding(this.VTableLayout.Single().Alignment);
+            int maxTableSize = this.NonPaddedMaxTableInlineSize + SerializationHelpers.GetMaxPadding(this.PhysicalLayout.Single().Alignment);
 
             List<string> statements = new List<string>();
             foreach (var kvp in this.IndexToMemberMap)

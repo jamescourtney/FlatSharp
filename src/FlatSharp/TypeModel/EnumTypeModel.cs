@@ -19,6 +19,7 @@
     using FlatSharp.Attributes;
     using System;
     using System.Collections.Generic;
+    using System.Collections.Immutable;
     using System.Reflection;
 
     /// <summary>
@@ -55,7 +56,7 @@
 
         public override FlatBufferSchemaType SchemaType => FlatBufferSchemaType.Scalar;
 
-        public override VTableEntry[] VTableLayout => this.underlyingTypeModel.VTableLayout;
+        public override ImmutableArray<PhysicalLayoutElement> PhysicalLayout => this.underlyingTypeModel.PhysicalLayout;
 
         public override bool IsFixedSize => this.underlyingTypeModel.IsFixedSize;
 

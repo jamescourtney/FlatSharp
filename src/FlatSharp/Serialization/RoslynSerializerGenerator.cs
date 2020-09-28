@@ -420,7 +420,7 @@ $@"
             {inlineDeclaration}
             private static {CSharpHelpers.GetCompilableTypeName(typeModel.ClrType)} {this.readMethods[typeModel.ClrType]}(
                 {nameof(InputBuffer)} {context.InputBufferVariableName}, 
-                {GetVTableOffsetVariableType(typeModel.VTableLayout.Length)} {context.OffsetVariableName})
+                {GetVTableOffsetVariableType(typeModel.PhysicalLayout.Length)} {context.OffsetVariableName})
             {{
                 {method.MethodBody}
             }}";
@@ -450,7 +450,7 @@ $@"
                 {nameof(SpanWriter)} {context.SpanWriterVariableName}, 
                 Span<byte> {context.SpanVariableName}, 
                 {CSharpHelpers.GetCompilableTypeName(typeModel.ClrType)} {context.ValueVariableName}, 
-                {GetVTableOffsetVariableType(typeModel.VTableLayout.Length)} {context.OffsetVariableName}, 
+                {GetVTableOffsetVariableType(typeModel.PhysicalLayout.Length)} {context.OffsetVariableName}, 
                 {nameof(SerializationContext)} {context.SerializationContextVariableName})
             {{
                 {method.MethodBody}

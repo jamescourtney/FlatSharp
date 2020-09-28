@@ -18,6 +18,7 @@ namespace FlatSharp.TypeModel
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.Immutable;
 
     /// <summary>
     /// A type model. Declares both properties of a type and how to serialize/parse that type.
@@ -38,7 +39,7 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// Layout when in a vtable.
         /// </summary>
-        VTableEntry[] VTableLayout { get; }
+        ImmutableArray<PhysicalLayoutElement> PhysicalLayout { get; }
 
         /// <summary>
         /// Indicates if this item is fixed size or not.

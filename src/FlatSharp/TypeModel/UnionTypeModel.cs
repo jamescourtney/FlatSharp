@@ -18,6 +18,7 @@ namespace FlatSharp.TypeModel
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.Immutable;
     using System.Linq;
 
     /// <summary>
@@ -39,11 +40,11 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// Unions are "double-wide" vtable items.
         /// </summary>
-        public override VTableEntry[] VTableLayout => new[]
+        public override ImmutableArray<PhysicalLayoutElement> PhysicalLayout => new[]
         {
-            new VTableEntry(sizeof(byte), sizeof(byte)),
-            new VTableEntry(sizeof(uint), sizeof(uint))
-        };
+            new PhysicalLayoutElement(sizeof(byte), sizeof(byte)),
+            new PhysicalLayoutElement(sizeof(uint), sizeof(uint))
+        }.ToImmutableArray();
 
         /// <summary>
         /// Unions are not fixed because they contain tables.
@@ -170,7 +171,7 @@ $@"
                     // a pointer to a struct.
                     inlineAdjustment =
 $@"
-                        var writeOffset = context.{nameof(SerializationContext.AllocateSpace)}({elementModel.VTableLayout.Single().InlineSize}, {elementModel.VTableLayout.Single().Alignment});
+                        var writeOffset = context.{nameof(SerializationContext.AllocateSpace)}({elementModel.PhysicalLayout.Single().InlineSize}, {elementModel.PhysicalLayout.Single().Alignment});
                         {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteUOffset)}(span, {context.OffsetVariableName}.offset1, writeOffset, context);";
                 }
                 else

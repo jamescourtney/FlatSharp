@@ -18,6 +18,7 @@ namespace FlatSharp.TypeModel
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.Immutable;
     using System.Linq;
 
     /// <summary>
@@ -52,7 +53,7 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// Gets the layout of this type model's vtable.
         /// </summary>
-        public abstract VTableEntry[] VTableLayout { get; }
+        public abstract ImmutableArray<PhysicalLayoutElement> PhysicalLayout { get; }
 
         /// <summary>
         /// Indicates if this item is fixed size or not.
@@ -92,7 +93,7 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// Gets the maximum inline size of this item when padded for alignment, when stored in a table or vector.
         /// </summary>
-        public virtual int MaxInlineSize => this.VTableLayout.Sum(x => x.InlineSize + SerializationHelpers.GetMaxPadding(x.Alignment));
+        public virtual int MaxInlineSize => this.PhysicalLayout.Sum(x => x.InlineSize + SerializationHelpers.GetMaxPadding(x.Alignment));
 
         /// <summary>
         /// In general, we don't set this to true.

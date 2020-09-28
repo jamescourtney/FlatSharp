@@ -16,8 +16,10 @@
  
  namespace FlatSharp.TypeModel
 {
+    using Microsoft.CodeAnalysis.CSharp.Syntax;
     using System;
     using System.Collections.Generic;
+    using System.Collections.Immutable;
 
     /// <summary>
     /// Defines a scalar FlatSharp type model.
@@ -43,7 +45,7 @@
         /// <summary>
         /// Layout when in a vtable.
         /// </summary>
-        public override VTableEntry[] VTableLayout => new[] { new VTableEntry(this.size, this.size) };
+        public override ImmutableArray<PhysicalLayoutElement> PhysicalLayout => new PhysicalLayoutElement[] { new PhysicalLayoutElement(this.size, this.size) }.ToImmutableArray();
 
         /// <summary>
         /// Scalars are fixed size.
