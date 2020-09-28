@@ -27,7 +27,7 @@ namespace FlatSharp.TypeModel
         private ITypeModel itemTypeModel;
         private bool isReadOnly;
 
-        internal ListVectorTypeModel(Type vectorType, ITypeModelProvider provider) : base(vectorType, provider)
+        internal ListVectorTypeModel(Type vectorType, TypeModelContainer provider) : base(vectorType, provider)
         {
         }
 
@@ -44,7 +44,7 @@ namespace FlatSharp.TypeModel
             }
 
             this.isReadOnly = genericDef == typeof(IReadOnlyList<>);
-            this.itemTypeModel = this.typeModelProvider.CreateTypeModel(this.ClrType.GetGenericArguments()[0]);
+            this.itemTypeModel = this.typeModelContainer.CreateTypeModel(this.ClrType.GetGenericArguments()[0]);
 
             if (!this.itemTypeModel.IsValidVectorMember)
             {

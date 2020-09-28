@@ -447,8 +447,8 @@ namespace FlatSharpTests
             var model = (BaseVectorTypeModel)RuntimeTypeModel.CreateFrom(vectorDefinition.MakeGenericType(innerType));
 
             Assert.AreEqual(model.ClrType.GetGenericTypeDefinition(), vectorDefinition);
-            Assert.AreEqual(model.VTableLayout.Single().InlineSize, 4);
-            Assert.AreEqual(model.VTableLayout.Single().Alignment, 4);
+            Assert.AreEqual(model.PhysicalLayout.Single().InlineSize, 4);
+            Assert.AreEqual(model.PhysicalLayout.Single().Alignment, 4);
 
             var innerModel = RuntimeTypeModel.CreateFrom(innerType);
             Assert.AreEqual(innerModel.ClrType, model.ItemTypeModel.ClrType);
@@ -571,23 +571,23 @@ namespace FlatSharpTests
             Assert.IsInstanceOfType(structModel.Members[0].ItemTypeModel, typeof(StructTypeModel));
             Assert.AreEqual(0, structModel.Members[0].Index);
             Assert.AreEqual(0, structModel.Members[0].Offset);
-            Assert.AreEqual(8, structModel.Members[0].ItemTypeModel.VTableLayout.Single().Alignment);
-            Assert.AreEqual(17, structModel.Members[0].ItemTypeModel.VTableLayout.Single().InlineSize);
+            Assert.AreEqual(8, structModel.Members[0].ItemTypeModel.PhysicalLayout.Single().Alignment);
+            Assert.AreEqual(17, structModel.Members[0].ItemTypeModel.PhysicalLayout.Single().InlineSize);
 
             Assert.IsInstanceOfType(structModel.Members[1].ItemTypeModel, typeof(ScalarTypeModel));
             Assert.AreEqual(1, structModel.Members[1].Index);
             Assert.AreEqual(24, structModel.Members[1].Offset);
-            Assert.AreEqual(8, structModel.Members[1].ItemTypeModel.VTableLayout.Single().Alignment);
-            Assert.AreEqual(8, structModel.Members[1].ItemTypeModel.VTableLayout.Single().InlineSize);
+            Assert.AreEqual(8, structModel.Members[1].ItemTypeModel.PhysicalLayout.Single().Alignment);
+            Assert.AreEqual(8, structModel.Members[1].ItemTypeModel.PhysicalLayout.Single().InlineSize);
 
             Assert.IsInstanceOfType(structModel.Members[2].ItemTypeModel, typeof(ScalarTypeModel));
             Assert.AreEqual(2, structModel.Members[2].Index);
             Assert.AreEqual(32, structModel.Members[2].Offset);
-            Assert.AreEqual(1, structModel.Members[2].ItemTypeModel.VTableLayout.Single().Alignment);
-            Assert.AreEqual(1, structModel.Members[2].ItemTypeModel.VTableLayout.Single().InlineSize);
+            Assert.AreEqual(1, structModel.Members[2].ItemTypeModel.PhysicalLayout.Single().Alignment);
+            Assert.AreEqual(1, structModel.Members[2].ItemTypeModel.PhysicalLayout.Single().InlineSize);
 
-            Assert.AreEqual(33, structModel.VTableLayout.Single().InlineSize);
-            Assert.AreEqual(8, structModel.VTableLayout.Single().Alignment);
+            Assert.AreEqual(33, structModel.PhysicalLayout.Single().InlineSize);
+            Assert.AreEqual(8, structModel.PhysicalLayout.Single().Alignment);
         }
 
         public enum UntaggedEnum

@@ -27,6 +27,7 @@ namespace FlatSharp.Compiler
     using System.Threading;
     using Antlr4.Runtime;
     using Antlr4.Runtime.Misc;
+    using FlatSharp.TypeModel;
 
     public static class FlatSharpCompiler
     {
@@ -304,7 +305,7 @@ namespace FlatSharp.Compiler
         {
             Type type = assembly.GetType(tableOrStruct.FullName);
             var options = new FlatBufferSerializerOptions(tableOrStruct.RequestedSerializer.Value);
-            var generator = new RoslynSerializerGenerator(options, SchemaDefinition.BuiltInTypeModelProvider);
+            var generator = new RoslynSerializerGenerator(options, TypeModelContainer.CreateDefault());
 
             var method = generator
                 .GetType()

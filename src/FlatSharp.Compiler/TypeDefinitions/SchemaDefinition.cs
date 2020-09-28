@@ -17,13 +17,9 @@
 namespace FlatSharp.Compiler
 {
     using FlatSharp.TypeModel;
-    using System;
-    using System.Collections.Generic;
 
     internal static class SchemaDefinition
     {
-        internal static readonly ITypeModelProvider BuiltInTypeModelProvider = new FlatSharpTypeModelProvider();
-
         public static ITypeModel ResolveBuiltInScalarType(string type)
         {
             if (!TryResolve(type, out ITypeModel builtInType))
@@ -36,10 +32,10 @@ namespace FlatSharp.Compiler
 
         public static bool TryResolve(string type, out ITypeModel builtInType)
         {
-            return TryResolve(type, BuiltInTypeModelProvider, out builtInType);
+            return TryResolve(type, TypeModelContainer.CreateDefault(), out builtInType);
         }
 
-        private static bool TryResolve(string type, ITypeModelProvider provider, out ITypeModel builtInType)
+        private static bool TryResolve(string type, TypeModelContainer provider, out ITypeModel builtInType)
         {
             return provider.TryResolveFbsAlias(type, out builtInType);
         }

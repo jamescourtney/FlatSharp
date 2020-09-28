@@ -25,7 +25,7 @@ namespace FlatSharp.TypeModel
     {
         private ITypeModel itemTypeModel;
 
-        internal ArrayVectorTypeModel(Type vectorType, ITypeModelProvider provider) : base(vectorType, provider)
+        internal ArrayVectorTypeModel(Type vectorType, TypeModelContainer provider) : base(vectorType, provider)
         {
         }
 
@@ -45,7 +45,7 @@ namespace FlatSharp.TypeModel
                 throw new InvalidFlatBufferDefinitionException($"Array vectors may only be single-dimensional.");
             }
 
-            this.itemTypeModel = this.typeModelProvider.CreateTypeModel(this.ClrType.GetElementType());
+            this.itemTypeModel = this.typeModelContainer.CreateTypeModel(this.ClrType.GetElementType());
             if (!this.itemTypeModel.IsValidVectorMember)
             {
                 throw new InvalidFlatBufferDefinitionException($"Type '{this.itemTypeModel.ClrType.Name}' is not a valid vector member.");

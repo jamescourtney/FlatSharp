@@ -18,7 +18,7 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.ComponentModel;
+    using System.Collections.Immutable;
     using System.Linq;
     using System.Reflection;
     using FlatSharp.Attributes;
@@ -33,7 +33,7 @@
         private int inlineSize;
         private int maxAlignment = 1;
 
-        internal StructTypeModel(Type clrType, ITypeModelProvider typeModelProvider) : base(clrType, typeModelProvider)
+        internal StructTypeModel(Type clrType, TypeModelContainer container) : base(clrType, container)
         {
         }
 
@@ -45,7 +45,8 @@
         /// <summary>
         /// Layout of the vtable.
         /// </summary>
-        public override VTableEntry[] VTableLayout => new VTableEntry[] { new VTableEntry(this.inlineSize, this.maxAlignment) };
+        public override ImmutableArray<PhysicalLayoutElement> PhysicalLayout =>
+            new PhysicalLayoutElement[] { new PhysicalLayoutElement(this.inlineSize, this.maxAlignment) }.ToImmutableArray();
 
         /// <summary>
         /// Structs are composed of scalars.
@@ -219,15 +220,15 @@ $@"
                 }
 
                 expectedIndex++;
-                ITypeModel propertyModel = this.typeModelProvider.CreateTypeModel(property.PropertyType);
+                ITypeModel propertyModel = this.typeModelContainer.CreateTypeModel(property.PropertyType);
 
-                if (!propertyModel.IsValidStructMember || propertyModel.VTableLayout.Length > 1)
+                if (!propertyModel.IsValidStructMember || propertyModel.PhysicalLayout.Length > 1)
                 {
                     throw new InvalidFlatBufferDefinitionException($"Struct property {property.Name} with type {property.PropertyType.Name} cannot be part of a flatbuffer struct.");
                 }
 
-                int propertySize = propertyModel.VTableLayout[0].InlineSize;
-                int propertyAlignment = propertyModel.VTableLayout[0].Alignment;
+                int propertySize = propertyModel.PhysicalLayout[0].InlineSize;
+                int propertyAlignment = propertyModel.PhysicalLayout[0].Alignment;
                 this.maxAlignment = Math.Max(propertyAlignment, this.maxAlignment);
 
                 // Pad for alignment.
@@ -240,7 +241,7 @@ $@"
                     this.inlineSize);
 
                 this.memberTypes.Add(model);
-                this.inlineSize += propertyModel.VTableLayout[0].InlineSize;
+                this.inlineSize += propertyModel.PhysicalLayout[0].InlineSize;
             }
         }
 
