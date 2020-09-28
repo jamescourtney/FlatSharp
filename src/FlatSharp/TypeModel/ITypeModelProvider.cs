@@ -24,29 +24,13 @@ namespace FlatSharp.TypeModel
     public interface ITypeModelProvider
     {
         /// <summary>
-        /// Creates a type model for the given type. Will only be invoked if <see cref="CanProvide(Type)"/> returns true.0
+        /// Creates a type model for the given type.
         /// </summary>
-        bool TryCreateTypeModel(Type type, out ITypeModel typeModel);
+        bool TryCreateTypeModel(TypeModelContainer container, Type type, out ITypeModel typeModel);
 
         /// <summary>
         /// Attempts to resolve the given alias from an FBS schema as a type model element.
         /// </summary>
-        bool TryResolveFbsAlias(string alias, out ITypeModel typeModel);
-    }
-
-    /// <summary>
-    /// Extensions for ITypeModelProvider.
-    /// </summary>
-    public static class TypeModelProviderExtensions
-    {
-        public static ITypeModel CreateTypeModel(this ITypeModelProvider provider, Type type)
-        {
-            if (!provider.TryCreateTypeModel(type, out var typeModel))
-            {
-                throw new InvalidFlatBufferDefinitionException($"Failed to create or find type model for type '{type.FullName}'.");
-            }
-
-            return typeModel;
-        }
+        bool TryResolveFbsAlias(TypeModelContainer container, string alias, out ITypeModel typeModel);
     }
 }

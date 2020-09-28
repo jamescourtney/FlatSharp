@@ -32,7 +32,7 @@ namespace FlatSharp
 
         private readonly Dictionary<Type, object> serializerCache = new Dictionary<Type, object>();
 
-        private ITypeModelProvider typeModelProvider;
+        private TypeModelContainer container;
 
         /// <summary>
         /// Creates a new flatbuffer serializer using the default options.
@@ -46,16 +46,16 @@ namespace FlatSharp
         /// Creates a new FlatBufferSerializer using the given options.
         /// </summary>
         public FlatBufferSerializer(FlatBufferSerializerOptions options) 
-            : this(options, new FlatSharpTypeModelProvider())
+            : this(options, TypeModelContainer.CreateDefault())
         {
         }
 
         /// <summary>
         /// Creates a new FlatBufferSerializer using the given options and type model provider.
         /// </summary>
-        public FlatBufferSerializer(FlatBufferSerializerOptions options, ITypeModelProvider typeModelProvider)
+        public FlatBufferSerializer(FlatBufferSerializerOptions options, TypeModelContainer typeModelContainer)
         {
-            this.typeModelProvider = typeModelProvider ?? throw new ArgumentNullException(nameof(typeModelProvider));
+            this.container = typeModelContainer ?? throw new ArgumentNullException(nameof(typeModelContainer));
             this.Options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
@@ -190,7 +190,7 @@ namespace FlatSharp
                 {
                     if (!this.serializerCache.TryGetValue(typeof(TRoot), out serializer))
                     {
-                        serializer = new RoslynSerializerGenerator(this.Options, this.typeModelProvider).Compile<TRoot>();
+                        serializer = new RoslynSerializerGenerator(this.Options, this.container).Compile<TRoot>();
                         this.serializerCache[typeof(TRoot)] = serializer;
                     }
                 }

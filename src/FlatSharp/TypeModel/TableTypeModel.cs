@@ -38,7 +38,7 @@
         /// </summary>
         private readonly HashSet<int> occupiedVtableSlots = new HashSet<int>();
 
-        internal TableTypeModel(Type clrType, ITypeModelProvider typeModelProvider) : base(clrType, typeModelProvider)
+        internal TableTypeModel(Type clrType, TypeModelContainer typeModelProvider) : base(clrType, typeModelProvider)
         {
         }
 
@@ -140,7 +140,7 @@
                 {
                     x.Property,
                     x.Attribute,
-                    ItemTypeModel = this.typeModelProvider.CreateTypeModel(x.Property.PropertyType),
+                    ItemTypeModel = this.typeModelContainer.CreateTypeModel(x.Property.PropertyType),
                 })
                 .ToList();
 

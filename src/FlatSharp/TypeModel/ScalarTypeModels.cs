@@ -552,7 +552,7 @@ namespace FlatSharp.TypeModel
 	
 	public class ScalarTypeModelProvider : ITypeModelProvider
 	{
-        public bool TryCreateTypeModel(Type type, out ITypeModel typeModel)
+        public bool TryCreateTypeModel(TypeModelContainer container, Type type, out ITypeModel typeModel)
 		{
 			typeModel = null;
 		
@@ -702,7 +702,7 @@ namespace FlatSharp.TypeModel
 			return false;
 		}
 		
-        public bool TryResolveFbsAlias(string alias, out ITypeModel typeModel)
+        public bool TryResolveFbsAlias(TypeModelContainer container, string alias, out ITypeModel typeModel)
 		{
 			typeModel = null;
 			switch (alias)

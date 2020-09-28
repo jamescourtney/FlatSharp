@@ -16,9 +16,6 @@
  
  namespace FlatSharp.TypeModel
 {
-    using System;
-    using System.Collections.Generic;
-
     public partial class DoubleTypeModel
     {
         public override bool TryFormatDefaultValueAsLiteral(object defaultValue, out string literal)
@@ -27,7 +24,7 @@
 
             if (defaultValue is double d)
             {
-                literal = d.ToString("G17");
+                literal = $"{d:G17}d";
                 return true;
             }
 

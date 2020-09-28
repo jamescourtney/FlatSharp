@@ -26,7 +26,7 @@ namespace FlatSharp.TypeModel
         private ITypeModel itemTypeModel;
         private bool isReadOnly;
 
-        internal MemoryVectorTypeModel(Type vectorType, ITypeModelProvider provider) : base(vectorType, provider)
+        internal MemoryVectorTypeModel(Type vectorType, TypeModelContainer provider) : base(vectorType, provider)
         {
         }
 

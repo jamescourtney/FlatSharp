@@ -33,7 +33,7 @@
         private int inlineSize;
         private int maxAlignment = 1;
 
-        internal StructTypeModel(Type clrType, ITypeModelProvider typeModelProvider) : base(clrType, typeModelProvider)
+        internal StructTypeModel(Type clrType, TypeModelContainer container) : base(clrType, container)
         {
         }
 
@@ -219,7 +219,7 @@ $@"
                 }
 
                 expectedIndex++;
-                ITypeModel propertyModel = this.typeModelProvider.CreateTypeModel(property.PropertyType);
+                ITypeModel propertyModel = this.typeModelContainer.CreateTypeModel(property.PropertyType);
 
                 if (!propertyModel.IsValidStructMember || propertyModel.VTableLayout.Length > 1)
                 {

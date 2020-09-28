@@ -27,7 +27,7 @@ namespace FlatSharp.TypeModel
         // count of items + padding(uoffset_t);
         protected static readonly int VectorMinSize = sizeof(uint) + SerializationHelpers.GetMaxPadding(sizeof(uint));
 
-        internal BaseVectorTypeModel(Type vectorType, ITypeModelProvider provider) : base(vectorType, provider)
+        internal BaseVectorTypeModel(Type vectorType, TypeModelContainer provider) : base(vectorType, provider)
         {
         }
 

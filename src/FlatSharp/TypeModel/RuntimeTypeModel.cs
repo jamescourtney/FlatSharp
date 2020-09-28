@@ -26,12 +26,12 @@ namespace FlatSharp.TypeModel
     /// </summary>
     public abstract class RuntimeTypeModel : ITypeModel
     {
-        protected readonly ITypeModelProvider typeModelProvider;
+        protected readonly TypeModelContainer typeModelContainer;
 
-        internal RuntimeTypeModel(Type clrType, ITypeModelProvider typeModelProvider)
+        internal RuntimeTypeModel(Type clrType, TypeModelContainer typeModelContainer)
         {
             this.ClrType = clrType;
-            this.typeModelProvider = typeModelProvider;
+            this.typeModelContainer = typeModelContainer;
         }
 
         /// <summary>
@@ -108,11 +108,11 @@ namespace FlatSharp.TypeModel
         }
 
         /// <summary>
-        /// Gets or creates a runtime type model from the given type.
+        /// Gets or creates a runtime type model from the given type. This is only used in test cases any more.
         /// </summary>
         internal static ITypeModel CreateFrom(Type type)
         {
-            return new FlatSharpTypeModelProvider().CreateTypeModel(type);
+            return TypeModelContainer.CreateDefault().CreateTypeModel(type);
         }
 
         public abstract CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context);

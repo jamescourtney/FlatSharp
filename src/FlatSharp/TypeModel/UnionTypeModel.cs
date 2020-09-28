@@ -27,7 +27,7 @@ namespace FlatSharp.TypeModel
     {
         private ITypeModel[] memberTypeModels;
 
-        internal UnionTypeModel(Type unionType, ITypeModelProvider provider) : base(unionType, provider)
+        internal UnionTypeModel(Type unionType, TypeModelContainer provider) : base(unionType, provider)
         {
         }
 
@@ -224,7 +224,7 @@ $@"
                 unionType = unionType.BaseType;
             }
 
-            this.memberTypeModels = unionType.GetGenericArguments().Select(this.typeModelProvider.CreateTypeModel).ToArray();
+            this.memberTypeModels = unionType.GetGenericArguments().Select(this.typeModelContainer.CreateTypeModel).ToArray();
 
             foreach (var item in this.memberTypeModels)
             {

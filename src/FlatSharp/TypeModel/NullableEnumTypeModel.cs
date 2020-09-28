@@ -30,7 +30,7 @@ namespace FlatSharp.TypeModel
         private ITypeModel underlyingTypeModel;
         private Type enumType;
 
-        internal NullableEnumTypeModel(Type type, ITypeModelProvider typeModelProvider) : base(type, typeModelProvider)
+        internal NullableEnumTypeModel(Type type, TypeModelContainer typeModelProvider) : base(type, typeModelProvider)
         {
         }
 
@@ -47,7 +47,7 @@ namespace FlatSharp.TypeModel
             this.enumType = Nullable.GetUnderlyingType(nullableType);
             Type underlyingType = Enum.GetUnderlyingType(this.enumType);
 
-            this.underlyingTypeModel = this.typeModelProvider.CreateTypeModel(underlyingType);
+            this.underlyingTypeModel = this.typeModelContainer.CreateTypeModel(underlyingType);
 
             var attribute = this.enumType.GetCustomAttribute<FlatBufferEnumAttribute>();
             if (attribute == null)

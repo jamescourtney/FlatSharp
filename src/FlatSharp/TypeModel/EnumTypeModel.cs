@@ -28,7 +28,7 @@
     {
         private ITypeModel underlyingTypeModel;
 
-        internal EnumTypeModel(Type type, ITypeModelProvider typeModelProvider) : base(type, typeModelProvider)
+        internal EnumTypeModel(Type type, TypeModelContainer typeModelContainer) : base(type, typeModelContainer)
         {
         }
 
@@ -39,7 +39,7 @@
             Type enumType = this.ClrType;
             Type underlyingType = Enum.GetUnderlyingType(enumType);
 
-            this.underlyingTypeModel = this.typeModelProvider.CreateTypeModel(underlyingType);
+            this.underlyingTypeModel = this.typeModelContainer.CreateTypeModel(underlyingType);
 
             var attribute = enumType.GetCustomAttribute<FlatBufferEnumAttribute>();
             if (attribute == null)

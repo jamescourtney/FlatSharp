@@ -17,7 +17,6 @@
 namespace FlatSharp.TypeModel
 {
     using System;
-    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Reflection;
 
@@ -28,61 +27,16 @@ namespace FlatSharp.TypeModel
     /// </summary>
     public class FlatSharpTypeModelProvider : ITypeModelProvider
     {
-        private readonly ConcurrentDictionary<Type, ITypeModel> cache = new ConcurrentDictionary<Type, ITypeModel>();
-        private readonly List<ITypeModelProvider> providers = new List<ITypeModelProvider> { new ScalarTypeModelProvider() };
-        private readonly List<Func<ITypeModel, ITypeModel>> decorators = new List<Func<ITypeModel, ITypeModel>>();
-
-        /// <summary>
-        /// Tries to create a type model based on the given type.
-        /// </summary>
-        public bool TryCreateTypeModel(Type type, out ITypeModel typeModel)
-        {
-            if (this.cache.TryGetValue(type, out typeModel))
-            {
-                return true;
-            }
-
-            typeModel = this.ApplyDecorators(this.GetTypeModel(type));
-            if (typeModel != null)
-            {
-                this.cache[type] = typeModel;
-
-                try
-                {
-                    typeModel.Initialize();
-                    return true;
-                }
-                catch
-                {
-                    this.cache.TryRemove(type, out _);
-                    throw;
-                }
-            }
-            else
-            {
-                return false;
-            }
-        }
-
         /// <summary>
         /// Tries to resolve an FBS alias into a type model.
         /// </summary>
-        public bool TryResolveFbsAlias(string alias, out ITypeModel typeModel)
+        public bool TryResolveFbsAlias(TypeModelContainer container, string alias, out ITypeModel typeModel)
         {
             typeModel = null;
 
-            foreach (var provider in this.providers)
-            {
-                if (provider.TryResolveFbsAlias(alias, out typeModel))
-                {
-                    typeModel = this.ApplyDecorators(typeModel);
-                    return true;
-                }
-            }
-
             if (alias == "string")
             {
-                typeModel = this.ApplyDecorators(new StringTypeModel());
+                typeModel = new StringTypeModel();
                 return true;
             }
 
@@ -90,73 +44,26 @@ namespace FlatSharp.TypeModel
         }
 
         /// <summary>
-        /// Registers a custom type model provider. Custom providers can be thorught of
-        /// as plugins and used to extend FlatSharp or alter properties of the 
-        /// serialization system. Custom providers are a very advanced feature and 
-        /// shouldn't be used without extensive testing and knowledge of FlatBuffers.
-        /// 
-        /// Use of this API almost certainly means that the binary format of FlatSharp
-        /// will no longer be compatible with the official FlatBuffers library.
+        /// Tries to create a type model based on the given type.
         /// </summary>
-        public void RegisterCustomModelProvider(ITypeModelProvider provider)
+        public bool TryCreateTypeModel(TypeModelContainer container, Type type, out ITypeModel typeModel)
         {
-            this.providers.Add(provider);
-        }
-
-        /// <summary>
-        /// Registers a custom type model decorator that is invoked after a type
-        /// model has been resolved. A decorator can be thought of as a hook to allow
-        /// callers to "wrap" an existing type model to apply some custom logic, validation,
-        /// or otherwise.
-        /// 
-        /// Use of this API almost certainly means that the binary format of FlatSharp
-        /// will no longer be compatible with the official FlatBuffers library.
-        /// </summary>
-        public void RegisterDecorator(Func<ITypeModel, ITypeModel> callback)
-        {
-            this.decorators.Add(callback);
-        }
-
-        private ITypeModel ApplyDecorators(ITypeModel input)
-        {
-            if (input != null)
-            {
-                foreach (var handler in this.decorators)
-                {
-                    ITypeModel wrapped = handler(input);
-                    if (wrapped != null)
-                    {
-                        return wrapped;
-                    }
-                }
-            }
-
-            return input;
-        }
-
-        private ITypeModel GetTypeModel(Type type)
-        {
-            foreach (var provider in this.providers)
-            {
-                if (provider.TryCreateTypeModel(type, out ITypeModel model))
-                {
-                    return model;
-                }
-            }
-
             if (type == typeof(string))
             {
-                return new StringTypeModel();
+                typeModel = new StringTypeModel();
+                return true;
             }
 
             if (type == typeof(SharedString))
             {
-                return new SharedStringTypeModel();
+                typeModel = new SharedStringTypeModel();
+                return true;
             }
 
             if (type.IsArray)
             {
-                return new ArrayVectorTypeModel(type, this);
+                typeModel = new ArrayVectorTypeModel(type, container);
+                return true;
             }
 
             if (type.IsGenericType)
@@ -164,23 +71,27 @@ namespace FlatSharp.TypeModel
                 var genericDef = type.GetGenericTypeDefinition();
                 if (genericDef == typeof(IList<>) || genericDef == typeof(IReadOnlyList<>))
                 {
-                    return new ListVectorTypeModel(type, this);
+                    typeModel = new ListVectorTypeModel(type, container);
+                    return true;
                 }
 
                 if (genericDef == typeof(Memory<>) || genericDef == typeof(ReadOnlyMemory<>))
                 {
-                    return new MemoryVectorTypeModel(type, this);
+                    typeModel = new MemoryVectorTypeModel(type, container);
+                    return true;
                 }
             }
 
             if (typeof(IUnion).IsAssignableFrom(type))
             {
-                return new UnionTypeModel(type, this);
+                typeModel = new UnionTypeModel(type, container);
+                return true;
             }
 
             if (type.IsEnum)
             {
-                return new EnumTypeModel(type, this);
+                typeModel = new EnumTypeModel(type, container);
+                return true;
             }
 
             if (Nullable.GetUnderlyingType(type) != null)
@@ -188,23 +99,27 @@ namespace FlatSharp.TypeModel
                 var underlyingType = Nullable.GetUnderlyingType(type);
                 if (underlyingType.IsEnum)
                 {
-                    return new NullableEnumTypeModel(type, this);
+                    typeModel = new NullableEnumTypeModel(type, container);
+                    return true;
                 }
             }
 
             var tableAttribute = type.GetCustomAttribute<FlatBufferTableAttribute>();
             if (tableAttribute != null)
             {
-                return new TableTypeModel(type, this);
+                typeModel = new TableTypeModel(type, container);
+                return true;
             }
 
             var structAttribute = type.GetCustomAttribute<FlatBufferStructAttribute>();
             if (structAttribute != null)
             {
-                return new StructTypeModel(type, this);
+                typeModel = new StructTypeModel(type, container);
+                return true;
             }
 
-            return null;
+            typeModel = null;
+            return false;
         }
     }
 }

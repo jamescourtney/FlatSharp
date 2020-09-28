@@ -48,7 +48,7 @@ namespace FlatSharp
         private readonly Dictionary<Type, string> readMethods = new Dictionary<Type, string>();
 
         private readonly FlatBufferSerializerOptions options;
-        private readonly ITypeModelProvider typeModelProvider;
+        private readonly TypeModelContainer typeModelContainer;
 
         private readonly List<SyntaxNode> methodDeclarations = new List<SyntaxNode>();
 
@@ -76,10 +76,10 @@ namespace FlatSharp
             }
         }
 
-        public RoslynSerializerGenerator(FlatBufferSerializerOptions options, ITypeModelProvider typeModelProvider)
+        public RoslynSerializerGenerator(FlatBufferSerializerOptions options, TypeModelContainer typeModelContainer)
         {
             this.options = options;
-            this.typeModelProvider = typeModelProvider;
+            this.typeModelContainer = typeModelContainer;
         }
 
         public ISerializer<TRoot> Compile<TRoot>() where TRoot : class
@@ -114,7 +114,7 @@ $@"
 
         internal string GenerateCSharp<TRoot>(string visibility = "public")
         {
-            ITypeModel rootModel = this.typeModelProvider.CreateTypeModel(typeof(TRoot));
+            ITypeModel rootModel = this.typeModelContainer.CreateTypeModel(typeof(TRoot));
             if (rootModel.SchemaType != FlatBufferSchemaType.Table)
             {
                 throw new InvalidFlatBufferDefinitionException($"Can only compile [FlatBufferTable] elements as root types. Type '{typeof(TRoot).Name}' is a '{rootModel.GetType().Name}'.");
@@ -325,7 +325,7 @@ $@"
         {
             foreach (var type in this.writeMethods.Keys)
             {
-                ITypeModel typeModel = this.typeModelProvider.CreateTypeModel(type);
+                ITypeModel typeModel = this.typeModelContainer.CreateTypeModel(type);
                 var maxSizeContext = new GetMaxSizeCodeGenContext("value", this.maxSizeMethods, this.options);
                 var parseContext = new ParserCodeGenContext("buffer", "offset", this.readMethods, this.options);
                 var serializeContext = new SerializationCodeGenContext("context", "span", "spanWriter", "value", "offset", this.writeMethods, this.options);
