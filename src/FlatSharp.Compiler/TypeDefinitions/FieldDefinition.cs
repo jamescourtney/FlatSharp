@@ -16,6 +16,7 @@
 
 using FlatSharp.TypeModel;
 using System;
+using System.Linq;
 
 namespace FlatSharp.Compiler
 {
@@ -44,6 +45,7 @@ namespace FlatSharp.Compiler
         public string GetClrTypeName(BaseSchemaMember baseMember)
         {
             string clrType;
+            string sortKeyType = null;
 
             if (SchemaDefinition.TryResolve(this.FbsFieldType, out ITypeModel builtInType))
             {
@@ -60,6 +62,11 @@ namespace FlatSharp.Compiler
                     else
                     {
                         clrType = typeDefinition.GlobalName;
+                    }
+
+                    if (typeDefinition is TableOrStructDefinition tableOrStruct && tableOrStruct.IsTable)
+                    {
+                        sortKeyType = tableOrStruct.Fields.FirstOrDefault(x => x.IsKey)?.GetClrTypeName(baseMember);
                     }
                 }
                 else
@@ -95,6 +102,9 @@ namespace FlatSharp.Compiler
                 case VectorType.ReadOnlyMemory:
                     return $"ReadOnlyMemory<{clrType}>";
 
+                case VectorType.Dictionary:
+                    return $"IDictionary<{sortKeyType}, {clrType}>";
+
                 case VectorType.None:
                     return clrType;
 
@@ -122,13 +132,20 @@ namespace FlatSharp.Compiler
                 case VectorType.IReadOnlyList:
                     writer.AppendLine($"this.{this.Name} = {sourceName}.{this.Name}?{selectStatement}.ToList();");
                     break;
+
                 case VectorType.Array:
                     writer.AppendLine($"this.{this.Name} = {sourceName}.{this.Name}?{selectStatement}.ToArray();");
                     break;
+
                 case VectorType.Memory:
                 case VectorType.ReadOnlyMemory:
                     writer.AppendLine($"this.{this.Name} = {sourceName}.{this.Name}.ToArray();");
                     break;
+
+                case VectorType.Dictionary:
+                    writer.AppendLine($"this.{this.Name} = {sourceName}.{this.Name}?.ToDictionary(x => x.Key, x => {nodeType.GetCopyExpression("x.Value")});");
+                    break;
+
                 case VectorType.None:
                 {
                     if (isBuiltIn)

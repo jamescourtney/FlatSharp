@@ -175,6 +175,8 @@
                     property.Attribute.SortedVector,
                     property.Attribute.Key);
 
+                model = property.ItemTypeModel.AdjustTableMember(model);
+
                 if (property.Attribute.Key)
                 {
                     if (this.KeyMember != null)
@@ -195,7 +197,7 @@
                     this.KeyMember = model;
                 }
 
-                ValidateSortedVector(property.Attribute, property.ItemTypeModel, property.Property);
+                ValidateSortedVector(model);
 
                 for (int i = 0; i < model.ItemTypeModel.PhysicalLayout.Length; ++i)
                 {
@@ -209,38 +211,38 @@
             }
         }
 
-        private static void ValidateSortedVector(FlatBufferItemAttribute itemAttribute, ITypeModel itemTypeModel, PropertyInfo propertyInfo)
+        private static void ValidateSortedVector(TableMemberModel model)
         {
-            if (itemAttribute.SortedVector)
+            if (model.IsSortedVector)
             {
-                if (itemTypeModel.SchemaType != FlatBufferSchemaType.Vector)
+                if (model.ItemTypeModel.SchemaType != FlatBufferSchemaType.Vector)
                 {
-                    throw new InvalidFlatBufferDefinitionException($"Property '{propertyInfo.Name}' declares the sortedVector option, but the underlying type was not a vector.");
+                    throw new InvalidFlatBufferDefinitionException($"Property '{model.PropertyInfo.Name}' declares the sortedVector option, but the underlying type was not a vector.");
                 }
 
-                if (!itemTypeModel.TryGetUnderlyingVectorType(out ITypeModel memberTypeModel))
+                if (!model.ItemTypeModel.TryGetUnderlyingVectorType(out ITypeModel memberTypeModel))
                 {
-                    throw new InvalidFlatBufferDefinitionException($"Property '{propertyInfo.Name}' declares the sortedVector option, but the underlying type model did not report the underlying vector type.");
+                    throw new InvalidFlatBufferDefinitionException($"Property '{model.PropertyInfo.Name}' declares the sortedVector option, but the underlying type model did not report the underlying vector type.");
                 }
 
                 if (memberTypeModel.SchemaType != FlatBufferSchemaType.Table)
                 {
-                    throw new InvalidFlatBufferDefinitionException($"Property '{propertyInfo.Name}' declares a sorted vector, but the member is not a table. Type = {itemTypeModel?.ClrType.FullName}.");
+                    throw new InvalidFlatBufferDefinitionException($"Property '{model.PropertyInfo.Name}' declares a sorted vector, but the member is not a table. Type = {model.ItemTypeModel?.ClrType.FullName}.");
                 }
 
                 if (!memberTypeModel.TryGetTableKeyMember(out TableMemberModel member))
                 {
-                    throw new InvalidFlatBufferDefinitionException($"Property '{propertyInfo.Name}' declares a sorted vector, but the member does not have a key defined. Type = {itemTypeModel?.ClrType.FullName}.");
+                    throw new InvalidFlatBufferDefinitionException($"Property '{model.PropertyInfo.Name}' declares a sorted vector, but the member does not have a key defined. Type = {model.ItemTypeModel?.ClrType.FullName}.");
                 }
 
                 if (!member.ItemTypeModel.TryGetSpanComparerType(out _))
                 {
-                    throw new InvalidFlatBufferDefinitionException($"Property '{propertyInfo.Name}' declares a sorted vector, but the key does not have an implementation of ISpanComparer. Keys must be non-nullable scalars or strings. KeyType = {member.ItemTypeModel.ClrType.FullName}");
+                    throw new InvalidFlatBufferDefinitionException($"Property '{model.PropertyInfo.Name}' declares a sorted vector, but the key does not have an implementation of ISpanComparer. Keys must be non-nullable scalars or strings. KeyType = {member.ItemTypeModel.ClrType.FullName}");
                 }
 
                 if (member.ItemTypeModel.PhysicalLayout.Length != 1)
                 {
-                    throw new InvalidFlatBufferDefinitionException($"Property '{propertyInfo.Name}' declares a sorted vector, but the sort key's vtable is not compatible with sorting. KeyType = {member.ItemTypeModel.ClrType.FullName}");
+                    throw new InvalidFlatBufferDefinitionException($"Property '{model.PropertyInfo.Name}' declares a sorted vector, but the sort key's vtable is not compatible with sorting. KeyType = {member.ItemTypeModel.ClrType.FullName}");
                 }
             }
         }

@@ -656,6 +656,62 @@ namespace FlatSharpTests
                 new Utf8StringComparer());
         }
 
+        [TestMethod]
+        public void DictionaryVector_Simple()
+        {
+            var table = new RootTableSorted<IDictionary<string, TableWithKey<string>>>
+            {
+                Vector = new Dictionary<string, TableWithKey<string>>
+                {
+                    { "a", new TableWithKey<string> { Key = "a", Value = "AAA" } },
+                    { "b", new TableWithKey<string> { Key = "b", Value = "BBB" } },
+                    { "c", new TableWithKey<string> { Key = "c", Value = "CCC" } },
+                }
+            };
+
+            var serializer = new FlatBufferSerializer(FlatBufferDeserializationOption.Lazy);
+
+            byte[] data = new byte[1024 * 1024];
+            serializer.Serialize(table, data);
+
+            var parsed = serializer.Parse<RootTableSorted<IDictionary<string, TableWithKey<string>>>>(data);
+
+            Assert.AreEqual("AAA", parsed.Vector["a"].Value);
+            Assert.AreEqual("BBB", parsed.Vector["b"].Value);
+            Assert.AreEqual("CCC", parsed.Vector["c"].Value);
+
+            Assert.IsTrue(parsed.Vector.TryGetValue("a", out var value) && value.Value == "AAA");
+            Assert.IsTrue(parsed.Vector.TryGetValue("b", out value) && value.Value == "BBB");
+            Assert.IsTrue(parsed.Vector.TryGetValue("c", out value) && value.Value == "CCC");
+        }
+
+        [TestMethod]
+        public void DictionaryVector_RandomString()
+        {
+            var table = new RootTable<IDictionary<string, TableWithKey<string>>>
+            {
+                Vector = new Dictionary<string, TableWithKey<string>>()
+            };
+
+            for (int i = 0; i < 1000; ++i)
+            {
+                string key = Guid.NewGuid().ToString();
+                table.Vector[key] = new TableWithKey<string> { Key = key, Value = Guid.NewGuid().ToString() };
+            }
+
+            byte[] data = new byte[10 * 1024 * 1024];
+            var serializer = new FlatBufferSerializer(FlatBufferDeserializationOption.Lazy);
+            serializer.Compile<RootTable<IDictionary<string, TableWithKey<string>>>>();
+            int bytesWritten = serializer.Serialize(table, data);
+
+            var parsed = serializer.Parse<RootTable<IDictionary<string, TableWithKey<string>>>>(data);
+
+            foreach (var key in table.Vector.Keys)
+            {
+                Assert.AreEqual(table.Vector[key].Value, parsed.Vector[key].Value);
+            }
+        }
+
         private void SortedVectorStructTest<TKey>() where TKey : struct
         {
             this.SortedVectorTest(
