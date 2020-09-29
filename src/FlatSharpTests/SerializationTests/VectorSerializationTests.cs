@@ -686,6 +686,70 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
+        public void DictionaryVector_MismatchedKeys_Int()
+        {
+            var table = new RootTableSorted<IDictionary<int, TableWithKey<int>>>
+            {
+                Vector = new Dictionary<int, TableWithKey<int>>
+                {
+                    { 1, new TableWithKey<int> { Key = 4, Value = "AAA" } },
+                    { 2, new TableWithKey<int> { Key = 5, Value = "BBB" } },
+                    { 3, new TableWithKey<int> { Key = 6, Value = "CCC" } },
+                }
+            };
+
+            try
+            {
+                byte[] data = new byte[1024 * 1024];
+                FlatBufferSerializer.Default.Serialize(table, data);
+            }
+            catch (InvalidOperationException)
+            {
+            }
+
+            try
+            {
+                byte[] data = new byte[1024 * 1024];
+                FlatBufferSerializer.Default.GetMaxSize(table);
+            }
+            catch (InvalidOperationException)
+            {
+            }
+        }
+
+        [TestMethod]
+        public void DictionaryVector_MismatchedKeys_String()
+        {
+            var table = new RootTableSorted<IDictionary<string, TableWithKey<string>>>
+            {
+                Vector = new Dictionary<string, TableWithKey<string>>
+                {
+                    { "invalid", new TableWithKey<string> { Key = "a", Value = "AAA" } },
+                    { "b", new TableWithKey<string> { Key = "b", Value = "BBB" } },
+                    { "c", new TableWithKey<string> { Key = "c", Value = "CCC" } },
+                }
+            };
+
+            try
+            {
+                byte[] data = new byte[1024 * 1024];
+                FlatBufferSerializer.Default.Serialize(table, data);
+            }
+            catch (InvalidOperationException)
+            {
+            }
+
+            try
+            {
+                byte[] data = new byte[1024 * 1024];
+                FlatBufferSerializer.Default.GetMaxSize(table);
+            }
+            catch (InvalidOperationException)
+            {
+            }
+        }
+
+        [TestMethod]
         public void DictionaryVector_RandomString()
         {
             var table = new RootTable<IDictionary<string, TableWithKey<string>>>
@@ -709,6 +773,77 @@ namespace FlatSharpTests
             foreach (var key in table.Vector.Keys)
             {
                 Assert.AreEqual(table.Vector[key].Value, parsed.Vector[key].Value);
+            }
+        }
+        [TestMethod]
+        public void DictionaryVector_RandomByte() => DictionaryVectorTest<byte>();
+
+        [TestMethod]
+        public void DictionaryVector_RandomSByte() => DictionaryVectorTest<sbyte>();
+
+        [TestMethod]
+        public void DictionaryVector_RandomUShort() => DictionaryVectorTest<ushort>();
+
+        [TestMethod]
+        public void DictionaryVector_RandomShort() => DictionaryVectorTest<short>();
+
+        [TestMethod]
+        public void DictionaryVector_RandomUInt() => DictionaryVectorTest<uint>();
+
+        [TestMethod]
+        public void DictionaryVector_RandomInt() => DictionaryVectorTest<int>();
+
+        [TestMethod]
+        public void DictionaryVector_RandomULong() => DictionaryVectorTest<ulong>();
+
+        [TestMethod]
+        public void DictionaryVector_RandomLong() => DictionaryVectorTest<long>();
+
+        private void DictionaryVectorTest<T>() where T : struct
+        {
+            foreach (FlatBufferDeserializationOption option in Enum.GetValues(typeof(FlatBufferDeserializationOption)))
+            {
+                var table = new RootTable<IDictionary<T, TableWithKey<T>>>
+                {
+                    Vector = new Dictionary<T, TableWithKey<T>>()
+                };
+
+                Random r = new Random();
+                byte[] keyBuffer = new byte[8];
+
+                for (int i = 0; i < 1000; ++i)
+                {
+                    r.NextBytes(keyBuffer);
+                    T key = MemoryMarshal.Cast<byte, T>(keyBuffer)[0];
+                    table.Vector[key] = new TableWithKey<T> { Key = key, Value = Guid.NewGuid().ToString() };
+                }
+
+                byte[] data = new byte[1024 * 1024];
+                var serializer = new FlatBufferSerializer(option);
+                int bytesWritten = serializer.Serialize(table, data);
+
+                var parsed = serializer.Parse<RootTable<IDictionary<T, TableWithKey<T>>>>(data);
+
+                foreach (var key in table.Vector.Keys)
+                {
+                    Assert.AreEqual(table.Vector[key].Value, parsed.Vector[key].Value);
+                }
+
+                // verify sorted and that we can read it when it's from a normal vector.
+                var parsedList = serializer.Parse<RootTable<IList<TableWithKey<T>>>>(data);
+                Assert.AreEqual(parsed.Vector.Count, parsedList.Vector.Count);
+                var previous = parsedList.Vector[0];
+                for (int i = 1; i < parsedList.Vector.Count; ++i)
+                {
+                    var item = parsedList.Vector[i];
+                    Assert.IsTrue(Comparer<T>.Default.Compare(previous.Key, item.Key) <= 0);
+
+                    Assert.IsTrue(parsed.Vector.TryGetValue(item.Key, out var fromDict));
+                    Assert.AreEqual(item.Key, fromDict.Key);
+                    Assert.AreEqual(item.Value, fromDict.Value);
+
+                    previous = item;
+                }
             }
         }
 

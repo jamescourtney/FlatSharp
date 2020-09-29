@@ -19,6 +19,7 @@ namespace FlatSharp
     using System;
     using System.Buffers;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.IO;
     using System.Linq;
     using System.Reflection;
@@ -187,6 +188,7 @@ $@"
                 MetadataReference.CreateFromFile(typeof(IBufferWriter<>).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(IGeneratedSerializer<byte>).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(InvalidDataException).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(ReadOnlyDictionary<,>).Assembly.Location),
             });
 
             var rootNode = ApplySyntaxTransformations(CSharpSyntaxTree.ParseText(sourceCode, ParseOptions).GetRoot());

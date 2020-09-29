@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 namespace FlatSharp.TypeModel
 {
     using System;
@@ -91,9 +91,11 @@ namespace FlatSharp.TypeModel
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
             string body;
+            string keyTypeName = CSharpHelpers.GetCompilableTypeName(this.keyTypeModel.ClrType);
+            string valueTypeName = CSharpHelpers.GetCompilableTypeName(this.valueTypeModel.ClrType);
 
             string createFlatBufferVector =
-            $@"new {nameof(FlatBufferDictionaryVector<int, string>)}<{CSharpHelpers.GetCompilableTypeName(this.keyTypeModel.ClrType)}, {CSharpHelpers.GetCompilableTypeName(this.valueTypeModel.ClrType)}>(
+            $@"new {nameof(FlatBufferDictionaryVector<int, string>)}<{keyTypeName}, {valueTypeName}>(
                     {context.InputBufferVariableName}, 
                     {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBuffer.ReadUOffset)}({context.OffsetVariableName}), 
                     {this.PaddedMemberInlineSize}, 
@@ -105,11 +107,10 @@ namespace FlatSharp.TypeModel
                 // We just call .ToDictionary() when in preallocate mode. Note that when full greedy mode is on, these items will be 
                 // greedily initialized as we traverse the list. Otherwise, they'll be allocated lazily.
                 body = $"({createFlatBufferVector}).ToDictionary()";
-
                 if (!context.Options.GenerateMutableObjects)
                 {
                     // Finally, if we're not in the business of making mutable objects, then convert the list to read only.
-                    body += ".AsReadOnly()";
+                    body = $"new System.Collections.ObjectModel.ReadOnlyDictionary<{keyTypeName}, {valueTypeName}>({body})";
                 }
 
                 body = $"return {body};";
@@ -186,13 +187,14 @@ namespace FlatSharp.TypeModel
 
         private string GetKvpValidations(string keyName, string valueName)
         {
+            // Let's make string.Format as meta as possible here:
             return $@"
                     {this.valueTypeModel.GetThrowIfNullInvocation(valueName)};
                     {this.keyTypeModel.GetThrowIfNullInvocation(keyName)};
 
                     if ({keyName} != {valueName}.{this.keyMemberModel.PropertyInfo.Name})
                     {{
-                        throw new InvalidOperationException(""Dictionary keys must match the key property in the value."");
+                        throw new InvalidOperationException($""Dictionary keys must match the key property in the value. DictionaryKey = '{{{keyName}}}' Table Key = '{{{valueName}.{this.keyMemberModel.PropertyInfo.Name}}}'."");
                     }}
 ";
         }
