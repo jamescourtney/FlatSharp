@@ -25,19 +25,17 @@ namespace FlatSharp
     /// A base class that FlatBuffersNet implements to deserialize vectors. FlatBufferVetor{T} is a lazy implementation
     /// which will create a new instance for each item it returns. Calling .ToList() is an effective way to do caching.
     /// </summary>
-    public sealed class FlatBufferVector<T> : IList<T>, IReadOnlyList<T>
+    public abstract class FlatBufferVector<T> : IList<T>, IReadOnlyList<T>
     {
         private readonly InputBuffer memory;
         private readonly int offset;
         private readonly int itemSize;
         private readonly int count;
-        private readonly Func<InputBuffer, int, T> parseItem;
 
         public FlatBufferVector(
             InputBuffer memory,
             int offset,
-            int itemSize,
-            Func<InputBuffer, int, T> parseItem)
+            int itemSize)
         {
             this.memory = memory;
             this.offset = offset;
@@ -47,8 +45,6 @@ namespace FlatSharp
             // Advance to the start of the element at index 0. Easiest to do this once
             // in the .ctor than repeatedly for each index.
             this.offset = checked(this.offset + sizeof(uint));
-
-            this.parseItem = parseItem;
         }
 
         /// <summary>
@@ -161,9 +157,11 @@ namespace FlatSharp
         private T GetItemWithoutRangeCheck(int index)
         {
             // start at offset and then multiply item size * index.
-            return this.parseItem(
+            return this.ParseItem(
                 this.memory,
                 checked(this.offset + (this.itemSize * index)));
         }
+
+        protected abstract T ParseItem(InputBuffer buffer, int offset);
     }
 }

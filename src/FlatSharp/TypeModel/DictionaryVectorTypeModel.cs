@@ -94,19 +94,29 @@ namespace FlatSharp.TypeModel
             string keyTypeName = CSharpHelpers.GetCompilableTypeName(this.keyTypeModel.ClrType);
             string valueTypeName = CSharpHelpers.GetCompilableTypeName(this.valueTypeModel.ClrType);
 
+            (string vectorClassDef, string vectorClassName) = FlatBufferVectorHelpers.CreateFlatBufferVectorSubclass(
+                this.valueTypeModel.ClrType,
+                context.MethodNameMap[this.valueTypeModel.ClrType]);
+
+            (string dictionaryClassDef, string dictionaryClassName) = FlatBufferVectorHelpers.CreateFlatBufferDictionarySubclass(
+                this.valueTypeModel.ClrType,
+                this.keyTypeModel.ClrType,
+                this.keyMemberModel.PropertyInfo.Name);
+
             string createFlatBufferVector =
-            $@"new {nameof(FlatBufferDictionaryVector<int, string>)}<{keyTypeName}, {valueTypeName}>(
+            $@"new {vectorClassName}(
                     {context.InputBufferVariableName}, 
                     {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBuffer.ReadUOffset)}({context.OffsetVariableName}), 
-                    {this.PaddedMemberInlineSize}, 
-                    (b, o) => {context.MethodNameMap[this.valueTypeModel.ClrType]}(b, o),
-                    (value) => value.{this.keyMemberModel.PropertyInfo.Name})";
+                    {this.PaddedMemberInlineSize})";
+
+            string createDictionary =
+            $@"new {dictionaryClassName}({createFlatBufferVector})";
 
             if (context.Options.PreallocateVectors)
             {
                 // We just call .ToDictionary() when in preallocate mode. Note that when full greedy mode is on, these items will be 
                 // greedily initialized as we traverse the list. Otherwise, they'll be allocated lazily.
-                body = $"({createFlatBufferVector}).ToDictionary()";
+                body = $"({createDictionary}).ToDictionary()";
                 if (!context.Options.GenerateMutableObjects)
                 {
                     // Finally, if we're not in the business of making mutable objects, then convert the list to read only.
@@ -117,10 +127,10 @@ namespace FlatSharp.TypeModel
             }
             else
             {
-                body = $"return {createFlatBufferVector};";
+                body = $"return {createDictionary};";
             }
 
-            return new CodeGeneratedMethod { MethodBody = body, IsMethodInline = true };
+            return new CodeGeneratedMethod { MethodBody = body, IsMethodInline = true, ClassDefinition = string.Join("\r\n", vectorClassDef, dictionaryClassDef) };
         }
 
         public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)

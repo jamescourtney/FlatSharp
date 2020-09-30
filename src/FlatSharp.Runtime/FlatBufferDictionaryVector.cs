@@ -25,20 +25,15 @@ namespace FlatSharp
     /// A class that FlatSharp implements to approximate a dictionary as a programming model. The class relies on
     /// the assumption that dictionary keys correspond to "key" members in the table.
     /// </summary>
-    public sealed class FlatBufferDictionaryVector<TKey, TValue> : IDictionary<TKey, TValue> where TValue : class
+    public abstract class FlatBufferDictionaryVector<TKey, TValue> 
+        : IDictionary<TKey, TValue> 
+        where TValue : class
     {
-        private readonly FlatBufferVector<TValue> vector;
-        private readonly Func<TValue, TKey> getKeyCallback;
+        private readonly IReadOnlyList<TValue> vector;
 
-        public FlatBufferDictionaryVector(
-            InputBuffer memory,
-            int offset,
-            int itemSize,
-            Func<InputBuffer, int, TValue> parseItem,
-            Func<TValue, TKey> getKey)
+        public FlatBufferDictionaryVector(IReadOnlyList<TValue> innerVector)
         {
-            this.vector = new FlatBufferVector<TValue>(memory, offset, itemSize, parseItem);
-            this.getKeyCallback = getKey;
+            this.vector = innerVector;
         }
 
         public TValue this[TKey key] 
@@ -60,10 +55,10 @@ namespace FlatSharp
         }
 
         public ICollection<TKey> Keys 
-            => this.vector.Select(x => this.getKeyCallback(x)).ToList();
+            => this.vector.Select(this.GetKey).ToList();
 
         public ICollection<TValue> Values 
-            => this.vector.Select(x => x).ToList();
+            => this.vector.ToList();
 
         public int Count => this.vector.Count;
 
@@ -84,16 +79,15 @@ namespace FlatSharp
 
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
-            var getKey = this.getKeyCallback;
             foreach (var value in this.vector)
             {
-                yield return new KeyValuePair<TKey, TValue>(getKey(value), value);
+                yield return new KeyValuePair<TKey, TValue>(this.GetKey(value), value);
             }
         }
 
         public bool TryGetValue(TKey key, out TValue value)
         {
-            value = ((IList<TValue>)this.vector).BinarySearchByFlatBufferKey(key);
+            value = this.vector.BinarySearchByFlatBufferKey(key);
             return value != null;
         }
 
@@ -142,5 +136,7 @@ namespace FlatSharp
         {
             throw new NotMutableException();
         }
+
+        protected abstract TKey GetKey(TValue value);
     }
 }

@@ -54,14 +54,17 @@ namespace FlatSharp.TypeModel
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
+            (string vectorClassDef, string vectorClassName) = FlatBufferVectorHelpers.CreateFlatBufferVectorSubclass(
+                this.itemTypeModel.ClrType,
+                context.MethodNameMap[this.itemTypeModel.ClrType]);
+
             string body;
 
             string createFlatBufferVector =
-            $@"new {nameof(FlatBufferVector<int>)}<{CSharpHelpers.GetCompilableTypeName(this.itemTypeModel.ClrType)}>(
+            $@"new {vectorClassName}(
                     {context.InputBufferVariableName}, 
                     {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBuffer.ReadUOffset)}({context.OffsetVariableName}), 
-                    {this.PaddedMemberInlineSize}, 
-                    (b, o) => {context.MethodNameMap[itemTypeModel.ClrType]}(b, o))";
+                    {this.PaddedMemberInlineSize})";
 
             if (context.Options.PreallocateVectors)
             {
@@ -82,7 +85,7 @@ namespace FlatSharp.TypeModel
                 body = $"return {createFlatBufferVector};";
             }
 
-            return new CodeGeneratedMethod { MethodBody = body };
+            return new CodeGeneratedMethod { MethodBody = body, ClassDefinition = vectorClassDef };
         }
     }
 }

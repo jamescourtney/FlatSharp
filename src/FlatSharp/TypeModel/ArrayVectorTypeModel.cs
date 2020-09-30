@@ -56,6 +56,8 @@ namespace FlatSharp.TypeModel
         {
             string body;
 
+            (string vectorClassDef, string vectorClassName) = (null, null);
+
             if (itemTypeModel.ClrType == typeof(byte))
             {
                 // can handle this as memory.
@@ -70,17 +72,20 @@ namespace FlatSharp.TypeModel
             }
             else
             {
+                (vectorClassDef, vectorClassName) = FlatBufferVectorHelpers.CreateFlatBufferVectorSubclass(
+                    this.itemTypeModel.ClrType,
+                    context.MethodNameMap[this.itemTypeModel.ClrType]);
+
                 string createFlatBufferVector =
-                $@"new {nameof(FlatBufferVector<int>)}<{CSharpHelpers.GetCompilableTypeName(itemTypeModel.ClrType)}>(
+                $@"new {vectorClassName}(
                     {context.InputBufferVariableName}, 
                     {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBuffer.ReadUOffset)}({context.OffsetVariableName}), 
-                    {this.PaddedMemberInlineSize}, 
-                    (b, o) => {context.MethodNameMap[itemTypeModel.ClrType]}(b, o))";
+                    {this.PaddedMemberInlineSize})";
 
                 body = $"return ({createFlatBufferVector}).ToArray();";
             }
 
-            return new CodeGeneratedMethod { MethodBody = body };
+            return new CodeGeneratedMethod { MethodBody = body, ClassDefinition = vectorClassDef };
         }
     }
 }
