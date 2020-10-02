@@ -33,7 +33,10 @@ namespace Benchmark
             summaries.Add(BenchmarkRunner.Run<FBBench.FBSerializeBench>());
             summaries.Add(BenchmarkRunner.Run<FBBench.FBDeserializeBench>());
             summaries.Add(BenchmarkRunner.Run<FBBench.OthersDeserializeBench>());
+
+#if !NO_SHARED_STRINGS
             summaries.Add(BenchmarkRunner.Run<FBBench.FBSharedStringBench>());
+#endif
 
             foreach (var item in summaries)
             {
