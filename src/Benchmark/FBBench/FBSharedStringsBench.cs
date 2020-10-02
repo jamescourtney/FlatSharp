@@ -16,6 +16,8 @@
 
 namespace Benchmark.FBBench
 {
+#if !NO_SHARED_STRINGS
+
     using BenchmarkDotNet.Attributes;
     using FlatSharp;
     using FlatSharp.Attributes;
@@ -162,4 +164,6 @@ namespace Benchmark.FBBench
             return rand_normal;
         }
     }
+
+#endif
 }
