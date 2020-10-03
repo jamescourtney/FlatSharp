@@ -25,19 +25,20 @@ namespace FlatSharp
     /// A base class that FlatBuffersNet implements to deserialize vectors. FlatBufferVetor{T} is a lazy implementation
     /// which will create a new instance for each item it returns. Calling .ToList() is an effective way to do caching.
     /// </summary>
-    public sealed class FlatBufferVector<T> : IList<T>, IReadOnlyList<T>
+    public sealed class FlatBufferVector<T, TInputBuffer> : IList<T>, IReadOnlyList<T>
+        where TInputBuffer : IInputBuffer
     {
-        private readonly InputBuffer memory;
+        private readonly TInputBuffer memory;
         private readonly int offset;
         private readonly int itemSize;
         private readonly int count;
-        private readonly Func<InputBuffer, int, T> parseItem;
+        private readonly Func<TInputBuffer, int, T> parseItem;
 
         public FlatBufferVector(
-            InputBuffer memory,
+            TInputBuffer memory,
             int offset,
             int itemSize,
-            Func<InputBuffer, int, T> parseItem)
+            Func<TInputBuffer, int, T> parseItem)
         {
             this.memory = memory;
             this.offset = offset;
@@ -135,6 +136,19 @@ namespace FlatSharp
             }
 
             return -1;
+        }
+
+        public List<T> FlatBufferVectorToList()
+        {
+            int count = this.Count;
+
+            var list = new List<T>(count);
+            for (int i = 0; i < count; ++i)
+            {
+                list.Add(GetItemWithoutRangeCheck(i));
+            }
+
+            return list;
         }
 
         public void Insert(int index, T item)

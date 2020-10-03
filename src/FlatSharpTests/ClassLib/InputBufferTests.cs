@@ -112,7 +112,7 @@ namespace FlatSharpTests
             this.TestDeserializeBoth(b => new UnsafeMemoryInputBuffer(b));
         }
 
-        private void InputBufferTest(InputBuffer ib)
+        private void InputBufferTest(IInputBuffer ib)
         {
             var mem = new Memory<byte>(Input);
 
@@ -137,7 +137,7 @@ namespace FlatSharpTests
             this.CompareEqual<double>(sizeof(double), i => BitConverter.Int64BitsToDouble(BinaryPrimitives.ReadInt64LittleEndian(mem.Span.Slice(i))), i => ib.ReadDouble(i));
         }
 
-        private void StringInputBufferTest(InputBuffer ib)
+        private void StringInputBufferTest(IInputBuffer ib)
         {
             Assert.AreEqual(StringData, ib.ReadString(0));
         }
@@ -155,13 +155,13 @@ namespace FlatSharpTests
             }
         }
 
-        private void TestDeserializeBoth<TBuffer>(Func<byte[], TBuffer> bufferBuilder) where TBuffer : InputBuffer
+        private void TestDeserializeBoth<TBuffer>(Func<byte[], TBuffer> bufferBuilder) where TBuffer : IInputBuffer
         {
             this.TestDeserialize<TBuffer, ReadOnlyMemoryTable>(bufferBuilder);
             this.TestDeserialize<TBuffer, MemoryTable>(bufferBuilder);
         }
 
-        private void TestReadByteArray<TBuffer>(Func<byte[], TBuffer> bufferBuilder) where TBuffer : InputBuffer
+        private void TestReadByteArray<TBuffer>(Func<byte[], TBuffer> bufferBuilder) where TBuffer : IInputBuffer
         {
             byte[] buffer = new byte[] { 4, 0, 0, 0, 7, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7 };
             TBuffer inputBuffer = bufferBuilder(buffer);
@@ -172,7 +172,7 @@ namespace FlatSharpTests
         }
 
         private void TestDeserialize<TBuffer, TType>(Func<byte[], TBuffer> bufferBuilder) 
-            where TBuffer : InputBuffer
+            where TBuffer : IInputBuffer
             where TType : class, IMemoryTable, new()
         {
             TType table = new TType
@@ -184,7 +184,7 @@ namespace FlatSharpTests
             FlatBufferSerializer.Default.Serialize(table, dest);
 
             TBuffer buffer = bufferBuilder(dest);
-            var parsed = FlatBufferSerializer.Default.Parse<TType>(buffer);
+            var parsed = FlatBufferSerializer.Default.Parse<TType, TBuffer>(buffer);
             for (int i = 1; i <= 5; ++i)
             {
                 Assert.AreEqual(i + 5, parsed.Memory.Span[i - 1]);

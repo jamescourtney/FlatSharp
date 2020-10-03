@@ -49,9 +49,11 @@ namespace Benchmark.FBBench
         protected MemoryStream pbdn_readBuffer = new MemoryStream(64 * 1024);
 
         private FlatBufferSerializer fs_serializer;
+        private ISerializer<UnsortedVectorTable<int>> unsortedIntSerializer;
+
         protected byte[] fs_readMemory;
         protected readonly byte[] fs_writeMemory = new byte[64 * 1024];
-        private InputBuffer inputBuffer;
+        private ArrayInputBuffer inputBuffer;
 
         public FBBenchCore()
         {
@@ -65,7 +67,7 @@ namespace Benchmark.FBBench
 
         public virtual FlatBufferDeserializationOption DeserializeOption { get; set; }
 
-        protected virtual InputBuffer GetInputBuffer(byte[] data) => new ArrayInputBuffer(data);
+        protected virtual ArrayInputBuffer GetInputBuffer(byte[] data) => new ArrayInputBuffer(data);
 
         [GlobalSetup]
         public virtual void GlobalSetup()
@@ -111,20 +113,23 @@ namespace Benchmark.FBBench
             Random rng = new Random();
             this.sortedIntContainer = new SortedVectorTable<int> { Vector = new List<SortedVectorTableItem<int>>() };
             this.sortedStringContainer = new SortedVectorTable<string> { Vector = new List<SortedVectorTableItem<string>>() };
+            this.unsortedIntContainer = new UnsortedVectorTable<int> { Vector = new List<UnsortedVectorTableItem<int>>() };
+            this.unsortedStringContainer = new UnsortedVectorTable<string> { Vector = new List<UnsortedVectorTableItem<string>>() };
 
             for (int i = 0; i < this.VectorLength; ++i)
             {
                 this.sortedIntContainer.Vector.Add(new SortedVectorTableItem<int> { Key = rng.Next() });
                 this.sortedStringContainer.Vector.Add(new SortedVectorTableItem<string> { Key = Guid.NewGuid().ToString() });
+                this.unsortedIntContainer.Vector.Add(new UnsortedVectorTableItem<int> { Key = rng.Next() });
+                this.unsortedStringContainer.Vector.Add(new UnsortedVectorTableItem<string> { Key = Guid.NewGuid().ToString() });
             }
-
-            this.unsortedIntContainer = new UnsortedVectorTable<int> { Vector = this.sortedIntContainer.Vector };
-            this.unsortedStringContainer = new UnsortedVectorTable<string> { Vector = this.sortedStringContainer.Vector };
 
             {
                 var options = new FlatBufferSerializerOptions(this.DeserializeOption);
 
                 this.fs_serializer = new FlatBufferSerializer(options);
+                this.unsortedIntSerializer = this.fs_serializer.Compile<UnsortedVectorTable<int>>();
+
                 int offset = this.fs_serializer.Serialize(this.defaultContainer, this.fs_writeMemory);
                 this.fs_readMemory = this.fs_writeMemory.AsSpan(0, offset).ToArray();
                 this.inputBuffer = new ArrayInputBuffer(this.fs_readMemory);
@@ -427,13 +432,23 @@ namespace Benchmark.FBBench
 
         public virtual void FlatSharp_ParseAndTraverse()
         {
+#if NO_GENERIC_INPUT_BUFFER
             var item = this.fs_serializer.Parse<FooBarListContainer>(this.inputBuffer);
+#else
+            var item = this.fs_serializer.Parse<FooBarListContainer, ArrayInputBuffer>(this.inputBuffer);
+#endif
+
             this.TraverseFooBarContainer(item);
         }
 
         public virtual void FlatSharp_ParseAndTraversePartial()
         {
+#if NO_GENERIC_INPUT_BUFFER
             var item = this.fs_serializer.Parse<FooBarListContainer>(this.inputBuffer);
+#else
+            var item = this.fs_serializer.Parse<FooBarListContainer, ArrayInputBuffer>(this.inputBuffer);
+#endif
+
             this.TraverseFooBarContainerPartial(item);
         }
         
@@ -457,9 +472,9 @@ namespace Benchmark.FBBench
             this.fs_serializer.Serialize(this.unsortedIntContainer, this.fs_writeMemory);
         }
 
-        #endregion
+#endregion
 
-        #region PBDN
+#region PBDN
 
         public virtual void PBDN_Serialize()
         {
@@ -481,7 +496,7 @@ namespace Benchmark.FBBench
             this.TraverseFooBarContainerPartial(item);
         }
 
-        #endregion
+#endregion
 
         private int TraverseFooBarContainer(FooBarListContainer foobar)
         {
@@ -554,7 +569,7 @@ namespace Benchmark.FBBench
     }
 
 
-    #region Shared Contracts
+#region Shared Contracts
 
     [ProtoContract]
     [FlatBufferStruct]
@@ -624,9 +639,9 @@ namespace Benchmark.FBBench
         public virtual string Location { get; set; }
     }
 
-    #endregion
+#endregion
 
-    #region Sorted Vector Contracts
+#region Sorted Vector Contracts
 
     [FlatBufferTable]
     public class SortedVectorTable<T>
@@ -638,8 +653,8 @@ namespace Benchmark.FBBench
     [FlatBufferTable]
     public class UnsortedVectorTable<T>
     {
-        [FlatBufferItem(0, SortedVector = false)]
-        public virtual IList<SortedVectorTableItem<T>> Vector { get; set; }
+        [FlatBufferItem(0)]
+        public virtual IList<UnsortedVectorTableItem<T>> Vector { get; set; }
     }
 
     [FlatBufferTable]
@@ -649,5 +664,12 @@ namespace Benchmark.FBBench
         public virtual T Key { get; set; }
     }
 
-    #endregion
+    [FlatBufferTable]
+    public class UnsortedVectorTableItem<T>
+    {
+        [FlatBufferItem(0)]
+        public virtual T Key { get; set; }
+    }
+
+#endregion
 }

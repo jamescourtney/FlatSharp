@@ -22,100 +22,124 @@ namespace FlatSharp
     using System.Runtime.InteropServices;
     using System.Text;
 
-    /// <summary>
-    /// A buffer for reading from memory.
-    /// </summary>
-    public abstract class InputBuffer
+    public interface IInputBuffer
     {
-        internal static readonly Encoding Encoding = new UTF8Encoding(false);
-        internal const byte True = 1;
-        internal const byte False = 0;
+        ISharedStringReader SharedStringReader { get; set; }
 
-        private ISharedStringReader sharedStringReader;
+        int Length { get; }
 
-        #region Defined Methods
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        byte ReadByte(int offset);
 
-        protected InputBuffer()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        sbyte ReadSByte(int offset);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        ushort ReadUShort(int offset);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        short ReadShort(int offset);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        uint ReadUInt(int offset);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        int ReadInt(int offset);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        ulong ReadULong(int offset);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        long ReadLong(int offset);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        float ReadFloat(int offset);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        double ReadDouble(int offset);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        string ReadString(int offset, int byteLength, Encoding encoding);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        Memory<byte> GetByteMemory(int start, int length);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length);
+    }
+
+    public static class InputBufferExtensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool ReadBool<TBuffer>(this TBuffer buffer, int offset) where TBuffer : IInputBuffer
         {
-        }
-
-        /// <summary>
-        /// Sets a shared string reader for use in this input buffer. 
-        /// </summary>
-        internal void SetSharedStringReader(ISharedStringReader reader)
-        {
-            this.sharedStringReader = reader;
+            return buffer.ReadByte(offset) != InputBuffer.False;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool ReadBool(int offset)
-        {
-            return this.ReadByte(offset) != False;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public string ReadString(int offset)
+        public static string ReadString<TBuffer>(this TBuffer buffer, int offset) where TBuffer : IInputBuffer
         {
             checked
             {
                 // Strings are stored by reference.
-                offset += this.ReadUOffset(offset);
-                return this.ReadStringFromUOffset(offset);
+                offset += buffer.ReadUOffset(offset);
+                return buffer.ReadStringFromUOffset(offset);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public SharedString ReadSharedString(int offset)
+        public static SharedString ReadSharedString<TBuffer>(this TBuffer buffer, int offset) where TBuffer : IInputBuffer
         {
             checked
             {
-                var reader = this.sharedStringReader;
+                var reader = buffer.SharedStringReader;
                 if (reader != null)
                 {
-                    int uoffset = offset + this.ReadUOffset(offset);
-                    return reader.ReadSharedString(this, uoffset);
+                    int uoffset = offset + buffer.ReadUOffset(offset);
+                    return reader.ReadSharedString(buffer, uoffset);
                 }
                 else
                 {
-                    return this.ReadString(offset);
+                    return buffer.ReadString(offset);
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public string ReadStringFromUOffset(int uoffset)
+        public static string ReadStringFromUOffset<TBuffer>(this TBuffer buffer, int uoffset) where TBuffer : IInputBuffer
         {
             checked
             {
-                int numberOfBytes = (int)this.ReadUInt(uoffset);
-                return this.ReadStringProtected(uoffset + sizeof(int), numberOfBytes, Encoding);
+                int numberOfBytes = (int)buffer.ReadUInt(uoffset);
+                return buffer.ReadString(uoffset + sizeof(int), numberOfBytes, InputBuffer.Encoding);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int ReadUOffset(int offset)
+        public static int ReadUOffset<TBuffer>(this TBuffer buffer, int offset) where TBuffer : IInputBuffer
         {
-            uint uoffset = this.ReadUInt(offset);
+            uint uoffset = buffer.ReadUInt(offset);
             if (uoffset < sizeof(uint))
             {
-                throw new IndexOutOfRangeException($"Decoded uoffset_t had value less than {sizeof(uint)}. Value = {uoffset}");
+                ThrowUOffsetLessThanMinimumException(uoffset);
             }
 
-            if (uoffset > int.MaxValue)
-            {
-                throw new IndexOutOfRangeException($"Decoded uoffset_t had value larger than max of {int.MaxValue}. Value = {uoffset}");
-            }
+            return checked((int)uoffset);
+        }
 
-            return (int)uoffset;
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static void ThrowUOffsetLessThanMinimumException(uint uoffset)
+        {
+            throw new IndexOutOfRangeException($"Decoded uoffset_t had value less than {sizeof(uint)}. Value = {uoffset}");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int GetAbsoluteTableFieldLocation(int tableOffset, int index)
+        public static int GetAbsoluteTableFieldLocation<TBuffer>(this TBuffer buffer, int tableOffset, int index) where TBuffer : IInputBuffer
         {
             checked
             {
-                int vtableOffset = tableOffset - this.ReadInt(tableOffset);
-                int vtableLength = this.ReadUShort(vtableOffset);
+                int vtableOffset = tableOffset - buffer.ReadInt(tableOffset);
+                int vtableLength = buffer.ReadUShort(vtableOffset);
 
                 // VTable structure:
                 // ushort: vtable length
@@ -135,7 +159,7 @@ namespace FlatSharp
                     return 0;
                 }
 
-                ushort relativeOffset = this.ReadUShort(vtableOffset + 2 * (2 + index));
+                ushort relativeOffset = buffer.ReadUShort(vtableOffset + 2 * (2 + index));
                 if (relativeOffset == 0)
                 {
                     return 0;
@@ -146,86 +170,53 @@ namespace FlatSharp
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Memory<byte> ReadByteMemoryBlock(int uoffset)
+        public static Memory<byte> ReadByteMemoryBlock<TBuffer>(this TBuffer buffer, int uoffset) where TBuffer : IInputBuffer
         {
-            return this.ReadByteMemoryBlockImpl(
+            return buffer.ReadByteMemoryBlockImpl(
                 uoffset,
-                this.GetByteMemory);
+                buffer.GetByteMemory);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReadOnlyMemory<byte> ReadByteReadOnlyMemoryBlock(int uoffset)
+        public static ReadOnlyMemory<byte> ReadByteReadOnlyMemoryBlock<TBuffer>(this TBuffer buffer, int uoffset) where TBuffer : IInputBuffer
         {
-            return this.ReadByteMemoryBlockImpl(
+            return buffer.ReadByteMemoryBlockImpl(
                 uoffset,
-                this.GetReadOnlyByteMemory);
+                buffer.GetReadOnlyByteMemory);
         }
 
-        private T ReadByteMemoryBlockImpl<T>(int uoffset, Func<int, int, T> callback)
+        private static T ReadByteMemoryBlockImpl<T, TBuffer>(this TBuffer buffer, int uoffset, Func<int, int, T> callback) where TBuffer : IInputBuffer
         {
             checked
             {
                 // The local value stores a uoffset_t, so follow that now.
-                uoffset = uoffset + this.ReadUOffset(uoffset);
+                uoffset = uoffset + buffer.ReadUOffset(uoffset);
 
                 // Skip the first 4 bytes of the vector, which contains the length.
                 return callback(
                     uoffset + sizeof(uint),
-                    (int)this.ReadUInt(uoffset));
+                    (int)buffer.ReadUInt(uoffset));
             }
         }
 
-        #endregion
-
-        public abstract int Length { get; }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public abstract byte ReadByte(int offset);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public abstract sbyte ReadSByte(int offset);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public abstract ushort ReadUShort(int offset);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public abstract short ReadShort(int offset);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public abstract uint ReadUInt(int offset);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public abstract int ReadInt(int offset);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public abstract ulong ReadULong(int offset);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public abstract long ReadLong(int offset);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public abstract float ReadFloat(int offset);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public abstract double ReadDouble(int offset);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected abstract string ReadStringProtected(int offset, int byteLength, Encoding encoding);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected abstract Memory<byte> GetByteMemory(int start, int length);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected abstract ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length);
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [Conditional("DEBUG")]
-        protected static void CheckAlignment(int offset, int size)
+        public static void CheckAlignment<TBuffer>(this TBuffer buffer, int offset, int size) where TBuffer : IInputBuffer
         {
             if (offset % size != 0)
             {
                 throw new InvalidOperationException($"BugCheck: attempted to read unaligned data at index: {offset}, expected alignment: {size}");
             }
         }
+    }
+
+    /// <summary>
+    /// A buffer for reading from memory.
+    /// </summary>
+    public static class InputBuffer
+    {
+        internal static readonly Encoding Encoding = new UTF8Encoding(false);
+        internal const byte True = 1;
+        internal const byte False = 0;
     }
 }

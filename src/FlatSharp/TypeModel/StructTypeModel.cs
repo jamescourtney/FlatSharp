@@ -120,7 +120,7 @@
                     generatedProperty.ReadValueMethodDefinition =
 $@"
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {generatedProperty.ReadValueMethodName}(InputBuffer buffer, int offset)
+                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {generatedProperty.ReadValueMethodName}({context.InputBufferTypeName} buffer, int offset)
                     {{
                         return {propContext.GetParseInvocation(propertyType)};
                     }}
@@ -139,7 +139,7 @@ $@"
             return new CodeGeneratedMethod
             {
                 ClassDefinition = classDefinition,
-                MethodBody = $"return new {className}({context.InputBufferVariableName}, {context.OffsetVariableName});",
+                MethodBody = $"return new {className}<{context.InputBufferTypeName}>({context.InputBufferVariableName}, {context.OffsetVariableName});",
             };
         }
 

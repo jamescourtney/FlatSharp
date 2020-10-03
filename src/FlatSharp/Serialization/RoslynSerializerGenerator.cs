@@ -313,7 +313,7 @@ $@"
                 string methodText =
 $@"
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                public {CSharpHelpers.GetCompilableTypeName(rootType)} Parse(InputBuffer buffer, int offset)
+                public {CSharpHelpers.GetCompilableTypeName(rootType)} Parse<TInputBuffer>(TInputBuffer buffer, int offset) where TInputBuffer : IInputBuffer
                 {{
                     return {this.readMethods[rootType]}(buffer, offset);
                 }}
@@ -328,7 +328,7 @@ $@"
             {
                 ITypeModel typeModel = this.typeModelContainer.CreateTypeModel(type);
                 var maxSizeContext = new GetMaxSizeCodeGenContext("value", this.maxSizeMethods, this.options);
-                var parseContext = new ParserCodeGenContext("buffer", "offset", this.readMethods, this.options);
+                var parseContext = new ParserCodeGenContext("buffer", "offset", "TInputBuffer", this.readMethods, this.options);
                 var serializeContext = new SerializationCodeGenContext("context", "span", "spanWriter", "value", "offset", this.writeMethods, this.options);
 
                 var maxSizeMethod = typeModel.CreateGetMaxSizeMethodBody(maxSizeContext);
@@ -419,9 +419,9 @@ $@"
             string declaration =
 $@"
             {inlineDeclaration}
-            private static {CSharpHelpers.GetCompilableTypeName(typeModel.ClrType)} {this.readMethods[typeModel.ClrType]}(
-                {nameof(InputBuffer)} {context.InputBufferVariableName}, 
-                {GetVTableOffsetVariableType(typeModel.PhysicalLayout.Length)} {context.OffsetVariableName})
+            private static {CSharpHelpers.GetCompilableTypeName(typeModel.ClrType)} {this.readMethods[typeModel.ClrType]}<TInputBuffer>(
+                TInputBuffer {context.InputBufferVariableName}, 
+                {GetVTableOffsetVariableType(typeModel.PhysicalLayout.Length)} {context.OffsetVariableName}) where TInputBuffer : IInputBuffer
             {{
                 {method.MethodBody}
             }}";

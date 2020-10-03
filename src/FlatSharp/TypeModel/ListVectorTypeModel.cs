@@ -57,9 +57,9 @@ namespace FlatSharp.TypeModel
             string body;
 
             string createFlatBufferVector =
-            $@"new {nameof(FlatBufferVector<int>)}<{CSharpHelpers.GetCompilableTypeName(this.itemTypeModel.ClrType)}>(
+            $@"new {nameof(FlatBufferVector<int, ArrayInputBuffer>)}<{CSharpHelpers.GetCompilableTypeName(this.itemTypeModel.ClrType)}, {context.InputBufferTypeName}>(
                     {context.InputBufferVariableName}, 
-                    {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBuffer.ReadUOffset)}({context.OffsetVariableName}), 
+                    {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}), 
                     {this.PaddedMemberInlineSize}, 
                     (b, o) => {context.MethodNameMap[itemTypeModel.ClrType]}(b, o))";
 
@@ -67,7 +67,7 @@ namespace FlatSharp.TypeModel
             {
                 // We just call .ToList(). Note that when full greedy mode is on, these items will be 
                 // greedily initialized as we traverse the list. Otherwise, they'll be allocated lazily.
-                body = $"({createFlatBufferVector}).{nameof(SerializationHelpers.FlatBufferVectorToList)}()";
+                body = $"({createFlatBufferVector}).{nameof(FlatBufferVector<int, ArrayInputBuffer>.FlatBufferVectorToList)}()";
 
                 if (!context.Options.GenerateMutableObjects)
                 {

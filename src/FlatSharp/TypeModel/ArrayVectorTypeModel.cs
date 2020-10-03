@@ -59,10 +59,10 @@ namespace FlatSharp.TypeModel
             if (itemTypeModel.ClrType == typeof(byte))
             {
                 // can handle this as memory.
-                string method = nameof(InputBuffer.ReadByteMemoryBlock);
+                string method = nameof(InputBufferExtensions.ReadByteMemoryBlock);
                 if (this.ClrType == typeof(ReadOnlyMemory<byte>))
                 {
-                    method = nameof(InputBuffer.ReadByteReadOnlyMemoryBlock);
+                    method = nameof(InputBufferExtensions.ReadByteReadOnlyMemoryBlock);
                 }
 
                 string memoryVectorRead = $"{context.InputBufferVariableName}.{method}({context.OffsetVariableName})";
@@ -71,9 +71,9 @@ namespace FlatSharp.TypeModel
             else
             {
                 string createFlatBufferVector =
-                $@"new {nameof(FlatBufferVector<int>)}<{CSharpHelpers.GetCompilableTypeName(itemTypeModel.ClrType)}>(
+                $@"new {nameof(FlatBufferVector<int, ArrayInputBuffer>)}<{CSharpHelpers.GetCompilableTypeName(itemTypeModel.ClrType)}, {context.InputBufferTypeName}>(
                     {context.InputBufferVariableName}, 
-                    {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBuffer.ReadUOffset)}({context.OffsetVariableName}), 
+                    {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}), 
                     {this.PaddedMemberInlineSize}, 
                     (b, o) => {context.MethodNameMap[itemTypeModel.ClrType]}(b, o))";
 

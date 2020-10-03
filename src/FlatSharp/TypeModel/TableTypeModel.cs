@@ -477,7 +477,7 @@ $@"
             return new CodeGeneratedMethod
             {
                 ClassDefinition = classDefinition,
-                MethodBody = $"return new {className}({context.InputBufferVariableName}, {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBuffer.ReadUOffset)}({context.OffsetVariableName}));"
+                MethodBody = $"return new {className}<{context.InputBufferTypeName}>({context.InputBufferVariableName}, {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}));"
             };
         }
 
@@ -495,9 +495,9 @@ $@"
             property.ReadValueMethodDefinition =
 $@"
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {property.ReadValueMethodName}({nameof(InputBuffer)} buffer, int offset)
+                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {property.ReadValueMethodName}({context.InputBufferTypeName} buffer, int offset)
                     {{
-                        int absoluteLocation = buffer.{nameof(InputBuffer.GetAbsoluteTableFieldLocation)}(offset, {index});
+                        int absoluteLocation = buffer.{nameof(InputBufferExtensions.GetAbsoluteTableFieldLocation)}(offset, {index});
                         if (absoluteLocation == 0) {{
                             return {memberModel.DefaultValueToken};
                         }}
@@ -523,15 +523,15 @@ $@"
             List<string> locationGetters = new List<string> { FirstLocationVariableName };
             for (int i = 1; i < memberModel.ItemTypeModel.PhysicalLayout.Length; ++i)
             {
-                locationGetters.Add($"buffer.{nameof(InputBuffer.GetAbsoluteTableFieldLocation)}(offset, {index + i})");
+                locationGetters.Add($"buffer.{nameof(InputBufferExtensions.GetAbsoluteTableFieldLocation)}(offset, {index + i})");
             }
 
             property.ReadValueMethodDefinition =
 $@"
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {property.ReadValueMethodName}({nameof(InputBuffer)} buffer, int offset)
+                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {property.ReadValueMethodName}({context.InputBufferTypeName} buffer, int offset)
                     {{
-                        int {FirstLocationVariableName} = buffer.{nameof(InputBuffer.GetAbsoluteTableFieldLocation)}(offset, {index});
+                        int {FirstLocationVariableName} = buffer.{nameof(InputBufferExtensions.GetAbsoluteTableFieldLocation)}(offset, {index});
                         if ({FirstLocationVariableName} == 0)
                         {{
                             return {memberModel.DefaultValueToken};

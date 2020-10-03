@@ -20,13 +20,11 @@ namespace FlatSharp
     using System.Text;
 
     /// <summary>
-    /// An implementation of <see cref="InputBuffer"/> for managed arrays.
+    /// An implementation of <see cref="IInputBuffer"/> for managed arrays.
     /// </summary>
-    public sealed class ArrayInputBuffer : InputBuffer
+    public sealed class ArrayInputBuffer : IInputBuffer
     {
         private readonly ArraySegment<byte> memory;
-
-        public override int Length => this.memory.Count;
 
         public ArrayInputBuffer(ArraySegment<byte> memory)
         {
@@ -37,75 +35,79 @@ namespace FlatSharp
         {
         }
 
-        public override byte ReadByte(int offset)
+        public int Length => this.memory.Count;
+
+        public ISharedStringReader SharedStringReader { get; set; }
+
+        public byte ReadByte(int offset)
         {
             return ScalarSpanReader.ReadByte(this.memory.AsSpan().Slice(offset));
         }
 
-        public override sbyte ReadSByte(int offset)
+        public sbyte ReadSByte(int offset)
         {
             return ScalarSpanReader.ReadSByte(this.memory.AsSpan().Slice(offset));
         }
 
-        public override ushort ReadUShort(int offset)
+        public ushort ReadUShort(int offset)
         {
-            CheckAlignment(offset, sizeof(ushort));
+            this.CheckAlignment(offset, sizeof(ushort));
             return ScalarSpanReader.ReadUShort(this.memory.AsSpan().Slice(offset));
         }
 
-        public override short ReadShort(int offset)
+        public short ReadShort(int offset)
         {
-            CheckAlignment(offset, sizeof(short));
+            this.CheckAlignment(offset, sizeof(short));
             return ScalarSpanReader.ReadShort(this.memory.AsSpan().Slice(offset));
         }
 
-        public override uint ReadUInt(int offset)
+        public uint ReadUInt(int offset)
         {
-            CheckAlignment(offset, sizeof(uint));
+            this.CheckAlignment(offset, sizeof(uint));
             return ScalarSpanReader.ReadUInt(this.memory.AsSpan().Slice(offset));
         }
 
-        public override int ReadInt(int offset)
+        public int ReadInt(int offset)
         {
-            CheckAlignment(offset, sizeof(int));
+            this.CheckAlignment(offset, sizeof(int));
             return ScalarSpanReader.ReadInt(this.memory.AsSpan().Slice(offset));
         }
 
-        public override ulong ReadULong(int offset)
+        public ulong ReadULong(int offset)
         {
-            CheckAlignment(offset, sizeof(ulong));
+            this.CheckAlignment(offset, sizeof(ulong));
             return ScalarSpanReader.ReadULong(this.memory.AsSpan().Slice(offset));
         }
 
-        public override long ReadLong(int offset)
+        public long ReadLong(int offset)
         {
-            CheckAlignment(offset, sizeof(long));
+            this.CheckAlignment(offset, sizeof(long));
             return ScalarSpanReader.ReadLong(this.memory.AsSpan().Slice(offset));
         }
 
-        public override float ReadFloat(int offset)
+        public float ReadFloat(int offset)
         {
-            CheckAlignment(offset, sizeof(float));
+            this.CheckAlignment(offset, sizeof(float));
             return ScalarSpanReader.ReadFloat(this.memory.AsSpan().Slice(offset));
         }
 
-        public override double ReadDouble(int offset)
+        public double ReadDouble(int offset)
         {
-            CheckAlignment(offset, sizeof(double));
+            this.CheckAlignment(offset, sizeof(double));
             return ScalarSpanReader.ReadDouble(this.memory.AsSpan().Slice(offset));
         }
 
-        protected override string ReadStringProtected(int offset, int byteLength, Encoding encoding)
+        public string ReadString(int offset, int byteLength, Encoding encoding)
         {
             return ScalarSpanReader.ReadString(this.memory.AsSpan().Slice(offset, byteLength), encoding);
         }
 
-        protected override Memory<byte> GetByteMemory(int start, int length)
+        public Memory<byte> GetByteMemory(int start, int length)
         {
             return new Memory<byte>(this.memory.Array, this.memory.Offset + start, length);
         }
 
-        protected override ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length)
+        public ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length)
         {
             return this.GetByteMemory(start, length);
         }

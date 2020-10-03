@@ -52,10 +52,10 @@ namespace FlatSharp.TypeModel
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
-            string method = nameof(InputBuffer.ReadByteMemoryBlock);
+            string method = nameof(InputBufferExtensions.ReadByteMemoryBlock);
             if (this.isReadOnly)
             {
-                method = nameof(InputBuffer.ReadByteReadOnlyMemoryBlock);
+                method = nameof(InputBufferExtensions.ReadByteReadOnlyMemoryBlock);
             }
 
             string memoryVectorRead = $"{context.InputBufferVariableName}.{method}({context.OffsetVariableName})";

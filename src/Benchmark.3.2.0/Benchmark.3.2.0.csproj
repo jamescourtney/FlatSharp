@@ -7,7 +7,7 @@
     <DelaySign>false</DelaySign>
     <SignAssembly>false</SignAssembly>
     <AssemblyOriginatorKeyFile>..\..\misc\strongname.snk</AssemblyOriginatorKeyFile>
-    <DefineConstants>$(DefineConstants);NO_SHARED_STRINGS</DefineConstants>
+    <DefineConstants>$(DefineConstants);NO_SHARED_STRINGS;NO_GENERIC_INPUT_BUFFER</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

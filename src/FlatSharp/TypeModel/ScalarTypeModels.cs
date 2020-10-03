@@ -43,7 +43,7 @@ namespace FlatSharp.TypeModel
             return true;
         }
 
-        protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadBool);
+        protected override string InputBufferReadMethodName => nameof(InputBufferExtensions.ReadBool);
 
         protected override string SpanWriterWriteMethodName => nameof(SpanWriterExtensions.WriteBool);
     }
@@ -63,8 +63,8 @@ namespace FlatSharp.TypeModel
             comparerType = null;
             return false;
         }
-
-        protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadBool);
+		
+        protected override string InputBufferReadMethodName => nameof(InputBufferExtensions.ReadBool);
 
         protected override string SpanWriterWriteMethodName => nameof(SpanWriterExtensions.WriteBool);
     }
@@ -91,9 +91,9 @@ namespace FlatSharp.TypeModel
             return true;
         }
 
-        protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadByte);
+        protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadByte);
 
-        protected override string SpanWriterWriteMethodName => nameof(SpanWriter.WriteByte);
+        protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteByte);
     }
 
 	
@@ -111,10 +111,10 @@ namespace FlatSharp.TypeModel
             comparerType = null;
             return false;
         }
+		
+        protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadByte);
 
-        protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadByte);
-
-        protected override string SpanWriterWriteMethodName => nameof(SpanWriter.WriteByte);
+        protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteByte);
     }
 
 		
@@ -139,9 +139,9 @@ namespace FlatSharp.TypeModel
             return true;
         }
 
-        protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadSByte);
+        protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadSByte);
 
-        protected override string SpanWriterWriteMethodName => nameof(SpanWriter.WriteSByte);
+        protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteSByte);
     }
 
 	
@@ -159,10 +159,10 @@ namespace FlatSharp.TypeModel
             comparerType = null;
             return false;
         }
+		
+        protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadSByte);
 
-        protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadSByte);
-
-        protected override string SpanWriterWriteMethodName => nameof(SpanWriter.WriteSByte);
+        protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteSByte);
     }
 
 		
@@ -187,9 +187,9 @@ namespace FlatSharp.TypeModel
             return true;
         }
 
-        protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadUShort);
+        protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadUShort);
 
-        protected override string SpanWriterWriteMethodName => nameof(SpanWriter.WriteUShort);
+        protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteUShort);
     }
 
 	
@@ -207,10 +207,10 @@ namespace FlatSharp.TypeModel
             comparerType = null;
             return false;
         }
+		
+        protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadUShort);
 
-        protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadUShort);
-
-        protected override string SpanWriterWriteMethodName => nameof(SpanWriter.WriteUShort);
+        protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteUShort);
     }
 
 		
@@ -235,9 +235,9 @@ namespace FlatSharp.TypeModel
             return true;
         }
 
-        protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadShort);
+        protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadShort);
 
-        protected override string SpanWriterWriteMethodName => nameof(SpanWriter.WriteShort);
+        protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteShort);
     }
 
 	
@@ -255,10 +255,10 @@ namespace FlatSharp.TypeModel
             comparerType = null;
             return false;
         }
+		
+        protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadShort);
 
-        protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadShort);
-
-        protected override string SpanWriterWriteMethodName => nameof(SpanWriter.WriteShort);
+        protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteShort);
     }
 
 		
@@ -283,9 +283,9 @@ namespace FlatSharp.TypeModel
             return true;
         }
 
-        protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadInt);
+        protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadInt);
 
-        protected override string SpanWriterWriteMethodName => nameof(SpanWriter.WriteInt);
+        protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteInt);
     }
 
 	
@@ -303,10 +303,10 @@ namespace FlatSharp.TypeModel
             comparerType = null;
             return false;
         }
+		
+        protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadInt);
 
-        protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadInt);
-
-        protected override string SpanWriterWriteMethodName => nameof(SpanWriter.WriteInt);
+        protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteInt);
     }
 
 		
@@ -331,9 +331,9 @@ namespace FlatSharp.TypeModel
             return true;
         }
 
-        protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadUInt);
+        protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadUInt);
 
-        protected override string SpanWriterWriteMethodName => nameof(SpanWriter.WriteUInt);
+        protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteUInt);
     }
 
 	
@@ -351,10 +351,10 @@ namespace FlatSharp.TypeModel
             comparerType = null;
             return false;
         }
+		
+        protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadUInt);
 
-        protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadUInt);
-
-        protected override string SpanWriterWriteMethodName => nameof(SpanWriter.WriteUInt);
+        protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteUInt);
     }
 
 		
@@ -379,9 +379,9 @@ namespace FlatSharp.TypeModel
             return true;
         }
 
-        protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadLong);
+        protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadLong);
 
-        protected override string SpanWriterWriteMethodName => nameof(SpanWriter.WriteLong);
+        protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteLong);
     }
 
 	
@@ -399,10 +399,10 @@ namespace FlatSharp.TypeModel
             comparerType = null;
             return false;
         }
+		
+        protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadLong);
 
-        protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadLong);
-
-        protected override string SpanWriterWriteMethodName => nameof(SpanWriter.WriteLong);
+        protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteLong);
     }
 
 		
@@ -427,9 +427,9 @@ namespace FlatSharp.TypeModel
             return true;
         }
 
-        protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadULong);
+        protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadULong);
 
-        protected override string SpanWriterWriteMethodName => nameof(SpanWriter.WriteULong);
+        protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteULong);
     }
 
 	
@@ -447,10 +447,10 @@ namespace FlatSharp.TypeModel
             comparerType = null;
             return false;
         }
+		
+        protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadULong);
 
-        protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadULong);
-
-        protected override string SpanWriterWriteMethodName => nameof(SpanWriter.WriteULong);
+        protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteULong);
     }
 
 		
@@ -475,9 +475,9 @@ namespace FlatSharp.TypeModel
             return true;
         }
 
-        protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadFloat);
+        protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadFloat);
 
-        protected override string SpanWriterWriteMethodName => nameof(SpanWriter.WriteFloat);
+        protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteFloat);
     }
 
 	
@@ -495,10 +495,10 @@ namespace FlatSharp.TypeModel
             comparerType = null;
             return false;
         }
+		
+        protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadFloat);
 
-        protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadFloat);
-
-        protected override string SpanWriterWriteMethodName => nameof(SpanWriter.WriteFloat);
+        protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteFloat);
     }
 
 		
@@ -523,9 +523,9 @@ namespace FlatSharp.TypeModel
             return true;
         }
 
-        protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadDouble);
+        protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadDouble);
 
-        protected override string SpanWriterWriteMethodName => nameof(SpanWriter.WriteDouble);
+        protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteDouble);
     }
 
 	
@@ -543,10 +543,10 @@ namespace FlatSharp.TypeModel
             comparerType = null;
             return false;
         }
+		
+        protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadDouble);
 
-        protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadDouble);
-
-        protected override string SpanWriterWriteMethodName => nameof(SpanWriter.WriteDouble);
+        protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteDouble);
     }
 
 	

@@ -91,7 +91,7 @@ namespace FlatSharp.TypeModel
         {
             return new CodeGeneratedMethod
             {
-                MethodBody = $"return {context.InputBufferVariableName}.{nameof(InputBuffer.ReadSharedString)}({context.OffsetVariableName});",
+                MethodBody = $"return {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadSharedString)}({context.OffsetVariableName});",
             };
         }
 

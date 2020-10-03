@@ -27,11 +27,13 @@ namespace FlatSharp
         public ParserCodeGenContext(
             string inputBufferVariableName,
             string offsetVariableName,
+            string inputBufferTypeName,
             IReadOnlyDictionary<Type, string> methodNameMap,
             FlatBufferSerializerOptions options)
         {
             this.InputBufferVariableName = inputBufferVariableName;
             this.OffsetVariableName = offsetVariableName;
+            this.InputBufferTypeName = inputBufferTypeName;
             this.MethodNameMap = methodNameMap;
             this.Options = options;
         }
@@ -40,6 +42,7 @@ namespace FlatSharp
         {
             this.InputBufferVariableName = other.InputBufferVariableName;
             this.OffsetVariableName = other.OffsetVariableName;
+            this.InputBufferTypeName = other.InputBufferTypeName;
             this.MethodNameMap = other.MethodNameMap;
             this.Options = other.Options;
         }
@@ -56,6 +59,11 @@ namespace FlatSharp
         /// The variable name of the span. Represents a <see cref="System.Span{System.Byte}"/> value.
         /// </summary>
         public string InputBufferVariableName { get; private set; }
+
+        /// <summary>
+        /// The type of the input buffer.
+        /// </summary>
+        public string InputBufferTypeName { get; private set; }
 
         /// <summary>
         /// The variable name of the span writer. Represents a <see cref="SpanWriter"/> value.

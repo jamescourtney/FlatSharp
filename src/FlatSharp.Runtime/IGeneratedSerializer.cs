@@ -46,6 +46,6 @@ namespace FlatSharp
         /// <summary>
         /// Parses the given buffer as an instance of <typeparamref name="T"/> from the given offset.
         /// </summary>
-        T Parse(InputBuffer buffer, int offset);
+        T Parse<TInputBuffer>(TInputBuffer buffer, int offset) where TInputBuffer : IInputBuffer;
     }
 }

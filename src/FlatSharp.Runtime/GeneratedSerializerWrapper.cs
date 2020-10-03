@@ -62,7 +62,7 @@ namespace FlatSharp
             return sizeof(uint) + SerializationHelpers.GetMaxPadding(sizeof(uint)) + this.innerSerializer.GetMaxSize(item);
         }
 
-        public T Parse(InputBuffer buffer)
+        public T Parse<TInputBuffer>(TInputBuffer buffer) where TInputBuffer : IInputBuffer
         {
             if (buffer.Length >= int.MaxValue / 2)
             {
@@ -74,7 +74,7 @@ namespace FlatSharp
                 throw new ArgumentException("Buffer is too small to be valid!");
             }
 
-            buffer.SetSharedStringReader(this.settings?.SharedStringReaderFactory?.Invoke());
+            buffer.SharedStringReader = this.settings?.SharedStringReaderFactory?.Invoke();
             return this.innerSerializer.Parse(buffer, 0);
         }
 

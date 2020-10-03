@@ -82,7 +82,7 @@ namespace FlatSharp
             IEnumerable<GeneratedProperty> propertyOverrides,
             FlatBufferSerializerOptions options)
         {
-            string inputBufferFieldDef = "private readonly InputBuffer buffer;";
+            string inputBufferFieldDef = "private readonly TInputBuffer buffer;";
             string offsetFieldDef = "private readonly int offset;";
 
             string ctorBody =
@@ -100,12 +100,12 @@ $@"
 
             return
 $@"
-                private sealed class {className} : {CSharpHelpers.GetCompilableTypeName(baseType)}
+                private sealed class {className}<TInputBuffer> : {CSharpHelpers.GetCompilableTypeName(baseType)} where TInputBuffer : IInputBuffer
                 {{
                     {inputBufferFieldDef}
                     {offsetFieldDef}
         
-                    public {className}({nameof(InputBuffer)} buffer, int offset)
+                    public {className}(TInputBuffer buffer, int offset)
                     {{
                         {ctorBody}
                     }}

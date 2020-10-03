@@ -59,7 +59,7 @@ namespace FlatSharp
         /// <summary>
         /// Parses the given buffer as an instance of <typeparamref name="T"/>.
         /// </summary>
-        T Parse(InputBuffer buffer);
+        T Parse<TInputBuffer>(TInputBuffer buffer) where TInputBuffer : IInputBuffer;
 
         /// <summary>
         /// Returns a new <see cref="ISerializer{T}"/> instance based on the current one with the given settings.
