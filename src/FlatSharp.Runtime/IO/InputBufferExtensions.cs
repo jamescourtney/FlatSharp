@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2018 James Courtney
+ * Copyright 2020 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,63 +19,24 @@ namespace FlatSharp
     using System;
     using System.Diagnostics;
     using System.Runtime.CompilerServices;
-    using System.Runtime.InteropServices;
-    using System.Text;
 
-    public interface IInputBuffer
-    {
-        ISharedStringReader SharedStringReader { get; set; }
-
-        int Length { get; }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        byte ReadByte(int offset);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        sbyte ReadSByte(int offset);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        ushort ReadUShort(int offset);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        short ReadShort(int offset);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        uint ReadUInt(int offset);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        int ReadInt(int offset);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        ulong ReadULong(int offset);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        long ReadLong(int offset);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        float ReadFloat(int offset);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        double ReadDouble(int offset);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        string ReadString(int offset, int byteLength, Encoding encoding);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        Memory<byte> GetByteMemory(int start, int length);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length);
-    }
-
+    /// <summary>
+    /// Extensions for input buffers.
+    /// </summary>
     public static class InputBufferExtensions
     {
+        /// <summary>
+        /// Reads a bool.
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool ReadBool<TBuffer>(this TBuffer buffer, int offset) where TBuffer : IInputBuffer
         {
-            return buffer.ReadByte(offset) != InputBuffer.False;
+            return buffer.ReadByte(offset) != SerializationHelpers.False;
         }
 
+        /// <summary>
+        /// Reads a string at the given offset.
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string ReadString<TBuffer>(this TBuffer buffer, int offset) where TBuffer : IInputBuffer
         {
@@ -87,6 +48,9 @@ namespace FlatSharp
             }
         }
 
+        /// <summary>
+        /// Reads a shared string at the given offset.
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static SharedString ReadSharedString<TBuffer>(this TBuffer buffer, int offset) where TBuffer : IInputBuffer
         {
@@ -105,16 +69,22 @@ namespace FlatSharp
             }
         }
 
+        /// <summary>
+        /// Reads a string from the given uoffset.
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string ReadStringFromUOffset<TBuffer>(this TBuffer buffer, int uoffset) where TBuffer : IInputBuffer
         {
             checked
             {
                 int numberOfBytes = (int)buffer.ReadUInt(uoffset);
-                return buffer.ReadString(uoffset + sizeof(int), numberOfBytes, InputBuffer.Encoding);
+                return buffer.ReadString(uoffset + sizeof(int), numberOfBytes, SerializationHelpers.Encoding);
             }
         }
 
+        /// <summary>
+        /// Reads the given uoffset.
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int ReadUOffset<TBuffer>(this TBuffer buffer, int offset) where TBuffer : IInputBuffer
         {
@@ -127,12 +97,18 @@ namespace FlatSharp
             return checked((int)uoffset);
         }
 
+        /// <summary>
+        /// Left as no inlining. Literal strings seem to prevent JIT inlining.
+        /// </summary>
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static void ThrowUOffsetLessThanMinimumException(uint uoffset)
         {
             throw new IndexOutOfRangeException($"Decoded uoffset_t had value less than {sizeof(uint)}. Value = {uoffset}");
         }
 
+        /// <summary>
+        /// Traverses a vtable to find the absolute offset of a table field.
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetAbsoluteTableFieldLocation<TBuffer>(this TBuffer buffer, int tableOffset, int index) where TBuffer : IInputBuffer
         {
@@ -149,7 +125,7 @@ namespace FlatSharp
                 // etc
                 if (vtableLength < 4)
                 {
-                    throw new IndexOutOfRangeException("VTable was not long enough to be valid.");
+                    ThrowInvalidVtableException();
                 }
 
                 // the max index is ((vtableLength - 4) / 2) - 1
@@ -169,33 +145,31 @@ namespace FlatSharp
             }
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static void ThrowInvalidVtableException()
+        {
+            throw new IndexOutOfRangeException("VTable was not long enough to be valid.");
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Memory<byte> ReadByteMemoryBlock<TBuffer>(this TBuffer buffer, int uoffset) where TBuffer : IInputBuffer
-        {
-            return buffer.ReadByteMemoryBlockImpl(
-                uoffset,
-                buffer.GetByteMemory);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ReadOnlyMemory<byte> ReadByteReadOnlyMemoryBlock<TBuffer>(this TBuffer buffer, int uoffset) where TBuffer : IInputBuffer
-        {
-            return buffer.ReadByteMemoryBlockImpl(
-                uoffset,
-                buffer.GetReadOnlyByteMemory);
-        }
-
-        private static T ReadByteMemoryBlockImpl<T, TBuffer>(this TBuffer buffer, int uoffset, Func<int, int, T> callback) where TBuffer : IInputBuffer
         {
             checked
             {
                 // The local value stores a uoffset_t, so follow that now.
                 uoffset = uoffset + buffer.ReadUOffset(uoffset);
+                return buffer.GetByteMemory(uoffset + sizeof(uint), (int)buffer.ReadUInt(uoffset));
+            }
+        }
 
-                // Skip the first 4 bytes of the vector, which contains the length.
-                return callback(
-                    uoffset + sizeof(uint),
-                    (int)buffer.ReadUInt(uoffset));
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ReadOnlyMemory<byte> ReadByteReadOnlyMemoryBlock<TBuffer>(this TBuffer buffer, int uoffset) where TBuffer : IInputBuffer
+        {
+            checked
+            {
+                // The local value stores a uoffset_t, so follow that now.
+                uoffset = uoffset + buffer.ReadUOffset(uoffset);
+                return buffer.GetReadOnlyByteMemory(uoffset + sizeof(uint), (int)buffer.ReadUInt(uoffset));
             }
         }
 
@@ -203,20 +177,12 @@ namespace FlatSharp
         [Conditional("DEBUG")]
         public static void CheckAlignment<TBuffer>(this TBuffer buffer, int offset, int size) where TBuffer : IInputBuffer
         {
+#if DEBUG
             if (offset % size != 0)
             {
                 throw new InvalidOperationException($"BugCheck: attempted to read unaligned data at index: {offset}, expected alignment: {size}");
             }
+#endif
         }
-    }
-
-    /// <summary>
-    /// A buffer for reading from memory.
-    /// </summary>
-    public static class InputBuffer
-    {
-        internal static readonly Encoding Encoding = new UTF8Encoding(false);
-        internal const byte True = 1;
-        internal const byte False = 0;
     }
 }

@@ -184,7 +184,7 @@ namespace FlatSharpTests
             FlatBufferSerializer.Default.Serialize(table, dest);
 
             TBuffer buffer = bufferBuilder(dest);
-            var parsed = FlatBufferSerializer.Default.Parse<TType, TBuffer>(buffer);
+            var parsed = FlatBufferSerializer.Default.Parse<TType>(buffer);
             for (int i = 1; i <= 5; ++i)
             {
                 Assert.AreEqual(i + 5, parsed.Memory.Span[i - 1]);

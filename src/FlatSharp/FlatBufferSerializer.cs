@@ -85,7 +85,7 @@ namespace FlatSharp
         /// </summary>
         public T Parse<T>(Memory<byte> memory) where T : class
         {
-            return this.Parse<T, MemoryInputBuffer>(new MemoryInputBuffer(memory));
+            return this.Parse<T>(new MemoryInputBuffer(memory));
         }
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace FlatSharp
         /// </summary>
         public T Parse<T>(ReadOnlyMemory<byte> memory) where T : class
         {
-            return this.Parse<T, ReadOnlyMemoryInputBuffer>(new ReadOnlyMemoryInputBuffer(memory));
+            return this.Parse<T>(new ReadOnlyMemoryInputBuffer(memory));
         }
 
         /// <summary>
@@ -109,7 +109,7 @@ namespace FlatSharp
         /// </summary>
         public T Parse<T>(ArraySegment<byte> arraySegment) where T : class
         {
-            return this.Parse<T, ArrayInputBuffer>(new ArrayInputBuffer(arraySegment));
+            return this.Parse<T>(new ArrayInputBuffer(arraySegment));
         }
         
         /// <summary>
@@ -119,18 +119,6 @@ namespace FlatSharp
         /// </summary>
         public T Parse<T>(IInputBuffer buffer)
             where T : class
-        {
-            return this.GetOrCreateSerializer<T>().Parse(buffer);
-        }
-
-        /// <summary>
-        /// Parses the given block of memory as an instance of T. This operation is near-instant
-        /// and is zero copy by default, which means that modifications to the backing buffer
-        /// will modify the data in the resulting object.
-        /// </summary>
-        public T Parse<T, TInputBuffer>(TInputBuffer buffer) 
-            where T : class
-            where TInputBuffer : IInputBuffer
         {
             return this.GetOrCreateSerializer<T>().Parse(buffer);
         }

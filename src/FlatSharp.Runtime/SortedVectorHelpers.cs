@@ -166,7 +166,7 @@ namespace FlatSharp
                 throw new ArgumentNullException("key");
             }
 
-            byte[] rightData = InputBuffer.Encoding.GetBytes(right);
+            byte[] rightData = SerializationHelpers.Encoding.GetBytes(right);
             return left =>
             {
                 if (left == null)
@@ -174,7 +174,7 @@ namespace FlatSharp
                     throw new InvalidOperationException("Sorted FlatBuffer vectors may not have null-valued keys.");
                 }
 
-                var enc = InputBuffer.Encoding;
+                var enc = SerializationHelpers.Encoding;
                 int maxLength = enc.GetMaxByteCount(left.Length);
 
 #if NETSTANDARD

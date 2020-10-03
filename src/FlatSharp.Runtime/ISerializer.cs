@@ -46,10 +46,7 @@ namespace FlatSharp
         /// <param name="destination">The span to write to.</param>
         /// <param name="item">The object to serialize.</param>
         /// <returns>The number of bytes written.</returns>
-        int Write<TSpanWriter>(
-            TSpanWriter writer,
-            Span<byte> destination,
-            T item) where TSpanWriter : ISpanWriter;
+        int Write(ISpanWriter writer, Span<byte> destination, T item);
 
         /// <summary>
         /// Computes the maximum size necessary to serialize the given instance of <typeparamref name="T"/>.
@@ -59,7 +56,7 @@ namespace FlatSharp
         /// <summary>
         /// Parses the given buffer as an instance of <typeparamref name="T"/>.
         /// </summary>
-        T Parse<TInputBuffer>(TInputBuffer buffer) where TInputBuffer : IInputBuffer;
+        T Parse(IInputBuffer buffer);
 
         /// <summary>
         /// Returns a new <see cref="ISerializer{T}"/> instance based on the current one with the given settings.

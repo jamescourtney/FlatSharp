@@ -62,7 +62,7 @@ namespace FlatSharp
             return sizeof(uint) + SerializationHelpers.GetMaxPadding(sizeof(uint)) + this.innerSerializer.GetMaxSize(item);
         }
 
-        public T Parse<TInputBuffer>(TInputBuffer buffer) where TInputBuffer : IInputBuffer
+        public T Parse(IInputBuffer buffer)
         {
             if (buffer.Length >= int.MaxValue / 2)
             {
@@ -75,10 +75,10 @@ namespace FlatSharp
             }
 
             buffer.SharedStringReader = this.settings?.SharedStringReaderFactory?.Invoke();
-            return this.innerSerializer.Parse(buffer, 0);
+            return buffer.InvokeParse(this.innerSerializer, 0);
         }
 
-        public int Write<TSpanWriter>(TSpanWriter writer, Span<byte> destination, T item) where TSpanWriter : ISpanWriter
+        public int Write(ISpanWriter writer, Span<byte> destination, T item)
         {
             if (object.ReferenceEquals(item, null))
             {
@@ -100,8 +100,13 @@ namespace FlatSharp
             try
             {
                 sharedStringWriter?.PrepareWrite();
-                this.innerSerializer.Write(writer, destination, item, 0, serializationContext);
-                sharedStringWriter?.FlushWrites(writer, destination, serializationContext);
+                writer.InvokeWrite(this.innerSerializer, destination, item, 0, serializationContext);
+
+                if (sharedStringWriter != null)
+                {
+                    writer.FlushSharedStrings(sharedStringWriter, destination, serializationContext);
+                }
+
                 serializationContext.InvokePostSerializeActions(destination);
             }
             catch (BufferTooSmallException ex)
