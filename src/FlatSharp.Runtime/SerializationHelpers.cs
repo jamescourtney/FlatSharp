@@ -69,7 +69,7 @@ namespace FlatSharp
         {
             if (object.ReferenceEquals(item, null))
             {
-                throw new InvalidDataException("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.");
+                ThrowNonNullException();
             }
         }
 
@@ -84,8 +84,14 @@ namespace FlatSharp
         {
             if (!item.HasValue)
             {
-                throw new InvalidDataException("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.");
+                ThrowNonNullException();
             }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static void ThrowNonNullException()
+        {
+            throw new InvalidDataException("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.");
         }
 
         /// <summary>

@@ -17,6 +17,7 @@
 namespace FlatSharp
 {
     using System;
+    using System.Buffers.Binary;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Runtime.CompilerServices;
@@ -38,23 +39,15 @@ namespace FlatSharp
         private int offset;
         private int capacity;
         private readonly List<PostSerializeAction> postSerializeActions;
+        private readonly List<int> vtableOffsets;
 
         /// <summary>
         /// Initializes a new serialization context.
         /// </summary>
         public SerializationContext()
         {
-            this.VTableBuilder = new VTableBuilder(this);
             this.postSerializeActions = new List<PostSerializeAction>();
-        }
-
-        /// <summary>
-        /// Gets the vtable builder associated with this context.
-        /// </summary>
-        public VTableBuilder VTableBuilder
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get;
+            this.vtableOffsets = new List<int>();
         }
 
         /// <summary>
@@ -89,8 +82,8 @@ namespace FlatSharp
             this.offset = 0;
             this.capacity = capacity;
             this.SharedStringWriter = null;
-            this.VTableBuilder.Reset();
             this.postSerializeActions.Clear();
+            this.vtableOffsets.Clear();
         }
 
         /// <summary>
@@ -115,7 +108,6 @@ namespace FlatSharp
         /// <summary>
         /// Allocate a vector and return the index. Does not populate any details of the vector.
         /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int AllocateVector(int itemAlignment, int numberOfItems, int sizePerItem)
         {
             checked
@@ -174,6 +166,32 @@ namespace FlatSharp
                 this.offset = finalOffset;
                 return offset;
             }
+        }
+
+        public int FinishVTable(Span<byte> buffer, Span<byte> vtable)
+        {
+            var offsets = this.vtableOffsets;
+            int offsetCount = offsets.Count;
+
+            for (int i = 0; i < offsetCount; ++i)
+            {
+                int offset = offsets[i];
+                ReadOnlySpan<byte> existingVTable = buffer.Slice(offset);
+                existingVTable = existingVTable.Slice(0, BinaryPrimitives.ReadUInt16LittleEndian(existingVTable));
+
+                if (existingVTable.SequenceEqual(vtable))
+                {
+                    // We already have a vtable that matches this specification. Return that offset.
+                    return offset;
+                }
+            }
+
+            // Oh, well. Write the new table.
+            int newVTableOffset = this.AllocateSpace(vtable.Length, sizeof(ushort));
+            vtable.CopyTo(buffer.Slice(newVTableOffset));
+            offsets.Add(newVTableOffset);
+
+            return newVTableOffset;
         }
     }
 }

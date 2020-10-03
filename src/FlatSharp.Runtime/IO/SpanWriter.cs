@@ -26,85 +26,69 @@ namespace FlatSharp
     /// <summary>
     /// Utility class for writing items to spans.
     /// </summary>
-    public class SpanWriter
+    public struct SpanWriter : ISpanWriter
     {
         /// <summary>
         /// A default instance. Spanwriter is stateless and threadsafe.
         /// </summary>
-        public static SpanWriter Instance { get; } = new SpanWriter();
+        public static SpanWriter Instance => default;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteUOffset(Span<byte> span, int offset, int secondOffset, SerializationContext context)
-        {
-            checked
-            {
-                uint uoffset = (uint)(secondOffset - offset);
-                this.WriteUInt(span, uoffset, offset, context);
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteBool(Span<byte> span, bool b, int offset, SerializationContext context)
-        {
-            this.WriteByte(span, b ? InputBuffer.True : InputBuffer.False, offset, context);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual void WriteByte(Span<byte> span, byte value, int offset, SerializationContext context)
+        public void WriteByte(Span<byte> span, byte value, int offset, SerializationContext context)
         {
             span[offset] = value;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual void WriteSByte(Span<byte> span, sbyte value, int offset, SerializationContext context)
+        public void WriteSByte(Span<byte> span, sbyte value, int offset, SerializationContext context)
         {
             span[offset] = (byte)value;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual void WriteUShort(Span<byte> span, ushort value, int offset, SerializationContext context)
+        public void WriteUShort(Span<byte> span, ushort value, int offset, SerializationContext context)
         {
-            CheckAlignment(offset, sizeof(ushort));
+            this.CheckAlignment(offset, sizeof(ushort));
             BinaryPrimitives.WriteUInt16LittleEndian(span.Slice(offset), value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual void WriteShort(Span<byte> span, short value, int offset, SerializationContext context)
+        public void WriteShort(Span<byte> span, short value, int offset, SerializationContext context)
         {
-            CheckAlignment(offset, sizeof(short));
+            this.CheckAlignment(offset, sizeof(short));
             BinaryPrimitives.WriteInt16LittleEndian(span.Slice(offset), value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual void WriteUInt(Span<byte> span, uint value, int offset, SerializationContext context)
+        public void WriteUInt(Span<byte> span, uint value, int offset, SerializationContext context)
         {
-            CheckAlignment(offset, sizeof(uint));
+            this.CheckAlignment(offset, sizeof(uint));
             BinaryPrimitives.WriteUInt32LittleEndian(span.Slice(offset), value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual void WriteInt(Span<byte> span, int value, int offset, SerializationContext context)
+        public void WriteInt(Span<byte> span, int value, int offset, SerializationContext context)
         {
-            CheckAlignment(offset, sizeof(int));
+            this.CheckAlignment(offset, sizeof(int));
             BinaryPrimitives.WriteInt32LittleEndian(span.Slice(offset), value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual void WriteULong(Span<byte> span, ulong value, int offset, SerializationContext context)
+        public void WriteULong(Span<byte> span, ulong value, int offset, SerializationContext context)
         {
-            CheckAlignment(offset, sizeof(ulong));
+            this.CheckAlignment(offset, sizeof(ulong));
             BinaryPrimitives.WriteUInt64LittleEndian(span.Slice(offset), value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual void WriteLong(Span<byte> span, long value, int offset, SerializationContext context)
+        public void WriteLong(Span<byte> span, long value, int offset, SerializationContext context)
         {
-            CheckAlignment(offset, sizeof(long));
+            this.CheckAlignment(offset, sizeof(long));
             BinaryPrimitives.WriteInt64LittleEndian(span.Slice(offset), value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual void WriteFloat(Span<byte> span, float value, int offset, SerializationContext context)
+        public void WriteFloat(Span<byte> span, float value, int offset, SerializationContext context)
         {
             ScalarSpanReader.FloatLayout floatLayout = new ScalarSpanReader.FloatLayout
             {
@@ -115,92 +99,130 @@ namespace FlatSharp
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual void WriteDouble(Span<byte> span, double value, int offset, SerializationContext context)
+        public void WriteDouble(Span<byte> span, double value, int offset, SerializationContext context)
         {
             this.WriteLong(span, BitConverter.DoubleToInt64Bits(value), offset, context);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual void WriteString(Span<byte> span, string value, int offset, SerializationContext context)
+        public int GetStringBytes(Span<byte> destination, string value, Encoding encoding)
         {
-            int stringOffset = this.WriteAndProvisionString(span, value, context);
-            this.WriteUOffset(span, offset, stringOffset, context);
+#if NETCOREAPP
+            int bytesWritten = encoding.GetBytes(value, destination);
+#else
+            var bytes = encoding.GetBytes(value);
+            bytes.CopyTo(destination);
+            int bytesWritten = bytes.Length;
+#endif
+
+            return bytesWritten;
+        }
+    }
+
+    public static class SpanWriterExtensions
+    {
+        public static void WriteReadOnlyByteMemoryBlock<TSpanWriter>(
+            this TSpanWriter spanWriter,
+            Span<byte> span,
+            ReadOnlyMemory<byte> memory,
+            int offset,
+            SerializationContext ctx) where TSpanWriter : ISpanWriter
+        {
+            int numberOfItems = memory.Length;
+            int vectorStartOffset = ctx.AllocateVector(itemAlignment: sizeof(byte), numberOfItems, sizePerItem: sizeof(byte));
+
+            spanWriter.WriteUOffset(span, offset, vectorStartOffset, ctx);
+            spanWriter.WriteInt(span, numberOfItems, vectorStartOffset, ctx);
+
+            memory.Span.CopyTo(span.Slice(vectorStartOffset + sizeof(uint)));
         }
 
+        /// <summary>
+        /// Writes the given string.
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual void WriteSharedString(Span<byte> span, SharedString value, int offset, SerializationContext context)
+        public static void WriteString<TSpanWriter>(
+            this TSpanWriter spanWriter,
+            Span<byte> span, 
+            string value, 
+            int offset, 
+            SerializationContext context) where TSpanWriter : ISpanWriter
+        {
+            int stringOffset = spanWriter.WriteAndProvisionString(span, value, context);
+            spanWriter.WriteUOffset(span, offset, stringOffset, context);
+        }
+
+        /// <summary>
+        /// Writes the given shared string.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void WriteSharedString<TSpanWriter>(
+            this TSpanWriter writer, 
+            Span<byte> span, 
+            SharedString value, 
+            int offset, 
+            SerializationContext context) where TSpanWriter : ISpanWriter
         {
             var manager = context.SharedStringWriter;
             if (manager != null)
             {
-                manager.WriteSharedString(this, span, offset, value, context);
+                manager.WriteSharedString(writer, span, offset, value, context);
             }
             else
             {
-                this.WriteString(span, value, offset, context);
+                writer.WriteString(span, value, offset, context);
             }
         }
 
         /// <summary>
         /// Writes the string to the buffer, returning the absolute offset of the string.
         /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int WriteAndProvisionString(Span<byte> span, string value, SerializationContext context)
+        public static int WriteAndProvisionString<TSpanWriter>(this TSpanWriter spanWriter, Span<byte> span, string value, SerializationContext context)
+            where TSpanWriter : ISpanWriter
         {
             checked
             {
                 var encoding = InputBuffer.Encoding;
 
                 // Allocate more than we need and then give back what we don't use.
-                int maxItems = encoding.GetMaxByteCount(value.Length);
-                int stringStartOffset = context.AllocateVector(sizeof(byte), maxItems + 1, sizeof(byte));
+                int maxItems = encoding.GetMaxByteCount(value.Length) + 1;
+                int stringStartOffset = context.AllocateVector(sizeof(byte), maxItems, sizeof(byte));
 
-                int bytesWritten = this.WriteStringProtected(span.Slice(stringStartOffset + sizeof(uint), maxItems), value, encoding);
+                int bytesWritten = spanWriter.GetStringBytes(span.Slice(stringStartOffset + sizeof(uint), maxItems), value, encoding);
 
                 // null teriminator
                 span[stringStartOffset + bytesWritten + sizeof(uint)] = 0;
 
                 // write length
-                this.WriteInt(span, bytesWritten, stringStartOffset, context);
+                spanWriter.WriteInt(span, bytesWritten, stringStartOffset, context);
 
-                // give back unused space.
-                context.Offset -= maxItems - bytesWritten;
+                // give back unused space. Account for null terminator.
+                context.Offset -= maxItems - (bytesWritten + 1);
 
                 return stringStartOffset;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected virtual int WriteStringProtected(Span<byte> span, string value, Encoding encoding)
+        public static void WriteUOffset<TSpanWriter>(this TSpanWriter spanWriter, Span<byte> span, int offset, int secondOffset, SerializationContext context)
+            where TSpanWriter : ISpanWriter
         {
-#if NETCOREAPP
-            return encoding.GetBytes(value, span);
-#else
-            var bytes = encoding.GetBytes(value);
-            bytes.CopyTo(span);
-            return bytes.Length;
-#endif
+            checked
+            {
+                uint uoffset = (uint)(secondOffset - offset);
+                spanWriter.WriteUInt(span, uoffset, offset, context);
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteReadOnlyByteMemoryBlock(
-            Span<byte> span,
-            ReadOnlyMemory<byte> memory,
-            int offset,
-            SerializationContext ctx)
+        public static void WriteBool<TSpanWriter>(this TSpanWriter spanWriter, Span<byte> span, bool b, int offset, SerializationContext context) 
+            where TSpanWriter : ISpanWriter
         {
-            int numberOfItems = memory.Length;
-            int vectorStartOffset = ctx.AllocateVector(itemAlignment: sizeof(byte), numberOfItems, sizePerItem: sizeof(byte));
-
-            this.WriteUOffset(span, offset, vectorStartOffset, ctx);
-            this.WriteInt(span, numberOfItems, vectorStartOffset, ctx);
-
-            memory.Span.CopyTo(span.Slice(vectorStartOffset + sizeof(uint)));
+            spanWriter.WriteByte(span, b ? InputBuffer.True : InputBuffer.False, offset, context);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [Conditional("DEBUG")]
-        protected static void CheckAlignment(int offset, int size)
+        public static void CheckAlignment<TSpanWriter>(this TSpanWriter spanWriter, int offset, int size) where TSpanWriter : ISpanWriter
         {
             if (offset % size != 0)
             {

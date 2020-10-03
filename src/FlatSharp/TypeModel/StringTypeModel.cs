@@ -99,7 +99,7 @@ namespace FlatSharp.TypeModel
         {
             return new CodeGeneratedMethod
             {
-                MethodBody = $"{context.SpanWriterVariableName}.{nameof(SpanWriter.WriteString)}({context.SpanVariableName}, {context.ValueVariableName}, {context.OffsetVariableName}, {context.SerializationContextVariableName});",
+                MethodBody = $"{context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteString)}({context.SpanVariableName}, {context.ValueVariableName}, {context.OffsetVariableName}, {context.SerializationContextVariableName});",
             };
         }
 

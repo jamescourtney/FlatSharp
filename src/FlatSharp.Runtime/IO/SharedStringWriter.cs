@@ -65,12 +65,12 @@ namespace FlatSharp
         /// <summary>
         /// Writes a shared string.
         /// </summary>
-        public void WriteSharedString(
-            SpanWriter spanWriter, 
+        public void WriteSharedString<TSpanWriter>(
+            TSpanWriter spanWriter, 
             Span<byte> data, 
             int offset, 
             SharedString value, 
-            SerializationContext context)
+            SerializationContext context) where TSpanWriter : ISpanWriter
         {
             // Find the associative set that must contain our key.
             var cache = this.sharedStringOffsetCache;
@@ -96,7 +96,7 @@ namespace FlatSharp
         /// <summary>
         /// Flush any pending writes.
         /// </summary>
-        public void FlushWrites(SpanWriter writer, Span<byte> data, SerializationContext context)
+        public void FlushWrites<TSpanWriter>(TSpanWriter writer, Span<byte> data, SerializationContext context) where TSpanWriter : ISpanWriter
         {
             var cache = this.sharedStringOffsetCache;
             for (int i = 0; i < cache.Length; ++i)
@@ -113,7 +113,12 @@ namespace FlatSharp
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void FlushSharedString(SpanWriter spanWriter, Span<byte> span, string value, List<int> offsets, SerializationContext context)
+        private static void FlushSharedString<TSpanWriter>(
+            TSpanWriter spanWriter, 
+            Span<byte> span, 
+            string value, 
+            List<int> offsets, 
+            SerializationContext context) where TSpanWriter : ISpanWriter
         {
             int stringOffset = spanWriter.WriteAndProvisionString(span, value, context);
             int count = offsets.Count;

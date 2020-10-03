@@ -45,7 +45,7 @@ namespace FlatSharp.TypeModel
 
         protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadBool);
 
-        protected override string SpanWriterWriteMethodName => nameof(SpanWriter.WriteBool);
+        protected override string SpanWriterWriteMethodName => nameof(SpanWriterExtensions.WriteBool);
     }
 
 	
@@ -66,7 +66,7 @@ namespace FlatSharp.TypeModel
 
         protected override string InputBufferReadMethodName => nameof(InputBuffer.ReadBool);
 
-        protected override string SpanWriterWriteMethodName => nameof(SpanWriter.WriteBool);
+        protected override string SpanWriterWriteMethodName => nameof(SpanWriterExtensions.WriteBool);
     }
 
 		

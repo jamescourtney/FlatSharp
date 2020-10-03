@@ -294,11 +294,12 @@
             string methodStart =
 $@"
                 int tableStart = {context.SerializationContextVariableName}.{nameof(SerializationContext.AllocateSpace)}({maxInlineSize}, sizeof(int));
-                {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteUOffset)}({context.SpanVariableName}, {context.OffsetVariableName}, tableStart, {context.SerializationContextVariableName});
+                {context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteUOffset)}({context.SpanVariableName}, {context.OffsetVariableName}, tableStart, {context.SerializationContextVariableName});
                 int currentOffset = tableStart + sizeof(int); // skip past vtable soffset_t.
 
-                var vtable = {context.SerializationContextVariableName}.{nameof(SerializationContext.VTableBuilder)};
-                vtable.StartObject({maxIndex});
+                Span<byte> vtable = stackalloc byte[{4 + 2 * (maxIndex + 1)}];
+                int maxVtableIndex = -1;
+                vtable.Clear(); // reset to 0. Random memory from the stack isn't trustworthy.
 ";
 
             List<string> body = new List<string>();
@@ -316,8 +317,15 @@ $@"
             // Then we can write the vtable.
             body.Add("int tableLength = currentOffset - tableStart;");
             body.Add($"{context.SerializationContextVariableName}.{nameof(SerializationContext.Offset)} -= {maxInlineSize} - tableLength;");
-            body.Add($"int vtablePosition = vtable.{nameof(VTableBuilder.EndObject)}(span, {context.SpanWriterVariableName}, tableLength);");
-            body.Add($"{context.SpanWriterVariableName}.{nameof(SpanWriter.WriteInt)}(span, tableStart - vtablePosition, tableStart, context);");
+
+            // write vtable header
+            body.Add($"int vtableLength = 6 + (2 * maxVtableIndex);");
+            body.Add($"{context.SpanWriterVariableName}.{nameof(ISpanWriter.WriteUShort)}(vtable, (ushort)vtableLength, 0, {context.SerializationContextVariableName});");
+            body.Add($"{context.SpanWriterVariableName}.{nameof(ISpanWriter.WriteUShort)}(vtable, (ushort)tableLength, sizeof(ushort), {context.SerializationContextVariableName});");
+
+            // Finish vtable.
+            body.Add($"int vtablePosition = {context.SerializationContextVariableName}.{nameof(SerializationContext.FinishVTable)}({context.SpanVariableName}, vtable.Slice(0, vtableLength));");
+            body.Add($"{context.SpanWriterVariableName}.{nameof(SpanWriter.WriteInt)}({context.SpanVariableName}, tableStart - vtablePosition, tableStart, {context.SerializationContextVariableName});");
 
             body.AddRange(writers);
 
@@ -354,7 +362,8 @@ $@"
                 prepareBlockComponents.Add($@"
                             currentOffset += {CSharpHelpers.GetFullMethodName(ReflectedMethods.SerializationHelpers_GetAlignmentErrorMethod)}(currentOffset, {layout.Alignment});
                             {OffsetVariableName(i)} = currentOffset;
-                            vtable.{nameof(VTableBuilder.SetOffset)}({index + i}, currentOffset - tableStart);
+                            {context.SpanWriterVariableName}.{nameof(ISpanWriter.WriteUShort)}(vtable, (ushort)(currentOffset - tableStart), {4 + 2 * (index + i)}, {context.SerializationContextVariableName});
+                            maxVtableIndex = {index + i};
                             currentOffset += {layout.InlineSize};
                 ");
             }

@@ -20,7 +20,7 @@ namespace FlatSharp.Unsafe
     using System.Runtime.CompilerServices;
     using System.Text;
 
-    public sealed unsafe class UnsafeSpanWriter : SpanWriter
+    public sealed unsafe class UnsafeSpanWriter : ISpanWriter
     {
         public UnsafeSpanWriter()
         {
@@ -30,19 +30,19 @@ namespace FlatSharp.Unsafe
             }
         }
 
-        public override void WriteByte(Span<byte> span, byte value, int offset, SerializationContext context)
+        public void WriteByte(Span<byte> span, byte value, int offset, SerializationContext context)
         {
             span[offset] = value;
         }
 
-        public override void WriteSByte(Span<byte> span, sbyte value, int offset, SerializationContext context)
+        public void WriteSByte(Span<byte> span, sbyte value, int offset, SerializationContext context)
         {
             span[offset] = (byte)value;
         }
 
-        public override void WriteDouble(Span<byte> span, double value, int offset, SerializationContext context)
+        public void WriteDouble(Span<byte> span, double value, int offset, SerializationContext context)
         {
-            CheckAlignment(offset, sizeof(double));
+            this.CheckAlignment(offset, sizeof(double));
             checked
             {
                 EnsureInBounds(span, offset, sizeof(double));
@@ -53,9 +53,9 @@ namespace FlatSharp.Unsafe
             }
         }
 
-        public override void WriteFloat(Span<byte> span, float value, int offset, SerializationContext context)
+        public void WriteFloat(Span<byte> span, float value, int offset, SerializationContext context)
         {
-            CheckAlignment(offset, sizeof(float));
+            this.CheckAlignment(offset, sizeof(float));
             checked
             {
                 EnsureInBounds(span, offset, sizeof(float));
@@ -66,9 +66,9 @@ namespace FlatSharp.Unsafe
             }
         }
 
-        public override void WriteInt(Span<byte> span, int value, int offset, SerializationContext context)
+        public void WriteInt(Span<byte> span, int value, int offset, SerializationContext context)
         {
-            CheckAlignment(offset, sizeof(int));
+            this.CheckAlignment(offset, sizeof(int));
             checked
             {
                 EnsureInBounds(span, offset, sizeof(int));
@@ -79,9 +79,9 @@ namespace FlatSharp.Unsafe
             }
         }
 
-        public override void WriteLong(Span<byte> span, long value, int offset, SerializationContext context)
+        public void WriteLong(Span<byte> span, long value, int offset, SerializationContext context)
         {
-            CheckAlignment(offset, sizeof(long));
+            this.CheckAlignment(offset, sizeof(long));
             checked
             {
                 EnsureInBounds(span, offset, sizeof(long));
@@ -92,9 +92,9 @@ namespace FlatSharp.Unsafe
             }
         }
 
-        public override void WriteShort(Span<byte> span, short value, int offset, SerializationContext context)
+        public void WriteShort(Span<byte> span, short value, int offset, SerializationContext context)
         {
-            CheckAlignment(offset, sizeof(short));
+            this.CheckAlignment(offset, sizeof(short));
             checked
             {
                 EnsureInBounds(span, offset, sizeof(short));
@@ -105,9 +105,9 @@ namespace FlatSharp.Unsafe
             }
         }
 
-        public override void WriteUInt(Span<byte> span, uint value, int offset, SerializationContext context)
+        public void WriteUInt(Span<byte> span, uint value, int offset, SerializationContext context)
         {
-            CheckAlignment(offset, sizeof(uint));
+            this.CheckAlignment(offset, sizeof(uint));
             checked
             {
                 EnsureInBounds(span, offset, sizeof(uint));
@@ -118,9 +118,9 @@ namespace FlatSharp.Unsafe
             }
         }
 
-        public override void WriteULong(Span<byte> span, ulong value, int offset, SerializationContext context)
+        public void WriteULong(Span<byte> span, ulong value, int offset, SerializationContext context)
         {
-            CheckAlignment(offset, sizeof(ulong));
+            this.CheckAlignment(offset, sizeof(ulong));
             checked
             {
                 EnsureInBounds(span, offset, sizeof(ulong));
@@ -131,27 +131,15 @@ namespace FlatSharp.Unsafe
             }
         }
 
-        public override void WriteUShort(Span<byte> span, ushort value, int offset, SerializationContext context)
+        public void WriteUShort(Span<byte> span, ushort value, int offset, SerializationContext context)
         {
-            CheckAlignment(offset, sizeof(ushort));
+            this.CheckAlignment(offset, sizeof(ushort));
             checked
             {
                 EnsureInBounds(span, offset, sizeof(ushort));
                 fixed (byte* pByte = &span[offset])
                 {
                     *(ushort*)pByte = value;
-                }
-            }
-        }
-
-        protected override int WriteStringProtected(Span<byte> span, string value, Encoding encoding)
-        {
-            checked
-            {
-                fixed (byte* pByte = span)
-                fixed (char* pChar = value)
-                {
-                    return encoding.GetBytes(pChar, value.Length, pByte, span.Length);
                 }
             }
         }
@@ -164,6 +152,19 @@ namespace FlatSharp.Unsafe
                 if (offset + size > span.Length || offset < 0 || size < 0)
                 {
                     throw new IndexOutOfRangeException();
+                }
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int GetStringBytes(Span<byte> destination, string value, Encoding encoding)
+        {
+            checked
+            {
+                fixed (byte* pByte = destination)
+                fixed (char* pChar = value)
+                {
+                    return encoding.GetBytes(pChar, value.Length, pByte, destination.Length);
                 }
             }
         }

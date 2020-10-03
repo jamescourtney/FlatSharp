@@ -46,10 +46,10 @@ namespace FlatSharp
         /// <param name="destination">The span to write to.</param>
         /// <param name="item">The object to serialize.</param>
         /// <returns>The number of bytes written.</returns>
-        int Write(
-            SpanWriter writer,
+        int Write<TSpanWriter>(
+            TSpanWriter writer,
             Span<byte> destination,
-            T item);
+            T item) where TSpanWriter : ISpanWriter;
 
         /// <summary>
         /// Computes the maximum size necessary to serialize the given instance of <typeparamref name="T"/>.

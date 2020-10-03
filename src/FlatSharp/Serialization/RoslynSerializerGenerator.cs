@@ -288,7 +288,8 @@ $@"
                 string methodText =
 $@"
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                public void Write(SpanWriter writer, Span<byte> target, {CSharpHelpers.GetCompilableTypeName(rootType)} root, int offset, SerializationContext context)
+                public void Write<TSpanWriter>(TSpanWriter writer, Span<byte> target, {CSharpHelpers.GetCompilableTypeName(rootType)} root, int offset, SerializationContext context)
+                    where TSpanWriter : ISpanWriter
                 {{
                     {this.writeMethods[rootType]}(writer, target, root, offset, context);
                 }}
@@ -446,12 +447,12 @@ $@"
             string declaration =
 $@"
             {inlineDeclaration}
-            private static void {this.writeMethods[typeModel.ClrType]}(
-                {nameof(SpanWriter)} {context.SpanWriterVariableName}, 
+            private static void {this.writeMethods[typeModel.ClrType]}<TSpanWriter>(
+                TSpanWriter {context.SpanWriterVariableName}, 
                 Span<byte> {context.SpanVariableName}, 
                 {CSharpHelpers.GetCompilableTypeName(typeModel.ClrType)} {context.ValueVariableName}, 
                 {GetVTableOffsetVariableType(typeModel.PhysicalLayout.Length)} {context.OffsetVariableName}, 
-                {nameof(SerializationContext)} {context.SerializationContextVariableName})
+                {nameof(SerializationContext)} {context.SerializationContextVariableName}) where TSpanWriter : ISpanWriter
             {{
                 {method.MethodBody}
             }}";

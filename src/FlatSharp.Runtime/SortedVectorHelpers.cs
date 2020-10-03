@@ -62,12 +62,12 @@ namespace FlatSharp
         /// new position within the vector.
         /// </remarks>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public static void SortVector(
+        public static void SortVector<TSpanComparer>(
             Span<byte> buffer,
             int vectorUOffset,
             int vtableIndex,
             int? keyInlineSize,
-            ISpanComparer comparer)
+            TSpanComparer comparer) where TSpanComparer : ISpanComparer
         {
             checked
             {
@@ -271,12 +271,12 @@ namespace FlatSharp
         /// Due to the amount of indirection in FlatBuffers, it's not possible to use the built-in sorting algorithms,
         /// so we do the next best thing. Note that this is not a true IntroSort, since we omit the HeapSort component.
         /// </summary>
-        private static void IntroSort(
+        private static void IntroSort<TSpanComparer>(
             ReadOnlySpan<byte> buffer,
-            ISpanComparer keyComparer,
+            TSpanComparer keyComparer,
             int lo,
             int hi,
-            Span<(int offset, int length, int tableOffset)> keyLocations)
+            Span<(int offset, int length, int tableOffset)> keyLocations) where TSpanComparer : ISpanComparer
         {
             checked
             {
@@ -367,12 +367,12 @@ namespace FlatSharp
             }
         }
 
-        private static void InsertionSort(
+        private static void InsertionSort<TSpanComparer>(
             ReadOnlySpan<byte> buffer,
-            ISpanComparer comparer,
+            TSpanComparer comparer,
             int lo,
             int hi,
-            Span<(int offset, int length, int tableOffset)> keyLocations)
+            Span<(int offset, int length, int tableOffset)> keyLocations) where TSpanComparer : ISpanComparer
         {
             for (int i = lo; i < hi; i++)
             {
@@ -401,12 +401,12 @@ namespace FlatSharp
             }
         }
 
-        private static void SwapIfGreater(
+        private static void SwapIfGreater<TSpanComparer>(
             ReadOnlySpan<byte> vector,
-            ISpanComparer comparer,
+            TSpanComparer comparer,
             int leftIndex,
             int rightIndex,
-            Span<(int, int, int)> keyOffsets)
+            Span<(int, int, int)> keyOffsets) where TSpanComparer : ISpanComparer
         {
             if (leftIndex != rightIndex)
             {

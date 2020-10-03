@@ -172,7 +172,7 @@ $@"
                     inlineAdjustment =
 $@"
                         var writeOffset = context.{nameof(SerializationContext.AllocateSpace)}({elementModel.PhysicalLayout.Single().InlineSize}, {elementModel.PhysicalLayout.Single().Alignment});
-                        {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteUOffset)}(span, {context.OffsetVariableName}.offset1, writeOffset, context);";
+                        {context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteUOffset)}(span, {context.OffsetVariableName}.offset1, writeOffset, context);";
                 }
                 else
                 {

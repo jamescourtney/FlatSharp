@@ -76,7 +76,7 @@ namespace FlatSharp.TypeModel
         public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
         {
             string body = 
-                $"{context.SpanWriterVariableName}.{nameof(SpanWriter.WriteReadOnlyByteMemoryBlock)}({context.SpanVariableName}, {context.ValueVariableName}, {context.OffsetVariableName}, {context.SerializationContextVariableName});";
+                $"{context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteReadOnlyByteMemoryBlock)}({context.SpanVariableName}, {context.ValueVariableName}, {context.OffsetVariableName}, {context.SerializationContextVariableName});";
 
             return new CodeGeneratedMethod { MethodBody = body };
         }

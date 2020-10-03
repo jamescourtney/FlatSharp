@@ -42,7 +42,7 @@ namespace FlatSharpTests
             this.SimpleTypesTest(new UnsafeSpanWriter());
         }
 
-        private void SimpleTypesTest(SpanWriter writer)
+        private void SimpleTypesTest<TSpanWriter>(TSpanWriter writer) where TSpanWriter : ISpanWriter
         {
             var simple = new BasicTypes
             {

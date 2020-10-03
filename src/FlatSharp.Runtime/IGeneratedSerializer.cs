@@ -31,12 +31,12 @@ namespace FlatSharp
         /// <param name="item">The object to serialize.</param>
         /// <param name="offset">The offset to begin writing at.</param>
         /// <param name="context">The serialization context.</param>
-        void Write(
-            SpanWriter writer,
+        void Write<TSpanWriter>(
+            TSpanWriter writer,
             Span<byte> destination,
             T item,
             int offset,
-            SerializationContext context);
+            SerializationContext context) where TSpanWriter : ISpanWriter;
 
         /// <summary>
         /// Computes the maximum size necessary to serialize the given instance of <typeparamref name="T"/>.

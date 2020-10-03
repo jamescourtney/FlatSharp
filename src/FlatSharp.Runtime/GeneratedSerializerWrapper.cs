@@ -78,7 +78,7 @@ namespace FlatSharp
             return this.innerSerializer.Parse(buffer, 0);
         }
 
-        public int Write(SpanWriter writer, Span<byte> destination, T item)
+        public int Write<TSpanWriter>(TSpanWriter writer, Span<byte> destination, T item) where TSpanWriter : ISpanWriter
         {
             if (object.ReferenceEquals(item, null))
             {
