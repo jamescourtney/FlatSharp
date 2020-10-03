@@ -16,9 +16,6 @@
 
 namespace FlatSharp
 {
-    using System.Reflection;
-    using System.Reflection.Emit;
-
     /// <summary>
     /// A shared lock for use when doing compilation/reflection work.
     /// </summary>

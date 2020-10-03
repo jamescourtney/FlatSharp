@@ -360,7 +360,7 @@ $@"
                 var layout = memberModel.ItemTypeModel.PhysicalLayout[i];
 
                 prepareBlockComponents.Add($@"
-                            currentOffset += {CSharpHelpers.GetFullMethodName(ReflectedMethods.SerializationHelpers_GetAlignmentErrorMethod)}(currentOffset, {layout.Alignment});
+                            currentOffset += {nameof(SerializationHelpers)}.{nameof(SerializationHelpers.GetAlignmentError)}(currentOffset, {layout.Alignment});
                             {OffsetVariableName(i)} = currentOffset;
                             {context.SpanWriterVariableName}.{nameof(ISpanWriter.WriteUShort)}(vtable, (ushort)(currentOffset - tableStart), {4 + 2 * (index + i)}, {context.SerializationContextVariableName});
                             maxVtableIndex = {index + i};
