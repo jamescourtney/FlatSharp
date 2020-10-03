@@ -42,7 +42,7 @@ namespace FlatSharpTests
         {
             var table = this.SerializeAndParse<IList<string>>(FlatBufferDeserializationOption.Lazy, Strings);
 
-            Assert.AreEqual(typeof(FlatBufferVector<string, ArrayInputBuffer>), table.Vector.GetType());
+            Assert.AreEqual(typeof(FlatBufferVector<,>), table.Vector.GetType().GetGenericTypeDefinition());
             Assert.IsFalse(object.ReferenceEquals(table.Vector, table.Vector));
 
             var vector = table.Vector;
@@ -62,7 +62,7 @@ namespace FlatSharpTests
         {
             var table = this.SerializeAndParse<IReadOnlyList<string>>(FlatBufferDeserializationOption.Lazy, Strings);
 
-            Assert.AreEqual(typeof(FlatBufferVector<string, ArrayInputBuffer>), table.Vector.GetType());
+            Assert.AreEqual(typeof(FlatBufferVector<,>), table.Vector.GetType().GetGenericTypeDefinition());
             Assert.IsFalse(object.ReferenceEquals(table.Vector, table.Vector));
             Assert.IsFalse(object.ReferenceEquals(table.Vector[5], table.Vector[5]));
             Assert.IsFalse(object.ReferenceEquals(table.First, table.First));
@@ -121,7 +121,7 @@ namespace FlatSharpTests
         {
             var table = this.SerializeAndParse<IList<string>>(FlatBufferDeserializationOption.PropertyCache, Strings);
 
-            Assert.AreEqual(typeof(FlatBufferVector<string, ArrayInputBuffer>), table.Vector.GetType());
+            Assert.AreEqual(typeof(FlatBufferVector<,>), table.Vector.GetType().GetGenericTypeDefinition());
             Assert.IsTrue(object.ReferenceEquals(table.Vector, table.Vector));
 
             var vector = table.Vector;
@@ -141,7 +141,7 @@ namespace FlatSharpTests
         {
             var table = this.SerializeAndParse<IReadOnlyList<string>>(FlatBufferDeserializationOption.PropertyCache, Strings);
 
-            Assert.AreEqual(typeof(FlatBufferVector<string, ArrayInputBuffer>), table.Vector.GetType());
+            Assert.AreEqual(typeof(FlatBufferVector<,>), table.Vector.GetType().GetGenericTypeDefinition());
             Assert.IsTrue(object.ReferenceEquals(table.Vector, table.Vector));
             Assert.IsFalse(object.ReferenceEquals(table.Vector[5], table.Vector[5]));
             Assert.IsTrue(object.ReferenceEquals(table.First, table.First));

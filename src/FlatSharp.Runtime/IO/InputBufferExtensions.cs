@@ -151,7 +151,8 @@ namespace FlatSharp
             throw new IndexOutOfRangeException("VTable was not long enough to be valid.");
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // Seems to break JIT in .NET Core 2.1. Framework 4.7 and Core 3.1 work as expected.
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Memory<byte> ReadByteMemoryBlock<TBuffer>(this TBuffer buffer, int uoffset) where TBuffer : IInputBuffer
         {
             checked
@@ -162,7 +163,8 @@ namespace FlatSharp
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // Seems to break JIT in .NET Core 2.1. Framework 4.7 and Core 3.1 work as expected.
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ReadOnlyMemory<byte> ReadByteReadOnlyMemoryBlock<TBuffer>(this TBuffer buffer, int uoffset) where TBuffer : IInputBuffer
         {
             checked
