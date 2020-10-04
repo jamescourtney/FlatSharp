@@ -113,9 +113,7 @@ namespace FlatSharp
         }
         
         /// <summary>
-        /// Parses the given block of memory as an instance of T. This operation is near-instant
-        /// and is zero copy by default, which means that modifications to the backing buffer
-        /// will modify the data in the resulting object.
+        /// Parses the given input buffer as an instance of <typeparamref name="T"/>.
         /// </summary>
         public T Parse<T>(IInputBuffer buffer)
             where T : class

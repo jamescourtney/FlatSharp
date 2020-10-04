@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2018 James Courtney
+ * Copyright 2020 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,9 @@ namespace FlatSharp
     using System;
     using System.Text;
 
+    /// <summary>
+    /// Defines a buffer that FlatSharp can parse from. Implementations will be fastest when using a struct.
+    /// </summary>
     public interface IInputBuffer
     {
         /// <summary>
