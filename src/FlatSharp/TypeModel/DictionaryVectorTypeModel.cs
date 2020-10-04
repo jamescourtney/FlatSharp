@@ -96,6 +96,7 @@ namespace FlatSharp.TypeModel
 
             (string vectorClassDef, string vectorClassName) = FlatBufferVectorHelpers.CreateFlatBufferVectorSubclass(
                 this.valueTypeModel.ClrType,
+                context.InputBufferTypeName,
                 context.MethodNameMap[this.valueTypeModel.ClrType]);
 
             (string dictionaryClassDef, string dictionaryClassName) = FlatBufferVectorHelpers.CreateFlatBufferDictionarySubclass(
@@ -104,9 +105,9 @@ namespace FlatSharp.TypeModel
                 this.keyMemberModel.PropertyInfo.Name);
 
             string createFlatBufferVector =
-            $@"new {vectorClassName}(
+            $@"new {vectorClassName}<{context.InputBufferTypeName}>(
                     {context.InputBufferVariableName}, 
-                    {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBuffer.ReadUOffset)}({context.OffsetVariableName}), 
+                    {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}), 
                     {this.PaddedMemberInlineSize})";
 
             string createDictionary =
@@ -164,7 +165,7 @@ namespace FlatSharp.TypeModel
             string body = $@"
                 int count = {context.ValueVariableName}.{nameof(IDictionary<string, string>.Count)};
                 int vectorOffset = {context.SerializationContextVariableName}.{nameof(SerializationContext.AllocateVector)}({itemTypeModel.PhysicalLayout[0].Alignment}, count, {this.PaddedMemberInlineSize});
-                {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteUOffset)}({context.SpanVariableName}, {context.OffsetVariableName}, vectorOffset, {context.SerializationContextVariableName});
+                {context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteUOffset)}({context.SpanVariableName}, {context.OffsetVariableName}, vectorOffset, {context.SerializationContextVariableName});
                 {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteInt)}({context.SpanVariableName}, count, vectorOffset, {context.SerializationContextVariableName});
                 vectorOffset += sizeof(int);
                 foreach (var pair in {context.ValueVariableName})
