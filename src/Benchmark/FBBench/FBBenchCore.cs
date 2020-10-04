@@ -27,7 +27,7 @@ namespace Benchmark.FBBench
     using FlatSharp.Attributes;
     using ProtoBuf;
 
-    using JobKind = BenchmarkDotNet.Attributes.ShortRunJobAttribute;
+    using JobKind = BenchmarkDotNet.Attributes.MediumRunJobAttribute;
 
     [JobKind(BenchmarkDotNet.Jobs.RuntimeMoniker.NetCoreApp31)]
     [JobKind(BenchmarkDotNet.Jobs.RuntimeMoniker.NetCoreApp21)]

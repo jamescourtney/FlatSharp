@@ -117,6 +117,7 @@
 
                     var propContext = context.With(offset: $"({context.OffsetVariableName} + {value.Offset})", inputBuffer: "buffer");
 
+                    // These are always inline as they are only invoked from one place.
                     generatedProperty.ReadValueMethodDefinition =
 $@"
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]

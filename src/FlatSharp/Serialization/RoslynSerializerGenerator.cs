@@ -287,7 +287,6 @@ $@"
             {
                 string methodText =
 $@"
-                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 public void Write<TSpanWriter>(TSpanWriter writer, Span<byte> target, {CSharpHelpers.GetCompilableTypeName(rootType)} root, int offset, SerializationContext context)
                     where TSpanWriter : ISpanWriter
                 {{
@@ -300,7 +299,6 @@ $@"
             {
                 string methodText =
 $@"
-                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 public int GetMaxSize({CSharpHelpers.GetCompilableTypeName(rootType)} root)
                 {{
                     return {this.maxSizeMethods[rootType]}(root);
@@ -312,8 +310,8 @@ $@"
             {
                 string methodText =
 $@"
-                [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                public {CSharpHelpers.GetCompilableTypeName(rootType)} Parse<TInputBuffer>(TInputBuffer buffer, int offset) where TInputBuffer : IInputBuffer
+                public {CSharpHelpers.GetCompilableTypeName(rootType)} Parse<TInputBuffer>(TInputBuffer buffer, int offset) 
+                    where TInputBuffer : IInputBuffer
                 {{
                     return {this.readMethods[rootType]}(buffer, offset);
                 }}

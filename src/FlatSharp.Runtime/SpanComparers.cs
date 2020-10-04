@@ -23,7 +23,7 @@ namespace FlatSharp
 
 		
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public class BoolSpanComparer : ISpanComparer
+    public struct BoolSpanComparer : ISpanComparer
     {
 		private readonly bool defaultValue;
 
@@ -42,7 +42,7 @@ namespace FlatSharp
     }
 	
     [EditorBrowsable(EditorBrowsableState.Never)]
-	public class NullableBoolSpanComparer : ISpanComparer
+	public struct NullableBoolSpanComparer : ISpanComparer
     {
 		public NullableBoolSpanComparer(bool? notUsed)
 		{
@@ -61,7 +61,7 @@ namespace FlatSharp
 
 		
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public class ByteSpanComparer : ISpanComparer
+    public struct ByteSpanComparer : ISpanComparer
     {
 		private readonly byte defaultValue;
 
@@ -80,7 +80,7 @@ namespace FlatSharp
     }
 	
     [EditorBrowsable(EditorBrowsableState.Never)]
-	public class NullableByteSpanComparer : ISpanComparer
+	public struct NullableByteSpanComparer : ISpanComparer
     {
 		public NullableByteSpanComparer(byte? notUsed)
 		{
@@ -99,7 +99,7 @@ namespace FlatSharp
 
 		
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public class SByteSpanComparer : ISpanComparer
+    public struct SByteSpanComparer : ISpanComparer
     {
 		private readonly sbyte defaultValue;
 
@@ -118,7 +118,7 @@ namespace FlatSharp
     }
 	
     [EditorBrowsable(EditorBrowsableState.Never)]
-	public class NullableSByteSpanComparer : ISpanComparer
+	public struct NullableSByteSpanComparer : ISpanComparer
     {
 		public NullableSByteSpanComparer(sbyte? notUsed)
 		{
@@ -137,7 +137,7 @@ namespace FlatSharp
 
 		
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public class UShortSpanComparer : ISpanComparer
+    public struct UShortSpanComparer : ISpanComparer
     {
 		private readonly ushort defaultValue;
 
@@ -156,7 +156,7 @@ namespace FlatSharp
     }
 	
     [EditorBrowsable(EditorBrowsableState.Never)]
-	public class NullableUShortSpanComparer : ISpanComparer
+	public struct NullableUShortSpanComparer : ISpanComparer
     {
 		public NullableUShortSpanComparer(ushort? notUsed)
 		{
@@ -175,7 +175,7 @@ namespace FlatSharp
 
 		
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public class ShortSpanComparer : ISpanComparer
+    public struct ShortSpanComparer : ISpanComparer
     {
 		private readonly short defaultValue;
 
@@ -194,7 +194,7 @@ namespace FlatSharp
     }
 	
     [EditorBrowsable(EditorBrowsableState.Never)]
-	public class NullableShortSpanComparer : ISpanComparer
+	public struct NullableShortSpanComparer : ISpanComparer
     {
 		public NullableShortSpanComparer(short? notUsed)
 		{
@@ -213,7 +213,7 @@ namespace FlatSharp
 
 		
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public class IntSpanComparer : ISpanComparer
+    public struct IntSpanComparer : ISpanComparer
     {
 		private readonly int defaultValue;
 
@@ -232,7 +232,7 @@ namespace FlatSharp
     }
 	
     [EditorBrowsable(EditorBrowsableState.Never)]
-	public class NullableIntSpanComparer : ISpanComparer
+	public struct NullableIntSpanComparer : ISpanComparer
     {
 		public NullableIntSpanComparer(int? notUsed)
 		{
@@ -251,7 +251,7 @@ namespace FlatSharp
 
 		
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public class UIntSpanComparer : ISpanComparer
+    public struct UIntSpanComparer : ISpanComparer
     {
 		private readonly uint defaultValue;
 
@@ -270,7 +270,7 @@ namespace FlatSharp
     }
 	
     [EditorBrowsable(EditorBrowsableState.Never)]
-	public class NullableUIntSpanComparer : ISpanComparer
+	public struct NullableUIntSpanComparer : ISpanComparer
     {
 		public NullableUIntSpanComparer(uint? notUsed)
 		{
@@ -289,7 +289,7 @@ namespace FlatSharp
 
 		
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public class LongSpanComparer : ISpanComparer
+    public struct LongSpanComparer : ISpanComparer
     {
 		private readonly long defaultValue;
 
@@ -308,7 +308,7 @@ namespace FlatSharp
     }
 	
     [EditorBrowsable(EditorBrowsableState.Never)]
-	public class NullableLongSpanComparer : ISpanComparer
+	public struct NullableLongSpanComparer : ISpanComparer
     {
 		public NullableLongSpanComparer(long? notUsed)
 		{
@@ -327,7 +327,7 @@ namespace FlatSharp
 
 		
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public class ULongSpanComparer : ISpanComparer
+    public struct ULongSpanComparer : ISpanComparer
     {
 		private readonly ulong defaultValue;
 
@@ -346,7 +346,7 @@ namespace FlatSharp
     }
 	
     [EditorBrowsable(EditorBrowsableState.Never)]
-	public class NullableULongSpanComparer : ISpanComparer
+	public struct NullableULongSpanComparer : ISpanComparer
     {
 		public NullableULongSpanComparer(ulong? notUsed)
 		{
@@ -365,7 +365,7 @@ namespace FlatSharp
 
 		
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public class FloatSpanComparer : ISpanComparer
+    public struct FloatSpanComparer : ISpanComparer
     {
 		private readonly float defaultValue;
 
@@ -384,7 +384,7 @@ namespace FlatSharp
     }
 	
     [EditorBrowsable(EditorBrowsableState.Never)]
-	public class NullableFloatSpanComparer : ISpanComparer
+	public struct NullableFloatSpanComparer : ISpanComparer
     {
 		public NullableFloatSpanComparer(float? notUsed)
 		{
@@ -403,7 +403,7 @@ namespace FlatSharp
 
 		
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public class DoubleSpanComparer : ISpanComparer
+    public struct DoubleSpanComparer : ISpanComparer
     {
 		private readonly double defaultValue;
 
@@ -422,7 +422,7 @@ namespace FlatSharp
     }
 	
     [EditorBrowsable(EditorBrowsableState.Never)]
-	public class NullableDoubleSpanComparer : ISpanComparer
+	public struct NullableDoubleSpanComparer : ISpanComparer
     {
 		public NullableDoubleSpanComparer(double? notUsed)
 		{

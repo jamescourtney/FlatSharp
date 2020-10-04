@@ -491,6 +491,7 @@ $@"
             Type propertyType = memberModel.ItemTypeModel.ClrType;
             GeneratedProperty property = new GeneratedProperty(context.Options, index, memberModel.PropertyInfo);
 
+            // These are always inline as they are only invoked from one place.
             property.ReadValueMethodDefinition =
 $@"
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -525,6 +526,7 @@ $@"
                 locationGetters.Add($"buffer.{nameof(InputBufferExtensions.GetAbsoluteTableFieldLocation)}(offset, {index + i})");
             }
 
+            // These are always inline as they are only invoked from one place.
             property.ReadValueMethodDefinition =
 $@"
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]

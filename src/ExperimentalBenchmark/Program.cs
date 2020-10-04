@@ -22,14 +22,15 @@ namespace BenchmarkCore
     {
         public static void Main(string[] args)
         {
-            FBSharedStringBench bench = new FBSharedStringBench();
-            bench.CacheSize = 800;
-            bench.VectorLength = 1000;
+            FBDeserializeBench bench = new FBDeserializeBench();
+            bench.VectorLength = 30;
+            bench.DeserializeOption = FlatSharp.FlatBufferDeserializationOption.Lazy;
+            bench.TraversalCount = 5;
             bench.GlobalSetup();
 
             while (true)
             {
-                bench.Parse_RepeatedStringVector_WithSharedStrings();
+                bench.FlatSharp_ParseAndTraverse();
             }
         }
     }
