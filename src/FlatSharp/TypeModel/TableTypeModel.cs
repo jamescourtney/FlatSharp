@@ -296,11 +296,12 @@
             string methodStart =
 $@"
                 int tableStart = {context.SerializationContextVariableName}.{nameof(SerializationContext.AllocateSpace)}({maxInlineSize}, sizeof(int));
-                {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteUOffset)}({context.SpanVariableName}, {context.OffsetVariableName}, tableStart, {context.SerializationContextVariableName});
+                {context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteUOffset)}({context.SpanVariableName}, {context.OffsetVariableName}, tableStart, {context.SerializationContextVariableName});
                 int currentOffset = tableStart + sizeof(int); // skip past vtable soffset_t.
 
-                var vtable = {context.SerializationContextVariableName}.{nameof(SerializationContext.VTableBuilder)};
-                vtable.StartObject({maxIndex});
+                Span<byte> vtable = stackalloc byte[{4 + 2 * (maxIndex + 1)}];
+                int maxVtableIndex = -1;
+                vtable.Clear(); // reset to 0. Random memory from the stack isn't trustworthy.
 ";
 
             List<string> body = new List<string>();
@@ -318,8 +319,15 @@ $@"
             // Then we can write the vtable.
             body.Add("int tableLength = currentOffset - tableStart;");
             body.Add($"{context.SerializationContextVariableName}.{nameof(SerializationContext.Offset)} -= {maxInlineSize} - tableLength;");
-            body.Add($"int vtablePosition = vtable.{nameof(VTableBuilder.EndObject)}(span, {context.SpanWriterVariableName}, tableLength);");
-            body.Add($"{context.SpanWriterVariableName}.{nameof(SpanWriter.WriteInt)}(span, tableStart - vtablePosition, tableStart, context);");
+
+            // write vtable header
+            body.Add($"int vtableLength = 6 + (2 * maxVtableIndex);");
+            body.Add($"{context.SpanWriterVariableName}.{nameof(ISpanWriter.WriteUShort)}(vtable, (ushort)vtableLength, 0, {context.SerializationContextVariableName});");
+            body.Add($"{context.SpanWriterVariableName}.{nameof(ISpanWriter.WriteUShort)}(vtable, (ushort)tableLength, sizeof(ushort), {context.SerializationContextVariableName});");
+
+            // Finish vtable.
+            body.Add($"int vtablePosition = {context.SerializationContextVariableName}.{nameof(SerializationContext.FinishVTable)}({context.SpanVariableName}, vtable.Slice(0, vtableLength));");
+            body.Add($"{context.SpanWriterVariableName}.{nameof(SpanWriter.WriteInt)}({context.SpanVariableName}, tableStart - vtablePosition, tableStart, {context.SerializationContextVariableName});");
 
             body.AddRange(writers);
 
@@ -327,7 +335,6 @@ $@"
             return new CodeGeneratedMethod
             {
                 MethodBody = $"{methodStart} \r\n {string.Join("\r\n", body)}",
-                IsMethodInline = false,
             };
         }
 
@@ -354,9 +361,10 @@ $@"
                 var layout = memberModel.ItemTypeModel.PhysicalLayout[i];
 
                 prepareBlockComponents.Add($@"
-                            currentOffset += {CSharpHelpers.GetFullMethodName(ReflectedMethods.SerializationHelpers_GetAlignmentErrorMethod)}(currentOffset, {layout.Alignment});
+                            currentOffset += {nameof(SerializationHelpers)}.{nameof(SerializationHelpers.GetAlignmentError)}(currentOffset, {layout.Alignment});
                             {OffsetVariableName(i)} = currentOffset;
-                            vtable.{nameof(VTableBuilder.SetOffset)}({index + i}, currentOffset - tableStart);
+                            {context.SpanWriterVariableName}.{nameof(ISpanWriter.WriteUShort)}(vtable, (ushort)(currentOffset - tableStart), {4 + 2 * (index + i)}, {context.SerializationContextVariableName});
+                            maxVtableIndex = {index + i};
                             currentOffset += {layout.InlineSize};
                 ");
             }
@@ -470,7 +478,7 @@ $@"
             return new CodeGeneratedMethod
             {
                 ClassDefinition = classDefinition,
-                MethodBody = $"return new {className}({context.InputBufferVariableName}, {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBuffer.ReadUOffset)}({context.OffsetVariableName}));"
+                MethodBody = $"return new {className}<{context.InputBufferTypeName}>({context.InputBufferVariableName}, {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}));"
             };
         }
 
@@ -485,12 +493,13 @@ $@"
             Type propertyType = memberModel.ItemTypeModel.ClrType;
             GeneratedProperty property = new GeneratedProperty(context.Options, index, memberModel.PropertyInfo);
 
+            // These are always inline as they are only invoked from one place.
             property.ReadValueMethodDefinition =
 $@"
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {property.ReadValueMethodName}({nameof(InputBuffer)} buffer, int offset)
+                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {property.ReadValueMethodName}({context.InputBufferTypeName} buffer, int offset)
                     {{
-                        int absoluteLocation = buffer.{nameof(InputBuffer.GetAbsoluteTableFieldLocation)}(offset, {index});
+                        int absoluteLocation = buffer.{nameof(InputBufferExtensions.GetAbsoluteTableFieldLocation)}(offset, {index});
                         if (absoluteLocation == 0) {{
                             return {memberModel.DefaultValueToken};
                         }}
@@ -516,15 +525,16 @@ $@"
             List<string> locationGetters = new List<string> { FirstLocationVariableName };
             for (int i = 1; i < memberModel.ItemTypeModel.PhysicalLayout.Length; ++i)
             {
-                locationGetters.Add($"buffer.{nameof(InputBuffer.GetAbsoluteTableFieldLocation)}(offset, {index + i})");
+                locationGetters.Add($"buffer.{nameof(InputBufferExtensions.GetAbsoluteTableFieldLocation)}(offset, {index + i})");
             }
 
+            // These are always inline as they are only invoked from one place.
             property.ReadValueMethodDefinition =
 $@"
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {property.ReadValueMethodName}({nameof(InputBuffer)} buffer, int offset)
+                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {property.ReadValueMethodName}({context.InputBufferTypeName} buffer, int offset)
                     {{
-                        int {FirstLocationVariableName} = buffer.{nameof(InputBuffer.GetAbsoluteTableFieldLocation)}(offset, {index});
+                        int {FirstLocationVariableName} = buffer.{nameof(InputBufferExtensions.GetAbsoluteTableFieldLocation)}(offset, {index});
                         if ({FirstLocationVariableName} == 0)
                         {{
                             return {memberModel.DefaultValueToken};

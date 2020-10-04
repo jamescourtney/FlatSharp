@@ -111,13 +111,12 @@ namespace FlatSharp
         {
             return this.Parse<T>(new ArrayInputBuffer(arraySegment));
         }
-
+        
         /// <summary>
-        /// Parses the given block of memory as an instance of T. This operation is near-instant
-        /// and is zero copy by default, which means that modifications to the backing buffer
-        /// will modify the data in the resulting object.
+        /// Parses the given input buffer as an instance of <typeparamref name="T"/>.
         /// </summary>
-        public T Parse<T>(InputBuffer buffer) where T : class
+        public T Parse<T>(IInputBuffer buffer)
+            where T : class
         {
             return this.GetOrCreateSerializer<T>().Parse(buffer);
         }
@@ -135,7 +134,9 @@ namespace FlatSharp
         /// Writes the given object to the given memory block.
         /// </summary>
         /// <returns>The length of data that was written to the memory block.</returns>
-        public int Serialize<T>(T item, Span<byte> destination, SpanWriter writer) where T : class
+        public int Serialize<T, TSpanWriter>(T item, Span<byte> destination, TSpanWriter writer) 
+            where T : class 
+            where TSpanWriter : ISpanWriter
         {
             return this.GetOrCreateSerializer<T>().Write(writer, destination, item);
         }

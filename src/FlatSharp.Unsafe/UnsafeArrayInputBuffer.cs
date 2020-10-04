@@ -21,7 +21,7 @@ namespace FlatSharp.Unsafe
     using System.Runtime.CompilerServices;
     using System.Text;
 
-    public sealed unsafe class UnsafeArrayInputBuffer : InputBuffer
+    public sealed unsafe class UnsafeArrayInputBuffer : IInputBuffer
     {
         private readonly byte[] array;
         private readonly int offset;
@@ -43,10 +43,12 @@ namespace FlatSharp.Unsafe
         {
         }
 
-        public override int Length => this.length;
+        public int Length => this.length;
+
+        public ISharedStringReader SharedStringReader { get; set; }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override byte ReadByte(int offset)
+        public byte ReadByte(int offset)
         {
             checked
             {
@@ -59,9 +61,9 @@ namespace FlatSharp.Unsafe
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override double ReadDouble(int offset)
+        public double ReadDouble(int offset)
         {
-            CheckAlignment(offset, sizeof(double));
+            this.CheckAlignment(offset, sizeof(double));
             checked
             {
                 this.EnsureInBounds(offset, sizeof(double));
@@ -73,9 +75,9 @@ namespace FlatSharp.Unsafe
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override float ReadFloat(int offset)
+        public float ReadFloat(int offset)
         {
-            CheckAlignment(offset, sizeof(float));
+            this.CheckAlignment(offset, sizeof(float));
             checked
             {
                 this.EnsureInBounds(offset, sizeof(float));
@@ -87,9 +89,9 @@ namespace FlatSharp.Unsafe
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override int ReadInt(int offset)
+        public int ReadInt(int offset)
         {
-            CheckAlignment(offset, sizeof(int));
+            this.CheckAlignment(offset, sizeof(int));
             checked
             {
                 this.EnsureInBounds(offset, sizeof(int));
@@ -101,9 +103,9 @@ namespace FlatSharp.Unsafe
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override long ReadLong(int offset)
+        public long ReadLong(int offset)
         {
-            CheckAlignment(offset, sizeof(long));
+            this.CheckAlignment(offset, sizeof(long));
             checked
             {
                 this.EnsureInBounds(offset, sizeof(long));
@@ -115,7 +117,7 @@ namespace FlatSharp.Unsafe
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override sbyte ReadSByte(int offset)
+        public sbyte ReadSByte(int offset)
         {
             checked
             {
@@ -128,9 +130,9 @@ namespace FlatSharp.Unsafe
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override short ReadShort(int offset)
+        public short ReadShort(int offset)
         {
-            CheckAlignment(offset, sizeof(short));
+            this.CheckAlignment(offset, sizeof(short));
             checked
             {
                 this.EnsureInBounds(offset, sizeof(short));
@@ -142,9 +144,9 @@ namespace FlatSharp.Unsafe
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override uint ReadUInt(int offset)
+        public uint ReadUInt(int offset)
         {
-            CheckAlignment(offset, sizeof(uint));
+            this.CheckAlignment(offset, sizeof(uint));
             checked
             {
                 this.EnsureInBounds(offset, sizeof(uint));
@@ -156,9 +158,9 @@ namespace FlatSharp.Unsafe
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override ulong ReadULong(int offset)
+        public ulong ReadULong(int offset)
         {
-            CheckAlignment(offset, sizeof(ulong));
+            this.CheckAlignment(offset, sizeof(ulong));
             checked
             {
                 this.EnsureInBounds(offset, sizeof(ulong));
@@ -170,9 +172,9 @@ namespace FlatSharp.Unsafe
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override ushort ReadUShort(int offset)
+        public ushort ReadUShort(int offset)
         {
-            CheckAlignment(offset, sizeof(ushort));
+            this.CheckAlignment(offset, sizeof(ushort));
             checked
             {
                 this.EnsureInBounds(offset, sizeof(ushort));
@@ -184,7 +186,7 @@ namespace FlatSharp.Unsafe
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected override Memory<byte> GetByteMemory(int start, int length)
+        public Memory<byte> GetByteMemory(int start, int length)
         {
             checked
             {
@@ -194,13 +196,13 @@ namespace FlatSharp.Unsafe
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected override ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length)
+        public ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length)
         {
             return this.GetByteMemory(start, length);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected override string ReadStringProtected(int offset, int byteLength, Encoding encoding)
+        public string ReadString(int offset, int byteLength, Encoding encoding)
         {
             checked
             {
@@ -222,6 +224,67 @@ namespace FlatSharp.Unsafe
                     throw new IndexOutOfRangeException();
                 }
             }
+        }
+
+        public TItem InvokeParse<TItem>(IGeneratedSerializer<TItem> serializer, int offset)
+        {
+            return serializer.Parse(new Wrapper(this), offset);
+        }
+        
+        private readonly struct Wrapper : IInputBuffer
+        {
+            private readonly UnsafeArrayInputBuffer buffer;
+
+            public Wrapper(UnsafeArrayInputBuffer buffer) => this.buffer = buffer;
+
+            public ISharedStringReader SharedStringReader { get => this.buffer.SharedStringReader; set => this.buffer.SharedStringReader = value; }
+            public int Length
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => this.buffer.Length;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Memory<byte> GetByteMemory(int start, int length) => this.buffer.GetByteMemory(start, length);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length) => this.buffer.GetReadOnlyByteMemory(start, length);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public TItem InvokeParse<TItem>(IGeneratedSerializer<TItem> serializer, int offset) => throw new NotImplementedException();
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public byte ReadByte(int offset) => this.buffer.ReadByte(offset);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public double ReadDouble(int offset) => this.buffer.ReadDouble(offset);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public float ReadFloat(int offset) => this.buffer.ReadFloat(offset);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public int ReadInt(int offset) => this.buffer.ReadInt(offset);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public long ReadLong(int offset) => this.buffer.ReadLong(offset);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public sbyte ReadSByte(int offset) => this.buffer.ReadSByte(offset);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public short ReadShort(int offset) => this.buffer.ReadShort(offset);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public string ReadString(int offset, int byteLength, Encoding encoding) => this.buffer.ReadString(offset, byteLength, encoding);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public uint ReadUInt(int offset) => this.buffer.ReadUInt(offset);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public ulong ReadULong(int offset) => this.buffer.ReadULong(offset);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public ushort ReadUShort(int offset) => this.buffer.ReadUShort(offset);
         }
     }
 }

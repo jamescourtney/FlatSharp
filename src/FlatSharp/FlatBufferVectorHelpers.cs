@@ -21,22 +21,24 @@ namespace FlatSharp.TypeModel
     internal static class FlatBufferVectorHelpers
     {
         public static (string classDef, string className) CreateFlatBufferVectorSubclass(
-            Type itemType, 
+            Type itemType,
+            string inputBufferTypeName,
             string parseFunctionName)
         {
             string className = $"FlatBufferVector_{Guid.NewGuid():n}";
 
             string classDef = $@"
-                public sealed class {className} : {nameof(FlatBufferVector<int>)}<{CSharpHelpers.GetCompilableTypeName(itemType)}>
+                public sealed class {className}<{inputBufferTypeName}> : FlatBufferVector<{CSharpHelpers.GetCompilableTypeName(itemType)}, {inputBufferTypeName}>
+                    where {inputBufferTypeName} : {nameof(IInputBuffer)}
                 {{
                     public {className}(
-                        InputBuffer memory,
+                        {inputBufferTypeName} memory,
                         int offset,
                         int itemSize) : base(memory, offset, itemSize)
                     {{
                     }}
 
-                    protected override {CSharpHelpers.GetCompilableTypeName(itemType)} ParseItem(InputBuffer memory, int offset)
+                    protected override {CSharpHelpers.GetCompilableTypeName(itemType)} ParseItem({inputBufferTypeName} memory, int offset)
                     {{
                         return {parseFunctionName}(memory, offset);
                     }}

@@ -125,7 +125,7 @@ $@"
                 string inlineAdjustment = string.Empty;
                 if (unionMember.SerializesInline)
                 {
-                    inlineAdjustment = $"offsetLocation += buffer.{nameof(InputBuffer.ReadUOffset)}(offsetLocation);";
+                    inlineAdjustment = $"offsetLocation += buffer.{nameof(InputBufferExtensions.ReadUOffset)}(offsetLocation);";
                 }
 
                 string @case =
@@ -138,7 +138,7 @@ $@"
             }
 
             string body = $@"
-                byte discriminator = {context.InputBufferVariableName}.{nameof(InputBuffer.ReadByte)}({context.OffsetVariableName}.offset0);
+                byte discriminator = {context.InputBufferVariableName}.{nameof(IInputBuffer.ReadByte)}({context.OffsetVariableName}.offset0);
                 int offsetLocation = {context.OffsetVariableName}.offset1;
                 if (discriminator == 0 && offsetLocation != 0)
                     throw new System.IO.InvalidDataException(""FlatBuffer union had discriminator set but no offset."");
@@ -172,7 +172,7 @@ $@"
                     inlineAdjustment =
 $@"
                         var writeOffset = context.{nameof(SerializationContext.AllocateSpace)}({elementModel.PhysicalLayout.Single().InlineSize}, {elementModel.PhysicalLayout.Single().Alignment});
-                        {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteUOffset)}(span, {context.OffsetVariableName}.offset1, writeOffset, context);";
+                        {context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteUOffset)}(span, {context.OffsetVariableName}.offset1, writeOffset, context);";
                 }
                 else
                 {
@@ -205,7 +205,7 @@ $@"
                     default: throw new InvalidOperationException(""Unexpected"");
                 }}";
 
-            return new CodeGeneratedMethod { IsMethodInline = false, MethodBody = serializeBlock };
+            return new CodeGeneratedMethod { MethodBody = serializeBlock };
         }
 
         public override string GetThrowIfNullInvocation(string itemVariableName)

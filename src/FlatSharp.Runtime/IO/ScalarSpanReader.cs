@@ -30,7 +30,7 @@ namespace FlatSharp
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool ReadBool(ReadOnlySpan<byte> span)
         {
-            return span[0] != InputBuffer.False;
+            return span[0] != SerializationHelpers.False;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -22,13 +22,13 @@ namespace FlatSharp
     /// <summary>
     /// An implementation of InputBuffer for writable memory segments.
     /// </summary>
-    public class MemoryInputBuffer : ReadOnlyMemoryInputBuffer
+    public sealed class MemoryInputBuffer : ReadOnlyMemoryInputBuffer
     {
         public MemoryInputBuffer(Memory<byte> memory) : base(memory)
         {
         }
 
-        protected override Memory<byte> GetByteMemory(int start, int length)
+        public override Memory<byte> GetByteMemory(int start, int length)
         {
             // We play a trick with memory marshal to convert the readonly memory into
             // a writable memory. Why is this safe? Because this class takes a writable memory object

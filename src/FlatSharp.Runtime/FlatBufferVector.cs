@@ -25,15 +25,16 @@ namespace FlatSharp
     /// A base class that FlatBuffersNet implements to deserialize vectors. FlatBufferVetor{T} is a lazy implementation
     /// which will create a new instance for each item it returns. Calling .ToList() is an effective way to do caching.
     /// </summary>
-    public abstract class FlatBufferVector<T> : IList<T>, IReadOnlyList<T>
+    public abstract class FlatBufferVector<T, TInputBuffer> : IList<T>, IReadOnlyList<T>
+        where TInputBuffer : IInputBuffer
     {
-        private readonly InputBuffer memory;
+        private readonly TInputBuffer memory;
         private readonly int offset;
         private readonly int itemSize;
         private readonly int count;
 
         public FlatBufferVector(
-            InputBuffer memory,
+            TInputBuffer memory,
             int offset,
             int itemSize)
         {
@@ -52,7 +53,6 @@ namespace FlatSharp
         /// </summary>
         public T this[int index]
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 if (index < 0 || index >= this.count)
@@ -96,7 +96,6 @@ namespace FlatSharp
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T[] ToArray()
         {
             int count = this.count;
@@ -133,6 +132,19 @@ namespace FlatSharp
             return -1;
         }
 
+        public List<T> FlatBufferVectorToList()
+        {
+            int count = this.Count;
+
+            var list = new List<T>(count);
+            for (int i = 0; i < count; ++i)
+            {
+                list.Add(GetItemWithoutRangeCheck(i));
+            }
+
+            return list;
+        }
+
         public void Insert(int index, T item)
         {
             throw new NotSupportedException("FlatBufferVector does not support inserting.");
@@ -162,6 +174,6 @@ namespace FlatSharp
                 checked(this.offset + (this.itemSize * index)));
         }
 
-        protected abstract T ParseItem(InputBuffer buffer, int offset);
+        protected abstract T ParseItem(TInputBuffer buffer, int offset);
     }
 }

@@ -52,25 +52,27 @@ namespace FlatSharp.TypeModel
             }
         }
 
+
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
             (string vectorClassDef, string vectorClassName) = FlatBufferVectorHelpers.CreateFlatBufferVectorSubclass(
                 this.itemTypeModel.ClrType,
+                context.InputBufferTypeName,
                 context.MethodNameMap[this.itemTypeModel.ClrType]);
 
             string body;
 
             string createFlatBufferVector =
-            $@"new {vectorClassName}(
+            $@"new {vectorClassName}<{context.InputBufferTypeName}>(
                     {context.InputBufferVariableName}, 
-                    {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBuffer.ReadUOffset)}({context.OffsetVariableName}), 
+                    {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}), 
                     {this.PaddedMemberInlineSize})";
 
             if (context.Options.PreallocateVectors)
             {
                 // We just call .ToList(). Note that when full greedy mode is on, these items will be 
                 // greedily initialized as we traverse the list. Otherwise, they'll be allocated lazily.
-                body = $"({createFlatBufferVector}).{nameof(SerializationHelpers.FlatBufferVectorToList)}()";
+                body = $"({createFlatBufferVector}).FlatBufferVectorToList()";
 
                 if (!context.Options.GenerateMutableObjects)
                 {

@@ -85,7 +85,8 @@ namespace FlatSharp.TypeModel
 
             return new CodeGeneratedMethod
             {
-                MethodBody = $"return {context.MethodNameMap[underlyingType]}(({underlyingTypeName}){context.ValueVariableName}.Value);"
+                MethodBody = $"return {context.MethodNameMap[underlyingType]}(({underlyingTypeName}){context.ValueVariableName}.Value);",
+                IsMethodInline = true,
             };
         }
 
@@ -96,7 +97,8 @@ namespace FlatSharp.TypeModel
 
             return new CodeGeneratedMethod
             {
-                MethodBody = $"return ({typeName}){context.MethodNameMap[underlyingType]}({context.InputBufferVariableName}, {context.OffsetVariableName});"
+                MethodBody = $"return ({typeName}){context.MethodNameMap[underlyingType]}({context.InputBufferVariableName}, {context.OffsetVariableName});",
+                IsMethodInline = true,
             };
         }
 
@@ -107,7 +109,8 @@ namespace FlatSharp.TypeModel
 
             return new CodeGeneratedMethod
             {
-                MethodBody = $"{context.MethodNameMap[underlyingType]}({context.SpanWriterVariableName}, {context.SpanVariableName}, ({underlyingTypeName}){context.ValueVariableName}.Value, {context.OffsetVariableName}, {context.SerializationContextVariableName});"
+                MethodBody = $"{context.MethodNameMap[underlyingType]}({context.SpanWriterVariableName}, {context.SpanVariableName}, ({underlyingTypeName}){context.ValueVariableName}.Value, {context.OffsetVariableName}, {context.SerializationContextVariableName});",
+                IsMethodInline = true,
             };
         }
 
