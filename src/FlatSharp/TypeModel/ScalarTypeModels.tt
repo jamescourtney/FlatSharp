@@ -23,19 +23,19 @@
 <#@ output extension=".cs" #>
 
 <#
-	(string casedName, string typeName, string literalSpecifier, string[] fbsAliases)[] types = 
+	(string casedName, string typeName, string literalSpecifier, string[] fbsAliases, string writeNameClass, string readNameClass)[] types = 
 	{
-		("Bool", "bool", "", new[] { "bool" }),
-		("Byte", "byte", "", new[] { "ubyte", "uint8" }),
-		("SByte", "sbyte", "", new[] { "byte", "int8" }),
-		("UShort", "ushort", "", new[] { "ushort", "uint16" }),
-		("Short", "short", "", new[] { "short", "int16" }),
-		("Int", "int", "", new[] { "int", "int32" }),
-		("UInt", "uint", "u", new[] { "uint", "uint32" }),
-		("Long", "long", "L", new[] { "long", "int64" }),
-		("ULong", "ulong", "ul", new[] { "ulong", "uint64" }),
-		("Float", "float", "f", new[] { "float", "float32" }),
-		("Double", "double", "d", new[] { "double", "float64" }),
+		("Bool", "bool", "", new[] { "bool" }, "SpanWriterExtensions", "InputBufferExtensions"),
+		("Byte", "byte", "", new[] { "ubyte", "uint8" }, null, null),
+		("SByte", "sbyte", "", new[] { "byte", "int8" }, null, null),
+		("UShort", "ushort", "", new[] { "ushort", "uint16" }, null, null),
+		("Short", "short", "", new[] { "short", "int16" }, null, null),
+		("Int", "int", "", new[] { "int", "int32" }, null, null),
+		("UInt", "uint", "u", new[] { "uint", "uint32" }, null, null),
+		("Long", "long", "L", new[] { "long", "int64" }, null, null),
+		("ULong", "ulong", "ul", new[] { "ulong", "uint64" }, null, null),
+		("Float", "float", "f", new[] { "float", "float32" }, null, null),
+		("Double", "double", "d", new[] { "double", "float64" }, null, null),
 	};
 #>
 
@@ -55,6 +55,7 @@ namespace FlatSharp.TypeModel
     /// <summary>
     /// Type Model for <see cref="<#= typeName #>"/>.
     /// </summary>
+	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public partial class <#= className #> : ScalarTypeModel
     {
         public <#= className #>() : base(typeof(<#=typeName#>), sizeof(<#=typeName#>)) 
@@ -73,15 +74,16 @@ namespace FlatSharp.TypeModel
             return true;
         }
 
-        protected override string InputBufferReadMethodName => nameof(InputBuffer.Read<#= casedName #>);
+        protected override string InputBufferReadMethodName => nameof(<#= pair.readNameClass ?? "IInputBuffer" #>.Read<#= casedName #>);
 
-        protected override string SpanWriterWriteMethodName => nameof(SpanWriter.Write<#= casedName #>);
+        protected override string SpanWriterWriteMethodName => nameof(<#= pair.writeNameClass ?? "ISpanWriter" #>.Write<#= casedName #>);
     }
 
 	
     /// <summary>
     /// Type Model for <see cref="<#= typeName #>?"/>.
     /// </summary>
+	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public partial class Nullable<#= className #> : ScalarTypeModel
     {
         public Nullable<#= className #>() : base(typeof(<#=typeName#>?), sizeof(<#=typeName#>)) 
@@ -93,10 +95,10 @@ namespace FlatSharp.TypeModel
             comparerType = null;
             return false;
         }
+		
+        protected override string InputBufferReadMethodName => nameof(<#= pair.readNameClass ?? "IInputBuffer" #>.Read<#= casedName #>);
 
-        protected override string InputBufferReadMethodName => nameof(InputBuffer.Read<#= casedName #>);
-
-        protected override string SpanWriterWriteMethodName => nameof(SpanWriter.Write<#= casedName #>);
+        protected override string SpanWriterWriteMethodName => nameof(<#= pair.writeNameClass ?? "ISpanWriter" #>.Write<#= casedName #>);
     }
 
 	<# } #>

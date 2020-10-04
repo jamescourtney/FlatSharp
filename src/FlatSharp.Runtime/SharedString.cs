@@ -103,7 +103,6 @@ namespace FlatSharp
 
         public static implicit operator SharedString(string x) => SharedString.Create(x);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static bool StaticEquals(SharedString x, SharedString y)
         {
             bool xNull = (object)x == null;

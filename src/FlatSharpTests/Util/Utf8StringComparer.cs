@@ -23,7 +23,7 @@ namespace FlatSharpTests
     {
         public int Compare(string x, string y)
         {
-            return StringSpanComparer.Instance.Compare(x != null, InputBuffer.Encoding.GetBytes(x), y != null, InputBuffer.Encoding.GetBytes(y));
+            return StringSpanComparer.Instance.Compare(x != null, SerializationHelpers.Encoding.GetBytes(x), y != null, SerializationHelpers.Encoding.GetBytes(y));
         }
     }
 }

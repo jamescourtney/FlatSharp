@@ -20,6 +20,7 @@ namespace FlatSharp
     using System.Diagnostics;
     using System.IO;
     using System.Runtime.CompilerServices;
+    using System.Text;
 
     /// <summary>
     /// Collection of methods that help to serialize objects. It's kind of a hodge-podge,
@@ -27,6 +28,21 @@ namespace FlatSharp
     /// </summary>
     public static class SerializationHelpers
     {
+        /// <summary>
+        /// Encoding used for strings.
+        /// </summary>
+        public static readonly Encoding Encoding = new UTF8Encoding(false);
+
+        /// <summary>
+        /// Value of true as a byte.
+        /// </summary>
+        public const byte True = 1;
+
+        /// <summary>
+        /// Value of false as a byte.
+        /// </summary>
+        public const byte False = 0;
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetMaxSize(string value)
         {
@@ -34,7 +50,7 @@ namespace FlatSharp
             {
                 return
                     sizeof(uint) + GetMaxPadding(sizeof(uint)) + // string length
-                    InputBuffer.Encoding.GetMaxByteCount(value.Length) + 1; // max bytes and null terminator
+                    Encoding.GetMaxByteCount(value.Length) + 1; // max bytes and null terminator
             }
         }
 
@@ -69,7 +85,7 @@ namespace FlatSharp
         {
             if (object.ReferenceEquals(item, null))
             {
-                throw new InvalidDataException("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.");
+                ThrowNonNullException();
             }
         }
 
@@ -84,25 +100,14 @@ namespace FlatSharp
         {
             if (!item.HasValue)
             {
-                throw new InvalidDataException("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.");
+                ThrowNonNullException();
             }
         }
 
-        /// <summary>
-        /// Efficiently converts a <see cref="FlatBufferVector{T}"/> object
-        /// into a <see cref="List{T}"/>.
-        /// </summary>
-        public static List<T> FlatBufferVectorToList<T>(this FlatBufferVector<T> vector)
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static void ThrowNonNullException()
         {
-            int count = vector.Count;
-
-            var list = new List<T>(count);
-            for (int i = 0; i < count; ++i)
-            {
-                list.Add(vector[i]);
-            }
-
-            return list;
+            throw new InvalidDataException("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.");
         }
     }
 }

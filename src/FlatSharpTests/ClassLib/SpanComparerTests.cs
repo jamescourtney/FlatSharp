@@ -47,8 +47,8 @@ namespace FlatSharpTests
                 string str = sb.ToString();
                 string str2 = sb2.ToString();
 
-                Span<byte> span = InputBuffer.Encoding.GetBytes(str);
-                Span<byte> span2 = InputBuffer.Encoding.GetBytes(str2);
+                Span<byte> span = SerializationHelpers.Encoding.GetBytes(str);
+                Span<byte> span2 = SerializationHelpers.Encoding.GetBytes(str2);
 
                 Utf8StringComparer utf8Comparer = new Utf8StringComparer();
                 Assert.AreEqual(0, StringSpanComparer.Instance.Compare(true, span, true, span));
@@ -72,8 +72,8 @@ namespace FlatSharpTests
         {
             BoolSpanComparer comparer = new BoolSpanComparer(default);
 
-            Span<byte> f = new byte[1] { InputBuffer.False };
-            Span<byte> t = new byte[1] { InputBuffer.True };
+            Span<byte> f = new byte[1] { SerializationHelpers.False };
+            Span<byte> t = new byte[1] { SerializationHelpers.True };
 
             Assert.AreEqual(false.CompareTo(true), comparer.Compare(true, f, true, t));
             Assert.AreEqual(false.CompareTo(false), comparer.Compare(true, f, true, f));

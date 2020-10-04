@@ -53,7 +53,7 @@ namespace FlatSharp
 	#>
 	
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public class <#=className#> : ISpanComparer
+    public struct <#=className#> : ISpanComparer
     {
 		private readonly <#=typeName#> defaultValue;
 
@@ -72,7 +72,8 @@ namespace FlatSharp
     }
 	
     [EditorBrowsable(EditorBrowsableState.Never)]
-	public class Nullable<#=className#> : ISpanComparer
+	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage] // Not currently used.
+	public struct Nullable<#=className#> : ISpanComparer
     {
 		public Nullable<#=className#>(<#=typeName#>? notUsed)
 		{

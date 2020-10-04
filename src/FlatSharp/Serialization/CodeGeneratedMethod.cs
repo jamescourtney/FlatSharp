@@ -45,6 +45,6 @@ namespace FlatSharp
         /// <summary>
         /// Indicates if the method should be marked with aggressive inlining.
         /// </summary>
-        public bool IsMethodInline { get; set; } = true;
+        public bool IsMethodInline { get; set; }
     }
 }

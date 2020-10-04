@@ -56,13 +56,15 @@ namespace FlatSharp.TypeModel
         {
             string body;
 
+            (string vectorClassDef, string vectorClassName) = (null, null);
+
             if (itemTypeModel.ClrType == typeof(byte))
             {
                 // can handle this as memory.
-                string method = nameof(InputBuffer.ReadByteMemoryBlock);
+                string method = nameof(InputBufferExtensions.ReadByteMemoryBlock);
                 if (this.ClrType == typeof(ReadOnlyMemory<byte>))
                 {
-                    method = nameof(InputBuffer.ReadByteReadOnlyMemoryBlock);
+                    method = nameof(InputBufferExtensions.ReadByteReadOnlyMemoryBlock);
                 }
 
                 string memoryVectorRead = $"{context.InputBufferVariableName}.{method}({context.OffsetVariableName})";
@@ -70,17 +72,21 @@ namespace FlatSharp.TypeModel
             }
             else
             {
+                (vectorClassDef, vectorClassName) = FlatBufferVectorHelpers.CreateFlatBufferVectorSubclass(
+                    this.itemTypeModel.ClrType,
+                    context.InputBufferTypeName,
+                    context.MethodNameMap[this.itemTypeModel.ClrType]);
+
                 string createFlatBufferVector =
-                $@"new {nameof(FlatBufferVector<int>)}<{CSharpHelpers.GetCompilableTypeName(itemTypeModel.ClrType)}>(
+                $@"new {vectorClassName}<{context.InputBufferTypeName}>(
                     {context.InputBufferVariableName}, 
-                    {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBuffer.ReadUOffset)}({context.OffsetVariableName}), 
-                    {this.PaddedMemberInlineSize}, 
-                    (b, o) => {context.MethodNameMap[itemTypeModel.ClrType]}(b, o))";
+                    {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}), 
+                    {this.PaddedMemberInlineSize})";
 
                 body = $"return ({createFlatBufferVector}).ToArray();";
             }
 
-            return new CodeGeneratedMethod { MethodBody = body };
+            return new CodeGeneratedMethod { MethodBody = body, ClassDefinition = vectorClassDef };
         }
     }
 }

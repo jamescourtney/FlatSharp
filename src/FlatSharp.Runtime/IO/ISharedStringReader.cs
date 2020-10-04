@@ -27,6 +27,6 @@ namespace FlatSharp
         /// Reads a string from the given input buffer from the given offset.
         /// May perform deduplication of shared strings and return a previously-computed value.
         /// </summary>
-        SharedString ReadSharedString(InputBuffer buffer, int offset);
+        SharedString ReadSharedString<TBuffer>(TBuffer buffer, int offset) where TBuffer : IInputBuffer;
     }
 }

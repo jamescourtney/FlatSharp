@@ -66,7 +66,7 @@ namespace FlatSharp
             return new SharedStringReader(hashTableCapacity, threadSafe: false);
         }
 
-        public SharedString ReadSharedString(InputBuffer buffer, int offset)
+        public SharedString ReadSharedString<TInputBuffer>(TInputBuffer buffer, int offset) where TInputBuffer : IInputBuffer
         {
             var cache = this.sharedStringCache;
 
@@ -83,7 +83,7 @@ namespace FlatSharp
             }
         }
 
-        private static SharedString GetSharedStringPrivate(CacheEntry[] cache, InputBuffer buffer, int offset)
+        private static SharedString GetSharedStringPrivate<TInputBuffer>(CacheEntry[] cache, TInputBuffer buffer, int offset) where TInputBuffer : IInputBuffer
         {
             // uoffset guaranteed to be aligned to a 4 byte boundary, so we can easily 
             // divide by 4 as a quick and dirty hash.

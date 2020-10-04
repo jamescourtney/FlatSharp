@@ -52,10 +52,10 @@ namespace FlatSharp.TypeModel
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
-            string method = nameof(InputBuffer.ReadByteMemoryBlock);
+            string method = nameof(InputBufferExtensions.ReadByteMemoryBlock);
             if (this.isReadOnly)
             {
-                method = nameof(InputBuffer.ReadByteReadOnlyMemoryBlock);
+                method = nameof(InputBufferExtensions.ReadByteReadOnlyMemoryBlock);
             }
 
             string memoryVectorRead = $"{context.InputBufferVariableName}.{method}({context.OffsetVariableName})";
@@ -76,7 +76,7 @@ namespace FlatSharp.TypeModel
         public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
         {
             string body = 
-                $"{context.SpanWriterVariableName}.{nameof(SpanWriter.WriteReadOnlyByteMemoryBlock)}({context.SpanVariableName}, {context.ValueVariableName}, {context.OffsetVariableName}, {context.SerializationContextVariableName});";
+                $"{context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteReadOnlyByteMemoryBlock)}({context.SpanVariableName}, {context.ValueVariableName}, {context.OffsetVariableName}, {context.SerializationContextVariableName});";
 
             return new CodeGeneratedMethod { MethodBody = body };
         }
