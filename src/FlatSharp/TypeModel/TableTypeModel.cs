@@ -333,7 +333,6 @@ $@"
             return new CodeGeneratedMethod
             {
                 MethodBody = $"{methodStart} \r\n {string.Join("\r\n", body)}",
-                IsMethodInline = false,
             };
         }
 

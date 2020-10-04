@@ -37,7 +37,6 @@ namespace FlatSharp
         /// <summary>
         /// Reads a string at the given offset.
         /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string ReadString<TBuffer>(this TBuffer buffer, int offset) where TBuffer : IInputBuffer
         {
             checked
@@ -51,7 +50,6 @@ namespace FlatSharp
         /// <summary>
         /// Reads a shared string at the given offset.
         /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static SharedString ReadSharedString<TBuffer>(this TBuffer buffer, int offset) where TBuffer : IInputBuffer
         {
             checked
@@ -72,7 +70,6 @@ namespace FlatSharp
         /// <summary>
         /// Reads a string from the given uoffset.
         /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string ReadStringFromUOffset<TBuffer>(this TBuffer buffer, int uoffset) where TBuffer : IInputBuffer
         {
             checked
@@ -85,7 +82,6 @@ namespace FlatSharp
         /// <summary>
         /// Reads the given uoffset.
         /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int ReadUOffset<TBuffer>(this TBuffer buffer, int offset) where TBuffer : IInputBuffer
         {
             uint uoffset = buffer.ReadUInt(offset);
@@ -109,7 +105,6 @@ namespace FlatSharp
         /// <summary>
         /// Traverses a vtable to find the absolute offset of a table field.
         /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetAbsoluteTableFieldLocation<TBuffer>(this TBuffer buffer, int tableOffset, int index) where TBuffer : IInputBuffer
         {
             checked
@@ -175,7 +170,6 @@ namespace FlatSharp
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [Conditional("DEBUG")]
         public static void CheckAlignment<TBuffer>(this TBuffer buffer, int offset, int size) where TBuffer : IInputBuffer
         {

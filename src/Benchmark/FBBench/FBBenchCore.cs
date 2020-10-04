@@ -27,7 +27,7 @@ namespace Benchmark.FBBench
     using FlatSharp.Attributes;
     using ProtoBuf;
 
-    using JobKind = BenchmarkDotNet.Attributes.MediumRunJobAttribute;
+    using JobKind = BenchmarkDotNet.Attributes.ShortRunJobAttribute;
 
     [JobKind(BenchmarkDotNet.Jobs.RuntimeMoniker.NetCoreApp31)]
     [JobKind(BenchmarkDotNet.Jobs.RuntimeMoniker.NetCoreApp21)]
@@ -49,11 +49,10 @@ namespace Benchmark.FBBench
         protected MemoryStream pbdn_readBuffer = new MemoryStream(64 * 1024);
 
         private FlatBufferSerializer fs_serializer;
-        private ISerializer<UnsortedVectorTable<int>> unsortedIntSerializer;
 
         protected byte[] fs_readMemory;
         protected readonly byte[] fs_writeMemory = new byte[64 * 1024];
-        private ArrayInputBuffer inputBuffer;
+        public ArrayInputBuffer inputBuffer;
 
         public FBBenchCore()
         {
@@ -128,7 +127,6 @@ namespace Benchmark.FBBench
                 var options = new FlatBufferSerializerOptions(this.DeserializeOption);
 
                 this.fs_serializer = new FlatBufferSerializer(options);
-                this.unsortedIntSerializer = this.fs_serializer.Compile<UnsortedVectorTable<int>>();
 
                 int offset = this.fs_serializer.Serialize(this.defaultContainer, this.fs_writeMemory);
                 this.fs_readMemory = this.fs_writeMemory.AsSpan(0, offset).ToArray();
@@ -432,22 +430,14 @@ namespace Benchmark.FBBench
 
         public virtual void FlatSharp_ParseAndTraverse()
         {
-#if NO_GENERIC_INPUT_BUFFER
             var item = this.fs_serializer.Parse<FooBarListContainer>(this.inputBuffer);
-#else
-            var item = this.fs_serializer.Parse<FooBarListContainer, ArrayInputBuffer>(this.inputBuffer);
-#endif
 
             this.TraverseFooBarContainer(item);
         }
 
         public virtual void FlatSharp_ParseAndTraversePartial()
         {
-#if NO_GENERIC_INPUT_BUFFER
             var item = this.fs_serializer.Parse<FooBarListContainer>(this.inputBuffer);
-#else
-            var item = this.fs_serializer.Parse<FooBarListContainer, ArrayInputBuffer>(this.inputBuffer);
-#endif
 
             this.TraverseFooBarContainerPartial(item);
         }
@@ -498,7 +488,7 @@ namespace Benchmark.FBBench
 
 #endregion
 
-        private int TraverseFooBarContainer(FooBarListContainer foobar)
+        public int TraverseFooBarContainer(FooBarListContainer foobar)
         {
             var iterations = this.TraversalCount;
             int sum = 0;

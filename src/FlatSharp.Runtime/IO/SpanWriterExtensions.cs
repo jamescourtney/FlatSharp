@@ -44,7 +44,6 @@ namespace FlatSharp
         /// <summary>
         /// Writes the given string.
         /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WriteString<TSpanWriter>(
             this TSpanWriter spanWriter,
             Span<byte> span, 
@@ -59,7 +58,6 @@ namespace FlatSharp
         /// <summary>
         /// Writes the given shared string.
         /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WriteSharedString<TSpanWriter>(
             this TSpanWriter writer, 
             Span<byte> span, 
@@ -125,7 +123,6 @@ namespace FlatSharp
             spanWriter.WriteByte(span, b ? SerializationHelpers.True : SerializationHelpers.False, offset, context);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [Conditional("DEBUG")]
         public static void CheckAlignment<TSpanWriter>(this TSpanWriter spanWriter, int offset, int size) where TSpanWriter : ISpanWriter
         {

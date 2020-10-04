@@ -20,7 +20,6 @@ namespace FlatSharp
     using System.Buffers.Binary;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using System.Runtime.CompilerServices;
     using System.Threading;
 
     /// <summary>
@@ -55,10 +54,7 @@ namespace FlatSharp
         /// </summary>
         public int Offset
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => this.offset;
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => this.offset = value;
         }
 
@@ -67,10 +63,7 @@ namespace FlatSharp
         /// </summary>
         public ISharedStringWriter SharedStringWriter
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set;
         }
 
@@ -147,7 +140,6 @@ namespace FlatSharp
         /// <summary>
         /// Allocates a block of memory. Returns the offset.
         /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int AllocateSpace(int bytesNeeded, int alignment)
         {
             checked

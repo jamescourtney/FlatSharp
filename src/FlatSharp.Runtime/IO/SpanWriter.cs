@@ -29,7 +29,6 @@ namespace FlatSharp
         /// <summary>
         /// A default instance. Spanwriter is stateless and threadsafe.
         /// </summary>
-        [Obsolete("SpanWriter.Instance is deprecated and may be removed in future versions.")]
         public static SpanWriter Instance => default;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

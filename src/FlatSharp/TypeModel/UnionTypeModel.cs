@@ -205,7 +205,7 @@ $@"
                     default: throw new InvalidOperationException(""Unexpected"");
                 }}";
 
-            return new CodeGeneratedMethod { IsMethodInline = false, MethodBody = serializeBlock };
+            return new CodeGeneratedMethod { MethodBody = serializeBlock };
         }
 
         public override string GetThrowIfNullInvocation(string itemVariableName)
