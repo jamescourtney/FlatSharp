@@ -18,6 +18,7 @@ namespace FlatSharp
 {
     using System;
     using System.Diagnostics;
+    using System.Diagnostics.CodeAnalysis;
     using System.Runtime.CompilerServices;
 
     /// <summary>
@@ -170,6 +171,7 @@ namespace FlatSharp
             }
         }
 
+        [ExcludeFromCodeCoverage] // Not currently used.
         [Conditional("DEBUG")]
         public static void CheckAlignment<TBuffer>(this TBuffer buffer, int offset, int size) where TBuffer : IInputBuffer
         {

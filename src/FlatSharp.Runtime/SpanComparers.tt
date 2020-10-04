@@ -72,6 +72,7 @@ namespace FlatSharp
     }
 	
     [EditorBrowsable(EditorBrowsableState.Never)]
+	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage] // Not currently used.
 	public struct Nullable<#=className#> : ISpanComparer
     {
 		public Nullable<#=className#>(<#=typeName#>? notUsed)

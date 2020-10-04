@@ -18,6 +18,7 @@ namespace FlatSharp
 {
     using System;
     using System.Diagnostics;
+    using System.Diagnostics.CodeAnalysis;
     using System.Runtime.CompilerServices;
 
     /// <summary>
@@ -123,6 +124,7 @@ namespace FlatSharp
             spanWriter.WriteByte(span, b ? SerializationHelpers.True : SerializationHelpers.False, offset, context);
         }
 
+        [ExcludeFromCodeCoverage]
         [Conditional("DEBUG")]
         public static void CheckAlignment<TSpanWriter>(this TSpanWriter spanWriter, int offset, int size) where TSpanWriter : ISpanWriter
         {

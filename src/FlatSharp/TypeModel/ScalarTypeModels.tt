@@ -55,6 +55,7 @@ namespace FlatSharp.TypeModel
     /// <summary>
     /// Type Model for <see cref="<#= typeName #>"/>.
     /// </summary>
+	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public partial class <#= className #> : ScalarTypeModel
     {
         public <#= className #>() : base(typeof(<#=typeName#>), sizeof(<#=typeName#>)) 
@@ -82,6 +83,7 @@ namespace FlatSharp.TypeModel
     /// <summary>
     /// Type Model for <see cref="<#= typeName #>?"/>.
     /// </summary>
+	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public partial class Nullable<#= className #> : ScalarTypeModel
     {
         public Nullable<#= className #>() : base(typeof(<#=typeName#>?), sizeof(<#=typeName#>)) 

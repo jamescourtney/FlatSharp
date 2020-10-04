@@ -42,6 +42,7 @@ namespace FlatSharp
     }
 	
     [EditorBrowsable(EditorBrowsableState.Never)]
+	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage] // Not currently used.
 	public struct NullableBoolSpanComparer : ISpanComparer
     {
 		public NullableBoolSpanComparer(bool? notUsed)
@@ -80,6 +81,7 @@ namespace FlatSharp
     }
 	
     [EditorBrowsable(EditorBrowsableState.Never)]
+	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage] // Not currently used.
 	public struct NullableByteSpanComparer : ISpanComparer
     {
 		public NullableByteSpanComparer(byte? notUsed)
@@ -118,6 +120,7 @@ namespace FlatSharp
     }
 	
     [EditorBrowsable(EditorBrowsableState.Never)]
+	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage] // Not currently used.
 	public struct NullableSByteSpanComparer : ISpanComparer
     {
 		public NullableSByteSpanComparer(sbyte? notUsed)
@@ -156,6 +159,7 @@ namespace FlatSharp
     }
 	
     [EditorBrowsable(EditorBrowsableState.Never)]
+	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage] // Not currently used.
 	public struct NullableUShortSpanComparer : ISpanComparer
     {
 		public NullableUShortSpanComparer(ushort? notUsed)
@@ -194,6 +198,7 @@ namespace FlatSharp
     }
 	
     [EditorBrowsable(EditorBrowsableState.Never)]
+	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage] // Not currently used.
 	public struct NullableShortSpanComparer : ISpanComparer
     {
 		public NullableShortSpanComparer(short? notUsed)
@@ -232,6 +237,7 @@ namespace FlatSharp
     }
 	
     [EditorBrowsable(EditorBrowsableState.Never)]
+	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage] // Not currently used.
 	public struct NullableIntSpanComparer : ISpanComparer
     {
 		public NullableIntSpanComparer(int? notUsed)
@@ -270,6 +276,7 @@ namespace FlatSharp
     }
 	
     [EditorBrowsable(EditorBrowsableState.Never)]
+	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage] // Not currently used.
 	public struct NullableUIntSpanComparer : ISpanComparer
     {
 		public NullableUIntSpanComparer(uint? notUsed)
@@ -308,6 +315,7 @@ namespace FlatSharp
     }
 	
     [EditorBrowsable(EditorBrowsableState.Never)]
+	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage] // Not currently used.
 	public struct NullableLongSpanComparer : ISpanComparer
     {
 		public NullableLongSpanComparer(long? notUsed)
@@ -346,6 +354,7 @@ namespace FlatSharp
     }
 	
     [EditorBrowsable(EditorBrowsableState.Never)]
+	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage] // Not currently used.
 	public struct NullableULongSpanComparer : ISpanComparer
     {
 		public NullableULongSpanComparer(ulong? notUsed)
@@ -384,6 +393,7 @@ namespace FlatSharp
     }
 	
     [EditorBrowsable(EditorBrowsableState.Never)]
+	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage] // Not currently used.
 	public struct NullableFloatSpanComparer : ISpanComparer
     {
 		public NullableFloatSpanComparer(float? notUsed)
@@ -422,6 +432,7 @@ namespace FlatSharp
     }
 	
     [EditorBrowsable(EditorBrowsableState.Never)]
+	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage] // Not currently used.
 	public struct NullableDoubleSpanComparer : ISpanComparer
     {
 		public NullableDoubleSpanComparer(double? notUsed)
