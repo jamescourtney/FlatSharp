@@ -31,16 +31,17 @@ furnished to do so, subject to the following conditions:
 
 namespace FlatSharp
 {
-    using FlatSharp.Attributes;
     using System;
     using System.Buffers.Binary;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.ComponentModel;
-    using System.Diagnostics;
     using System.Linq;
     using System.Reflection;
-    using System.Runtime.CompilerServices;
+
+    using FlatSharp.Attributes;
+
+#nullable enable
 
     /// <summary>
     /// Helper methods for dealing with sorted vectors. This class provides functionality for both sorting vectors and
@@ -104,30 +105,30 @@ namespace FlatSharp
         }
 
         /// <summary>
-        /// Perfors a binary search on the given sorted vector with the given key. The vector is presumed to be sorted.
+        /// Performs a binary search on the given sorted vector with the given key. The vector is presumed to be sorted.
         /// </summary>
         /// <returns>A value if found, null otherwise.</returns>
-        public static TTable BinarySearchByFlatBufferKey<TTable, TKey>(this IList<TTable> sortedVector, TKey key)
+        public static TTable? BinarySearchByFlatBufferKey<TTable, TKey>(this IList<TTable> sortedVector, TKey key)
             where TTable : class
         {
             return GenericBinarySearch(sortedVector.Count, i => sortedVector[i], key);
         }
 
         /// <summary>
-        /// Perfors a binary search on the given sorted vector with the given key. The vector is presumed to be sorted.
+        /// Performs a binary search on the given sorted vector with the given key. The vector is presumed to be sorted.
         /// </summary>
         /// <returns>A value if found, null otherwise.</returns>
-        public static TTable BinarySearchByFlatBufferKey<TTable, TKey>(this TTable[] sortedVector, TKey key)
+        public static TTable? BinarySearchByFlatBufferKey<TTable, TKey>(this TTable[] sortedVector, TKey key)
             where TTable : class
         {
             return GenericBinarySearch(sortedVector.Length, i => sortedVector[i], key);
         }
 
         /// <summary>
-        /// Perfors a binary search on the given sorted vector with the given key. The vector is presumed to be sorted.
+        /// Performs a binary search on the given sorted vector with the given key. The vector is presumed to be sorted.
         /// </summary>
         /// <returns>A value if found, null otherwise.</returns>
-        public static TTable BinarySearchByFlatBufferKey<TTable, TKey>(this IReadOnlyList<TTable> sortedVector, TKey key)
+        public static TTable? BinarySearchByFlatBufferKey<TTable, TKey>(this IReadOnlyList<TTable> sortedVector, TKey key)
            where TTable : class
         {
             return GenericBinarySearch(sortedVector.Count, i => sortedVector[i], key);
@@ -150,16 +151,16 @@ namespace FlatSharp
             }
         }
 
-        private static Func<SharedString, int> GetSharedStringComparerFunc(SharedString right)
+        private static Func<SharedString, int> GetSharedStringComparerFunc(SharedString? right)
         {
-            Func<string, int> nonSharedCallback = GetStringComparerFunc(right?.String);
+            Func<string?, int> nonSharedCallback = GetStringComparerFunc(right?.String);
             return ss =>
             {
                 return nonSharedCallback(ss?.String);
             };
         }
 
-        private static Func<string, int> GetStringComparerFunc(string right)
+        private static Func<string?, int> GetStringComparerFunc(string? right)
         {
             if (right == null)
             {
@@ -223,7 +224,7 @@ namespace FlatSharp
                 KeyGetterCallbacks[typeof(TTable)] = value;
             }
 
-            if (key.GetType() != value.Item1)
+            if (key?.GetType() != value.Item1)
             {
                 throw new InvalidOperationException($"Key '{key}' had type '{key?.GetType()}', but the key for table '{typeof(TTable).Name}' is of type '{value.Item1.Name}'.");
             }
@@ -231,7 +232,7 @@ namespace FlatSharp
             return (Func<TTable, TKey>)value.Item2;
         }
 
-        private static TTable GenericBinarySearch<TTable, TKey>(int count, Func<int, TTable> itemAtIndex, TKey key)
+        private static TTable? GenericBinarySearch<TTable, TKey>(int count, Func<int, TTable> itemAtIndex, TKey key)
             where TTable : class
         {
             Func<TKey, int> compare = GetComparerFunc<TKey>(key);

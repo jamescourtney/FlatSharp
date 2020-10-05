@@ -120,6 +120,12 @@ namespace FlatSharp
 
         public int IndexOf(T item)
         {
+            // FlatBuffer vectors are not allowed to have null by definition.
+            if (item is null)
+            {
+                return -1;
+            }
+
             int count = this.count;
             for (int i = 0; i < count; ++i)
             {

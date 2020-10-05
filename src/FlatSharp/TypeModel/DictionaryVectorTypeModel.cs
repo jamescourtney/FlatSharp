@@ -109,9 +109,8 @@ namespace FlatSharp.TypeModel
                     {context.InputBufferVariableName}, 
                     {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}), 
                     {this.PaddedMemberInlineSize})";
-
-            string createDictionary =
-            $@"new {dictionaryClassName}({createFlatBufferVector})";
+            
+            string createDictionary = $@"new {dictionaryClassName}({createFlatBufferVector})";
 
             if (context.Options.PreallocateVectors)
             {
