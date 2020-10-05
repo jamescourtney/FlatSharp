@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2018 James Courtney
+ * Copyright 2020 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,12 +55,12 @@ namespace FlatSharp
         {
             get
             {
-                if (index < 0 || index >= this.count)
+                if ((uint)index >= (uint)this.count)
                 {
                     throw new IndexOutOfRangeException();
                 }
 
-                return this.GetItemWithoutRangeCheck(index);
+                return this.ParseItem(this.memory, GetOffset(this.itemSize, this.offset, index));
             }
             set
             {
@@ -90,9 +90,27 @@ namespace FlatSharp
         public void CopyTo(T[] array, int arrayIndex)
         {
             var count = this.count;
-            for (int i = 0; i < count; ++i)
+            var memory = this.memory;
+            var offset = this.offset;
+            var itemSize = this.itemSize;
+
+            if (array.Length == count)
             {
-                array[arrayIndex + i] = this.GetItemWithoutRangeCheck(i);
+                // special case: write code where the compiler can elide the 
+                // bounds check on the array.
+                for (int i = 0; i < array.Length; ++i)
+                {
+                    array[i] = this.ParseItem(memory, offset);
+                    offset = checked(offset + itemSize);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < count; ++i)
+                {
+                    array[arrayIndex + i] = this.ParseItem(memory, offset);
+                    offset = checked(offset + itemSize);
+                }
             }
         }
 
@@ -100,12 +118,7 @@ namespace FlatSharp
         {
             int count = this.count;
             T[] array = new T[count];
-
-            for (int i = 0; i < count; ++i)
-            {
-                array[i] = this.GetItemWithoutRangeCheck(i);
-            }
-
+            this.CopyTo(array, 0);
             return array;
         }
 
@@ -114,7 +127,7 @@ namespace FlatSharp
             int count = this.count;
             for (int i = 0; i < count; ++i)
             {
-                yield return this.GetItemWithoutRangeCheck(i);
+                yield return this.ParseItem(this.memory, GetOffset(this.itemSize, this.offset, i));
             }
         }
 
@@ -127,12 +140,18 @@ namespace FlatSharp
             }
 
             int count = this.count;
+            var memory = this.memory;
+            var offset = this.offset;
+            var itemSize = this.itemSize;
+
             for (int i = 0; i < count; ++i)
             {
-                if (item.Equals(this.GetItemWithoutRangeCheck(i)))
+                if (item.Equals(this.ParseItem(memory, offset)))
                 {
                     return i;
                 }
+
+                offset = checked(offset + itemSize);
             }
 
             return -1;
@@ -140,16 +159,7 @@ namespace FlatSharp
 
         public List<T> FlatBufferVectorToList()
         {
-            int count = this.Count;
-
-            var list = new List<T>(count);
-            for (int i = 0; i < count; ++i)
-            {
-                list.Add(GetItemWithoutRangeCheck(i));
-            }
-
-
-            return list;
+            return new List<T>(this);
         }
 
         public void Insert(int index, T item)
@@ -173,12 +183,9 @@ namespace FlatSharp
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private T GetItemWithoutRangeCheck(int index)
+        private static int GetOffset(int itemSize, int baseOffset, int index)
         {
-            // start at offset and then multiply item size * index.
-            return this.ParseItem(
-                this.memory,
-                checked(this.offset + (this.itemSize * index)));
+            return checked(baseOffset + (itemSize * index));
         }
 
         protected abstract T ParseItem(TInputBuffer buffer, int offset);
