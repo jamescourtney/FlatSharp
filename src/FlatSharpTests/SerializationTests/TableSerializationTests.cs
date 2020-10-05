@@ -244,10 +244,5 @@ namespace FlatSharpTests
             [FlatBufferItem(2)]
             public virtual uint Uint { get; set; }
         }
-
-        //private class NoPaddingTypeModel : ITypeModel
-        //{
-        //    private readonly ITypeModel typeModel;
-        //}
     }
 }
