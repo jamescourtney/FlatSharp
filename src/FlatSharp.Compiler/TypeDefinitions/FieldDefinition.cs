@@ -102,7 +102,11 @@ namespace FlatSharp.Compiler
                 case VectorType.ReadOnlyMemory:
                     return $"ReadOnlyMemory<{clrType}>";
 
-                case VectorType.Dictionary:
+                case VectorType.IDictionary:
+                    if (string.IsNullOrWhiteSpace(sortKeyType))
+                    {
+                        ErrorContext.Current.RegisterError($"Unable to determine key type for table {clrType}. Please make sure a property has the 'Key' metadata.");
+                    }
                     return $"IDictionary<{sortKeyType}, {clrType}>";
 
                 case VectorType.None:
@@ -142,7 +146,7 @@ namespace FlatSharp.Compiler
                     writer.AppendLine($"this.{this.Name} = {sourceName}.{this.Name}.ToArray();");
                     break;
 
-                case VectorType.Dictionary:
+                case VectorType.IDictionary:
                     writer.AppendLine($"this.{this.Name} = {sourceName}.{this.Name}?.ToDictionary(x => x.Key, x => {nodeType.GetCopyExpression("x.Value")});");
                     break;
 

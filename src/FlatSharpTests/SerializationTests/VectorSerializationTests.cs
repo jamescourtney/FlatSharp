@@ -730,23 +730,9 @@ namespace FlatSharpTests
                 }
             };
 
-            try
-            {
-                byte[] data = new byte[1024 * 1024];
-                FlatBufferSerializer.Default.Serialize(table, data);
-            }
-            catch (InvalidOperationException)
-            {
-            }
-
-            try
-            {
-                byte[] data = new byte[1024 * 1024];
-                FlatBufferSerializer.Default.GetMaxSize(table);
-            }
-            catch (InvalidOperationException)
-            {
-            }
+            byte[] data = new byte[1024 * 1024];
+            Assert.ThrowsException<InvalidOperationException>(() => FlatBufferSerializer.Default.Serialize(table, data));
+            Assert.ThrowsException<InvalidOperationException>(() => FlatBufferSerializer.Default.GetMaxSize(table));
         }
 
         [TestMethod]
@@ -775,6 +761,50 @@ namespace FlatSharpTests
                 Assert.AreEqual(table.Vector[key].Value, parsed.Vector[key].Value);
             }
         }
+
+        [TestMethod]
+        public void DictionaryVector_SharedStrings()
+        {
+            var table = new RootTable<IDictionary<SharedString, TableWithKey<SharedString>>>
+            {
+                Vector = new Dictionary<SharedString, TableWithKey<SharedString>>()
+            };
+
+            for (int i = 0; i < 50; ++i)
+            {
+                string key = Guid.NewGuid().ToString();
+                table.Vector[key] = new TableWithKey<SharedString> { Key = key, Value = Guid.NewGuid().ToString() };
+            }
+
+            byte[] data = new byte[10 * 1024 * 1024];
+            var serializer = new FlatBufferSerializer(FlatBufferDeserializationOption.Lazy);
+            var sharedStringSerializer = serializer.Compile<RootTable<IDictionary<SharedString, TableWithKey<SharedString>>>>()
+                .WithSettings(new SerializerSettings
+                {
+                    SharedStringReaderFactory = () => SharedStringReader.Create(5000),
+                    SharedStringWriterFactory = () => new SharedStringWriter(5000),
+                });
+
+            int bytesWritten = sharedStringSerializer.Write(data, table);
+            var parsed = sharedStringSerializer.Parse(data);
+
+            foreach (var kvp in parsed.Vector)
+            {
+                SharedString key = kvp.Key;
+                SharedString value = kvp.Value.Key;
+
+                Assert.IsTrue(object.ReferenceEquals(key.String, value.String));
+            }
+
+            foreach (var key in table.Vector.Keys)
+            {
+                SharedString expectedKey = key;
+                Assert.IsTrue(parsed.Vector.TryGetValue(key, out var value));
+                Assert.AreEqual(expectedKey, value.Key);
+                Assert.IsFalse(object.ReferenceEquals(expectedKey.String, value.Key.String));
+            }
+        }
+
         [TestMethod]
         public void DictionaryVector_RandomByte() => DictionaryVectorTest<byte>();
 
