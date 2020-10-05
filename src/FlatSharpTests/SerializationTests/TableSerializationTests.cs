@@ -130,7 +130,7 @@ namespace FlatSharpTests
             Assert.ThrowsException<NotMutableException>(() => table.String = null);
             Assert.ThrowsException<NotMutableException>(() => table.Struct = null);
             Assert.ThrowsException<NotMutableException>(() => table.StructVector = new List<SimpleStruct>());
-            Assert.ThrowsException<NotSupportedException>(() => table.StructVector.Add(null));
+            Assert.ThrowsException<NotMutableException>(() => table.StructVector.Add(null));
         }
 
         [TestMethod]

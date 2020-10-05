@@ -64,7 +64,7 @@ namespace FlatSharp
             }
             set
             {
-                throw new NotSupportedException("FlatBufferVector does not allow mutating items.");
+                throw new NotMutableException("FlatBufferVector does not allow mutating items.");
             }
         }
 
@@ -74,12 +74,12 @@ namespace FlatSharp
 
         public void Add(T item)
         {
-            throw new NotSupportedException("FlatBufferVector does not allow adding items.");
+            throw new NotMutableException("FlatBufferVector does not allow adding items.");
         }
 
         public void Clear()
         {
-            throw new NotSupportedException("FlatBufferVector does not support clearing.");
+            throw new NotMutableException("FlatBufferVector does not support clearing.");
         }
 
         public bool Contains(T item)
@@ -148,22 +148,23 @@ namespace FlatSharp
                 list.Add(GetItemWithoutRangeCheck(i));
             }
 
+
             return list;
         }
 
         public void Insert(int index, T item)
         {
-            throw new NotSupportedException("FlatBufferVector does not support inserting.");
+            throw new NotMutableException("FlatBufferVector does not support inserting.");
         }
 
         public bool Remove(T item)
         {
-            throw new NotSupportedException("FlatBufferVector does not support removing.");
+            throw new NotMutableException("FlatBufferVector does not support removing.");
         }
 
         public void RemoveAt(int index)
         {
-            throw new NotSupportedException("FlatBufferVector does not support removing.");
+            throw new NotMutableException("FlatBufferVector does not support removing.");
         }
 
         IEnumerator IEnumerable.GetEnumerator()

@@ -21,17 +21,6 @@ namespace FlatSharp
     /// </summary>
     public class CodeGeneratedMethod
     {
-        public CodeGeneratedMethod(CodeGeneratedMethod other)
-        {
-            this.MethodBody = other.MethodBody;
-            this.IsMethodInline = other.IsMethodInline;
-            this.ClassDefinition = other.ClassDefinition;
-        }
-
-        public CodeGeneratedMethod()
-        {
-        }
-
         /// <summary>
         /// The body of the method.
         /// </summary>

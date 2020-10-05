@@ -51,8 +51,8 @@ namespace FlatSharpTests
             Assert.IsFalse(object.ReferenceEquals(table.Second, table.Second));
 
             Assert.AreEqual(Strings.Length, table.Vector.Count);
-            Assert.ThrowsException<NotSupportedException>(() => table.Vector[0] = "foobar");
-            Assert.ThrowsException<NotSupportedException>(() => table.Vector.Clear());
+            Assert.ThrowsException<NotMutableException>(() => table.Vector[0] = "foobar");
+            Assert.ThrowsException<NotMutableException>(() => table.Vector.Clear());
             Assert.ThrowsException<NotMutableException>(() => table.First.First = 3);
             Assert.ThrowsException<NotMutableException>(() => table.First = null);
         }
@@ -130,8 +130,8 @@ namespace FlatSharpTests
             Assert.IsTrue(object.ReferenceEquals(table.Second, table.Second));
 
             Assert.AreEqual(Strings.Length, table.Vector.Count);
-            Assert.ThrowsException<NotSupportedException>(() => table.Vector[0] = "foobar");
-            Assert.ThrowsException<NotSupportedException>(() => table.Vector.Clear());
+            Assert.ThrowsException<NotMutableException>(() => table.Vector[0] = "foobar");
+            Assert.ThrowsException<NotMutableException>(() => table.Vector.Clear());
             Assert.ThrowsException<NotMutableException>(() => table.First.First = 3);
             Assert.ThrowsException<NotMutableException>(() => table.First = null);
         }
