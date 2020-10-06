@@ -200,7 +200,7 @@ namespace FlatSharp
         /// <summary>
         /// Reflects on TTable to return a delegate that accesses the flat buffer key property. The type of the property must precisely match TKey.
         /// </summary>
-        private static Func<TTable, TKey> GetOrCreateGetKeyCallback<TTable, TKey>(TKey key)
+        internal static Func<TTable, TKey> GetOrCreateGetKeyCallback<TTable, TKey>()
         {
             if (!KeyGetterCallbacks.TryGetValue(typeof(TTable), out (Type, object) value))
             {
@@ -224,19 +224,19 @@ namespace FlatSharp
                 KeyGetterCallbacks[typeof(TTable)] = value;
             }
 
-            if (key?.GetType() != value.Item1)
+            if (value.Item2 is Func<TTable, TKey> callback)
             {
-                throw new InvalidOperationException($"Key '{key}' had type '{key?.GetType()}', but the key for table '{typeof(TTable).Name}' is of type '{value.Item1.Name}'.");
+                return callback;
             }
 
-            return (Func<TTable, TKey>)value.Item2;
+            throw new InvalidOperationException($"Key type was: '{typeof(TKey)}', but the key for table '{typeof(TTable).Name}' is of type '{value.Item1.Name}'.");
         }
 
         private static TTable? GenericBinarySearch<TTable, TKey>(int count, Func<int, TTable> itemAtIndex, TKey key)
             where TTable : class
         {
             Func<TKey, int> compare = GetComparerFunc<TKey>(key);
-            Func<TTable, TKey> keyGetter = GetOrCreateGetKeyCallback<TTable, TKey>(key);
+            Func<TTable, TKey> keyGetter = GetOrCreateGetKeyCallback<TTable, TKey>();
 
             int min = 0;
             int max = count - 1;

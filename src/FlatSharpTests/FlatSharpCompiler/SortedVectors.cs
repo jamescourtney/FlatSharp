@@ -199,7 +199,7 @@ table VectorMember {
         {
             string schema = $@"
 table Monster (PrecompiledSerializer) {{
-  Vector:[VectorMember] (VectorType:IDictionary);
+  Vector:[VectorMember] (VectorType:IIndexedVector);
 }}
 table VectorMember {{
     Data:string;
@@ -211,7 +211,7 @@ table VectorMember {{
         {
             string schema = $@"
 table Monster (PrecompiledSerializer) {{
-  Vector:[VectorMember] (VectorType:IDictionary);
+  Vector:[VectorMember] (VectorType:IIndexedVector);
 }}
 table VectorMember {{
     Data:{type} (Key {(!string.IsNullOrEmpty(metadata) ? ", " : "")}{metadata});
@@ -230,7 +230,7 @@ table VectorMember {{
             Assert.AreEqual(typeof(TKeyType), vectorMemberProperties[0].PropertyType);
 
             Assert.AreEqual("Vector", monsterProperties[0].Name);
-            Assert.AreEqual(typeof(IDictionary<,>).MakeGenericType(typeof(TKeyType), vectorMemberType), monsterProperties[0].PropertyType);
+            Assert.AreEqual(typeof(IIndexedVector<,>).MakeGenericType(typeof(TKeyType), vectorMemberType), monsterProperties[0].PropertyType);
         }
     }
 }

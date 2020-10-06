@@ -31,6 +31,6 @@ namespace FlatSharp.Compiler
         Array,
         Memory,
         ReadOnlyMemory,
-        IDictionary,
+        IIndexedVector,
     }
 }
