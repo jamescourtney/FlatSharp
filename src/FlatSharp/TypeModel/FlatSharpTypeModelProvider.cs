@@ -81,9 +81,9 @@ namespace FlatSharp.TypeModel
                     return true;
                 }
 
-                if (genericDef == typeof(IDictionary<,>))
+                if (genericDef == typeof(IIndexedVector<,>))
                 {
-                    typeModel = new DictionaryVectorTypeModel(type, container);
+                    typeModel = new IndexedVectorTypeModel(type, container);
                     return true;
                 }
             }
