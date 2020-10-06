@@ -222,68 +222,53 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
-        public void TypeModel_Vector_Dictionary()
+        public void TypeModel_Vector_Indexed()
         {
-            var model = RuntimeTypeModel.CreateFrom(typeof(GenericTable<IDictionary<string, SortedVectorKeyTable<string>>>));
+            var model = RuntimeTypeModel.CreateFrom(typeof(GenericTable<IIndexedVector<string, SortedVectorKeyTable<string>>>));
             Assert.AreEqual(FlatBufferSchemaType.Table, model.SchemaType);
 
             TableTypeModel tableModel = (TableTypeModel)model;
             var firstMember = tableModel.IndexToMemberMap[0];
 
-            Assert.IsTrue(firstMember.IsSortedVector); // sorted vector is set even though it's not explicitly declared. Dictionaries force it to be set.
+            Assert.IsTrue(firstMember.IsSortedVector); // sorted vector is set even though it's not explicitly declared. Indexed Vectors force it to be set.
 
             var vectorModel = firstMember.ItemTypeModel;
             Assert.AreEqual(FlatBufferSchemaType.Vector, vectorModel.SchemaType);
         }
 
         [TestMethod]
-        public void TypeModel_Vector_Dictionary_MismatchedKeyTypes_NotAllowed()
+        public void TypeModel_Vector_IndexedVector_MismatchedKeyTypes_NotAllowed()
         {
             Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
-                () => RuntimeTypeModel.CreateFrom(typeof(IDictionary<int, SortedVectorKeyTable<string>>)));
+                () => RuntimeTypeModel.CreateFrom(typeof(IIndexedVector<int, SortedVectorKeyTable<string>>)));
         }
 
         [TestMethod]
-        public void TypeModel_Vector_Dictionary_UnkeyedTable_NotAllowed()
+        public void TypeModel_Vector_IndexedVector_UnkeyedTable_NotAllowed()
         {
             Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
-                () => RuntimeTypeModel.CreateFrom(typeof(IDictionary<int, GenericTable<string>>)));
+                () => RuntimeTypeModel.CreateFrom(typeof(IIndexedVector<int, GenericTable<string>>)));
         }
 
         [TestMethod]
-        public void TypeModel_Vector_Dictionary_Struct_NotAllowed()
+        public void TypeModel_Vector_IndexedVector_Struct_NotAllowed()
         {
             Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
-                () => RuntimeTypeModel.CreateFrom(typeof(IDictionary<int, GenericStruct<int>>)));
+                () => RuntimeTypeModel.CreateFrom(typeof(IIndexedVector<int, GenericStruct<int>>)));
         }
 
         [TestMethod]
-        public void TypeModel_Vector_Dictionary_Vector_NotAllowed()
+        public void TypeModel_Vector_IndexedVector_Vector_NotAllowed()
         {
             Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
-                () => RuntimeTypeModel.CreateFrom(typeof(IDictionary<int, IList<string>>)));
+                () => RuntimeTypeModel.CreateFrom(typeof(IIndexedVector<int, IList<string>>)));
         }
 
         [TestMethod]
-        public void TypeModel_Vector_Dictionary_Scalar_NotAllowed()
+        public void TypeModel_Vector_IndexedVector_Union_NotAllowed()
         {
             Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
-                () => RuntimeTypeModel.CreateFrom(typeof(IDictionary<int, int>)));
-        }
-
-        [TestMethod]
-        public void TypeModel_Vector_Dictionary_Enum_NotAllowed()
-        {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
-                () => RuntimeTypeModel.CreateFrom(typeof(IDictionary<int, TaggedEnum>)));
-        }
-
-
-        [TestMethod]
-        public void TypeModel_Vector_Dictionary_Union_NotAllowed()
-        {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
-                () => RuntimeTypeModel.CreateFrom(typeof(IDictionary<int, FlatBufferUnion<string, GenericTable<string>>>)));
+                () => RuntimeTypeModel.CreateFrom(typeof(IIndexedVector<int, FlatBufferUnion<string, GenericTable<string>>>)));
         }
 
         [TestMethod]

@@ -64,37 +64,37 @@ namespace FlatSharpTests.Compiler
         }
 
         [TestMethod]
-        public void DictionaryVector()
+        public void IIndexedVector()
         {
-            var (prop, type, attribute) = this.CompileAndGetProperty("", "[OtherTable]", "VectorType:\"IDictionary\",SortedVector");
+            var (prop, type, attribute) = this.CompileAndGetProperty("", "[OtherTable]", "VectorType:\"IIndexedVector\",SortedVector");
 
             Assert.IsFalse(attribute.Deprecated);
             Assert.IsTrue(attribute.SortedVector);
-            Assert.AreEqual(typeof(IDictionary<,>), prop.PropertyType.GetGenericTypeDefinition());
+            Assert.AreEqual(typeof(IIndexedVector<,>), prop.PropertyType.GetGenericTypeDefinition());
             Assert.AreEqual(typeof(string), prop.PropertyType.GetGenericArguments()[0]);
             Assert.IsTrue(prop.PropertyType.GetGenericArguments()[1].FullName.Contains("OtherTable"));
         }
 
         [TestMethod]
-        public void DictionaryVector_WithSerializer()
+        public void IIndexedVectorVector_WithSerializer()
         {
-            var (prop, type, attribute) = this.CompileAndGetProperty("PrecompiledSerializer", "[OtherTable]", "VectorType:\"IDictionary\",SortedVector");
+            var (prop, type, attribute) = this.CompileAndGetProperty("PrecompiledSerializer", "[OtherTable]", "VectorType:\"IIndexedVector\",SortedVector");
 
             Assert.IsFalse(attribute.Deprecated);
             Assert.IsTrue(attribute.SortedVector);
-            Assert.AreEqual(typeof(IDictionary<,>), prop.PropertyType.GetGenericTypeDefinition());
+            Assert.AreEqual(typeof(IIndexedVector<,>), prop.PropertyType.GetGenericTypeDefinition());
             Assert.AreEqual(typeof(string), prop.PropertyType.GetGenericArguments()[0]);
             Assert.IsTrue(prop.PropertyType.GetGenericArguments()[1].FullName.Contains("OtherTable"));
         }
 
         [TestMethod]
-        public void DictionaryVector_WithSerializer_NoSortedDeclaration()
+        public void IIndexedVector_WithSerializer_NoSortedDeclaration()
         {
-            var (prop, type, attribute) = this.CompileAndGetProperty("PrecompiledSerializer", "[OtherTable]", "VectorType:\"IDictionary\"");
+            var (prop, type, attribute) = this.CompileAndGetProperty("PrecompiledSerializer", "[OtherTable]", "VectorType:\"IIndexedVector\"");
 
             Assert.IsFalse(attribute.Deprecated);
             Assert.IsFalse(attribute.SortedVector); // dictionaries override this attribute.
-            Assert.AreEqual(typeof(IDictionary<,>), prop.PropertyType.GetGenericTypeDefinition());
+            Assert.AreEqual(typeof(IIndexedVector<,>), prop.PropertyType.GetGenericTypeDefinition());
             Assert.AreEqual(typeof(string), prop.PropertyType.GetGenericArguments()[0]);
             Assert.IsTrue(prop.PropertyType.GetGenericArguments()[1].FullName.Contains("OtherTable"));
         }

@@ -102,12 +102,12 @@ namespace FlatSharp.Compiler
                 case VectorType.ReadOnlyMemory:
                     return $"ReadOnlyMemory<{clrType}>";
 
-                case VectorType.IDictionary:
+                case VectorType.IIndexedVector:
                     if (string.IsNullOrWhiteSpace(sortKeyType))
                     {
                         ErrorContext.Current.RegisterError($"Unable to determine key type for table {clrType}. Please make sure a property has the 'Key' metadata.");
                     }
-                    return $"IDictionary<{sortKeyType}, {clrType}>";
+                    return $"IIndexedVector<{sortKeyType}, {clrType}>";
 
                 case VectorType.None:
                     return clrType;
@@ -146,8 +146,8 @@ namespace FlatSharp.Compiler
                     writer.AppendLine($"this.{this.Name} = {sourceName}.{this.Name}.ToArray();");
                     break;
 
-                case VectorType.IDictionary:
-                    writer.AppendLine($"this.{this.Name} = {sourceName}.{this.Name}?.ToDictionary(x => x.Key, x => {nodeType.GetCopyExpression("x.Value")});");
+                case VectorType.IIndexedVector:
+                    writer.AppendLine($"this.{this.Name} = {sourceName}.{this.Name}?.Clone(x => {nodeType.GetCopyExpression("x")});");
                     break;
 
                 case VectorType.None:

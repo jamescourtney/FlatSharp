@@ -22,13 +22,13 @@ namespace FlatSharp.TypeModel
     /// <summary>
     /// Defines a vector type model for a sorted vector that looks like a Dictionary.
     /// </summary>
-    public class DictionaryVectorTypeModel : BaseVectorTypeModel
+    public class IndexedVectorTypeModel : BaseVectorTypeModel
     {
         private ITypeModel keyTypeModel;
         private ITypeModel valueTypeModel;
         private TableMemberModel keyMemberModel;
 
-        internal DictionaryVectorTypeModel(Type vectorType, TypeModelContainer provider) : base(vectorType, provider)
+        internal IndexedVectorTypeModel(Type vectorType, TypeModelContainer provider) : base(vectorType, provider)
         {
         }
 
@@ -39,9 +39,9 @@ namespace FlatSharp.TypeModel
         public override void OnInitialize()
         {
             if (!this.ClrType.IsGenericType ||
-                this.ClrType.GetGenericTypeDefinition() != typeof(IDictionary<,>))
+                this.ClrType.GetGenericTypeDefinition() != typeof(IIndexedVector<,>))
             {
-                throw new InvalidFlatBufferDefinitionException($"Dictionary vectors must be of type IDictionary. Type = {this.ClrType.FullName}.");
+                throw new InvalidFlatBufferDefinitionException($"Indexed vectors must be of type IIndexedVector. Type = {this.ClrType.FullName}.");
             }
 
             Type keyType = this.ClrType.GetGenericArguments()[0];
@@ -99,38 +99,25 @@ namespace FlatSharp.TypeModel
                 context.InputBufferTypeName,
                 context.MethodNameMap[this.valueTypeModel.ClrType]);
 
-            (string dictionaryClassDef, string dictionaryClassName) = FlatBufferVectorHelpers.CreateFlatBufferDictionarySubclass(
-                this.valueTypeModel.ClrType,
-                this.keyTypeModel.ClrType,
-                this.keyMemberModel.PropertyInfo.Name);
-
             string createFlatBufferVector =
             $@"new {vectorClassName}<{context.InputBufferTypeName}>(
                     {context.InputBufferVariableName}, 
                     {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}), 
                     {this.PaddedMemberInlineSize})";
-            
-            string createDictionary = $@"new {dictionaryClassName}({createFlatBufferVector})";
 
             if (context.Options.PreallocateVectors)
             {
-                // We just call .ToDictionary() when in preallocate mode. Note that when full greedy mode is on, these items will be 
-                // greedily initialized as we traverse the list. Otherwise, they'll be allocated lazily.
-                body = $"({createDictionary}).ToDictionary()";
-                if (!context.Options.GenerateMutableObjects)
-                {
-                    // Finally, if we're not in the business of making mutable objects, then convert the list to read only.
-                    body = $"new System.Collections.ObjectModel.ReadOnlyDictionary<{keyTypeName}, {valueTypeName}>({body})";
-                }
-
-                body = $"return {body};";
+                // Eager indexed vector.
+                string mutable = context.Options.GenerateMutableObjects.ToString().ToLowerInvariant();
+                body = $@"return new {nameof(IndexedVector<string, string>)}<{keyTypeName}, {valueTypeName}>({createFlatBufferVector}, {mutable});";
             }
             else
             {
-                body = $"return {createDictionary};";
+                // Lazy indexed vector.
+                body = $@"return new {nameof(FlatBufferIndexedVector<string, string>)}<{keyTypeName}, {valueTypeName}>({createFlatBufferVector});";
             }
 
-            return new CodeGeneratedMethod { MethodBody = body, IsMethodInline = true, ClassDefinition = string.Join("\r\n", vectorClassDef, dictionaryClassDef) };
+            return new CodeGeneratedMethod { MethodBody = body, IsMethodInline = true, ClassDefinition = vectorClassDef };
         }
 
         public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
@@ -141,9 +128,6 @@ namespace FlatSharp.TypeModel
                 {{
                     var current = pair.Value;
                     var key = pair.Key;
-
-                    {this.GetKvpValidations("key", "current")}
-
                     runningSum += {context.MethodNameMap[this.valueTypeModel.ClrType]}(current);
                 }}
 
@@ -162,7 +146,7 @@ namespace FlatSharp.TypeModel
             var itemTypeModel = this.ItemTypeModel;
 
             string body = $@"
-                int count = {context.ValueVariableName}.{nameof(IDictionary<string, string>.Count)};
+                int count = {context.ValueVariableName}.{nameof(IIndexedVector<string, string>.Count)};
                 int vectorOffset = {context.SerializationContextVariableName}.{nameof(SerializationContext.AllocateVector)}({itemTypeModel.PhysicalLayout[0].Alignment}, count, {this.PaddedMemberInlineSize});
                 {context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteUOffset)}({context.SpanVariableName}, {context.OffsetVariableName}, vectorOffset, {context.SerializationContextVariableName});
                 {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteInt)}({context.SpanVariableName}, count, vectorOffset, {context.SerializationContextVariableName});
@@ -171,8 +155,6 @@ namespace FlatSharp.TypeModel
                 {{
                       var key = pair.Key;
                       var current = pair.Value;
-
-                      {this.GetKvpValidations("key", "current")}
 
                       {context.MethodNameMap[itemTypeModel.ClrType]}({context.SpanWriterVariableName}, {context.SpanVariableName}, current, vectorOffset, {context.SerializationContextVariableName});
                       vectorOffset += {this.PaddedMemberInlineSize};
@@ -193,20 +175,6 @@ namespace FlatSharp.TypeModel
             {
                 this.valueTypeModel.TraverseObjectGraph(seenTypes);
             }
-        }
-
-        private string GetKvpValidations(string keyName, string valueName)
-        {
-            // Let's make string.Format as meta as possible here:
-            return $@"
-                    {this.valueTypeModel.GetThrowIfNullInvocation(valueName)};
-                    {this.keyTypeModel.GetThrowIfNullInvocation(keyName)};
-
-                    if ({keyName} != {valueName}.{this.keyMemberModel.PropertyInfo.Name})
-                    {{
-                        throw new InvalidOperationException($""Dictionary keys must match the key property in the value. DictionaryKey = '{{{keyName}}}' Table Key = '{{{valueName}.{this.keyMemberModel.PropertyInfo.Name}}}'."");
-                    }}
-";
         }
     }
 }
