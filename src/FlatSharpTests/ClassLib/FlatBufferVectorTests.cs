@@ -31,52 +31,60 @@ namespace FlatSharpTests
     [TestClass]
     public class FlatBufferVectorTests
     {
-        private static readonly IReadOnlyList<string> ExpectedContents = new List<string> { "one", "two", "three", "four", "five" };
-        private TableVector parsedVector;
+        private static readonly IReadOnlyList<string> ExpectedStringContents = new List<string> { "one", "two", "three", "four", "five" };
+        private static readonly IReadOnlyList<int> ExpectedIntContents = new List<int> { 1, 2, 3, 4, 5 };
+
+        private TableVector<string> stringVector;
+        private TableVector<int> intVector;
 
         [TestInitialize]
         public void TestInitialize()
         {
-            var originalVector = new TableVector
+            var originalVector = new TableVector<string>
             {
-                StringVector = ExpectedContents.ToList()
+                Vector = ExpectedStringContents.ToList()
             };
+
+            var originalIntVector = new TableVector<int> { Vector = ExpectedIntContents.ToList() };
 
             Span<byte> buffer = new byte[1024];
 
-            var serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions(FlatBufferDeserializationOption.Greedy));
+            var serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions(FlatBufferDeserializationOption.Lazy));
             int bytesWritten = serializer.Serialize(originalVector, buffer);
-            this.parsedVector = serializer.Parse<TableVector>(buffer.Slice(0, bytesWritten).ToArray());
+            this.stringVector = serializer.Parse<TableVector<string>>(buffer.Slice(0, bytesWritten).ToArray());
+
+            bytesWritten = serializer.Serialize(originalIntVector, buffer);
+            this.intVector = serializer.Parse<TableVector<int>>(buffer.Slice(0, bytesWritten).ToArray());
         }
 
         [TestMethod]
         public void FlatBufferVector_OutOfRange()
         {
-            Assert.ThrowsException<ArgumentOutOfRangeException>(() => this.parsedVector.StringVector[-1]);
-            Assert.ThrowsException<ArgumentOutOfRangeException>(() => this.parsedVector.StringVector[5]);
+            Assert.ThrowsException<IndexOutOfRangeException>(() => this.stringVector.Vector[-1]);
+            Assert.ThrowsException<IndexOutOfRangeException>(() => this.stringVector.Vector[5]);
         }
 
         [TestMethod]
         public void FlatBufferVector_NotMutable()
         {
-            Assert.IsTrue(this.parsedVector.StringVector.IsReadOnly);
-            Assert.ThrowsException<NotSupportedException>(() => this.parsedVector.StringVector[0] = "foobar");
-            Assert.ThrowsException<NotSupportedException>(() => this.parsedVector.StringVector.Add("foobar"));
-            Assert.ThrowsException<NotSupportedException>(() => this.parsedVector.StringVector.Clear());
-            Assert.ThrowsException<NotSupportedException>(() => this.parsedVector.StringVector.Insert(0, "foobar"));
-            Assert.ThrowsException<NotSupportedException>(() => this.parsedVector.StringVector.Remove("foobar"));
-            Assert.ThrowsException<NotSupportedException>(() => this.parsedVector.StringVector.RemoveAt(0));
+            Assert.IsTrue(this.stringVector.Vector.IsReadOnly);
+            Assert.ThrowsException<NotMutableException>(() => this.stringVector.Vector[0] = "foobar");
+            Assert.ThrowsException<NotMutableException>(() => this.stringVector.Vector.Add("foobar"));
+            Assert.ThrowsException<NotMutableException>(() => this.stringVector.Vector.Clear());
+            Assert.ThrowsException<NotMutableException>(() => this.stringVector.Vector.Insert(0, "foobar"));
+            Assert.ThrowsException<NotMutableException>(() => this.stringVector.Vector.Remove("foobar"));
+            Assert.ThrowsException<NotMutableException>(() => this.stringVector.Vector.RemoveAt(0));
         }
 
         [TestMethod]
         public void FlatBufferVector_GetEnumerator()
         {
-            IEnumerable<string> enumerable = this.parsedVector.StringVector;
+            IEnumerable<string> enumerable = this.stringVector.Vector;
 
             int i = 0; 
-            foreach (var item in this.parsedVector.StringVector)
+            foreach (var item in this.stringVector.Vector)
             {
-                Assert.AreEqual(item, ExpectedContents[i]);
+                Assert.AreEqual(item, ExpectedStringContents[i]);
                 i++;
             }
         }
@@ -84,8 +92,12 @@ namespace FlatSharpTests
         [TestMethod]
         public void FlatBufferVector_Contains()
         {
-            Assert.IsTrue(this.parsedVector.StringVector.Contains("one"));
-            Assert.IsFalse(this.parsedVector.StringVector.Contains("foobar"));
+            Assert.IsTrue(this.stringVector.Vector.Contains("one"));
+            Assert.IsFalse(this.stringVector.Vector.Contains("foobar"));
+            Assert.IsFalse(this.stringVector.Vector.Contains(null));
+
+            Assert.IsTrue(this.intVector.Vector.Contains(1));
+            Assert.IsFalse(this.intVector.Vector.Contains(18));
         }
 
         [TestMethod]
@@ -93,19 +105,19 @@ namespace FlatSharpTests
         {
             string[] array = new string[100];
 
-            this.parsedVector.StringVector.CopyTo(array, 50);
+            this.stringVector.Vector.CopyTo(array, 50);
             
             for (int i = 0; i < 50; ++i)
             {
                 Assert.IsNull(array[i]);
             }
 
-            for (int i = 0; i < ExpectedContents.Count; ++i)
+            for (int i = 0; i < ExpectedStringContents.Count; ++i)
             {
-                Assert.AreEqual(ExpectedContents[i], array[i + 50]);
+                Assert.AreEqual(ExpectedStringContents[i], array[i + 50]);
             }
 
-            for (int i = 50 + ExpectedContents.Count; i < array.Length; ++i)
+            for (int i = 50 + ExpectedStringContents.Count; i < array.Length; ++i)
             {
                 Assert.IsNull(array[i]);
             }
@@ -114,19 +126,22 @@ namespace FlatSharpTests
         [TestMethod]
         public void FlatBufferVector_IndexOf()
         {
-            for (int i = 0; i < ExpectedContents.Count; ++i)
+            for (int i = 0; i < ExpectedStringContents.Count; ++i)
             {
-                Assert.AreEqual(i, this.parsedVector.StringVector.IndexOf(ExpectedContents[i]));
+                Assert.AreEqual(i, this.stringVector.Vector.IndexOf(ExpectedStringContents[i]));
+                Assert.AreEqual(i, this.intVector.Vector.IndexOf(ExpectedIntContents[i]));
             }
 
-            Assert.AreEqual(-1, this.parsedVector.StringVector.IndexOf("foobar"));
+            Assert.AreEqual(-1, this.stringVector.Vector.IndexOf("foobar"));
+            Assert.AreEqual(-1, this.stringVector.Vector.IndexOf(null));
+            Assert.AreEqual(-1, this.intVector.Vector.IndexOf(int.MinValue));
         }
 
         [FlatBufferTable]
-        public class TableVector
+        public class TableVector<T>
         {
             [FlatBufferItem(0)]
-            public virtual IList<string> StringVector { get; set; }
+            public virtual IList<T> Vector { get; set; }
         }
     }
 }

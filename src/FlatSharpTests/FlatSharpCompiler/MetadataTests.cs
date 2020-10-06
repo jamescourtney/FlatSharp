@@ -64,6 +64,42 @@ namespace FlatSharpTests.Compiler
         }
 
         [TestMethod]
+        public void DictionaryVector()
+        {
+            var (prop, type, attribute) = this.CompileAndGetProperty("", "[OtherTable]", "VectorType:\"IDictionary\",SortedVector");
+
+            Assert.IsFalse(attribute.Deprecated);
+            Assert.IsTrue(attribute.SortedVector);
+            Assert.AreEqual(typeof(IDictionary<,>), prop.PropertyType.GetGenericTypeDefinition());
+            Assert.AreEqual(typeof(string), prop.PropertyType.GetGenericArguments()[0]);
+            Assert.IsTrue(prop.PropertyType.GetGenericArguments()[1].FullName.Contains("OtherTable"));
+        }
+
+        [TestMethod]
+        public void DictionaryVector_WithSerializer()
+        {
+            var (prop, type, attribute) = this.CompileAndGetProperty("PrecompiledSerializer", "[OtherTable]", "VectorType:\"IDictionary\",SortedVector");
+
+            Assert.IsFalse(attribute.Deprecated);
+            Assert.IsTrue(attribute.SortedVector);
+            Assert.AreEqual(typeof(IDictionary<,>), prop.PropertyType.GetGenericTypeDefinition());
+            Assert.AreEqual(typeof(string), prop.PropertyType.GetGenericArguments()[0]);
+            Assert.IsTrue(prop.PropertyType.GetGenericArguments()[1].FullName.Contains("OtherTable"));
+        }
+
+        [TestMethod]
+        public void DictionaryVector_WithSerializer_NoSortedDeclaration()
+        {
+            var (prop, type, attribute) = this.CompileAndGetProperty("PrecompiledSerializer", "[OtherTable]", "VectorType:\"IDictionary\"");
+
+            Assert.IsFalse(attribute.Deprecated);
+            Assert.IsFalse(attribute.SortedVector); // dictionaries override this attribute.
+            Assert.AreEqual(typeof(IDictionary<,>), prop.PropertyType.GetGenericTypeDefinition());
+            Assert.AreEqual(typeof(string), prop.PropertyType.GetGenericArguments()[0]);
+            Assert.IsTrue(prop.PropertyType.GetGenericArguments()[1].FullName.Contains("OtherTable"));
+        }
+
+        [TestMethod]
         public void PrecompiledSerializer()
         {
             var (prop, type, attribute) = this.CompileAndGetProperty("PrecompiledSerializer", "string", "");

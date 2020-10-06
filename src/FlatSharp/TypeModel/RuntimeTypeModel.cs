@@ -160,5 +160,10 @@ namespace FlatSharp.TypeModel
             tableMember = null;
             return false;
         }
+
+        public virtual TableMemberModel AdjustTableMember(TableMemberModel source)
+        {
+            return source;
+        }
     }
 }

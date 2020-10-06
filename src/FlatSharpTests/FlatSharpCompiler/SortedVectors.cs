@@ -20,6 +20,7 @@ namespace FlatSharpTests.Compiler
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
+    using System.Security.Cryptography.X509Certificates;
     using FlatSharp;
     using FlatSharp.Attributes;
     using FlatSharp.Compiler;
@@ -152,6 +153,84 @@ table VectorMember {
 
 ";
             Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema));
+        }
+
+        [TestMethod]
+        public void SortedVector_Dictionary_KeyTypesCorrect_SharedString() => this.SortedVector_Dictionary_KeyTypesCorrect<SharedString>("string", "SharedString");
+
+        [TestMethod]
+        public void SortedVector_Dictionary_KeyTypesCorrect_String() => this.SortedVector_Dictionary_KeyTypesCorrect<string>("string");
+
+        [TestMethod]
+        public void SortedVector_Dictionary_KeyTypesCorrect_Bool() => this.SortedVector_Dictionary_KeyTypesCorrect<bool>("bool");
+
+        [TestMethod]
+        public void SortedVector_Dictionary_KeyTypesCorrect_Byte() => this.SortedVector_Dictionary_KeyTypesCorrect<byte>("ubyte");
+
+        [TestMethod]
+        public void SortedVector_Dictionary_KeyTypesCorrect_SByte() => this.SortedVector_Dictionary_KeyTypesCorrect<sbyte>("byte");
+
+        [TestMethod]
+        public void SortedVector_Dictionary_KeyTypesCorrect_UShort() => this.SortedVector_Dictionary_KeyTypesCorrect<ushort>("ushort");
+
+        [TestMethod]
+        public void SortedVector_Dictionary_KeyTypesCorrect_Short() => this.SortedVector_Dictionary_KeyTypesCorrect<short>("short");
+
+        [TestMethod]
+        public void SortedVector_Dictionary_KeyTypesCorrect_UInt() => this.SortedVector_Dictionary_KeyTypesCorrect<uint>("uint");
+
+        [TestMethod]
+        public void SortedVector_Dictionary_KeyTypesCorrect_Int() => this.SortedVector_Dictionary_KeyTypesCorrect<int>("int");
+
+        [TestMethod]
+        public void SortedVector_Dictionary_KeyTypesCorrect_ULong() => this.SortedVector_Dictionary_KeyTypesCorrect<ulong>("ulong");
+
+        [TestMethod]
+        public void SortedVector_Dictionary_KeyTypesCorrect_Long() => this.SortedVector_Dictionary_KeyTypesCorrect<long>("long");
+
+        [TestMethod]
+        public void SortedVector_Dictionary_KeyTypesCorrect_Float() => this.SortedVector_Dictionary_KeyTypesCorrect<float>("float");
+
+        [TestMethod]
+        public void SortedVector_Dictionary_KeyTypesCorrect_Double() => this.SortedVector_Dictionary_KeyTypesCorrect<double>("double");
+
+        [TestMethod]
+        public void SortedVector_Dictionary_NoKey()
+        {
+            string schema = $@"
+table Monster (PrecompiledSerializer) {{
+  Vector:[VectorMember] (VectorType:IDictionary);
+}}
+table VectorMember {{
+    Data:string;
+}}";
+            Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema));
+        }
+
+        private void SortedVector_Dictionary_KeyTypesCorrect<TKeyType>(string type, string metadata = null)
+        {
+            string schema = $@"
+table Monster (PrecompiledSerializer) {{
+  Vector:[VectorMember] (VectorType:IDictionary);
+}}
+table VectorMember {{
+    Data:{type} (Key {(!string.IsNullOrEmpty(metadata) ? ", " : "")}{metadata});
+}}";
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema);
+            var monsterType = asm.GetTypes().Single(t => t.Name == "Monster");
+            var vectorMemberType = asm.GetTypes().Single(t => t.Name == "VectorMember");
+
+            var monsterProperties = monsterType.GetProperties(BindingFlags.Instance | BindingFlags.Public).ToList();
+            Assert.AreEqual(1, monsterProperties.Count);
+
+            var vectorMemberProperties = vectorMemberType.GetProperties(BindingFlags.Instance | BindingFlags.Public).ToList();
+            Assert.AreEqual(1, vectorMemberProperties.Count);
+
+            Assert.AreEqual("Data", vectorMemberProperties[0].Name);
+            Assert.AreEqual(typeof(TKeyType), vectorMemberProperties[0].PropertyType);
+
+            Assert.AreEqual("Vector", monsterProperties[0].Name);
+            Assert.AreEqual(typeof(IDictionary<,>).MakeGenericType(typeof(TKeyType), vectorMemberType), monsterProperties[0].PropertyType);
         }
     }
 }

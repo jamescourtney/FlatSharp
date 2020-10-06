@@ -40,7 +40,8 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// Layout of the vtable.
         /// </summary>
-        public override ImmutableArray<PhysicalLayoutElement> PhysicalLayout => new PhysicalLayoutElement[] { new PhysicalLayoutElement(sizeof(uint), sizeof(uint)) }.ToImmutableArray();
+        public override ImmutableArray<PhysicalLayoutElement> PhysicalLayout => 
+            new PhysicalLayoutElement[] { new PhysicalLayoutElement(sizeof(uint), sizeof(uint)) }.ToImmutableArray();
 
         /// <summary>
         /// Vectors are arbitrary in length.
@@ -124,7 +125,7 @@ namespace FlatSharp.TypeModel
                 body =
     $@"
                     int length = {lengthProperty};
-                    int runningSum = {VectorMinSize} + {SerializationHelpers.GetMaxPadding(this.ItemTypeModel.PhysicalLayout[0].Alignment)} + ({this.PaddedMemberInlineSize} * length);
+                    int runningSum = {VectorMinSize} + {this.MaxInlineSize};
                     for (int i = 0; i < length; ++i)
                     {{
                         var itemTemp = {context.ValueVariableName}[i];

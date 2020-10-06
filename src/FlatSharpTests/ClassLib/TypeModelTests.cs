@@ -222,6 +222,71 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
+        public void TypeModel_Vector_Dictionary()
+        {
+            var model = RuntimeTypeModel.CreateFrom(typeof(GenericTable<IDictionary<string, SortedVectorKeyTable<string>>>));
+            Assert.AreEqual(FlatBufferSchemaType.Table, model.SchemaType);
+
+            TableTypeModel tableModel = (TableTypeModel)model;
+            var firstMember = tableModel.IndexToMemberMap[0];
+
+            Assert.IsTrue(firstMember.IsSortedVector); // sorted vector is set even though it's not explicitly declared. Dictionaries force it to be set.
+
+            var vectorModel = firstMember.ItemTypeModel;
+            Assert.AreEqual(FlatBufferSchemaType.Vector, vectorModel.SchemaType);
+        }
+
+        [TestMethod]
+        public void TypeModel_Vector_Dictionary_MismatchedKeyTypes_NotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => RuntimeTypeModel.CreateFrom(typeof(IDictionary<int, SortedVectorKeyTable<string>>)));
+        }
+
+        [TestMethod]
+        public void TypeModel_Vector_Dictionary_UnkeyedTable_NotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => RuntimeTypeModel.CreateFrom(typeof(IDictionary<int, GenericTable<string>>)));
+        }
+
+        [TestMethod]
+        public void TypeModel_Vector_Dictionary_Struct_NotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => RuntimeTypeModel.CreateFrom(typeof(IDictionary<int, GenericStruct<int>>)));
+        }
+
+        [TestMethod]
+        public void TypeModel_Vector_Dictionary_Vector_NotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => RuntimeTypeModel.CreateFrom(typeof(IDictionary<int, IList<string>>)));
+        }
+
+        [TestMethod]
+        public void TypeModel_Vector_Dictionary_Scalar_NotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => RuntimeTypeModel.CreateFrom(typeof(IDictionary<int, int>)));
+        }
+
+        [TestMethod]
+        public void TypeModel_Vector_Dictionary_Enum_NotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => RuntimeTypeModel.CreateFrom(typeof(IDictionary<int, TaggedEnum>)));
+        }
+
+
+        [TestMethod]
+        public void TypeModel_Vector_Dictionary_Union_NotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => RuntimeTypeModel.CreateFrom(typeof(IDictionary<int, FlatBufferUnion<string, GenericTable<string>>>)));
+        }
+
+        [TestMethod]
         public void TypeModel_Enum_UntaggedEnumNotAllowed()
         {
             Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
@@ -373,7 +438,7 @@ namespace FlatSharpTests
         [TestMethod]
         public void TypeModel_SortedVector_OfTableWithOptionalKey_NotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<IReadOnlyList<SortedVectorKeyTable<bool?>>>)));
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<bool?>>)));
             Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<byte?>[]>)));
             Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<sbyte?>[]>)));
             Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<ushort?>[]>)));

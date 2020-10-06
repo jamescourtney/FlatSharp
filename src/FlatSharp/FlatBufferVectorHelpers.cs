@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+ 
 namespace FlatSharp.TypeModel
 {
     using System;
@@ -42,6 +42,29 @@ namespace FlatSharp.TypeModel
                     {{
                         return {parseFunctionName}(memory, offset);
                     }}
+                }}
+            ";
+
+            return (classDef, className);
+        }
+
+        public static (string classDef, string className) CreateFlatBufferDictionarySubclass(
+            Type itemType,
+            Type keyType,
+            string keyPropertyName)
+        {
+            string valueTypeString = CSharpHelpers.GetCompilableTypeName(itemType);
+            string keyTypeString = CSharpHelpers.GetCompilableTypeName(keyType);
+            string className = $"FlatBufferDictionary_{Guid.NewGuid():n}";
+
+            string classDef = $@"
+                public sealed class {className} : {nameof(FlatBufferDictionaryVector<int, string>)}<{keyTypeString}, {valueTypeString}>
+                {{
+                    public {className}(IReadOnlyList<{valueTypeString}> innerList) : base(innerList)
+                    {{
+                    }}
+
+                    protected override {keyTypeString} GetKey({valueTypeString} value) => value.{keyPropertyName};
                 }}
             ";
 

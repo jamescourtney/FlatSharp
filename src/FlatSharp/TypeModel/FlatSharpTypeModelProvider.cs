@@ -80,6 +80,12 @@ namespace FlatSharp.TypeModel
                     typeModel = new MemoryVectorTypeModel(type, container);
                     return true;
                 }
+
+                if (genericDef == typeof(IDictionary<,>))
+                {
+                    typeModel = new DictionaryVectorTypeModel(type, container);
+                    return true;
+                }
             }
 
             if (typeof(IUnion).IsAssignableFrom(type))

@@ -26,5 +26,9 @@ namespace FlatSharp
         public NotMutableException()
         {
         }
+
+        public NotMutableException(string message) : base(message)
+        {
+        }
     }
 }

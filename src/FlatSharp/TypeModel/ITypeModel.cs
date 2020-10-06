@@ -151,6 +151,13 @@ namespace FlatSharp.TypeModel
         bool TryGetTableKeyMember(out TableMemberModel tableMember);
 
         /// <summary>
+        /// Invoked when this type model is being serialized as part of a table. Provides an opportunity to override or supplement
+        /// the declared configuration in the table. This method will not be invoked
+        /// when the type is serialized in other contexts, such as vectors and structs.
+        /// </summary>
+        TableMemberModel AdjustTableMember(TableMemberModel source);
+
+        /// <summary>
         /// Initializes and validates the type model.
         /// </summary>
         void Initialize();

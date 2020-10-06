@@ -278,6 +278,11 @@ namespace FlatSharp.Compiler
             // Compile with firstpass here to include all data (even stuff from includes).
             CodeWriter writer = new CodeWriter();
             rootNode.WriteCode(writer, CodeWritingPass.FirstPass, rootNode.DeclaringFile, new Dictionary<string, string>());
+            if (ErrorContext.Current.Errors.Any())
+            {
+                throw new InvalidFbsFileException(ErrorContext.Current.Errors);
+            }
+
             string code = writer.ToString();
             var (assembly, _, _) = RoslynSerializerGenerator.CompileAssembly(code, true);
 
