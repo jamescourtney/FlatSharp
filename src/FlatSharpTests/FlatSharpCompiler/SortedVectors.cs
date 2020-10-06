@@ -156,46 +156,46 @@ table VectorMember {
         }
 
         [TestMethod]
-        public void SortedVector_Dictionary_KeyTypesCorrect_SharedString() => this.SortedVector_Dictionary_KeyTypesCorrect<SharedString>("string", "SharedString");
+        public void SortedVector_IndexedVector_KeyTypesCorrect_SharedString() => this.SortedVector_IndexedVector_KeyTypesCorrect<SharedString>("string", "SharedString");
 
         [TestMethod]
-        public void SortedVector_Dictionary_KeyTypesCorrect_String() => this.SortedVector_Dictionary_KeyTypesCorrect<string>("string");
+        public void SortedVector_IndexedVector_KeyTypesCorrect_String() => this.SortedVector_IndexedVector_KeyTypesCorrect<string>("string");
 
         [TestMethod]
-        public void SortedVector_Dictionary_KeyTypesCorrect_Bool() => this.SortedVector_Dictionary_KeyTypesCorrect<bool>("bool");
+        public void SortedVector_IndexedVector_KeyTypesCorrect_Bool() => this.SortedVector_IndexedVector_KeyTypesCorrect<bool>("bool");
 
         [TestMethod]
-        public void SortedVector_Dictionary_KeyTypesCorrect_Byte() => this.SortedVector_Dictionary_KeyTypesCorrect<byte>("ubyte");
+        public void SortedVector_IndexedVector_KeyTypesCorrect_Byte() => this.SortedVector_IndexedVector_KeyTypesCorrect<byte>("ubyte");
 
         [TestMethod]
-        public void SortedVector_Dictionary_KeyTypesCorrect_SByte() => this.SortedVector_Dictionary_KeyTypesCorrect<sbyte>("byte");
+        public void SortedVector_IndexedVector_KeyTypesCorrect_SByte() => this.SortedVector_IndexedVector_KeyTypesCorrect<sbyte>("byte");
 
         [TestMethod]
-        public void SortedVector_Dictionary_KeyTypesCorrect_UShort() => this.SortedVector_Dictionary_KeyTypesCorrect<ushort>("ushort");
+        public void SortedVector_IndexedVector_KeyTypesCorrect_UShort() => this.SortedVector_IndexedVector_KeyTypesCorrect<ushort>("ushort");
 
         [TestMethod]
-        public void SortedVector_Dictionary_KeyTypesCorrect_Short() => this.SortedVector_Dictionary_KeyTypesCorrect<short>("short");
+        public void SortedVector_IndexedVector_KeyTypesCorrect_Short() => this.SortedVector_IndexedVector_KeyTypesCorrect<short>("short");
 
         [TestMethod]
-        public void SortedVector_Dictionary_KeyTypesCorrect_UInt() => this.SortedVector_Dictionary_KeyTypesCorrect<uint>("uint");
+        public void SortedVector_IndexedVector_KeyTypesCorrect_UInt() => this.SortedVector_IndexedVector_KeyTypesCorrect<uint>("uint");
 
         [TestMethod]
-        public void SortedVector_Dictionary_KeyTypesCorrect_Int() => this.SortedVector_Dictionary_KeyTypesCorrect<int>("int");
+        public void SortedVector_IndexedVector_KeyTypesCorrect_Int() => this.SortedVector_IndexedVector_KeyTypesCorrect<int>("int");
 
         [TestMethod]
-        public void SortedVector_Dictionary_KeyTypesCorrect_ULong() => this.SortedVector_Dictionary_KeyTypesCorrect<ulong>("ulong");
+        public void SortedVector_IndexedVector_KeyTypesCorrect_ULong() => this.SortedVector_IndexedVector_KeyTypesCorrect<ulong>("ulong");
 
         [TestMethod]
-        public void SortedVector_Dictionary_KeyTypesCorrect_Long() => this.SortedVector_Dictionary_KeyTypesCorrect<long>("long");
+        public void SortedVector_IndexedVector_KeyTypesCorrect_Long() => this.SortedVector_IndexedVector_KeyTypesCorrect<long>("long");
 
         [TestMethod]
-        public void SortedVector_Dictionary_KeyTypesCorrect_Float() => this.SortedVector_Dictionary_KeyTypesCorrect<float>("float");
+        public void SortedVector_IndexedVector_KeyTypesCorrect_Float() => this.SortedVector_IndexedVector_KeyTypesCorrect<float>("float");
 
         [TestMethod]
-        public void SortedVector_Dictionary_KeyTypesCorrect_Double() => this.SortedVector_Dictionary_KeyTypesCorrect<double>("double");
+        public void SortedVector_IndexedVector_KeyTypesCorrect_Double() => this.SortedVector_IndexedVector_KeyTypesCorrect<double>("double");
 
         [TestMethod]
-        public void SortedVector_Dictionary_NoKey()
+        public void SortedVector_IndexedVector_NoKey()
         {
             string schema = $@"
 table Monster (PrecompiledSerializer) {{
@@ -207,7 +207,7 @@ table VectorMember {{
             Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema));
         }
 
-        private void SortedVector_Dictionary_KeyTypesCorrect<TKeyType>(string type, string metadata = null)
+        private void SortedVector_IndexedVector_KeyTypesCorrect<TKeyType>(string type, string metadata = null)
         {
             string schema = $@"
 table Monster (PrecompiledSerializer) {{
