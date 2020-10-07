@@ -245,8 +245,6 @@ namespace Benchmark.FBBench
 
             for (int loop = 0; loop < iterations; ++loop)
             {
-                sum = 0;
-
                 sum += foobar.Initialized ? 1 : 0;
                 sum += foobar.Location.Length;
                 sum += foobar.Fruit;
@@ -282,7 +280,6 @@ namespace Benchmark.FBBench
 
             for (int loop = 0; loop < iterations; ++loop)
             {
-                sum = 0;
                 var foobar = Google.FooBarContainer.GetRootAsFooBarContainer(this.google_ByteBuffer);
 
                 sum += foobar.Initialized ? 1 : 0;
@@ -316,8 +313,6 @@ namespace Benchmark.FBBench
 
             for (int loop = 0; loop < iterations; ++loop)
             {
-                sum = 0;
-
                 sum += foobar.Initialized ? 1 : 0;
                 sum += foobar.Location.Length;
                 sum += foobar.Fruit;
@@ -496,7 +491,6 @@ namespace Benchmark.FBBench
 
             for (int loop = 0; loop < iterations; ++loop)
             {
-                sum = 0;
                 sum += foobar.Initialized ? 1 : 0;
                 sum += foobar.Location.Length;
                 sum += foobar.Fruit;
@@ -534,7 +528,6 @@ namespace Benchmark.FBBench
 
             for (int loop = 0; loop < iterations; ++loop)
             {
-                sum = 0;
                 sum += foobar.Initialized ? 1 : 0;
                 sum += foobar.Location.Length;
                 sum += foobar.Fruit;
