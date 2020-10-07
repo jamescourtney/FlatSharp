@@ -118,20 +118,19 @@ Serializers are a common vector for security issues. FlatSharp takes the followi
 At its core, FlatSharp is a tool to convert a FlatBuffer schema into a pile of safe C# code that depends only upon standard .NET libraries. There is no "secret sauce". Buffer overflows are intended to be impossible by design, due to the features of .NET and the CLR. A malicious input may lead to corrupt data or an Exception being thrown, but the process will not be compromised. As always, a best practice is to encrypt data at rest, in transit, and decorate it with some checksums.
 
 ### Performance & Benchmarks
-FlatSharp is really fast. This is primarily thanks to new changes in C# with Memory and Span, as well as FlatBuffers itself exposing a very simple type system that makes optimization simple. FlatSharp has a default serializer instance (```FlatBuffersSerializer.Default```), however it is possible to tune the serializer by creating your own with a custom ```FlatBufferSerializerOptions``` instance. More details are available in the [samples solution](samples/Example1-SerializerOptions/SerializerOptionsExample.cs).
-
-The FlatSharp benchmarks were run on .NET Core 3.1, using a C# approximation of [Google's FlatBuffer benchmark](https://github.com/google/flatbuffers/tree/benchmarks/benchmarks/cpp/FB), which can be found [here](src/Benchmark). The FlatSharp benchmarks use this schema, but with the following parameters:
+FlatSharp is really fast. This is primarily thanks to new changes in C# with Memory and Span, as well as FlatBuffers itself exposing a very simple type system that makes optimization simple. The FlatSharp benchmarks were run on .NET Core 3.1, using a C# approximation of [Google's FlatBuffer benchmark](https://github.com/google/flatbuffers/tree/benchmarks/benchmarks/cpp/FB), which can be found [here](src/Benchmark). The FlatSharp benchmarks use this schema, but with the following parameters:
 - Vector length = 3 or 30
 - Traversal count = 1 or 5
+- Runtime: .NET 4.7, .NET Core 2.1, .NET Core 3.1, .NET Core 5.0 - RC
 
-The full results for each version of FlatSharp can be viewed in the [benchmarks folder](benchmarks), which also contains benchmarks for .NET Framework 4.7 and .NET Core 2.1. Additionally, the benchmark data contains performance data for many different configurations of FlatSharp and other features, such as sorted vectors.
+The full results for each version of FlatSharp can be viewed in the [benchmarks folder](benchmarks). Additionally, the benchmark data contains performance data for many different configurations of FlatSharp and other features, such as sorted vectors.
 
 The benchmarks test 3 different serialization frameworks:
 - FlatSharp
 - Protobuf.NET
 - Google's C# Flatbuffers implementation (both standard and Object API flavors)
 
-The graphs below are generated using the default settings from each library.
+The graphs below are generated using the default settings from each library on .NET Core 3.1:
 
 ![image](doc/serialize.png)
 ![image](doc/parse.png)
