@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>Benchmark.FBBench.FBDeserializeBench-20201006-032258</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet=v0.12.1, OS=Windows 10.0.14393.3930 (1607/AnniversaryUpdate/Redstone1), VM=Hyper-V
+Intel Xeon CPU E5-2667 v3 3.20GHz, 1 CPU, 8 logical and 8 physical cores
+  [Host]                  : .NET Framework 4.8 (4.8.4240.0), X64 RyuJIT
+  MediumRun-.NET 4.7      : .NET Framework 4.8 (4.8.4240.0), X64 RyuJIT
+  MediumRun-.NET Core 2.1 : .NET Core 2.1.22 (CoreCLR 4.6.29220.03, CoreFX 4.6.29220.01), X64 RyuJIT
+  MediumRun-.NET Core 3.1 : .NET Core 3.1.8 (CoreCLR 4.700.20.41105, CoreFX 4.700.20.41903), X64 RyuJIT
+  MediumRun-.NET Core 5.0 : .NET Core 5.0.0 (CoreCLR 5.0.20.45114, CoreFX 5.0.20.45114), X64 RyuJIT
+</code></pre>
+<pre><code>IterationCount=15  LaunchCount=2  WarmupCount=10  
+</code></pre>
+
+<table>
+<thead><tr><th>                     Method</th><th>              Job</th><th>Runtime</th><th>TraversalCount</th><th>DeserializeOption</th><th>VectorLength</th><th> Mean</th><th>Error</th><th>StdDev</th>
+</tr>
+</thead><tbody><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>1</td><td>Lazy</td><td>3</td><td>1,975.5 ns</td><td>15.81 ns</td><td>23.66 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>1</td><td>Lazy</td><td>3</td><td>1,464.6 ns</td><td>8.06 ns</td><td>12.07 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>1</td><td>Lazy</td><td>3</td><td>864.0 ns</td><td>10.05 ns</td><td>15.04 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>1</td><td>Lazy</td><td>3</td><td>688.6 ns</td><td>10.94 ns</td><td>16.38 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>1</td><td>Lazy</td><td>3</td><td>898.4 ns</td><td>9.80 ns</td><td>14.37 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>1</td><td>Lazy</td><td>3</td><td>710.6 ns</td><td>10.78 ns</td><td>15.45 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>1</td><td>Lazy</td><td>3</td><td>882.5 ns</td><td>8.94 ns</td><td>12.53 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>1</td><td>Lazy</td><td>3</td><td>709.1 ns</td><td>12.40 ns</td><td>18.18 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>1</td><td>Lazy</td><td>30</td><td>15,236.3 ns</td><td>154.86 ns</td><td>231.79 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>1</td><td>Lazy</td><td>30</td><td>10,245.2 ns</td><td>78.91 ns</td><td>115.66 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>1</td><td>Lazy</td><td>30</td><td>6,441.1 ns</td><td>87.37 ns</td><td>130.77 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>1</td><td>Lazy</td><td>30</td><td>4,727.6 ns</td><td>103.00 ns</td><td>154.16 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>1</td><td>Lazy</td><td>30</td><td>6,725.2 ns</td><td>51.54 ns</td><td>73.92 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>1</td><td>Lazy</td><td>30</td><td>4,898.5 ns</td><td>41.64 ns</td><td>62.33 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>1</td><td>Lazy</td><td>30</td><td>6,706.0 ns</td><td>28.13 ns</td><td>42.11 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>1</td><td>Lazy</td><td>30</td><td>4,956.5 ns</td><td>113.03 ns</td><td>169.18 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>1</td><td>PropertyCache</td><td>3</td><td>2,090.2 ns</td><td>22.78 ns</td><td>34.09 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>1</td><td>PropertyCache</td><td>3</td><td>1,570.6 ns</td><td>22.57 ns</td><td>33.79 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>1</td><td>PropertyCache</td><td>3</td><td>971.0 ns</td><td>6.19 ns</td><td>9.07 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>1</td><td>PropertyCache</td><td>3</td><td>766.3 ns</td><td>11.19 ns</td><td>16.40 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>1</td><td>PropertyCache</td><td>3</td><td>996.3 ns</td><td>8.62 ns</td><td>12.36 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>1</td><td>PropertyCache</td><td>3</td><td>802.2 ns</td><td>8.62 ns</td><td>12.64 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>1</td><td>PropertyCache</td><td>3</td><td>982.3 ns</td><td>7.63 ns</td><td>11.42 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>1</td><td>PropertyCache</td><td>3</td><td>787.1 ns</td><td>12.42 ns</td><td>18.58 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>1</td><td>PropertyCache</td><td>30</td><td>16,276.1 ns</td><td>86.23 ns</td><td>126.40 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>1</td><td>PropertyCache</td><td>30</td><td>10,845.2 ns</td><td>103.09 ns</td><td>154.30 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>1</td><td>PropertyCache</td><td>30</td><td>7,384.1 ns</td><td>131.90 ns</td><td>197.42 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>1</td><td>PropertyCache</td><td>30</td><td>5,267.8 ns</td><td>167.43 ns</td><td>240.13 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>1</td><td>PropertyCache</td><td>30</td><td>7,599.8 ns</td><td>42.22 ns</td><td>60.56 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>1</td><td>PropertyCache</td><td>30</td><td>5,500.1 ns</td><td>84.05 ns</td><td>123.20 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>1</td><td>PropertyCache</td><td>30</td><td>7,644.0 ns</td><td>74.49 ns</td><td>111.49 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>1</td><td>PropertyCache</td><td>30</td><td>5,388.2 ns</td><td>69.41 ns</td><td>103.89 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>1</td><td>VectorCache</td><td>3</td><td>2,151.3 ns</td><td>6.65 ns</td><td>9.53 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>1</td><td>VectorCache</td><td>3</td><td>1,598.0 ns</td><td>14.43 ns</td><td>21.15 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>1</td><td>VectorCache</td><td>3</td><td>1,025.0 ns</td><td>23.68 ns</td><td>35.45 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>1</td><td>VectorCache</td><td>3</td><td>814.3 ns</td><td>17.61 ns</td><td>26.36 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>1</td><td>VectorCache</td><td>3</td><td>1,097.4 ns</td><td>6.77 ns</td><td>9.71 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>1</td><td>VectorCache</td><td>3</td><td>885.7 ns</td><td>7.47 ns</td><td>10.95 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>1</td><td>VectorCache</td><td>3</td><td>1,080.4 ns</td><td>8.11 ns</td><td>11.63 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>1</td><td>VectorCache</td><td>3</td><td>889.4 ns</td><td>12.78 ns</td><td>19.12 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>1</td><td>VectorCache</td><td>30</td><td>16,951.0 ns</td><td>147.07 ns</td><td>215.57 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>1</td><td>VectorCache</td><td>30</td><td>11,392.8 ns</td><td>191.64 ns</td><td>286.84 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>1</td><td>VectorCache</td><td>30</td><td>7,816.1 ns</td><td>122.87 ns</td><td>183.91 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>1</td><td>VectorCache</td><td>30</td><td>5,586.4 ns</td><td>130.40 ns</td><td>187.02 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>1</td><td>VectorCache</td><td>30</td><td>8,204.5 ns</td><td>64.84 ns</td><td>95.05 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>1</td><td>VectorCache</td><td>30</td><td>6,202.1 ns</td><td>34.63 ns</td><td>49.66 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>1</td><td>VectorCache</td><td>30</td><td>8,126.8 ns</td><td>35.58 ns</td><td>53.26 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>1</td><td>VectorCache</td><td>30</td><td>6,205.8 ns</td><td>71.46 ns</td><td>104.74 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>1</td><td>VectorCacheMutable</td><td>3</td><td>2,121.2 ns</td><td>10.81 ns</td><td>15.84 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>1</td><td>VectorCacheMutable</td><td>3</td><td>1,602.3 ns</td><td>17.93 ns</td><td>25.72 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>1</td><td>VectorCacheMutable</td><td>3</td><td>1,030.8 ns</td><td>11.29 ns</td><td>16.91 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>1</td><td>VectorCacheMutable</td><td>3</td><td>817.8 ns</td><td>9.01 ns</td><td>13.48 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>1</td><td>VectorCacheMutable</td><td>3</td><td>1,060.8 ns</td><td>6.13 ns</td><td>8.99 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>1</td><td>VectorCacheMutable</td><td>3</td><td>867.6 ns</td><td>6.40 ns</td><td>9.18 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>1</td><td>VectorCacheMutable</td><td>3</td><td>1,062.8 ns</td><td>6.59 ns</td><td>9.45 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>1</td><td>VectorCacheMutable</td><td>3</td><td>854.2 ns</td><td>3.43 ns</td><td>4.70 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>1</td><td>VectorCacheMutable</td><td>30</td><td>16,697.4 ns</td><td>75.09 ns</td><td>110.07 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>1</td><td>VectorCacheMutable</td><td>30</td><td>11,387.2 ns</td><td>108.03 ns</td><td>161.69 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>1</td><td>VectorCacheMutable</td><td>30</td><td>7,731.6 ns</td><td>74.18 ns</td><td>111.02 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>1</td><td>VectorCacheMutable</td><td>30</td><td>5,417.7 ns</td><td>222.92 ns</td><td>333.66 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>1</td><td>VectorCacheMutable</td><td>30</td><td>8,075.9 ns</td><td>68.89 ns</td><td>103.11 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>1</td><td>VectorCacheMutable</td><td>30</td><td>6,108.8 ns</td><td>45.36 ns</td><td>63.58 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>1</td><td>VectorCacheMutable</td><td>30</td><td>7,994.0 ns</td><td>55.63 ns</td><td>77.99 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>1</td><td>VectorCacheMutable</td><td>30</td><td>5,981.5 ns</td><td>70.69 ns</td><td>101.38 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>1</td><td>Greedy</td><td>3</td><td>2,099.9 ns</td><td>14.12 ns</td><td>20.25 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>1</td><td>Greedy</td><td>3</td><td>2,090.9 ns</td><td>12.55 ns</td><td>18.00 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>1</td><td>Greedy</td><td>3</td><td>1,010.3 ns</td><td>10.97 ns</td><td>15.73 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>1</td><td>Greedy</td><td>3</td><td>971.6 ns</td><td>7.59 ns</td><td>11.12 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>1</td><td>Greedy</td><td>3</td><td>1,048.0 ns</td><td>8.95 ns</td><td>13.12 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>1</td><td>Greedy</td><td>3</td><td>1,007.7 ns</td><td>7.42 ns</td><td>11.10 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>1</td><td>Greedy</td><td>3</td><td>1,040.5 ns</td><td>9.19 ns</td><td>13.19 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>1</td><td>Greedy</td><td>3</td><td>1,005.2 ns</td><td>11.02 ns</td><td>16.15 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>1</td><td>Greedy</td><td>30</td><td>16,197.8 ns</td><td>108.15 ns</td><td>158.53 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>1</td><td>Greedy</td><td>30</td><td>16,047.7 ns</td><td>124.04 ns</td><td>177.90 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>1</td><td>Greedy</td><td>30</td><td>7,395.0 ns</td><td>58.56 ns</td><td>85.83 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>1</td><td>Greedy</td><td>30</td><td>7,023.5 ns</td><td>105.66 ns</td><td>158.15 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>1</td><td>Greedy</td><td>30</td><td>7,649.5 ns</td><td>67.55 ns</td><td>101.10 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>1</td><td>Greedy</td><td>30</td><td>7,328.0 ns</td><td>36.36 ns</td><td>52.15 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>1</td><td>Greedy</td><td>30</td><td>7,719.4 ns</td><td>48.75 ns</td><td>69.91 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>1</td><td>Greedy</td><td>30</td><td>7,281.9 ns</td><td>53.67 ns</td><td>78.67 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>1</td><td>GreedyMutable</td><td>3</td><td>2,064.3 ns</td><td>15.88 ns</td><td>22.26 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>1</td><td>GreedyMutable</td><td>3</td><td>2,039.2 ns</td><td>18.11 ns</td><td>25.39 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>1</td><td>GreedyMutable</td><td>3</td><td>981.3 ns</td><td>18.29 ns</td><td>27.38 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>1</td><td>GreedyMutable</td><td>3</td><td>964.6 ns</td><td>16.54 ns</td><td>23.72 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>1</td><td>GreedyMutable</td><td>3</td><td>1,016.5 ns</td><td>7.23 ns</td><td>10.37 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>1</td><td>GreedyMutable</td><td>3</td><td>962.9 ns</td><td>4.98 ns</td><td>6.99 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>1</td><td>GreedyMutable</td><td>3</td><td>999.5 ns</td><td>9.72 ns</td><td>14.54 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>1</td><td>GreedyMutable</td><td>3</td><td>968.2 ns</td><td>8.01 ns</td><td>11.75 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>1</td><td>GreedyMutable</td><td>30</td><td>16,107.2 ns</td><td>121.62 ns</td><td>174.43 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>1</td><td>GreedyMutable</td><td>30</td><td>15,807.3 ns</td><td>90.04 ns</td><td>131.98 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>1</td><td>GreedyMutable</td><td>30</td><td>7,305.3 ns</td><td>64.24 ns</td><td>94.16 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>1</td><td>GreedyMutable</td><td>30</td><td>6,998.5 ns</td><td>81.88 ns</td><td>122.55 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>1</td><td>GreedyMutable</td><td>30</td><td>7,631.7 ns</td><td>64.27 ns</td><td>92.17 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>1</td><td>GreedyMutable</td><td>30</td><td>7,284.5 ns</td><td>77.63 ns</td><td>111.33 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>1</td><td>GreedyMutable</td><td>30</td><td>7,461.1 ns</td><td>41.84 ns</td><td>58.66 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>1</td><td>GreedyMutable</td><td>30</td><td>7,158.5 ns</td><td>60.68 ns</td><td>88.94 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>5</td><td>Lazy</td><td>3</td><td>9,626.0 ns</td><td>80.78 ns</td><td>120.91 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>5</td><td>Lazy</td><td>3</td><td>6,942.2 ns</td><td>57.95 ns</td><td>86.74 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>5</td><td>Lazy</td><td>3</td><td>3,984.4 ns</td><td>74.81 ns</td><td>104.87 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>5</td><td>Lazy</td><td>3</td><td>3,138.0 ns</td><td>44.88 ns</td><td>67.18 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>5</td><td>Lazy</td><td>3</td><td>4,203.9 ns</td><td>26.56 ns</td><td>38.94 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>5</td><td>Lazy</td><td>3</td><td>3,315.5 ns</td><td>26.10 ns</td><td>38.26 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>5</td><td>Lazy</td><td>3</td><td>4,216.1 ns</td><td>32.64 ns</td><td>48.86 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>5</td><td>Lazy</td><td>3</td><td>3,305.1 ns</td><td>45.18 ns</td><td>67.62 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>5</td><td>Lazy</td><td>30</td><td>77,196.6 ns</td><td>378.12 ns</td><td>554.24 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>5</td><td>Lazy</td><td>30</td><td>51,125.6 ns</td><td>327.89 ns</td><td>459.66 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>5</td><td>Lazy</td><td>30</td><td>31,956.2 ns</td><td>352.03 ns</td><td>516.01 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>5</td><td>Lazy</td><td>30</td><td>22,624.0 ns</td><td>431.70 ns</td><td>632.78 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>5</td><td>Lazy</td><td>30</td><td>33,655.0 ns</td><td>317.77 ns</td><td>475.62 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>5</td><td>Lazy</td><td>30</td><td>25,082.7 ns</td><td>321.97 ns</td><td>481.91 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>5</td><td>Lazy</td><td>30</td><td>33,545.7 ns</td><td>328.63 ns</td><td>481.70 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>5</td><td>Lazy</td><td>30</td><td>24,335.0 ns</td><td>378.46 ns</td><td>554.74 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>5</td><td>PropertyCache</td><td>3</td><td>8,910.8 ns</td><td>110.93 ns</td><td>166.03 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>5</td><td>PropertyCache</td><td>3</td><td>6,065.7 ns</td><td>48.95 ns</td><td>71.75 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>5</td><td>PropertyCache</td><td>3</td><td>3,863.2 ns</td><td>46.43 ns</td><td>69.50 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>5</td><td>PropertyCache</td><td>3</td><td>2,886.9 ns</td><td>41.76 ns</td><td>59.89 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>5</td><td>PropertyCache</td><td>3</td><td>4,071.7 ns</td><td>33.50 ns</td><td>49.11 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>5</td><td>PropertyCache</td><td>3</td><td>3,066.1 ns</td><td>32.04 ns</td><td>47.96 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>5</td><td>PropertyCache</td><td>3</td><td>4,018.1 ns</td><td>25.08 ns</td><td>35.16 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>5</td><td>PropertyCache</td><td>3</td><td>3,082.0 ns</td><td>28.60 ns</td><td>41.92 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>5</td><td>PropertyCache</td><td>30</td><td>79,079.9 ns</td><td>578.30 ns</td><td>865.58 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>5</td><td>PropertyCache</td><td>30</td><td>51,777.8 ns</td><td>696.68 ns</td><td>1,042.75 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>5</td><td>PropertyCache</td><td>30</td><td>35,655.6 ns</td><td>477.26 ns</td><td>684.48 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>5</td><td>PropertyCache</td><td>30</td><td>25,813.4 ns</td><td>240.10 ns</td><td>351.93 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>5</td><td>PropertyCache</td><td>30</td><td>37,425.2 ns</td><td>245.85 ns</td><td>360.36 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>5</td><td>PropertyCache</td><td>30</td><td>26,284.1 ns</td><td>151.87 ns</td><td>217.81 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>5</td><td>PropertyCache</td><td>30</td><td>36,831.8 ns</td><td>250.86 ns</td><td>367.70 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>5</td><td>PropertyCache</td><td>30</td><td>26,523.8 ns</td><td>136.60 ns</td><td>191.49 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>5</td><td>VectorCache</td><td>3</td><td>2,574.1 ns</td><td>17.30 ns</td><td>25.35 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>5</td><td>VectorCache</td><td>3</td><td>1,876.1 ns</td><td>13.36 ns</td><td>19.59 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>5</td><td>VectorCache</td><td>3</td><td>1,484.2 ns</td><td>17.96 ns</td><td>25.75 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>5</td><td>VectorCache</td><td>3</td><td>1,110.3 ns</td><td>13.26 ns</td><td>19.85 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>5</td><td>VectorCache</td><td>3</td><td>1,522.3 ns</td><td>9.59 ns</td><td>13.75 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>5</td><td>VectorCache</td><td>3</td><td>1,129.6 ns</td><td>7.03 ns</td><td>10.52 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>5</td><td>VectorCache</td><td>3</td><td>1,506.9 ns</td><td>8.38 ns</td><td>11.46 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>5</td><td>VectorCache</td><td>3</td><td>1,133.8 ns</td><td>5.10 ns</td><td>7.31 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>5</td><td>VectorCache</td><td>30</td><td>20,444.6 ns</td><td>168.18 ns</td><td>246.51 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>5</td><td>VectorCache</td><td>30</td><td>13,969.0 ns</td><td>202.06 ns</td><td>302.44 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>5</td><td>VectorCache</td><td>30</td><td>11,733.8 ns</td><td>90.53 ns</td><td>135.50 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>5</td><td>VectorCache</td><td>30</td><td>7,877.1 ns</td><td>105.04 ns</td><td>153.96 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>5</td><td>VectorCache</td><td>30</td><td>12,055.7 ns</td><td>100.38 ns</td><td>150.24 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>5</td><td>VectorCache</td><td>30</td><td>7,893.3 ns</td><td>58.21 ns</td><td>87.13 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>5</td><td>VectorCache</td><td>30</td><td>12,021.0 ns</td><td>105.44 ns</td><td>154.55 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>5</td><td>VectorCache</td><td>30</td><td>8,021.9 ns</td><td>93.96 ns</td><td>131.72 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>5</td><td>VectorCacheMutable</td><td>3</td><td>2,503.6 ns</td><td>27.00 ns</td><td>40.41 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>5</td><td>VectorCacheMutable</td><td>3</td><td>1,806.1 ns</td><td>27.46 ns</td><td>40.25 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>5</td><td>VectorCacheMutable</td><td>3</td><td>1,418.4 ns</td><td>15.17 ns</td><td>22.24 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>5</td><td>VectorCacheMutable</td><td>3</td><td>1,015.9 ns</td><td>10.16 ns</td><td>14.90 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>5</td><td>VectorCacheMutable</td><td>3</td><td>1,453.7 ns</td><td>13.62 ns</td><td>20.39 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>5</td><td>VectorCacheMutable</td><td>3</td><td>1,076.4 ns</td><td>6.59 ns</td><td>9.66 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>5</td><td>VectorCacheMutable</td><td>3</td><td>1,448.4 ns</td><td>16.94 ns</td><td>24.83 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>5</td><td>VectorCacheMutable</td><td>3</td><td>1,063.2 ns</td><td>6.25 ns</td><td>9.36 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>5</td><td>VectorCacheMutable</td><td>30</td><td>19,954.8 ns</td><td>142.41 ns</td><td>199.63 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>5</td><td>VectorCacheMutable</td><td>30</td><td>12,812.5 ns</td><td>162.59 ns</td><td>243.35 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>5</td><td>VectorCacheMutable</td><td>30</td><td>11,008.0 ns</td><td>97.78 ns</td><td>140.24 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>5</td><td>VectorCacheMutable</td><td>30</td><td>7,159.9 ns</td><td>117.04 ns</td><td>175.18 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>5</td><td>VectorCacheMutable</td><td>30</td><td>11,554.3 ns</td><td>104.54 ns</td><td>156.47 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>5</td><td>VectorCacheMutable</td><td>30</td><td>7,659.6 ns</td><td>60.58 ns</td><td>86.88 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>5</td><td>VectorCacheMutable</td><td>30</td><td>11,495.5 ns</td><td>80.15 ns</td><td>117.48 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>5</td><td>VectorCacheMutable</td><td>30</td><td>7,704.2 ns</td><td>36.61 ns</td><td>54.79 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>5</td><td>Greedy</td><td>3</td><td>2,438.9 ns</td><td>17.50 ns</td><td>26.19 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>5</td><td>Greedy</td><td>3</td><td>2,259.5 ns</td><td>16.35 ns</td><td>24.48 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>5</td><td>Greedy</td><td>3</td><td>1,312.6 ns</td><td>7.85 ns</td><td>11.74 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>5</td><td>Greedy</td><td>3</td><td>1,175.2 ns</td><td>12.89 ns</td><td>19.29 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>5</td><td>Greedy</td><td>3</td><td>1,364.0 ns</td><td>7.76 ns</td><td>11.37 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>5</td><td>Greedy</td><td>3</td><td>1,181.4 ns</td><td>3.81 ns</td><td>5.46 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>5</td><td>Greedy</td><td>3</td><td>1,343.5 ns</td><td>10.01 ns</td><td>14.68 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>5</td><td>Greedy</td><td>3</td><td>1,210.4 ns</td><td>10.67 ns</td><td>15.65 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>5</td><td>Greedy</td><td>30</td><td>19,014.3 ns</td><td>115.82 ns</td><td>169.76 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>5</td><td>Greedy</td><td>30</td><td>17,376.7 ns</td><td>83.16 ns</td><td>119.27 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>5</td><td>Greedy</td><td>30</td><td>10,185.9 ns</td><td>72.35 ns</td><td>106.05 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>5</td><td>Greedy</td><td>30</td><td>8,450.2 ns</td><td>179.27 ns</td><td>262.78 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>5</td><td>Greedy</td><td>30</td><td>10,569.5 ns</td><td>72.31 ns</td><td>108.23 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>5</td><td>Greedy</td><td>30</td><td>8,808.7 ns</td><td>105.96 ns</td><td>158.60 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>5</td><td>Greedy</td><td>30</td><td>10,236.2 ns</td><td>61.60 ns</td><td>90.29 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>5</td><td>Greedy</td><td>30</td><td>8,777.3 ns</td><td>39.25 ns</td><td>56.29 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>5</td><td>GreedyMutable</td><td>3</td><td>2,353.9 ns</td><td>22.72 ns</td><td>34.01 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>5</td><td>GreedyMutable</td><td>3</td><td>2,188.6 ns</td><td>19.01 ns</td><td>28.45 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>5</td><td>GreedyMutable</td><td>3</td><td>1,258.1 ns</td><td>9.32 ns</td><td>13.66 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>5</td><td>GreedyMutable</td><td>3</td><td>1,109.6 ns</td><td>10.40 ns</td><td>15.57 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>5</td><td>GreedyMutable</td><td>3</td><td>1,288.6 ns</td><td>7.23 ns</td><td>10.60 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>5</td><td>GreedyMutable</td><td>3</td><td>1,139.3 ns</td><td>4.81 ns</td><td>6.91 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>5</td><td>GreedyMutable</td><td>3</td><td>1,270.7 ns</td><td>6.83 ns</td><td>9.79 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>5</td><td>GreedyMutable</td><td>3</td><td>1,144.0 ns</td><td>9.94 ns</td><td>14.57 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>5</td><td>GreedyMutable</td><td>30</td><td>18,568.8 ns</td><td>185.73 ns</td><td>277.99 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>5</td><td>GreedyMutable</td><td>30</td><td>17,095.8 ns</td><td>103.47 ns</td><td>145.05 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>5</td><td>GreedyMutable</td><td>30</td><td>9,724.5 ns</td><td>137.77 ns</td><td>197.58 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>5</td><td>GreedyMutable</td><td>30</td><td>8,127.8 ns</td><td>147.39 ns</td><td>220.61 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>5</td><td>GreedyMutable</td><td>30</td><td>9,917.7 ns</td><td>39.12 ns</td><td>54.85 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>5</td><td>GreedyMutable</td><td>30</td><td>8,474.2 ns</td><td>87.47 ns</td><td>125.44 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraverse</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>5</td><td>GreedyMutable</td><td>30</td><td>9,851.5 ns</td><td>77.12 ns</td><td>115.44 ns</td>
+</tr><tr><td>FlatSharp_ParseAndTraversePartial</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>5</td><td>GreedyMutable</td><td>30</td><td>8,556.5 ns</td><td>74.16 ns</td><td>111.00 ns</td>
+</tr></tbody></table>
+</body>
+</html>

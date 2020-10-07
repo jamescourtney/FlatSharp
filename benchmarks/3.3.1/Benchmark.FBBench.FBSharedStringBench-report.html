@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>Benchmark.FBBench.FBSharedStringBench-20201006-070013</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet=v0.12.1, OS=Windows 10.0.14393.3930 (1607/AnniversaryUpdate/Redstone1), VM=Hyper-V
+Intel Xeon CPU E5-2667 v3 3.20GHz, 1 CPU, 8 logical and 8 physical cores
+  [Host]                  : .NET Framework 4.8 (4.8.4240.0), X64 RyuJIT
+  MediumRun-.NET 4.7      : .NET Framework 4.8 (4.8.4240.0), X64 RyuJIT
+  MediumRun-.NET Core 2.1 : .NET Core 2.1.22 (CoreCLR 4.6.29220.03, CoreFX 4.6.29220.01), X64 RyuJIT
+  MediumRun-.NET Core 3.1 : .NET Core 3.1.8 (CoreCLR 4.700.20.41105, CoreFX 4.700.20.41903), X64 RyuJIT
+  MediumRun-.NET Core 5.0 : .NET Core 5.0.0 (CoreCLR 5.0.20.45114, CoreFX 5.0.20.45114), X64 RyuJIT
+</code></pre>
+<pre><code>IterationCount=15  LaunchCount=2  WarmupCount=10  
+</code></pre>
+
+<table>
+<thead><tr><th>                                                     Method</th><th>              Job</th><th>Runtime</th><th>CacheSize</th><th>VectorLength</th><th>Mean</th><th>Error</th><th>StdDev</th><th>Median</th>
+</tr>
+</thead><tbody><tr><td>Serialize_RandomStringVector_WithRegularString</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>100</td><td>1000</td><td>162.12 &mu;s</td><td>3.168 &mu;s</td><td>4.742 &mu;s</td><td>161.77 &mu;s</td>
+</tr><tr><td>Serialize_RandomStringVector_WithSharing</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>100</td><td>1000</td><td>212.23 &mu;s</td><td>1.101 &mu;s</td><td>1.543 &mu;s</td><td>212.31 &mu;s</td>
+</tr><tr><td>Serialize_NonRandomStringVector_WithSharing</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>100</td><td>1000</td><td>205.15 &mu;s</td><td>1.158 &mu;s</td><td>1.661 &mu;s</td><td>205.16 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithRegularString</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>100</td><td>1000</td><td>147.96 &mu;s</td><td>1.430 &mu;s</td><td>2.140 &mu;s</td><td>147.64 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithSharedStrings</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>100</td><td>1000</td><td>173.39 &mu;s</td><td>1.404 &mu;s</td><td>2.058 &mu;s</td><td>172.66 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_NonThreadSafe</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>100</td><td>1000</td><td>159.39 &mu;s</td><td>1.668 &mu;s</td><td>2.445 &mu;s</td><td>159.75 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_ThreadSafe</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>100</td><td>1000</td><td>173.99 &mu;s</td><td>1.082 &mu;s</td><td>1.587 &mu;s</td><td>173.37 &mu;s</td>
+</tr><tr><td>Serialize_RandomStringVector_WithRegularString</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>100</td><td>1000</td><td>59.19 &mu;s</td><td>0.280 &mu;s</td><td>0.411 &mu;s</td><td>59.12 &mu;s</td>
+</tr><tr><td>Serialize_RandomStringVector_WithSharing</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>100</td><td>1000</td><td>75.64 &mu;s</td><td>0.373 &mu;s</td><td>0.559 &mu;s</td><td>75.64 &mu;s</td>
+</tr><tr><td>Serialize_NonRandomStringVector_WithSharing</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>100</td><td>1000</td><td>73.58 &mu;s</td><td>0.338 &mu;s</td><td>0.484 &mu;s</td><td>73.47 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithRegularString</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>100</td><td>1000</td><td>64.76 &mu;s</td><td>1.308 &mu;s</td><td>1.957 &mu;s</td><td>64.77 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithSharedStrings</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>100</td><td>1000</td><td>83.02 &mu;s</td><td>0.388 &mu;s</td><td>0.556 &mu;s</td><td>82.81 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_NonThreadSafe</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>100</td><td>1000</td><td>81.54 &mu;s</td><td>1.266 &mu;s</td><td>1.896 &mu;s</td><td>81.78 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_ThreadSafe</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>100</td><td>1000</td><td>92.06 &mu;s</td><td>1.048 &mu;s</td><td>1.504 &mu;s</td><td>92.47 &mu;s</td>
+</tr><tr><td>Serialize_RandomStringVector_WithRegularString</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>100</td><td>1000</td><td>41.72 &mu;s</td><td>0.815 &mu;s</td><td>1.168 &mu;s</td><td>41.78 &mu;s</td>
+</tr><tr><td>Serialize_RandomStringVector_WithSharing</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>100</td><td>1000</td><td>62.79 &mu;s</td><td>0.590 &mu;s</td><td>0.864 &mu;s</td><td>62.69 &mu;s</td>
+</tr><tr><td>Serialize_NonRandomStringVector_WithSharing</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>100</td><td>1000</td><td>62.96 &mu;s</td><td>0.425 &mu;s</td><td>0.623 &mu;s</td><td>62.89 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithRegularString</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>100</td><td>1000</td><td>57.20 &mu;s</td><td>0.576 &mu;s</td><td>0.827 &mu;s</td><td>56.97 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithSharedStrings</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>100</td><td>1000</td><td>82.36 &mu;s</td><td>1.002 &mu;s</td><td>1.468 &mu;s</td><td>82.32 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_NonThreadSafe</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>100</td><td>1000</td><td>76.06 &mu;s</td><td>0.712 &mu;s</td><td>1.022 &mu;s</td><td>76.24 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_ThreadSafe</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>100</td><td>1000</td><td>91.84 &mu;s</td><td>1.053 &mu;s</td><td>1.576 &mu;s</td><td>91.97 &mu;s</td>
+</tr><tr><td>Serialize_RandomStringVector_WithRegularString</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>100</td><td>1000</td><td>38.96 &mu;s</td><td>0.431 &mu;s</td><td>0.645 &mu;s</td><td>39.26 &mu;s</td>
+</tr><tr><td>Serialize_RandomStringVector_WithSharing</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>100</td><td>1000</td><td>58.39 &mu;s</td><td>0.492 &mu;s</td><td>0.706 &mu;s</td><td>58.43 &mu;s</td>
+</tr><tr><td>Serialize_NonRandomStringVector_WithSharing</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>100</td><td>1000</td><td>57.27 &mu;s</td><td>0.197 &mu;s</td><td>0.277 &mu;s</td><td>57.23 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithRegularString</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>100</td><td>1000</td><td>58.51 &mu;s</td><td>0.426 &mu;s</td><td>0.637 &mu;s</td><td>58.28 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithSharedStrings</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>100</td><td>1000</td><td>79.03 &mu;s</td><td>0.561 &mu;s</td><td>0.787 &mu;s</td><td>79.18 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_NonThreadSafe</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>100</td><td>1000</td><td>74.37 &mu;s</td><td>0.993 &mu;s</td><td>1.424 &mu;s</td><td>74.40 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_ThreadSafe</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>100</td><td>1000</td><td>90.47 &mu;s</td><td>0.944 &mu;s</td><td>1.413 &mu;s</td><td>90.32 &mu;s</td>
+</tr><tr><td>Serialize_RandomStringVector_WithRegularString</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>200</td><td>1000</td><td>160.87 &mu;s</td><td>3.010 &mu;s</td><td>4.219 &mu;s</td><td>159.18 &mu;s</td>
+</tr><tr><td>Serialize_RandomStringVector_WithSharing</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>200</td><td>1000</td><td>203.46 &mu;s</td><td>1.626 &mu;s</td><td>2.279 &mu;s</td><td>202.50 &mu;s</td>
+</tr><tr><td>Serialize_NonRandomStringVector_WithSharing</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>200</td><td>1000</td><td>194.30 &mu;s</td><td>1.521 &mu;s</td><td>2.276 &mu;s</td><td>193.83 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithRegularString</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>200</td><td>1000</td><td>146.43 &mu;s</td><td>1.103 &mu;s</td><td>1.616 &mu;s</td><td>146.53 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithSharedStrings</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>200</td><td>1000</td><td>174.45 &mu;s</td><td>1.861 &mu;s</td><td>2.669 &mu;s</td><td>173.24 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_NonThreadSafe</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>200</td><td>1000</td><td>157.43 &mu;s</td><td>1.782 &mu;s</td><td>2.667 &mu;s</td><td>156.93 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_ThreadSafe</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>200</td><td>1000</td><td>170.00 &mu;s</td><td>1.136 &mu;s</td><td>1.665 &mu;s</td><td>169.72 &mu;s</td>
+</tr><tr><td>Serialize_RandomStringVector_WithRegularString</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>200</td><td>1000</td><td>59.37 &mu;s</td><td>0.348 &mu;s</td><td>0.476 &mu;s</td><td>59.37 &mu;s</td>
+</tr><tr><td>Serialize_RandomStringVector_WithSharing</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>200</td><td>1000</td><td>76.00 &mu;s</td><td>0.409 &mu;s</td><td>0.612 &mu;s</td><td>76.01 &mu;s</td>
+</tr><tr><td>Serialize_NonRandomStringVector_WithSharing</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>200</td><td>1000</td><td>74.76 &mu;s</td><td>0.763 &mu;s</td><td>1.094 &mu;s</td><td>74.76 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithRegularString</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>200</td><td>1000</td><td>62.08 &mu;s</td><td>0.388 &mu;s</td><td>0.569 &mu;s</td><td>61.99 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithSharedStrings</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>200</td><td>1000</td><td>87.00 &mu;s</td><td>0.633 &mu;s</td><td>0.947 &mu;s</td><td>86.91 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_NonThreadSafe</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>200</td><td>1000</td><td>77.72 &mu;s</td><td>0.777 &mu;s</td><td>1.163 &mu;s</td><td>77.35 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_ThreadSafe</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>200</td><td>1000</td><td>90.37 &mu;s</td><td>0.683 &mu;s</td><td>1.002 &mu;s</td><td>90.45 &mu;s</td>
+</tr><tr><td>Serialize_RandomStringVector_WithRegularString</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>200</td><td>1000</td><td>40.35 &mu;s</td><td>0.209 &mu;s</td><td>0.312 &mu;s</td><td>40.40 &mu;s</td>
+</tr><tr><td>Serialize_RandomStringVector_WithSharing</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>200</td><td>1000</td><td>64.40 &mu;s</td><td>0.521 &mu;s</td><td>0.780 &mu;s</td><td>64.34 &mu;s</td>
+</tr><tr><td>Serialize_NonRandomStringVector_WithSharing</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>200</td><td>1000</td><td>63.85 &mu;s</td><td>1.652 &mu;s</td><td>2.422 &mu;s</td><td>65.35 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithRegularString</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>200</td><td>1000</td><td>59.25 &mu;s</td><td>0.462 &mu;s</td><td>0.677 &mu;s</td><td>59.11 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithSharedStrings</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>200</td><td>1000</td><td>82.03 &mu;s</td><td>1.103 &mu;s</td><td>1.650 &mu;s</td><td>82.25 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_NonThreadSafe</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>200</td><td>1000</td><td>71.89 &mu;s</td><td>1.506 &mu;s</td><td>2.061 &mu;s</td><td>70.89 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_ThreadSafe</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>200</td><td>1000</td><td>87.50 &mu;s</td><td>0.866 &mu;s</td><td>1.242 &mu;s</td><td>87.33 &mu;s</td>
+</tr><tr><td>Serialize_RandomStringVector_WithRegularString</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>200</td><td>1000</td><td>39.80 &mu;s</td><td>0.788 &mu;s</td><td>1.180 &mu;s</td><td>39.69 &mu;s</td>
+</tr><tr><td>Serialize_RandomStringVector_WithSharing</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>200</td><td>1000</td><td>60.79 &mu;s</td><td>0.424 &mu;s</td><td>0.622 &mu;s</td><td>60.73 &mu;s</td>
+</tr><tr><td>Serialize_NonRandomStringVector_WithSharing</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>200</td><td>1000</td><td>59.28 &mu;s</td><td>0.295 &mu;s</td><td>0.432 &mu;s</td><td>59.29 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithRegularString</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>200</td><td>1000</td><td>57.16 &mu;s</td><td>0.856 &mu;s</td><td>1.281 &mu;s</td><td>57.00 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithSharedStrings</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>200</td><td>1000</td><td>79.78 &mu;s</td><td>1.242 &mu;s</td><td>1.820 &mu;s</td><td>79.40 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_NonThreadSafe</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>200</td><td>1000</td><td>71.71 &mu;s</td><td>1.119 &mu;s</td><td>1.569 &mu;s</td><td>72.51 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_ThreadSafe</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>200</td><td>1000</td><td>90.67 &mu;s</td><td>0.938 &mu;s</td><td>1.404 &mu;s</td><td>90.66 &mu;s</td>
+</tr><tr><td>Serialize_RandomStringVector_WithRegularString</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>400</td><td>1000</td><td>157.25 &mu;s</td><td>0.691 &mu;s</td><td>1.035 &mu;s</td><td>157.08 &mu;s</td>
+</tr><tr><td>Serialize_RandomStringVector_WithSharing</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>400</td><td>1000</td><td>198.33 &mu;s</td><td>1.232 &mu;s</td><td>1.845 &mu;s</td><td>198.49 &mu;s</td>
+</tr><tr><td>Serialize_NonRandomStringVector_WithSharing</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>400</td><td>1000</td><td>179.81 &mu;s</td><td>1.077 &mu;s</td><td>1.510 &mu;s</td><td>179.54 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithRegularString</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>400</td><td>1000</td><td>144.60 &mu;s</td><td>0.487 &mu;s</td><td>0.682 &mu;s</td><td>144.48 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithSharedStrings</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>400</td><td>1000</td><td>174.93 &mu;s</td><td>1.489 &mu;s</td><td>2.183 &mu;s</td><td>174.38 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_NonThreadSafe</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>400</td><td>1000</td><td>141.21 &mu;s</td><td>1.487 &mu;s</td><td>2.132 &mu;s</td><td>141.82 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_ThreadSafe</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>400</td><td>1000</td><td>155.40 &mu;s</td><td>1.106 &mu;s</td><td>1.656 &mu;s</td><td>155.58 &mu;s</td>
+</tr><tr><td>Serialize_RandomStringVector_WithRegularString</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>400</td><td>1000</td><td>59.23 &mu;s</td><td>0.346 &mu;s</td><td>0.507 &mu;s</td><td>59.11 &mu;s</td>
+</tr><tr><td>Serialize_RandomStringVector_WithSharing</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>400</td><td>1000</td><td>78.23 &mu;s</td><td>0.564 &mu;s</td><td>0.827 &mu;s</td><td>78.09 &mu;s</td>
+</tr><tr><td>Serialize_NonRandomStringVector_WithSharing</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>400</td><td>1000</td><td>73.51 &mu;s</td><td>0.299 &mu;s</td><td>0.428 &mu;s</td><td>73.40 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithRegularString</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>400</td><td>1000</td><td>62.50 &mu;s</td><td>0.649 &mu;s</td><td>0.972 &mu;s</td><td>62.33 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithSharedStrings</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>400</td><td>1000</td><td>83.73 &mu;s</td><td>2.364 &mu;s</td><td>3.465 &mu;s</td><td>86.26 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_NonThreadSafe</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>400</td><td>1000</td><td>72.37 &mu;s</td><td>0.890 &mu;s</td><td>1.332 &mu;s</td><td>72.24 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_ThreadSafe</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>400</td><td>1000</td><td>86.25 &mu;s</td><td>0.708 &mu;s</td><td>1.060 &mu;s</td><td>86.54 &mu;s</td>
+</tr><tr><td>Serialize_RandomStringVector_WithRegularString</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>400</td><td>1000</td><td>40.35 &mu;s</td><td>0.640 &mu;s</td><td>0.938 &mu;s</td><td>40.93 &mu;s</td>
+</tr><tr><td>Serialize_RandomStringVector_WithSharing</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>400</td><td>1000</td><td>67.07 &mu;s</td><td>0.435 &mu;s</td><td>0.651 &mu;s</td><td>66.95 &mu;s</td>
+</tr><tr><td>Serialize_NonRandomStringVector_WithSharing</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>400</td><td>1000</td><td>63.89 &mu;s</td><td>0.693 &mu;s</td><td>1.015 &mu;s</td><td>63.93 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithRegularString</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>400</td><td>1000</td><td>58.61 &mu;s</td><td>0.836 &mu;s</td><td>1.199 &mu;s</td><td>58.75 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithSharedStrings</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>400</td><td>1000</td><td>80.36 &mu;s</td><td>0.774 &mu;s</td><td>1.159 &mu;s</td><td>80.18 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_NonThreadSafe</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>400</td><td>1000</td><td>70.20 &mu;s</td><td>1.346 &mu;s</td><td>1.886 &mu;s</td><td>70.28 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_ThreadSafe</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>400</td><td>1000</td><td>81.85 &mu;s</td><td>0.872 &mu;s</td><td>1.251 &mu;s</td><td>82.25 &mu;s</td>
+</tr><tr><td>Serialize_RandomStringVector_WithRegularString</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>400</td><td>1000</td><td>38.85 &mu;s</td><td>0.202 &mu;s</td><td>0.296 &mu;s</td><td>38.78 &mu;s</td>
+</tr><tr><td>Serialize_RandomStringVector_WithSharing</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>400</td><td>1000</td><td>63.59 &mu;s</td><td>0.499 &mu;s</td><td>0.731 &mu;s</td><td>63.76 &mu;s</td>
+</tr><tr><td>Serialize_NonRandomStringVector_WithSharing</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>400</td><td>1000</td><td>61.40 &mu;s</td><td>0.438 &mu;s</td><td>0.642 &mu;s</td><td>61.49 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithRegularString</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>400</td><td>1000</td><td>57.17 &mu;s</td><td>0.896 &mu;s</td><td>1.313 &mu;s</td><td>57.66 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithSharedStrings</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>400</td><td>1000</td><td>78.60 &mu;s</td><td>1.297 &mu;s</td><td>1.901 &mu;s</td><td>78.11 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_NonThreadSafe</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>400</td><td>1000</td><td>66.32 &mu;s</td><td>0.936 &mu;s</td><td>1.373 &mu;s</td><td>65.87 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_ThreadSafe</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>400</td><td>1000</td><td>84.32 &mu;s</td><td>1.211 &mu;s</td><td>1.813 &mu;s</td><td>84.03 &mu;s</td>
+</tr><tr><td>Serialize_RandomStringVector_WithRegularString</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>800</td><td>1000</td><td>157.71 &mu;s</td><td>1.109 &mu;s</td><td>1.591 &mu;s</td><td>157.55 &mu;s</td>
+</tr><tr><td>Serialize_RandomStringVector_WithSharing</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>800</td><td>1000</td><td>199.57 &mu;s</td><td>1.504 &mu;s</td><td>2.158 &mu;s</td><td>200.22 &mu;s</td>
+</tr><tr><td>Serialize_NonRandomStringVector_WithSharing</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>800</td><td>1000</td><td>177.67 &mu;s</td><td>1.009 &mu;s</td><td>1.447 &mu;s</td><td>177.99 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithRegularString</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>800</td><td>1000</td><td>146.04 &mu;s</td><td>0.976 &mu;s</td><td>1.430 &mu;s</td><td>145.55 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithSharedStrings</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>800</td><td>1000</td><td>173.60 &mu;s</td><td>0.920 &mu;s</td><td>1.320 &mu;s</td><td>173.21 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_NonThreadSafe</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>800</td><td>1000</td><td>121.84 &mu;s</td><td>2.920 &mu;s</td><td>4.371 &mu;s</td><td>121.88 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_ThreadSafe</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>800</td><td>1000</td><td>145.14 &mu;s</td><td>1.178 &mu;s</td><td>1.726 &mu;s</td><td>144.80 &mu;s</td>
+</tr><tr><td>Serialize_RandomStringVector_WithRegularString</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>800</td><td>1000</td><td>59.63 &mu;s</td><td>0.372 &mu;s</td><td>0.545 &mu;s</td><td>59.56 &mu;s</td>
+</tr><tr><td>Serialize_RandomStringVector_WithSharing</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>800</td><td>1000</td><td>81.42 &mu;s</td><td>0.642 &mu;s</td><td>0.921 &mu;s</td><td>80.99 &mu;s</td>
+</tr><tr><td>Serialize_NonRandomStringVector_WithSharing</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>800</td><td>1000</td><td>73.38 &mu;s</td><td>0.364 &mu;s</td><td>0.534 &mu;s</td><td>73.14 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithRegularString</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>800</td><td>1000</td><td>62.06 &mu;s</td><td>0.454 &mu;s</td><td>0.651 &mu;s</td><td>61.79 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithSharedStrings</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>800</td><td>1000</td><td>86.68 &mu;s</td><td>1.112 &mu;s</td><td>1.665 &mu;s</td><td>86.79 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_NonThreadSafe</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>800</td><td>1000</td><td>67.66 &mu;s</td><td>0.516 &mu;s</td><td>0.756 &mu;s</td><td>67.81 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_ThreadSafe</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>800</td><td>1000</td><td>80.75 &mu;s</td><td>1.008 &mu;s</td><td>1.508 &mu;s</td><td>80.96 &mu;s</td>
+</tr><tr><td>Serialize_RandomStringVector_WithRegularString</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>800</td><td>1000</td><td>40.46 &mu;s</td><td>0.266 &mu;s</td><td>0.398 &mu;s</td><td>40.28 &mu;s</td>
+</tr><tr><td>Serialize_RandomStringVector_WithSharing</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>800</td><td>1000</td><td>68.36 &mu;s</td><td>0.470 &mu;s</td><td>0.703 &mu;s</td><td>68.50 &mu;s</td>
+</tr><tr><td>Serialize_NonRandomStringVector_WithSharing</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>800</td><td>1000</td><td>64.79 &mu;s</td><td>0.469 &mu;s</td><td>0.673 &mu;s</td><td>64.69 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithRegularString</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>800</td><td>1000</td><td>60.76 &mu;s</td><td>1.753 &mu;s</td><td>2.570 &mu;s</td><td>59.70 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithSharedStrings</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>800</td><td>1000</td><td>81.97 &mu;s</td><td>0.768 &mu;s</td><td>1.125 &mu;s</td><td>82.13 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_NonThreadSafe</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>800</td><td>1000</td><td>64.98 &mu;s</td><td>0.542 &mu;s</td><td>0.777 &mu;s</td><td>64.89 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_ThreadSafe</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>800</td><td>1000</td><td>79.53 &mu;s</td><td>0.804 &mu;s</td><td>1.179 &mu;s</td><td>79.23 &mu;s</td>
+</tr><tr><td>Serialize_RandomStringVector_WithRegularString</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>800</td><td>1000</td><td>38.49 &mu;s</td><td>0.150 &mu;s</td><td>0.225 &mu;s</td><td>38.46 &mu;s</td>
+</tr><tr><td>Serialize_RandomStringVector_WithSharing</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>800</td><td>1000</td><td>66.92 &mu;s</td><td>0.522 &mu;s</td><td>0.781 &mu;s</td><td>66.85 &mu;s</td>
+</tr><tr><td>Serialize_NonRandomStringVector_WithSharing</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>800</td><td>1000</td><td>63.32 &mu;s</td><td>0.627 &mu;s</td><td>0.920 &mu;s</td><td>63.72 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithRegularString</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>800</td><td>1000</td><td>64.78 &mu;s</td><td>0.968 &mu;s</td><td>1.389 &mu;s</td><td>64.80 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithSharedStrings</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>800</td><td>1000</td><td>81.01 &mu;s</td><td>1.378 &mu;s</td><td>2.021 &mu;s</td><td>80.65 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_NonThreadSafe</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>800</td><td>1000</td><td>63.81 &mu;s</td><td>1.168 &mu;s</td><td>1.749 &mu;s</td><td>64.32 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_ThreadSafe</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>800</td><td>1000</td><td>76.71 &mu;s</td><td>0.935 &mu;s</td><td>1.399 &mu;s</td><td>76.54 &mu;s</td>
+</tr></tbody></table>
+</body>
+</html>
