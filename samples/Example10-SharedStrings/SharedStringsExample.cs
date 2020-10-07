@@ -137,7 +137,7 @@ namespace Samples.SharedStrings
     {
         private readonly ConcurrentDictionary<int, SharedString> offsetStringMap = new ConcurrentDictionary<int, SharedString>();
 
-        public SharedString ReadSharedString(InputBuffer buffer, int offset)
+        public SharedString ReadSharedString<TInputBuffer>(TInputBuffer buffer, int offset) where TInputBuffer : IInputBuffer
         {
             if (this.offsetStringMap.TryGetValue(offset, out SharedString str))
             {
@@ -164,7 +164,7 @@ namespace Samples.SharedStrings
         /// Called when FlatSharp has finished a serialize operation. This is the signal to flush any strings that the 
         /// string writer is hanging onto.
         /// </summary>
-        public void FlushWrites(SpanWriter writer, Span<byte> data, SerializationContext context)
+        public void FlushWrites<TSpanWriter>(TSpanWriter writer, Span<byte> data, SerializationContext context) where TSpanWriter : ISpanWriter
         {
             foreach (var kvp in this.stringOffsetMap)
             {
@@ -194,7 +194,8 @@ namespace Samples.SharedStrings
         /// <summary>
         /// Writes a shared string by storing the string mapped to the offsets at which the string occurs in the buffer.
         /// </summary>
-        public void WriteSharedString(SpanWriter spanWriter, Span<byte> data, int offset, SharedString value, SerializationContext context)
+        public void WriteSharedString<TSpanWriter>(TSpanWriter spanWriter, Span<byte> data, int offset, SharedString value, SerializationContext context)
+            where TSpanWriter : ISpanWriter
         {
             if (!this.stringOffsetMap.TryGetValue(value, out List<int> offsets))
             {

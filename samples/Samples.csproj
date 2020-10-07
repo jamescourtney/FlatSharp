@@ -16,17 +16,18 @@
     <FlatSharpSchema Include="Example7-Includes\IncludesExample.fbs" />
     <FlatSharpSchema Include="Example9-Unions\Unions.fbs" />
     <FlatSharpSchema Include="Example10-SharedStrings\SharedStrings.fbs" />
+    <FlatSharpSchema Include="Example11-IndexedVectors\IndexedVectors.fbs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FlatSharp" Version="3.3.0" />
-    <PackageReference Include="FlatSharp.Compiler" Version="3.3.0">
+    <PackageReference Include="FlatSharp" Version="4.0.0" />
+    <PackageReference Include="FlatSharp.Compiler" Version="4.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="FlatSharp.Runtime" Version="3.3.0" />
-    <PackageReference Include="FlatSharp.Unsafe" Version="3.3.0" />
-    <PackageReference Include="Grpc" Version="2.27.0" />
+    <PackageReference Include="FlatSharp.Runtime" Version="4.0.0" />
+    <PackageReference Include="FlatSharp.Unsafe" Version="4.0.0" />
+    <PackageReference Include="Grpc" Version="2.32.0" />
   </ItemGroup>
 
 </Project>

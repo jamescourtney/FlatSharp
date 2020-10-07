@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>Benchmark.FBBench.OthersDeserializeBench-20201006-054648</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet=v0.12.1, OS=Windows 10.0.14393.3930 (1607/AnniversaryUpdate/Redstone1), VM=Hyper-V
+Intel Xeon CPU E5-2667 v3 3.20GHz, 1 CPU, 8 logical and 8 physical cores
+  [Host]                  : .NET Framework 4.8 (4.8.4240.0), X64 RyuJIT
+  MediumRun-.NET 4.7      : .NET Framework 4.8 (4.8.4240.0), X64 RyuJIT
+  MediumRun-.NET Core 2.1 : .NET Core 2.1.22 (CoreCLR 4.6.29220.03, CoreFX 4.6.29220.01), X64 RyuJIT
+  MediumRun-.NET Core 3.1 : .NET Core 3.1.8 (CoreCLR 4.700.20.41105, CoreFX 4.700.20.41903), X64 RyuJIT
+  MediumRun-.NET Core 5.0 : .NET Core 5.0.0 (CoreCLR 5.0.20.45114, CoreFX 5.0.20.45114), X64 RyuJIT
+</code></pre>
+<pre><code>IterationCount=15  LaunchCount=2  WarmupCount=10  
+</code></pre>
+
+<table>
+<thead><tr><th>                                        Method</th><th>              Job</th><th>Runtime</th><th>TraversalCount</th><th>VectorLength</th><th> Mean</th><th>Error</th><th>StdDev</th>
+</tr>
+</thead><tbody><tr><td>Google_Flatbuffers_ParseAndTraverse</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>1</td><td>3</td><td>1,473.7 ns</td><td>7.40 ns</td><td>10.37 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraversePartial</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>1</td><td>3</td><td>1,095.6 ns</td><td>6.94 ns</td><td>10.18 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraverse_ObjectApi</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>1</td><td>3</td><td>2,260.7 ns</td><td>15.46 ns</td><td>22.65 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraversePartial_ObjectApi</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>1</td><td>3</td><td>2,260.6 ns</td><td>11.32 ns</td><td>16.59 ns</td>
+</tr><tr><td>PBDN_ParseAndTraverse</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>1</td><td>3</td><td>3,838.4 ns</td><td>102.37 ns</td><td>146.81 ns</td>
+</tr><tr><td>PBDN_ParseAndTraversePartial</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>1</td><td>3</td><td>3,654.6 ns</td><td>27.10 ns</td><td>40.57 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraverse</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>1</td><td>3</td><td>1,394.4 ns</td><td>6.99 ns</td><td>10.03 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraversePartial</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>1</td><td>3</td><td>1,017.3 ns</td><td>7.04 ns</td><td>10.32 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraverse_ObjectApi</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>1</td><td>3</td><td>2,175.9 ns</td><td>16.21 ns</td><td>23.76 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraversePartial_ObjectApi</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>1</td><td>3</td><td>2,171.7 ns</td><td>16.84 ns</td><td>24.16 ns</td>
+</tr><tr><td>PBDN_ParseAndTraverse</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>1</td><td>3</td><td>4,139.8 ns</td><td>26.87 ns</td><td>39.39 ns</td>
+</tr><tr><td>PBDN_ParseAndTraversePartial</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>1</td><td>3</td><td>4,095.3 ns</td><td>27.93 ns</td><td>40.93 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraverse</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>1</td><td>3</td><td>1,356.0 ns</td><td>6.45 ns</td><td>9.25 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraversePartial</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>1</td><td>3</td><td>999.6 ns</td><td>4.19 ns</td><td>6.01 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraverse_ObjectApi</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>1</td><td>3</td><td>2,172.6 ns</td><td>22.04 ns</td><td>32.99 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraversePartial_ObjectApi</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>1</td><td>3</td><td>2,150.0 ns</td><td>16.08 ns</td><td>22.55 ns</td>
+</tr><tr><td>PBDN_ParseAndTraverse</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>1</td><td>3</td><td>3,507.8 ns</td><td>32.22 ns</td><td>46.21 ns</td>
+</tr><tr><td>PBDN_ParseAndTraversePartial</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>1</td><td>3</td><td>3,424.9 ns</td><td>25.15 ns</td><td>36.07 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraverse</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>1</td><td>3</td><td>1,382.9 ns</td><td>5.58 ns</td><td>8.35 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraversePartial</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>1</td><td>3</td><td>968.1 ns</td><td>6.48 ns</td><td>9.50 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraverse_ObjectApi</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>1</td><td>3</td><td>2,117.4 ns</td><td>18.14 ns</td><td>27.16 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraversePartial_ObjectApi</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>1</td><td>3</td><td>2,125.5 ns</td><td>20.24 ns</td><td>29.66 ns</td>
+</tr><tr><td>PBDN_ParseAndTraverse</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>1</td><td>3</td><td>3,290.8 ns</td><td>25.89 ns</td><td>37.95 ns</td>
+</tr><tr><td>PBDN_ParseAndTraversePartial</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>1</td><td>3</td><td>3,205.3 ns</td><td>12.00 ns</td><td>17.21 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraverse</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>1</td><td>30</td><td>12,282.1 ns</td><td>78.65 ns</td><td>117.73 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraversePartial</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>1</td><td>30</td><td>8,605.9 ns</td><td>45.11 ns</td><td>67.52 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraverse_ObjectApi</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>1</td><td>30</td><td>19,953.9 ns</td><td>136.69 ns</td><td>200.36 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraversePartial_ObjectApi</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>1</td><td>30</td><td>19,825.3 ns</td><td>145.87 ns</td><td>204.49 ns</td>
+</tr><tr><td>PBDN_ParseAndTraverse</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>1</td><td>30</td><td>26,803.4 ns</td><td>225.42 ns</td><td>337.40 ns</td>
+</tr><tr><td>PBDN_ParseAndTraversePartial</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>1</td><td>30</td><td>26,521.8 ns</td><td>259.59 ns</td><td>380.50 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraverse</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>1</td><td>30</td><td>11,772.5 ns</td><td>56.15 ns</td><td>84.05 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraversePartial</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>1</td><td>30</td><td>8,007.2 ns</td><td>35.32 ns</td><td>49.51 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraverse_ObjectApi</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>1</td><td>30</td><td>19,165.9 ns</td><td>96.30 ns</td><td>141.16 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraversePartial_ObjectApi</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>1</td><td>30</td><td>19,027.9 ns</td><td>138.42 ns</td><td>198.52 ns</td>
+</tr><tr><td>PBDN_ParseAndTraverse</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>1</td><td>30</td><td>30,545.1 ns</td><td>238.09 ns</td><td>348.99 ns</td>
+</tr><tr><td>PBDN_ParseAndTraversePartial</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>1</td><td>30</td><td>30,031.1 ns</td><td>169.79 ns</td><td>243.50 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraverse</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>1</td><td>30</td><td>11,521.5 ns</td><td>147.56 ns</td><td>220.86 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraversePartial</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>1</td><td>30</td><td>7,663.5 ns</td><td>30.54 ns</td><td>45.72 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraverse_ObjectApi</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>1</td><td>30</td><td>18,973.8 ns</td><td>123.82 ns</td><td>181.49 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraversePartial_ObjectApi</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>1</td><td>30</td><td>18,950.8 ns</td><td>140.25 ns</td><td>201.14 ns</td>
+</tr><tr><td>PBDN_ParseAndTraverse</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>1</td><td>30</td><td>24,898.6 ns</td><td>195.75 ns</td><td>292.99 ns</td>
+</tr><tr><td>PBDN_ParseAndTraversePartial</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>1</td><td>30</td><td>24,472.4 ns</td><td>139.76 ns</td><td>200.44 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraverse</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>1</td><td>30</td><td>11,465.0 ns</td><td>51.89 ns</td><td>77.67 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraversePartial</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>1</td><td>30</td><td>7,472.6 ns</td><td>29.13 ns</td><td>41.78 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraverse_ObjectApi</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>1</td><td>30</td><td>18,579.6 ns</td><td>94.44 ns</td><td>138.42 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraversePartial_ObjectApi</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>1</td><td>30</td><td>18,615.6 ns</td><td>102.52 ns</td><td>147.03 ns</td>
+</tr><tr><td>PBDN_ParseAndTraverse</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>1</td><td>30</td><td>24,040.8 ns</td><td>154.39 ns</td><td>231.08 ns</td>
+</tr><tr><td>PBDN_ParseAndTraversePartial</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>1</td><td>30</td><td>23,842.4 ns</td><td>153.72 ns</td><td>230.09 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraverse</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>5</td><td>3</td><td>7,382.2 ns</td><td>31.84 ns</td><td>45.67 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraversePartial</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>5</td><td>3</td><td>5,498.3 ns</td><td>51.03 ns</td><td>76.38 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraverse_ObjectApi</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>5</td><td>3</td><td>2,311.2 ns</td><td>12.76 ns</td><td>18.71 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraversePartial_ObjectApi</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>5</td><td>3</td><td>2,268.2 ns</td><td>17.76 ns</td><td>26.03 ns</td>
+</tr><tr><td>PBDN_ParseAndTraverse</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>5</td><td>3</td><td>3,962.4 ns</td><td>35.91 ns</td><td>52.64 ns</td>
+</tr><tr><td>PBDN_ParseAndTraversePartial</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>5</td><td>3</td><td>3,818.5 ns</td><td>39.47 ns</td><td>57.85 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraverse</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>5</td><td>3</td><td>6,875.2 ns</td><td>38.40 ns</td><td>56.28 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraversePartial</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>5</td><td>3</td><td>5,034.7 ns</td><td>24.99 ns</td><td>37.40 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraverse_ObjectApi</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>5</td><td>3</td><td>2,196.8 ns</td><td>18.22 ns</td><td>26.70 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraversePartial_ObjectApi</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>5</td><td>3</td><td>2,161.9 ns</td><td>16.09 ns</td><td>23.58 ns</td>
+</tr><tr><td>PBDN_ParseAndTraverse</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>5</td><td>3</td><td>4,416.9 ns</td><td>19.07 ns</td><td>26.73 ns</td>
+</tr><tr><td>PBDN_ParseAndTraversePartial</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>5</td><td>3</td><td>4,327.8 ns</td><td>43.26 ns</td><td>64.75 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraverse</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>5</td><td>3</td><td>6,881.7 ns</td><td>38.01 ns</td><td>55.72 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraversePartial</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>5</td><td>3</td><td>4,905.4 ns</td><td>42.04 ns</td><td>61.63 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraverse_ObjectApi</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>5</td><td>3</td><td>2,192.7 ns</td><td>10.53 ns</td><td>15.11 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraversePartial_ObjectApi</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>5</td><td>3</td><td>2,155.0 ns</td><td>11.01 ns</td><td>15.07 ns</td>
+</tr><tr><td>PBDN_ParseAndTraverse</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>5</td><td>3</td><td>3,780.9 ns</td><td>27.19 ns</td><td>37.22 ns</td>
+</tr><tr><td>PBDN_ParseAndTraversePartial</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>5</td><td>3</td><td>3,564.1 ns</td><td>26.30 ns</td><td>38.56 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraverse</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>5</td><td>3</td><td>6,900.6 ns</td><td>40.04 ns</td><td>59.94 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraversePartial</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>5</td><td>3</td><td>4,800.8 ns</td><td>35.38 ns</td><td>51.87 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraverse_ObjectApi</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>5</td><td>3</td><td>2,187.8 ns</td><td>22.23 ns</td><td>31.88 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraversePartial_ObjectApi</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>5</td><td>3</td><td>2,182.8 ns</td><td>12.25 ns</td><td>18.33 ns</td>
+</tr><tr><td>PBDN_ParseAndTraverse</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>5</td><td>3</td><td>3,593.9 ns</td><td>25.94 ns</td><td>38.03 ns</td>
+</tr><tr><td>PBDN_ParseAndTraversePartial</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>5</td><td>3</td><td>3,396.1 ns</td><td>17.00 ns</td><td>24.92 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraverse</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>5</td><td>30</td><td>61,514.1 ns</td><td>368.21 ns</td><td>539.72 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraversePartial</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>5</td><td>30</td><td>42,963.1 ns</td><td>208.85 ns</td><td>299.53 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraverse_ObjectApi</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>5</td><td>30</td><td>20,444.9 ns</td><td>141.84 ns</td><td>203.42 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraversePartial_ObjectApi</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>5</td><td>30</td><td>20,074.2 ns</td><td>183.12 ns</td><td>274.09 ns</td>
+</tr><tr><td>PBDN_ParseAndTraverse</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>5</td><td>30</td><td>29,320.4 ns</td><td>151.86 ns</td><td>222.60 ns</td>
+</tr><tr><td>PBDN_ParseAndTraversePartial</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>5</td><td>30</td><td>27,591.9 ns</td><td>268.16 ns</td><td>384.59 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraverse</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>5</td><td>30</td><td>59,038.6 ns</td><td>353.17 ns</td><td>528.61 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraversePartial</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>5</td><td>30</td><td>39,866.2 ns</td><td>146.53 ns</td><td>210.15 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraverse_ObjectApi</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>5</td><td>30</td><td>19,595.1 ns</td><td>102.72 ns</td><td>143.99 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraversePartial_ObjectApi</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>5</td><td>30</td><td>19,282.4 ns</td><td>84.15 ns</td><td>123.35 ns</td>
+</tr><tr><td>PBDN_ParseAndTraverse</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>5</td><td>30</td><td>32,480.8 ns</td><td>117.23 ns</td><td>164.34 ns</td>
+</tr><tr><td>PBDN_ParseAndTraversePartial</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>5</td><td>30</td><td>31,119.5 ns</td><td>192.22 ns</td><td>287.70 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraverse</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>5</td><td>30</td><td>58,101.4 ns</td><td>345.31 ns</td><td>484.07 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraversePartial</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>5</td><td>30</td><td>38,337.1 ns</td><td>262.85 ns</td><td>393.43 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraverse_ObjectApi</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>5</td><td>30</td><td>19,341.6 ns</td><td>126.21 ns</td><td>176.93 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraversePartial_ObjectApi</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>5</td><td>30</td><td>19,293.0 ns</td><td>96.77 ns</td><td>144.84 ns</td>
+</tr><tr><td>PBDN_ParseAndTraverse</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>5</td><td>30</td><td>27,507.8 ns</td><td>144.02 ns</td><td>206.55 ns</td>
+</tr><tr><td>PBDN_ParseAndTraversePartial</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>5</td><td>30</td><td>25,842.3 ns</td><td>196.90 ns</td><td>288.62 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraverse</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>5</td><td>30</td><td>58,638.1 ns</td><td>497.28 ns</td><td>744.31 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraversePartial</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>5</td><td>30</td><td>37,470.5 ns</td><td>339.70 ns</td><td>508.44 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraverse_ObjectApi</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>5</td><td>30</td><td>19,100.4 ns</td><td>99.21 ns</td><td>148.50 ns</td>
+</tr><tr><td>Google_Flatbuffers_ParseAndTraversePartial_ObjectApi</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>5</td><td>30</td><td>18,635.3 ns</td><td>119.70 ns</td><td>179.17 ns</td>
+</tr><tr><td>PBDN_ParseAndTraverse</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>5</td><td>30</td><td>26,238.1 ns</td><td>166.35 ns</td><td>248.99 ns</td>
+</tr><tr><td>PBDN_ParseAndTraversePartial</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>5</td><td>30</td><td>24,526.5 ns</td><td>152.57 ns</td><td>228.35 ns</td>
+</tr></tbody></table>
+</body>
+</html>

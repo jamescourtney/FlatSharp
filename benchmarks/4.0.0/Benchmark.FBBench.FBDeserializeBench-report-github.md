@@ -1,0 +1,207 @@
+``` ini
+
+BenchmarkDotNet=v0.12.1, OS=Windows 10.0.14393.3930 (1607/AnniversaryUpdate/Redstone1), VM=Hyper-V
+Intel Xeon CPU E5-2667 v3 3.20GHz, 1 CPU, 8 logical and 8 physical cores
+  [Host]                  : .NET Framework 4.8 (4.8.4240.0), X64 RyuJIT
+  MediumRun-.NET 4.7      : .NET Framework 4.8 (4.8.4240.0), X64 RyuJIT
+  MediumRun-.NET Core 2.1 : .NET Core 2.1.22 (CoreCLR 4.6.29220.03, CoreFX 4.6.29220.01), X64 RyuJIT
+  MediumRun-.NET Core 3.1 : .NET Core 3.1.8 (CoreCLR 4.700.20.41105, CoreFX 4.700.20.41903), X64 RyuJIT
+  MediumRun-.NET Core 5.0 : .NET Core 5.0.0 (CoreCLR 5.0.20.45114, CoreFX 5.0.20.45114), X64 RyuJIT
+
+IterationCount=15  LaunchCount=2  WarmupCount=10  
+
+```
+|                            Method |                     Job |       Runtime | TraversalCount |  DeserializeOption | VectorLength |        Mean |     Error |      StdDev |      Median |
+|---------------------------------- |------------------------ |-------------- |--------------- |------------------- |------------- |------------:|----------:|------------:|------------:|
+|        **FlatSharp_ParseAndTraverse** |      **MediumRun-.NET 4.7** |      **.NET 4.7** |              **1** |               **Lazy** |            **3** |  **1,595.4 ns** |  **15.62 ns** |    **23.38 ns** |  **1,595.1 ns** |
+| FlatSharp_ParseAndTraversePartial |      MediumRun-.NET 4.7 |      .NET 4.7 |              1 |               Lazy |            3 |  1,215.8 ns |  19.07 ns |    27.36 ns |  1,225.1 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              1 |               Lazy |            3 |    797.7 ns |  10.48 ns |    15.36 ns |    801.3 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              1 |               Lazy |            3 |    652.5 ns |   8.11 ns |    12.14 ns |    654.2 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              1 |               Lazy |            3 |    826.2 ns |   6.46 ns |     9.26 ns |    827.8 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              1 |               Lazy |            3 |    692.6 ns |   5.58 ns |     8.36 ns |    690.7 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              1 |               Lazy |            3 |    833.2 ns |   6.19 ns |     9.27 ns |    833.3 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              1 |               Lazy |            3 |    692.1 ns |   8.30 ns |    12.43 ns |    689.6 ns |
+|        **FlatSharp_ParseAndTraverse** |      **MediumRun-.NET 4.7** |      **.NET 4.7** |              **1** |               **Lazy** |           **30** | **12,220.8 ns** | **202.92 ns** |   **303.72 ns** | **12,220.1 ns** |
+| FlatSharp_ParseAndTraversePartial |      MediumRun-.NET 4.7 |      .NET 4.7 |              1 |               Lazy |           30 |  8,550.1 ns | 119.52 ns |   175.20 ns |  8,560.0 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              1 |               Lazy |           30 |  5,856.6 ns |  95.48 ns |   139.95 ns |  5,836.8 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              1 |               Lazy |           30 |  4,249.8 ns |  83.66 ns |   125.21 ns |  4,255.8 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              1 |               Lazy |           30 |  6,071.8 ns |  45.12 ns |    66.13 ns |  6,084.4 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              1 |               Lazy |           30 |  4,606.6 ns |  26.56 ns |    39.76 ns |  4,605.2 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              1 |               Lazy |           30 |  6,036.7 ns |  37.21 ns |    52.17 ns |  6,060.0 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              1 |               Lazy |           30 |  4,648.2 ns |  45.71 ns |    68.41 ns |  4,639.0 ns |
+|        **FlatSharp_ParseAndTraverse** |      **MediumRun-.NET 4.7** |      **.NET 4.7** |              **1** |      **PropertyCache** |            **3** |  **1,676.3 ns** |  **11.99 ns** |    **17.20 ns** |  **1,675.5 ns** |
+| FlatSharp_ParseAndTraversePartial |      MediumRun-.NET 4.7 |      .NET 4.7 |              1 |      PropertyCache |            3 |  1,303.7 ns |  18.22 ns |    27.27 ns |  1,308.6 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              1 |      PropertyCache |            3 |    862.7 ns |  10.68 ns |    15.32 ns |    865.8 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              1 |      PropertyCache |            3 |    716.7 ns |  11.83 ns |    17.70 ns |    719.3 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              1 |      PropertyCache |            3 |    923.0 ns |   5.49 ns |     8.04 ns |    924.3 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              1 |      PropertyCache |            3 |    755.4 ns |   6.61 ns |     9.90 ns |    755.1 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              1 |      PropertyCache |            3 |    907.5 ns |   3.77 ns |     5.53 ns |    907.4 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              1 |      PropertyCache |            3 |    742.4 ns |   9.97 ns |    14.93 ns |    744.0 ns |
+|        **FlatSharp_ParseAndTraverse** |      **MediumRun-.NET 4.7** |      **.NET 4.7** |              **1** |      **PropertyCache** |           **30** | **13,099.9 ns** | **190.48 ns** |   **285.10 ns** | **13,118.8 ns** |
+| FlatSharp_ParseAndTraversePartial |      MediumRun-.NET 4.7 |      .NET 4.7 |              1 |      PropertyCache |           30 |  9,297.8 ns | 150.12 ns |   220.04 ns |  9,359.0 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              1 |      PropertyCache |           30 |  6,499.4 ns |  89.56 ns |   134.04 ns |  6,516.7 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              1 |      PropertyCache |           30 |  4,554.9 ns | 132.06 ns |   197.67 ns |  4,589.3 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              1 |      PropertyCache |           30 |  6,823.6 ns |  31.56 ns |    45.26 ns |  6,839.0 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              1 |      PropertyCache |           30 |  5,145.9 ns |  44.99 ns |    67.34 ns |  5,154.0 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              1 |      PropertyCache |           30 |  6,709.8 ns |  58.39 ns |    85.59 ns |  6,715.9 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              1 |      PropertyCache |           30 |  4,886.7 ns |  76.61 ns |   114.67 ns |  4,877.0 ns |
+|        **FlatSharp_ParseAndTraverse** |      **MediumRun-.NET 4.7** |      **.NET 4.7** |              **1** |        **VectorCache** |            **3** |  **1,789.1 ns** |  **16.07 ns** |    **22.53 ns** |  **1,786.3 ns** |
+| FlatSharp_ParseAndTraversePartial |      MediumRun-.NET 4.7 |      .NET 4.7 |              1 |        VectorCache |            3 |  1,422.7 ns |  12.59 ns |    18.06 ns |  1,423.4 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              1 |        VectorCache |            3 |    975.4 ns |  10.14 ns |    15.18 ns |    974.8 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              1 |        VectorCache |            3 |    813.6 ns |  12.84 ns |    19.21 ns |    817.9 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              1 |        VectorCache |            3 |  1,022.6 ns |   7.09 ns |    10.39 ns |  1,019.9 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              1 |        VectorCache |            3 |    871.8 ns |   6.01 ns |     8.62 ns |    869.3 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              1 |        VectorCache |            3 |  1,007.4 ns |  11.12 ns |    16.29 ns |  1,005.8 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              1 |        VectorCache |            3 |    836.9 ns |  11.75 ns |    17.59 ns |    838.6 ns |
+|        **FlatSharp_ParseAndTraverse** |      **MediumRun-.NET 4.7** |      **.NET 4.7** |              **1** |        **VectorCache** |           **30** | **13,661.8 ns** | **141.37 ns** |   **207.22 ns** | **13,630.2 ns** |
+| FlatSharp_ParseAndTraversePartial |      MediumRun-.NET 4.7 |      .NET 4.7 |              1 |        VectorCache |           30 |  9,971.5 ns | 128.00 ns |   191.58 ns | 10,040.6 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              1 |        VectorCache |           30 |  7,111.2 ns | 161.55 ns |   231.70 ns |  7,070.8 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              1 |        VectorCache |           30 |  5,209.8 ns | 135.62 ns |   202.98 ns |  5,275.7 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              1 |        VectorCache |           30 |  7,407.3 ns |  43.45 ns |    62.32 ns |  7,402.8 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              1 |        VectorCache |           30 |  5,651.0 ns | 168.86 ns |   247.52 ns |  5,733.8 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              1 |        VectorCache |           30 |  7,211.9 ns |  80.69 ns |   118.27 ns |  7,242.0 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              1 |        VectorCache |           30 |  5,619.1 ns |  50.71 ns |    74.33 ns |  5,600.1 ns |
+|        **FlatSharp_ParseAndTraverse** |      **MediumRun-.NET 4.7** |      **.NET 4.7** |              **1** | **VectorCacheMutable** |            **3** |  **1,762.9 ns** |  **22.62 ns** |    **33.86 ns** |  **1,774.3 ns** |
+| FlatSharp_ParseAndTraversePartial |      MediumRun-.NET 4.7 |      .NET 4.7 |              1 | VectorCacheMutable |            3 |  1,383.2 ns |  26.47 ns |    39.61 ns |  1,391.6 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              1 | VectorCacheMutable |            3 |    983.5 ns |  16.87 ns |    25.25 ns |    987.2 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              1 | VectorCacheMutable |            3 |    786.1 ns |  17.28 ns |    25.86 ns |    792.2 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              1 | VectorCacheMutable |            3 |    990.2 ns |   6.45 ns |     9.46 ns |    992.9 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              1 | VectorCacheMutable |            3 |    833.9 ns |   8.14 ns |    12.18 ns |    836.2 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              1 | VectorCacheMutable |            3 |    992.7 ns |  13.29 ns |    19.89 ns |    990.5 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              1 | VectorCacheMutable |            3 |    872.6 ns |  26.16 ns |    39.16 ns |    858.2 ns |
+|        **FlatSharp_ParseAndTraverse** |      **MediumRun-.NET 4.7** |      **.NET 4.7** |              **1** | **VectorCacheMutable** |           **30** | **13,679.8 ns** | **105.82 ns** |   **155.10 ns** | **13,710.6 ns** |
+| FlatSharp_ParseAndTraversePartial |      MediumRun-.NET 4.7 |      .NET 4.7 |              1 | VectorCacheMutable |           30 |  9,927.9 ns | 107.22 ns |   160.49 ns |  9,942.3 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              1 | VectorCacheMutable |           30 |  6,939.3 ns |  99.98 ns |   149.65 ns |  6,930.1 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              1 | VectorCacheMutable |           30 |  5,267.9 ns |  98.00 ns |   146.68 ns |  5,316.2 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              1 | VectorCacheMutable |           30 |  7,020.0 ns |  79.35 ns |   113.80 ns |  7,043.3 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              1 | VectorCacheMutable |           30 |  5,429.9 ns | 129.60 ns |   189.96 ns |  5,404.2 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              1 | VectorCacheMutable |           30 |  7,226.1 ns |  65.73 ns |    98.38 ns |  7,231.3 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              1 | VectorCacheMutable |           30 |  6,117.1 ns | 310.19 ns |   444.87 ns |  5,779.6 ns |
+|        **FlatSharp_ParseAndTraverse** |      **MediumRun-.NET 4.7** |      **.NET 4.7** |              **1** |             **Greedy** |            **3** |  **1,668.8 ns** |   **8.27 ns** |    **11.60 ns** |  **1,669.9 ns** |
+| FlatSharp_ParseAndTraversePartial |      MediumRun-.NET 4.7 |      .NET 4.7 |              1 |             Greedy |            3 |  1,625.0 ns |  11.03 ns |    16.17 ns |  1,627.4 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              1 |             Greedy |            3 |    906.3 ns |  15.99 ns |    23.93 ns |    901.8 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              1 |             Greedy |            3 |    896.2 ns |  17.94 ns |    26.84 ns |    902.1 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              1 |             Greedy |            3 |    979.1 ns |   7.18 ns |    10.52 ns |    975.1 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              1 |             Greedy |            3 |    919.4 ns |   6.53 ns |     9.57 ns |    916.5 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              1 |             Greedy |            3 |    966.8 ns |   3.60 ns |     5.16 ns |    966.9 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              1 |             Greedy |            3 |    927.1 ns |   6.36 ns |     9.32 ns |    923.2 ns |
+|        **FlatSharp_ParseAndTraverse** |      **MediumRun-.NET 4.7** |      **.NET 4.7** |              **1** |             **Greedy** |           **30** | **12,477.0 ns** |  **94.04 ns** |   **140.75 ns** | **12,498.3 ns** |
+| FlatSharp_ParseAndTraversePartial |      MediumRun-.NET 4.7 |      .NET 4.7 |              1 |             Greedy |           30 | 11,996.3 ns | 169.65 ns |   248.67 ns | 12,012.3 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              1 |             Greedy |           30 |  6,181.1 ns |  65.89 ns |    94.50 ns |  6,189.4 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              1 |             Greedy |           30 |  6,133.4 ns |  87.76 ns |   131.35 ns |  6,166.7 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              1 |             Greedy |           30 |  6,878.1 ns |  70.77 ns |   105.92 ns |  6,844.0 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              1 |             Greedy |           30 |  6,485.0 ns |  40.88 ns |    59.92 ns |  6,486.1 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              1 |             Greedy |           30 |  6,752.2 ns |  72.90 ns |    99.79 ns |  6,750.6 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              1 |             Greedy |           30 |  6,353.2 ns |  55.29 ns |    81.05 ns |  6,367.9 ns |
+|        **FlatSharp_ParseAndTraverse** |      **MediumRun-.NET 4.7** |      **.NET 4.7** |              **1** |      **GreedyMutable** |            **3** |  **1,655.0 ns** |  **24.07 ns** |    **36.03 ns** |  **1,656.5 ns** |
+| FlatSharp_ParseAndTraversePartial |      MediumRun-.NET 4.7 |      .NET 4.7 |              1 |      GreedyMutable |            3 |  1,635.1 ns |  10.29 ns |    15.40 ns |  1,637.3 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              1 |      GreedyMutable |            3 |    920.3 ns |   9.51 ns |    14.23 ns |    920.4 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              1 |      GreedyMutable |            3 |    880.9 ns |  10.46 ns |    15.66 ns |    884.6 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              1 |      GreedyMutable |            3 |    955.0 ns |   7.70 ns |    11.05 ns |    953.3 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              1 |      GreedyMutable |            3 |    909.3 ns |   4.76 ns |     6.83 ns |    909.3 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              1 |      GreedyMutable |            3 |    954.9 ns |   6.64 ns |     9.94 ns |    950.7 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              1 |      GreedyMutable |            3 |    900.8 ns |   5.35 ns |     7.67 ns |    901.6 ns |
+|        **FlatSharp_ParseAndTraverse** |      **MediumRun-.NET 4.7** |      **.NET 4.7** |              **1** |      **GreedyMutable** |           **30** | **12,426.9 ns** | **121.74 ns** |   **174.60 ns** | **12,429.6 ns** |
+| FlatSharp_ParseAndTraversePartial |      MediumRun-.NET 4.7 |      .NET 4.7 |              1 |      GreedyMutable |           30 | 12,184.5 ns | 188.43 ns |   282.03 ns | 12,245.0 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              1 |      GreedyMutable |           30 |  6,588.1 ns |  82.10 ns |   120.34 ns |  6,588.9 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              1 |      GreedyMutable |           30 |  6,286.4 ns |  76.04 ns |   111.46 ns |  6,300.4 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              1 |      GreedyMutable |           30 |  6,830.6 ns |  80.42 ns |   117.88 ns |  6,847.7 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              1 |      GreedyMutable |           30 |  6,391.3 ns |  75.70 ns |   110.95 ns |  6,325.2 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              1 |      GreedyMutable |           30 |  6,692.2 ns |  31.58 ns |    47.27 ns |  6,690.5 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              1 |      GreedyMutable |           30 |  6,342.9 ns | 119.31 ns |   174.88 ns |  6,419.2 ns |
+|        **FlatSharp_ParseAndTraverse** |      **MediumRun-.NET 4.7** |      **.NET 4.7** |              **5** |               **Lazy** |            **3** |  **7,743.7 ns** | **142.71 ns** |   **213.60 ns** |  **7,805.4 ns** |
+| FlatSharp_ParseAndTraversePartial |      MediumRun-.NET 4.7 |      .NET 4.7 |              5 |               Lazy |            3 |  5,903.1 ns |  88.84 ns |   132.98 ns |  5,930.5 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              5 |               Lazy |            3 |  3,759.5 ns |  37.60 ns |    55.11 ns |  3,764.5 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              5 |               Lazy |            3 |  2,952.5 ns |  63.27 ns |    94.71 ns |  2,979.6 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              5 |               Lazy |            3 |  3,829.2 ns |  29.84 ns |    44.66 ns |  3,838.5 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              5 |               Lazy |            3 |  3,072.8 ns |  20.50 ns |    30.69 ns |  3,072.2 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              5 |               Lazy |            3 |  3,759.6 ns |  25.82 ns |    37.03 ns |  3,774.6 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              5 |               Lazy |            3 |  3,086.2 ns |  17.49 ns |    26.18 ns |  3,091.3 ns |
+|        **FlatSharp_ParseAndTraverse** |      **MediumRun-.NET 4.7** |      **.NET 4.7** |              **5** |               **Lazy** |           **30** | **63,708.3 ns** | **249.17 ns** |   **341.07 ns** | **63,672.6 ns** |
+| FlatSharp_ParseAndTraversePartial |      MediumRun-.NET 4.7 |      .NET 4.7 |              5 |               Lazy |           30 | 44,835.0 ns | 367.33 ns |   538.43 ns | 44,797.4 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              5 |               Lazy |           30 | 29,542.7 ns | 221.98 ns |   311.19 ns | 29,602.0 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              5 |               Lazy |           30 | 19,974.2 ns | 478.01 ns |   685.55 ns | 20,291.4 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              5 |               Lazy |           30 | 30,075.1 ns | 341.06 ns |   499.92 ns | 29,915.6 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              5 |               Lazy |           30 | 22,217.2 ns | 337.72 ns |   495.03 ns | 22,411.8 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              5 |               Lazy |           30 | 29,551.8 ns | 290.63 ns |   435.00 ns | 29,642.1 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              5 |               Lazy |           30 | 22,814.9 ns | 249.21 ns |   373.00 ns | 22,876.0 ns |
+|        **FlatSharp_ParseAndTraverse** |      **MediumRun-.NET 4.7** |      **.NET 4.7** |              **5** |      **PropertyCache** |            **3** |  **7,058.9 ns** |  **56.96 ns** |    **81.70 ns** |  **7,073.7 ns** |
+| FlatSharp_ParseAndTraversePartial |      MediumRun-.NET 4.7 |      .NET 4.7 |              5 |      PropertyCache |            3 |  5,143.3 ns |  74.09 ns |   106.26 ns |  5,140.0 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              5 |      PropertyCache |            3 |  3,509.1 ns |  84.53 ns |   126.52 ns |  3,553.9 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              5 |      PropertyCache |            3 |  2,321.4 ns |  34.98 ns |    51.28 ns |  2,321.5 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              5 |      PropertyCache |            3 |  3,622.6 ns |  33.52 ns |    49.14 ns |  3,627.0 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              5 |      PropertyCache |            3 |  2,763.6 ns |  44.33 ns |    66.35 ns |  2,750.1 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              5 |      PropertyCache |            3 |  3,657.2 ns |  35.27 ns |    50.58 ns |  3,652.4 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              5 |      PropertyCache |            3 |  2,819.7 ns |  19.22 ns |    28.76 ns |  2,820.3 ns |
+|        **FlatSharp_ParseAndTraverse** |      **MediumRun-.NET 4.7** |      **.NET 4.7** |              **5** |      **PropertyCache** |           **30** | **64,499.8 ns** | **495.00 ns** |   **725.56 ns** | **64,436.4 ns** |
+| FlatSharp_ParseAndTraversePartial |      MediumRun-.NET 4.7 |      .NET 4.7 |              5 |      PropertyCache |           30 | 42,535.3 ns | 506.69 ns |   758.39 ns | 42,466.3 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              5 |      PropertyCache |           30 | 29,343.1 ns | 524.87 ns |   785.61 ns | 29,542.8 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              5 |      PropertyCache |           30 | 20,310.5 ns | 688.07 ns | 1,008.56 ns | 19,921.6 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              5 |      PropertyCache |           30 | 33,233.6 ns | 356.99 ns |   511.99 ns | 33,058.3 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              5 |      PropertyCache |           30 | 24,687.5 ns | 298.27 ns |   437.21 ns | 24,801.1 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              5 |      PropertyCache |           30 | 32,761.7 ns | 283.72 ns |   415.87 ns | 32,758.8 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              5 |      PropertyCache |           30 | 24,327.8 ns | 315.31 ns |   471.95 ns | 24,418.0 ns |
+|        **FlatSharp_ParseAndTraverse** |      **MediumRun-.NET 4.7** |      **.NET 4.7** |              **5** |        **VectorCache** |            **3** |  **2,930.1 ns** |  **12.26 ns** |    **18.36 ns** |  **2,931.8 ns** |
+| FlatSharp_ParseAndTraversePartial |      MediumRun-.NET 4.7 |      .NET 4.7 |              5 |        VectorCache |            3 |  1,899.1 ns |  23.68 ns |    34.72 ns |  1,899.7 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              5 |        VectorCache |            3 |  1,384.3 ns |  22.78 ns |    32.67 ns |  1,386.9 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              5 |        VectorCache |            3 |  1,008.6 ns |  11.45 ns |    16.78 ns |  1,005.7 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              5 |        VectorCache |            3 |  1,452.0 ns |   5.56 ns |     7.98 ns |  1,453.2 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              5 |        VectorCache |            3 |  1,116.9 ns |   9.22 ns |    13.80 ns |  1,115.9 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              5 |        VectorCache |            3 |  1,417.9 ns |  10.16 ns |    14.57 ns |  1,417.4 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              5 |        VectorCache |            3 |  1,103.3 ns |   8.33 ns |    11.68 ns |  1,102.2 ns |
+|        **FlatSharp_ParseAndTraverse** |      **MediumRun-.NET 4.7** |      **.NET 4.7** |              **5** |        **VectorCache** |           **30** | **24,153.4 ns** | **185.18 ns** |   **271.44 ns** | **24,074.7 ns** |
+| FlatSharp_ParseAndTraversePartial |      MediumRun-.NET 4.7 |      .NET 4.7 |              5 |        VectorCache |           30 | 13,857.5 ns | 147.00 ns |   215.47 ns | 13,847.0 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              5 |        VectorCache |           30 | 10,480.5 ns | 132.47 ns |   194.17 ns | 10,484.8 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              5 |        VectorCache |           30 |  6,805.9 ns |  97.70 ns |   143.21 ns |  6,775.5 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              5 |        VectorCache |           30 | 11,128.8 ns |  62.18 ns |    89.18 ns | 11,111.0 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              5 |        VectorCache |           30 |  7,680.4 ns | 169.45 ns |   253.63 ns |  7,627.1 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              5 |        VectorCache |           30 | 10,870.8 ns |  99.29 ns |   148.62 ns | 10,850.6 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              5 |        VectorCache |           30 |  7,516.0 ns |  73.24 ns |   107.35 ns |  7,530.8 ns |
+|        **FlatSharp_ParseAndTraverse** |      **MediumRun-.NET 4.7** |      **.NET 4.7** |              **5** | **VectorCacheMutable** |            **3** |  **2,837.9 ns** |  **10.31 ns** |    **14.78 ns** |  **2,839.8 ns** |
+| FlatSharp_ParseAndTraversePartial |      MediumRun-.NET 4.7 |      .NET 4.7 |              5 | VectorCacheMutable |            3 |  1,804.4 ns |  24.24 ns |    36.28 ns |  1,810.0 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              5 | VectorCacheMutable |            3 |  1,284.9 ns |  15.96 ns |    23.89 ns |  1,282.1 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              5 | VectorCacheMutable |            3 |    958.4 ns |  15.75 ns |    22.59 ns |    960.7 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              5 | VectorCacheMutable |            3 |  1,382.0 ns |  17.51 ns |    25.66 ns |  1,381.0 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              5 | VectorCacheMutable |            3 |  1,057.1 ns |  19.56 ns |    28.67 ns |  1,050.3 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              5 | VectorCacheMutable |            3 |  1,387.3 ns |   8.77 ns |    13.13 ns |  1,381.6 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              5 | VectorCacheMutable |            3 |  1,055.6 ns |   5.47 ns |     8.02 ns |  1,054.2 ns |
+|        **FlatSharp_ParseAndTraverse** |      **MediumRun-.NET 4.7** |      **.NET 4.7** |              **5** | **VectorCacheMutable** |           **30** | **23,500.6 ns** | **162.23 ns** |   **242.81 ns** | **23,515.1 ns** |
+| FlatSharp_ParseAndTraversePartial |      MediumRun-.NET 4.7 |      .NET 4.7 |              5 | VectorCacheMutable |           30 | 12,945.2 ns | 127.76 ns |   183.23 ns | 12,974.2 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              5 | VectorCacheMutable |           30 |  9,741.5 ns |  70.29 ns |   103.03 ns |  9,708.9 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              5 | VectorCacheMutable |           30 |  6,379.4 ns |  45.25 ns |    64.90 ns |  6,386.4 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              5 | VectorCacheMutable |           30 | 10,677.4 ns | 115.51 ns |   161.92 ns | 10,636.6 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              5 | VectorCacheMutable |           30 |  7,309.0 ns |  63.80 ns |    91.50 ns |  7,301.8 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              5 | VectorCacheMutable |           30 | 10,392.2 ns |  68.57 ns |   100.51 ns | 10,388.8 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              5 | VectorCacheMutable |           30 |  7,730.9 ns | 318.31 ns |   466.57 ns |  7,481.1 ns |
+|        **FlatSharp_ParseAndTraverse** |      **MediumRun-.NET 4.7** |      **.NET 4.7** |              **5** |             **Greedy** |            **3** |  **1,975.1 ns** |  **17.45 ns** |    **24.46 ns** |  **1,975.0 ns** |
+| FlatSharp_ParseAndTraversePartial |      MediumRun-.NET 4.7 |      .NET 4.7 |              5 |             Greedy |            3 |  1,780.4 ns |  11.57 ns |    17.32 ns |  1,782.9 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              5 |             Greedy |            3 |  1,241.0 ns |  15.97 ns |    23.90 ns |  1,244.3 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              5 |             Greedy |            3 |  1,081.4 ns |  10.56 ns |    15.81 ns |  1,081.8 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              5 |             Greedy |            3 |  1,280.6 ns |   8.96 ns |    12.85 ns |  1,281.0 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              5 |             Greedy |            3 |  1,117.9 ns |   6.71 ns |     9.41 ns |  1,114.8 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              5 |             Greedy |            3 |  1,286.9 ns |  10.59 ns |    15.85 ns |  1,286.7 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              5 |             Greedy |            3 |  1,117.3 ns |   9.64 ns |    14.42 ns |  1,115.9 ns |
+|        **FlatSharp_ParseAndTraverse** |      **MediumRun-.NET 4.7** |      **.NET 4.7** |              **5** |             **Greedy** |           **30** | **15,227.5 ns** | **153.70 ns** |   **230.05 ns** | **15,147.5 ns** |
+| FlatSharp_ParseAndTraversePartial |      MediumRun-.NET 4.7 |      .NET 4.7 |              5 |             Greedy |           30 | 13,428.0 ns |  89.70 ns |   134.26 ns | 13,448.7 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              5 |             Greedy |           30 |  9,418.2 ns |  84.07 ns |   123.24 ns |  9,415.8 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              5 |             Greedy |           30 |  7,729.6 ns |  87.38 ns |   128.09 ns |  7,719.9 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              5 |             Greedy |           30 |  9,883.2 ns |  97.08 ns |   145.31 ns |  9,876.0 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              5 |             Greedy |           30 |  7,968.8 ns |  82.86 ns |   124.02 ns |  7,910.2 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              5 |             Greedy |           30 |  9,521.2 ns |  50.40 ns |    72.28 ns |  9,509.5 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              5 |             Greedy |           30 |  7,887.1 ns |  79.19 ns |   118.53 ns |  7,871.2 ns |
+|        **FlatSharp_ParseAndTraverse** |      **MediumRun-.NET 4.7** |      **.NET 4.7** |              **5** |      **GreedyMutable** |            **3** |  **1,868.4 ns** |  **37.90 ns** |    **55.56 ns** |  **1,856.9 ns** |
+| FlatSharp_ParseAndTraversePartial |      MediumRun-.NET 4.7 |      .NET 4.7 |              5 |      GreedyMutable |            3 |  1,693.8 ns |  17.28 ns |    25.87 ns |  1,684.5 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              5 |      GreedyMutable |            3 |  1,122.8 ns |  12.91 ns |    19.32 ns |  1,118.8 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              5 |      GreedyMutable |            3 |    953.2 ns |   6.98 ns |     9.78 ns |    953.0 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              5 |      GreedyMutable |            3 |  1,201.7 ns |   9.65 ns |    14.44 ns |  1,204.0 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              5 |      GreedyMutable |            3 |  1,050.6 ns |  10.30 ns |    14.78 ns |  1,047.1 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              5 |      GreedyMutable |            3 |  1,188.9 ns |   8.18 ns |    12.25 ns |  1,188.6 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              5 |      GreedyMutable |            3 |  1,024.3 ns |   9.36 ns |    14.01 ns |  1,026.6 ns |
+|        **FlatSharp_ParseAndTraverse** |      **MediumRun-.NET 4.7** |      **.NET 4.7** |              **5** |      **GreedyMutable** |           **30** | **14,390.6 ns** |  **70.46 ns** |   **105.46 ns** | **14,369.1 ns** |
+| FlatSharp_ParseAndTraversePartial |      MediumRun-.NET 4.7 |      .NET 4.7 |              5 |      GreedyMutable |           30 | 12,871.3 ns | 118.47 ns |   177.32 ns | 12,859.9 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              5 |      GreedyMutable |           30 |  8,241.7 ns |  56.59 ns |    82.95 ns |  8,219.1 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 2.1 | .NET Core 2.1 |              5 |      GreedyMutable |           30 |  6,789.7 ns |  73.78 ns |   110.43 ns |  6,766.0 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              5 |      GreedyMutable |           30 |  9,136.7 ns |  85.13 ns |   127.42 ns |  9,117.0 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 3.1 | .NET Core 3.1 |              5 |      GreedyMutable |           30 |  7,474.6 ns |  51.69 ns |    77.37 ns |  7,466.1 ns |
+|        FlatSharp_ParseAndTraverse | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              5 |      GreedyMutable |           30 |  8,988.6 ns |  82.31 ns |   118.04 ns |  9,032.0 ns |
+| FlatSharp_ParseAndTraversePartial | MediumRun-.NET Core 5.0 | .NET Core 5.0 |              5 |      GreedyMutable |           30 |  7,336.3 ns |  76.15 ns |   111.62 ns |  7,322.1 ns |
