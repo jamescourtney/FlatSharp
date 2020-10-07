@@ -158,5 +158,7 @@ Unity / Blazor / Xamarin | ✔️ |❌ | ❌| ✔️
 .NET Framework (Precompiled) | ✔️ | ❌ | ❔ | ✔️
 .NET Framework (Runtime-compiled) | ✔️ | ✔️ | ❔ | ❌
 
+❔: .NET Framework does not have first-class support for ```Memory<T>``` and ```Span<T>```, which results in degraded performance relative to .NET Core. Use of the unsafe packages has a sizeable impact on FlatSharp's speed on the legacy platform, but requires the use of unsafe code. For most cases, FlatSharp will be plenty fast without this.
+
 ### License
 FlatSharp is a C# implementation of Google's FlatBuffer binary format, which is licensed under the Apache 2.0 License. Accordingly, FlatSharp is also licensed under Apache 2.0. FlatSharp incorporates code from the Google FlatSharp library for testing and benchmarking purposes.
