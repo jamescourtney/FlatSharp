@@ -204,7 +204,6 @@ namespace Benchmark.FBBench
 
             for (int loop = 0; loop < iterations; ++loop)
             {
-                sum = 0;
                 var foobar = Google.FooBarContainer.GetRootAsFooBarContainer(this.google_ByteBuffer);
 
                 sum += foobar.Initialized ? 1 : 0;
