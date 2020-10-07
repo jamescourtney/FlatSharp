@@ -133,10 +133,7 @@ The benchmarks test 3 different serialization frameworks:
 
 The graphs below are generated using the default settings from each library.
 
-#### Serialization
 ![image](doc/serialize.png)
-
-#### Deserialization
 ![image](doc/parse.png)
 
 ### So What Packages Do I Need?
