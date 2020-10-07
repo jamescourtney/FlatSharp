@@ -44,7 +44,6 @@ namespace Samples.IOOptionsExample
                 Vitals = new AnimalVitals { Age = 14, Gender = Gender.Female, Name = "Peaches" }
             };
 
-            // RIP
             Cat grumpyCat = new Cat
             {
                 Breed = CatBreed.GrumpyCat,
@@ -62,7 +61,7 @@ namespace Samples.IOOptionsExample
 
             // SpanWriter is the core code that writes data to a span. Flatsharp provides a couple:
             SpanWriter spanWriter = new SpanWriter();
-            SpanWriter unsafeSpanWriter = new UnsafeSpanWriter();
+            var unsafeSpanWriter = new UnsafeSpanWriter();
 
             byte[] buffer = new byte[Person.Serializer.GetMaxSize(person)];
 
@@ -79,11 +78,14 @@ namespace Samples.IOOptionsExample
             var p3 = Person.Serializer.Parse(new ReadOnlyMemoryInputBuffer(new ReadOnlyMemory<byte>(buffer)));
 
             // The unsafe variants are available in the FlatSharp.Unsafe package and use pointers and other unsafe code to squeeze
-            // out some more performance.
+            // out some more performance. These unsafe inputs generally have the most benefit when running on .NET Framework due
+            // to legacy code requirements.
             var p4 = Person.Serializer.Parse(new UnsafeArrayInputBuffer(buffer));
             using (var unsafeMemoryInput = new UnsafeMemoryInputBuffer(new Memory<byte>(buffer)))
             {
                 // Unsafe memory input buffer must be disposed of because it pins the memory in place.
+                // The lifetime of the buffer must be tied to the lifetime of the deserialized object
+                // unless using lazy deserialization.
                 var p5 = Person.Serializer.Parse(unsafeMemoryInput);
             }
         }

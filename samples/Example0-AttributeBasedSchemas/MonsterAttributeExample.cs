@@ -31,10 +31,10 @@ namespace Samples.MonsterAttributeExample
     /// For FlatSharp to work with your schema, you need to obey the following set of rules:
     /// - All types must be public and externally visible.
     /// - All types must be unsealed.
-    /// - All properties decorated by [FlatSharpItem] must be virtual and public. Setters may be omitted, but Getters are required.
-    /// - All FlatSharpItem indexes must be unique within the given data type.
+    /// - All properties decorated by [FlatBufferItem] must be virtual and public. Setters may be omitted, but Getters are required.
+    /// - All FlatBufferItem indexes must be unique within the given data type.
     /// - Struct/Table vectors must be defined as IList{T}, IReadOnlyList{T}, or T[].
-    /// - Scalar vectors must be defined as either IList{T}, IReadOnlyList{T}, Memory{T}, ReadOnlyMemory{T}, or T[].
+    /// - Scalar vectors must be defined as either IList{T}, IReadOnlyList{T}, ReadOnlyMemory{T}, or T[]. Scalar vectors of bytes may be defined as Memory{byte}/ReadOnlyMemory{byte}.
     /// - All types must be serializable in FlatBuffers(that is -- you can't throw in an arbitrary C# type).
     /// 
     /// When versioning your schema, you'll need to keep these rules in mind: https://google.github.io/flatbuffers/flatbuffers_guide_writing_schema.html
@@ -167,6 +167,18 @@ namespace Samples.MonsterAttributeExample
         /// </summary>
         [FlatBufferItem(10)]
         public virtual Vec3[] Path { get; set; }
+
+        /// <summary>
+        /// Optional (nullable) scalars are supported, but may not have a default value besides null.
+        /// </summary>
+        [FlatBufferItem(11)]
+        public virtual double? ManaRegenRate { get; set; } = null;
+
+        /// <summary>
+        /// Optional (nullable) enums are supported, but may not have a default value besides null.
+        /// </summary>
+        [FlatBufferItem(11)]
+        public virtual Color? SecondaryColor { get; set; } = null;
     }
 
     [FlatBufferTable]
