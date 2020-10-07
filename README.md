@@ -1,5 +1,6 @@
 ## FlatSharp
-FlatSharp is Google's FlatBuffers serialization format implemented in C#, for C#. FlatBuffers is a zero-copy binary serialization format intended for high-performance scenarios. FlatSharp leverages the latest and greatest from .NET in the form of ```Memory<T>``` and ```Span<T>```. As such, FlatSharp's safe-code implementations are often faster than other implementations using unsafe code. FlatSharp aims to provide 3 core priorities:
+FlatSharp is Google's FlatBuffers serialization format implemented in C#, for C#. FlatBuffers is a zero-copy binary serialization format intended for high-performance scenarios. FlatSharp leverages the latest and greatest from .NET in the form of ```Memory<T>``` and ```Span<T>```. As such, FlatSharp's safe-code implementations are often faster than other implementations using unsafe code. FlatSharp aims to provide 4 core priorities:
+
 - Full safety (no unsafe code or IL generation -- more on that below).
 - Speed
 - FlatBuffers schema correctness
@@ -10,6 +11,8 @@ All FlatSharp packages are published on nuget.org:
 - **FlatSharp**: Support for runtime schemas with C# attributes. Includes ```FlatBufferSerializer```.
 - **FlatSharp.Unsafe**: Unsafe I/O extensions.
 - **FlatSharp.Compiler**: Build time compiler for generating C# from an FBS schema.
+
+As of version 3.3.1, FlatSharp is in production use at Microsoft. 
 
 ### Getting Started
 If you're completely new to FlatBuffers, take a minute to look over [the FlatBuffer overview](https://google.github.io/flatbuffers/index.html#flatbuffers_overview). Additionally, it's worth the time to understand the different elements of [FlatBuffer schemas](https://google.github.io/flatbuffers/flatbuffers_guide_writing_schema.html).
@@ -100,6 +103,7 @@ FlatSharp supports some interesting features not covered here. Please visit the 
 - [Sorted Vectors](samples/Example8-SortedVectors/)
 - [Unions](samples/Example9-Unions/)
 - [String deduplication](samples/Example10-SharedStrings/)
+- [Indexed Vectors (Dictionary-like functionality)](samples/Example11-IndexedVectors/)
 
 ### Internals
 FlatSharp works by generating subclasses of your data contracts based on the schema that you define. That is, when you attempt to deserialize a ```MonsterTable``` object, you actually get back a subclass of ```MonsterTable```, which has properties defined in such a way as to index into the buffer, according to the deserialization mode specified (greedy, lazy, etc).
@@ -116,7 +120,7 @@ At its core, FlatSharp is a tool to convert a FlatBuffer schema into a pile of s
 ### Performance & Benchmarks
 FlatSharp is really fast. This is primarily thanks to new changes in C# with Memory and Span, as well as FlatBuffers itself exposing a very simple type system that makes optimization simple. FlatSharp has a default serializer instance (```FlatBuffersSerializer.Default```), however it is possible to tune the serializer by creating your own with a custom ```FlatBufferSerializerOptions``` instance. More details are available in the [samples solution](samples/Example1-SerializerOptions/SerializerOptionsExample.cs).
 
-The FlatSharp benchmarks were run on .NET Core 3.1, using a C# approximation of [Google's FlatBuffer benchmark](https://github.com/google/flatbuffers/tree/benchmarks/benchmarks/cpp/FB), which can be found [here](src/Benchmark).The FlatSharp benchmarks use this schema, but with the following parameters:
+The FlatSharp benchmarks were run on .NET Core 3.1, using a C# approximation of [Google's FlatBuffer benchmark](https://github.com/google/flatbuffers/tree/benchmarks/benchmarks/cpp/FB), which can be found [here](src/Benchmark). The FlatSharp benchmarks use this schema, but with the following parameters:
 - Vector length = 3 or 30
 - Traversal count = 1 or 5
 
@@ -135,11 +139,26 @@ The graphs below are generated using the default settings from each library.
 #### Deserialization
 ![image](doc/parse.png)
 
-### Roadmap
-- [ ] Security hardening and fuzzing
-- [x] Code gen based on FBS schema files
-- [x] Build time generation of Serializers
-- [x] GRPC support
+### So What Packages Do I Need?
+As discussed, there are two main ways to use FlatSharp: Precompilation and runtime compilation. Both of these produce and load the same code, so the performance will be identical. There are 6 good reasons to use precompilation over runtime compilation:
+- No runtime overhead -- Roslyn can take a little bit to spin up the first time
+- Fewer package dependencies
+- Better interop with other FlatBuffers languages via .fbs files
+- gRPC Support
+- Schema validation errors caught at build-time instead of runtime.
+- Better supported with other .NET toolchains
+
+Runtime compilation is not planned to be deprecated, and can offer some compelling use cases as well, such as building more complex data structures that are shared between projects.
+
+Framework | FlatSharp.Runtime | FlatSharp | FlatSharp.Unsafe | FlatSharp.Compiler
+------------ | ------------- | --------  | ---------------- | -----------------
+Unity / Blazor / Xamarin | ✔️ |❌ | ❌| ✔️
+.NET Core (Precompiled) | ✔️ | ❌ | ❌ | ✔️
+.NET Core (Runtime-compiled) | ✔️ | ✔️ | ❌ | ❌
+.NET Framework (Precompiled) | ✔️ | ❌ | ❔ | ✔️
+.NET Framework (Runtime-compiled) | ✔️ | ✔️ | ❔ | ❌
+
+❔: .NET Framework does not have first-class support for ```Memory<T>``` and ```Span<T>```, which results in degraded performance relative to .NET Core. Use of the unsafe packages has a sizeable impact on FlatSharp's speed on the legacy platform, but requires the use of unsafe code. For most cases, FlatSharp will be plenty fast without this.
 
 ### License
 FlatSharp is a C# implementation of Google's FlatBuffer binary format, which is licensed under the Apache 2.0 License. Accordingly, FlatSharp is also licensed under Apache 2.0. FlatSharp incorporates code from the Google FlatSharp library for testing and benchmarking purposes.
