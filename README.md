@@ -140,7 +140,7 @@ The graphs below are generated using the default settings from each library.
 ![image](doc/parse.png)
 
 ### So What Packages Do I Need?
-As discussed, there are two main ways to use FlatSharp: Precompilation and runtime compilation. Both of these produce and load the same code, so the performance will be identical. There are 6 good reasons to use precompilation over runtime compilation:
+There are two main ways to use FlatSharp: Precompilation with .fbs files and runtime compilation using attributes on C# classes. Both of these produce and load the same code, so the performance will be identical. There are some good reasons to use precompilation over runtime compilation:
 - No runtime overhead -- Roslyn can take a little bit to spin up the first time
 - Fewer package dependencies
 - Better interop with other FlatBuffers languages via .fbs files
@@ -148,7 +148,7 @@ As discussed, there are two main ways to use FlatSharp: Precompilation and runti
 - Schema validation errors caught at build-time instead of runtime.
 - Better supported with other .NET toolchains
 
-Runtime compilation is not planned to be deprecated, and can offer some compelling use cases as well, such as building more complex data structures that are shared between projects.
+Runtime compilation is not planned to be deprecated (in fact the FlatSharp tests use Runtime compilation extensively), and can offer some compelling use cases as well, such as building more complex data structures that are shared between projects.
 
 Framework | FlatSharp.Runtime | FlatSharp | FlatSharp.Unsafe | FlatSharp.Compiler
 ------------ | ------------- | --------  | ---------------- | -----------------
@@ -161,4 +161,4 @@ Unity / Blazor / Xamarin | ✔️ |❌ | ❌| ✔️
 ❔: .NET Framework does not have first-class support for ```Memory<T>``` and ```Span<T>```, which results in degraded performance relative to .NET Core. Use of the unsafe packages has a sizeable impact on FlatSharp's speed on the legacy platform, but requires the use of unsafe code. For most cases, FlatSharp will be plenty fast without this.
 
 ### License
-FlatSharp is a C# implementation of Google's FlatBuffer binary format, which is licensed under the Apache 2.0 License. Accordingly, FlatSharp is also licensed under Apache 2.0. FlatSharp incorporates code from the Google FlatSharp library for testing and benchmarking purposes.
+FlatSharp is licensed under Apache 2.0.
