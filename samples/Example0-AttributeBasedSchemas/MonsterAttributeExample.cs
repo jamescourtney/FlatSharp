@@ -177,7 +177,7 @@ namespace Samples.MonsterAttributeExample
         /// <summary>
         /// Optional (nullable) enums are supported, but may not have a default value besides null.
         /// </summary>
-        [FlatBufferItem(11)]
+        [FlatBufferItem(12)]
         public virtual Color? SecondaryColor { get; set; } = null;
     }
 
