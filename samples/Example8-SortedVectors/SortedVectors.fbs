@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-namespace Samples.SortedVectors;
+namespace Samples.SortedVectors.Fbs;
 
-table UserList {
+table UserList (PrecompiledSerializer) {
     Users:[User] (SortedVector); // Declare the vector to be sorted.
 }
 

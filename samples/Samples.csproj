@@ -14,6 +14,7 @@
     <FlatSharpSchema Include="Example7-Includes\A.fbs" />
     <FlatSharpSchema Include="Example7-Includes\Subdirectory\B.fbs" />
     <FlatSharpSchema Include="Example7-Includes\IncludesExample.fbs" />
+    <FlatSharpSchema Include="Example8-SortedVectors\SortedVectors.fbs" />
     <FlatSharpSchema Include="Example9-Unions\Unions.fbs" />
     <FlatSharpSchema Include="Example10-SharedStrings\SharedStrings.fbs" />
     <FlatSharpSchema Include="Example11-IndexedVectors\IndexedVectors.fbs" />

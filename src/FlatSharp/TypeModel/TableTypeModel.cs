@@ -398,9 +398,9 @@ $@"
 
                 sortInvocation = @$"
                     {context.SerializationContextVariableName}.{nameof(SerializationContext.AddPostSerializeAction)}(
-                        (span, ctx) =>
+                        (tempSpan, ctx) =>
                         {nameof(SortedVectorHelpers)}.{nameof(SortedVectorHelpers.SortVector)}(
-                            span, 
+                            tempSpan, 
                             {OffsetVariableName(0)}, 
                             {keyMember.Index}, 
                             {inlineSize}, 
