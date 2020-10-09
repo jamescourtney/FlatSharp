@@ -16,6 +16,7 @@
  
 namespace FlatSharp.TypeModel
 {
+    using Microsoft.CodeAnalysis.CSharp.Syntax;
     using System;
 
     /// <summary>
@@ -30,11 +31,6 @@ namespace FlatSharp.TypeModel
         {
         }
 
-        /// <summary>
-        /// Memory vectors are always serialized because they are structs and vector's can't have default values.
-        /// </summary>
-        public override bool MustAlwaysSerialize => true;
-
         public override ITypeModel ItemTypeModel => this.itemTypeModel;
 
         public override string LengthPropertyName => nameof(Memory<byte>.Length);
@@ -48,6 +44,11 @@ namespace FlatSharp.TypeModel
 
             this.isReadOnly = this.ClrType == typeof(ReadOnlyMemory<byte>);
             this.itemTypeModel = new ByteTypeModel();
+        }
+
+        public override string GetIsEqualToDefaultValueExpression(string variableName, string defaultValue)
+        {
+            return $"false";
         }
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)

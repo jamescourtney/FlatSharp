@@ -77,11 +77,6 @@ namespace FlatSharp.TypeModel
         int MaxInlineSize { get; }
 
         /// <summary>
-        /// When true, indicates that this type model must always be written to the buffer. This suppresses null checks and default value checks.
-        /// </summary>
-        bool MustAlwaysSerialize { get; }
-
-        /// <summary>
         /// When true, indicates that this type model serializes directly at the offset provided (ie, it does not write a uoffset).
         /// </summary>
         bool SerializesInline { get; }
@@ -121,14 +116,19 @@ namespace FlatSharp.TypeModel
         string GetNonNullConditionExpression(string itemVariableName);
 
         /// <summary>
-        /// Travses the object graph to identify types needed to build a serializer.
+        /// Returns a boolean expression that returns true when the given variable is equal to the default value.
         /// </summary>
-        void TraverseObjectGraph(HashSet<Type> seenTypes);
+        string GetIsEqualToDefaultValueExpression(string variableName, string defaultValue);
 
         /// <summary>
         /// Attempts to format the given default value into a C# literal. Not all implementations support this.
         /// </summary>
         bool TryFormatDefaultValueAsLiteral(object defaultValue, out string literal);
+
+        /// <summary>
+        /// Travses the object graph to identify types needed to build a serializer.
+        /// </summary>
+        void TraverseObjectGraph(HashSet<Type> seenTypes);
 
         /// <summary>
         /// Attempts to format the given string as a literal of this type. Not all implementations support this.

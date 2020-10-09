@@ -19,7 +19,7 @@ namespace FlatSharp.TypeModel
     using System;
     using System.Collections.Generic;
     using System.Reflection;
-
+    using System.Runtime.InteropServices;
     using FlatSharp.Attributes;
 
     /// <summary>
@@ -102,12 +102,8 @@ namespace FlatSharp.TypeModel
 
             if (Nullable.GetUnderlyingType(type) != null)
             {
-                var underlyingType = Nullable.GetUnderlyingType(type);
-                if (underlyingType.IsEnum)
-                {
-                    typeModel = new NullableEnumTypeModel(type, container);
-                    return true;
-                }
+                typeModel = new NullableValueTypeTypeModel(type, container);
+                return true;
             }
 
             var tableAttribute = type.GetCustomAttribute<FlatBufferTableAttribute>();
@@ -121,6 +117,15 @@ namespace FlatSharp.TypeModel
             if (structAttribute != null)
             {
                 typeModel = new StructTypeModel(type, container);
+                return true;
+            }
+
+            if (type.IsValueType && 
+                type.Attributes.HasFlag(TypeAttributes.ExplicitLayout) && 
+                type.IsExplicitLayout && 
+                type.StructLayoutAttribute?.Value == LayoutKind.Explicit)
+            {
+                typeModel = new ValueStructTypeModel(type, container);
                 return true;
             }
 

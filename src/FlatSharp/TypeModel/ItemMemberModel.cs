@@ -27,8 +27,7 @@ namespace FlatSharp.TypeModel
         internal ItemMemberModel(
             ITypeModel propertyModel,
             PropertyInfo propertyInfo,
-            ushort index,
-            bool validateVirtual)
+            ushort index)
         {
             var getMethod = propertyInfo.GetMethod ?? propertyInfo.GetGetMethod();
             var setMethod = propertyInfo.SetMethod ?? propertyInfo.GetSetMethod();
@@ -38,17 +37,14 @@ namespace FlatSharp.TypeModel
             this.Index = index;
             this.IsReadOnly = setMethod == null;
 
-            if (validateVirtual)
+            if (!ValidatePropertyMethod(getMethod, false))
             {
-                if (!ValidatePropertyMethod(getMethod, false))
-                {
-                    throw new InvalidFlatBufferDefinitionException($"Property {propertyInfo.Name} did not declare a public/protected virtual getter.");
-                }
+                throw new InvalidFlatBufferDefinitionException($"Property {propertyInfo.Name} did not declare a public/protected virtual getter.");
+            }
 
-                if (!ValidatePropertyMethod(setMethod, true))
-                {
-                    throw new InvalidFlatBufferDefinitionException($"Property {propertyInfo.Name} declared a set method, but it was not public/protected and virtual.");
-                }
+            if (!ValidatePropertyMethod(setMethod, true))
+            {
+                throw new InvalidFlatBufferDefinitionException($"Property {propertyInfo.Name} declared a set method, but it was not public/protected and virtual.");
             }
         }
 

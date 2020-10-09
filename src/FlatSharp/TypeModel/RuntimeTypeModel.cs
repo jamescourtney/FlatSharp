@@ -96,11 +96,6 @@ namespace FlatSharp.TypeModel
         public virtual int MaxInlineSize => this.PhysicalLayout.Sum(x => x.InlineSize + SerializationHelpers.GetMaxPadding(x.Alignment));
 
         /// <summary>
-        /// In general, we don't set this to true.
-        /// </summary>
-        public virtual bool MustAlwaysSerialize => false;
-
-        /// <summary>
         /// Validates a default value.
         /// </summary>
         public virtual bool ValidateDefaultValue(object defaultValue)
@@ -164,6 +159,11 @@ namespace FlatSharp.TypeModel
         public virtual TableMemberModel AdjustTableMember(TableMemberModel source)
         {
             return source;
+        }
+
+        public virtual string GetIsEqualToDefaultValueExpression(string variableName, string defaultValue)
+        {
+            return $"{variableName} == {defaultValue}";
         }
     }
 }

@@ -21,7 +21,7 @@ namespace FlatSharp.Attributes
     /// <summary>
     /// Marks a class as being a FlatBuffer struct.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = true)]
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
     public class FlatBufferStructAttribute : Attribute
     {
     }

@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
- namespace FlatSharp.TypeModel
+
+namespace FlatSharp.TypeModel
 {
+    using FlatSharp.Attributes;
     using System;
     using System.Collections.Generic;
     using System.Collections.Immutable;
     using System.Linq;
     using System.Reflection;
-    using FlatSharp.Attributes;
 
     /// <summary>
     /// Describes the schema of a FlatBuffer table. Tables, analgous to classes, provide for mutable schema definitions over time
@@ -348,12 +348,7 @@ $@"
             string valueVariableName = $"index{index}Value";
 
             // Set up a condition for serializing, unless the type model tells us not to.
-            string condition = $"if ({valueVariableName} != {memberModel.DefaultValueToken})";
-            if (memberModel.ItemTypeModel.MustAlwaysSerialize)
-            {
-                condition = string.Empty;
-            }
-
+            string condition = memberModel.ItemTypeModel.GetIsEqualToDefaultValueExpression(valueVariableName, memberModel.DefaultValueToken);
             List<string> prepareBlockComponents = new List<string>();
             int vtableEntries = memberModel.ItemTypeModel.PhysicalLayout.Length;
             for (int i = 0; i < vtableEntries; ++i)
@@ -373,7 +368,7 @@ $@"
 $@"
                     var {valueVariableName} = {context.ValueVariableName}.{memberModel.PropertyInfo.Name};
                     {string.Join("\r\n", Enumerable.Range(0, vtableEntries).Select(x => $"var {OffsetVariableName(x)} = 0;"))}
-                    {condition} 
+                    if (!({condition}))
                     {{
                             {string.Join("\r\n", prepareBlockComponents)}
                     }}";

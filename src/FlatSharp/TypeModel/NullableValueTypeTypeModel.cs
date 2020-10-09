@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2018 James Courtney
+ * Copyright 2020 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,48 +19,19 @@ namespace FlatSharp.TypeModel
     using System;
     using System.Collections.Generic;
     using System.Collections.Immutable;
-    using System.Reflection;
 
-    using FlatSharp.Attributes;
-
-    /// <summary>
-    /// Defines a Nullable Enum FlatSharp type model, which derives from the scalar type model.
-    /// </summary>
-    public class NullableEnumTypeModel : RuntimeTypeModel
+    public class NullableValueTypeTypeModel : RuntimeTypeModel
     {
         private ITypeModel underlyingTypeModel;
-        private Type enumType;
 
-        internal NullableEnumTypeModel(Type type, TypeModelContainer typeModelProvider) : base(type, typeModelProvider)
+        internal NullableValueTypeTypeModel(Type type, TypeModelContainer typeModelProvider) : base(type, typeModelProvider)
         {
         }
 
         /// <summary>
         /// Gets the schema type.
         /// </summary>
-        public override FlatBufferSchemaType SchemaType => FlatBufferSchemaType.Scalar;
-
-        public override void Initialize()
-        {
-            base.Initialize();
-
-            Type nullableType = this.ClrType;
-            this.enumType = Nullable.GetUnderlyingType(nullableType);
-            Type underlyingType = Enum.GetUnderlyingType(this.enumType);
-
-            this.underlyingTypeModel = this.typeModelContainer.CreateTypeModel(underlyingType);
-
-            var attribute = this.enumType.GetCustomAttribute<FlatBufferEnumAttribute>();
-            if (attribute == null)
-            {
-                throw new InvalidFlatBufferDefinitionException($"Enums '{enumType.Name}' is not tagged with a [FlatBufferEnum] attribute.");
-            }
-
-            if (attribute.DeclaredUnderlyingType != underlyingType)
-            {
-                throw new InvalidFlatBufferDefinitionException($"Enum '{this.enumType.Name}' declared underlying type '{attribute.DeclaredUnderlyingType}', but was actually '{underlyingType}'");
-            }
-        }
+        public override FlatBufferSchemaType SchemaType => this.underlyingTypeModel.SchemaType;
 
         public override ImmutableArray<PhysicalLayoutElement> PhysicalLayout => this.underlyingTypeModel.PhysicalLayout;
 
@@ -68,7 +39,7 @@ namespace FlatSharp.TypeModel
 
         public override bool IsValidStructMember => false;
 
-        public override bool IsValidTableMember => true;
+        public override bool IsValidTableMember => this.underlyingTypeModel.IsValidTableMember;
 
         public override bool IsValidVectorMember => false;
 
@@ -76,7 +47,18 @@ namespace FlatSharp.TypeModel
 
         public override bool IsValidSortedVectorKey => false;
 
-        public override bool SerializesInline => true;
+        public override bool SerializesInline => this.underlyingTypeModel.SerializesInline;
+
+        public override void Initialize()
+        {
+            base.Initialize();
+            this.underlyingTypeModel = this.typeModelContainer.CreateTypeModel(Nullable.GetUnderlyingType(this.ClrType));
+        }
+
+        public override string GetIsEqualToDefaultValueExpression(string variableName, string defaultValue)
+        {
+            return $"{variableName}.HasValue == false";
+        }
 
         public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
         {
@@ -117,8 +99,10 @@ namespace FlatSharp.TypeModel
         public override void TraverseObjectGraph(HashSet<Type> seenTypes)
         {
             seenTypes.Add(this.ClrType);
-            seenTypes.Add(this.enumType);
-            seenTypes.Add(this.underlyingTypeModel.ClrType);
+            if (seenTypes.Add(this.underlyingTypeModel.ClrType))
+            {
+                this.underlyingTypeModel.TraverseObjectGraph(seenTypes);
+            }
         }
 
         public override string GetThrowIfNullInvocation(string itemVariableName)

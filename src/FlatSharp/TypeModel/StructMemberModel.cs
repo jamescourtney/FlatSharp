@@ -28,7 +28,7 @@
             ITypeModel propertyModel,
             PropertyInfo propertyInfo,
             ushort index,
-            int offset) : base(propertyModel, propertyInfo, index, !propertyModel.ClrType.IsValueType)
+            int offset) : base(propertyModel, propertyInfo, index)
         {
             this.Offset = offset;
         }

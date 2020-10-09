@@ -21,7 +21,7 @@ namespace FlatSharp.Attributes
     /// <summary>
     /// Defines a member of a FlatBuffer struct or table.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false, Inherited = true)]
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public class FlatBufferItemAttribute : Attribute
     {
         /// <summary>
