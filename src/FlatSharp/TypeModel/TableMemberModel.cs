@@ -31,7 +31,7 @@
             bool hasDefaultValue,
             object defaultValue,
             bool isSortedVector,
-            bool isKey) : base(propertyModel, propertyInfo, index)
+            bool isKey) : base(propertyModel, propertyInfo, index, validateVirtual: true)
         {
             this.HasDefaultValue = hasDefaultValue;
             this.DefaultValue = defaultValue;

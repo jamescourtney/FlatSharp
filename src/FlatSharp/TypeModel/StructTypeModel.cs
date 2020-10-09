@@ -21,6 +21,7 @@
     using System.Collections.Immutable;
     using System.Linq;
     using System.Reflection;
+    using System.Runtime.InteropServices;
     using FlatSharp.Attributes;
 
     /// <summary>
@@ -98,6 +99,48 @@
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
+            if (this.ClrType.IsValueType)
+            {
+                return this.CreateStructParseBody(context);
+            }
+            else
+            {
+                return this.CreateClassParseMethodBody(context);
+            }
+        }
+
+        private CodeGeneratedMethod CreateStructParseBody(ParserCodeGenContext context)
+        {
+            var propertyStatements = new List<string>();
+            for (int i = 0; i < this.Members.Count; ++i)
+            {
+                var member = this.Members[i];
+                propertyStatements.Add($@"
+                    item.{member.PropertyInfo.Name} = {context.MethodNameMap[member.PropertyInfo.PropertyType]}<{context.InputBufferTypeName}>(
+                        {context.InputBufferVariableName}), 
+                        ({context.OffsetVariableName} + {member.Offset});");
+            }
+
+            // For little endian architectures, we can do the equivalent of a reinterpret_cast operation.
+            string body = $@"
+            if (BitConverter.IsLittleEndian)
+            {{
+                var mem = {context.InputBufferVariableName}.{nameof(IInputBuffer.GetReadOnlyByteMemory)}({context.OffsetVariableName}, {this.inlineSize});
+                return {nameof(MemoryMarshal)}.{nameof(MemoryMarshal.Cast)}<byte, {CSharpHelpers.GetCompilableTypeName(this.ClrType)}>(mem.Span)[0];
+            }}
+            else
+            {{
+                var item = default({CSharpHelpers.GetCompilableTypeName(this.ClrType)};
+                {string.Join("\r\n", propertyStatements)}
+                return item;
+            }}
+";
+
+            return new CodeGeneratedMethod { MethodBody = body };
+        }
+
+        private CodeGeneratedMethod CreateClassParseMethodBody(ParserCodeGenContext context)
+        {
             // We have to implement two items: The table class and the overall "read" method.
             // Let's start with the read method.
             string className = "structReader_" + Guid.NewGuid().ToString("n");
@@ -146,6 +189,44 @@ $@"
 
         public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
         {
+            return this.ClrType.IsValueType
+                ? this.CreateStructSerializeBody(context)
+                : this.CreateClassSerializeMethodBody(context);
+        }
+
+        private CodeGeneratedMethod CreateStructSerializeBody(SerializationCodeGenContext context)
+        {
+            var propertyStatements = new List<string>();
+            for (int i = 0; i < this.Members.Count; ++i)
+            {
+                var member = this.Members[i];
+                propertyStatements.Add($@"
+                    {context.MethodNameMap[member.PropertyInfo.PropertyType]}(
+                        {context.SpanWriterVariableName}, 
+                        {context.SpanVariableName},
+                        {context.ValueVariableName}.{member.PropertyInfo.Name},
+                        {context.OffsetVariableName} + {member.Offset},
+                        {context.SerializationContextVariableName});");
+            }
+
+            // For little endian architectures, we can do the equivalent of a reinterpret_cast operation.
+            string body = $@"
+            if (BitConverter.IsLittleEndian)
+            {{
+                var tempSpan = {nameof(MemoryMarshal)}.{nameof(MemoryMarshal.Cast)}<byte, {CSharpHelpers.GetCompilableTypeName(this.ClrType)}>({context.SpanVariableName}.Slice({context.OffsetVariableName}, {this.inlineSize}));
+                tempSpan[0] = {context.ValueVariableName};
+            }}
+            else
+            {{
+                {string.Join("\r\n", propertyStatements)}
+            }}
+";
+
+            return new CodeGeneratedMethod { MethodBody = body };
+        }
+
+        private CodeGeneratedMethod CreateClassSerializeMethodBody(SerializationCodeGenContext context)
+        {
             List<string> body = new List<string>();
             for (int i = 0; i < this.Members.Count; ++i)
             {
@@ -184,14 +265,13 @@ $@"
                 throw new InvalidFlatBufferDefinitionException($"Can't create struct type model from type {this.ClrType.Name} because it does not have a [FlatBufferStruct] attribute.");
             }
 
-            TableTypeModel.EnsureClassCanBeInheritedByOutsideAssembly(this.ClrType, out var ctor);
-
             var properties = this.ClrType
                 .GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
                 .Select(x => new
                 {
                     Property = x,
-                    Attribute = x.GetCustomAttribute<FlatBufferItemAttribute>()
+                    Attribute = x.GetCustomAttribute<FlatBufferItemAttribute>(),
+                    ExplicitOffsetAttribute = x.GetCustomAttribute<FieldOffsetAttribute>(),
                 })
                 .Where(x => x.Attribute != null)
                 .OrderBy(x => x.Attribute.Index);
@@ -228,6 +308,11 @@ $@"
                     throw new InvalidFlatBufferDefinitionException($"Struct property {property.Name} with type {property.PropertyType.Name} cannot be part of a flatbuffer struct.");
                 }
 
+                if (this.ClrType.IsValueType && !propertyModel.ClrType.IsValueType)
+                {
+                    throw new InvalidFlatBufferDefinitionException($"Struct {this.ClrType.Name} property {property.Name} must be a value type if the struct is a value type.");
+                }
+
                 int propertySize = propertyModel.PhysicalLayout[0].InlineSize;
                 int propertyAlignment = propertyModel.PhysicalLayout[0].Alignment;
                 this.maxAlignment = Math.Max(propertyAlignment, this.maxAlignment);
@@ -242,7 +327,29 @@ $@"
                     this.inlineSize);
 
                 this.memberTypes.Add(model);
+
+                if (this.ClrType.IsValueType && item.ExplicitOffsetAttribute?.Value != this.inlineSize)
+                {
+                    throw new InvalidFlatBufferDefinitionException($"Struct '{this.ClrType.Name}' property '{property.Name}' defines invalid [FieldOffset attribute. Expected [FieldOffset({this.inlineSize})].");
+                }
+
                 this.inlineSize += propertyModel.PhysicalLayout[0].InlineSize;
+            }
+
+            // Validate the struct type after all the alignment business.
+            if (this.ClrType.IsValueType)
+            {
+                var physicalLayout = this.ClrType.GetCustomAttribute<StructLayoutAttribute>();
+                if (physicalLayout?.Value != LayoutKind.Explicit ||
+                    physicalLayout?.Pack != this.maxAlignment ||
+                    physicalLayout?.Size != this.inlineSize)
+                {
+                    throw new InvalidFlatBufferDefinitionException($"Struct {this.ClrType.Name} must define a [StructLayout(LayoutKind.Explicit, Pack = {this.maxAlignment}, Size = {this.inlineSize})] attribute.");
+                }
+            }
+            else
+            {
+                TableTypeModel.EnsureClassCanBeInheritedByOutsideAssembly(this.ClrType, out var ctor);
             }
         }
 
