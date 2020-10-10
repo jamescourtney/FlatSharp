@@ -19,6 +19,7 @@ namespace FlatSharpTests
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Runtime.InteropServices;
     using FlatSharp;
     using FlatSharp.Attributes;
     using FlatSharp.TypeModel;
@@ -66,6 +67,91 @@ namespace FlatSharpTests
         public void TypeModel_Table_InterfaceImplementationVirtual()
         {
             RuntimeTypeModel.CreateFrom(typeof(InterfaceTableSuccess));
+        }
+        
+        [TestMethod]
+        public void TypeModel_ValueStruct_BasicTypes()
+        {
+            ITypeModel model = RuntimeTypeModel.CreateFrom(typeof(ValueStruct_Outer));
+            Assert.AreEqual(typeof(ValueStruct_Outer), model.ClrType);
+            Assert.IsTrue(model is ValueStructTypeModel valueModel);
+        }
+
+        [TestMethod]
+        public void TypeModel_ValueStruct_String_NotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => RuntimeTypeModel.CreateFrom(typeof(ValueStruct_String)));
+        }
+
+        [TestMethod]
+        public void TypeModel_ValueStruct_ListVector_NotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => RuntimeTypeModel.CreateFrom(typeof(ValueStruct_ListVector)));
+        }
+
+        [TestMethod]
+        public void TypeModel_ValueStruct_Array_NotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => RuntimeTypeModel.CreateFrom(typeof(ValueStruct_ArrayVector)));
+        }
+
+        [TestMethod]
+        public void TypeModel_ValueStruct_MemoryVector_NotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => RuntimeTypeModel.CreateFrom(typeof(ValueStruct_MemoryVector)));
+        }
+
+        [TestMethod]
+        public void TypeModel_ValueStruct_Table_NotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => RuntimeTypeModel.CreateFrom(typeof(ValueStruct_Table)));
+        }
+
+        [TestMethod]
+        public void TypeModel_ValueStruct_Union_NotAllowed()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => RuntimeTypeModel.CreateFrom(typeof(ValueStruct_Union)));
+        }
+
+        [TestMethod]
+        public void TypeModel_ValueStruct_Misaligned()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => RuntimeTypeModel.CreateFrom(typeof(ValueStruct_Misaligned)));
+        }
+
+        [TestMethod]
+        public void TypeModel_ValueStruct_SizeWrong()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => RuntimeTypeModel.CreateFrom(typeof(ValueStruct_SizeWrong)));
+        }
+
+        [TestMethod]
+        public void TypeModel_ValueStruct_NonPublic()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => RuntimeTypeModel.CreateFrom(typeof(ValueStruct_NonPublic)));
+        }
+
+        [TestMethod]
+        public void TypeModel_ValueStruct_Empty()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => RuntimeTypeModel.CreateFrom(typeof(ValueStruct_Empty)));
+        }
+
+        [TestMethod]
+        public void TypeModel_ValueStruct_NonExplicit()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => RuntimeTypeModel.CreateFrom(typeof(ValueStruct_NonExplicit)));
         }
 
         [TestMethod]
@@ -309,6 +395,13 @@ namespace FlatSharpTests
         public void TypeModel_Vector_ListVectorOfStruct()
         {
             var model = this.VectorTest(typeof(IList<>), typeof(GenericStruct<bool>));
+            Assert.IsInstanceOfType(model, typeof(ListVectorTypeModel));
+        }
+
+        [TestMethod]
+        public void TypeModel_Vector_ListVectorOfValueStruct()
+        {
+            var model = this.VectorTest(typeof(IList<>), typeof(ValueStruct_Outer));
             Assert.IsInstanceOfType(model, typeof(ListVectorTypeModel));
         }
 
@@ -593,15 +686,16 @@ namespace FlatSharpTests
         [TestMethod]
         public void TypeModel_Union_StructsTablesStringsAllowed()
         {
-            var tableModel = (TableTypeModel)RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, GenericTable<string>, GenericStruct<int>>>));
+            var tableModel = (TableTypeModel)RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, GenericTable<string>, GenericStruct<int>, ValueStruct_Outer>>));
             Assert.AreEqual(1, tableModel.IndexToMemberMap.Count);
 
             var model = (UnionTypeModel)tableModel.IndexToMemberMap[0].ItemTypeModel;
 
-            Assert.AreEqual(3, model.UnionElementTypeModel.Length);
+            Assert.AreEqual(4, model.UnionElementTypeModel.Length);
             Assert.IsInstanceOfType(model.UnionElementTypeModel[0], typeof(StringTypeModel));
             Assert.IsInstanceOfType(model.UnionElementTypeModel[1], typeof(TableTypeModel));
             Assert.IsInstanceOfType(model.UnionElementTypeModel[2], typeof(StructTypeModel));
+            Assert.IsInstanceOfType(model.UnionElementTypeModel[3], typeof(ValueStructTypeModel));
         }
 
         [TestMethod]
@@ -850,6 +944,97 @@ namespace FlatSharpTests
         {
             [FlatBufferItem(0, Key = true)]
             public virtual T Key { get; set; }
+        }
+
+        [FlatBufferStruct, StructLayout(LayoutKind.Explicit, Size = 52)]
+        public struct ValueStruct_Outer
+        {
+            [FieldOffset(0)] public bool Bool;
+            [FieldOffset(1)] public byte Byte;
+            [FieldOffset(2)] public sbyte Sbyte;
+            [FieldOffset(4)] public ValueStruct_Inner InnerStruct;
+            [FieldOffset(8)] public uint UInt;
+            [FieldOffset(12)] public int Int;
+            [FieldOffset(16)] public ulong ULong;
+            [FieldOffset(24)] public long Long;
+            [FieldOffset(32)] public float Float;
+            [FieldOffset(40)] public double Double;
+            [FieldOffset(48)] public TaggedEnum TaggedEnum;
+        }
+
+        [FlatBufferStruct, StructLayout(LayoutKind.Explicit, Size = 4)]
+        public struct ValueStruct_Inner
+        {
+            [FieldOffset(0)] public ushort UShort;
+            [FieldOffset(2)] public short Short;
+        }
+
+        // Assume a pointer
+        [FlatBufferStruct, StructLayout(LayoutKind.Explicit, Size = 8)]
+        public struct ValueStruct_String
+        {
+            [FieldOffset(0)] public string String;
+        }
+
+        [FlatBufferStruct, StructLayout(LayoutKind.Explicit, Size = 8)]
+        public struct ValueStruct_ListVector
+        {
+            [FieldOffset(0)] public IList<int> Value;
+        }
+
+        [FlatBufferStruct, StructLayout(LayoutKind.Explicit, Size = 8)]
+        public struct ValueStruct_ArrayVector
+        {
+            [FieldOffset(0)] public int[] Value;
+        }
+
+        [FlatBufferStruct, StructLayout(LayoutKind.Explicit, Size = 8)]
+        public struct ValueStruct_MemoryVector
+        {
+            [FieldOffset(0)] public Memory<byte> Value;
+        }
+
+        [FlatBufferStruct, StructLayout(LayoutKind.Explicit, Size = 8)]
+        public struct ValueStruct_Table
+        {
+            [FieldOffset(0)] public GenericTable<int> Value;
+        }
+
+        [FlatBufferStruct, StructLayout(LayoutKind.Explicit, Size = 8)]
+        public struct ValueStruct_Union
+        {
+            [FieldOffset(0)] public FlatBufferUnion<string> Value;
+        }
+
+        [FlatBufferStruct, StructLayout(LayoutKind.Explicit, Size = 8)]
+        public struct ValueStruct_Misaligned
+        {
+            [FieldOffset(0)] public byte First;
+            [FieldOffset(1)] public int Second; // should be at offet 4.
+        }
+
+        [FlatBufferStruct, StructLayout(LayoutKind.Explicit, Size = 7)]
+        public struct ValueStruct_SizeWrong
+        {
+            [FieldOffset(0)] public byte First;
+            [FieldOffset(4)] public int Second;
+        }
+
+        [FlatBufferStruct, StructLayout(LayoutKind.Explicit, Size = 1)]
+        internal struct ValueStruct_NonPublic
+        {
+            [FieldOffset(0)] public bool Bool;
+        }
+
+        [FlatBufferStruct, StructLayout(LayoutKind.Explicit, Size = 0)]
+        public struct ValueStruct_Empty
+        {
+        }
+
+        [FlatBufferStruct, StructLayout(LayoutKind.Sequential)]
+        public struct ValueStruct_NonExplicit
+        {
+            public bool Bool;
         }
     }
 }

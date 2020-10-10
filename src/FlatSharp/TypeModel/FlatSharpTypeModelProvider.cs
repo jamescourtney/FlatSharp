@@ -116,17 +116,20 @@ namespace FlatSharp.TypeModel
             var structAttribute = type.GetCustomAttribute<FlatBufferStructAttribute>();
             if (structAttribute != null)
             {
-                typeModel = new StructTypeModel(type, container);
-                return true;
-            }
-
-            if (type.IsValueType && 
-                type.Attributes.HasFlag(TypeAttributes.ExplicitLayout) && 
-                type.IsExplicitLayout && 
-                type.StructLayoutAttribute?.Value == LayoutKind.Explicit)
-            {
-                typeModel = new ValueStructTypeModel(type, container);
-                return true;
+                if (!type.IsValueType)
+                {
+                    typeModel = new StructTypeModel(type, container);
+                    return true;
+                }
+                else if (
+                    type.IsValueType &&
+                    type.Attributes.HasFlag(TypeAttributes.ExplicitLayout) &&
+                    type.IsExplicitLayout &&
+                    type.StructLayoutAttribute?.Value == LayoutKind.Explicit)
+                {
+                    typeModel = new ValueStructTypeModel(type, container);
+                    return true;
+                }
             }
 
             typeModel = null;

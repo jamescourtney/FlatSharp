@@ -40,5 +40,8 @@ namespace Benchmark.FBBench
 
         [Benchmark]
         public override void FlatSharp_ParseAndTraversePartial() => base.FlatSharp_ParseAndTraversePartial();
+
+        [Benchmark]
+        public override void FlatSharp_ParseAndTraverse_ByValue() => base.FlatSharp_ParseAndTraverse_ByValue();
     }
 }

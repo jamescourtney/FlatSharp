@@ -177,6 +177,42 @@ namespace FlatSharpTests
             Assert.IsTrue(expectedData.AsSpan().SequenceEqual(buffer.AsSpan().Slice(0, bytesWritten)));
         }
 
+        [TestMethod]
+        public void NestedStructs()
+        {
+            var table = new SimpleTable<OuterStruct>
+            {
+                /*
+                Struct = new OuterStruct
+                {
+                    Parent = new InnerStruct
+                    {
+                        Count = 1,
+                        Id = 2,
+                        Length = 3,
+                        Prefix = 4,
+                    },
+                    Ratio = 3.14f,
+                    Size = 2,
+                    Time = 3,
+                }
+                */
+            };
+
+            byte[] buffer = new byte[1024];
+
+            byte[] expectedData =
+            {
+                4, 0, 0, 0,
+                252, 255, 255, 255,
+                4, 0,
+                4, 0,
+            };
+
+            int bytesWritten = FlatBufferSerializer.Default.Serialize(table, buffer);
+            Assert.IsTrue(expectedData.AsSpan().SequenceEqual(buffer.AsSpan().Slice(0, bytesWritten)));
+        }
+
         [FlatBufferTable]
         public class SimpleTable<T>
         {
@@ -197,7 +233,7 @@ namespace FlatSharpTests
             public virtual uint Uint { get; set; }
         }
 
-        [StructLayout(LayoutKind.Explicit)]
+        [FlatBufferStruct, StructLayout(LayoutKind.Explicit, Size = 16)]
         public struct SimpleValueStruct
         {
             [FieldOffset(0)]
@@ -210,12 +246,30 @@ namespace FlatSharpTests
             public uint Uint;
         }
 
-        [StructLayout(LayoutKind.Explicit)]
+        [FlatBufferStruct, StructLayout(LayoutKind.Explicit, Size = 4)]
         public struct SmallStruct
         {
             [FieldOffset(0)] public byte A;
             [FieldOffset(1)] public byte B;
             [FieldOffset(2)] public ushort C;
+        }
+
+        [FlatBufferStruct, StructLayout(LayoutKind.Explicit, Size = 16)]
+        public struct InnerStruct
+        {
+            [FieldOffset(0)] public ulong Id;
+            [FieldOffset(8)] public short Count;
+            [FieldOffset(10)] public sbyte Prefix;
+            [FieldOffset(12)] public uint Length;
+        }
+
+        [FlatBufferStruct, StructLayout(LayoutKind.Explicit, Size = 26)]
+        public struct OuterStruct
+        {
+            [FieldOffset(0)] public InnerStruct Parent;
+            [FieldOffset(16)] public int Time;
+            [FieldOffset(20)] public float Ratio;
+            [FieldOffset(24)] public ushort Size;
         }
     }
 }

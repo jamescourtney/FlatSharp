@@ -16,6 +16,7 @@
  
  namespace FlatSharp.TypeModel
 {
+    using FlatSharp.Attributes;
     using System;
     using System.Collections.Generic;
     using System.Collections.Immutable;
@@ -120,7 +121,8 @@
                         {context.OffsetVariableName} + {member.offset});");
             }
 
-            // For little endian architectures, we can do the equivalent of a reinterpret_cast operation.
+            // For little endian architectures, we can do the equivalent of a reinterpret_cast operation. This will be
+            // generally faster than reading fields individually, since we will read entire words.
             string body = $@"
             if (BitConverter.IsLittleEndian)
             {{
@@ -179,14 +181,12 @@
             return string.Empty;
         }
 
-
-
         public override void Initialize()
         {
-            if (!this.ClrType.Attributes.HasFlag(TypeAttributes.ExplicitLayout) ||
-                this.ClrType.StructLayoutAttribute?.Value != LayoutKind.Explicit)
+            var structAttribute = this.ClrType.GetCustomAttribute<FlatBufferStructAttribute>();
+            if (structAttribute == null)
             {
-                throw new InvalidFlatBufferDefinitionException($"Can't create struct type model from type {this.ClrType.Name} because it does not have a [StructLayout(LayoutKind.Explicit)] attribute.");
+                throw new InvalidFlatBufferDefinitionException($"Can't create struct type model from type {this.ClrType.Name} because it does not have a [FlatBufferStruct] attribute.");
             }
 
             var properties = this.ClrType
@@ -196,10 +196,16 @@
                     Field = x,
                     OffsetAttribute = x.GetCustomAttribute<FieldOffsetAttribute>(),
                 })
-                .Where(x => x.OffsetAttribute != null);
+                .Where(x => x.OffsetAttribute != null)
+                .ToList();
+
+
+            if (properties.Count == 0)
+            {
+                throw new InvalidFlatBufferDefinitionException($"Struct '{this.ClrType.Name}' is empty or has no public properties with '[FieldOffset]' attributes.");
+            }
 
             this.inlineSize = 0;
-
             foreach (var item in properties)
             {
                 var offsetAttribute = item.OffsetAttribute;
@@ -227,7 +233,7 @@
                 this.members.Add((this.inlineSize, field, propertyModel));
                 if (offsetAttribute?.Value != this.inlineSize)
                 {
-                    throw new InvalidFlatBufferDefinitionException($"Struct '{this.ClrType.Name}' property '{field.Name}' defines invalid [FieldOffset attribute. Expected [FieldOffset({this.inlineSize})].");
+                    throw new InvalidFlatBufferDefinitionException($"Struct '{this.ClrType.Name}' property '{field.Name}' defines invalid [FieldOffset] attribute. Expected: [FieldOffset({this.inlineSize})].");
                 }
 
                 this.inlineSize += propertyModel.PhysicalLayout[0].InlineSize;
@@ -236,6 +242,13 @@
             if (!this.ClrType.IsPublic && !this.ClrType.IsNestedPublic)
             {
                 throw new InvalidFlatBufferDefinitionException($"Can't create type model from type {this.ClrType.Name} because it is not public.");
+            }
+
+            if (!this.ClrType.Attributes.HasFlag(TypeAttributes.ExplicitLayout) ||
+                this.ClrType.StructLayoutAttribute?.Value != LayoutKind.Explicit ||
+                this.ClrType.StructLayoutAttribute?.Size != this.inlineSize)
+            {
+                throw new InvalidFlatBufferDefinitionException($"Can't create struct type model from type {this.ClrType.Name} because it does not have a [StructLayout(LayoutKind.Explicit, Size = {this.inlineSize})] attribute.");
             }
         }
 

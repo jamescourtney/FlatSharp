@@ -21,6 +21,7 @@ namespace Benchmark.FBBench
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
+    using System.Runtime.InteropServices;
     using BenchmarkDotNet.Attributes;
     using FlatBuffers;
     using FlatSharp;
@@ -430,6 +431,13 @@ namespace Benchmark.FBBench
             this.TraverseFooBarContainer(item);
         }
 
+        public virtual void FlatSharp_ParseAndTraverse_ByValue()
+        {
+            var item = this.fs_serializer.Parse<ValueFooBarListContainer>(this.inputBuffer);
+
+            this.TraverseFooBarContainer(item);
+        }
+
         public virtual void FlatSharp_ParseAndTraversePartial()
         {
             var item = this.fs_serializer.Parse<FooBarListContainer>(this.inputBuffer);
@@ -484,6 +492,43 @@ namespace Benchmark.FBBench
 #endregion
 
         public int TraverseFooBarContainer(FooBarListContainer foobar)
+        {
+            var iterations = this.TraversalCount;
+            int sum = 0;
+
+            for (int loop = 0; loop < iterations; ++loop)
+            {
+                sum += foobar.Initialized ? 1 : 0;
+                sum += foobar.Location.Length;
+                sum += foobar.Fruit;
+
+                var list = foobar.List;
+                int count = list.Count;
+
+                for (int i = 0; i < count; ++i)
+                {
+                    var item = list[i];
+                    sum += item.Name.Length;
+                    sum += item.PostFix;
+                    sum += (int)item.Rating;
+
+                    var bar = item.Sibling;
+                    sum += (int)bar.Ratio;
+                    sum += bar.Size;
+                    sum += bar.Time;
+
+                    var parent = bar.Parent;
+                    sum += parent.Count;
+                    sum += (int)parent.Id;
+                    sum += (int)parent.Length;
+                    sum += parent.Prefix;
+                }
+            }
+
+            return sum;
+        }
+
+        public int TraverseFooBarContainer(ValueFooBarListContainer foobar)
         {
             var iterations = this.TraversalCount;
             int sum = 0;
@@ -622,9 +667,66 @@ namespace Benchmark.FBBench
         public virtual string Location { get; set; }
     }
 
-#endregion
+    #endregion
 
-#region Sorted Vector Contracts
+
+    #region Shared Contracts
+
+    [StructLayout(LayoutKind.Explicit)]
+    public struct ValueFoo
+    {
+        [FieldOffset(0)] public ulong Id;
+        [FieldOffset(8)] public short Count;
+        [FieldOffset(10)] public sbyte Prefix;
+        [FieldOffset(12)] public uint Length;
+    }
+
+    [StructLayout(LayoutKind.Explicit)]
+    public struct ValueBar
+    {
+        [FieldOffset(0)] public ValueFoo Parent;
+        [FieldOffset(16)] public int Time;
+        [FieldOffset(20)] public float Ratio;
+        [FieldOffset(22)] public ushort Size;
+    }
+
+    [FlatBufferTable]
+    public class ValueFooBar
+    {
+        [FlatBufferItem(0)]
+        public virtual ValueBar Sibling { get; set; }
+
+        [FlatBufferItem(1)]
+        public virtual string Name { get; set; }
+
+        [FlatBufferItem(2)]
+        public virtual double Rating { get; set; }
+
+        [FlatBufferItem(3)]
+        public virtual byte PostFix { get; set; }
+    }
+
+    [ProtoContract]
+    [FlatBufferTable]
+    public class ValueFooBarListContainer
+    {
+        [FlatBufferItem(0)]
+        public virtual IList<ValueFooBar> List { get; set; }
+
+        [FlatBufferItem(1)]
+        public virtual bool Initialized { get; set; }
+
+        [FlatBufferItem(2)]
+        public virtual short Fruit { get; set; }
+
+        [FlatBufferItem(3)]
+        public virtual string Location { get; set; }
+    }
+
+    #endregion
+
+
+    #region Sorted Vector Contracts
 
     [FlatBufferTable]
     public class SortedVectorTable<T>
