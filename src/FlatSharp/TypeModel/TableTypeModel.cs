@@ -254,11 +254,6 @@
                 throw new InvalidFlatBufferDefinitionException($"Can't create type model from type {type.Name} because it is not a class.");
             }
 
-            if (type.IsSealed)
-            {
-                throw new InvalidFlatBufferDefinitionException($"Can't create type model from type {type.Name} because it is sealed.");
-            }
-
             if (type.IsAbstract)
             {
                 throw new InvalidFlatBufferDefinitionException($"Can't create type model from type {type.Name} because it is abstract.");
@@ -491,7 +486,7 @@ $@"
             ParserCodeGenContext context)
         {
             Type propertyType = memberModel.ItemTypeModel.ClrType;
-            GeneratedProperty property = new GeneratedProperty(context.Options, index, memberModel.PropertyInfo);
+            GeneratedProperty property = new GeneratedProperty(context.Options, index, memberModel);
 
             // These are always inline as they are only invoked from one place.
             property.ReadValueMethodDefinition =
@@ -520,7 +515,7 @@ $@"
             const string FirstLocationVariableName = "firstLocation";
 
             Type propertyType = memberModel.ItemTypeModel.ClrType;
-            GeneratedProperty property = new GeneratedProperty(context.Options, index, memberModel.PropertyInfo);
+            GeneratedProperty property = new GeneratedProperty(context.Options, index, memberModel);
 
             List<string> locationGetters = new List<string> { FirstLocationVariableName };
             for (int i = 1; i < memberModel.ItemTypeModel.PhysicalLayout.Length; ++i)

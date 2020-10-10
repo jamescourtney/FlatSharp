@@ -20,7 +20,6 @@ namespace FlatSharp
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
-    using FlatSharp.TypeModel;
     using Microsoft.CodeAnalysis.CSharp;
 
     /// <summary>
@@ -85,17 +84,34 @@ namespace FlatSharp
             string inputBufferFieldDef = "private readonly TInputBuffer buffer;";
             string offsetFieldDef = "private readonly int offset;";
 
-            string ctorBody =
-$@"
-                this.buffer = buffer;
-                this.offset = offset;
-";
+            List<string> ctorStatements = new List<string>
+            {
+                "this.buffer = buffer;",
+                "this.offset = offset;"
+            };
 
             if (options.GreedyDeserialize)
             {
                 inputBufferFieldDef = string.Empty;
                 offsetFieldDef = string.Empty;
-                ctorBody = string.Join("\r\n", propertyOverrides.Select(x => $"this.{x.BackingFieldName} = {x.ReadValueMethodName}(buffer, offset);"));
+                ctorStatements.Clear();
+            }
+
+            foreach (var property in propertyOverrides)
+            {
+                if (property.MemberModel.IsVirtual)
+                {
+                    if (options.GreedyDeserialize)
+                    {
+                        ctorStatements.Add(
+                            $"this.{property.BackingFieldName} = {property.ReadValueMethodName}(buffer, offset);");
+                    }
+                }
+                else
+                {
+                    ctorStatements.Add(
+                        $"base.{property.MemberModel.PropertyInfo.Name} = {property.ReadValueMethodName}(buffer, offset);");
+                }
             }
 
             return
@@ -107,7 +123,7 @@ $@"
         
                     public {className}(TInputBuffer buffer, int offset)
                     {{
-                        {ctorBody}
+                        {string.Join("\r\n", ctorStatements)}
                     }}
 
                     {string.Join("\r\n", propertyOverrides)}

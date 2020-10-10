@@ -35,29 +35,48 @@ namespace FlatSharp.TypeModel
             this.ItemTypeModel = propertyModel;
             this.PropertyInfo = propertyInfo;
             this.Index = index;
-            this.IsReadOnly = setMethod == null;
 
-            if (!ValidatePropertyMethod(getMethod, false))
+            if (getMethod == null)
             {
-                throw new InvalidFlatBufferDefinitionException($"Property {propertyInfo.Name} did not declare a public/protected virtual getter.");
+                throw new InvalidFlatBufferDefinitionException($"Property {propertyInfo.Name} did not declare a getter.");
             }
 
-            if (!ValidatePropertyMethod(setMethod, true))
+            if (getMethod.IsVirtual)
             {
-                throw new InvalidFlatBufferDefinitionException($"Property {propertyInfo.Name} declared a set method, but it was not public/protected and virtual.");
+                if (!ValidateVirtualPropertyMethod(getMethod, false))
+                {
+                    throw new InvalidFlatBufferDefinitionException($"Property {propertyInfo.Name} did not declare a public/protected virtual getter.");
+                }
+
+                if (!ValidateVirtualPropertyMethod(setMethod, true))
+                {
+                    throw new InvalidFlatBufferDefinitionException($"Property {propertyInfo.Name} declared a set method, but it was not public/protected and virtual.");
+                }
+            }
+            else
+            {
+                if (!ValidateNonVirtualMethod(getMethod))
+                {
+                    throw new InvalidFlatBufferDefinitionException($"Non-virtual property {propertyInfo.Name} must declare a public and non-abstract getter.");
+                }
+
+                if (!ValidateNonVirtualMethod(setMethod))
+                {
+                    throw new InvalidFlatBufferDefinitionException($"Non-virtual property {propertyInfo.Name} must declare a public and non-abstract setter.");
+                }
             }
         }
 
-        private static bool ValidatePropertyMethod(MethodInfo method, bool allowNull)
+        private static bool ValidateNonVirtualMethod(MethodInfo method)
+        {
+            return method != null && method.IsPublic && !method.IsAbstract && !method.IsVirtual;
+        }
+
+        private static bool ValidateVirtualPropertyMethod(MethodInfo method, bool allowNull)
         {
             if (method == null)
             {
-                if (allowNull)
-                {
-                    return true;
-                }
-
-                return false;
+                return allowNull;
             }
 
             if (!method.IsVirtual || method.IsFinal)
@@ -84,8 +103,8 @@ namespace FlatSharp.TypeModel
         public ITypeModel ItemTypeModel { get; }
 
         /// <summary>
-        /// The property is read only (ie, does not have a setter).
+        /// The property is virtual (ie, FlatSharp will override it when generating code).
         /// </summary>
-        public bool IsReadOnly { get; }
+        public bool IsVirtual { get; }
     }
 }
