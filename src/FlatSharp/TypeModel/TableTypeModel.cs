@@ -254,6 +254,11 @@
                 throw new InvalidFlatBufferDefinitionException($"Can't create type model from type {type.Name} because it is not a class.");
             }
 
+            if (type.IsSealed)
+            {
+                throw new InvalidFlatBufferDefinitionException($"Can't create type model from type {type.Name} because it is sealed.");
+            }
+
             if (type.IsAbstract)
             {
                 throw new InvalidFlatBufferDefinitionException($"Can't create type model from type {type.Name} because it is abstract.");
