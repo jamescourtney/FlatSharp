@@ -34,6 +34,8 @@ namespace FlatSharp.Compiler
 
         public bool IsKey { get; set; }
 
+        public bool? Virtual { get; set; }
+
         public string DefaultValue { get; set; }
 
         public bool IsOptionalScalar { get; set; }
@@ -179,14 +181,14 @@ namespace FlatSharp.Compiler
             }
         }
 
-        public void WriteField(CodeWriter writer, BaseSchemaMember schemaDefinition)
+        public void WriteField(CodeWriter writer, TableOrStructDefinition parent)
         {
             ErrorContext.Current.WithScope(this.Name, (Action)(() =>
             {
                 bool isVector = this.VectorType != VectorType.None;
                 EnumDefinition enumDefinition = null;
 
-                if (schemaDefinition.TryResolveName(this.FbsFieldType, out var typeDefinition))
+                if (parent.TryResolveName(this.FbsFieldType, out var typeDefinition))
                 {
                     enumDefinition = typeDefinition as EnumDefinition;
                 }
@@ -225,7 +227,7 @@ namespace FlatSharp.Compiler
                     }
                 }
 
-                this.WriteField(writer, this.GetClrTypeName(schemaDefinition), defaultValue, this.Name);
+                this.WriteField(writer, this.GetClrTypeName(parent), defaultValue, this.Name, parent);
             }));
         }
 
@@ -234,6 +236,7 @@ namespace FlatSharp.Compiler
             string clrTypeName,
             string defaultValue,
             string name,
+            TableOrStructDefinition parent,
             string accessModifier = "public")
         {
             string defaultValueAttribute = string.Empty;
@@ -263,8 +266,18 @@ namespace FlatSharp.Compiler
                 isDeprecated = ", Deprecated = true";
             }
 
+            bool isVirtual = true;
+            if (this.Virtual != null)
+            {
+                isVirtual = this.Virtual.Value;
+            }
+            else if (parent.Virtual != null)
+            {
+                isVirtual = parent.Virtual.Value;
+            }
+
             writer.AppendLine($"[FlatBufferItem({this.Index}{defaultValueAttribute}{isDeprecated}{sortedVector}{isKey})]");
-            writer.AppendLine($"{accessModifier} virtual {clrTypeName} {name} {{ get; set; }}{defaultValueAssignment}");
+            writer.AppendLine($"{accessModifier} {(isVirtual ? "virtual " : string.Empty)}{clrTypeName} {name} {{ get; set; }}{defaultValueAssignment}");
         }
     }
 }

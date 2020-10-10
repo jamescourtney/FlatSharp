@@ -157,7 +157,7 @@ root_type Monster;";
 
         private void TestFlags(FlatBufferDeserializationOption expectedFlags, string metadata)
         {
-            string schema = $"namespace Test; table FooTable ({metadata}) {{ foo:string; }}";
+            string schema = $"namespace Test; table FooTable ({metadata}) {{ foo:string; bar:string (virtual:\"false\"); }}";
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema);
 
             Type type = asm.GetType("Test.FooTable");

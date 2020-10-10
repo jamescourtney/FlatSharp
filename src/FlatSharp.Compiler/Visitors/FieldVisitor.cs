@@ -85,6 +85,16 @@ namespace FlatSharp.Compiler
                     this.definition.IsKey = true;
                 }
 
+                if (metadata.TryGetValue("virtual", out string virtualValue))
+                {
+                    if (!bool.TryParse(virtualValue, out bool isVirtual))
+                    {
+                        ErrorContext.Current?.RegisterError($"The 'virtual' attribute must have a boolean value.");
+                    }
+
+                    this.definition.Virtual = isVirtual;
+                }
+
                 if (metadata.ContainsKey("sortedvector"))
                 {
                     this.definition.SortedVector = true;

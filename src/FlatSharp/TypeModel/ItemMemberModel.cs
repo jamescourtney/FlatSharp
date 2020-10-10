@@ -43,6 +43,7 @@ namespace FlatSharp.TypeModel
 
             if (getMethod.IsVirtual)
             {
+                this.IsVirtual = true;
                 if (!ValidateVirtualPropertyMethod(getMethod, false))
                 {
                     throw new InvalidFlatBufferDefinitionException($"Property {propertyInfo.Name} did not declare a public/protected virtual getter.");
@@ -55,21 +56,33 @@ namespace FlatSharp.TypeModel
             }
             else
             {
-                if (!ValidateNonVirtualMethod(getMethod))
+                if (!ValidateNonVirtualMethod(getMethod, false))
                 {
                     throw new InvalidFlatBufferDefinitionException($"Non-virtual property {propertyInfo.Name} must declare a public and non-abstract getter.");
                 }
 
-                if (!ValidateNonVirtualMethod(setMethod))
+                if (!ValidateNonVirtualMethod(setMethod, true))
                 {
-                    throw new InvalidFlatBufferDefinitionException($"Non-virtual property {propertyInfo.Name} must declare a public and non-abstract setter.");
+                    throw new InvalidFlatBufferDefinitionException($"Non-virtual property {propertyInfo.Name} must declare a public/protected and non-abstract setter.");
                 }
             }
         }
 
-        private static bool ValidateNonVirtualMethod(MethodInfo method)
+        private static bool ValidateNonVirtualMethod(MethodInfo method, bool allowProtected)
         {
-            return method != null && method.IsPublic && !method.IsAbstract && !method.IsVirtual;
+            if (method == null ||
+                method.IsAbstract ||
+                method.IsVirtual)
+            {
+                return false;
+            }
+
+            if (allowProtected && (method.IsFamily || method.IsFamilyOrAssembly))
+            {
+                return true;
+            }
+
+            return method.IsPublic;
         }
 
         private static bool ValidateVirtualPropertyMethod(MethodInfo method, bool allowNull)

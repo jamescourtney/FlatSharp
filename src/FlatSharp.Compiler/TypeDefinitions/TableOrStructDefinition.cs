@@ -36,6 +36,8 @@ namespace FlatSharp.Compiler
         
         public bool IsTable { get; set; }
 
+        public bool? Virtual { get; set; }
+
         public FlatBufferDeserializationOption? RequestedSerializer { get; }
 
         protected override bool SupportsChildren => false;
