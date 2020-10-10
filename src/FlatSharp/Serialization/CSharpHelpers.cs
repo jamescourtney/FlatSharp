@@ -23,20 +23,10 @@ namespace FlatSharp
     using Microsoft.CodeAnalysis.CSharp;
 
     /// <summary>
-    /// Generates a collection of methods to help serialize the given root type.
-    /// Does recursive traversal of the object graph and builds a set of methods to assist with populating vtables and writing values.
-    /// 
-    /// Eventually, everything must reduce to a built in type of string / scalar, which this will then call out to.
+    /// Some C# codegen helpers.
     /// </summary>
     internal static class CSharpHelpers
     {
-        internal static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(LanguageVersion.Latest);
-
-        internal static string GetFullMethodName(MethodInfo info)
-        {
-            return $"{info.DeclaringType.FullName}.{info.Name}";
-        }
-
         internal static string GetCompilableTypeName(Type t)
         {
             string name;

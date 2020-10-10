@@ -124,10 +124,10 @@ namespace FlatSharpTests
         [TestMethod]
         public void TableWithStructAndStringNonVirtual()
         {
-            SimpleTableSealed table = new SimpleTableSealed
+            SimpleTableNonVirtual table = new SimpleTableNonVirtual
             {
                 String = "hi",
-                Struct = new SimpleStructSealed { Byte = 1, Long = 2, Uint = 3 }
+                Struct = new SimpleStructNonVirtual { Byte = 1, Long = 2, Uint = 3 }
             };
 
             byte[] buffer = new byte[1024];
@@ -152,7 +152,7 @@ namespace FlatSharpTests
 
             int bytesWritten = FlatBufferSerializer.Default.Serialize(table, buffer);
             Assert.IsTrue(expectedData.AsSpan().SequenceEqual(buffer.AsSpan().Slice(0, bytesWritten)));
-            var parsed = FlatBufferSerializer.Default.Parse<SimpleTableSealed>(buffer);
+            var parsed = FlatBufferSerializer.Default.Parse<SimpleTableNonVirtual>(buffer);
         }
 
         [TestMethod]
@@ -280,23 +280,23 @@ namespace FlatSharpTests
         }
 
         [FlatBufferTable]
-        public class SimpleTableSealed
+        public class SimpleTableNonVirtual
         {
             [FlatBufferItem(0)]
             public string String { get; set; }
 
             [FlatBufferItem(1)]
-            public SimpleStructSealed Struct { get; set; }
+            public SimpleStructNonVirtual Struct { get; set; }
 
             [FlatBufferItem(2)]
-            public IList<SimpleStructSealed> StructVector { get; set; }
+            public IList<SimpleStructNonVirtual> StructVector { get; set; }
 
             [FlatBufferItem(4)]
-            public SimpleTableSealed InnerTable { get; set; }
+            public SimpleTableNonVirtual InnerTable { get; set; }
         }
 
         [FlatBufferStruct]
-        public class SimpleStructSealed
+        public class SimpleStructNonVirtual
         {
             [FlatBufferItem(0)]
             public long Long { get; set; }
