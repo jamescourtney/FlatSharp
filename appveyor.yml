@@ -15,8 +15,6 @@ version: '4.0.3'
 branches:
   only:
   - master
-  
-configuration: Release
 
 environment:
   AppVeyorBuild: true
