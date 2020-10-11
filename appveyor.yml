@@ -17,6 +17,15 @@ environment:
   
 version: '$(VersionMajor).{build}'
 
+dotnet_csproj:
+  patch: true
+  file: '**\*.csproj;**\*.props'
+  version: '$(VersionMajor)'
+  package_version: '$(VersionMajor)'
+  assembly_version: '$(VersionMajor)'
+  file_version: '{version}'
+  informational_version: '{version}'
+
 nuget:
   disable_publish_on_pr: true
   disable_publish_octopus: true
