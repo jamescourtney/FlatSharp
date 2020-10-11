@@ -1,9 +1,6 @@
 image:
   - Visual Studio 2019
 
-build:
-  verbosity: minimal
-
 install:
   - choco install gitversion.portable -y
 
@@ -34,7 +31,6 @@ dotnet_csproj:
   assembly_version: '{version}'
   file_version: '{version}.{build}'
   informational_version: '{version}.{build}'
-
 
 build:
   project: src\FlatSharp.sln
