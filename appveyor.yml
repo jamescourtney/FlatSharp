@@ -6,9 +6,6 @@ install:
 
 configuration:
   - Release
-  
-version_major: '4.0.3'
-version: '{version_major}.{build}'
 
 branches:
   only:
@@ -16,6 +13,9 @@ branches:
 
 environment:
   AppVeyorBuild: true
+  VersionMajor: '4.0.3'
+  
+version: '$(VersionMajor).{build}'
 
 nuget:
   disable_publish_on_pr: true
@@ -27,9 +27,9 @@ before_build:
 dotnet_csproj:
   patch: true
   file: '**\*.csproj;**\*.props'
-  version: '{version_major}'
-  package_version: '{version_major}'
-  assembly_version: '{version_major}'
+  version: '$(VersionMajor)'
+  package_version: '$(VersionMajor)'
+  assembly_version: '$(VersionMajor)'
   file_version: '{version}'
   informational_version: '{version}'
 
