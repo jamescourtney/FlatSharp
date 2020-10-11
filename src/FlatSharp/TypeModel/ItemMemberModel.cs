@@ -29,8 +29,8 @@ namespace FlatSharp.TypeModel
             PropertyInfo propertyInfo,
             ushort index)
         {
-            var getMethod = propertyInfo.GetMethod ?? propertyInfo.GetGetMethod();
-            var setMethod = propertyInfo.SetMethod ?? propertyInfo.GetSetMethod();
+            var getMethod = propertyInfo.GetMethod;
+            var setMethod = propertyInfo.SetMethod;
 
             this.ItemTypeModel = propertyModel;
             this.PropertyInfo = propertyInfo;
@@ -39,6 +39,11 @@ namespace FlatSharp.TypeModel
             if (getMethod == null)
             {
                 throw new InvalidFlatBufferDefinitionException($"Property {propertyInfo.Name} did not declare a getter.");
+            }
+
+            if (!getMethod.IsPublic)
+            {
+                throw new InvalidFlatBufferDefinitionException($"Property {propertyInfo.Name} must declare a public getter.");
             }
 
             if (getMethod.IsVirtual)
@@ -56,19 +61,19 @@ namespace FlatSharp.TypeModel
             }
             else
             {
-                if (!ValidateNonVirtualMethod(getMethod, false))
+                if (!ValidateNonVirtualMethod(getMethod))
                 {
                     throw new InvalidFlatBufferDefinitionException($"Non-virtual property {propertyInfo.Name} must declare a public and non-abstract getter.");
                 }
 
-                if (!ValidateNonVirtualMethod(setMethod, true))
+                if (!ValidateNonVirtualMethod(setMethod))
                 {
                     throw new InvalidFlatBufferDefinitionException($"Non-virtual property {propertyInfo.Name} must declare a public/protected and non-abstract setter.");
                 }
             }
         }
 
-        private static bool ValidateNonVirtualMethod(MethodInfo method, bool allowProtected)
+        private static bool ValidateNonVirtualMethod(MethodInfo method)
         {
             if (method == null ||
                 method.IsAbstract ||
@@ -77,12 +82,7 @@ namespace FlatSharp.TypeModel
                 return false;
             }
 
-            if (allowProtected && (method.IsFamily || method.IsFamilyOrAssembly))
-            {
-                return true;
-            }
-
-            return method.IsPublic;
+            return method.IsPublic || method.IsFamily || method.IsFamilyOrAssembly;
         }
 
         private static bool ValidateVirtualPropertyMethod(MethodInfo method, bool allowNull)

@@ -122,13 +122,15 @@ $@"
                     lines.Add($"private bool {this.HasValueFieldName};");
                 }
 
-                lines.Add($@"{CSharpHelpers.GetAccessModifier(this.propertyInfo)} override {CSharpHelpers.GetCompilableTypeName(this.propertyInfo.PropertyType)} {this.propertyInfo.Name} {{");
-                lines.Add($"get {{ {this.GetterBody} }}");
+                var accessModifiers = CSharpHelpers.GetPropertyAccessModifiers(this.propertyInfo);
 
-                MethodInfo methodInfo = this.propertyInfo.GetSetMethod() ?? this.propertyInfo.SetMethod;
+                lines.Add($@"{accessModifiers.propertyModifier} override {CSharpHelpers.GetCompilableTypeName(this.propertyInfo.PropertyType)} {this.propertyInfo.Name} {{");
+                lines.Add($"{accessModifiers.getModifer} get {{ {this.GetterBody} }}");
+
+                MethodInfo methodInfo = this.propertyInfo.SetMethod;
                 if (methodInfo != null)
                 {
-                    lines.Add($"set {{ {this.SetterBody} }}");
+                    lines.Add($"{accessModifiers.setModifier} set {{ {this.SetterBody} }}");
                 }
 
                 lines.Add("}");

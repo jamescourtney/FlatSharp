@@ -20,6 +20,8 @@ namespace FlatSharp
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
+    using System.Security.Cryptography.X509Certificates;
+    using FlatSharp.TypeModel;
     using Microsoft.CodeAnalysis.CSharp;
 
     /// <summary>
@@ -27,6 +29,8 @@ namespace FlatSharp
     /// </summary>
     internal static class CSharpHelpers
     {
+        internal static bool ConvertProtectedInternalToProtected = true;
+
         internal static string GetCompilableTypeName(Type t)
         {
             string name;
@@ -53,13 +57,49 @@ namespace FlatSharp
             return name;
         }
 
-        internal static string GetAccessModifier(PropertyInfo property)
+        internal static (string propertyModifier, string getModifer, string setModifier) GetPropertyAccessModifiers(
+            PropertyInfo property)
         {
-            var method = property.GetGetMethod() ?? property.GetMethod;
+            var getTuple = GetAccessModifier(property.GetMethod);
+            if (property.SetMethod == null)
+            {
+                return (getTuple.modifier, string.Empty, null);
+            }
 
+            var setTuple = GetAccessModifier(property.SetMethod);
+
+            if (getTuple.precedence < setTuple.precedence)
+            {
+                return (getTuple.modifier, string.Empty, setTuple.modifier);
+            }
+            else if (setTuple.precedence < getTuple.precedence)
+            {
+                return (setTuple.modifier, getTuple.modifier, string.Empty);
+            }
+
+            return (getTuple.modifier, string.Empty, string.Empty);
+        }
+
+        internal static (int precedence, string modifier) GetAccessModifier(MethodInfo method)
+        {
             if (method.IsPublic)
             {
-                return "public";
+                return (0, "public");
+            }
+
+            if (method.IsFamilyOrAssembly)
+            {
+                if (ConvertProtectedInternalToProtected)
+                {
+                    return (2, "protected");
+                }
+
+                return (1, "protected internal");
+            }
+
+            if (method.IsFamily)
+            {
+                return (2, "protected");
             }
 
             throw new InvalidOperationException("Unexpected method visibility: " + method.Name);
@@ -106,7 +146,7 @@ namespace FlatSharp
 
             return
 $@"
-                private sealed class {className}<TInputBuffer> : {CSharpHelpers.GetCompilableTypeName(baseType)} where TInputBuffer : IInputBuffer
+                private sealed class {className}<TInputBuffer> : {GetCompilableTypeName(baseType)} where TInputBuffer : IInputBuffer
                 {{
                     {inputBufferFieldDef}
                     {offsetFieldDef}

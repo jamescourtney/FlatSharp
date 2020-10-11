@@ -29,6 +29,8 @@
     /// </summary>
     public class TableTypeModel : RuntimeTypeModel
     {
+        private readonly string ParseClassName = "tableReader_" + Guid.NewGuid().ToString("n");
+
         /// <summary>
         /// Maps vtable index -> type model.
         /// </summary>

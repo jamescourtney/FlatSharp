@@ -66,9 +66,9 @@ namespace FlatSharpTests.Compiler
                 Assert.IsNotNull(forcedVirtualProperty);
                 Assert.IsNotNull(forcedNonVirtualProperty);
 
-                Assert.AreEqual(defaultVirtual, defaultProperty.GetGetMethod().IsVirtual);
-                Assert.IsTrue(forcedVirtualProperty.GetGetMethod().IsVirtual);
-                Assert.IsFalse(forcedNonVirtualProperty.GetGetMethod().IsVirtual);
+                Assert.AreEqual(defaultVirtual, defaultProperty.GetMethod.IsVirtual);
+                Assert.IsTrue(forcedVirtualProperty.GetMethod.IsVirtual);
+                Assert.IsFalse(forcedNonVirtualProperty.GetMethod.IsVirtual);
             }
 
             foreach (var typeName in new[] { "VirtualTests.DefaultTable", "VirtualTests.DefaultStruct" })
@@ -78,7 +78,7 @@ namespace FlatSharpTests.Compiler
                 var defaultProperty = type.GetProperty("Default");
 
                 Assert.IsNotNull(defaultProperty);
-                Assert.IsTrue(defaultProperty.GetGetMethod().IsVirtual);
+                Assert.IsTrue(defaultProperty.GetMethod.IsVirtual);
             }
         }
     }

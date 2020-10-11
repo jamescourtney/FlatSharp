@@ -67,6 +67,48 @@ namespace FlatSharpTests
         {
             RuntimeTypeModel.CreateFrom(typeof(InterfaceTableSuccess));
         }
+        
+        [TestMethod]
+        public void TypeModel_Table_NoGetter()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(Table_NoGetter)));
+        }
+
+        [TestMethod]
+        public void TypeModel_Table_NonPublicGetter()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(Table_NonPublicGetter)));
+        }
+
+        [TestMethod]
+        public void TypeModel_Table_NonVirtual_NoSetter()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(Table_NonVirtual_NoSetter)));
+        }
+
+        [TestMethod]
+        public void TypeModel_Struct_NonVirtual_NoSetter()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(Struct_NonVirtual_NoSetter)));
+        }
+
+        [TestMethod]
+        public void TypeModel_Struct_NoGetter()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(Struct_NoGetter)));
+        }
+
+        [TestMethod]
+        public void TypeModel_Struct_NonPublicGetter()
+        {
+            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(Struct_NonPublicGetter)));
+        }
 
         [TestMethod]
         public void TypeModel_Struct_StringNotAllowed()
@@ -687,10 +729,10 @@ namespace FlatSharpTests
             public virtual T Value { get; set; }
 
             [FlatBufferItem(1)]
-            protected internal virtual double Double { get; set; }
+            public virtual double Double { get; protected internal set; }
 
             [FlatBufferItem(2)]
-            protected virtual bool Bool { get; set; }
+            public virtual bool Bool { get; protected set; }
         }
 
         [FlatBufferStruct]
@@ -863,6 +905,52 @@ namespace FlatSharpTests
         {
             [FlatBufferItem(0, Key = true)]
             public virtual T Key { get; set; }
+        }
+
+        [FlatBufferTable]
+        public class Table_NoGetter
+        {
+            private int value;
+
+            [FlatBufferItem(0)]
+            public virtual int Prop { set => this.value = value; }
+        }
+
+        [FlatBufferStruct]
+        public class Struct_NoGetter
+        {
+            private int value;
+
+            [FlatBufferItem(0)]
+            public virtual int Prop { set => this.value = value; }
+        }
+
+        [FlatBufferTable]
+        public class Table_NonPublicGetter
+        {
+            [FlatBufferItem(0)]
+            public virtual int Prop { protected get; set; }
+        }
+
+        [FlatBufferStruct]
+        public class Struct_NonPublicGetter
+        {
+            [FlatBufferItem(0)]
+            public virtual int Prop { protected get; set; }
+        }
+
+        [FlatBufferTable]
+        public class Table_NonVirtual_NoSetter
+        {
+            [FlatBufferItem(0)]
+            public int Prop { get; }
+        }
+
+        [FlatBufferStruct]
+        public class Struct_NonVirtual_NoSetter
+        {
+            [FlatBufferItem(0)]
+            public int Prop { get; }
         }
     }
 }

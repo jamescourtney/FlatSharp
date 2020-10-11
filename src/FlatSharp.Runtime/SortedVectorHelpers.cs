@@ -219,7 +219,7 @@ namespace FlatSharp
                 }
 
                 PropertyInfo keyProperty = keys[0];
-                var keyGetterDelegate = (Func<TTable, TKey>)Delegate.CreateDelegate(typeof(Func<TTable, TKey>), keyProperty.GetMethod ?? keyProperty.GetGetMethod());
+                var keyGetterDelegate = (Func<TTable, TKey>)Delegate.CreateDelegate(typeof(Func<TTable, TKey>), keyProperty.GetMethod);
                 value = (keyProperty.PropertyType, keyGetterDelegate);
                 KeyGetterCallbacks[typeof(TTable)] = value;
             }
