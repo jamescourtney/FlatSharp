@@ -16,6 +16,7 @@
 
 namespace FlatSharp
 {
+    using FlatSharp.TypeModel;
     using System;
     using System.Collections.Generic;
     using System.Reflection;
@@ -28,13 +29,19 @@ namespace FlatSharp
         private readonly FlatBufferSerializerOptions options;
         private readonly PropertyInfo propertyInfo;
 
-        public GeneratedProperty(FlatBufferSerializerOptions options, int index, PropertyInfo propertyInfo)
+        public GeneratedProperty(FlatBufferSerializerOptions options, int index, ItemMemberModel memberModel)
         {
             this.options = options;
-            this.propertyInfo = propertyInfo;
-            this.HasValueFieldName = options.PropertyCache ? $"__hasIndex{index}" : null;
-            this.BackingFieldName = !options.Lazy ? $"__index{index}" : null;
+            this.propertyInfo = memberModel.PropertyInfo;
+            this.MemberModel = memberModel;
+
             this.ReadValueMethodName = $"__ReadIndex{index}Value";
+
+            if (memberModel.IsVirtual)
+            {
+                this.HasValueFieldName = options.PropertyCache ? $"__hasIndex{index}" : null;
+                this.BackingFieldName = !options.Lazy ? $"__index{index}" : null;
+            }
         }
 
         public string BackingFieldName { get; }
@@ -42,6 +49,8 @@ namespace FlatSharp
         public string HasValueFieldName { get; }
 
         public string ReadValueMethodName { get; }
+
+        public ItemMemberModel MemberModel { get; }
 
         public string ReadValueMethodDefinition { get; set; }
 
@@ -101,28 +110,31 @@ $@"
         {
             List<string> lines = new List<string>();
 
-            if (!string.IsNullOrEmpty(this.BackingFieldName))
+            if (this.MemberModel.IsVirtual)
             {
-                lines.Add($"private {CSharpHelpers.GetCompilableTypeName(this.propertyInfo.PropertyType)} {this.BackingFieldName};");
-            }
+                if (!string.IsNullOrEmpty(this.BackingFieldName))
+                {
+                    lines.Add($"private {CSharpHelpers.GetCompilableTypeName(this.propertyInfo.PropertyType)} {this.BackingFieldName};");
+                }
 
-            if (!string.IsNullOrEmpty(this.HasValueFieldName))
-            {
-                lines.Add($"private bool {this.HasValueFieldName};");
+                if (!string.IsNullOrEmpty(this.HasValueFieldName))
+                {
+                    lines.Add($"private bool {this.HasValueFieldName};");
+                }
+
+                lines.Add($@"{CSharpHelpers.GetAccessModifier(this.propertyInfo)} override {CSharpHelpers.GetCompilableTypeName(this.propertyInfo.PropertyType)} {this.propertyInfo.Name} {{");
+                lines.Add($"get {{ {this.GetterBody} }}");
+
+                MethodInfo methodInfo = this.propertyInfo.GetSetMethod() ?? this.propertyInfo.SetMethod;
+                if (methodInfo != null)
+                {
+                    lines.Add($"set {{ {this.SetterBody} }}");
+                }
+
+                lines.Add("}");
             }
 
             lines.Add(this.ReadValueMethodDefinition);
-
-            lines.Add($@"{CSharpHelpers.GetAccessModifier(this.propertyInfo)} override {CSharpHelpers.GetCompilableTypeName(this.propertyInfo.PropertyType)} {this.propertyInfo.Name} {{");
-            lines.Add($"get {{ {this.GetterBody} }}");
-
-            MethodInfo methodInfo = this.propertyInfo.GetSetMethod() ?? this.propertyInfo.SetMethod;
-            if (methodInfo != null)
-            {
-                lines.Add($"set {{ {this.SetterBody} }}");
-            }
-
-            lines.Add("}");
 
             return string.Join("\r\n", lines);
         }

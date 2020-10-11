@@ -43,6 +43,16 @@ namespace FlatSharp.Compiler
             {
                 definition.IsTable = context.GetChild(0).GetText() == "table";
 
+                if (metadata.TryGetValue("virtual", out string virtualValue))
+                {
+                    if (!bool.TryParse(virtualValue, out bool isVirtual))
+                    {
+                        ErrorContext.Current?.RegisterError($"The 'virtual' attribute must have a boolean value.");
+                    }
+
+                    definition.Virtual = isVirtual;
+                }
+
                 if (!definition.IsTable && definition.RequestedSerializer != null)
                 {
                     ErrorContext.Current.RegisterError("Structs may not have precompiled serializers.");

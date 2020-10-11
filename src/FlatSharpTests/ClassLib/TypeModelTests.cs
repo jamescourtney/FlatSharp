@@ -120,8 +120,14 @@ namespace FlatSharpTests
         [TestMethod]
         public void TypeModel_Struct_NonVirtualProperty()
         {
+            RuntimeTypeModel.CreateFrom(typeof(NonVirtualPropertyStruct<byte>));
+        }
+
+        [TestMethod]
+        public void TypeModel_Struct_NonVirtualProperty_PrivateSetter_NotAllowed()
+        {
             Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
-                RuntimeTypeModel.CreateFrom(typeof(NonVirtualPropertyStruct<byte>)));
+                RuntimeTypeModel.CreateFrom(typeof(NonVirtualPropertyStructPrivateSetter<byte>)));
         }
 
         [TestMethod]
@@ -731,6 +737,13 @@ namespace FlatSharpTests
         {
             [FlatBufferItem(0)]
             public T Value { get; set; }
+        }
+
+        [FlatBufferStruct]
+        public class NonVirtualPropertyStructPrivateSetter<T>
+        {
+            [FlatBufferItem(0)]
+            public T Value { get; private set; }
         }
 
         [FlatBufferStruct]

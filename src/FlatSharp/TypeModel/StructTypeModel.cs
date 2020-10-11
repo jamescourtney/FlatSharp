@@ -113,7 +113,7 @@
                     PropertyInfo propertyInfo = value.PropertyInfo;
                     Type propertyType = propertyInfo.PropertyType;
 
-                    GeneratedProperty generatedProperty = new GeneratedProperty(context.Options, index, propertyInfo);
+                    GeneratedProperty generatedProperty = new GeneratedProperty(context.Options, index, value);
 
                     var propContext = context.With(offset: $"({context.OffsetVariableName} + {value.Offset})", inputBuffer: "buffer");
 
