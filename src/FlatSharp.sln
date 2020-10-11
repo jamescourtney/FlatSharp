@@ -29,8 +29,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmark.3.3.0", "Benchmar
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{D1E90BAE-FC51-44DB-8215-1D9BB6059886}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlatSharpTests.Net472", "FlatSharpTests.Net472\FlatSharpTests.Net472.csproj", "{842A2629-BEE0-4E94-853D-2F50707E5846}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -81,10 +79,6 @@ Global
 		{87E539C3-FE9D-473A-8556-F719B3C3F70A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{87E539C3-FE9D-473A-8556-F719B3C3F70A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{87E539C3-FE9D-473A-8556-F719B3C3F70A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{842A2629-BEE0-4E94-853D-2F50707E5846}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{842A2629-BEE0-4E94-853D-2F50707E5846}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{842A2629-BEE0-4E94-853D-2F50707E5846}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{842A2629-BEE0-4E94-853D-2F50707E5846}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -97,7 +91,6 @@ Global
 		{9EFCF7A1-59E8-4926-8CCB-5DACD1294887} = {83478353-8C5A-41C2-84C2-F79488B43CB0}
 		{2111D75B-E3B1-4F8A-948A-7505215CBA41} = {83478353-8C5A-41C2-84C2-F79488B43CB0}
 		{87E539C3-FE9D-473A-8556-F719B3C3F70A} = {83478353-8C5A-41C2-84C2-F79488B43CB0}
-		{842A2629-BEE0-4E94-853D-2F50707E5846} = {D1E90BAE-FC51-44DB-8215-1D9BB6059886}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {726A4C0E-5760-4B35-8C73-9AC21B2E4C8B}
