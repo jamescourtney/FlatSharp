@@ -28,10 +28,10 @@ build:
   project: src\FlatSharp.sln
 
 after_build:
-  - cmd: dotnet pack src\FlatSharp\flatsharp.csproj -c Release -o .\artifacts -p:PackageVersion="%GitVersion_NuGetVersion%" --include-symbols -v n
-  - cmd: dotnet pack src\FlatSharp.Compiler\FlatSharp.Compiler.csproj -c Release -o .\artifacts -p:PackageVersion="%GitVersion_NuGetVersion%" --include-symbols -v n
-  - cmd: dotnet pack src\FlatSharp.Runtime\FlatSharp.Runtime.csproj -c Release -o .\artifacts -p:PackageVersion="%GitVersion_NuGetVersion%" --include-symbols -v n
-  - cmd: dotnet pack src\FlatSharp.Unsafe\FlatSharp.Unsafe.csproj -c Release -o .\artifacts -p:PackageVersion="%GitVersion_NuGetVersion%" --include-symbols -v n
+  - cmd: dotnet pack src\FlatSharp\flatsharp.csproj -c Release -o .\artifacts --include-symbols -v n
+  - cmd: dotnet pack src\FlatSharp.Compiler\FlatSharp.Compiler.csproj -c Release -o .\artifacts --include-symbols -v n
+  - cmd: dotnet pack src\FlatSharp.Runtime\FlatSharp.Runtime.csproj -c Release -o .\artifacts --include-symbols -v n
+  - cmd: dotnet pack src\FlatSharp.Unsafe\FlatSharp.Unsafe.csproj -c Release -o .\artifacts --include-symbols -v n
 
 artifacts:
   - path: '.\artifacts\*.nupkg'
