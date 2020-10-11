@@ -1,11 +1,29 @@
 image:
   - Visual Studio 2019
 
+build:
+  verbosity: minimal
+
 install:
   - choco install gitversion.portable -y
 
 configuration:
   - Release
+  
+version: '4.0.3'
+
+branches:
+  only:
+  - master
+  
+configuration: Release
+
+environment:
+  AppVeyorBuild: true
+
+nuget:
+  disable_publish_on_pr: true
+  disable_publish_octopus: true
 
 before_build:
   - dotnet restore src
@@ -13,11 +31,11 @@ before_build:
 dotnet_csproj:
   patch: true
   file: '**\*.csproj;**\*.props'
-  version: '4.0.3.{build}'
-  package_version: '4.0.3'
-  assembly_version: '{package_version}'
-  file_version: '{version}'
-  informational_version: '{version}'
+  version: '{version}'
+  package_version: '{version}'
+  assembly_version: '{version}'
+  file_version: '{version}.{build}'
+  informational_version: '{version}.{build}'
 
 
 build:
