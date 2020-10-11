@@ -23,15 +23,6 @@ nuget:
 
 before_build:
   - dotnet restore src
-  
-dotnet_csproj:
-  patch: true
-  file: '**\*.csproj;**\*.props'
-  version: '$(VersionMajor)'
-  package_version: '$(VersionMajor)'
-  assembly_version: '$(VersionMajor)'
-  file_version: '{version}'
-  informational_version: '{version}'
 
 build:
   project: src\FlatSharp.sln
