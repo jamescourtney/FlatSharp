@@ -68,8 +68,22 @@ namespace FlatSharp
                 }
                 catch (FileNotFoundException)
                 {
-                    // For .NET 47, NetStandard may not be present in the GAC. Try to expand to see if we can grab it locally.
-                    assembly = Assembly.LoadFile(Path.Combine(typeof(RoslynSerializerGenerator).Assembly.Location, $"{name}.dll"));
+                    try
+                    {
+                        // For .NET 47, NetStandard may not be present in the GAC. Try to expand to see if we can grab it locally.
+                        assembly = Assembly.LoadFile(Path.Combine(typeof(RoslynSerializerGenerator).Assembly.Location, $"{name}.dll"));
+                    }
+                    catch (FileNotFoundException)
+                    {
+                        // Method of last resort: Load our embedded resource.
+                        var embeddedResourceName = typeof(RoslynSerializerGenerator).Assembly.GetManifestResourceNames().Single(
+                            x => x.IndexOf(name, StringComparison.OrdinalIgnoreCase) >= 0);
+
+                        using var resourceStream = typeof(RoslynSerializerGenerator).Assembly.GetManifestResourceStream(embeddedResourceName);
+                        using var memoryStream = new MemoryStream();
+                        resourceStream.CopyTo(memoryStream);
+                        assembly = Assembly.Load(memoryStream.ToArray());
+                    }
                 }
 
                 var reference = MetadataReference.CreateFromFile(assembly.Location);

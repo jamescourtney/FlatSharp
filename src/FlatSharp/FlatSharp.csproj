@@ -7,18 +7,7 @@
     <RootNamespace>FlatSharp</RootNamespace>
     <Description>FlatSharp is an idiomatic C# implementation of the FlatBuffer serialization format. Use attributes to declare your data contracts!</Description>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Update="TypeModel\ScalarTypeModels.tt">
-      <LastGenOutput>ScalarTypeModels.cs</LastGenOutput>
-      <Generator>TextTemplatingFileGenerator</Generator>
-    </None>
-    <None Update="UnionTypes.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>UnionTypes.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
-
+  
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.4.0" />
     <PackageReference Include="Microsoft.Net.Compilers" Version="3.4.0">
@@ -26,14 +15,17 @@
       <IncludeAssets>runtime</IncludeAssets>
     </PackageReference>
     <PackageReference Include="System.Memory" Version="4.5.3" />
+    <PackageReference Include="NetStandard.Library" Version="2.0.3" GeneratePathProperty="true" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="$(PkgNetStandard_Library)\build\netstandard2.0\ref\netstandard.dll" />
+    <EmbeddedResource Include="$(PkgNetStandard_Library)\build\netstandard2.0\ref\System.Collections.dll" />
+    <EmbeddedResource Include="$(PkgNetStandard_Library)\build\netstandard2.0\ref\System.Runtime.dll" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
   </ItemGroup>
 
   <ItemGroup>
