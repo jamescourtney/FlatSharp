@@ -9,23 +9,16 @@ configuration:
 
 before_build:
   - dotnet restore src
-  - gitversion /l console /output buildserver
-  - ps: appveyor UpdateBuild -Version "$env:GitVersion_SemVer-$env:GitVersion_BuildMetaData"
-  # This is a hack, the dynamic generated fbs.generated files are not triggering at the right time for the build which causes it to fail
-  # We trigger a build to generate the files in preparation for the actual build.
-  - ps: |
-      $cmd = 'dotnet build src\FlatSharp.sln -c:"Release"'
-      iex "& $cmd"
-      $host.SetShouldExit(0)
-
+  
 dotnet_csproj:
   patch: true
   file: '**\*.csproj;**\*.props'
-  version: $(GitVersion_NuGetVersion)
-  package_version: $(GitVersion_NuGetVersion)
-  assembly_version: $(GitVersion_MajorMinorPatch)
-  file_version: $(GitVersion_MajorMinorPatch)
-  informational_version: $(GitVersion_InformationalVersion) 
+  version: '4.0.3.{build}'
+  package_version: '4.0.3.{build}'
+  assembly_version: '4.0.3.{build}'
+  file_version: '4.0.3.{build}'
+  informational_version: '4.0.3.{build}'
+
 
 build:
   project: src\FlatSharp.sln
