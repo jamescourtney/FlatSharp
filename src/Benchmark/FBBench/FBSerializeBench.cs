@@ -47,7 +47,13 @@ namespace Benchmark.FBBench
         public override void FlatSharp_Serialize() => base.FlatSharp_Serialize();
 
         [Benchmark]
+        public override void FlatSharp_Serialize_NonVirtual() => base.FlatSharp_Serialize_NonVirtual();
+
+        [Benchmark]
         public override void PBDN_Serialize() => base.PBDN_Serialize();
+
+        [Benchmark]
+        public override void PBDN_Serialize_NonVirtual() => base.PBDN_Serialize_NonVirtual();
 
         [Benchmark]
         public override void FlatSharp_Serialize_StringVector_Sorted() => base.FlatSharp_Serialize_StringVector_Sorted();

@@ -43,5 +43,11 @@ namespace Benchmark.FBBench
 
         [Benchmark]
         public override void PBDN_ParseAndTraversePartial() => base.PBDN_ParseAndTraversePartial();
+
+        [Benchmark]
+        public override void PBDN_ParseAndTraverse_NonVirtual() => base.PBDN_ParseAndTraverse_NonVirtual();
+
+        [Benchmark]
+        public override void PBDN_ParseAndTraversePartial_NonVirtual() => base.PBDN_ParseAndTraversePartial_NonVirtual();
     }
 }

@@ -41,6 +41,7 @@ namespace Benchmark.FBBench
         public Google.FooBarContainerT google_defaultContainer;
 
         public FooBarListContainer defaultContainer;
+        public FooBarListContainerNonVirtual defaultContainerNonVirtual;
         public SortedVectorTable<string> sortedStringContainer;
         public SortedVectorTable<int> sortedIntContainer;
         public UnsortedVectorTable<string> unsortedStringContainer;
@@ -73,9 +74,18 @@ namespace Benchmark.FBBench
         public virtual void GlobalSetup()
         {
             FooBar[] fooBars = new FooBar[this.VectorLength];
+            FooBarNonVirtual[] fooBarsNV = new FooBarNonVirtual[this.VectorLength];
             for (int i = 0; i < fooBars.Length; i++)
             {
                 var foo = new Foo
+                {
+                    Id = 0xABADCAFEABADCAFE + (ulong)i,
+                    Count = (short)(10000 + i),
+                    Prefix = (sbyte)('@' + i),
+                    Length = (uint)(1000000 + i)
+                };
+
+                var fooNV = new FooNonVirtual
                 {
                     Id = 0xABADCAFEABADCAFE + (ulong)i,
                     Count = (short)(10000 + i),
@@ -91,6 +101,14 @@ namespace Benchmark.FBBench
                     Time = 123456 + i
                 };
 
+                var barNV = new BarNonVirtual
+                {
+                    Parent = fooNV,
+                    Ratio = 3.14159f + i,
+                    Size = (ushort)(10000 + i),
+                    Time = 123456 + i
+                };
+
                 var fooBar = new FooBar
                 {
                     Name = Guid.NewGuid().ToString(),
@@ -99,7 +117,16 @@ namespace Benchmark.FBBench
                     Sibling = bar,
                 };
 
+                var fooBarNV = new FooBarNonVirtual
+                {
+                    Name = Guid.NewGuid().ToString(),
+                    PostFix = (byte)('!' + i),
+                    Rating = 3.1415432432445543543 + i,
+                    Sibling = barNV,
+                };
+
                 fooBars[i] = fooBar;
+                fooBarsNV[i] = fooBarNV;
             }
 
             this.defaultContainer = new FooBarListContainer
@@ -108,6 +135,14 @@ namespace Benchmark.FBBench
                 Initialized = true,
                 Location = "http://google.com/flatbuffers/",
                 List = fooBars,
+            };
+
+            this.defaultContainerNonVirtual = new FooBarListContainerNonVirtual
+            {
+                Fruit = 123,
+                Initialized = true,
+                Location = "http://google.com/flatbuffers/",
+                List = fooBarsNV,
             };
 
             Random rng = new Random();
@@ -423,6 +458,11 @@ namespace Benchmark.FBBench
             this.fs_serializer.Serialize(this.defaultContainer, this.fs_writeMemory);
         }
 
+        public virtual void FlatSharp_Serialize_NonVirtual()
+        {
+            this.fs_serializer.Serialize(this.defaultContainerNonVirtual, this.fs_writeMemory);
+        }
+
         public virtual void FlatSharp_ParseAndTraverse()
         {
             var item = this.fs_serializer.Parse<FooBarListContainer>(this.inputBuffer);
@@ -436,7 +476,21 @@ namespace Benchmark.FBBench
 
             this.TraverseFooBarContainerPartial(item);
         }
-        
+
+        public virtual void FlatSharp_ParseAndTraverse_NonVirtual()
+        {
+            var item = this.fs_serializer.Parse<FooBarListContainerNonVirtual>(this.inputBuffer);
+
+            this.TraverseFooBarContainer(item);
+        }
+
+        public virtual void FlatSharp_ParseAndTraversePartial_NonVirtual()
+        {
+            var item = this.fs_serializer.Parse<FooBarListContainerNonVirtual>(this.inputBuffer);
+
+            this.TraverseFooBarContainerPartial(item);
+        }
+
         public virtual void FlatSharp_Serialize_StringVector_Sorted()
         {
             this.fs_serializer.Serialize(this.sortedStringContainer, this.fs_writeMemory);
@@ -457,14 +511,20 @@ namespace Benchmark.FBBench
             this.fs_serializer.Serialize(this.unsortedIntContainer, this.fs_writeMemory);
         }
 
-#endregion
+        #endregion
 
-#region PBDN
+        #region PBDN
 
         public virtual void PBDN_Serialize()
         {
             this.pbdn_writeBuffer.Position = 0;
             ProtoBuf.Serializer.Serialize(this.pbdn_writeBuffer, this.defaultContainer);
+        }
+
+        public virtual void PBDN_Serialize_NonVirtual()
+        {
+            this.pbdn_writeBuffer.Position = 0;
+            ProtoBuf.Serializer.Serialize(this.pbdn_writeBuffer, this.defaultContainerNonVirtual);
         }
 
         public virtual void PBDN_ParseAndTraverse()
@@ -481,7 +541,21 @@ namespace Benchmark.FBBench
             this.TraverseFooBarContainerPartial(item);
         }
 
-#endregion
+        public virtual void PBDN_ParseAndTraverse_NonVirtual()
+        {
+            this.pbdn_readBuffer.Position = 0;
+            var item = ProtoBuf.Serializer.Deserialize<FooBarListContainerNonVirtual>(this.pbdn_readBuffer);
+            this.TraverseFooBarContainer(item);
+        }
+
+        public virtual void PBDN_ParseAndTraversePartial_NonVirtual()
+        {
+            this.pbdn_readBuffer.Position = 0;
+            var item = ProtoBuf.Serializer.Deserialize<FooBarListContainerNonVirtual>(this.pbdn_readBuffer);
+            this.TraverseFooBarContainerPartial(item);
+        }
+
+        #endregion
 
         public int TraverseFooBarContainer(FooBarListContainer foobar)
         {
@@ -549,10 +623,78 @@ namespace Benchmark.FBBench
 
             return sum;
         }
+
+
+        public int TraverseFooBarContainer(FooBarListContainerNonVirtual foobar)
+        {
+            var iterations = this.TraversalCount;
+            int sum = 0;
+
+            for (int loop = 0; loop < iterations; ++loop)
+            {
+                sum += foobar.Initialized ? 1 : 0;
+                sum += foobar.Location.Length;
+                sum += foobar.Fruit;
+
+                var list = foobar.List;
+                int count = list.Count;
+
+                for (int i = 0; i < count; ++i)
+                {
+                    var item = list[i];
+                    sum += item.Name.Length;
+                    sum += item.PostFix;
+                    sum += (int)item.Rating;
+
+                    var bar = item.Sibling;
+                    sum += (int)bar.Ratio;
+                    sum += bar.Size;
+                    sum += bar.Time;
+
+                    var parent = bar.Parent;
+                    sum += parent.Count;
+                    sum += (int)parent.Id;
+                    sum += (int)parent.Length;
+                    sum += parent.Prefix;
+                }
+            }
+
+            return sum;
+        }
+
+        private int TraverseFooBarContainerPartial(FooBarListContainerNonVirtual foobar)
+        {
+            var iterations = this.TraversalCount;
+            int sum = 0;
+
+            for (int loop = 0; loop < iterations; ++loop)
+            {
+                sum += foobar.Initialized ? 1 : 0;
+                sum += foobar.Location.Length;
+                sum += foobar.Fruit;
+
+                var list = foobar.List;
+                int count = list.Count;
+
+                for (int i = 0; i < count; ++i)
+                {
+                    var item = list[i];
+                    sum += item.Name.Length;
+
+                    var bar = item.Sibling;
+                    sum += (int)bar.Ratio;
+
+                    var parent = bar.Parent;
+                    sum += parent.Count;
+                }
+            }
+
+            return sum;
+        }
     }
 
 
-#region Shared Contracts
+    #region Shared Contracts -- Virtual
 
     [ProtoContract]
     [FlatBufferStruct]
@@ -622,9 +764,82 @@ namespace Benchmark.FBBench
         public virtual string Location { get; set; }
     }
 
-#endregion
+    #endregion
 
-#region Sorted Vector Contracts
+
+    #region Shared Contracts -- NonVirtual
+
+    [ProtoContract]
+    [FlatBufferStruct]
+    public class FooNonVirtual
+    {
+        [ProtoMember(1), FlatBufferItem(0)]
+        public ulong Id { get; set; }
+
+        [ProtoMember(2), FlatBufferItem(1)]
+        public short Count { get; set; }
+
+        [ProtoMember(3), FlatBufferItem(2)]
+        public sbyte Prefix { get; set; }
+
+        [ProtoMember(4), FlatBufferItem(3)]
+        public uint Length { get; set; }
+    }
+
+    [ProtoContract]
+    [FlatBufferStruct]
+    public class BarNonVirtual
+    {
+        [ProtoMember(1), FlatBufferItem(0)]
+        public FooNonVirtual Parent { get; set; }
+
+        [ProtoMember(2), FlatBufferItem(1)]
+        public int Time { get; set; }
+
+        [ProtoMember(3), FlatBufferItem(2)]
+        public float Ratio { get; set; }
+
+        [ProtoMember(4), FlatBufferItem(3)]
+        public ushort Size { get; set; }
+    }
+
+    [ProtoContract]
+    [FlatBufferTable]
+    public class FooBarNonVirtual
+    {
+        [ProtoMember(1), FlatBufferItem(0)]
+        public BarNonVirtual Sibling { get; set; }
+
+        [ProtoMember(2), FlatBufferItem(1)]
+        public string Name { get; set; }
+
+        [ProtoMember(3), FlatBufferItem(2)]
+        public double Rating { get; set; }
+
+        [ProtoMember(4), FlatBufferItem(3)]
+        public byte PostFix { get; set; }
+    }
+
+    [ProtoContract]
+    [FlatBufferTable]
+    public class FooBarListContainerNonVirtual
+    {
+        [ProtoMember(1), FlatBufferItem(0)]
+        public IList<FooBarNonVirtual> List { get; set; }
+
+        [ProtoMember(2), FlatBufferItem(1)]
+        public bool Initialized { get; set; }
+
+        [ProtoMember(3), FlatBufferItem(2)]
+        public short Fruit { get; set; }
+
+        [ProtoMember(4), FlatBufferItem(3)]
+        public string Location { get; set; }
+    }
+
+    #endregion
+
+    #region Sorted Vector Contracts
 
     [FlatBufferTable]
     public class SortedVectorTable<T>
@@ -654,5 +869,5 @@ namespace Benchmark.FBBench
         public virtual T Key { get; set; }
     }
 
-#endregion
+    #endregion
 }
