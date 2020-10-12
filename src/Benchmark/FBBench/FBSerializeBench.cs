@@ -46,10 +46,8 @@ namespace Benchmark.FBBench
         [Benchmark]
         public override void FlatSharp_Serialize() => base.FlatSharp_Serialize();
 
-#if FLATSHARP_NONVIRTUAL
         [Benchmark]
         public override void FlatSharp_Serialize_NonVirtual() => base.FlatSharp_Serialize_NonVirtual();
-#endif
 
         [Benchmark]
         public override void PBDN_Serialize() => base.PBDN_Serialize();

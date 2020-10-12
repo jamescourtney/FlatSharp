@@ -56,11 +56,6 @@ namespace Benchmark.FBBench
         protected readonly byte[] fs_writeMemory = new byte[64 * 1024];
         public ArrayInputBuffer inputBuffer;
 
-        public FBBenchCore()
-        {
-            Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.RealTime;
-        }
-
         [Params(3, 30)]
         public virtual int VectorLength { get; set; }
 
@@ -73,6 +68,8 @@ namespace Benchmark.FBBench
         [GlobalSetup]
         public virtual void GlobalSetup()
         {
+            Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.Idle;
+
             FooBar[] fooBars = new FooBar[this.VectorLength];
             FooBarNonVirtual[] fooBarsNV = new FooBarNonVirtual[this.VectorLength];
             for (int i = 0; i < fooBars.Length; i++)
@@ -181,6 +178,8 @@ namespace Benchmark.FBBench
                 this.pbdn_writeBuffer.CopyTo(this.pbdn_readBuffer);
                 this.PBDN_ParseAndTraverse();
             }
+
+            Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.RealTime;
         }
 
         #region Google.FlatBuffers
