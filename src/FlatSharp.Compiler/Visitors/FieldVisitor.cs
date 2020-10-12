@@ -95,6 +95,16 @@ namespace FlatSharp.Compiler
                     this.definition.Virtual = isVirtual;
                 }
 
+                if (metadata.TryGetValue("setter", out string setterStyle))
+                {
+                    if (!Enum.TryParse<SetterKind>(setterStyle, true, out SetterKind kind))
+                    {
+                        ErrorContext.Current?.RegisterError($"Unable to parse '{setterStyle}' as a Setter kind. Valid values are: {string.Join(", ", Enum.GetValues(typeof(SetterKind)))}");
+                    }
+
+                    definition.SetterKind = kind;
+                }
+
                 if (metadata.ContainsKey("sortedvector"))
                 {
                     this.definition.SortedVector = true;

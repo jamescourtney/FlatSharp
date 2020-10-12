@@ -308,24 +308,32 @@ namespace FlatSharp.Compiler
         // TODO: consider moving to TableOrStructDefinition.
         private static string GenerateSerializerForType(Assembly assembly, TableOrStructDefinition tableOrStruct)
         {
-            Type type = assembly.GetType(tableOrStruct.FullName);
-            var options = new FlatBufferSerializerOptions(tableOrStruct.RequestedSerializer.Value);
-            var generator = new RoslynSerializerGenerator(options, TypeModelContainer.CreateDefault());
-
-            var method = generator
-                .GetType()
-                .GetMethod(nameof(RoslynSerializerGenerator.GenerateCSharp), BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
-                .MakeGenericMethod(type);
-
+            CSharpHelpers.ConvertProtectedInternalToProtected = false;
             try
             {
-                string code = (string)method.Invoke(generator, new[] { "private" });
-                return code;
+                Type type = assembly.GetType(tableOrStruct.FullName);
+                var options = new FlatBufferSerializerOptions(tableOrStruct.RequestedSerializer.Value);
+                var generator = new RoslynSerializerGenerator(options, TypeModelContainer.CreateDefault());
+
+                var method = generator
+                    .GetType()
+                    .GetMethod(nameof(RoslynSerializerGenerator.GenerateCSharp), BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
+                    .MakeGenericMethod(type);
+
+                try
+                {
+                    string code = (string)method.Invoke(generator, new[] { "private" });
+                    return code;
+                }
+                catch (TargetInvocationException ex)
+                {
+                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                    throw;
+                }
             }
-            catch (TargetInvocationException ex)
+            finally
             {
-                ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
-                throw;
+                CSharpHelpers.ConvertProtectedInternalToProtected = true;
             }
         }
 

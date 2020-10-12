@@ -42,6 +42,8 @@ namespace FlatSharp.Compiler
 
         public VectorType VectorType { get; set; }
 
+        public SetterKind SetterKind { get; set; } = SetterKind.Public;
+
         public bool SharedString { get; set; }
 
         public string GetClrTypeName(BaseSchemaMember baseMember)
@@ -227,6 +229,11 @@ namespace FlatSharp.Compiler
                     }
                 }
 
+                if (this.SetterKind == SetterKind.None && this.Virtual == false)
+                {
+                    ErrorContext.Current?.RegisterError($"Virtual:false cannot be combined with setter:None.");
+                }
+
                 this.WriteField(writer, this.GetClrTypeName(parent), defaultValue, this.Name, parent);
             }));
         }
@@ -236,8 +243,7 @@ namespace FlatSharp.Compiler
             string clrTypeName,
             string defaultValue,
             string name,
-            TableOrStructDefinition parent,
-            string accessModifier = "public")
+            TableOrStructDefinition parent)
         {
             string defaultValueAttribute = string.Empty;
             string defaultValueAssignment = string.Empty;
@@ -276,8 +282,23 @@ namespace FlatSharp.Compiler
                 isVirtual = parent.Virtual.Value;
             }
 
+            string accessModifier = this.SetterKind switch
+            {
+                SetterKind.Public => string.Empty, // setter has same access as getter.
+                SetterKind.Protected => "protected",
+                SetterKind.ProtectedInternal => "protected internal",
+                SetterKind.None => null,
+                _ => string.Empty,
+            };
+
+            string setter = $"{accessModifier} set;";
+            if (accessModifier == null)
+            {
+                setter = string.Empty;
+            }
+
             writer.AppendLine($"[FlatBufferItem({this.Index}{defaultValueAttribute}{isDeprecated}{sortedVector}{isKey})]");
-            writer.AppendLine($"{accessModifier} {(isVirtual ? "virtual " : string.Empty)}{clrTypeName} {name} {{ get; set; }}{defaultValueAssignment}");
+            writer.AppendLine($"public {(isVirtual ? "virtual " : string.Empty)}{clrTypeName} {name} {{ get; {setter} }}{defaultValueAssignment}");
         }
     }
 }
