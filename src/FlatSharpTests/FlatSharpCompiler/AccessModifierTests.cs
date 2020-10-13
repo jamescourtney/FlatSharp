@@ -44,15 +44,15 @@ namespace FlatSharpTests.Compiler
             namespace VirtualTests;
             table VirtualTable (PrecompiledSerializer:""{option}"") {{
                 Default:int (setter:""{setterKind}"");
-                ForcedVirtual:int (virtual:""true"", setter:""{setterKind}"");
-                ForcedNonVirtual:int (virtual:""false"", setter:""{(setterKind != SetterKind.None ? setterKind : SetterKind.Public)}"");
+                ForcedVirtual:int (nonVirtual:""false"", setter:""{setterKind}"");
+                ForcedNonVirtual:int (nonVirtual:""true"", setter:""{(setterKind != SetterKind.None ? setterKind : SetterKind.Public)}"");
                 Struct:VirtualStruct;
             }}
 
             struct VirtualStruct {{
                 Default:int (setter:""{setterKind}"");
-                ForcedVirtual:int (virtual:""true"", setter:""{setterKind}"");
-                ForcedNonVirtual:int (virtual:""false"", setter:""{(setterKind != SetterKind.None ? setterKind : SetterKind.Public)}"");
+                ForcedVirtual:int (nonVirtual:""false"", setter:""{setterKind}"");
+                ForcedNonVirtual:int (nonVirtual:""true"", setter:""{(setterKind != SetterKind.None ? setterKind : SetterKind.Public)}"");
             }}";
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema);

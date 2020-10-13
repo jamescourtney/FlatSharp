@@ -17,6 +17,7 @@
 namespace FlatSharp.Compiler
 {
     using Antlr4.Runtime.Misc;
+    using FlatSharp.Attributes;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -35,23 +36,21 @@ namespace FlatSharp.Compiler
             Dictionary<string, string> metadata = new MetadataVisitor().Visit(context.metadata());
 
             TableOrStructDefinition definition = new TableOrStructDefinition(
-                context.IDENT().GetText(), 
-                ParseSerailizerFlags(metadata),
+                context.IDENT().GetText(),
                 this.parent);
 
             ErrorContext.Current.WithScope(definition.Name, () =>
             {
                 definition.IsTable = context.GetChild(0).GetText() == "table";
 
-                if (metadata.TryGetValue("virtual", out string virtualValue))
-                {
-                    if (!bool.TryParse(virtualValue, out bool isVirtual))
-                    {
-                        ErrorContext.Current?.RegisterError($"The 'virtual' attribute must have a boolean value.");
-                    }
+                definition.NonVirtual = metadata.ParseNullableBooleanMetadata("nonVirtual");
+                definition.ObsoleteDefaultConstructor = metadata.ParseBooleanMetadata("obsoleteDefaultConstructor");
 
-                    definition.Virtual = isVirtual;
-                }
+                definition.RequestedSerializer = metadata.ParseMetadata<FlatBufferDeserializationOption?>(
+                    "PrecompiledSerializer",
+                    ParseSerailizerFlags,
+                    FlatBufferDeserializationOption.Default,
+                    null);
 
                 if (!definition.IsTable && definition.RequestedSerializer != null)
                 {
@@ -68,26 +67,11 @@ namespace FlatSharp.Compiler
             return definition;
         }
 
-        private static FlatBufferDeserializationOption? ParseSerailizerFlags(Dictionary<string, string> metadata)
+        private static bool ParseSerailizerFlags(string value, out FlatBufferDeserializationOption? result)
         {
-            if (metadata == null || !metadata.TryGetValue("PrecompiledSerializer", out string value))
-            {
-                return null;
-            }
-
-            if (string.IsNullOrEmpty(value))
-            {
-                return FlatBufferDeserializationOption.Default;
-            }
-
-            // Cover all of the real names.
-            if (Enum.TryParse(value, true, out FlatBufferDeserializationOption flag))
-            {
-                return flag;
-            }
-
-            ErrorContext.Current.RegisterError($"Value '{value}' is not understood as a valid value for precompiled serializer flags. Value must be one of '{string.Join(",", Enum.GetNames(typeof(FlatBufferDeserializationOption)))}'");
-            return null;
+            var success = Enum.TryParse<FlatBufferDeserializationOption>(value, true, out var tempResult);
+            result = tempResult;
+            return success;
         }
     }
 }

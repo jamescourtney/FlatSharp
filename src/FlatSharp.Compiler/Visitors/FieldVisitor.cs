@@ -75,46 +75,17 @@ namespace FlatSharp.Compiler
                     this.definition.DefaultValue = defaultValue;
                 }
 
-                if (metadata.ContainsKey("deprecated"))
-                {
-                    this.definition.Deprecated = true;
-                }
+                this.definition.Deprecated = metadata.ParseBooleanMetadata("deprecated");
+                this.definition.IsKey = metadata.ParseBooleanMetadata("key");
+                this.definition.NonVirtual = metadata.ParseNullableBooleanMetadata("nonVirtual");
+                this.definition.SortedVector = metadata.ParseBooleanMetadata("sortedvector");
+                this.definition.SharedString = metadata.ParseBooleanMetadata("sharedstring");
 
-                if (metadata.ContainsKey("key"))
-                {
-                    this.definition.IsKey = true;
-                }
-
-                if (metadata.TryGetValue("virtual", out string virtualValue))
-                {
-                    if (!bool.TryParse(virtualValue, out bool isVirtual))
-                    {
-                        ErrorContext.Current?.RegisterError($"The 'virtual' attribute must have a boolean value.");
-                    }
-
-                    this.definition.Virtual = isVirtual;
-                }
-
-                if (metadata.TryGetValue("setter", out string setterStyle))
-                {
-                    if (!Enum.TryParse<SetterKind>(setterStyle, true, out SetterKind kind))
-                    {
-                        ErrorContext.Current?.RegisterError($"Unable to parse '{setterStyle}' as a Setter kind. Valid values are: {string.Join(", ", Enum.GetValues(typeof(SetterKind)))}");
-                    }
-
-                    definition.SetterKind = kind;
-                }
-
-                if (metadata.ContainsKey("sortedvector"))
-                {
-                    this.definition.SortedVector = true;
-                }
-
-                // override the given type and use shared string instead.
-                if (metadata.ContainsKey("sharedstring"))
-                {
-                    this.definition.SharedString = true;
-                }
+                this.definition.SetterKind = metadata.ParseMetadata(
+                    "setter",
+                    ParseSetterKind,
+                    SetterKind.Public,
+                    SetterKind.Public);
 
                 // Attributes from FlatBuffers that we don't support.
                 string[] unsupportedAttributes =
@@ -132,6 +103,11 @@ namespace FlatSharp.Compiler
             });
 
             return this.definition;
+        }
+
+        private static bool ParseSetterKind(string value, out SetterKind setter)
+        {
+            return Enum.TryParse<SetterKind>(value, true, out setter);
         }
     }
 }

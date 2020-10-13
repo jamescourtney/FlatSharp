@@ -24,10 +24,8 @@ namespace FlatSharp.Compiler
     {
         public TableOrStructDefinition(
             string name, 
-            FlatBufferDeserializationOption? serializerFlags,
             BaseSchemaMember parent) : base(name, parent)
         {
-            this.RequestedSerializer = serializerFlags;
         }
 
         public IReadOnlyDictionary<string, string> Metadata { get; }
@@ -36,9 +34,11 @@ namespace FlatSharp.Compiler
         
         public bool IsTable { get; set; }
 
-        public bool? Virtual { get; set; }
+        public bool? NonVirtual { get; set; }
 
-        public FlatBufferDeserializationOption? RequestedSerializer { get; }
+        public bool ObsoleteDefaultConstructor { get; set; }
+
+        public FlatBufferDeserializationOption? RequestedSerializer { get; set; }
 
         protected override bool SupportsChildren => false;
 
@@ -78,7 +78,8 @@ namespace FlatSharp.Compiler
                 writer.AppendLine($"partial void OnInitialized();");
 
                 // default ctor.
-                writer.AppendLine($"public {this.Name}() {{ this.OnInitialized(); }}");
+                string obsolete = this.ObsoleteDefaultConstructor ? $"[Obsolete]" : string.Empty;
+                writer.AppendLine($"{obsolete} public {this.Name}() {{ this.OnInitialized(); }}");
 
                 writer.AppendLine($"public {this.Name}({this.Name} source)");
                 using (writer.WithBlock())

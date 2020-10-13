@@ -36,17 +36,17 @@ namespace FlatSharpTests.Compiler
         {
             string schema = $@"
             namespace VirtualTests;
-            table VirtualTable (virtual:""{defaultVirtual.ToString().ToLowerInvariant()}"", PrecompiledSerializer:Lazy) {{
+            table VirtualTable (nonVirtual:""{(!defaultVirtual).ToString().ToLowerInvariant()}"", PrecompiledSerializer:Lazy) {{
                 Default:int;
-                ForcedVirtual:int (virtual:""true"");
-                ForcedNonVirtual:int (virtual:""false"");
+                ForcedVirtual:int (nonVirtual:""false"");
+                ForcedNonVirtual:int (nonVirtual:""true"");
                 Struct:VirtualStruct;
             }}
 
-            struct VirtualStruct (virtual:""{defaultVirtual.ToString().ToLowerInvariant()}"") {{
+            struct VirtualStruct (nonVirtual:""{(!defaultVirtual).ToString().ToLowerInvariant()}"") {{
                 Default:int;
-                ForcedVirtual:int (virtual:""true"");
-                ForcedNonVirtual:int (virtual:""false"");
+                ForcedVirtual:int (nonVirtual:""false"");
+                ForcedNonVirtual:int (nonVirtual:""true"");
             }}
 
             table DefaultTable (PrecompiledSerializer:lazy) {{ Default:int; Struct:DefaultStruct; }}
