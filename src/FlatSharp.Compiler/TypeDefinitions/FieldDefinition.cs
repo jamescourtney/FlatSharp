@@ -34,7 +34,7 @@ namespace FlatSharp.Compiler
 
         public bool IsKey { get; set; }
 
-        public bool? Virtual { get; set; }
+        public bool? NonVirtual { get; set; }
 
         public string DefaultValue { get; set; }
 
@@ -229,9 +229,9 @@ namespace FlatSharp.Compiler
                     }
                 }
 
-                if (this.SetterKind == SetterKind.None && this.Virtual == false)
+                if (this.SetterKind == SetterKind.None && this.NonVirtual == true)
                 {
-                    ErrorContext.Current?.RegisterError($"Virtual:false cannot be combined with setter:None.");
+                    ErrorContext.Current?.RegisterError($"NonVirtual:true cannot be combined with setter:None.");
                 }
 
                 this.WriteField(writer, this.GetClrTypeName(parent), defaultValue, this.Name, parent);
@@ -272,14 +272,14 @@ namespace FlatSharp.Compiler
                 isDeprecated = ", Deprecated = true";
             }
 
-            bool isVirtual = true;
-            if (this.Virtual != null)
+            bool isNonVirtual = false;
+            if (this.NonVirtual != null)
             {
-                isVirtual = this.Virtual.Value;
+                isNonVirtual = this.NonVirtual.Value;
             }
-            else if (parent.Virtual != null)
+            else if (parent.NonVirtual != null)
             {
-                isVirtual = parent.Virtual.Value;
+                isNonVirtual = parent.NonVirtual.Value;
             }
 
             string accessModifier = this.SetterKind switch
@@ -298,7 +298,7 @@ namespace FlatSharp.Compiler
             }
 
             writer.AppendLine($"[FlatBufferItem({this.Index}{defaultValueAttribute}{isDeprecated}{sortedVector}{isKey})]");
-            writer.AppendLine($"public {(isVirtual ? "virtual " : string.Empty)}{clrTypeName} {name} {{ get; {setter} }}{defaultValueAssignment}");
+            writer.AppendLine($"public {(isNonVirtual ? string.Empty : "virtual ")}{clrTypeName} {name} {{ get; {setter} }}{defaultValueAssignment}");
         }
     }
 }

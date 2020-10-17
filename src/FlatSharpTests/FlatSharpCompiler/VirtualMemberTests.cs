@@ -27,26 +27,26 @@ namespace FlatSharpTests.Compiler
     public class VirtualMemberTests
     {
         [TestMethod]
-        public void DefaultVirtual() => this.VirtualTest(true);
+        public void DefaultVirtual() => this.VirtualTest(false);
 
         [TestMethod]
-        public void DefaultNonVirtual() => this.VirtualTest(false);
+        public void DefaultNonVirtual() => this.VirtualTest(true);
 
-        private void VirtualTest(bool defaultVirtual)
+        private void VirtualTest(bool defaultNonVirtual)
         {
             string schema = $@"
             namespace VirtualTests;
-            table VirtualTable (virtual:""{defaultVirtual.ToString().ToLowerInvariant()}"", PrecompiledSerializer:Lazy) {{
+            table VirtualTable (nonVirtual:""{defaultNonVirtual.ToString().ToLowerInvariant()}"", PrecompiledSerializer:Lazy) {{
                 Default:int;
-                ForcedVirtual:int (virtual:""true"");
-                ForcedNonVirtual:int (virtual:""false"");
+                ForcedVirtual:int (nonVirtual:""false"");
+                ForcedNonVirtual:int (nonVirtual:""true"");
                 Struct:VirtualStruct;
             }}
 
-            struct VirtualStruct (virtual:""{defaultVirtual.ToString().ToLowerInvariant()}"") {{
+            struct VirtualStruct (nonVirtual:""{defaultNonVirtual.ToString().ToLowerInvariant()}"") {{
                 Default:int;
-                ForcedVirtual:int (virtual:""true"");
-                ForcedNonVirtual:int (virtual:""false"");
+                ForcedVirtual:int (nonVirtual:""false"");
+                ForcedNonVirtual:int (nonVirtual:""true"");
             }}
 
             table DefaultTable (PrecompiledSerializer:lazy) {{ Default:int; Struct:DefaultStruct; }}
@@ -66,7 +66,7 @@ namespace FlatSharpTests.Compiler
                 Assert.IsNotNull(forcedVirtualProperty);
                 Assert.IsNotNull(forcedNonVirtualProperty);
 
-                Assert.AreEqual(defaultVirtual, defaultProperty.GetMethod.IsVirtual);
+                Assert.AreEqual(!defaultNonVirtual, defaultProperty.GetMethod.IsVirtual);
                 Assert.IsTrue(forcedVirtualProperty.GetMethod.IsVirtual);
                 Assert.IsFalse(forcedNonVirtualProperty.GetMethod.IsVirtual);
             }

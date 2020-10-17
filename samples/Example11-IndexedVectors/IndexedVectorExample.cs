@@ -16,6 +16,7 @@
 
 using FlatSharp;
 using FlatSharp.Attributes;
+using System;
 using System.Diagnostics;
 
 namespace Samples.IndexedVectors
@@ -49,11 +50,11 @@ namespace Samples.IndexedVectors
             {
                 Users = new IndexedVector<string, User>
                 {
-                    { new User { UserId = "1", FirstName = "Charlie", LastName = "Kelly" } },
-                    { new User { UserId = "2", FirstName = "Dennis", LastName = "Reynolds" } },
-                    { new User { UserId = "3", FirstName = "Ronald", LastName = "McDonald" } },
-                    { new User { UserId = "4", FirstName = "Frank", LastName = "Reynolds" } },
-                    { new User { UserId = "5", FirstName = "Deeandra", LastName = "Reynolds" } },
+                    { new User("1") { FirstName = "Charlie", LastName = "Kelly" } },
+                    { new User("2") { FirstName = "Dennis", LastName = "Reynolds" } },
+                    { new User("3") { FirstName = "Ronald", LastName = "McDonald" } },
+                    { new User("4") { FirstName = "Frank", LastName = "Reynolds" } },
+                    { new User("5") { FirstName = "Deeandra", LastName = "Reynolds" } },
                 }
             };
 
@@ -90,11 +91,22 @@ namespace Samples.IndexedVectors
         [FlatBufferTable]
         public class User
         {
+            [Obsolete("Marked as obsolete to prevent accidental usage. Please use a different constructor instead.")]
+            public User()
+            {
+            }
+
+            public User (string id)
+            {
+                this.UserId = id;
+            }
+
             /// <summary>
             /// This is the key. The type here (string) matches the key in the IIndexedVector up above.
+            /// It is recommended to keep key properties immutable when using Indexed Vectors.
             /// </summary>
             [FlatBufferItem(0, Key = true)]
-            public virtual string UserId { get; set; }
+            public virtual string UserId { get; protected set; }
 
             [FlatBufferItem(1)]
             public virtual string FirstName { get; set; }
