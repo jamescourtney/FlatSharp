@@ -77,7 +77,7 @@ rpc_service PersonService {
 Serialization is easy!
 ```c#
 Person person = new Person(...);
-int maxBytesNeeded = FlatBufferSerializer.Default.GetMaxBytes(person);
+int maxBytesNeeded = FlatBufferSerializer.Default.GetMaxSize(person);
 byte[] buffer = new byte[maxBytesNeeded];
 int bytesWritten = FlatBufferSerializer.Default.Serialize(person, buffer);
 ```
