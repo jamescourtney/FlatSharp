@@ -73,7 +73,7 @@ namespace FlatSharp.Compiler
 
         protected override bool SupportsChildren => false;
 
-        protected override void OnWriteCode(CodeWriter writer, CodeWritingPass pass, string forFile, IReadOnlyDictionary<string, string> precompiledSerializer)
+        protected override void OnWriteCode(CodeWriter writer, CodeWritingPass pass, string forFile, IReadOnlyDictionary<string, string> precompiledSerializers)
         {
             if (pass == CodeWritingPass.FirstPass)
             {
