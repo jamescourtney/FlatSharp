@@ -36,34 +36,7 @@ namespace FlatSharp.Compiler
             ErrorContext.Current.WithScope(this.definition.Name, () =>
             {
                 Dictionary<string, string> metadata = new MetadataVisitor().VisitMetadata(context.metadata());
-                string fbsFieldType = context.type().GetText();
-
-                this.definition.VectorType = VectorType.None;
-
-                if (fbsFieldType.StartsWith("["))
-                {
-                    this.definition.VectorType = VectorType.IList;
-
-                    // Trim the starting and ending square brackets.
-                    fbsFieldType = fbsFieldType.Substring(1, fbsFieldType.Length - 2);
-
-                    this.definition.VectorType = VectorType.IList;
-                    if (metadata.TryGetValue("vectortype", out string vectorTypeString))
-                    {
-                        if (!Enum.TryParse<VectorType>(vectorTypeString, true, out var vectorType))
-                        {
-                            ErrorContext.Current?.RegisterError($"Unable to parse '{vectorTypeString}' as a vector type. Valid choices are: {string.Join(", ", Enum.GetNames(typeof(VectorType)))}.");
-                        }
-
-                        this.definition.VectorType = vectorType;
-                    }
-                }
-                else if (metadata.ContainsKey("vectortype"))
-                {
-                    ErrorContext.Current?.RegisterError($"Non-vectors may not have the 'vectortype' attribute. Field = '{this.definition.Name}'");
-                }
-
-                this.definition.FbsFieldType = fbsFieldType;
+                SetFbsFieldType(context, metadata);
 
                 string defaultValue = context.defaultValue_decl()?.GetText();
                 if (defaultValue == "null")
@@ -103,6 +76,46 @@ namespace FlatSharp.Compiler
             });
 
             return this.definition;
+        }
+
+        private void SetFbsFieldType(FlatBuffersParser.Field_declContext context, Dictionary<string, string> metadata)
+        {
+            string fbsFieldType = context.type().GetText();
+
+            definition.VectorType = VectorType.None;
+
+            var isVectorType = fbsFieldType.StartsWith("[");
+            if (isVectorType)
+            {
+                // Trim the starting and ending square brackets.
+                fbsFieldType = GetVectorBaseType();
+
+                definition.VectorType = VectorType.IList;
+                if (!metadata.TryGetValue("vectortype", out string vectorTypeString))
+                {
+                    definition.FbsFieldType = fbsFieldType;
+                    return;
+                }
+
+                if (!Enum.TryParse<VectorType>(vectorTypeString, true, out var vectorType))
+                {
+                    ErrorContext.Current?.RegisterError(
+                        $"Unable to parse '{vectorTypeString}' as a vector type. Valid choices are: {string.Join(", ", Enum.GetNames(typeof(VectorType)))}.");
+                }
+
+                definition.VectorType = vectorType;
+            }
+            else if (metadata.ContainsKey("vectortype"))
+            {
+                ErrorContext.Current?.RegisterError($"Non-vectors may not have the 'vectortype' attribute. Field = '{this.definition.Name}'");
+            }
+
+            definition.FbsFieldType = fbsFieldType;
+
+            string GetVectorBaseType()
+            {
+                return fbsFieldType.Substring(1, fbsFieldType.Length - 2);
+            }
         }
 
         private static bool ParseSetterKind(string value, out SetterKind setter)

@@ -111,7 +111,7 @@ namespace FlatSharp.Compiler
                     ? builtInType.ClrType.FullName 
                     : typeDefinition?.GlobalName ?? FbsFieldType;
 
-                var defaultValue = GetDefaultValue(isBuiltInType, builtInType, enumDefinition, clrType);
+                var defaultValue = GetDefaultValue(builtInType, enumDefinition, clrType);
 
                 VerifySetterKindIsValid();
 
@@ -119,7 +119,7 @@ namespace FlatSharp.Compiler
             }));
         }
 
-        private string GetDefaultValue(bool isBuiltInType, ITypeModel builtInType, EnumDefinition enumDefinition, string clrType)
+        private string GetDefaultValue(ITypeModel builtInType, EnumDefinition enumDefinition, string clrType)
         {
             if (string.IsNullOrEmpty(DefaultValue))
             {

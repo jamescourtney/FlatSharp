@@ -42,8 +42,7 @@ namespace FlatSharp.Compiler
 
         protected override void OnWriteCode(CodeWriter writer, CodeWritingPass pass, string forFile, IReadOnlyDictionary<string, string> precompiledSerializers)
         {
-            this.AssignIndexes();
-
+            AssignIndexes();
             AppendTypeDefinition(writer);
 
             using (writer.IncreaseIndent())
@@ -55,12 +54,12 @@ namespace FlatSharp.Compiler
                 AppendSerializer(writer, pass, precompiledSerializers);
             }
 
-            writer.AppendLine($"}}");
+            writer.AppendLine("}");
         }
 
         protected override string OnGetCopyExpression(string source)
         {
-            return $"{source} != null ? new {this.FullName}({source}) : null";
+            return $"{source} != null ? new {FullName}({source}) : null";
         }
 
         private void AssignIndexes()
