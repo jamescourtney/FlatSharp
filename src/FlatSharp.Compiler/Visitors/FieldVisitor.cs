@@ -33,7 +33,7 @@ namespace FlatSharp.Compiler
         {
             this.definition.Name = context.IDENT().GetText();
 
-            ErrorContext.Current.WithScope(this.definition.Name, () =>
+            ErrorContext.Current.WithScope(definition.Name, () =>
             {
                 Dictionary<string, string> metadata = new MetadataVisitor().VisitMetadata(context.metadata());
                 SetFbsFieldType(context, metadata);
@@ -41,20 +41,22 @@ namespace FlatSharp.Compiler
                 string defaultValue = context.defaultValue_decl()?.GetText();
                 if (defaultValue == "null")
                 {
-                    this.definition.IsOptionalScalar = true;
+                    definition.IsOptionalScalar = true;
                 }
                 else if (!string.IsNullOrEmpty(defaultValue))
                 {
-                    this.definition.DefaultValue = defaultValue;
+                    definition.DefaultValue = defaultValue;
                 }
 
-                this.definition.Deprecated = metadata.ParseBooleanMetadata("deprecated");
-                this.definition.IsKey = metadata.ParseBooleanMetadata("key");
-                this.definition.NonVirtual = metadata.ParseNullableBooleanMetadata("nonVirtual");
-                this.definition.SortedVector = metadata.ParseBooleanMetadata("sortedvector");
-                this.definition.SharedString = metadata.ParseBooleanMetadata("sharedstring");
+                definition.Deprecated = metadata.ParseBooleanMetadata("deprecated");
+                definition.IsKey = metadata.ParseBooleanMetadata("key");
+                definition.NonVirtual = metadata.ParseNullableBooleanMetadata("nonVirtual");
+                definition.SortedVector = metadata.ParseBooleanMetadata("sortedvector");
+                definition.SharedString = metadata.ParseBooleanMetadata("sharedstring");
+                
+                ParseIdMetadata(metadata);
 
-                this.definition.SetterKind = metadata.ParseMetadata(
+                definition.SetterKind = metadata.ParseMetadata(
                     "setter",
                     ParseSetterKind,
                     SetterKind.Public,
@@ -63,7 +65,7 @@ namespace FlatSharp.Compiler
                 // Attributes from FlatBuffers that we don't support.
                 string[] unsupportedAttributes =
                 {
-                    "id", "required", "force_align", "bit_flags", "flexbuffer", "hash", "original_order"
+                    "required", "force_align", "bit_flags", "flexbuffer", "hash", "original_order"
                 };
 
                 foreach (var unsupportedAttribute in unsupportedAttributes)
@@ -75,7 +77,29 @@ namespace FlatSharp.Compiler
                 }
             });
 
-            return this.definition;
+            return definition;
+        }
+
+        private void ParseIdMetadata(IDictionary<string, string> metadata)
+        {
+            if (!metadata.TryParseIntegerMetadata("id", out var index))
+            {
+                if (index == MetadataHelpers.DefaultValueIfPresent)
+                {
+                    ErrorContext.Current?.RegisterError("Value of 'id' attribute should be set if attribute present.");
+                }
+
+                return;
+            }
+
+            if (index < 0)
+            {
+                ErrorContext.Current?.RegisterError(
+                    $"Value of 'id' attribute {index} of '{definition.Name}' field is negative.");
+            }
+
+            definition.Index = index;
+            definition.IsIndexSetManually = true;
         }
 
         private void SetFbsFieldType(FlatBuffersParser.Field_declContext context, Dictionary<string, string> metadata)

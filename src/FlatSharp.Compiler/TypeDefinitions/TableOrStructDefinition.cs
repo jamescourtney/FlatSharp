@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+using System.Linq;
+
+
 namespace FlatSharp.Compiler
 {
     using System.Collections.Generic;
@@ -57,10 +60,8 @@ namespace FlatSharp.Compiler
             writer.AppendLine("}");
         }
 
-        protected override string OnGetCopyExpression(string source)
-        {
-            return $"{source} != null ? new {FullName}({source}) : null";
-        }
+        protected override string OnGetCopyExpression(string source) => 
+            $"{source} != null ? new {FullName}({source}) : null";
 
         private void AssignIndexes()
         {
@@ -68,7 +69,22 @@ namespace FlatSharp.Compiler
                 Name,
                 () =>
                 {
-                    int nextIndex = 0;
+                    if (Fields.Any(field => field.IsIndexSetManually))
+                    {
+                        if (!IsTable)
+                        {
+                            ErrorContext.Current.RegisterError("Structure fields can not have 'id' attribute set.");
+                        }
+
+                        if (!Fields.TrueForAll(field => field.IsIndexSetManually))
+                        {
+                            ErrorContext.Current.RegisterError("All or none fields should have 'id' attribute set.");
+                        }
+
+                        return;
+                    }
+
+                    var nextIndex = 0;
                     foreach (var field in Fields)
                     {
                         field.Index = nextIndex;

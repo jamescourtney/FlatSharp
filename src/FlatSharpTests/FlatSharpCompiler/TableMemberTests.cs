@@ -90,7 +90,89 @@ namespace FlatSharpTests.Compiler
         [TestMethod]
         public void TableMember_string() => this.RunCompoundTest<string>("string");
 
-        private void RunCompoundTestWithDefaultValue_Bool(string fbsType)
+        [TestMethod]
+        public void TableMember_have_id()
+        {
+            try
+            {
+                const string Schema = "namespace TableMemberTests; table Table { member:string (id:1); member2:int (id:0); }";
+                var assembly = FlatSharpCompiler.CompileAndLoadAssembly(Schema);
+
+                var tableType = assembly.GetType("TableMemberTests.Table");
+                var property = tableType.GetProperty("member");
+
+                Assert.AreEqual(typeof(string), property.PropertyType);
+                var attribute = property.GetCustomAttribute<FlatBufferItemAttribute>();
+
+                Assert.AreEqual(1, attribute.Index);
+
+                var data = new byte[100];
+                CompilerTestHelpers.CompilerTestSerializer.ReflectionSerialize(Activator.CreateInstance(tableType), data);
+                CompilerTestHelpers.CompilerTestSerializer.ReflectionParse(tableType, data);
+            }
+            catch (TargetInvocationException ex)
+            {
+                throw ex.InnerException;
+            }
+        }
+
+        [TestMethod]
+        public void TableMember_only_some_fields_have_id()
+        {
+            try
+            {
+                const string Schema = "namespace TableMemberTests; table Table { member:string (id:1); member2:int; }";
+                Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(Schema));
+            }
+            catch (TargetInvocationException ex)
+            {
+                throw ex.InnerException;
+            }
+        }
+
+        [TestMethod]
+        public void TableMember_negative_id()
+        {
+            try
+            {
+                const string Schema = "namespace TableMemberTests; table Table { member:string (id:0); member2:int (id:-1); }";
+                Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(Schema));
+            }
+            catch (TargetInvocationException ex)
+            {
+                throw ex.InnerException;
+            }
+        }
+
+        [TestMethod]
+        public void TableMember_has_id_attribute_but_with_no_value()
+        {
+            try
+            {
+                const string Schema = "namespace TableMemberTests; table Table { member:string (id:0); member2:int (id); }";
+                Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(Schema));
+            }
+            catch (TargetInvocationException ex)
+            {
+                throw ex.InnerException;
+            }
+        }
+
+        [TestMethod]
+        public void StructMember_have_id()
+        {
+            try
+            {
+                const string Schema = "namespace TableMemberTests; struct Struct { member:string (id:1); member2:int (id:0); }";
+                Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(Schema));
+            }
+            catch (TargetInvocationException ex)
+            {
+                throw ex.InnerException;
+            }
+        }
+
+    private void RunCompoundTestWithDefaultValue_Bool(string fbsType)
         {
             this.RunSingleTest<bool>($"{fbsType} = true", hasDefaultValue: true, expectedDefaultValue: true);
             this.RunSingleTest<bool>($"{fbsType} = false", hasDefaultValue: true, expectedDefaultValue: false);
@@ -109,28 +191,35 @@ namespace FlatSharpTests.Compiler
             this.RunCompoundTest<T>(fbsType);
         }
 
-        private void RunCompoundTest<T>(string fbsType)
+        private void RunCompoundTest<T>(string fbsType, int id = 0)
         {
-            this.RunSingleTest<T>(fbsType);
-            this.RunSingleTest<T>($"{fbsType} (deprecated)", deprecated: true);
-            this.RunSingleTest<IList<T>>($"[{fbsType}]");
-            this.RunSingleTest<IList<T>>($"[{fbsType}]  (vectortype: IList)");
-            this.RunSingleTest<T[]>($"[{fbsType}]  (vectortype: Array)");
-            this.RunSingleTest<IReadOnlyList<T>>($"[{fbsType}]  (vectortype: IReadOnlyList)");
+            RunSingleTest<T>(fbsType);
+            RunSingleTest<T>($"{fbsType} (deprecated)", deprecated : true);
+            RunSingleTest<IList<T>>($"[{fbsType}]");
+            RunSingleTest<IList<T>>($"[{fbsType}]  (vectortype: IList)");
+            RunSingleTest<T[]>($"[{fbsType}]  (vectortype: Array)");
+            RunSingleTest<IReadOnlyList<T>>($"[{fbsType}]  (vectortype: IReadOnlyList)");
 
             if (typeof(T) == typeof(byte))
             {
-                this.RunSingleTest<Memory<T>>($"[{fbsType}]  (vectortype: Memory)");
-                this.RunSingleTest<ReadOnlyMemory<T>>($"[{fbsType}]  (vectortype: ReadOnlyMemory)");
+                RunSingleTest<Memory<T>>($"[{fbsType}]  (vectortype: Memory)");
+                RunSingleTest<ReadOnlyMemory<T>>($"[{fbsType}]  (vectortype: ReadOnlyMemory)");
             }
             else
             {
-                Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => this.RunSingleTest<Memory<T>>($"[{fbsType}]  (vectortype: Memory)"));
-                Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => this.RunSingleTest<ReadOnlyMemory<T>>($"[{fbsType}]  (vectortype: ReadOnlyMemory)"));
+                Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                    () => RunSingleTest<Memory<T>>($"[{fbsType}]  (vectortype: Memory)"));
+                Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                    () => RunSingleTest<ReadOnlyMemory<T>>($"[{fbsType}]  (vectortype: ReadOnlyMemory)"));
             }
         }
 
-        private void RunSingleTest<T>(string fbsType, bool deprecated = false, bool hasDefaultValue = false, T expectedDefaultValue = default)
+        private void RunSingleTest<T>(
+            string fbsType,
+            bool deprecated = false,
+            bool hasDefaultValue = false,
+            T expectedDefaultValue = default,
+            int id = 0)
         {
             try
             {
@@ -143,7 +232,7 @@ namespace FlatSharpTests.Compiler
                 Assert.AreEqual(typeof(T), property.PropertyType);
                 var attribute = property.GetCustomAttribute<FlatBufferItemAttribute>();
 
-                Assert.AreEqual(0, attribute.Index);
+                Assert.AreEqual(id, attribute.Index);
                 Assert.AreEqual(deprecated, attribute.Deprecated);
 
                 Assert.AreEqual(hasDefaultValue, attribute.DefaultValue != null);

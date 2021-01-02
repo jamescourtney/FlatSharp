@@ -24,6 +24,8 @@ namespace FlatSharp.Compiler
     {
         public int Index { get; set; }
 
+        public bool IsIndexSetManually { get; set; }
+
         public string Name { get; set; }
 
         public string FbsFieldType { get; set; }
