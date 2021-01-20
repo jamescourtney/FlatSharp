@@ -10,9 +10,13 @@
       <CompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\tools\net47\FlatSharp.Compiler.exe'))</CompilerPath>
       <CompilerInvocation>$(CompilerPath)</CompilerInvocation>
     </PropertyGroup>
+    
+    <PropertyGroup>
+      <NewFlatSharpSchemaPath>"%(FlatSharpSchema.fullpath)"</NewFlatSharpSchemaPath>
+    </PropertyGrop>
 
-    <Message Text="$(CompilerInvocation) %(FlatSharpSchema.fullpath)" Importance="high" />
-    <Exec Command="$(CompilerInvocation) %(FlatSharpSchema.fullpath) $(IntermediateOutputPath)" CustomErrorRegularExpression=".*" Condition=" '%(FlatSharpSchema.fullpath)' != '' " />
+    <Message Text="$(CompilerInvocation) $(NewFlatSharpSchemaPath)" Importance="high" />
+    <Exec Command="$(CompilerInvocation) $(NewFlatSharpSchemaPath) $(IntermediateOutputPath)" CustomErrorRegularExpression=".*" Condition=" '%(FlatSharpSchema.fullpath)' != '' " />
     <ItemGroup>
       <GeneratedFbs Include="$(IntermediateOutputPath)*.generated.cs" />
       <Compile Include="@(GeneratedFbs)" />
