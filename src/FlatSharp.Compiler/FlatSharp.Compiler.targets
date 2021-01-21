@@ -12,11 +12,11 @@
     </PropertyGroup>
     
     <PropertyGroup>
-      <NewFlatSharpSchemaPath>"%(FlatSharpSchema.fullpath)"</NewFlatSharpSchemaPath>
+      <QuotedSchemaPath>"%(FlatSharpSchema.fullpath)"</QuotedSchemaPath>
     </PropertyGrop>
 
-    <Message Text="$(CompilerInvocation) $(NewFlatSharpSchemaPath)" Importance="high" />
-    <Exec Command="$(CompilerInvocation) $(NewFlatSharpSchemaPath) $(IntermediateOutputPath)" CustomErrorRegularExpression=".*" Condition=" '%(FlatSharpSchema.fullpath)' != '' " />
+    <Message Text="$(CompilerInvocation) $(QuotedSchemaPath)" Importance="high" />
+    <Exec Command="$(CompilerInvocation) $(QuotedSchemaPath) $(IntermediateOutputPath)" CustomErrorRegularExpression=".*" Condition=" '%(FlatSharpSchema.fullpath)' != '' " />
     <ItemGroup>
       <GeneratedFbs Include="$(IntermediateOutputPath)*.generated.cs" />
       <Compile Include="@(GeneratedFbs)" />
