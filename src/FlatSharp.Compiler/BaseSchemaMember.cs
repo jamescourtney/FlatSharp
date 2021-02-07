@@ -77,7 +77,7 @@ namespace FlatSharp.Compiler
                 this.Name, () => this.OnGetCopyExpression(source));
         }
 
-        protected virtual void OnWriteCode(CodeWriter writer, CodeWritingPass pass, string forFile, IReadOnlyDictionary<string, string> precompiledSerializer)
+        protected virtual void OnWriteCode(CodeWriter writer, CodeWritingPass pass, string forFile, IReadOnlyDictionary<string, string> precompiledSerializers)
         {
         }
 

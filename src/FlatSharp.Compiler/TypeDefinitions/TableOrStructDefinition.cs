@@ -42,27 +42,45 @@ namespace FlatSharp.Compiler
 
         protected override bool SupportsChildren => false;
 
-        public void AssignIndexes()
+        private void AssignIndexes()
         {
-            ErrorContext.Current.WithScope(this.Name, () =>
-            {
-                int nextIndex = 0;
-                for (int i = 0; i < this.Fields.Count; ++i)
+            ErrorContext.Current.WithScope(
+                this.Name,
+                () =>
                 {
-                    this.Fields[i].Index = nextIndex;
-
-                    nextIndex++;
-
-                    if (this.TryResolveName(this.Fields[i].FbsFieldType, out var typeDef) && typeDef is UnionDefinition)
+                    if (this.Fields.Any(field => field.IsIndexSetManually))
                     {
-                        // Unions are double-wide.
-                        nextIndex++;
+                        if (!this.IsTable)
+                        {
+                            ErrorContext.Current.RegisterError("Structure fields can not have 'id' attribute set.");
+                        }
+
+                        if (!this.Fields.TrueForAll(field => field.IsIndexSetManually))
+                        {
+                            ErrorContext.Current.RegisterError("All or none fields should have 'id' attribute set.");
+                        }
+
+                        return;
                     }
-                }
-            });
+
+                    int nextIndex = 0;
+                    foreach (var field in this.Fields)
+                    {
+                        field.Index = nextIndex;
+
+                        nextIndex++;
+
+                        if (this.TryResolveName(field.FbsFieldType, out var typeDef) &&
+                            typeDef is UnionDefinition)
+                        {
+                            // Unions are double-wide.
+                            nextIndex++;
+                        }
+                    }
+                });
         }
 
-        protected override void OnWriteCode(CodeWriter writer, CodeWritingPass pass, string forFile, IReadOnlyDictionary<string, string> precompiledSerailizers)
+    protected override void OnWriteCode(CodeWriter writer, CodeWritingPass pass, string forFile, IReadOnlyDictionary<string, string> precompiledSerializers)
         {
             this.AssignIndexes();
 
@@ -102,9 +120,9 @@ namespace FlatSharp.Compiler
                     field.WriteField(writer, this);
                 }
 
-                if (pass == CodeWritingPass.SecondPass && precompiledSerailizers != null && this.RequestedSerializer != null)
+                if (pass == CodeWritingPass.SecondPass && precompiledSerializers != null && this.RequestedSerializer != null)
                 {
-                    if (precompiledSerailizers.TryGetValue(this.FullName, out string serializer))
+                    if (precompiledSerializers.TryGetValue(this.FullName, out string serializer))
                     {
                         writer.AppendLine($"public static ISerializer<{this.FullName}> Serializer {{ get; }} = new {RoslynSerializerGenerator.GeneratedSerializerClassName}().AsISerializer();");
                         writer.AppendLine(string.Empty);
