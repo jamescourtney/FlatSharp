@@ -81,7 +81,7 @@ namespace FlatSharp.Compiler
             CodeWriter writer, 
             CodeWritingPass pass, 
             string forFile, 
-            IReadOnlyDictionary<string, string> precompiledSerializer)
+            IReadOnlyDictionary<string, string> precompiledSerializers)
         {
             if (!this.GenerateCustomUnionType)
             {

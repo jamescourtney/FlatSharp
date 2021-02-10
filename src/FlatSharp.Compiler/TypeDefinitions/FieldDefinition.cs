@@ -24,6 +24,8 @@ namespace FlatSharp.Compiler
     {
         public int Index { get; set; }
 
+        public bool IsIndexSetManually { get; set; }
+
         public string Name { get; set; }
 
         public string FbsFieldType { get; set; }
@@ -59,14 +61,7 @@ namespace FlatSharp.Compiler
             {
                 if (baseMember.TryResolveName(this.FbsFieldType, out var typeDefinition))
                 {
-                    if (typeDefinition is UnionDefinition unionDef)
-                    {
-                        clrType = unionDef.ClrTypeName;
-                    }
-                    else
-                    {
-                        clrType = typeDefinition.GlobalName;
-                    }
+                    clrType = typeDefinition is UnionDefinition unionDef ? unionDef.ClrTypeName : typeDefinition.GlobalName;
 
                     if (typeDefinition is TableOrStructDefinition tableOrStruct && tableOrStruct.IsTable)
                     {
@@ -89,36 +84,7 @@ namespace FlatSharp.Compiler
                 clrType = $"global::{typeof(SharedString).FullName}";
             }
 
-            switch (this.VectorType)
-            {
-                case VectorType.Array:
-                    return $"{clrType}[]";
-
-                case VectorType.IList:
-                    return $"IList<{clrType}>";
-
-                case VectorType.IReadOnlyList:
-                    return $"IReadOnlyList<{clrType}>";
-
-                case VectorType.Memory:
-                    return $"Memory<{clrType}>";
-
-                case VectorType.ReadOnlyMemory:
-                    return $"ReadOnlyMemory<{clrType}>";
-
-                case VectorType.IIndexedVector:
-                    if (string.IsNullOrWhiteSpace(sortKeyType))
-                    {
-                        ErrorContext.Current.RegisterError($"Unable to determine key type for table {clrType}. Please make sure a property has the 'Key' metadata.");
-                    }
-                    return $"IIndexedVector<{sortKeyType}, {clrType}>";
-
-                case VectorType.None:
-                    return clrType;
-
-                default:
-                    throw new InvalidOperationException($"Unexpected value for vectortype: '{this.VectorType}'");
-            }
+            return this.GetClrTypeName(clrType, sortKeyType);
         }
 
         public void WriteCopyConstructorLine(CodeWriter writer, string sourceName, BaseSchemaMember parent)
@@ -170,18 +136,8 @@ namespace FlatSharp.Compiler
             }
         }
 
-        private string GetLinqSelectStatement(bool isBuiltIn, BaseSchemaMember nodeType)
-        {
-            if (isBuiltIn)
-            {
-                return string.Empty;
-            }
-            else
-            {
-                string cloneStatement = nodeType.GetCopyExpression("x");
-                return $".Select(x => {cloneStatement})";
-            }
-        }
+        private string GetLinqSelectStatement(bool isBuiltIn, BaseSchemaMember nodeType) => 
+            isBuiltIn ? string.Empty : $".Select(x => {nodeType.GetCopyExpression("x")})";
 
         public void WriteField(CodeWriter writer, TableOrStructDefinition parent)
         {
@@ -195,45 +151,15 @@ namespace FlatSharp.Compiler
                     enumDefinition = typeDefinition as EnumDefinition;
                 }
 
-                string defaultValue = string.Empty;
-                string clrType;
                 bool isBuiltInType = SchemaDefinition.TryResolve(this.FbsFieldType, out ITypeModel builtInType);
 
-                if (isBuiltInType)
-                {
-                    clrType = builtInType.ClrType.FullName;
-                }
-                else
-                {
-                    clrType = typeDefinition?.GlobalName ?? this.FbsFieldType;
-                }
+                string clrType = isBuiltInType
+                    ? builtInType.ClrType.FullName
+                    : typeDefinition?.GlobalName ?? this.FbsFieldType;
 
-                if (!string.IsNullOrEmpty(this.DefaultValue))
-                {
-                    if (isBuiltInType && builtInType.TryFormatStringAsLiteral(this.DefaultValue, out defaultValue))
-                    {
-                        // intentionally left blank.
-                    }
-                    else if (enumDefinition?.NameValuePairs.ContainsKey(this.DefaultValue) == true)
-                    {
-                        // Also ok.
-                        defaultValue = $"{clrType}.{this.DefaultValue}";
-                    }
-                    else if (enumDefinition?.UnderlyingType.TryFormatStringAsLiteral(this.DefaultValue, out defaultValue) == true)
-                    { 
-                        defaultValue = $"({clrType})({defaultValue})";
-                    }
-                    else
-                    {
-                        ErrorContext.Current?.RegisterError($"Only primitive types and enums may have default values. Field '{this.Name}' declares a default value but has type '{this.FbsFieldType}'.");
-                    }
-                }
+                string defaultValue = this.GetDefaultValue(builtInType, enumDefinition, clrType);
 
-                if (this.SetterKind == SetterKind.None && this.NonVirtual == true)
-                {
-                    ErrorContext.Current?.RegisterError($"NonVirtual:true cannot be combined with setter:None.");
-                }
-
+                this.VerifySetterKindIsValid();
                 this.WriteField(writer, this.GetClrTypeName(parent), defaultValue, this.Name, parent);
             }));
         }
@@ -299,6 +225,82 @@ namespace FlatSharp.Compiler
 
             writer.AppendLine($"[FlatBufferItem({this.Index}{defaultValueAttribute}{isDeprecated}{sortedVector}{isKey})]");
             writer.AppendLine($"public {(isNonVirtual ? string.Empty : "virtual ")}{clrTypeName} {name} {{ get; {setter} }}{defaultValueAssignment}");
+        }
+
+        private string GetDefaultValue(ITypeModel builtInType, EnumDefinition enumDefinition, string clrType)
+        {
+            if (string.IsNullOrEmpty(this.DefaultValue))
+            {
+                return string.Empty;
+            }
+
+            string defaultValue = string.Empty;
+            if (builtInType != null &&
+                builtInType.TryFormatStringAsLiteral(this.DefaultValue, out defaultValue))
+            {
+                // intentionally left blank.
+                return defaultValue;
+            }
+
+            if (enumDefinition?.NameValuePairs.ContainsKey(this.DefaultValue) == true)
+            {
+                // Also ok.
+                return $"{clrType}.{this.DefaultValue}";
+            }
+
+            if (enumDefinition?.UnderlyingType.TryFormatStringAsLiteral(this.DefaultValue, out defaultValue) == true)
+            {
+                return $"({clrType})({defaultValue})";
+            }
+
+            ErrorContext.Current?.RegisterError(
+                $"Only primitive types and enums may have default values. Field '{this.Name}' declares a default value but has type '{this.FbsFieldType}'.");
+
+            return string.Empty;
+        }
+
+        private void VerifySetterKindIsValid()
+        {
+            if (this.SetterKind == SetterKind.None &&
+                this.NonVirtual == true)
+            {
+                ErrorContext.Current?.RegisterError("NonVirtual:true cannot be combined with setter:None.");
+            }
+        }
+
+        private string GetClrTypeName(string clrType, string sortKeyType)
+        {
+            switch (this.VectorType)
+            {
+                case VectorType.Array:
+                    return $"{clrType}[]";
+
+                case VectorType.IList:
+                    return $"IList<{clrType}>";
+
+                case VectorType.IReadOnlyList:
+                    return $"IReadOnlyList<{clrType}>";
+
+                case VectorType.Memory:
+                    return $"Memory<{clrType}>";
+
+                case VectorType.ReadOnlyMemory:
+                    return $"ReadOnlyMemory<{clrType}>";
+
+                case VectorType.IIndexedVector:
+                    if (string.IsNullOrWhiteSpace(sortKeyType))
+                    {
+                        ErrorContext.Current.RegisterError($"Unable to determine key type for table {clrType}. Please make sure a property has the 'Key' metadata.");
+                    }
+
+                    return $"IIndexedVector<{sortKeyType}, {clrType}>";
+
+                case VectorType.None:
+                    return clrType;
+
+                default:
+                    throw new InvalidOperationException($"Unexpected value for vectortype: '{this.VectorType}'");
+            }
         }
     }
 }

@@ -90,7 +90,89 @@ namespace FlatSharpTests.Compiler
         [TestMethod]
         public void TableMember_string() => this.RunCompoundTest<string>("string");
 
-        private void RunCompoundTestWithDefaultValue_Bool(string fbsType)
+    [TestMethod]
+    public void TableMember_with_id()
+    {
+      try
+      {
+        const string Schema = "namespace TableMemberTests; table Table { member:string (id:1); member2:int (id:0); }";
+        var assembly = FlatSharpCompiler.CompileAndLoadAssembly(Schema);
+
+        var tableType = assembly.GetType("TableMemberTests.Table");
+        var property = tableType.GetProperty("member");
+
+        Assert.AreEqual(typeof(string), property.PropertyType);
+        var attribute = property.GetCustomAttribute<FlatBufferItemAttribute>();
+
+        Assert.AreEqual(1, attribute.Index);
+
+        var data = new byte[100];
+        CompilerTestHelpers.CompilerTestSerializer.ReflectionSerialize(Activator.CreateInstance(tableType), data);
+        CompilerTestHelpers.CompilerTestSerializer.ReflectionParse(tableType, data);
+      }
+      catch (TargetInvocationException ex)
+      {
+        throw ex.InnerException;
+      }
+    }
+
+    [TestMethod]
+    public void TableMember_only_some_fields_have_id()
+    {
+      try
+      {
+        const string Schema = "namespace TableMemberTests; table Table { member:string (id:1); member2:int; }";
+        Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(Schema));
+      }
+      catch (TargetInvocationException ex)
+      {
+        throw ex.InnerException;
+      }
+    }
+
+    [TestMethod]
+    public void TableMember_negative_id()
+    {
+      try
+      {
+        const string Schema = "namespace TableMemberTests; table Table { member:string (id:0); member2:int (id:-1); }";
+        Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(Schema));
+      }
+      catch (TargetInvocationException ex)
+      {
+        throw ex.InnerException;
+      }
+    }
+
+    [TestMethod]
+    public void TableMember_has_id_attribute_but_with_no_value()
+    {
+      try
+      {
+        const string Schema = "namespace TableMemberTests; table Table { member:string (id:0); member2:int (id); }";
+        Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(Schema));
+      }
+      catch (TargetInvocationException ex)
+      {
+        throw ex.InnerException;
+      }
+    }
+
+    [TestMethod]
+    public void StructMember_with_id()
+    {
+      try
+      {
+        const string Schema = "namespace TableMemberTests; struct Struct { member:string (id:1); member2:int (id:0); }";
+        Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(Schema));
+      }
+      catch (TargetInvocationException ex)
+      {
+        throw ex.InnerException;
+      }
+    }
+
+    private void RunCompoundTestWithDefaultValue_Bool(string fbsType)
         {
             this.RunSingleTest<bool>($"{fbsType} = true", hasDefaultValue: true, expectedDefaultValue: true);
             this.RunSingleTest<bool>($"{fbsType} = false", hasDefaultValue: true, expectedDefaultValue: false);
