@@ -56,7 +56,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="<#= typeName #>"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class <#= className #> : ScalarTypeModel
+    public partial class <#= className #> : ScalarTypeModel, ITypeModel<<#=typeName#>>
     {
         public <#= className #>() : base(typeof(<#=typeName#>), sizeof(<#=typeName#>)) 
         {
@@ -70,7 +70,7 @@ namespace FlatSharp.TypeModel
 
         public override bool TryGetSpanComparerType(out Type comparerType)
         {
-            comparerType = typeof(<#= casedName #>SpanComparer);;
+            comparerType = typeof(<#= casedName #>SpanComparer);
             return true;
         }
 
@@ -84,7 +84,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="<#= typeName #>?"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class Nullable<#= className #> : ScalarTypeModel
+    public partial class Nullable<#= className #> : ScalarTypeModel, ITypeModel<<#=typeName#>?>
     {
         public Nullable<#= className #>() : base(typeof(<#=typeName#>?), sizeof(<#=typeName#>)) 
         {

@@ -162,4 +162,8 @@ namespace FlatSharp.TypeModel
         /// </summary>
         void Initialize();
     }
+
+    public interface ITypeModel<T> : ITypeModel
+    {
+    }
 }

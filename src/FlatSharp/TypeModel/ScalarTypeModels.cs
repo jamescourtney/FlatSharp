@@ -26,7 +26,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="bool"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class BoolTypeModel : ScalarTypeModel
+    public partial class BoolTypeModel : ScalarTypeModel, ITypeModel<bool>
     {
         public BoolTypeModel() : base(typeof(bool), sizeof(bool)) 
         {
@@ -40,7 +40,7 @@ namespace FlatSharp.TypeModel
 
         public override bool TryGetSpanComparerType(out Type comparerType)
         {
-            comparerType = typeof(BoolSpanComparer);;
+            comparerType = typeof(BoolSpanComparer);
             return true;
         }
 
@@ -54,7 +54,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="bool?"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class NullableBoolTypeModel : ScalarTypeModel
+    public partial class NullableBoolTypeModel : ScalarTypeModel, ITypeModel<bool?>
     {
         public NullableBoolTypeModel() : base(typeof(bool?), sizeof(bool)) 
         {
@@ -76,7 +76,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="byte"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class ByteTypeModel : ScalarTypeModel
+    public partial class ByteTypeModel : ScalarTypeModel, ITypeModel<byte>
     {
         public ByteTypeModel() : base(typeof(byte), sizeof(byte)) 
         {
@@ -90,7 +90,7 @@ namespace FlatSharp.TypeModel
 
         public override bool TryGetSpanComparerType(out Type comparerType)
         {
-            comparerType = typeof(ByteSpanComparer);;
+            comparerType = typeof(ByteSpanComparer);
             return true;
         }
 
@@ -104,7 +104,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="byte?"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class NullableByteTypeModel : ScalarTypeModel
+    public partial class NullableByteTypeModel : ScalarTypeModel, ITypeModel<byte?>
     {
         public NullableByteTypeModel() : base(typeof(byte?), sizeof(byte)) 
         {
@@ -126,7 +126,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="sbyte"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class SByteTypeModel : ScalarTypeModel
+    public partial class SByteTypeModel : ScalarTypeModel, ITypeModel<sbyte>
     {
         public SByteTypeModel() : base(typeof(sbyte), sizeof(sbyte)) 
         {
@@ -140,7 +140,7 @@ namespace FlatSharp.TypeModel
 
         public override bool TryGetSpanComparerType(out Type comparerType)
         {
-            comparerType = typeof(SByteSpanComparer);;
+            comparerType = typeof(SByteSpanComparer);
             return true;
         }
 
@@ -154,7 +154,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="sbyte?"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class NullableSByteTypeModel : ScalarTypeModel
+    public partial class NullableSByteTypeModel : ScalarTypeModel, ITypeModel<sbyte?>
     {
         public NullableSByteTypeModel() : base(typeof(sbyte?), sizeof(sbyte)) 
         {
@@ -176,7 +176,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="ushort"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class UShortTypeModel : ScalarTypeModel
+    public partial class UShortTypeModel : ScalarTypeModel, ITypeModel<ushort>
     {
         public UShortTypeModel() : base(typeof(ushort), sizeof(ushort)) 
         {
@@ -190,7 +190,7 @@ namespace FlatSharp.TypeModel
 
         public override bool TryGetSpanComparerType(out Type comparerType)
         {
-            comparerType = typeof(UShortSpanComparer);;
+            comparerType = typeof(UShortSpanComparer);
             return true;
         }
 
@@ -204,7 +204,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="ushort?"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class NullableUShortTypeModel : ScalarTypeModel
+    public partial class NullableUShortTypeModel : ScalarTypeModel, ITypeModel<ushort?>
     {
         public NullableUShortTypeModel() : base(typeof(ushort?), sizeof(ushort)) 
         {
@@ -226,7 +226,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="short"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class ShortTypeModel : ScalarTypeModel
+    public partial class ShortTypeModel : ScalarTypeModel, ITypeModel<short>
     {
         public ShortTypeModel() : base(typeof(short), sizeof(short)) 
         {
@@ -240,7 +240,7 @@ namespace FlatSharp.TypeModel
 
         public override bool TryGetSpanComparerType(out Type comparerType)
         {
-            comparerType = typeof(ShortSpanComparer);;
+            comparerType = typeof(ShortSpanComparer);
             return true;
         }
 
@@ -254,7 +254,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="short?"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class NullableShortTypeModel : ScalarTypeModel
+    public partial class NullableShortTypeModel : ScalarTypeModel, ITypeModel<short?>
     {
         public NullableShortTypeModel() : base(typeof(short?), sizeof(short)) 
         {
@@ -276,7 +276,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="int"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class IntTypeModel : ScalarTypeModel
+    public partial class IntTypeModel : ScalarTypeModel, ITypeModel<int>
     {
         public IntTypeModel() : base(typeof(int), sizeof(int)) 
         {
@@ -290,7 +290,7 @@ namespace FlatSharp.TypeModel
 
         public override bool TryGetSpanComparerType(out Type comparerType)
         {
-            comparerType = typeof(IntSpanComparer);;
+            comparerType = typeof(IntSpanComparer);
             return true;
         }
 
@@ -304,7 +304,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="int?"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class NullableIntTypeModel : ScalarTypeModel
+    public partial class NullableIntTypeModel : ScalarTypeModel, ITypeModel<int?>
     {
         public NullableIntTypeModel() : base(typeof(int?), sizeof(int)) 
         {
@@ -326,7 +326,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="uint"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class UIntTypeModel : ScalarTypeModel
+    public partial class UIntTypeModel : ScalarTypeModel, ITypeModel<uint>
     {
         public UIntTypeModel() : base(typeof(uint), sizeof(uint)) 
         {
@@ -340,7 +340,7 @@ namespace FlatSharp.TypeModel
 
         public override bool TryGetSpanComparerType(out Type comparerType)
         {
-            comparerType = typeof(UIntSpanComparer);;
+            comparerType = typeof(UIntSpanComparer);
             return true;
         }
 
@@ -354,7 +354,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="uint?"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class NullableUIntTypeModel : ScalarTypeModel
+    public partial class NullableUIntTypeModel : ScalarTypeModel, ITypeModel<uint?>
     {
         public NullableUIntTypeModel() : base(typeof(uint?), sizeof(uint)) 
         {
@@ -376,7 +376,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="long"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class LongTypeModel : ScalarTypeModel
+    public partial class LongTypeModel : ScalarTypeModel, ITypeModel<long>
     {
         public LongTypeModel() : base(typeof(long), sizeof(long)) 
         {
@@ -390,7 +390,7 @@ namespace FlatSharp.TypeModel
 
         public override bool TryGetSpanComparerType(out Type comparerType)
         {
-            comparerType = typeof(LongSpanComparer);;
+            comparerType = typeof(LongSpanComparer);
             return true;
         }
 
@@ -404,7 +404,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="long?"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class NullableLongTypeModel : ScalarTypeModel
+    public partial class NullableLongTypeModel : ScalarTypeModel, ITypeModel<long?>
     {
         public NullableLongTypeModel() : base(typeof(long?), sizeof(long)) 
         {
@@ -426,7 +426,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="ulong"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class ULongTypeModel : ScalarTypeModel
+    public partial class ULongTypeModel : ScalarTypeModel, ITypeModel<ulong>
     {
         public ULongTypeModel() : base(typeof(ulong), sizeof(ulong)) 
         {
@@ -440,7 +440,7 @@ namespace FlatSharp.TypeModel
 
         public override bool TryGetSpanComparerType(out Type comparerType)
         {
-            comparerType = typeof(ULongSpanComparer);;
+            comparerType = typeof(ULongSpanComparer);
             return true;
         }
 
@@ -454,7 +454,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="ulong?"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class NullableULongTypeModel : ScalarTypeModel
+    public partial class NullableULongTypeModel : ScalarTypeModel, ITypeModel<ulong?>
     {
         public NullableULongTypeModel() : base(typeof(ulong?), sizeof(ulong)) 
         {
@@ -476,7 +476,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="float"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class FloatTypeModel : ScalarTypeModel
+    public partial class FloatTypeModel : ScalarTypeModel, ITypeModel<float>
     {
         public FloatTypeModel() : base(typeof(float), sizeof(float)) 
         {
@@ -490,7 +490,7 @@ namespace FlatSharp.TypeModel
 
         public override bool TryGetSpanComparerType(out Type comparerType)
         {
-            comparerType = typeof(FloatSpanComparer);;
+            comparerType = typeof(FloatSpanComparer);
             return true;
         }
 
@@ -504,7 +504,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="float?"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class NullableFloatTypeModel : ScalarTypeModel
+    public partial class NullableFloatTypeModel : ScalarTypeModel, ITypeModel<float?>
     {
         public NullableFloatTypeModel() : base(typeof(float?), sizeof(float)) 
         {
@@ -526,7 +526,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="double"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class DoubleTypeModel : ScalarTypeModel
+    public partial class DoubleTypeModel : ScalarTypeModel, ITypeModel<double>
     {
         public DoubleTypeModel() : base(typeof(double), sizeof(double)) 
         {
@@ -540,7 +540,7 @@ namespace FlatSharp.TypeModel
 
         public override bool TryGetSpanComparerType(out Type comparerType)
         {
-            comparerType = typeof(DoubleSpanComparer);;
+            comparerType = typeof(DoubleSpanComparer);
             return true;
         }
 
@@ -554,7 +554,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="double?"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class NullableDoubleTypeModel : ScalarTypeModel
+    public partial class NullableDoubleTypeModel : ScalarTypeModel, ITypeModel<double?>
     {
         public NullableDoubleTypeModel() : base(typeof(double?), sizeof(double)) 
         {

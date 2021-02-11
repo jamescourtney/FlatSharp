@@ -19,6 +19,9 @@ namespace FlatSharp.TypeModel
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
+    using System.Collections.Immutable;
+    using System.Linq.Expressions;
+    using System.Reflection;
 
     /// <summary>
     /// A root type model provider that supports registering extensions.
@@ -49,6 +52,217 @@ namespace FlatSharp.TypeModel
             container.RegisterProvider(new ScalarTypeModelProvider());
             container.RegisterProvider(new FlatSharpTypeModelProvider());
             return container;
+        }
+
+        public TypeModelContainer WithExtension<TUnderlyingType, TType>(
+            ITypeModel<TUnderlyingType> underlyingTypeModel,
+            Expression<Func<TUnderlyingType, TType>> convertFromLambda,
+            Expression<Func<TType, TUnderlyingType>> convertToLambda)
+        {
+            var fromUnderlying = GetMethod(convertFromLambda);
+            var toUnderlying = GetMethod(convertToLambda);
+
+            var model = new ExtensionTypeModel<TType, TUnderlyingType>(
+                toUnderlying,
+                fromUnderlying,
+                underlyingTypeModel);
+
+            this.providers.Insert(0, new ExtensionTypeModelProvider<TType>(model));
+            return this;
+        }
+
+        private static MethodInfo GetMethod<TInput, TOutput>(Expression<Func<TInput, TOutput>> expr)
+        {
+            static void Throw()
+            {
+                throw new ArgumentException("Lambda body must be a public static method call in a publicly visible class. The method must accept one argument that is the argument to the lambda");
+            }
+
+            if (!(expr is LambdaExpression lambda))
+            {
+                Throw();
+            }
+
+            if (!(lambda.Body is MethodCallExpression methodExpr))
+            {
+                Throw();
+            }
+
+            if (!methodExpr.Method.IsStatic || 
+                !(methodExpr.Method.DeclaringType.IsPublic || methodExpr.Method.DeclaringType.IsNestedPublic) ||
+                methodExpr.Method.IsSpecialName)
+            {
+                Throw();
+            }
+
+            if (methodExpr.Arguments.Count != 1 || methodExpr.Arguments[0] != lambda.Parameters[0])
+            {
+                Throw();
+            }
+
+            return methodExpr.Method;
+        }
+
+        private class ExtensionTypeModelProvider<T> : ITypeModelProvider
+        {
+            private ITypeModel<T> model;
+
+            public ExtensionTypeModelProvider(
+                ITypeModel<T> model)
+            {
+                this.model = model;
+            }
+
+            public bool TryCreateTypeModel(TypeModelContainer container, Type type, out ITypeModel typeModel)
+            {
+                if (type == typeof(T))
+                {
+                    typeModel = this.model;
+                    return true;
+                }
+
+                typeModel = null;
+                return false;
+            }
+
+            public bool TryResolveFbsAlias(TypeModelContainer container, string alias, out ITypeModel typeModel)
+            {
+                typeModel = null;
+                return false;
+            }
+        }
+
+        private class ExtensionTypeModel<T, TUnderlying> : ITypeModel<T>
+        {
+            private readonly ITypeModel<TUnderlying> underlyingModel;
+            private readonly MethodInfo toUnderlying;
+            private readonly MethodInfo fromUnderlying;
+
+            public ExtensionTypeModel(
+                MethodInfo toUnderlying,
+                MethodInfo fromUnderlying,
+                ITypeModel<TUnderlying> underlyingModel)
+            {
+                this.toUnderlying = toUnderlying;
+                this.fromUnderlying = fromUnderlying;
+                this.underlyingModel = underlyingModel;
+            }
+
+            public FlatBufferSchemaType SchemaType => this.underlyingModel.SchemaType;
+
+            public Type ClrType => typeof(T);
+
+            public ImmutableArray<PhysicalLayoutElement> PhysicalLayout => this.underlyingModel.PhysicalLayout;
+
+            public bool IsFixedSize => this.underlyingModel.IsFixedSize;
+
+            public bool IsValidStructMember => this.underlyingModel.IsValidStructMember;
+
+            public bool IsValidTableMember => this.underlyingModel.IsValidTableMember;
+
+            public bool IsValidVectorMember => this.underlyingModel.IsValidVectorMember;
+
+            public bool IsValidUnionMember => this.underlyingModel.IsValidUnionMember;
+
+            public bool IsValidSortedVectorKey => this.underlyingModel.IsValidSortedVectorKey;
+
+            public int MaxInlineSize => this.underlyingModel.MaxInlineSize;
+
+            public bool MustAlwaysSerialize => this.underlyingModel.MustAlwaysSerialize;
+
+            public bool SerializesInline => this.underlyingModel.SerializesInline;
+
+            public TableMemberModel AdjustTableMember(TableMemberModel source) => this.underlyingModel.AdjustTableMember(source);
+
+            public CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
+            {
+                string baseTypeName = CSharpHelpers.GetCompilableTypeName(this.toUnderlying.DeclaringType);
+                string methodName = this.toUnderlying.Name;
+
+                return this.underlyingModel.CreateGetMaxSizeMethodBody(
+                    context.With($"{baseTypeName}.{methodName}({context.ValueVariableName})"));
+            }
+
+            public CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
+            {
+                string baseTypeName = CSharpHelpers.GetCompilableTypeName(this.fromUnderlying.DeclaringType);
+                string methodName = this.fromUnderlying.Name;
+
+                // Parse buffer as underlying type name.
+                string parseUnderlying = context.MethodNameMap[typeof(TUnderlying)];
+
+                return new CodeGeneratedMethod
+                {
+                    MethodBody = $@"
+                        return {baseTypeName}.{methodName}(
+                            {parseUnderlying}(
+                                {context.InputBufferVariableName},
+                                {context.OffsetVariableName}));"
+                };
+            }
+
+            public CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
+            {
+                string baseTypeName = CSharpHelpers.GetCompilableTypeName(this.toUnderlying.DeclaringType);
+                string methodName = this.toUnderlying.Name;
+
+                return this.underlyingModel.CreateSerializeMethodBody(
+                    context.With(valueVariableName: $"{baseTypeName}.{methodName}({context.ValueVariableName})"));
+            }
+
+            public string GetNonNullConditionExpression(string itemVariableName)
+            {
+                bool isNullable = Nullable.GetUnderlyingType(typeof(T)) != null;
+
+                if (typeof(T).IsClass || isNullable)
+                {
+                    return $"{itemVariableName} != null";
+                }
+
+                return "true";
+            }
+
+            public string GetThrowIfNullInvocation(string itemVariableName)
+            {
+                bool isNullable = Nullable.GetUnderlyingType(typeof(T)) != null;
+
+                if (typeof(T).IsClass || isNullable)
+                {
+                    return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
+                }
+
+                return string.Empty;
+            }
+
+            public void Initialize()
+            {
+            }
+
+            public void TraverseObjectGraph(HashSet<Type> seenTypes)
+            {
+                seenTypes.Add(typeof(T));
+                seenTypes.Add(typeof(TUnderlying));
+            }
+
+            public bool TryFormatDefaultValueAsLiteral(object defaultValue, out string literal)
+            {
+                literal = null;
+                return false;
+            }
+
+            public bool TryFormatStringAsLiteral(string value, out string literal)
+            {
+                literal = null;
+                return false;
+            }
+
+            public bool TryGetSpanComparerType(out Type comparerType) => this.underlyingModel.TryGetSpanComparerType(out comparerType);
+
+            public bool TryGetTableKeyMember(out TableMemberModel tableMember) => this.underlyingModel.TryGetTableKeyMember(out tableMember);
+
+            public bool TryGetUnderlyingVectorType(out ITypeModel typeModel) => this.underlyingModel.TryGetUnderlyingVectorType(out typeModel);
+
+            public bool ValidateDefaultValue(object defaultValue) => false;
         }
 
         /// <summary>
