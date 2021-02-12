@@ -3,7 +3,7 @@
     <SignAssembly>true</SignAssembly>
     <DelaySign>false</DelaySign>
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)\..\misc\strongname.snk</AssemblyOriginatorKeyFile>
-    <LangVersion>8.0</LangVersion>
+    <LangVersion>9.0</LangVersion>
   </PropertyGroup>
   
   <PropertyGroup>
@@ -21,4 +21,6 @@
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>    
     <NuspecProperties>version=$(Version);releaseNotes=$(PackageReleaseNotes)</NuspecProperties>
   </PropertyGroup>
+
+  <Import Project="netfx.props" />
 </Project>

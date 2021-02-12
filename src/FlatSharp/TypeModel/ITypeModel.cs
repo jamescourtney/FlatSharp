@@ -151,6 +151,11 @@ namespace FlatSharp.TypeModel
         bool TryGetTableKeyMember(out TableMemberModel tableMember);
 
         /// <summary>
+        /// Returns any additional types that must have their assemblies referenced.
+        /// </summary>
+        IEnumerable<Type> GetReferencedTypes();
+
+        /// <summary>
         /// Invoked when this type model is being serialized as part of a table. Provides an opportunity to override or supplement
         /// the declared configuration in the table. This method will not be invoked
         /// when the type is serialized in other contexts, such as vectors and structs.
@@ -161,9 +166,5 @@ namespace FlatSharp.TypeModel
         /// Initializes and validates the type model.
         /// </summary>
         void Initialize();
-    }
-
-    public interface ITypeModel<T> : ITypeModel
-    {
     }
 }

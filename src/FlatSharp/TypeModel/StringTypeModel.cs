@@ -23,7 +23,7 @@ namespace FlatSharp.TypeModel
     /// <summary>
     /// Defines a FlatBuffer string type.
     /// </summary>
-    public class StringTypeModel : RuntimeTypeModel, ITypeModel<string>
+    public class StringTypeModel : RuntimeTypeModel
     {
         internal StringTypeModel() : base(typeof(string), null)
         {

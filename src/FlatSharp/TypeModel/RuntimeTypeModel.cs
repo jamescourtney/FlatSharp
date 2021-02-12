@@ -165,5 +165,10 @@ namespace FlatSharp.TypeModel
         {
             return source;
         }
+
+        public IEnumerable<Type> GetReferencedTypes()
+        {
+            return new[] { this.ClrType };
+        }
     }
 }

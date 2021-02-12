@@ -26,7 +26,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="bool"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class BoolTypeModel : ScalarTypeModel, ITypeModel<bool>
+    public partial class BoolTypeModel : ScalarTypeModel
     {
         public BoolTypeModel() : base(typeof(bool), sizeof(bool)) 
         {
@@ -54,7 +54,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="bool?"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class NullableBoolTypeModel : ScalarTypeModel, ITypeModel<bool?>
+    public partial class NullableBoolTypeModel : ScalarTypeModel
     {
         public NullableBoolTypeModel() : base(typeof(bool?), sizeof(bool)) 
         {
@@ -76,7 +76,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="byte"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class ByteTypeModel : ScalarTypeModel, ITypeModel<byte>
+    public partial class ByteTypeModel : ScalarTypeModel
     {
         public ByteTypeModel() : base(typeof(byte), sizeof(byte)) 
         {
@@ -104,7 +104,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="byte?"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class NullableByteTypeModel : ScalarTypeModel, ITypeModel<byte?>
+    public partial class NullableByteTypeModel : ScalarTypeModel
     {
         public NullableByteTypeModel() : base(typeof(byte?), sizeof(byte)) 
         {
@@ -126,7 +126,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="sbyte"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class SByteTypeModel : ScalarTypeModel, ITypeModel<sbyte>
+    public partial class SByteTypeModel : ScalarTypeModel
     {
         public SByteTypeModel() : base(typeof(sbyte), sizeof(sbyte)) 
         {
@@ -154,7 +154,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="sbyte?"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class NullableSByteTypeModel : ScalarTypeModel, ITypeModel<sbyte?>
+    public partial class NullableSByteTypeModel : ScalarTypeModel
     {
         public NullableSByteTypeModel() : base(typeof(sbyte?), sizeof(sbyte)) 
         {
@@ -176,7 +176,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="ushort"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class UShortTypeModel : ScalarTypeModel, ITypeModel<ushort>
+    public partial class UShortTypeModel : ScalarTypeModel
     {
         public UShortTypeModel() : base(typeof(ushort), sizeof(ushort)) 
         {
@@ -204,7 +204,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="ushort?"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class NullableUShortTypeModel : ScalarTypeModel, ITypeModel<ushort?>
+    public partial class NullableUShortTypeModel : ScalarTypeModel
     {
         public NullableUShortTypeModel() : base(typeof(ushort?), sizeof(ushort)) 
         {
@@ -226,7 +226,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="short"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class ShortTypeModel : ScalarTypeModel, ITypeModel<short>
+    public partial class ShortTypeModel : ScalarTypeModel
     {
         public ShortTypeModel() : base(typeof(short), sizeof(short)) 
         {
@@ -254,7 +254,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="short?"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class NullableShortTypeModel : ScalarTypeModel, ITypeModel<short?>
+    public partial class NullableShortTypeModel : ScalarTypeModel
     {
         public NullableShortTypeModel() : base(typeof(short?), sizeof(short)) 
         {
@@ -276,7 +276,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="int"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class IntTypeModel : ScalarTypeModel, ITypeModel<int>
+    public partial class IntTypeModel : ScalarTypeModel
     {
         public IntTypeModel() : base(typeof(int), sizeof(int)) 
         {
@@ -304,7 +304,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="int?"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class NullableIntTypeModel : ScalarTypeModel, ITypeModel<int?>
+    public partial class NullableIntTypeModel : ScalarTypeModel
     {
         public NullableIntTypeModel() : base(typeof(int?), sizeof(int)) 
         {
@@ -326,7 +326,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="uint"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class UIntTypeModel : ScalarTypeModel, ITypeModel<uint>
+    public partial class UIntTypeModel : ScalarTypeModel
     {
         public UIntTypeModel() : base(typeof(uint), sizeof(uint)) 
         {
@@ -354,7 +354,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="uint?"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class NullableUIntTypeModel : ScalarTypeModel, ITypeModel<uint?>
+    public partial class NullableUIntTypeModel : ScalarTypeModel
     {
         public NullableUIntTypeModel() : base(typeof(uint?), sizeof(uint)) 
         {
@@ -376,7 +376,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="long"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class LongTypeModel : ScalarTypeModel, ITypeModel<long>
+    public partial class LongTypeModel : ScalarTypeModel
     {
         public LongTypeModel() : base(typeof(long), sizeof(long)) 
         {
@@ -404,7 +404,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="long?"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class NullableLongTypeModel : ScalarTypeModel, ITypeModel<long?>
+    public partial class NullableLongTypeModel : ScalarTypeModel
     {
         public NullableLongTypeModel() : base(typeof(long?), sizeof(long)) 
         {
@@ -426,7 +426,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="ulong"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class ULongTypeModel : ScalarTypeModel, ITypeModel<ulong>
+    public partial class ULongTypeModel : ScalarTypeModel
     {
         public ULongTypeModel() : base(typeof(ulong), sizeof(ulong)) 
         {
@@ -454,7 +454,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="ulong?"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class NullableULongTypeModel : ScalarTypeModel, ITypeModel<ulong?>
+    public partial class NullableULongTypeModel : ScalarTypeModel
     {
         public NullableULongTypeModel() : base(typeof(ulong?), sizeof(ulong)) 
         {
@@ -476,7 +476,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="float"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class FloatTypeModel : ScalarTypeModel, ITypeModel<float>
+    public partial class FloatTypeModel : ScalarTypeModel
     {
         public FloatTypeModel() : base(typeof(float), sizeof(float)) 
         {
@@ -504,7 +504,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="float?"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class NullableFloatTypeModel : ScalarTypeModel, ITypeModel<float?>
+    public partial class NullableFloatTypeModel : ScalarTypeModel
     {
         public NullableFloatTypeModel() : base(typeof(float?), sizeof(float)) 
         {
@@ -526,7 +526,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="double"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class DoubleTypeModel : ScalarTypeModel, ITypeModel<double>
+    public partial class DoubleTypeModel : ScalarTypeModel
     {
         public DoubleTypeModel() : base(typeof(double), sizeof(double)) 
         {
@@ -554,7 +554,7 @@ namespace FlatSharp.TypeModel
     /// Type Model for <see cref="double?"/>.
     /// </summary>
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class NullableDoubleTypeModel : ScalarTypeModel, ITypeModel<double?>
+    public partial class NullableDoubleTypeModel : ScalarTypeModel
     {
         public NullableDoubleTypeModel() : base(typeof(double?), sizeof(double)) 
         {

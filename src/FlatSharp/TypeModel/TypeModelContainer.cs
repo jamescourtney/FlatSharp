@@ -16,15 +16,19 @@
 
 namespace FlatSharp.TypeModel
 {
+    using FlatSharp.Runtime;
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
-    using System.Collections.Immutable;
-    using System.Linq.Expressions;
-    using System.Reflection;
 
     /// <summary>
-    /// A root type model provider that supports registering extensions.
+    /// A <see cref="TypeModelContainer"/> describes how FlatSharp resolves types. Each container contains 
+    /// <see cref="ITypeModelProvider"/> instances, which are capable of resolving a CLR Type
+    /// into an <see cref="ITypeModel"/> instance. A <see cref="ITypeModel"/> describes formatting
+    /// rules and implements C# methods for serializing, parsing, and computing the max size
+    /// of the type that it describes.
+    /// 
+    /// Type Models are resolved by the container in the order by which their providers were registered.
     /// </summary>
     public sealed class TypeModelContainer
     {
@@ -54,215 +58,49 @@ namespace FlatSharp.TypeModel
             return container;
         }
 
-        public TypeModelContainer WithExtension<TUnderlyingType, TType>(
-            ITypeModel<TUnderlyingType> underlyingTypeModel,
-            Expression<Func<TUnderlyingType, TType>> convertFromLambda,
-            Expression<Func<TType, TUnderlyingType>> convertToLambda)
+        /// <summary>
+        /// Registers a type facade for the given type. Facades are a convenience mechanism to
+        /// expose types to FlatSharp that are based on some well-known underlying type.
+        /// An example of a Facade would be a DateTimeOffset that stores its value as ticks 
+        /// in the underlying FlatBuffer. Another example of a Facade would be a Guid that stores its
+        /// value as a string or byte array.
+        /// 
+        /// The binary format of the Facade will be the same as that of the underlying type, but will allow writing
+        /// code using the Facade type.
+        /// </summary>
+        /// <typeparam name="TUnderlyingType">The underlying type.</typeparam>
+        /// <typeparam name="TType">The exposed type.</typeparam>
+        /// <typeparam name="TConverter">The converter between <typeparamref name="TUnderlyingType"/> and <typeparamref name="TType"/>.</typeparam>
+        /// <param name="throwOnTypeConflict">
+        /// When set, throws an exception when registring a Facade for a type already resolved by this container.
+        /// It is recommended to pass <code>true</code> as this parameter to make you aware if future versions of FlatSharp
+        /// begin supporting a type for which you have defined a facade.
+        /// </param>
+        public void RegisterTypeFacade<TUnderlyingType, TType, TConverter>(bool throwOnTypeConflict = true)
+            where TConverter : struct, IFacadeTypeConverter<TUnderlyingType, TType>
         {
-            var fromUnderlying = GetMethod(convertFromLambda);
-            var toUnderlying = GetMethod(convertToLambda);
-
-            var model = new ExtensionTypeModel<TType, TUnderlyingType>(
-                toUnderlying,
-                fromUnderlying,
-                underlyingTypeModel);
-
-            this.providers.Insert(0, new ExtensionTypeModelProvider<TType>(model));
-            return this;
-        }
-
-        private static MethodInfo GetMethod<TInput, TOutput>(Expression<Func<TInput, TOutput>> expr)
-        {
-            static void Throw()
+            if (!this.TryCreateTypeModel(typeof(TUnderlyingType), out ITypeModel model))
             {
-                throw new ArgumentException("Lambda body must be a public static method call in a publicly visible class. The method must accept one argument that is the argument to the lambda");
+                throw new InvalidOperationException($"Unable to resolve type model for type '{typeof(TUnderlyingType).FullName}'.");
             }
 
-            if (!(expr is LambdaExpression lambda))
+            if (throwOnTypeConflict && this.TryCreateTypeModel(typeof(TType), out _))
             {
-                Throw();
+                throw new InvalidOperationException($"The Type model container already contains a type model for '{typeof(TUnderlyingType).FullName}', which may lead to unexpected behaviors.");
             }
 
-            if (!(lambda.Body is MethodCallExpression methodExpr))
+            if (typeof(TUnderlyingType).IsValueType && Nullable.GetUnderlyingType(typeof(TUnderlyingType)) == null)
             {
-                Throw();
+                // non-nullable value type.
+                var facadeContainer = new FacadeTypeModelProvider<TConverter, TUnderlyingType, TType>(model);
+                this.RegisterProvider(facadeContainer);
             }
-
-            if (!methodExpr.Method.IsStatic || 
-                !(methodExpr.Method.DeclaringType.IsPublic || methodExpr.Method.DeclaringType.IsNestedPublic) ||
-                methodExpr.Method.IsSpecialName)
+            else
             {
-                Throw();
+                // reference type or nullable value type.
+                var facadeContainer = new FacadeTypeModelProvider<NullCheckingFacadeTypeConverter<TUnderlyingType, TType, TConverter>, TUnderlyingType, TType>(model);
+                this.RegisterProvider(facadeContainer);
             }
-
-            if (methodExpr.Arguments.Count != 1 || methodExpr.Arguments[0] != lambda.Parameters[0])
-            {
-                Throw();
-            }
-
-            return methodExpr.Method;
-        }
-
-        private class ExtensionTypeModelProvider<T> : ITypeModelProvider
-        {
-            private ITypeModel<T> model;
-
-            public ExtensionTypeModelProvider(
-                ITypeModel<T> model)
-            {
-                this.model = model;
-            }
-
-            public bool TryCreateTypeModel(TypeModelContainer container, Type type, out ITypeModel typeModel)
-            {
-                if (type == typeof(T))
-                {
-                    typeModel = this.model;
-                    return true;
-                }
-
-                typeModel = null;
-                return false;
-            }
-
-            public bool TryResolveFbsAlias(TypeModelContainer container, string alias, out ITypeModel typeModel)
-            {
-                typeModel = null;
-                return false;
-            }
-        }
-
-        private class ExtensionTypeModel<T, TUnderlying> : ITypeModel<T>
-        {
-            private readonly ITypeModel<TUnderlying> underlyingModel;
-            private readonly MethodInfo toUnderlying;
-            private readonly MethodInfo fromUnderlying;
-
-            public ExtensionTypeModel(
-                MethodInfo toUnderlying,
-                MethodInfo fromUnderlying,
-                ITypeModel<TUnderlying> underlyingModel)
-            {
-                this.toUnderlying = toUnderlying;
-                this.fromUnderlying = fromUnderlying;
-                this.underlyingModel = underlyingModel;
-            }
-
-            public FlatBufferSchemaType SchemaType => this.underlyingModel.SchemaType;
-
-            public Type ClrType => typeof(T);
-
-            public ImmutableArray<PhysicalLayoutElement> PhysicalLayout => this.underlyingModel.PhysicalLayout;
-
-            public bool IsFixedSize => this.underlyingModel.IsFixedSize;
-
-            public bool IsValidStructMember => this.underlyingModel.IsValidStructMember;
-
-            public bool IsValidTableMember => this.underlyingModel.IsValidTableMember;
-
-            public bool IsValidVectorMember => this.underlyingModel.IsValidVectorMember;
-
-            public bool IsValidUnionMember => this.underlyingModel.IsValidUnionMember;
-
-            public bool IsValidSortedVectorKey => this.underlyingModel.IsValidSortedVectorKey;
-
-            public int MaxInlineSize => this.underlyingModel.MaxInlineSize;
-
-            public bool MustAlwaysSerialize => this.underlyingModel.MustAlwaysSerialize;
-
-            public bool SerializesInline => this.underlyingModel.SerializesInline;
-
-            public TableMemberModel AdjustTableMember(TableMemberModel source) => this.underlyingModel.AdjustTableMember(source);
-
-            public CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
-            {
-                string baseTypeName = CSharpHelpers.GetCompilableTypeName(this.toUnderlying.DeclaringType);
-                string methodName = this.toUnderlying.Name;
-
-                return this.underlyingModel.CreateGetMaxSizeMethodBody(
-                    context.With($"{baseTypeName}.{methodName}({context.ValueVariableName})"));
-            }
-
-            public CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
-            {
-                string baseTypeName = CSharpHelpers.GetCompilableTypeName(this.fromUnderlying.DeclaringType);
-                string methodName = this.fromUnderlying.Name;
-
-                // Parse buffer as underlying type name.
-                string parseUnderlying = context.MethodNameMap[typeof(TUnderlying)];
-
-                return new CodeGeneratedMethod
-                {
-                    MethodBody = $@"
-                        return {baseTypeName}.{methodName}(
-                            {parseUnderlying}(
-                                {context.InputBufferVariableName},
-                                {context.OffsetVariableName}));"
-                };
-            }
-
-            public CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
-            {
-                string baseTypeName = CSharpHelpers.GetCompilableTypeName(this.toUnderlying.DeclaringType);
-                string methodName = this.toUnderlying.Name;
-
-                return this.underlyingModel.CreateSerializeMethodBody(
-                    context.With(valueVariableName: $"{baseTypeName}.{methodName}({context.ValueVariableName})"));
-            }
-
-            public string GetNonNullConditionExpression(string itemVariableName)
-            {
-                bool isNullable = Nullable.GetUnderlyingType(typeof(T)) != null;
-
-                if (typeof(T).IsClass || isNullable)
-                {
-                    return $"{itemVariableName} != null";
-                }
-
-                return "true";
-            }
-
-            public string GetThrowIfNullInvocation(string itemVariableName)
-            {
-                bool isNullable = Nullable.GetUnderlyingType(typeof(T)) != null;
-
-                if (typeof(T).IsClass || isNullable)
-                {
-                    return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
-                }
-
-                return string.Empty;
-            }
-
-            public void Initialize()
-            {
-            }
-
-            public void TraverseObjectGraph(HashSet<Type> seenTypes)
-            {
-                seenTypes.Add(typeof(T));
-                seenTypes.Add(typeof(TUnderlying));
-            }
-
-            public bool TryFormatDefaultValueAsLiteral(object defaultValue, out string literal)
-            {
-                literal = null;
-                return false;
-            }
-
-            public bool TryFormatStringAsLiteral(string value, out string literal)
-            {
-                literal = null;
-                return false;
-            }
-
-            public bool TryGetSpanComparerType(out Type comparerType) => this.underlyingModel.TryGetSpanComparerType(out comparerType);
-
-            public bool TryGetTableKeyMember(out TableMemberModel tableMember) => this.underlyingModel.TryGetTableKeyMember(out tableMember);
-
-            public bool TryGetUnderlyingVectorType(out ITypeModel typeModel) => this.underlyingModel.TryGetUnderlyingVectorType(out typeModel);
-
-            public bool ValidateDefaultValue(object defaultValue) => false;
         }
 
         /// <summary>
