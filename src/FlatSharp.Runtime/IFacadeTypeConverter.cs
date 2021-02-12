@@ -32,12 +32,9 @@ namespace FlatSharp.Runtime
         TUnderlyingType ConvertToUnderlyingType(TFacadeType item);
 
         /// <summary>
-        /// Converts from the underlying type into the facade type.
+        /// Converts from the underlying type into the facade type. This method will only be invoked when the underlying type
+        /// has a non-default value.
         /// </summary>
-        /// <remarks>
-        /// When converting from a reference type of <typeparamref name="TUnderlyingType"/>, it must be assumed that null
-        /// is a valid value, and applications must guard against this.
-        /// </remarks>
-        TFacadeType ConvertFromUnderlyingType(TUnderlyingType? item);
+        TFacadeType ConvertFromUnderlyingType(TUnderlyingType item);
     }
 }
