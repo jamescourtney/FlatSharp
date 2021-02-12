@@ -91,7 +91,7 @@ namespace FlatSharp.TypeModel
             public CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
             {
                 return this.underlyingModel.CreateGetMaxSizeMethodBody(
-                    context.With(GetConvertInvocation(context.ValueVariableName)));
+                    context.With(GetConvertToUnderlyingInvocation(context.ValueVariableName)));
             }
 
             public CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
@@ -104,14 +104,14 @@ namespace FlatSharp.TypeModel
 
                 return new CodeGeneratedMethod
                 {
-                    MethodBody = $"return {GetConvertInvocation(parseInvocation)};"
+                    MethodBody = $"return {GetConvertFromUnderlyingInvocation(parseInvocation)};"
                 };
             }
 
             public CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
             {
                 return this.underlyingModel.CreateSerializeMethodBody(
-                    context.With(valueVariableName: GetConvertInvocation(context.ValueVariableName)));
+                    context.With(valueVariableName: GetConvertToUnderlyingInvocation(context.ValueVariableName)));
             }
 
             public string GetNonNullConditionExpression(string itemVariableName)
@@ -172,7 +172,13 @@ namespace FlatSharp.TypeModel
 
             public IEnumerable<Type> GetReferencedTypes() => new[] { typeof(TConverter), typeof(TType) };
 
-            private static string GetConvertInvocation(string source)
+            private static string GetConvertToUnderlyingInvocation(string source)
+            {
+                string typeName = CSharpHelpers.GetCompilableTypeName(typeof(TConverter));
+                return $"default({typeName}).{nameof(IFacadeTypeConverter<byte, byte>.ConvertToUnderlyingType)}({source})";
+            }
+
+            private static string GetConvertFromUnderlyingInvocation(string source)
             {
                 string typeName = CSharpHelpers.GetCompilableTypeName(typeof(TConverter));
                 return $"default({typeName}).{nameof(IFacadeTypeConverter<byte, byte>.ConvertFromUnderlyingType)}({source})";
