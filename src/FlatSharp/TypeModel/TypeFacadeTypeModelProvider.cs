@@ -119,11 +119,11 @@ namespace FlatSharp.TypeModel
 
             public string GetNonNullConditionExpression(string itemVariableName)
             {
-                bool isNullable = Nullable.GetUnderlyingType(typeof(TType)) != null;
+                bool isNullable = Nullable.GetUnderlyingType(this.ClrType) is not null;
 
-                if (typeof(TType).IsClass || isNullable)
+                if (this.ClrType.IsClass || isNullable)
                 {
-                    return $"{itemVariableName} != null";
+                    return $"{itemVariableName} is not null";
                 }
 
                 return "true";
@@ -131,9 +131,9 @@ namespace FlatSharp.TypeModel
 
             public string GetThrowIfNullInvocation(string itemVariableName)
             {
-                bool isNullable = Nullable.GetUnderlyingType(typeof(TType)) != null;
+                bool isNullable = Nullable.GetUnderlyingType(this.ClrType) is not null;
 
-                if (typeof(TType).IsClass || isNullable)
+                if (this.ClrType.IsClass || isNullable)
                 {
                     return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
                 }
@@ -147,7 +147,7 @@ namespace FlatSharp.TypeModel
 
             public void TraverseObjectGraph(HashSet<Type> seenTypes)
             {
-                seenTypes.Add(typeof(TType));
+                seenTypes.Add(this.ClrType);
                 seenTypes.Add(typeof(TUnderlying));
 
                 this.underlyingModel.TraverseObjectGraph(seenTypes);
@@ -173,7 +173,7 @@ namespace FlatSharp.TypeModel
 
             public bool ValidateDefaultValue(object? defaultValue) => false;
 
-            public IEnumerable<Type> GetReferencedTypes() => new[] { typeof(TConverter), typeof(TType) };
+            public IEnumerable<Type> GetReferencedTypes() => new[] { typeof(TConverter), this.ClrType };
 
             private static string GetConvertToUnderlyingInvocation(string source)
             {
