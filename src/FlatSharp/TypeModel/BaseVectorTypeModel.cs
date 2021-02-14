@@ -123,7 +123,7 @@ namespace FlatSharp.TypeModel
                 var itemContext = context.With(valueVariableName: "itemTemp");
 
                 body =
-    $@"
+                $@"
                     int length = {lengthProperty};
                     int runningSum = {VectorMinSize} + {this.MaxInlineSize};
                     for (int i = 0; i < length; ++i)

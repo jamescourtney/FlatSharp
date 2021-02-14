@@ -9,12 +9,12 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.4.0" />
-    <PackageReference Include="Microsoft.Net.Compilers" Version="3.4.0">
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.8.0" />
+    <PackageReference Include="Microsoft.Net.Compilers" Version="3.8.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="System.Memory" Version="4.5.3" />
+    <PackageReference Include="System.Memory" Version="4.5.4" />
     <PackageReference Include="NetStandard.Library" Version="2.0.3" GeneratePathProperty="true" PrivateAssets="All" />
   </ItemGroup>
 

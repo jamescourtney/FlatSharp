@@ -40,7 +40,7 @@ namespace FlatSharp.TypeModel
 
         public override bool TryGetSpanComparerType(out Type comparerType)
         {
-            comparerType = typeof(BoolSpanComparer);;
+            comparerType = typeof(BoolSpanComparer);
             return true;
         }
 
@@ -90,7 +90,7 @@ namespace FlatSharp.TypeModel
 
         public override bool TryGetSpanComparerType(out Type comparerType)
         {
-            comparerType = typeof(ByteSpanComparer);;
+            comparerType = typeof(ByteSpanComparer);
             return true;
         }
 
@@ -140,7 +140,7 @@ namespace FlatSharp.TypeModel
 
         public override bool TryGetSpanComparerType(out Type comparerType)
         {
-            comparerType = typeof(SByteSpanComparer);;
+            comparerType = typeof(SByteSpanComparer);
             return true;
         }
 
@@ -190,7 +190,7 @@ namespace FlatSharp.TypeModel
 
         public override bool TryGetSpanComparerType(out Type comparerType)
         {
-            comparerType = typeof(UShortSpanComparer);;
+            comparerType = typeof(UShortSpanComparer);
             return true;
         }
 
@@ -240,7 +240,7 @@ namespace FlatSharp.TypeModel
 
         public override bool TryGetSpanComparerType(out Type comparerType)
         {
-            comparerType = typeof(ShortSpanComparer);;
+            comparerType = typeof(ShortSpanComparer);
             return true;
         }
 
@@ -290,7 +290,7 @@ namespace FlatSharp.TypeModel
 
         public override bool TryGetSpanComparerType(out Type comparerType)
         {
-            comparerType = typeof(IntSpanComparer);;
+            comparerType = typeof(IntSpanComparer);
             return true;
         }
 
@@ -340,7 +340,7 @@ namespace FlatSharp.TypeModel
 
         public override bool TryGetSpanComparerType(out Type comparerType)
         {
-            comparerType = typeof(UIntSpanComparer);;
+            comparerType = typeof(UIntSpanComparer);
             return true;
         }
 
@@ -390,7 +390,7 @@ namespace FlatSharp.TypeModel
 
         public override bool TryGetSpanComparerType(out Type comparerType)
         {
-            comparerType = typeof(LongSpanComparer);;
+            comparerType = typeof(LongSpanComparer);
             return true;
         }
 
@@ -440,7 +440,7 @@ namespace FlatSharp.TypeModel
 
         public override bool TryGetSpanComparerType(out Type comparerType)
         {
-            comparerType = typeof(ULongSpanComparer);;
+            comparerType = typeof(ULongSpanComparer);
             return true;
         }
 
@@ -490,7 +490,7 @@ namespace FlatSharp.TypeModel
 
         public override bool TryGetSpanComparerType(out Type comparerType)
         {
-            comparerType = typeof(FloatSpanComparer);;
+            comparerType = typeof(FloatSpanComparer);
             return true;
         }
 
@@ -540,7 +540,7 @@ namespace FlatSharp.TypeModel
 
         public override bool TryGetSpanComparerType(out Type comparerType)
         {
-            comparerType = typeof(DoubleSpanComparer);;
+            comparerType = typeof(DoubleSpanComparer);
             return true;
         }
 

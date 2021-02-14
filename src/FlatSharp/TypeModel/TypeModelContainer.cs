@@ -16,12 +16,19 @@
 
 namespace FlatSharp.TypeModel
 {
+    using FlatSharp.Runtime;
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
 
     /// <summary>
-    /// A root type model provider that supports registering extensions.
+    /// A <see cref="TypeModelContainer"/> describes how FlatSharp resolves types. Each container contains 
+    /// <see cref="ITypeModelProvider"/> instances, which are capable of resolving a CLR Type
+    /// into an <see cref="ITypeModel"/> instance. A <see cref="ITypeModel"/> describes formatting
+    /// rules and implements C# methods for serializing, parsing, and computing the max size
+    /// of the type that it describes.
+    /// 
+    /// Type Models are resolved by the container in the order by which their providers were registered.
     /// </summary>
     public sealed class TypeModelContainer
     {
@@ -49,6 +56,51 @@ namespace FlatSharp.TypeModel
             container.RegisterProvider(new ScalarTypeModelProvider());
             container.RegisterProvider(new FlatSharpTypeModelProvider());
             return container;
+        }
+
+        /// <summary>
+        /// Registers a type facade for the given type. Facades are a convenience mechanism to
+        /// expose types to FlatSharp that are based on some well-known underlying type.
+        /// An example of a Facade would be a DateTimeOffset that stores its value as ticks 
+        /// in the underlying FlatBuffer. Another example of a Facade would be a Guid that stores its
+        /// value as a string or byte array.
+        /// 
+        /// The binary format of the Facade will be the same as that of the underlying type, but will allow writing
+        /// code using the Facade type.
+        /// </summary>
+        /// <typeparam name="TUnderlyingType">The underlying type.</typeparam>
+        /// <typeparam name="TFacadeType">The Facade (exposed) type.</typeparam>
+        /// <typeparam name="TConverter">The converter between <typeparamref name="TUnderlyingType"/> and <typeparamref name="TFacadeType"/>.</typeparam>
+        /// <param name="throwOnTypeConflict">
+        /// When set, throws an exception when registring a Facade for a type already resolved by this container.
+        /// It is recommended to pass 'true' as this parameter to make you aware if future versions of FlatSharp
+        /// begin supporting a type for which you have defined a facade.
+        /// </param>
+        public void RegisterTypeFacade<TUnderlyingType, TFacadeType, TConverter>(bool throwOnTypeConflict = true)
+            where TConverter : struct, ITypeFacadeConverter<TUnderlyingType, TFacadeType>
+        {
+            if (!this.TryCreateTypeModel(typeof(TUnderlyingType), out ITypeModel model))
+            {
+                throw new InvalidOperationException($"Unable to resolve type model for type '{typeof(TUnderlyingType).FullName}'.");
+            }
+
+            if (throwOnTypeConflict && this.TryCreateTypeModel(typeof(TFacadeType), out _))
+            {
+                throw new InvalidOperationException($"The Type model container already contains a type model for '{typeof(TUnderlyingType).FullName}', which may lead to unexpected behaviors.");
+            }
+
+            if (typeof(TUnderlyingType).IsValueType && Nullable.GetUnderlyingType(typeof(TUnderlyingType)) == null)
+            {
+                // non-nullable value type: omit the null check
+                var facadeContainer = new TypeFacadeTypeModelProvider<TConverter, TUnderlyingType, TFacadeType>(model);
+                this.RegisterProvider(facadeContainer);
+            }
+            else
+            {
+                // reference type or nullable value type.
+                var facadeContainer = new TypeFacadeTypeModelProvider<NullCheckingTypeFacadeConverter<TUnderlyingType, TFacadeType, TConverter>, TUnderlyingType, TFacadeType>(model);
+                this.RegisterProvider(facadeContainer);
+            }
         }
 
         /// <summary>

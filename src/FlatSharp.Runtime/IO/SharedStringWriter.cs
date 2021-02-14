@@ -84,7 +84,7 @@ namespace FlatSharp
             }
 
             var offsets = line.Offsets;
-            if (!object.ReferenceEquals(line.String, null))
+            if (line.String is not null)
             {
                 FlushSharedString(spanWriter, data, line.String, offsets, context);
             }
@@ -104,7 +104,7 @@ namespace FlatSharp
                 ref WriteCacheEntry item = ref cache[i];
                 var str = item.String;
 
-                if (!object.ReferenceEquals(str, null))
+                if (str is not null)
                 {
                     FlushSharedString(writer, data, str, item.Offsets, context);
                     item.String = null;
