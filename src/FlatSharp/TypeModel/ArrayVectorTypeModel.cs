@@ -27,6 +27,7 @@ namespace FlatSharp.TypeModel
 
         internal ArrayVectorTypeModel(Type vectorType, TypeModelContainer provider) : base(vectorType, provider)
         {
+            this.itemTypeModel = null!;
         }
 
         public override ITypeModel ItemTypeModel => this.itemTypeModel;
@@ -56,9 +57,14 @@ namespace FlatSharp.TypeModel
         {
             string body;
 
-            (string vectorClassDef, string vectorClassName) = (null, null);
+            if (this.itemTypeModel is null)
+            {
+                throw new InvalidOperationException($"Flatsharp internal error: ItemTypeModel null");
+            }
 
-            if (itemTypeModel.ClrType == typeof(byte))
+            (string vectorClassDef, string vectorClassName) = (string.Empty, string.Empty);
+
+            if (this.itemTypeModel.ClrType == typeof(byte))
             {
                 // can handle this as memory.
                 string method = nameof(InputBufferExtensions.ReadByteMemoryBlock);

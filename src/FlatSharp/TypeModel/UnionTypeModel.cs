@@ -30,6 +30,7 @@ namespace FlatSharp.TypeModel
 
         internal UnionTypeModel(Type unionType, TypeModelContainer provider) : base(unionType, provider)
         {
+            this.memberTypeModels = null!;
         }
 
         /// <summary>
@@ -40,11 +41,12 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// Unions are "double-wide" vtable items.
         /// </summary>
-        public override ImmutableArray<PhysicalLayoutElement> PhysicalLayout => new[]
-        {
-            new PhysicalLayoutElement(sizeof(byte), sizeof(byte)),
-            new PhysicalLayoutElement(sizeof(uint), sizeof(uint))
-        }.ToImmutableArray();
+        public override ImmutableArray<PhysicalLayoutElement> PhysicalLayout => 
+            new[]
+            {
+                new PhysicalLayoutElement(sizeof(byte), sizeof(byte)),
+                new PhysicalLayoutElement(sizeof(uint), sizeof(uint))
+            }.ToImmutableArray();
 
         /// <summary>
         /// Unions are not fixed because they contain tables.

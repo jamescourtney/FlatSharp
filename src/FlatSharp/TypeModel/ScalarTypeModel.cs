@@ -16,10 +16,10 @@
  
  namespace FlatSharp.TypeModel
 {
-    using Microsoft.CodeAnalysis.CSharp.Syntax;
     using System;
     using System.Collections.Generic;
     using System.Collections.Immutable;
+    using System.Diagnostics.CodeAnalysis;
 
     /// <summary>
     /// Defines a scalar FlatSharp type model.
@@ -30,8 +30,9 @@
         private readonly int size;
 
         internal ScalarTypeModel(
+            TypeModelContainer container,
             Type type,
-            int size) : base(type, null)
+            int size) : base(type, container)
         {
             this.size = size;
             this.isNullable = Nullable.GetUnderlyingType(type) != null;
@@ -95,7 +96,7 @@
         /// <summary>
         /// Force children to reimplement.
         /// </summary>
-        public abstract override bool TryGetSpanComparerType(out Type comparerType);
+        public abstract override bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType);
 
         /// <summary>
         /// Validates a default value.
@@ -176,11 +177,11 @@
             }
         }
 
-        public override bool TryFormatDefaultValueAsLiteral(object defaultValue, out string literal)
+        public override bool TryFormatDefaultValueAsLiteral(object defaultValue, [NotNullWhen(true)] out string? literal)
         {
             literal = null;
 
-            if (defaultValue.GetType() == this.ClrType)
+            if (defaultValue?.GetType() == this.ClrType)
             {
                 literal = $"({CSharpHelpers.GetCompilableTypeName(this.ClrType)})({defaultValue})";
                 return true;

@@ -17,6 +17,7 @@
 namespace FlatSharp.TypeModel
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
 
     /// <summary>
     /// Provides a type model to FlatSharp.
@@ -26,11 +27,17 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// Creates a type model for the given type.
         /// </summary>
-        bool TryCreateTypeModel(TypeModelContainer container, Type type, out ITypeModel typeModel);
+        bool TryCreateTypeModel(
+            TypeModelContainer container, 
+            Type type,
+            [NotNullWhen(true)] out ITypeModel? typeModel);
 
         /// <summary>
         /// Attempts to resolve the given alias from an FBS schema as a type model element.
         /// </summary>
-        bool TryResolveFbsAlias(TypeModelContainer container, string alias, out ITypeModel typeModel);
+        bool TryResolveFbsAlias(
+            TypeModelContainer container, 
+            string alias,
+            [NotNullWhen(true)] out ITypeModel? typeModel);
     }
 }

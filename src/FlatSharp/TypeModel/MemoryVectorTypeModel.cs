@@ -28,6 +28,7 @@ namespace FlatSharp.TypeModel
 
         internal MemoryVectorTypeModel(Type vectorType, TypeModelContainer provider) : base(vectorType, provider)
         {
+            this.itemTypeModel = null!;
         }
 
         /// <summary>
@@ -47,7 +48,7 @@ namespace FlatSharp.TypeModel
             }
 
             this.isReadOnly = this.ClrType == typeof(ReadOnlyMemory<byte>);
-            this.itemTypeModel = new ByteTypeModel();
+            this.itemTypeModel = new ByteTypeModel(this.typeModelContainer);
         }
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)

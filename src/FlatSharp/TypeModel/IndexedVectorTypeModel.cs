@@ -30,6 +30,9 @@ namespace FlatSharp.TypeModel
 
         internal IndexedVectorTypeModel(Type vectorType, TypeModelContainer provider) : base(vectorType, provider)
         {
+            this.keyTypeModel = null!;
+            this.valueTypeModel = null!;
+            this.keyMemberModel = null!;
         }
 
         public override ITypeModel ItemTypeModel => this.valueTypeModel;
@@ -56,10 +59,14 @@ namespace FlatSharp.TypeModel
                     $"Dictionary vector keys must be flatbuffer tables. Type = '{this.valueTypeModel.SchemaType}'");
             }
 
-            if (!this.valueTypeModel.TryGetTableKeyMember(out this.keyMemberModel) || this.keyMemberModel == null)
+            if (!this.valueTypeModel.TryGetTableKeyMember(out TableMemberModel? tempKeyMemberModel))
             {
                 throw new InvalidFlatBufferDefinitionException(
                     $"Dictionary vector values must have a key property defined. Table = '{this.valueTypeModel.ClrType.FullName}'");
+            }
+            else
+            {
+                this.keyMemberModel = tempKeyMemberModel;
             }
 
             if (!this.keyMemberModel.ItemTypeModel.TryGetSpanComparerType(out _))
@@ -82,7 +89,6 @@ namespace FlatSharp.TypeModel
                 source.ItemTypeModel,
                 source.PropertyInfo,
                 source.Index,
-                source.HasDefaultValue,
                 source.DefaultValue,
                 isSortedVector: true,
                 source.IsKey);
@@ -166,6 +172,7 @@ namespace FlatSharp.TypeModel
         public override void TraverseObjectGraph(HashSet<Type> seenTypes)
         {
             seenTypes.Add(this.ClrType);
+
             if (seenTypes.Add(this.keyTypeModel.ClrType))
             {
                 this.keyTypeModel.TraverseObjectGraph(seenTypes);

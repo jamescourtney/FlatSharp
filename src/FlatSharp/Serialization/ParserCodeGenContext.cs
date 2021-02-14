@@ -47,7 +47,7 @@ namespace FlatSharp
             this.Options = other.Options;
         }
 
-        public ParserCodeGenContext With(string offset = null, string inputBuffer = null)
+        public ParserCodeGenContext With(string? offset = null, string? inputBuffer = null)
         {
             ParserCodeGenContext context = new ParserCodeGenContext(this);
             context.OffsetVariableName = offset ?? this.OffsetVariableName;

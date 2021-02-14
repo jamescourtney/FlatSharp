@@ -29,6 +29,7 @@ namespace FlatSharp.TypeModel
 
         internal ListVectorTypeModel(Type vectorType, TypeModelContainer provider) : base(vectorType, provider)
         {
+            this.itemTypeModel = null!;
         }
 
         public override ITypeModel ItemTypeModel => this.itemTypeModel;

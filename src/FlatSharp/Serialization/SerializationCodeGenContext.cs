@@ -54,56 +54,56 @@ namespace FlatSharp
         }
 
         public SerializationCodeGenContext With(
-            string serializationContextVariableName = null,
-            string spanWriterVariableName = null,
-            string spanVariableName = null,
-            string valueVariableName = null,
-            string offsetVariableName = null)
+            string? serializationContextVariableName = null,
+            string? spanWriterVariableName = null,
+            string? spanVariableName = null,
+            string? valueVariableName = null,
+            string? offsetVariableName = null)
         {
-            var result = new SerializationCodeGenContext(this);
-            result.SerializationContextVariableName = serializationContextVariableName ?? result.SerializationContextVariableName;
-            result.SpanWriterVariableName = spanWriterVariableName ?? result.SpanWriterVariableName;
-            result.SpanVariableName = spanVariableName ?? result.SpanVariableName;
-            result.ValueVariableName = valueVariableName ?? result.ValueVariableName;
-            result.OffsetVariableName = offsetVariableName ?? result.OffsetVariableName;
-
-            return result;
+            return new SerializationCodeGenContext(this)
+            {
+                SerializationContextVariableName = serializationContextVariableName ?? this.SerializationContextVariableName,
+                SpanWriterVariableName = spanWriterVariableName ?? this.SpanWriterVariableName,
+                SpanVariableName = spanVariableName ?? this.SpanVariableName,
+                ValueVariableName = valueVariableName ?? this.ValueVariableName,
+                OffsetVariableName = offsetVariableName ?? this.OffsetVariableName,
+            };
         }
 
         /// <summary>
         /// The variable name of the serialization context. Represents a <see cref="SerializationContext"/> value.
         /// </summary>
-        public string SerializationContextVariableName { get; private set; }
+        public string SerializationContextVariableName { get; private init; }
 
         /// <summary>
         /// The variable name of the span. Represents a <see cref="System.Span{System.Byte}"/> value.
         /// </summary>
-        public string SpanVariableName { get; private set; }
+        public string SpanVariableName { get; private init; }
 
         /// <summary>
         /// The variable name of the span writer. Represents a <see cref="SpanWriter"/> value.
         /// </summary>
-        public string SpanWriterVariableName { get; private set; }
+        public string SpanWriterVariableName { get; private init; }
 
         /// <summary>
         /// The variable name of the current value to serialize.
         /// </summary>
-        public string ValueVariableName { get; private set; }
+        public string ValueVariableName { get; private init; }
 
         /// <summary>
         /// The variable name of the offset in the span. Represents a <see cref="Int32"/> value.
         /// </summary>
-        public string OffsetVariableName { get; private set; }
+        public string OffsetVariableName { get; private init; }
 
         /// <summary>
         /// A mapping of type to serialize method name for that type.
         /// </summary>
-        public IReadOnlyDictionary<Type, string> MethodNameMap { get; private set; }
+        public IReadOnlyDictionary<Type, string> MethodNameMap { get; private init; }
 
         /// <summary>
         /// Serialization options.
         /// </summary>
-        public FlatBufferSerializerOptions Options { get; private set; }
+        public FlatBufferSerializerOptions Options { get; private init; }
 
         /// <summary>
         /// Gets a serialization invocation for the given type.

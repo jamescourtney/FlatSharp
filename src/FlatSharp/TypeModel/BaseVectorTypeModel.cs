@@ -19,6 +19,7 @@ namespace FlatSharp.TypeModel
     using System;
     using System.Collections.Generic;
     using System.Collections.Immutable;
+    using System.Diagnostics.CodeAnalysis;
 
     /// <summary>
     /// Defines a vector type model.
@@ -102,14 +103,14 @@ namespace FlatSharp.TypeModel
             }
         }
 
-        public override bool TryGetUnderlyingVectorType(out ITypeModel typeModel)
+        public override bool TryGetUnderlyingVectorType([NotNullWhen(true)] out ITypeModel? typeModel)
         {
             typeModel = this.ItemTypeModel;
             return true;
         }
 
         public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
-        {            
+        {
             string lengthProperty = $"{context.ValueVariableName}.{this.LengthPropertyName}";
 
             string body;
@@ -170,6 +171,7 @@ namespace FlatSharp.TypeModel
 
         public sealed override void Initialize()
         {
+            base.Initialize();
             this.OnInitialize();
 
             if (this.ItemTypeModel.PhysicalLayout.Length != 1)

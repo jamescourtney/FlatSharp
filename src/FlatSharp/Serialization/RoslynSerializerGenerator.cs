@@ -244,7 +244,7 @@ $@"
                 ms.Position = 0;
                 byte[] assemblyData = ms.ToArray();
 
-                ResolveEventHandler handler = null;
+                ResolveEventHandler? handler = null;
                 if (enableAppDomainIntercept)
                 {
                     handler = (s, e) =>
@@ -269,7 +269,7 @@ $@"
                 }
                 finally
                 {
-                    if (handler != null)
+                    if (handler is not null)
                     {
                         AppDomain.CurrentDomain.AssemblyResolve -= handler;
                     }

@@ -28,12 +28,10 @@
             ITypeModel propertyModel, 
             PropertyInfo propertyInfo, 
             ushort index, 
-            bool hasDefaultValue,
-            object defaultValue,
+            object? defaultValue,
             bool isSortedVector,
             bool isKey) : base(propertyModel, propertyInfo, index)
         {
-            this.HasDefaultValue = hasDefaultValue;
             this.DefaultValue = defaultValue;
             this.IsSortedVector = isSortedVector;
             this.IsKey = isKey;
@@ -42,8 +40,8 @@
             {
                 throw new InvalidFlatBufferDefinitionException($"Table property {propertyInfo.Name} with type {propertyInfo.PropertyType.Name} cannot be part of a flatbuffer table.");
             }
-            
-            if (this.HasDefaultValue && !propertyModel.ValidateDefaultValue(this.DefaultValue))
+
+            if (this.DefaultValue is not null && !propertyModel.ValidateDefaultValue(this.DefaultValue))
             {
                 throw new InvalidFlatBufferDefinitionException($"Table property {propertyInfo.Name} declared default value of type {propertyModel.ClrType.Name}, but the value was of type {defaultValue?.GetType()?.Name}. Please ensure that the property is allowed to have a default value and that the types match.");
             }
@@ -52,12 +50,7 @@
         /// <summary>
         /// The default value of the table member.
         /// </summary>
-        public object DefaultValue { get; }
-
-        /// <summary>
-        /// Indicates if this member type has a default value at all. Only valid for tables.
-        /// </summary>
-        public bool HasDefaultValue { get; }
+        public object? DefaultValue { get; }
 
         /// <summary>
         /// Indicates if the member vector should be sorted before serializing.
@@ -73,8 +66,8 @@
         {
             get
             {
-                string defaultValue = $"default({CSharpHelpers.GetCompilableTypeName(this.ItemTypeModel.ClrType)})";
-                if (this.HasDefaultValue)
+                string? defaultValue = $"default({CSharpHelpers.GetCompilableTypeName(this.ItemTypeModel.ClrType)})";
+                if (this.DefaultValue is not null)
                 {
                     if (!this.ItemTypeModel.TryFormatDefaultValueAsLiteral(this.DefaultValue, out defaultValue))
                     {

@@ -87,12 +87,7 @@ namespace FlatSharp
             return false;
         }
 
-        public bool TryGetValue(
-            TKey key,
-#if NETSTANDARD2_1
-            [NotNullWhen(true)]
-#endif
-            out TValue? value)
+        public bool TryGetValue(TKey key, [NotNullWhen(true)] out TValue? value)
         {
             value = this.vector.BinarySearchByFlatBufferKey(key);
             return value is not null;

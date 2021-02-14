@@ -113,21 +113,19 @@
                     PropertyInfo propertyInfo = value.PropertyInfo;
                     Type propertyType = propertyInfo.PropertyType;
 
-                    GeneratedProperty generatedProperty = new GeneratedProperty(context.Options, index, value);
-
+                    // These are always inline as they are only invoked from one place.
                     var propContext = context.With(offset: $"({context.OffsetVariableName} + {value.Offset})", inputBuffer: "buffer");
 
-                    // These are always inline as they are only invoked from one place.
-                    generatedProperty.ReadValueMethodDefinition =
+                    string readValueMethod =
 $@"
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {generatedProperty.ReadValueMethodName}({context.InputBufferTypeName} buffer, int offset)
+                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {GeneratedProperty.GetReadValueMethodName(index)}({context.InputBufferTypeName} buffer, int offset)
                     {{
                         return {propContext.GetParseInvocation(propertyType)};
                     }}
 ";
 
-                    propertyOverrides.Add(generatedProperty);
+                    propertyOverrides.Add(new GeneratedProperty(context.Options, index, value, readValueMethod));
                 }
 
                 classDefinition = CSharpHelpers.CreateDeserializeClass(

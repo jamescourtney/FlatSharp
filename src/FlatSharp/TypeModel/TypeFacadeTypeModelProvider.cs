@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-#nullable enable
-
 namespace FlatSharp.TypeModel
 {
     using FlatSharp.Runtime;
     using System;
     using System.Collections.Generic;
     using System.Collections.Immutable;
+    using System.Diagnostics.CodeAnalysis;
 
     /// <summary>
     /// A type model provider for a Type Facade.
@@ -37,7 +36,7 @@ namespace FlatSharp.TypeModel
             this.model = new TypeFacadeTypeModel(underlyingModel);
         }
 
-        public bool TryCreateTypeModel(TypeModelContainer container, Type type, out ITypeModel? typeModel)
+        public bool TryCreateTypeModel(TypeModelContainer container, Type type, [NotNullWhen(true)] out ITypeModel? typeModel)
         {
             if (type == typeof(TType))
             {
@@ -49,7 +48,7 @@ namespace FlatSharp.TypeModel
             return false;
         }
 
-        public bool TryResolveFbsAlias(TypeModelContainer container, string alias, out ITypeModel? typeModel)
+        public bool TryResolveFbsAlias(TypeModelContainer container, string alias, [NotNullWhen(true)] out ITypeModel? typeModel)
         {
             typeModel = null;
             return false;
@@ -153,23 +152,26 @@ namespace FlatSharp.TypeModel
                 this.underlyingModel.TraverseObjectGraph(seenTypes);
             }
 
-            public bool TryFormatDefaultValueAsLiteral(object defaultValue, out string? literal)
+            public bool TryFormatDefaultValueAsLiteral(object defaultValue, [NotNullWhen(true)] out string? literal)
             {
                 literal = null;
                 return false;
             }
 
-            public bool TryFormatStringAsLiteral(string value, out string? literal)
+            public bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
             {
                 literal = null;
                 return false;
             }
 
-            public bool TryGetSpanComparerType(out Type? comparerType) => this.underlyingModel.TryGetSpanComparerType(out comparerType);
+            public bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType) 
+                => this.underlyingModel.TryGetSpanComparerType(out comparerType);
 
-            public bool TryGetTableKeyMember(out TableMemberModel? tableMember) => this.underlyingModel.TryGetTableKeyMember(out tableMember);
+            public bool TryGetTableKeyMember([NotNullWhen(true)] out TableMemberModel? tableMember) 
+                => this.underlyingModel.TryGetTableKeyMember(out tableMember);
 
-            public bool TryGetUnderlyingVectorType(out ITypeModel? typeModel) => this.underlyingModel.TryGetUnderlyingVectorType(out typeModel);
+            public bool TryGetUnderlyingVectorType([NotNullWhen(true)] out ITypeModel? typeModel) 
+                => this.underlyingModel.TryGetUnderlyingVectorType(out typeModel);
 
             public bool ValidateDefaultValue(object? defaultValue) => false;
 

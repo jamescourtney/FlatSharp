@@ -19,6 +19,7 @@
     using System;
     using System.Collections.Generic;
     using System.Collections.Immutable;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Reflection;
     using FlatSharp.Attributes;
@@ -43,6 +44,7 @@
 
         internal TableTypeModel(Type clrType, TypeModelContainer typeModelProvider) : base(clrType, typeModelProvider)
         {
+            this.DefaultConstructor = null!;
         }
 
         /// <summary>
@@ -108,7 +110,7 @@
         /// <summary>
         /// The property type used as a key.
         /// </summary>
-        public TableMemberModel KeyMember { get; private set; }
+        public TableMemberModel? KeyMember { get; private set; }
         
         /// <summary>
         /// Gets the maximum size of a table assuming all members are populated include the vtable offset. 
@@ -156,15 +158,6 @@
 
             foreach (var property in properties)
             {
-                bool hasDefaultValue = false;
-                object defaultValue = null;
-
-                if (property.Attribute.DefaultValue is not null)
-                {
-                    hasDefaultValue = true;
-                    defaultValue = property.Attribute.DefaultValue;
-                }
-
                 ushort index = property.Attribute.Index;
                 maxIndex = Math.Max(index, maxIndex);
 
@@ -172,8 +165,7 @@
                     property.ItemTypeModel,
                     property.Property,
                     index,
-                    hasDefaultValue,
-                    defaultValue,
+                    property.Attribute.DefaultValue,
                     property.Attribute.SortedVector,
                     property.Attribute.Key);
 
@@ -222,7 +214,7 @@
                     throw new InvalidFlatBufferDefinitionException($"Property '{model.PropertyInfo.Name}' declares the sortedVector option, but the underlying type was not a vector.");
                 }
 
-                if (!model.ItemTypeModel.TryGetUnderlyingVectorType(out ITypeModel memberTypeModel))
+                if (!model.ItemTypeModel.TryGetUnderlyingVectorType(out ITypeModel? memberTypeModel))
                 {
                     throw new InvalidFlatBufferDefinitionException($"Property '{model.PropertyInfo.Name}' declares the sortedVector option, but the underlying type model did not report the underlying vector type.");
                 }
@@ -232,7 +224,7 @@
                     throw new InvalidFlatBufferDefinitionException($"Property '{model.PropertyInfo.Name}' declares a sorted vector, but the member is not a table. Type = {model.ItemTypeModel?.ClrType.FullName}.");
                 }
 
-                if (!memberTypeModel.TryGetTableKeyMember(out TableMemberModel member))
+                if (!memberTypeModel.TryGetTableKeyMember(out TableMemberModel? member))
                 {
                     throw new InvalidFlatBufferDefinitionException($"Property '{model.PropertyInfo.Name}' declares a sorted vector, but the member does not have a key defined. Type = {model.ItemTypeModel?.ClrType.FullName}.");
                 }
@@ -383,14 +375,14 @@ $@"
             string sortInvocation = string.Empty;
             if (memberModel.IsSortedVector)
             {
-                if (!memberModel.ItemTypeModel.TryGetUnderlyingVectorType(out ITypeModel tableModel) ||
-                    !tableModel.TryGetTableKeyMember(out TableMemberModel keyMember) ||
-                    !keyMember.ItemTypeModel.TryGetSpanComparerType(out Type spanComparerType) ||
+                if (!memberModel.ItemTypeModel.TryGetUnderlyingVectorType(out ITypeModel? tableModel) ||
+                    !tableModel.TryGetTableKeyMember(out TableMemberModel? keyMember) ||
+                    !keyMember.ItemTypeModel.TryGetSpanComparerType(out Type? spanComparerType) ||
                     keyMember.ItemTypeModel.PhysicalLayout.Length != 1)
                 {
                     string vtm = memberModel.ItemTypeModel.ClrType.FullName;
-                    string ttm = tableModel?.GetType().FullName;
-                    string ttn = tableModel?.ClrType.FullName;
+                    string? ttm = tableModel?.GetType().FullName;
+                    string? ttn = tableModel?.ClrType.FullName;
 
                     throw new InvalidOperationException($"Internal error: Validation failed when writing sorted vector. VTM={vtm}, TTM={ttm}, TTN={ttn}");
                 }
@@ -493,13 +485,12 @@ $@"
             ParserCodeGenContext context)
         {
             Type propertyType = memberModel.ItemTypeModel.ClrType;
-            GeneratedProperty property = new GeneratedProperty(context.Options, index, memberModel);
 
             // These are always inline as they are only invoked from one place.
-            property.ReadValueMethodDefinition =
+            var methodDefinition =
 $@"
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {property.ReadValueMethodName}({context.InputBufferTypeName} buffer, int offset)
+                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {GeneratedProperty.GetReadValueMethodName(index)}({context.InputBufferTypeName} buffer, int offset)
                     {{
                         int absoluteLocation = buffer.{nameof(InputBufferExtensions.GetAbsoluteTableFieldLocation)}(offset, {index});
                         if (absoluteLocation == 0) {{
@@ -511,7 +502,7 @@ $@"
                     }}
 ";
 
-            return property;
+            return new GeneratedProperty(context.Options, index, memberModel, methodDefinition);
         }
 
         private static GeneratedProperty CreateWideTableProperty(
@@ -522,7 +513,6 @@ $@"
             const string FirstLocationVariableName = "firstLocation";
 
             Type propertyType = memberModel.ItemTypeModel.ClrType;
-            GeneratedProperty property = new GeneratedProperty(context.Options, index, memberModel);
 
             List<string> locationGetters = new List<string> { FirstLocationVariableName };
             for (int i = 1; i < memberModel.ItemTypeModel.PhysicalLayout.Length; ++i)
@@ -531,10 +521,10 @@ $@"
             }
 
             // These are always inline as they are only invoked from one place.
-            property.ReadValueMethodDefinition =
+            var methodDefinition =
 $@"
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {property.ReadValueMethodName}({context.InputBufferTypeName} buffer, int offset)
+                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {GeneratedProperty.GetReadValueMethodName(index)}({context.InputBufferTypeName} buffer, int offset)
                     {{
                         int {FirstLocationVariableName} = buffer.{nameof(InputBufferExtensions.GetAbsoluteTableFieldLocation)}(offset, {index});
                         if ({FirstLocationVariableName} == 0)
@@ -547,7 +537,7 @@ $@"
                     }}
 ";
 
-            return property;
+            return new GeneratedProperty(context.Options, index, memberModel, methodDefinition);
         }
 
         public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
@@ -603,7 +593,7 @@ $@"
             return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
         }
 
-        public override bool TryGetTableKeyMember(out TableMemberModel tableMember)
+        public override bool TryGetTableKeyMember([NotNullWhen(true)] out TableMemberModel? tableMember)
         {
             tableMember = this.KeyMember;
             return tableMember != null;

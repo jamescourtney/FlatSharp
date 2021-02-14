@@ -24,12 +24,12 @@ namespace FlatSharp
         /// <summary>
         /// The body of the method.
         /// </summary>
-        public string MethodBody { get; set; }
+        public string? MethodBody { get; set; }
 
         /// <summary>
         /// A class definition.
         /// </summary>
-        public string ClassDefinition { get; set; }
+        public string? ClassDefinition { get; set; }
 
         /// <summary>
         /// Indicates if the method should be marked with aggressive inlining.

@@ -61,9 +61,10 @@ namespace FlatSharp
             PropertyInfo property)
         {
             var getTuple = GetAccessModifier(property.GetMethod);
-            if (property.SetMethod == null)
+
+            if (property.SetMethod is null)
             {
-                return (getTuple.modifier, string.Empty, null);
+                return (getTuple.modifier, string.Empty, string.Empty);
             }
 
             var setTuple = GetAccessModifier(property.SetMethod);

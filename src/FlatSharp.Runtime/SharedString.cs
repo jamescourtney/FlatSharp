@@ -34,9 +34,7 @@ namespace FlatSharp
             this.str = str;
         }
 
-#if NETSTANDARD2_1
         [return: NotNullIfNotNull("str")]
-#endif
         public static SharedString? Create(string? str)
         {
             if (str is null)
@@ -102,14 +100,10 @@ namespace FlatSharp
 
         public static bool operator !=(string? x, SharedString? y) => !(x == y);
 
-#if NETSTANDARD2_1
         [return: NotNullIfNotNull("sharedString")]
-#endif
         public static implicit operator string?(SharedString? sharedString) => sharedString?.str;
 
-#if NETSTANDARD2_1
         [return: NotNullIfNotNull("x")]
-#endif
         public static implicit operator SharedString?(string? x) => SharedString.Create(x);
 
         internal static bool StaticEquals(SharedString? x, SharedString? y)

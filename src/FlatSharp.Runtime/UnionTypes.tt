@@ -82,11 +82,7 @@ namespace FlatSharp
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T<#= genericType #>? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T<#= genericType #>? item)
 				{
 					item = default;
 					if (this.discriminator == <#= genericType #>)

@@ -20,6 +20,7 @@ namespace FlatSharp.TypeModel
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
 
     /// <summary>
     /// A <see cref="TypeModelContainer"/> describes how FlatSharp resolves types. Each container contains 
@@ -79,7 +80,7 @@ namespace FlatSharp.TypeModel
         public void RegisterTypeFacade<TUnderlyingType, TFacadeType, TConverter>(bool throwOnTypeConflict = true)
             where TConverter : struct, ITypeFacadeConverter<TUnderlyingType, TFacadeType>
         {
-            if (!this.TryCreateTypeModel(typeof(TUnderlyingType), out ITypeModel model))
+            if (!this.TryCreateTypeModel(typeof(TUnderlyingType), out ITypeModel? model))
             {
                 throw new InvalidOperationException($"Unable to resolve type model for type '{typeof(TUnderlyingType).FullName}'.");
             }
@@ -116,13 +117,18 @@ namespace FlatSharp.TypeModel
         /// </summary>
         public void RegisterProvider(ITypeModelProvider provider)
         {
+            if (provider is null)
+            {
+                throw new ArgumentNullException(nameof(provider));
+            }
+
             this.providers.Add(provider);
         }
 
         /// <summary>
         /// Attempts to resolve a type model from the given type.
         /// </summary>
-        public bool TryCreateTypeModel(Type type, out ITypeModel typeModel)
+        public bool TryCreateTypeModel(Type type, [NotNullWhen(true)] out ITypeModel? typeModel)
         {
             if (this.cache.TryGetValue(type, out typeModel))
             {
@@ -161,7 +167,7 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// Attempts to resolve a type model from the given FBS type alias.
         /// </summary>
-        public bool TryResolveFbsAlias(string alias, out ITypeModel typeModel)
+        public bool TryResolveFbsAlias(string alias, [NotNullWhen(true)] out ITypeModel? typeModel)
         {
             typeModel = null;
 

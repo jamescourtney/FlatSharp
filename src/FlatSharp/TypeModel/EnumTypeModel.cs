@@ -20,6 +20,7 @@
     using System;
     using System.Collections.Generic;
     using System.Collections.Immutable;
+    using System.Diagnostics.CodeAnalysis;
     using System.Reflection;
 
     /// <summary>
@@ -31,6 +32,7 @@
 
         internal EnumTypeModel(Type type, TypeModelContainer typeModelContainer) : base(type, typeModelContainer)
         {
+            this.underlyingTypeModel = null!;
         }
 
         public override void Initialize()
@@ -126,7 +128,7 @@
             return "true";
         }
 
-        public override bool TryFormatDefaultValueAsLiteral(object defaultValue, out string literal)
+        public override bool TryFormatDefaultValueAsLiteral(object defaultValue, [NotNullWhen(true)] out string? literal)
         {
             if (this.underlyingTypeModel.TryFormatDefaultValueAsLiteral(Convert.ChangeType(defaultValue, this.underlyingTypeModel.ClrType), out literal))
             {

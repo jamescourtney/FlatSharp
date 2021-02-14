@@ -41,7 +41,7 @@ namespace FlatSharp
         /// <summary>
         /// Gets a new context with the value variable name overridden.
         /// </summary>
-        public GetMaxSizeCodeGenContext With(string valueVariableName = null)
+        public GetMaxSizeCodeGenContext With(string? valueVariableName = null)
         {
             var item = new GetMaxSizeCodeGenContext(this);
             item.ValueVariableName = valueVariableName ?? this.ValueVariableName;

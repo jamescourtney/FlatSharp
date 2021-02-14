@@ -63,11 +63,7 @@ namespace FlatSharp
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T1? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
 					item = default;
 					if (this.discriminator == 1)
@@ -215,11 +211,7 @@ namespace FlatSharp
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T1? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
 					item = default;
 					if (this.discriminator == 1)
@@ -247,11 +239,7 @@ namespace FlatSharp
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T2? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
 					item = default;
 					if (this.discriminator == 2)
@@ -439,11 +427,7 @@ System.Func<TState, T2, TResult> case2)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T1? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
 					item = default;
 					if (this.discriminator == 1)
@@ -471,11 +455,7 @@ System.Func<TState, T2, TResult> case2)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T2? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
 					item = default;
 					if (this.discriminator == 2)
@@ -503,11 +483,7 @@ System.Func<TState, T2, TResult> case2)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T3? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
 					item = default;
 					if (this.discriminator == 3)
@@ -735,11 +711,7 @@ System.Func<TState, T3, TResult> case3)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T1? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
 					item = default;
 					if (this.discriminator == 1)
@@ -767,11 +739,7 @@ System.Func<TState, T3, TResult> case3)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T2? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
 					item = default;
 					if (this.discriminator == 2)
@@ -799,11 +767,7 @@ System.Func<TState, T3, TResult> case3)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T3? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
 					item = default;
 					if (this.discriminator == 3)
@@ -831,11 +795,7 @@ System.Func<TState, T3, TResult> case3)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T4? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
 					item = default;
 					if (this.discriminator == 4)
@@ -1103,11 +1063,7 @@ System.Func<TState, T4, TResult> case4)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T1? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
 					item = default;
 					if (this.discriminator == 1)
@@ -1135,11 +1091,7 @@ System.Func<TState, T4, TResult> case4)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T2? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
 					item = default;
 					if (this.discriminator == 2)
@@ -1167,11 +1119,7 @@ System.Func<TState, T4, TResult> case4)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T3? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
 					item = default;
 					if (this.discriminator == 3)
@@ -1199,11 +1147,7 @@ System.Func<TState, T4, TResult> case4)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T4? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
 					item = default;
 					if (this.discriminator == 4)
@@ -1231,11 +1175,7 @@ System.Func<TState, T4, TResult> case4)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T5? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
 					item = default;
 					if (this.discriminator == 5)
@@ -1543,11 +1483,7 @@ System.Func<TState, T5, TResult> case5)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T1? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
 					item = default;
 					if (this.discriminator == 1)
@@ -1575,11 +1511,7 @@ System.Func<TState, T5, TResult> case5)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T2? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
 					item = default;
 					if (this.discriminator == 2)
@@ -1607,11 +1539,7 @@ System.Func<TState, T5, TResult> case5)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T3? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
 					item = default;
 					if (this.discriminator == 3)
@@ -1639,11 +1567,7 @@ System.Func<TState, T5, TResult> case5)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T4? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
 					item = default;
 					if (this.discriminator == 4)
@@ -1671,11 +1595,7 @@ System.Func<TState, T5, TResult> case5)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T5? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
 					item = default;
 					if (this.discriminator == 5)
@@ -1703,11 +1623,7 @@ System.Func<TState, T5, TResult> case5)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T6? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
 					item = default;
 					if (this.discriminator == 6)
@@ -2055,11 +1971,7 @@ System.Func<TState, T6, TResult> case6)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T1? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
 					item = default;
 					if (this.discriminator == 1)
@@ -2087,11 +1999,7 @@ System.Func<TState, T6, TResult> case6)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T2? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
 					item = default;
 					if (this.discriminator == 2)
@@ -2119,11 +2027,7 @@ System.Func<TState, T6, TResult> case6)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T3? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
 					item = default;
 					if (this.discriminator == 3)
@@ -2151,11 +2055,7 @@ System.Func<TState, T6, TResult> case6)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T4? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
 					item = default;
 					if (this.discriminator == 4)
@@ -2183,11 +2083,7 @@ System.Func<TState, T6, TResult> case6)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T5? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
 					item = default;
 					if (this.discriminator == 5)
@@ -2215,11 +2111,7 @@ System.Func<TState, T6, TResult> case6)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T6? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
 					item = default;
 					if (this.discriminator == 6)
@@ -2247,11 +2139,7 @@ System.Func<TState, T6, TResult> case6)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T7? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
 					item = default;
 					if (this.discriminator == 7)
@@ -2639,11 +2527,7 @@ System.Func<TState, T7, TResult> case7)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T1? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
 					item = default;
 					if (this.discriminator == 1)
@@ -2671,11 +2555,7 @@ System.Func<TState, T7, TResult> case7)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T2? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
 					item = default;
 					if (this.discriminator == 2)
@@ -2703,11 +2583,7 @@ System.Func<TState, T7, TResult> case7)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T3? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
 					item = default;
 					if (this.discriminator == 3)
@@ -2735,11 +2611,7 @@ System.Func<TState, T7, TResult> case7)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T4? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
 					item = default;
 					if (this.discriminator == 4)
@@ -2767,11 +2639,7 @@ System.Func<TState, T7, TResult> case7)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T5? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
 					item = default;
 					if (this.discriminator == 5)
@@ -2799,11 +2667,7 @@ System.Func<TState, T7, TResult> case7)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T6? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
 					item = default;
 					if (this.discriminator == 6)
@@ -2831,11 +2695,7 @@ System.Func<TState, T7, TResult> case7)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T7? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
 					item = default;
 					if (this.discriminator == 7)
@@ -2863,11 +2723,7 @@ System.Func<TState, T7, TResult> case7)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T8? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
 					item = default;
 					if (this.discriminator == 8)
@@ -3295,11 +3151,7 @@ System.Func<TState, T8, TResult> case8)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T1? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
 					item = default;
 					if (this.discriminator == 1)
@@ -3327,11 +3179,7 @@ System.Func<TState, T8, TResult> case8)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T2? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
 					item = default;
 					if (this.discriminator == 2)
@@ -3359,11 +3207,7 @@ System.Func<TState, T8, TResult> case8)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T3? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
 					item = default;
 					if (this.discriminator == 3)
@@ -3391,11 +3235,7 @@ System.Func<TState, T8, TResult> case8)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T4? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
 					item = default;
 					if (this.discriminator == 4)
@@ -3423,11 +3263,7 @@ System.Func<TState, T8, TResult> case8)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T5? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
 					item = default;
 					if (this.discriminator == 5)
@@ -3455,11 +3291,7 @@ System.Func<TState, T8, TResult> case8)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T6? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
 					item = default;
 					if (this.discriminator == 6)
@@ -3487,11 +3319,7 @@ System.Func<TState, T8, TResult> case8)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T7? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
 					item = default;
 					if (this.discriminator == 7)
@@ -3519,11 +3347,7 @@ System.Func<TState, T8, TResult> case8)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T8? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
 					item = default;
 					if (this.discriminator == 8)
@@ -3551,11 +3375,7 @@ System.Func<TState, T8, TResult> case8)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T9? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
 					item = default;
 					if (this.discriminator == 9)
@@ -4023,11 +3843,7 @@ System.Func<TState, T9, TResult> case9)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T1? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
 					item = default;
 					if (this.discriminator == 1)
@@ -4055,11 +3871,7 @@ System.Func<TState, T9, TResult> case9)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T2? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
 					item = default;
 					if (this.discriminator == 2)
@@ -4087,11 +3899,7 @@ System.Func<TState, T9, TResult> case9)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T3? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
 					item = default;
 					if (this.discriminator == 3)
@@ -4119,11 +3927,7 @@ System.Func<TState, T9, TResult> case9)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T4? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
 					item = default;
 					if (this.discriminator == 4)
@@ -4151,11 +3955,7 @@ System.Func<TState, T9, TResult> case9)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T5? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
 					item = default;
 					if (this.discriminator == 5)
@@ -4183,11 +3983,7 @@ System.Func<TState, T9, TResult> case9)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T6? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
 					item = default;
 					if (this.discriminator == 6)
@@ -4215,11 +4011,7 @@ System.Func<TState, T9, TResult> case9)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T7? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
 					item = default;
 					if (this.discriminator == 7)
@@ -4247,11 +4039,7 @@ System.Func<TState, T9, TResult> case9)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T8? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
 					item = default;
 					if (this.discriminator == 8)
@@ -4279,11 +4067,7 @@ System.Func<TState, T9, TResult> case9)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T9? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
 					item = default;
 					if (this.discriminator == 9)
@@ -4311,11 +4095,7 @@ System.Func<TState, T9, TResult> case9)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T10? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
 					item = default;
 					if (this.discriminator == 10)
@@ -4823,11 +4603,7 @@ System.Func<TState, T10, TResult> case10)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T1? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
 					item = default;
 					if (this.discriminator == 1)
@@ -4855,11 +4631,7 @@ System.Func<TState, T10, TResult> case10)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T2? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
 					item = default;
 					if (this.discriminator == 2)
@@ -4887,11 +4659,7 @@ System.Func<TState, T10, TResult> case10)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T3? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
 					item = default;
 					if (this.discriminator == 3)
@@ -4919,11 +4687,7 @@ System.Func<TState, T10, TResult> case10)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T4? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
 					item = default;
 					if (this.discriminator == 4)
@@ -4951,11 +4715,7 @@ System.Func<TState, T10, TResult> case10)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T5? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
 					item = default;
 					if (this.discriminator == 5)
@@ -4983,11 +4743,7 @@ System.Func<TState, T10, TResult> case10)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T6? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
 					item = default;
 					if (this.discriminator == 6)
@@ -5015,11 +4771,7 @@ System.Func<TState, T10, TResult> case10)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T7? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
 					item = default;
 					if (this.discriminator == 7)
@@ -5047,11 +4799,7 @@ System.Func<TState, T10, TResult> case10)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T8? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
 					item = default;
 					if (this.discriminator == 8)
@@ -5079,11 +4827,7 @@ System.Func<TState, T10, TResult> case10)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T9? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
 					item = default;
 					if (this.discriminator == 9)
@@ -5111,11 +4855,7 @@ System.Func<TState, T10, TResult> case10)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T10? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
 					item = default;
 					if (this.discriminator == 10)
@@ -5143,11 +4883,7 @@ System.Func<TState, T10, TResult> case10)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T11? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
 					item = default;
 					if (this.discriminator == 11)
@@ -5695,11 +5431,7 @@ System.Func<TState, T11, TResult> case11)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T1? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
 					item = default;
 					if (this.discriminator == 1)
@@ -5727,11 +5459,7 @@ System.Func<TState, T11, TResult> case11)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T2? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
 					item = default;
 					if (this.discriminator == 2)
@@ -5759,11 +5487,7 @@ System.Func<TState, T11, TResult> case11)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T3? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
 					item = default;
 					if (this.discriminator == 3)
@@ -5791,11 +5515,7 @@ System.Func<TState, T11, TResult> case11)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T4? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
 					item = default;
 					if (this.discriminator == 4)
@@ -5823,11 +5543,7 @@ System.Func<TState, T11, TResult> case11)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T5? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
 					item = default;
 					if (this.discriminator == 5)
@@ -5855,11 +5571,7 @@ System.Func<TState, T11, TResult> case11)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T6? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
 					item = default;
 					if (this.discriminator == 6)
@@ -5887,11 +5599,7 @@ System.Func<TState, T11, TResult> case11)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T7? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
 					item = default;
 					if (this.discriminator == 7)
@@ -5919,11 +5627,7 @@ System.Func<TState, T11, TResult> case11)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T8? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
 					item = default;
 					if (this.discriminator == 8)
@@ -5951,11 +5655,7 @@ System.Func<TState, T11, TResult> case11)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T9? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
 					item = default;
 					if (this.discriminator == 9)
@@ -5983,11 +5683,7 @@ System.Func<TState, T11, TResult> case11)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T10? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
 					item = default;
 					if (this.discriminator == 10)
@@ -6015,11 +5711,7 @@ System.Func<TState, T11, TResult> case11)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T11? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
 					item = default;
 					if (this.discriminator == 11)
@@ -6047,11 +5739,7 @@ System.Func<TState, T11, TResult> case11)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T12? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T12? item)
 				{
 					item = default;
 					if (this.discriminator == 12)
@@ -6639,11 +6327,7 @@ System.Func<TState, T12, TResult> case12)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T1? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
 					item = default;
 					if (this.discriminator == 1)
@@ -6671,11 +6355,7 @@ System.Func<TState, T12, TResult> case12)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T2? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
 					item = default;
 					if (this.discriminator == 2)
@@ -6703,11 +6383,7 @@ System.Func<TState, T12, TResult> case12)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T3? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
 					item = default;
 					if (this.discriminator == 3)
@@ -6735,11 +6411,7 @@ System.Func<TState, T12, TResult> case12)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T4? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
 					item = default;
 					if (this.discriminator == 4)
@@ -6767,11 +6439,7 @@ System.Func<TState, T12, TResult> case12)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T5? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
 					item = default;
 					if (this.discriminator == 5)
@@ -6799,11 +6467,7 @@ System.Func<TState, T12, TResult> case12)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T6? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
 					item = default;
 					if (this.discriminator == 6)
@@ -6831,11 +6495,7 @@ System.Func<TState, T12, TResult> case12)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T7? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
 					item = default;
 					if (this.discriminator == 7)
@@ -6863,11 +6523,7 @@ System.Func<TState, T12, TResult> case12)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T8? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
 					item = default;
 					if (this.discriminator == 8)
@@ -6895,11 +6551,7 @@ System.Func<TState, T12, TResult> case12)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T9? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
 					item = default;
 					if (this.discriminator == 9)
@@ -6927,11 +6579,7 @@ System.Func<TState, T12, TResult> case12)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T10? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
 					item = default;
 					if (this.discriminator == 10)
@@ -6959,11 +6607,7 @@ System.Func<TState, T12, TResult> case12)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T11? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
 					item = default;
 					if (this.discriminator == 11)
@@ -6991,11 +6635,7 @@ System.Func<TState, T12, TResult> case12)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T12? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T12? item)
 				{
 					item = default;
 					if (this.discriminator == 12)
@@ -7023,11 +6663,7 @@ System.Func<TState, T12, TResult> case12)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T13? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T13? item)
 				{
 					item = default;
 					if (this.discriminator == 13)
@@ -7655,11 +7291,7 @@ System.Func<TState, T13, TResult> case13)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T1? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
 					item = default;
 					if (this.discriminator == 1)
@@ -7687,11 +7319,7 @@ System.Func<TState, T13, TResult> case13)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T2? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
 					item = default;
 					if (this.discriminator == 2)
@@ -7719,11 +7347,7 @@ System.Func<TState, T13, TResult> case13)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T3? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
 					item = default;
 					if (this.discriminator == 3)
@@ -7751,11 +7375,7 @@ System.Func<TState, T13, TResult> case13)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T4? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
 					item = default;
 					if (this.discriminator == 4)
@@ -7783,11 +7403,7 @@ System.Func<TState, T13, TResult> case13)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T5? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
 					item = default;
 					if (this.discriminator == 5)
@@ -7815,11 +7431,7 @@ System.Func<TState, T13, TResult> case13)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T6? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
 					item = default;
 					if (this.discriminator == 6)
@@ -7847,11 +7459,7 @@ System.Func<TState, T13, TResult> case13)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T7? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
 					item = default;
 					if (this.discriminator == 7)
@@ -7879,11 +7487,7 @@ System.Func<TState, T13, TResult> case13)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T8? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
 					item = default;
 					if (this.discriminator == 8)
@@ -7911,11 +7515,7 @@ System.Func<TState, T13, TResult> case13)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T9? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
 					item = default;
 					if (this.discriminator == 9)
@@ -7943,11 +7543,7 @@ System.Func<TState, T13, TResult> case13)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T10? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
 					item = default;
 					if (this.discriminator == 10)
@@ -7975,11 +7571,7 @@ System.Func<TState, T13, TResult> case13)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T11? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
 					item = default;
 					if (this.discriminator == 11)
@@ -8007,11 +7599,7 @@ System.Func<TState, T13, TResult> case13)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T12? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T12? item)
 				{
 					item = default;
 					if (this.discriminator == 12)
@@ -8039,11 +7627,7 @@ System.Func<TState, T13, TResult> case13)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T13? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T13? item)
 				{
 					item = default;
 					if (this.discriminator == 13)
@@ -8071,11 +7655,7 @@ System.Func<TState, T13, TResult> case13)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T14? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T14? item)
 				{
 					item = default;
 					if (this.discriminator == 14)
@@ -8743,11 +8323,7 @@ System.Func<TState, T14, TResult> case14)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T1? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
 					item = default;
 					if (this.discriminator == 1)
@@ -8775,11 +8351,7 @@ System.Func<TState, T14, TResult> case14)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T2? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
 					item = default;
 					if (this.discriminator == 2)
@@ -8807,11 +8379,7 @@ System.Func<TState, T14, TResult> case14)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T3? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
 					item = default;
 					if (this.discriminator == 3)
@@ -8839,11 +8407,7 @@ System.Func<TState, T14, TResult> case14)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T4? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
 					item = default;
 					if (this.discriminator == 4)
@@ -8871,11 +8435,7 @@ System.Func<TState, T14, TResult> case14)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T5? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
 					item = default;
 					if (this.discriminator == 5)
@@ -8903,11 +8463,7 @@ System.Func<TState, T14, TResult> case14)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T6? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
 					item = default;
 					if (this.discriminator == 6)
@@ -8935,11 +8491,7 @@ System.Func<TState, T14, TResult> case14)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T7? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
 					item = default;
 					if (this.discriminator == 7)
@@ -8967,11 +8519,7 @@ System.Func<TState, T14, TResult> case14)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T8? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
 					item = default;
 					if (this.discriminator == 8)
@@ -8999,11 +8547,7 @@ System.Func<TState, T14, TResult> case14)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T9? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
 					item = default;
 					if (this.discriminator == 9)
@@ -9031,11 +8575,7 @@ System.Func<TState, T14, TResult> case14)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T10? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
 					item = default;
 					if (this.discriminator == 10)
@@ -9063,11 +8603,7 @@ System.Func<TState, T14, TResult> case14)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T11? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
 					item = default;
 					if (this.discriminator == 11)
@@ -9095,11 +8631,7 @@ System.Func<TState, T14, TResult> case14)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T12? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T12? item)
 				{
 					item = default;
 					if (this.discriminator == 12)
@@ -9127,11 +8659,7 @@ System.Func<TState, T14, TResult> case14)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T13? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T13? item)
 				{
 					item = default;
 					if (this.discriminator == 13)
@@ -9159,11 +8687,7 @@ System.Func<TState, T14, TResult> case14)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T14? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T14? item)
 				{
 					item = default;
 					if (this.discriminator == 14)
@@ -9191,11 +8715,7 @@ System.Func<TState, T14, TResult> case14)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T15? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T15? item)
 				{
 					item = default;
 					if (this.discriminator == 15)
@@ -9903,11 +9423,7 @@ System.Func<TState, T15, TResult> case15)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T1? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
 					item = default;
 					if (this.discriminator == 1)
@@ -9935,11 +9451,7 @@ System.Func<TState, T15, TResult> case15)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T2? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
 					item = default;
 					if (this.discriminator == 2)
@@ -9967,11 +9479,7 @@ System.Func<TState, T15, TResult> case15)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T3? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
 					item = default;
 					if (this.discriminator == 3)
@@ -9999,11 +9507,7 @@ System.Func<TState, T15, TResult> case15)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T4? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
 					item = default;
 					if (this.discriminator == 4)
@@ -10031,11 +9535,7 @@ System.Func<TState, T15, TResult> case15)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T5? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
 					item = default;
 					if (this.discriminator == 5)
@@ -10063,11 +9563,7 @@ System.Func<TState, T15, TResult> case15)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T6? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
 					item = default;
 					if (this.discriminator == 6)
@@ -10095,11 +9591,7 @@ System.Func<TState, T15, TResult> case15)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T7? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
 					item = default;
 					if (this.discriminator == 7)
@@ -10127,11 +9619,7 @@ System.Func<TState, T15, TResult> case15)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T8? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
 					item = default;
 					if (this.discriminator == 8)
@@ -10159,11 +9647,7 @@ System.Func<TState, T15, TResult> case15)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T9? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
 					item = default;
 					if (this.discriminator == 9)
@@ -10191,11 +9675,7 @@ System.Func<TState, T15, TResult> case15)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T10? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
 					item = default;
 					if (this.discriminator == 10)
@@ -10223,11 +9703,7 @@ System.Func<TState, T15, TResult> case15)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T11? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
 					item = default;
 					if (this.discriminator == 11)
@@ -10255,11 +9731,7 @@ System.Func<TState, T15, TResult> case15)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T12? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T12? item)
 				{
 					item = default;
 					if (this.discriminator == 12)
@@ -10287,11 +9759,7 @@ System.Func<TState, T15, TResult> case15)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T13? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T13? item)
 				{
 					item = default;
 					if (this.discriminator == 13)
@@ -10319,11 +9787,7 @@ System.Func<TState, T15, TResult> case15)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T14? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T14? item)
 				{
 					item = default;
 					if (this.discriminator == 14)
@@ -10351,11 +9815,7 @@ System.Func<TState, T15, TResult> case15)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T15? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T15? item)
 				{
 					item = default;
 					if (this.discriminator == 15)
@@ -10383,11 +9843,7 @@ System.Func<TState, T15, TResult> case15)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T16? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T16? item)
 				{
 					item = default;
 					if (this.discriminator == 16)
@@ -11135,11 +10591,7 @@ System.Func<TState, T16, TResult> case16)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T1? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
 					item = default;
 					if (this.discriminator == 1)
@@ -11167,11 +10619,7 @@ System.Func<TState, T16, TResult> case16)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T2? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
 					item = default;
 					if (this.discriminator == 2)
@@ -11199,11 +10647,7 @@ System.Func<TState, T16, TResult> case16)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T3? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
 					item = default;
 					if (this.discriminator == 3)
@@ -11231,11 +10675,7 @@ System.Func<TState, T16, TResult> case16)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T4? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
 					item = default;
 					if (this.discriminator == 4)
@@ -11263,11 +10703,7 @@ System.Func<TState, T16, TResult> case16)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T5? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
 					item = default;
 					if (this.discriminator == 5)
@@ -11295,11 +10731,7 @@ System.Func<TState, T16, TResult> case16)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T6? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
 					item = default;
 					if (this.discriminator == 6)
@@ -11327,11 +10759,7 @@ System.Func<TState, T16, TResult> case16)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T7? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
 					item = default;
 					if (this.discriminator == 7)
@@ -11359,11 +10787,7 @@ System.Func<TState, T16, TResult> case16)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T8? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
 					item = default;
 					if (this.discriminator == 8)
@@ -11391,11 +10815,7 @@ System.Func<TState, T16, TResult> case16)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T9? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
 					item = default;
 					if (this.discriminator == 9)
@@ -11423,11 +10843,7 @@ System.Func<TState, T16, TResult> case16)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T10? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
 					item = default;
 					if (this.discriminator == 10)
@@ -11455,11 +10871,7 @@ System.Func<TState, T16, TResult> case16)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T11? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
 					item = default;
 					if (this.discriminator == 11)
@@ -11487,11 +10899,7 @@ System.Func<TState, T16, TResult> case16)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T12? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T12? item)
 				{
 					item = default;
 					if (this.discriminator == 12)
@@ -11519,11 +10927,7 @@ System.Func<TState, T16, TResult> case16)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T13? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T13? item)
 				{
 					item = default;
 					if (this.discriminator == 13)
@@ -11551,11 +10955,7 @@ System.Func<TState, T16, TResult> case16)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T14? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T14? item)
 				{
 					item = default;
 					if (this.discriminator == 14)
@@ -11583,11 +10983,7 @@ System.Func<TState, T16, TResult> case16)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T15? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T15? item)
 				{
 					item = default;
 					if (this.discriminator == 15)
@@ -11615,11 +11011,7 @@ System.Func<TState, T16, TResult> case16)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T16? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T16? item)
 				{
 					item = default;
 					if (this.discriminator == 16)
@@ -11647,11 +11039,7 @@ System.Func<TState, T16, TResult> case16)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T17? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T17? item)
 				{
 					item = default;
 					if (this.discriminator == 17)
@@ -12439,11 +11827,7 @@ System.Func<TState, T17, TResult> case17)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T1? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
 					item = default;
 					if (this.discriminator == 1)
@@ -12471,11 +11855,7 @@ System.Func<TState, T17, TResult> case17)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T2? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
 					item = default;
 					if (this.discriminator == 2)
@@ -12503,11 +11883,7 @@ System.Func<TState, T17, TResult> case17)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T3? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
 					item = default;
 					if (this.discriminator == 3)
@@ -12535,11 +11911,7 @@ System.Func<TState, T17, TResult> case17)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T4? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
 					item = default;
 					if (this.discriminator == 4)
@@ -12567,11 +11939,7 @@ System.Func<TState, T17, TResult> case17)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T5? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
 					item = default;
 					if (this.discriminator == 5)
@@ -12599,11 +11967,7 @@ System.Func<TState, T17, TResult> case17)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T6? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
 					item = default;
 					if (this.discriminator == 6)
@@ -12631,11 +11995,7 @@ System.Func<TState, T17, TResult> case17)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T7? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
 					item = default;
 					if (this.discriminator == 7)
@@ -12663,11 +12023,7 @@ System.Func<TState, T17, TResult> case17)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T8? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
 					item = default;
 					if (this.discriminator == 8)
@@ -12695,11 +12051,7 @@ System.Func<TState, T17, TResult> case17)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T9? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
 					item = default;
 					if (this.discriminator == 9)
@@ -12727,11 +12079,7 @@ System.Func<TState, T17, TResult> case17)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T10? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
 					item = default;
 					if (this.discriminator == 10)
@@ -12759,11 +12107,7 @@ System.Func<TState, T17, TResult> case17)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T11? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
 					item = default;
 					if (this.discriminator == 11)
@@ -12791,11 +12135,7 @@ System.Func<TState, T17, TResult> case17)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T12? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T12? item)
 				{
 					item = default;
 					if (this.discriminator == 12)
@@ -12823,11 +12163,7 @@ System.Func<TState, T17, TResult> case17)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T13? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T13? item)
 				{
 					item = default;
 					if (this.discriminator == 13)
@@ -12855,11 +12191,7 @@ System.Func<TState, T17, TResult> case17)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T14? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T14? item)
 				{
 					item = default;
 					if (this.discriminator == 14)
@@ -12887,11 +12219,7 @@ System.Func<TState, T17, TResult> case17)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T15? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T15? item)
 				{
 					item = default;
 					if (this.discriminator == 15)
@@ -12919,11 +12247,7 @@ System.Func<TState, T17, TResult> case17)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T16? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T16? item)
 				{
 					item = default;
 					if (this.discriminator == 16)
@@ -12951,11 +12275,7 @@ System.Func<TState, T17, TResult> case17)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T17? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T17? item)
 				{
 					item = default;
 					if (this.discriminator == 17)
@@ -12983,11 +12303,7 @@ System.Func<TState, T17, TResult> case17)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T18? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T18? item)
 				{
 					item = default;
 					if (this.discriminator == 18)
@@ -13815,11 +13131,7 @@ System.Func<TState, T18, TResult> case18)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T1? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
 					item = default;
 					if (this.discriminator == 1)
@@ -13847,11 +13159,7 @@ System.Func<TState, T18, TResult> case18)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T2? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
 					item = default;
 					if (this.discriminator == 2)
@@ -13879,11 +13187,7 @@ System.Func<TState, T18, TResult> case18)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T3? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
 					item = default;
 					if (this.discriminator == 3)
@@ -13911,11 +13215,7 @@ System.Func<TState, T18, TResult> case18)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T4? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
 					item = default;
 					if (this.discriminator == 4)
@@ -13943,11 +13243,7 @@ System.Func<TState, T18, TResult> case18)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T5? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
 					item = default;
 					if (this.discriminator == 5)
@@ -13975,11 +13271,7 @@ System.Func<TState, T18, TResult> case18)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T6? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
 					item = default;
 					if (this.discriminator == 6)
@@ -14007,11 +13299,7 @@ System.Func<TState, T18, TResult> case18)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T7? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
 					item = default;
 					if (this.discriminator == 7)
@@ -14039,11 +13327,7 @@ System.Func<TState, T18, TResult> case18)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T8? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
 					item = default;
 					if (this.discriminator == 8)
@@ -14071,11 +13355,7 @@ System.Func<TState, T18, TResult> case18)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T9? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
 					item = default;
 					if (this.discriminator == 9)
@@ -14103,11 +13383,7 @@ System.Func<TState, T18, TResult> case18)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T10? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
 					item = default;
 					if (this.discriminator == 10)
@@ -14135,11 +13411,7 @@ System.Func<TState, T18, TResult> case18)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T11? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
 					item = default;
 					if (this.discriminator == 11)
@@ -14167,11 +13439,7 @@ System.Func<TState, T18, TResult> case18)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T12? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T12? item)
 				{
 					item = default;
 					if (this.discriminator == 12)
@@ -14199,11 +13467,7 @@ System.Func<TState, T18, TResult> case18)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T13? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T13? item)
 				{
 					item = default;
 					if (this.discriminator == 13)
@@ -14231,11 +13495,7 @@ System.Func<TState, T18, TResult> case18)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T14? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T14? item)
 				{
 					item = default;
 					if (this.discriminator == 14)
@@ -14263,11 +13523,7 @@ System.Func<TState, T18, TResult> case18)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T15? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T15? item)
 				{
 					item = default;
 					if (this.discriminator == 15)
@@ -14295,11 +13551,7 @@ System.Func<TState, T18, TResult> case18)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T16? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T16? item)
 				{
 					item = default;
 					if (this.discriminator == 16)
@@ -14327,11 +13579,7 @@ System.Func<TState, T18, TResult> case18)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T17? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T17? item)
 				{
 					item = default;
 					if (this.discriminator == 17)
@@ -14359,11 +13607,7 @@ System.Func<TState, T18, TResult> case18)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T18? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T18? item)
 				{
 					item = default;
 					if (this.discriminator == 18)
@@ -14391,11 +13635,7 @@ System.Func<TState, T18, TResult> case18)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T19? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T19? item)
 				{
 					item = default;
 					if (this.discriminator == 19)
@@ -15263,11 +14503,7 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T1? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
 					item = default;
 					if (this.discriminator == 1)
@@ -15295,11 +14531,7 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T2? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
 					item = default;
 					if (this.discriminator == 2)
@@ -15327,11 +14559,7 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T3? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
 					item = default;
 					if (this.discriminator == 3)
@@ -15359,11 +14587,7 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T4? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
 					item = default;
 					if (this.discriminator == 4)
@@ -15391,11 +14615,7 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T5? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
 					item = default;
 					if (this.discriminator == 5)
@@ -15423,11 +14643,7 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T6? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
 					item = default;
 					if (this.discriminator == 6)
@@ -15455,11 +14671,7 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T7? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
 					item = default;
 					if (this.discriminator == 7)
@@ -15487,11 +14699,7 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T8? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
 					item = default;
 					if (this.discriminator == 8)
@@ -15519,11 +14727,7 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T9? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
 					item = default;
 					if (this.discriminator == 9)
@@ -15551,11 +14755,7 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T10? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
 					item = default;
 					if (this.discriminator == 10)
@@ -15583,11 +14783,7 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T11? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
 					item = default;
 					if (this.discriminator == 11)
@@ -15615,11 +14811,7 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T12? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T12? item)
 				{
 					item = default;
 					if (this.discriminator == 12)
@@ -15647,11 +14839,7 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T13? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T13? item)
 				{
 					item = default;
 					if (this.discriminator == 13)
@@ -15679,11 +14867,7 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T14? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T14? item)
 				{
 					item = default;
 					if (this.discriminator == 14)
@@ -15711,11 +14895,7 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T15? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T15? item)
 				{
 					item = default;
 					if (this.discriminator == 15)
@@ -15743,11 +14923,7 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T16? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T16? item)
 				{
 					item = default;
 					if (this.discriminator == 16)
@@ -15775,11 +14951,7 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T17? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T17? item)
 				{
 					item = default;
 					if (this.discriminator == 17)
@@ -15807,11 +14979,7 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T18? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T18? item)
 				{
 					item = default;
 					if (this.discriminator == 18)
@@ -15839,11 +15007,7 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T19? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T19? item)
 				{
 					item = default;
 					if (this.discriminator == 19)
@@ -15871,11 +15035,7 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T20? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T20? item)
 				{
 					item = default;
 					if (this.discriminator == 20)
@@ -16783,11 +15943,7 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T1? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
 					item = default;
 					if (this.discriminator == 1)
@@ -16815,11 +15971,7 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T2? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
 					item = default;
 					if (this.discriminator == 2)
@@ -16847,11 +15999,7 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T3? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
 					item = default;
 					if (this.discriminator == 3)
@@ -16879,11 +16027,7 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T4? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
 					item = default;
 					if (this.discriminator == 4)
@@ -16911,11 +16055,7 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T5? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
 					item = default;
 					if (this.discriminator == 5)
@@ -16943,11 +16083,7 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T6? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
 					item = default;
 					if (this.discriminator == 6)
@@ -16975,11 +16111,7 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T7? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
 					item = default;
 					if (this.discriminator == 7)
@@ -17007,11 +16139,7 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T8? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
 					item = default;
 					if (this.discriminator == 8)
@@ -17039,11 +16167,7 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T9? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
 					item = default;
 					if (this.discriminator == 9)
@@ -17071,11 +16195,7 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T10? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
 					item = default;
 					if (this.discriminator == 10)
@@ -17103,11 +16223,7 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T11? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
 					item = default;
 					if (this.discriminator == 11)
@@ -17135,11 +16251,7 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T12? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T12? item)
 				{
 					item = default;
 					if (this.discriminator == 12)
@@ -17167,11 +16279,7 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T13? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T13? item)
 				{
 					item = default;
 					if (this.discriminator == 13)
@@ -17199,11 +16307,7 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T14? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T14? item)
 				{
 					item = default;
 					if (this.discriminator == 14)
@@ -17231,11 +16335,7 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T15? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T15? item)
 				{
 					item = default;
 					if (this.discriminator == 15)
@@ -17263,11 +16363,7 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T16? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T16? item)
 				{
 					item = default;
 					if (this.discriminator == 16)
@@ -17295,11 +16391,7 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T17? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T17? item)
 				{
 					item = default;
 					if (this.discriminator == 17)
@@ -17327,11 +16419,7 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T18? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T18? item)
 				{
 					item = default;
 					if (this.discriminator == 18)
@@ -17359,11 +16447,7 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T19? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T19? item)
 				{
 					item = default;
 					if (this.discriminator == 19)
@@ -17391,11 +16475,7 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T20? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T20? item)
 				{
 					item = default;
 					if (this.discriminator == 20)
@@ -17423,11 +16503,7 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T21? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T21? item)
 				{
 					item = default;
 					if (this.discriminator == 21)
@@ -18375,11 +17451,7 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T1? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
 					item = default;
 					if (this.discriminator == 1)
@@ -18407,11 +17479,7 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T2? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
 					item = default;
 					if (this.discriminator == 2)
@@ -18439,11 +17507,7 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T3? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
 					item = default;
 					if (this.discriminator == 3)
@@ -18471,11 +17535,7 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T4? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
 					item = default;
 					if (this.discriminator == 4)
@@ -18503,11 +17563,7 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T5? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
 					item = default;
 					if (this.discriminator == 5)
@@ -18535,11 +17591,7 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T6? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
 					item = default;
 					if (this.discriminator == 6)
@@ -18567,11 +17619,7 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T7? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
 					item = default;
 					if (this.discriminator == 7)
@@ -18599,11 +17647,7 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T8? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
 					item = default;
 					if (this.discriminator == 8)
@@ -18631,11 +17675,7 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T9? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
 					item = default;
 					if (this.discriminator == 9)
@@ -18663,11 +17703,7 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T10? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
 					item = default;
 					if (this.discriminator == 10)
@@ -18695,11 +17731,7 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T11? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
 					item = default;
 					if (this.discriminator == 11)
@@ -18727,11 +17759,7 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T12? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T12? item)
 				{
 					item = default;
 					if (this.discriminator == 12)
@@ -18759,11 +17787,7 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T13? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T13? item)
 				{
 					item = default;
 					if (this.discriminator == 13)
@@ -18791,11 +17815,7 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T14? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T14? item)
 				{
 					item = default;
 					if (this.discriminator == 14)
@@ -18823,11 +17843,7 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T15? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T15? item)
 				{
 					item = default;
 					if (this.discriminator == 15)
@@ -18855,11 +17871,7 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T16? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T16? item)
 				{
 					item = default;
 					if (this.discriminator == 16)
@@ -18887,11 +17899,7 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T17? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T17? item)
 				{
 					item = default;
 					if (this.discriminator == 17)
@@ -18919,11 +17927,7 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T18? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T18? item)
 				{
 					item = default;
 					if (this.discriminator == 18)
@@ -18951,11 +17955,7 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T19? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T19? item)
 				{
 					item = default;
 					if (this.discriminator == 19)
@@ -18983,11 +17983,7 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T20? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T20? item)
 				{
 					item = default;
 					if (this.discriminator == 20)
@@ -19015,11 +18011,7 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T21? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T21? item)
 				{
 					item = default;
 					if (this.discriminator == 21)
@@ -19047,11 +18039,7 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T22? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T22? item)
 				{
 					item = default;
 					if (this.discriminator == 22)
@@ -20039,11 +19027,7 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T1? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
 					item = default;
 					if (this.discriminator == 1)
@@ -20071,11 +19055,7 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T2? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
 					item = default;
 					if (this.discriminator == 2)
@@ -20103,11 +19083,7 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T3? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
 					item = default;
 					if (this.discriminator == 3)
@@ -20135,11 +19111,7 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T4? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
 					item = default;
 					if (this.discriminator == 4)
@@ -20167,11 +19139,7 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T5? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
 					item = default;
 					if (this.discriminator == 5)
@@ -20199,11 +19167,7 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T6? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
 					item = default;
 					if (this.discriminator == 6)
@@ -20231,11 +19195,7 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T7? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
 					item = default;
 					if (this.discriminator == 7)
@@ -20263,11 +19223,7 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T8? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
 					item = default;
 					if (this.discriminator == 8)
@@ -20295,11 +19251,7 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T9? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
 					item = default;
 					if (this.discriminator == 9)
@@ -20327,11 +19279,7 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T10? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
 					item = default;
 					if (this.discriminator == 10)
@@ -20359,11 +19307,7 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T11? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
 					item = default;
 					if (this.discriminator == 11)
@@ -20391,11 +19335,7 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T12? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T12? item)
 				{
 					item = default;
 					if (this.discriminator == 12)
@@ -20423,11 +19363,7 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T13? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T13? item)
 				{
 					item = default;
 					if (this.discriminator == 13)
@@ -20455,11 +19391,7 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T14? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T14? item)
 				{
 					item = default;
 					if (this.discriminator == 14)
@@ -20487,11 +19419,7 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T15? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T15? item)
 				{
 					item = default;
 					if (this.discriminator == 15)
@@ -20519,11 +19447,7 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T16? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T16? item)
 				{
 					item = default;
 					if (this.discriminator == 16)
@@ -20551,11 +19475,7 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T17? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T17? item)
 				{
 					item = default;
 					if (this.discriminator == 17)
@@ -20583,11 +19503,7 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T18? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T18? item)
 				{
 					item = default;
 					if (this.discriminator == 18)
@@ -20615,11 +19531,7 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T19? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T19? item)
 				{
 					item = default;
 					if (this.discriminator == 19)
@@ -20647,11 +19559,7 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T20? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T20? item)
 				{
 					item = default;
 					if (this.discriminator == 20)
@@ -20679,11 +19587,7 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T21? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T21? item)
 				{
 					item = default;
 					if (this.discriminator == 21)
@@ -20711,11 +19615,7 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T22? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T22? item)
 				{
 					item = default;
 					if (this.discriminator == 22)
@@ -20743,11 +19643,7 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T23? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T23? item)
 				{
 					item = default;
 					if (this.discriminator == 23)
@@ -21775,11 +20671,7 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T1? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
 					item = default;
 					if (this.discriminator == 1)
@@ -21807,11 +20699,7 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T2? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
 					item = default;
 					if (this.discriminator == 2)
@@ -21839,11 +20727,7 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T3? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
 					item = default;
 					if (this.discriminator == 3)
@@ -21871,11 +20755,7 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T4? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
 					item = default;
 					if (this.discriminator == 4)
@@ -21903,11 +20783,7 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T5? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
 					item = default;
 					if (this.discriminator == 5)
@@ -21935,11 +20811,7 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T6? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
 					item = default;
 					if (this.discriminator == 6)
@@ -21967,11 +20839,7 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T7? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
 					item = default;
 					if (this.discriminator == 7)
@@ -21999,11 +20867,7 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T8? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
 					item = default;
 					if (this.discriminator == 8)
@@ -22031,11 +20895,7 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T9? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
 					item = default;
 					if (this.discriminator == 9)
@@ -22063,11 +20923,7 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T10? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
 					item = default;
 					if (this.discriminator == 10)
@@ -22095,11 +20951,7 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T11? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
 					item = default;
 					if (this.discriminator == 11)
@@ -22127,11 +20979,7 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T12? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T12? item)
 				{
 					item = default;
 					if (this.discriminator == 12)
@@ -22159,11 +21007,7 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T13? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T13? item)
 				{
 					item = default;
 					if (this.discriminator == 13)
@@ -22191,11 +21035,7 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T14? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T14? item)
 				{
 					item = default;
 					if (this.discriminator == 14)
@@ -22223,11 +21063,7 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T15? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T15? item)
 				{
 					item = default;
 					if (this.discriminator == 15)
@@ -22255,11 +21091,7 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T16? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T16? item)
 				{
 					item = default;
 					if (this.discriminator == 16)
@@ -22287,11 +21119,7 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T17? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T17? item)
 				{
 					item = default;
 					if (this.discriminator == 17)
@@ -22319,11 +21147,7 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T18? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T18? item)
 				{
 					item = default;
 					if (this.discriminator == 18)
@@ -22351,11 +21175,7 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T19? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T19? item)
 				{
 					item = default;
 					if (this.discriminator == 19)
@@ -22383,11 +21203,7 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T20? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T20? item)
 				{
 					item = default;
 					if (this.discriminator == 20)
@@ -22415,11 +21231,7 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T21? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T21? item)
 				{
 					item = default;
 					if (this.discriminator == 21)
@@ -22447,11 +21259,7 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T22? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T22? item)
 				{
 					item = default;
 					if (this.discriminator == 22)
@@ -22479,11 +21287,7 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T23? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T23? item)
 				{
 					item = default;
 					if (this.discriminator == 23)
@@ -22511,11 +21315,7 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T24? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T24? item)
 				{
 					item = default;
 					if (this.discriminator == 24)
@@ -23583,11 +22383,7 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T1? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
 					item = default;
 					if (this.discriminator == 1)
@@ -23615,11 +22411,7 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T2? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
 					item = default;
 					if (this.discriminator == 2)
@@ -23647,11 +22439,7 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T3? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
 					item = default;
 					if (this.discriminator == 3)
@@ -23679,11 +22467,7 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T4? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
 					item = default;
 					if (this.discriminator == 4)
@@ -23711,11 +22495,7 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T5? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
 					item = default;
 					if (this.discriminator == 5)
@@ -23743,11 +22523,7 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T6? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
 					item = default;
 					if (this.discriminator == 6)
@@ -23775,11 +22551,7 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T7? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
 					item = default;
 					if (this.discriminator == 7)
@@ -23807,11 +22579,7 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T8? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
 					item = default;
 					if (this.discriminator == 8)
@@ -23839,11 +22607,7 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T9? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
 					item = default;
 					if (this.discriminator == 9)
@@ -23871,11 +22635,7 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T10? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
 					item = default;
 					if (this.discriminator == 10)
@@ -23903,11 +22663,7 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T11? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
 					item = default;
 					if (this.discriminator == 11)
@@ -23935,11 +22691,7 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T12? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T12? item)
 				{
 					item = default;
 					if (this.discriminator == 12)
@@ -23967,11 +22719,7 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T13? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T13? item)
 				{
 					item = default;
 					if (this.discriminator == 13)
@@ -23999,11 +22747,7 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T14? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T14? item)
 				{
 					item = default;
 					if (this.discriminator == 14)
@@ -24031,11 +22775,7 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T15? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T15? item)
 				{
 					item = default;
 					if (this.discriminator == 15)
@@ -24063,11 +22803,7 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T16? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T16? item)
 				{
 					item = default;
 					if (this.discriminator == 16)
@@ -24095,11 +22831,7 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T17? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T17? item)
 				{
 					item = default;
 					if (this.discriminator == 17)
@@ -24127,11 +22859,7 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T18? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T18? item)
 				{
 					item = default;
 					if (this.discriminator == 18)
@@ -24159,11 +22887,7 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T19? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T19? item)
 				{
 					item = default;
 					if (this.discriminator == 19)
@@ -24191,11 +22915,7 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T20? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T20? item)
 				{
 					item = default;
 					if (this.discriminator == 20)
@@ -24223,11 +22943,7 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T21? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T21? item)
 				{
 					item = default;
 					if (this.discriminator == 21)
@@ -24255,11 +22971,7 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T22? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T22? item)
 				{
 					item = default;
 					if (this.discriminator == 22)
@@ -24287,11 +22999,7 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T23? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T23? item)
 				{
 					item = default;
 					if (this.discriminator == 23)
@@ -24319,11 +23027,7 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T24? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T24? item)
 				{
 					item = default;
 					if (this.discriminator == 24)
@@ -24351,11 +23055,7 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T25? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T25? item)
 				{
 					item = default;
 					if (this.discriminator == 25)
@@ -25463,11 +24163,7 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T1? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
 					item = default;
 					if (this.discriminator == 1)
@@ -25495,11 +24191,7 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T2? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
 					item = default;
 					if (this.discriminator == 2)
@@ -25527,11 +24219,7 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T3? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
 					item = default;
 					if (this.discriminator == 3)
@@ -25559,11 +24247,7 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T4? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
 					item = default;
 					if (this.discriminator == 4)
@@ -25591,11 +24275,7 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T5? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
 					item = default;
 					if (this.discriminator == 5)
@@ -25623,11 +24303,7 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T6? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
 					item = default;
 					if (this.discriminator == 6)
@@ -25655,11 +24331,7 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T7? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
 					item = default;
 					if (this.discriminator == 7)
@@ -25687,11 +24359,7 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T8? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
 					item = default;
 					if (this.discriminator == 8)
@@ -25719,11 +24387,7 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T9? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
 					item = default;
 					if (this.discriminator == 9)
@@ -25751,11 +24415,7 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T10? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
 					item = default;
 					if (this.discriminator == 10)
@@ -25783,11 +24443,7 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T11? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
 					item = default;
 					if (this.discriminator == 11)
@@ -25815,11 +24471,7 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T12? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T12? item)
 				{
 					item = default;
 					if (this.discriminator == 12)
@@ -25847,11 +24499,7 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T13? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T13? item)
 				{
 					item = default;
 					if (this.discriminator == 13)
@@ -25879,11 +24527,7 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T14? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T14? item)
 				{
 					item = default;
 					if (this.discriminator == 14)
@@ -25911,11 +24555,7 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T15? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T15? item)
 				{
 					item = default;
 					if (this.discriminator == 15)
@@ -25943,11 +24583,7 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T16? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T16? item)
 				{
 					item = default;
 					if (this.discriminator == 16)
@@ -25975,11 +24611,7 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T17? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T17? item)
 				{
 					item = default;
 					if (this.discriminator == 17)
@@ -26007,11 +24639,7 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T18? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T18? item)
 				{
 					item = default;
 					if (this.discriminator == 18)
@@ -26039,11 +24667,7 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T19? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T19? item)
 				{
 					item = default;
 					if (this.discriminator == 19)
@@ -26071,11 +24695,7 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T20? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T20? item)
 				{
 					item = default;
 					if (this.discriminator == 20)
@@ -26103,11 +24723,7 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T21? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T21? item)
 				{
 					item = default;
 					if (this.discriminator == 21)
@@ -26135,11 +24751,7 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T22? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T22? item)
 				{
 					item = default;
 					if (this.discriminator == 22)
@@ -26167,11 +24779,7 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T23? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T23? item)
 				{
 					item = default;
 					if (this.discriminator == 23)
@@ -26199,11 +24807,7 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T24? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T24? item)
 				{
 					item = default;
 					if (this.discriminator == 24)
@@ -26231,11 +24835,7 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T25? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T25? item)
 				{
 					item = default;
 					if (this.discriminator == 25)
@@ -26263,11 +24863,7 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T26? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T26? item)
 				{
 					item = default;
 					if (this.discriminator == 26)
@@ -27415,11 +26011,7 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T1? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
 					item = default;
 					if (this.discriminator == 1)
@@ -27447,11 +26039,7 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T2? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
 					item = default;
 					if (this.discriminator == 2)
@@ -27479,11 +26067,7 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T3? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
 					item = default;
 					if (this.discriminator == 3)
@@ -27511,11 +26095,7 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T4? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
 					item = default;
 					if (this.discriminator == 4)
@@ -27543,11 +26123,7 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T5? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
 					item = default;
 					if (this.discriminator == 5)
@@ -27575,11 +26151,7 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T6? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
 					item = default;
 					if (this.discriminator == 6)
@@ -27607,11 +26179,7 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T7? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
 					item = default;
 					if (this.discriminator == 7)
@@ -27639,11 +26207,7 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T8? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
 					item = default;
 					if (this.discriminator == 8)
@@ -27671,11 +26235,7 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T9? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
 					item = default;
 					if (this.discriminator == 9)
@@ -27703,11 +26263,7 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T10? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
 					item = default;
 					if (this.discriminator == 10)
@@ -27735,11 +26291,7 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T11? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
 					item = default;
 					if (this.discriminator == 11)
@@ -27767,11 +26319,7 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T12? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T12? item)
 				{
 					item = default;
 					if (this.discriminator == 12)
@@ -27799,11 +26347,7 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T13? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T13? item)
 				{
 					item = default;
 					if (this.discriminator == 13)
@@ -27831,11 +26375,7 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T14? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T14? item)
 				{
 					item = default;
 					if (this.discriminator == 14)
@@ -27863,11 +26403,7 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T15? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T15? item)
 				{
 					item = default;
 					if (this.discriminator == 15)
@@ -27895,11 +26431,7 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T16? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T16? item)
 				{
 					item = default;
 					if (this.discriminator == 16)
@@ -27927,11 +26459,7 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T17? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T17? item)
 				{
 					item = default;
 					if (this.discriminator == 17)
@@ -27959,11 +26487,7 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T18? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T18? item)
 				{
 					item = default;
 					if (this.discriminator == 18)
@@ -27991,11 +26515,7 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T19? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T19? item)
 				{
 					item = default;
 					if (this.discriminator == 19)
@@ -28023,11 +26543,7 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T20? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T20? item)
 				{
 					item = default;
 					if (this.discriminator == 20)
@@ -28055,11 +26571,7 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T21? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T21? item)
 				{
 					item = default;
 					if (this.discriminator == 21)
@@ -28087,11 +26599,7 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T22? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T22? item)
 				{
 					item = default;
 					if (this.discriminator == 22)
@@ -28119,11 +26627,7 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T23? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T23? item)
 				{
 					item = default;
 					if (this.discriminator == 23)
@@ -28151,11 +26655,7 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T24? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T24? item)
 				{
 					item = default;
 					if (this.discriminator == 24)
@@ -28183,11 +26683,7 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T25? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T25? item)
 				{
 					item = default;
 					if (this.discriminator == 25)
@@ -28215,11 +26711,7 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T26? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T26? item)
 				{
 					item = default;
 					if (this.discriminator == 26)
@@ -28247,11 +26739,7 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T27? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T27? item)
 				{
 					item = default;
 					if (this.discriminator == 27)
@@ -29439,11 +27927,7 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T1? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
 					item = default;
 					if (this.discriminator == 1)
@@ -29471,11 +27955,7 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T2? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
 					item = default;
 					if (this.discriminator == 2)
@@ -29503,11 +27983,7 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T3? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
 					item = default;
 					if (this.discriminator == 3)
@@ -29535,11 +28011,7 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T4? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
 					item = default;
 					if (this.discriminator == 4)
@@ -29567,11 +28039,7 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T5? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
 					item = default;
 					if (this.discriminator == 5)
@@ -29599,11 +28067,7 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T6? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
 					item = default;
 					if (this.discriminator == 6)
@@ -29631,11 +28095,7 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T7? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
 					item = default;
 					if (this.discriminator == 7)
@@ -29663,11 +28123,7 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T8? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
 					item = default;
 					if (this.discriminator == 8)
@@ -29695,11 +28151,7 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T9? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
 					item = default;
 					if (this.discriminator == 9)
@@ -29727,11 +28179,7 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T10? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
 					item = default;
 					if (this.discriminator == 10)
@@ -29759,11 +28207,7 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T11? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
 					item = default;
 					if (this.discriminator == 11)
@@ -29791,11 +28235,7 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T12? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T12? item)
 				{
 					item = default;
 					if (this.discriminator == 12)
@@ -29823,11 +28263,7 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T13? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T13? item)
 				{
 					item = default;
 					if (this.discriminator == 13)
@@ -29855,11 +28291,7 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T14? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T14? item)
 				{
 					item = default;
 					if (this.discriminator == 14)
@@ -29887,11 +28319,7 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T15? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T15? item)
 				{
 					item = default;
 					if (this.discriminator == 15)
@@ -29919,11 +28347,7 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T16? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T16? item)
 				{
 					item = default;
 					if (this.discriminator == 16)
@@ -29951,11 +28375,7 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T17? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T17? item)
 				{
 					item = default;
 					if (this.discriminator == 17)
@@ -29983,11 +28403,7 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T18? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T18? item)
 				{
 					item = default;
 					if (this.discriminator == 18)
@@ -30015,11 +28431,7 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T19? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T19? item)
 				{
 					item = default;
 					if (this.discriminator == 19)
@@ -30047,11 +28459,7 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T20? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T20? item)
 				{
 					item = default;
 					if (this.discriminator == 20)
@@ -30079,11 +28487,7 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T21? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T21? item)
 				{
 					item = default;
 					if (this.discriminator == 21)
@@ -30111,11 +28515,7 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T22? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T22? item)
 				{
 					item = default;
 					if (this.discriminator == 22)
@@ -30143,11 +28543,7 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T23? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T23? item)
 				{
 					item = default;
 					if (this.discriminator == 23)
@@ -30175,11 +28571,7 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T24? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T24? item)
 				{
 					item = default;
 					if (this.discriminator == 24)
@@ -30207,11 +28599,7 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T25? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T25? item)
 				{
 					item = default;
 					if (this.discriminator == 25)
@@ -30239,11 +28627,7 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T26? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T26? item)
 				{
 					item = default;
 					if (this.discriminator == 26)
@@ -30271,11 +28655,7 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T27? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T27? item)
 				{
 					item = default;
 					if (this.discriminator == 27)
@@ -30303,11 +28683,7 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T28? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T28? item)
 				{
 					item = default;
 					if (this.discriminator == 28)
@@ -31535,11 +29911,7 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T1? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
 					item = default;
 					if (this.discriminator == 1)
@@ -31567,11 +29939,7 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T2? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
 					item = default;
 					if (this.discriminator == 2)
@@ -31599,11 +29967,7 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T3? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
 					item = default;
 					if (this.discriminator == 3)
@@ -31631,11 +29995,7 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T4? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
 					item = default;
 					if (this.discriminator == 4)
@@ -31663,11 +30023,7 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T5? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
 					item = default;
 					if (this.discriminator == 5)
@@ -31695,11 +30051,7 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T6? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
 					item = default;
 					if (this.discriminator == 6)
@@ -31727,11 +30079,7 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T7? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
 					item = default;
 					if (this.discriminator == 7)
@@ -31759,11 +30107,7 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T8? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
 					item = default;
 					if (this.discriminator == 8)
@@ -31791,11 +30135,7 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T9? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
 					item = default;
 					if (this.discriminator == 9)
@@ -31823,11 +30163,7 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T10? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
 					item = default;
 					if (this.discriminator == 10)
@@ -31855,11 +30191,7 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T11? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
 					item = default;
 					if (this.discriminator == 11)
@@ -31887,11 +30219,7 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T12? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T12? item)
 				{
 					item = default;
 					if (this.discriminator == 12)
@@ -31919,11 +30247,7 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T13? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T13? item)
 				{
 					item = default;
 					if (this.discriminator == 13)
@@ -31951,11 +30275,7 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T14? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T14? item)
 				{
 					item = default;
 					if (this.discriminator == 14)
@@ -31983,11 +30303,7 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T15? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T15? item)
 				{
 					item = default;
 					if (this.discriminator == 15)
@@ -32015,11 +30331,7 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T16? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T16? item)
 				{
 					item = default;
 					if (this.discriminator == 16)
@@ -32047,11 +30359,7 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T17? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T17? item)
 				{
 					item = default;
 					if (this.discriminator == 17)
@@ -32079,11 +30387,7 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T18? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T18? item)
 				{
 					item = default;
 					if (this.discriminator == 18)
@@ -32111,11 +30415,7 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T19? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T19? item)
 				{
 					item = default;
 					if (this.discriminator == 19)
@@ -32143,11 +30443,7 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T20? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T20? item)
 				{
 					item = default;
 					if (this.discriminator == 20)
@@ -32175,11 +30471,7 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T21? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T21? item)
 				{
 					item = default;
 					if (this.discriminator == 21)
@@ -32207,11 +30499,7 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T22? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T22? item)
 				{
 					item = default;
 					if (this.discriminator == 22)
@@ -32239,11 +30527,7 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T23? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T23? item)
 				{
 					item = default;
 					if (this.discriminator == 23)
@@ -32271,11 +30555,7 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T24? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T24? item)
 				{
 					item = default;
 					if (this.discriminator == 24)
@@ -32303,11 +30583,7 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T25? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T25? item)
 				{
 					item = default;
 					if (this.discriminator == 25)
@@ -32335,11 +30611,7 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T26? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T26? item)
 				{
 					item = default;
 					if (this.discriminator == 26)
@@ -32367,11 +30639,7 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T27? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T27? item)
 				{
 					item = default;
 					if (this.discriminator == 27)
@@ -32399,11 +30667,7 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T28? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T28? item)
 				{
 					item = default;
 					if (this.discriminator == 28)
@@ -32431,11 +30695,7 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T29? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T29? item)
 				{
 					item = default;
 					if (this.discriminator == 29)
@@ -33703,11 +31963,7 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T1? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
 					item = default;
 					if (this.discriminator == 1)
@@ -33735,11 +31991,7 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T2? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
 					item = default;
 					if (this.discriminator == 2)
@@ -33767,11 +32019,7 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T3? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
 					item = default;
 					if (this.discriminator == 3)
@@ -33799,11 +32047,7 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T4? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
 					item = default;
 					if (this.discriminator == 4)
@@ -33831,11 +32075,7 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T5? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
 					item = default;
 					if (this.discriminator == 5)
@@ -33863,11 +32103,7 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T6? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
 					item = default;
 					if (this.discriminator == 6)
@@ -33895,11 +32131,7 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T7? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
 					item = default;
 					if (this.discriminator == 7)
@@ -33927,11 +32159,7 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T8? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
 					item = default;
 					if (this.discriminator == 8)
@@ -33959,11 +32187,7 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T9? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
 					item = default;
 					if (this.discriminator == 9)
@@ -33991,11 +32215,7 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T10? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
 					item = default;
 					if (this.discriminator == 10)
@@ -34023,11 +32243,7 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T11? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
 					item = default;
 					if (this.discriminator == 11)
@@ -34055,11 +32271,7 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T12? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T12? item)
 				{
 					item = default;
 					if (this.discriminator == 12)
@@ -34087,11 +32299,7 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T13? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T13? item)
 				{
 					item = default;
 					if (this.discriminator == 13)
@@ -34119,11 +32327,7 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T14? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T14? item)
 				{
 					item = default;
 					if (this.discriminator == 14)
@@ -34151,11 +32355,7 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T15? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T15? item)
 				{
 					item = default;
 					if (this.discriminator == 15)
@@ -34183,11 +32383,7 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T16? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T16? item)
 				{
 					item = default;
 					if (this.discriminator == 16)
@@ -34215,11 +32411,7 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T17? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T17? item)
 				{
 					item = default;
 					if (this.discriminator == 17)
@@ -34247,11 +32439,7 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T18? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T18? item)
 				{
 					item = default;
 					if (this.discriminator == 18)
@@ -34279,11 +32467,7 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T19? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T19? item)
 				{
 					item = default;
 					if (this.discriminator == 19)
@@ -34311,11 +32495,7 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T20? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T20? item)
 				{
 					item = default;
 					if (this.discriminator == 20)
@@ -34343,11 +32523,7 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T21? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T21? item)
 				{
 					item = default;
 					if (this.discriminator == 21)
@@ -34375,11 +32551,7 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T22? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T22? item)
 				{
 					item = default;
 					if (this.discriminator == 22)
@@ -34407,11 +32579,7 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T23? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T23? item)
 				{
 					item = default;
 					if (this.discriminator == 23)
@@ -34439,11 +32607,7 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T24? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T24? item)
 				{
 					item = default;
 					if (this.discriminator == 24)
@@ -34471,11 +32635,7 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T25? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T25? item)
 				{
 					item = default;
 					if (this.discriminator == 25)
@@ -34503,11 +32663,7 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T26? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T26? item)
 				{
 					item = default;
 					if (this.discriminator == 26)
@@ -34535,11 +32691,7 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T27? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T27? item)
 				{
 					item = default;
 					if (this.discriminator == 27)
@@ -34567,11 +32719,7 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T28? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T28? item)
 				{
 					item = default;
 					if (this.discriminator == 28)
@@ -34599,11 +32747,7 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T29? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T29? item)
 				{
 					item = default;
 					if (this.discriminator == 29)
@@ -34631,11 +32775,7 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(
-				#if NETSTANDARD2_1
-					[System.Diagnostics.CodeAnalysis.NotNullWhen(true)]
-				#endif
-					out T30? item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T30? item)
 				{
 					item = default;
 					if (this.discriminator == 30)

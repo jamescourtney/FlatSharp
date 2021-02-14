@@ -28,14 +28,20 @@ namespace FlatSharp
     {
         private readonly FlatBufferSerializerOptions options;
         private readonly PropertyInfo propertyInfo;
+        private readonly int index;
 
-        public GeneratedProperty(FlatBufferSerializerOptions options, int index, ItemMemberModel memberModel)
+        public GeneratedProperty(
+            FlatBufferSerializerOptions options, 
+            int index, 
+            ItemMemberModel memberModel,
+            string readValueMethodDefinition)
         {
             this.options = options;
             this.propertyInfo = memberModel.PropertyInfo;
             this.MemberModel = memberModel;
+            this.index = index;
 
-            this.ReadValueMethodName = $"__ReadIndex{index}Value";
+            this.ReadValueMethodDefinition = readValueMethodDefinition;
 
             if (memberModel.IsVirtual)
             {
@@ -44,15 +50,17 @@ namespace FlatSharp
             }
         }
 
-        public string BackingFieldName { get; }
+        public static string GetReadValueMethodName(int index) => $"__ReadIndex{index}Value";
 
-        public string HasValueFieldName { get; }
+        public string? BackingFieldName { get; }
 
-        public string ReadValueMethodName { get; }
+        public string? HasValueFieldName { get; }
+
+        public string ReadValueMethodName => GetReadValueMethodName(this.index);
 
         public ItemMemberModel MemberModel { get; }
 
-        public string ReadValueMethodDefinition { get; set; }
+        public string ReadValueMethodDefinition { get; }
 
         public string GetterBody
         {
