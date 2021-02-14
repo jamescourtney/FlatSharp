@@ -14,19 +14,26 @@
  * limitations under the License.
  */
 
-using FlatSharp;
-using FlatSharp.Attributes;
-using FlatSharp.Runtime;
-using FlatSharp.TypeModel;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-
 namespace Samples.TypeFacades
 {
+    using FlatSharp;
+    using FlatSharp.Attributes;
+    using FlatSharp.Runtime;
+    using FlatSharp.TypeModel;
+    using System;
+    using System.Diagnostics;
+
     /// <summary>
-    /// This example shows how to use FlatSharp with unions. FlatBuffer unions are discriminated unions, which means exactly one of the fields may be set.
-    /// FlatSharp can 
+    /// FlatSharp supports a feature called Type Facades. Type Facades are an easy way to extend FlatSharp
+    /// to expose custom types that are not defined in FlatBuffers proper. Type Facades need 3 things:
+    /// 1) A type you want FlatSharp to understand (the Facade)
+    /// 2) A type FlatSharp already understands (long/int/string/array/etc)
+    /// 3) A converter that can convert back and forth between them.
+    /// 
+    /// Some examples of Facades are:
+    /// 1) DateTimeOffset stored as UtcTicks
+    /// 2) Guid stored as byte array
+    /// 3) JSON object stored as string
     /// </summary>
     public class TypeFacadesExample
     {
@@ -67,7 +74,7 @@ namespace Samples.TypeFacades
         }
 
         /// <summary>
-        /// 
+        /// Convert between Guid and Byte Array.
         /// </summary>
         public struct GuidByteArrayConverter : ITypeFacadeConverter<byte[], Guid>
         {
