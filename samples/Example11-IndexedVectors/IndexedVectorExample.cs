@@ -60,8 +60,8 @@ namespace Samples.IndexedVectors
 
             // Indexed vectors look and act like dictionaries. The main difference
             // is that adding arbitrary keys is not supported.
-            Debug.Assert(table.Users.TryGetValue("5", out var dee));
-            Debug.Assert(dee.UserId == "5");
+            Debug.Assert(table.Users.TryGetValue("5", out var bird));
+            Debug.Assert(bird.UserId == "5");
             Debug.Assert(table.Users["5"].FirstName == "Deeandra");
 
             byte[] data = new byte[1024];
@@ -73,7 +73,7 @@ namespace Samples.IndexedVectors
             Debug.Assert(parsedTable.Users.TryGetValue("2", out var dennis));
             Debug.Assert(parsedTable.Users.TryGetValue("3", out var mac));
             Debug.Assert(parsedTable.Users.TryGetValue("1", out var charlie));
-            Debug.Assert(parsedTable.Users.TryGetValue("5", out dee));
+            Debug.Assert(parsedTable.Users.TryGetValue("5", out bird));
             Debug.Assert(parsedTable.Users.TryGetValue("4", out var frank));
         }
 
