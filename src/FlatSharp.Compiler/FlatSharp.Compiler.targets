@@ -13,7 +13,7 @@
     
     <PropertyGroup>
       <QuotedSchemaPath>"%(FlatSharpSchema.fullpath)"</QuotedSchemaPath>
-    </PropertyGrop>
+    </PropertyGroup>
 
     <Message Text="$(CompilerInvocation) $(QuotedSchemaPath)" Importance="high" />
     <Exec Command="$(CompilerInvocation) $(QuotedSchemaPath) $(IntermediateOutputPath)" CustomErrorRegularExpression=".*" Condition=" '%(FlatSharpSchema.fullpath)' != '' " />

@@ -15,6 +15,7 @@
             Unions.UnionsExample.Run();
             SharedStrings.SharedStringsExample.Run();
             IndexedVectors.IndexedVectorsExample.Run();
+            TypeFacades.TypeFacadesExample.Run();
         }
     }
 }
