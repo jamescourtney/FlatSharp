@@ -113,7 +113,7 @@ namespace FlatSharpTests
             }
             catch (InvalidOperationException ex)
             {
-                Assert.IsTrue(ex.Message.Contains("IFacadeTypeConverter"));
+                Assert.IsTrue(ex.Message.Contains("ITypeFacadeConverter"));
             }
         }
 
@@ -143,7 +143,7 @@ namespace FlatSharpTests
             }
             catch (InvalidOperationException ex)
             {
-                Assert.IsTrue(ex.Message.Contains("IFacadeTypeConverter"));
+                Assert.IsTrue(ex.Message.Contains("ITypeFacadeConverter"));
             }
         }
 
@@ -159,7 +159,7 @@ namespace FlatSharpTests
         private void FacadeTest<TUnderlyingType, TType, TConverter>(
             TUnderlyingType underlyingValue,
             TType value,
-            TypeModelContainer container = null) where TConverter : struct, IFacadeTypeConverter<TUnderlyingType, TType>
+            TypeModelContainer container = null) where TConverter : struct, ITypeFacadeConverter<TUnderlyingType, TType>
         {
             if (container == null)
             {
@@ -197,7 +197,7 @@ namespace FlatSharpTests
             public virtual T Item { get; set; }
         }
 
-        public struct NullableDateTimeTicksConverter : IFacadeTypeConverter<long?, DateTimeOffset?>
+        public struct NullableDateTimeTicksConverter : ITypeFacadeConverter<long?, DateTimeOffset?>
         {
             public long? ConvertToUnderlyingType(DateTimeOffset? item)
             {
@@ -215,7 +215,7 @@ namespace FlatSharpTests
             }
         }
 
-        public struct NullableDateTimeStringConverter : IFacadeTypeConverter<string, DateTimeOffset?>
+        public struct NullableDateTimeStringConverter : ITypeFacadeConverter<string, DateTimeOffset?>
         {
             public string ConvertToUnderlyingType(DateTimeOffset? item)
             {
@@ -228,35 +228,35 @@ namespace FlatSharpTests
             }
         }
 
-        public struct DateTimeStringConverter : IFacadeTypeConverter<string, DateTimeOffset>
+        public struct DateTimeStringConverter : ITypeFacadeConverter<string, DateTimeOffset>
         {
             public DateTimeOffset ConvertFromUnderlyingType(string item) => DateTimeOffset.Parse(item);
 
             public string ConvertToUnderlyingType(DateTimeOffset item) => item.ToString("O");
         }
 
-        public struct InvalidDateTimeStringConverter : IFacadeTypeConverter<string, DateTimeOffset>
+        public struct InvalidDateTimeStringConverter : ITypeFacadeConverter<string, DateTimeOffset>
         {
             public DateTimeOffset ConvertFromUnderlyingType(string item) => DateTimeOffset.Parse(item);
 
             public string ConvertToUnderlyingType(DateTimeOffset item) => null;
         }
 
-        public struct InvalidNullableDateTimeNullableLongConverter : IFacadeTypeConverter<long?, DateTimeOffset?>
+        public struct InvalidNullableDateTimeNullableLongConverter : ITypeFacadeConverter<long?, DateTimeOffset?>
         {
             public DateTimeOffset? ConvertFromUnderlyingType(long? item) => new DateTimeOffset(item.Value, TimeSpan.Zero);
 
             public long? ConvertToUnderlyingType(DateTimeOffset? item) => null;
         }
 
-        public struct DateTimeTicksConverter : IFacadeTypeConverter<long, DateTimeOffset>
+        public struct DateTimeTicksConverter : ITypeFacadeConverter<long, DateTimeOffset>
         {
             public DateTimeOffset ConvertFromUnderlyingType(long item) => new DateTimeOffset(item, TimeSpan.Zero);
 
             public long ConvertToUnderlyingType(DateTimeOffset item) => item.UtcTicks;
         }
 
-        public struct TimeSpanTicksConverter : IFacadeTypeConverter<long, TimeSpan>
+        public struct TimeSpanTicksConverter : ITypeFacadeConverter<long, TimeSpan>
         {
             public long ConvertToUnderlyingType(TimeSpan item) => item.Ticks;
 
@@ -264,7 +264,7 @@ namespace FlatSharpTests
         }
 
 
-        public struct DateTimeTimeSpanConverter : IFacadeTypeConverter<TimeSpan, DateTimeOffset>
+        public struct DateTimeTimeSpanConverter : ITypeFacadeConverter<TimeSpan, DateTimeOffset>
         {
             public TimeSpan ConvertToUnderlyingType(DateTimeOffset item) => item - DateTimeOffset.MinValue;
 
@@ -291,7 +291,7 @@ namespace FlatSharpTests
             }
         }
 
-        public struct StringReversedStringConverter : IFacadeTypeConverter<string, ReversedString>
+        public struct StringReversedStringConverter : ITypeFacadeConverter<string, ReversedString>
         {
             public string ConvertToUnderlyingType(ReversedString item) => Reverse(item?.Value);
 

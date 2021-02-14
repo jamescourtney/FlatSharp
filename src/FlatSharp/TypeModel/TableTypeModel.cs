@@ -159,7 +159,7 @@
                 bool hasDefaultValue = false;
                 object defaultValue = null;
 
-                if (!object.ReferenceEquals(property.Attribute.DefaultValue, null))
+                if (property.Attribute.DefaultValue is not null)
                 {
                     hasDefaultValue = true;
                     defaultValue = property.Attribute.DefaultValue;

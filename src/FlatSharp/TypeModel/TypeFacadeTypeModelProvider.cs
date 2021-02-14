@@ -14,27 +14,30 @@
  * limitations under the License.
  */
 
+#nullable enable
+
 namespace FlatSharp.TypeModel
 {
     using FlatSharp.Runtime;
     using System;
     using System.Collections.Generic;
     using System.Collections.Immutable;
-    using System.Linq.Expressions;
-    using System.Reflection;
 
-    internal class FacadeTypeModelProvider<TConverter, TUnderlying, TType> : ITypeModelProvider
-        where TConverter : struct, IFacadeTypeConverter<TUnderlying, TType>
+    /// <summary>
+    /// A type model provider for a Type Facade.
+    /// </summary>
+    internal class TypeFacadeTypeModelProvider<TConverter, TUnderlying, TType> : ITypeModelProvider
+        where TConverter : struct, ITypeFacadeConverter<TUnderlying, TType>
     {
         private readonly ITypeModel model;
 
-        public FacadeTypeModelProvider(
+        public TypeFacadeTypeModelProvider(
             ITypeModel underlyingModel)
         {
-            this.model = new FacadeTypeModel(underlyingModel);
+            this.model = new TypeFacadeTypeModel(underlyingModel);
         }
 
-        public bool TryCreateTypeModel(TypeModelContainer container, Type type, out ITypeModel typeModel)
+        public bool TryCreateTypeModel(TypeModelContainer container, Type type, out ITypeModel? typeModel)
         {
             if (type == typeof(TType))
             {
@@ -46,17 +49,17 @@ namespace FlatSharp.TypeModel
             return false;
         }
 
-        public bool TryResolveFbsAlias(TypeModelContainer container, string alias, out ITypeModel typeModel)
+        public bool TryResolveFbsAlias(TypeModelContainer container, string alias, out ITypeModel? typeModel)
         {
             typeModel = null;
             return false;
         }
 
-        private class FacadeTypeModel : ITypeModel
+        private class TypeFacadeTypeModel : ITypeModel
         {
             private readonly ITypeModel underlyingModel;
 
-            public FacadeTypeModel(
+            public TypeFacadeTypeModel(
                 ITypeModel underlyingModel)
             {
                 this.underlyingModel = underlyingModel;
@@ -150,38 +153,38 @@ namespace FlatSharp.TypeModel
                 this.underlyingModel.TraverseObjectGraph(seenTypes);
             }
 
-            public bool TryFormatDefaultValueAsLiteral(object defaultValue, out string literal)
+            public bool TryFormatDefaultValueAsLiteral(object defaultValue, out string? literal)
             {
                 literal = null;
                 return false;
             }
 
-            public bool TryFormatStringAsLiteral(string value, out string literal)
+            public bool TryFormatStringAsLiteral(string value, out string? literal)
             {
                 literal = null;
                 return false;
             }
 
-            public bool TryGetSpanComparerType(out Type comparerType) => this.underlyingModel.TryGetSpanComparerType(out comparerType);
+            public bool TryGetSpanComparerType(out Type? comparerType) => this.underlyingModel.TryGetSpanComparerType(out comparerType);
 
-            public bool TryGetTableKeyMember(out TableMemberModel tableMember) => this.underlyingModel.TryGetTableKeyMember(out tableMember);
+            public bool TryGetTableKeyMember(out TableMemberModel? tableMember) => this.underlyingModel.TryGetTableKeyMember(out tableMember);
 
-            public bool TryGetUnderlyingVectorType(out ITypeModel typeModel) => this.underlyingModel.TryGetUnderlyingVectorType(out typeModel);
+            public bool TryGetUnderlyingVectorType(out ITypeModel? typeModel) => this.underlyingModel.TryGetUnderlyingVectorType(out typeModel);
 
-            public bool ValidateDefaultValue(object defaultValue) => false;
+            public bool ValidateDefaultValue(object? defaultValue) => false;
 
             public IEnumerable<Type> GetReferencedTypes() => new[] { typeof(TConverter), typeof(TType) };
 
             private static string GetConvertToUnderlyingInvocation(string source)
             {
                 string typeName = CSharpHelpers.GetCompilableTypeName(typeof(TConverter));
-                return $"default({typeName}).{nameof(IFacadeTypeConverter<byte, byte>.ConvertToUnderlyingType)}({source})";
+                return $"default({typeName}).{nameof(ITypeFacadeConverter<byte, byte>.ConvertToUnderlyingType)}({source})";
             }
 
             private static string GetConvertFromUnderlyingInvocation(string source)
             {
                 string typeName = CSharpHelpers.GetCompilableTypeName(typeof(TConverter));
-                return $"default({typeName}).{nameof(IFacadeTypeConverter<byte, byte>.ConvertFromUnderlyingType)}({source})";
+                return $"default({typeName}).{nameof(ITypeFacadeConverter<byte, byte>.ConvertFromUnderlyingType)}({source})";
             }
         }
     }

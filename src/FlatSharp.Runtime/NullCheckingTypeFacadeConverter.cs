@@ -23,15 +23,16 @@ namespace FlatSharp.Runtime
     /// Adds a null check to Facade converters for underlying reference types.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public struct NullCheckingFacadeTypeConverter<TUnderlyingType, TType, TConverter> : IFacadeTypeConverter<TUnderlyingType, TType>
-        where TConverter : struct, IFacadeTypeConverter<TUnderlyingType, TType>
+    public struct NullCheckingTypeFacadeConverter<TUnderlyingType, TType, TConverter> 
+        : ITypeFacadeConverter<TUnderlyingType, TType>
+        where TConverter : struct, ITypeFacadeConverter<TUnderlyingType, TType>
     {
         public TUnderlyingType ConvertToUnderlyingType(TType item)
         {
             var underlyingValue = default(TConverter).ConvertToUnderlyingType(item);
-            if (object.ReferenceEquals(underlyingValue, null))
+            if (underlyingValue is null)
             {
-                throw new InvalidOperationException($"{nameof(IFacadeTypeConverter<int, int>)} '{typeof(TConverter).FullName}' returned null when converting to the underlying type '{typeof(TUnderlyingType).FullName}'. Facade converters may not return null when converting to the underlying type.");
+                throw new InvalidOperationException($"{nameof(ITypeFacadeConverter<int, int>)} '{typeof(TConverter).FullName}' returned null when converting to the underlying type '{typeof(TUnderlyingType).FullName}'. Facade converters may not return null when converting to the underlying type.");
             }
 
             return underlyingValue;

@@ -83,7 +83,7 @@ namespace FlatSharp
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void EnsureNonNull<T>(T item) where T : class
         {
-            if (object.ReferenceEquals(item, null))
+            if (item is null)
             {
                 ThrowNonNullException();
             }

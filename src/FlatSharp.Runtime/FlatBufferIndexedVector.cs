@@ -91,7 +91,7 @@ namespace FlatSharp
         public bool TryGetValue(TKey key, out TValue? value)
         {
             value = this.vector.BinarySearchByFlatBufferKey(key);
-            return !object.ReferenceEquals(value, null);
+            return value is not null;
         }
 
         public bool ContainsKey(TKey key)

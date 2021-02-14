@@ -35,7 +35,7 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -171,7 +171,7 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -183,7 +183,7 @@ namespace FlatSharp
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -375,7 +375,7 @@ System.Func<TState, T2, TResult> case2)
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -387,7 +387,7 @@ System.Func<TState, T2, TResult> case2)
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -399,7 +399,7 @@ System.Func<TState, T2, TResult> case2)
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -647,7 +647,7 @@ System.Func<TState, T3, TResult> case3)
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -659,7 +659,7 @@ System.Func<TState, T3, TResult> case3)
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -671,7 +671,7 @@ System.Func<TState, T3, TResult> case3)
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -683,7 +683,7 @@ System.Func<TState, T3, TResult> case3)
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -987,7 +987,7 @@ System.Func<TState, T4, TResult> case4)
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -999,7 +999,7 @@ System.Func<TState, T4, TResult> case4)
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -1011,7 +1011,7 @@ System.Func<TState, T4, TResult> case4)
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -1023,7 +1023,7 @@ System.Func<TState, T4, TResult> case4)
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -1035,7 +1035,7 @@ System.Func<TState, T4, TResult> case4)
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -1395,7 +1395,7 @@ System.Func<TState, T5, TResult> case5)
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -1407,7 +1407,7 @@ System.Func<TState, T5, TResult> case5)
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -1419,7 +1419,7 @@ System.Func<TState, T5, TResult> case5)
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -1431,7 +1431,7 @@ System.Func<TState, T5, TResult> case5)
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -1443,7 +1443,7 @@ System.Func<TState, T5, TResult> case5)
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -1455,7 +1455,7 @@ System.Func<TState, T5, TResult> case5)
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -1871,7 +1871,7 @@ System.Func<TState, T6, TResult> case6)
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -1883,7 +1883,7 @@ System.Func<TState, T6, TResult> case6)
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -1895,7 +1895,7 @@ System.Func<TState, T6, TResult> case6)
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -1907,7 +1907,7 @@ System.Func<TState, T6, TResult> case6)
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -1919,7 +1919,7 @@ System.Func<TState, T6, TResult> case6)
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -1931,7 +1931,7 @@ System.Func<TState, T6, TResult> case6)
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -1943,7 +1943,7 @@ System.Func<TState, T6, TResult> case6)
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -2415,7 +2415,7 @@ System.Func<TState, T7, TResult> case7)
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -2427,7 +2427,7 @@ System.Func<TState, T7, TResult> case7)
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -2439,7 +2439,7 @@ System.Func<TState, T7, TResult> case7)
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -2451,7 +2451,7 @@ System.Func<TState, T7, TResult> case7)
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -2463,7 +2463,7 @@ System.Func<TState, T7, TResult> case7)
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -2475,7 +2475,7 @@ System.Func<TState, T7, TResult> case7)
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -2487,7 +2487,7 @@ System.Func<TState, T7, TResult> case7)
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -2499,7 +2499,7 @@ System.Func<TState, T7, TResult> case7)
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -3027,7 +3027,7 @@ System.Func<TState, T8, TResult> case8)
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -3039,7 +3039,7 @@ System.Func<TState, T8, TResult> case8)
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -3051,7 +3051,7 @@ System.Func<TState, T8, TResult> case8)
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -3063,7 +3063,7 @@ System.Func<TState, T8, TResult> case8)
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -3075,7 +3075,7 @@ System.Func<TState, T8, TResult> case8)
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -3087,7 +3087,7 @@ System.Func<TState, T8, TResult> case8)
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -3099,7 +3099,7 @@ System.Func<TState, T8, TResult> case8)
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -3111,7 +3111,7 @@ System.Func<TState, T8, TResult> case8)
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -3123,7 +3123,7 @@ System.Func<TState, T8, TResult> case8)
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -3707,7 +3707,7 @@ System.Func<TState, T9, TResult> case9)
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -3719,7 +3719,7 @@ System.Func<TState, T9, TResult> case9)
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -3731,7 +3731,7 @@ System.Func<TState, T9, TResult> case9)
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -3743,7 +3743,7 @@ System.Func<TState, T9, TResult> case9)
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -3755,7 +3755,7 @@ System.Func<TState, T9, TResult> case9)
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -3767,7 +3767,7 @@ System.Func<TState, T9, TResult> case9)
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -3779,7 +3779,7 @@ System.Func<TState, T9, TResult> case9)
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -3791,7 +3791,7 @@ System.Func<TState, T9, TResult> case9)
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -3803,7 +3803,7 @@ System.Func<TState, T9, TResult> case9)
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -3815,7 +3815,7 @@ System.Func<TState, T9, TResult> case9)
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -4455,7 +4455,7 @@ System.Func<TState, T10, TResult> case10)
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -4467,7 +4467,7 @@ System.Func<TState, T10, TResult> case10)
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -4479,7 +4479,7 @@ System.Func<TState, T10, TResult> case10)
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -4491,7 +4491,7 @@ System.Func<TState, T10, TResult> case10)
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -4503,7 +4503,7 @@ System.Func<TState, T10, TResult> case10)
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -4515,7 +4515,7 @@ System.Func<TState, T10, TResult> case10)
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -4527,7 +4527,7 @@ System.Func<TState, T10, TResult> case10)
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -4539,7 +4539,7 @@ System.Func<TState, T10, TResult> case10)
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -4551,7 +4551,7 @@ System.Func<TState, T10, TResult> case10)
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -4563,7 +4563,7 @@ System.Func<TState, T10, TResult> case10)
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -4575,7 +4575,7 @@ System.Func<TState, T10, TResult> case10)
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -5271,7 +5271,7 @@ System.Func<TState, T11, TResult> case11)
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -5283,7 +5283,7 @@ System.Func<TState, T11, TResult> case11)
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -5295,7 +5295,7 @@ System.Func<TState, T11, TResult> case11)
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -5307,7 +5307,7 @@ System.Func<TState, T11, TResult> case11)
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -5319,7 +5319,7 @@ System.Func<TState, T11, TResult> case11)
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -5331,7 +5331,7 @@ System.Func<TState, T11, TResult> case11)
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -5343,7 +5343,7 @@ System.Func<TState, T11, TResult> case11)
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -5355,7 +5355,7 @@ System.Func<TState, T11, TResult> case11)
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -5367,7 +5367,7 @@ System.Func<TState, T11, TResult> case11)
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -5379,7 +5379,7 @@ System.Func<TState, T11, TResult> case11)
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -5391,7 +5391,7 @@ System.Func<TState, T11, TResult> case11)
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -5403,7 +5403,7 @@ System.Func<TState, T11, TResult> case11)
 				
 				public FlatBufferUnion(T12 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -6155,7 +6155,7 @@ System.Func<TState, T12, TResult> case12)
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -6167,7 +6167,7 @@ System.Func<TState, T12, TResult> case12)
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -6179,7 +6179,7 @@ System.Func<TState, T12, TResult> case12)
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -6191,7 +6191,7 @@ System.Func<TState, T12, TResult> case12)
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -6203,7 +6203,7 @@ System.Func<TState, T12, TResult> case12)
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -6215,7 +6215,7 @@ System.Func<TState, T12, TResult> case12)
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -6227,7 +6227,7 @@ System.Func<TState, T12, TResult> case12)
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -6239,7 +6239,7 @@ System.Func<TState, T12, TResult> case12)
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -6251,7 +6251,7 @@ System.Func<TState, T12, TResult> case12)
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -6263,7 +6263,7 @@ System.Func<TState, T12, TResult> case12)
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -6275,7 +6275,7 @@ System.Func<TState, T12, TResult> case12)
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -6287,7 +6287,7 @@ System.Func<TState, T12, TResult> case12)
 				
 				public FlatBufferUnion(T12 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -6299,7 +6299,7 @@ System.Func<TState, T12, TResult> case12)
 				
 				public FlatBufferUnion(T13 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -7107,7 +7107,7 @@ System.Func<TState, T13, TResult> case13)
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -7119,7 +7119,7 @@ System.Func<TState, T13, TResult> case13)
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -7131,7 +7131,7 @@ System.Func<TState, T13, TResult> case13)
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -7143,7 +7143,7 @@ System.Func<TState, T13, TResult> case13)
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -7155,7 +7155,7 @@ System.Func<TState, T13, TResult> case13)
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -7167,7 +7167,7 @@ System.Func<TState, T13, TResult> case13)
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -7179,7 +7179,7 @@ System.Func<TState, T13, TResult> case13)
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -7191,7 +7191,7 @@ System.Func<TState, T13, TResult> case13)
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -7203,7 +7203,7 @@ System.Func<TState, T13, TResult> case13)
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -7215,7 +7215,7 @@ System.Func<TState, T13, TResult> case13)
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -7227,7 +7227,7 @@ System.Func<TState, T13, TResult> case13)
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -7239,7 +7239,7 @@ System.Func<TState, T13, TResult> case13)
 				
 				public FlatBufferUnion(T12 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -7251,7 +7251,7 @@ System.Func<TState, T13, TResult> case13)
 				
 				public FlatBufferUnion(T13 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -7263,7 +7263,7 @@ System.Func<TState, T13, TResult> case13)
 				
 				public FlatBufferUnion(T14 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -8127,7 +8127,7 @@ System.Func<TState, T14, TResult> case14)
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -8139,7 +8139,7 @@ System.Func<TState, T14, TResult> case14)
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -8151,7 +8151,7 @@ System.Func<TState, T14, TResult> case14)
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -8163,7 +8163,7 @@ System.Func<TState, T14, TResult> case14)
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -8175,7 +8175,7 @@ System.Func<TState, T14, TResult> case14)
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -8187,7 +8187,7 @@ System.Func<TState, T14, TResult> case14)
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -8199,7 +8199,7 @@ System.Func<TState, T14, TResult> case14)
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -8211,7 +8211,7 @@ System.Func<TState, T14, TResult> case14)
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -8223,7 +8223,7 @@ System.Func<TState, T14, TResult> case14)
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -8235,7 +8235,7 @@ System.Func<TState, T14, TResult> case14)
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -8247,7 +8247,7 @@ System.Func<TState, T14, TResult> case14)
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -8259,7 +8259,7 @@ System.Func<TState, T14, TResult> case14)
 				
 				public FlatBufferUnion(T12 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -8271,7 +8271,7 @@ System.Func<TState, T14, TResult> case14)
 				
 				public FlatBufferUnion(T13 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -8283,7 +8283,7 @@ System.Func<TState, T14, TResult> case14)
 				
 				public FlatBufferUnion(T14 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -8295,7 +8295,7 @@ System.Func<TState, T14, TResult> case14)
 				
 				public FlatBufferUnion(T15 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -9215,7 +9215,7 @@ System.Func<TState, T15, TResult> case15)
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -9227,7 +9227,7 @@ System.Func<TState, T15, TResult> case15)
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -9239,7 +9239,7 @@ System.Func<TState, T15, TResult> case15)
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -9251,7 +9251,7 @@ System.Func<TState, T15, TResult> case15)
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -9263,7 +9263,7 @@ System.Func<TState, T15, TResult> case15)
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -9275,7 +9275,7 @@ System.Func<TState, T15, TResult> case15)
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -9287,7 +9287,7 @@ System.Func<TState, T15, TResult> case15)
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -9299,7 +9299,7 @@ System.Func<TState, T15, TResult> case15)
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -9311,7 +9311,7 @@ System.Func<TState, T15, TResult> case15)
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -9323,7 +9323,7 @@ System.Func<TState, T15, TResult> case15)
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -9335,7 +9335,7 @@ System.Func<TState, T15, TResult> case15)
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -9347,7 +9347,7 @@ System.Func<TState, T15, TResult> case15)
 				
 				public FlatBufferUnion(T12 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -9359,7 +9359,7 @@ System.Func<TState, T15, TResult> case15)
 				
 				public FlatBufferUnion(T13 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -9371,7 +9371,7 @@ System.Func<TState, T15, TResult> case15)
 				
 				public FlatBufferUnion(T14 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -9383,7 +9383,7 @@ System.Func<TState, T15, TResult> case15)
 				
 				public FlatBufferUnion(T15 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -9395,7 +9395,7 @@ System.Func<TState, T15, TResult> case15)
 				
 				public FlatBufferUnion(T16 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -10371,7 +10371,7 @@ System.Func<TState, T16, TResult> case16)
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -10383,7 +10383,7 @@ System.Func<TState, T16, TResult> case16)
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -10395,7 +10395,7 @@ System.Func<TState, T16, TResult> case16)
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -10407,7 +10407,7 @@ System.Func<TState, T16, TResult> case16)
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -10419,7 +10419,7 @@ System.Func<TState, T16, TResult> case16)
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -10431,7 +10431,7 @@ System.Func<TState, T16, TResult> case16)
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -10443,7 +10443,7 @@ System.Func<TState, T16, TResult> case16)
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -10455,7 +10455,7 @@ System.Func<TState, T16, TResult> case16)
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -10467,7 +10467,7 @@ System.Func<TState, T16, TResult> case16)
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -10479,7 +10479,7 @@ System.Func<TState, T16, TResult> case16)
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -10491,7 +10491,7 @@ System.Func<TState, T16, TResult> case16)
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -10503,7 +10503,7 @@ System.Func<TState, T16, TResult> case16)
 				
 				public FlatBufferUnion(T12 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -10515,7 +10515,7 @@ System.Func<TState, T16, TResult> case16)
 				
 				public FlatBufferUnion(T13 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -10527,7 +10527,7 @@ System.Func<TState, T16, TResult> case16)
 				
 				public FlatBufferUnion(T14 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -10539,7 +10539,7 @@ System.Func<TState, T16, TResult> case16)
 				
 				public FlatBufferUnion(T15 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -10551,7 +10551,7 @@ System.Func<TState, T16, TResult> case16)
 				
 				public FlatBufferUnion(T16 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -10563,7 +10563,7 @@ System.Func<TState, T16, TResult> case16)
 				
 				public FlatBufferUnion(T17 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -11595,7 +11595,7 @@ System.Func<TState, T17, TResult> case17)
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -11607,7 +11607,7 @@ System.Func<TState, T17, TResult> case17)
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -11619,7 +11619,7 @@ System.Func<TState, T17, TResult> case17)
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -11631,7 +11631,7 @@ System.Func<TState, T17, TResult> case17)
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -11643,7 +11643,7 @@ System.Func<TState, T17, TResult> case17)
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -11655,7 +11655,7 @@ System.Func<TState, T17, TResult> case17)
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -11667,7 +11667,7 @@ System.Func<TState, T17, TResult> case17)
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -11679,7 +11679,7 @@ System.Func<TState, T17, TResult> case17)
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -11691,7 +11691,7 @@ System.Func<TState, T17, TResult> case17)
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -11703,7 +11703,7 @@ System.Func<TState, T17, TResult> case17)
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -11715,7 +11715,7 @@ System.Func<TState, T17, TResult> case17)
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -11727,7 +11727,7 @@ System.Func<TState, T17, TResult> case17)
 				
 				public FlatBufferUnion(T12 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -11739,7 +11739,7 @@ System.Func<TState, T17, TResult> case17)
 				
 				public FlatBufferUnion(T13 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -11751,7 +11751,7 @@ System.Func<TState, T17, TResult> case17)
 				
 				public FlatBufferUnion(T14 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -11763,7 +11763,7 @@ System.Func<TState, T17, TResult> case17)
 				
 				public FlatBufferUnion(T15 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -11775,7 +11775,7 @@ System.Func<TState, T17, TResult> case17)
 				
 				public FlatBufferUnion(T16 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -11787,7 +11787,7 @@ System.Func<TState, T17, TResult> case17)
 				
 				public FlatBufferUnion(T17 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -11799,7 +11799,7 @@ System.Func<TState, T17, TResult> case17)
 				
 				public FlatBufferUnion(T18 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -12887,7 +12887,7 @@ System.Func<TState, T18, TResult> case18)
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -12899,7 +12899,7 @@ System.Func<TState, T18, TResult> case18)
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -12911,7 +12911,7 @@ System.Func<TState, T18, TResult> case18)
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -12923,7 +12923,7 @@ System.Func<TState, T18, TResult> case18)
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -12935,7 +12935,7 @@ System.Func<TState, T18, TResult> case18)
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -12947,7 +12947,7 @@ System.Func<TState, T18, TResult> case18)
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -12959,7 +12959,7 @@ System.Func<TState, T18, TResult> case18)
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -12971,7 +12971,7 @@ System.Func<TState, T18, TResult> case18)
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -12983,7 +12983,7 @@ System.Func<TState, T18, TResult> case18)
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -12995,7 +12995,7 @@ System.Func<TState, T18, TResult> case18)
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -13007,7 +13007,7 @@ System.Func<TState, T18, TResult> case18)
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -13019,7 +13019,7 @@ System.Func<TState, T18, TResult> case18)
 				
 				public FlatBufferUnion(T12 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -13031,7 +13031,7 @@ System.Func<TState, T18, TResult> case18)
 				
 				public FlatBufferUnion(T13 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -13043,7 +13043,7 @@ System.Func<TState, T18, TResult> case18)
 				
 				public FlatBufferUnion(T14 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -13055,7 +13055,7 @@ System.Func<TState, T18, TResult> case18)
 				
 				public FlatBufferUnion(T15 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -13067,7 +13067,7 @@ System.Func<TState, T18, TResult> case18)
 				
 				public FlatBufferUnion(T16 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -13079,7 +13079,7 @@ System.Func<TState, T18, TResult> case18)
 				
 				public FlatBufferUnion(T17 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -13091,7 +13091,7 @@ System.Func<TState, T18, TResult> case18)
 				
 				public FlatBufferUnion(T18 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -13103,7 +13103,7 @@ System.Func<TState, T18, TResult> case18)
 				
 				public FlatBufferUnion(T19 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -14247,7 +14247,7 @@ System.Func<TState, T19, TResult> case19)
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -14259,7 +14259,7 @@ System.Func<TState, T19, TResult> case19)
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -14271,7 +14271,7 @@ System.Func<TState, T19, TResult> case19)
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -14283,7 +14283,7 @@ System.Func<TState, T19, TResult> case19)
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -14295,7 +14295,7 @@ System.Func<TState, T19, TResult> case19)
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -14307,7 +14307,7 @@ System.Func<TState, T19, TResult> case19)
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -14319,7 +14319,7 @@ System.Func<TState, T19, TResult> case19)
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -14331,7 +14331,7 @@ System.Func<TState, T19, TResult> case19)
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -14343,7 +14343,7 @@ System.Func<TState, T19, TResult> case19)
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -14355,7 +14355,7 @@ System.Func<TState, T19, TResult> case19)
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -14367,7 +14367,7 @@ System.Func<TState, T19, TResult> case19)
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -14379,7 +14379,7 @@ System.Func<TState, T19, TResult> case19)
 				
 				public FlatBufferUnion(T12 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -14391,7 +14391,7 @@ System.Func<TState, T19, TResult> case19)
 				
 				public FlatBufferUnion(T13 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -14403,7 +14403,7 @@ System.Func<TState, T19, TResult> case19)
 				
 				public FlatBufferUnion(T14 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -14415,7 +14415,7 @@ System.Func<TState, T19, TResult> case19)
 				
 				public FlatBufferUnion(T15 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -14427,7 +14427,7 @@ System.Func<TState, T19, TResult> case19)
 				
 				public FlatBufferUnion(T16 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -14439,7 +14439,7 @@ System.Func<TState, T19, TResult> case19)
 				
 				public FlatBufferUnion(T17 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -14451,7 +14451,7 @@ System.Func<TState, T19, TResult> case19)
 				
 				public FlatBufferUnion(T18 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -14463,7 +14463,7 @@ System.Func<TState, T19, TResult> case19)
 				
 				public FlatBufferUnion(T19 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -14475,7 +14475,7 @@ System.Func<TState, T19, TResult> case19)
 				
 				public FlatBufferUnion(T20 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -15675,7 +15675,7 @@ System.Func<TState, T20, TResult> case20)
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -15687,7 +15687,7 @@ System.Func<TState, T20, TResult> case20)
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -15699,7 +15699,7 @@ System.Func<TState, T20, TResult> case20)
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -15711,7 +15711,7 @@ System.Func<TState, T20, TResult> case20)
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -15723,7 +15723,7 @@ System.Func<TState, T20, TResult> case20)
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -15735,7 +15735,7 @@ System.Func<TState, T20, TResult> case20)
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -15747,7 +15747,7 @@ System.Func<TState, T20, TResult> case20)
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -15759,7 +15759,7 @@ System.Func<TState, T20, TResult> case20)
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -15771,7 +15771,7 @@ System.Func<TState, T20, TResult> case20)
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -15783,7 +15783,7 @@ System.Func<TState, T20, TResult> case20)
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -15795,7 +15795,7 @@ System.Func<TState, T20, TResult> case20)
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -15807,7 +15807,7 @@ System.Func<TState, T20, TResult> case20)
 				
 				public FlatBufferUnion(T12 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -15819,7 +15819,7 @@ System.Func<TState, T20, TResult> case20)
 				
 				public FlatBufferUnion(T13 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -15831,7 +15831,7 @@ System.Func<TState, T20, TResult> case20)
 				
 				public FlatBufferUnion(T14 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -15843,7 +15843,7 @@ System.Func<TState, T20, TResult> case20)
 				
 				public FlatBufferUnion(T15 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -15855,7 +15855,7 @@ System.Func<TState, T20, TResult> case20)
 				
 				public FlatBufferUnion(T16 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -15867,7 +15867,7 @@ System.Func<TState, T20, TResult> case20)
 				
 				public FlatBufferUnion(T17 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -15879,7 +15879,7 @@ System.Func<TState, T20, TResult> case20)
 				
 				public FlatBufferUnion(T18 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -15891,7 +15891,7 @@ System.Func<TState, T20, TResult> case20)
 				
 				public FlatBufferUnion(T19 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -15903,7 +15903,7 @@ System.Func<TState, T20, TResult> case20)
 				
 				public FlatBufferUnion(T20 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -15915,7 +15915,7 @@ System.Func<TState, T20, TResult> case20)
 				
 				public FlatBufferUnion(T21 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -17171,7 +17171,7 @@ System.Func<TState, T21, TResult> case21)
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -17183,7 +17183,7 @@ System.Func<TState, T21, TResult> case21)
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -17195,7 +17195,7 @@ System.Func<TState, T21, TResult> case21)
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -17207,7 +17207,7 @@ System.Func<TState, T21, TResult> case21)
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -17219,7 +17219,7 @@ System.Func<TState, T21, TResult> case21)
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -17231,7 +17231,7 @@ System.Func<TState, T21, TResult> case21)
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -17243,7 +17243,7 @@ System.Func<TState, T21, TResult> case21)
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -17255,7 +17255,7 @@ System.Func<TState, T21, TResult> case21)
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -17267,7 +17267,7 @@ System.Func<TState, T21, TResult> case21)
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -17279,7 +17279,7 @@ System.Func<TState, T21, TResult> case21)
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -17291,7 +17291,7 @@ System.Func<TState, T21, TResult> case21)
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -17303,7 +17303,7 @@ System.Func<TState, T21, TResult> case21)
 				
 				public FlatBufferUnion(T12 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -17315,7 +17315,7 @@ System.Func<TState, T21, TResult> case21)
 				
 				public FlatBufferUnion(T13 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -17327,7 +17327,7 @@ System.Func<TState, T21, TResult> case21)
 				
 				public FlatBufferUnion(T14 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -17339,7 +17339,7 @@ System.Func<TState, T21, TResult> case21)
 				
 				public FlatBufferUnion(T15 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -17351,7 +17351,7 @@ System.Func<TState, T21, TResult> case21)
 				
 				public FlatBufferUnion(T16 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -17363,7 +17363,7 @@ System.Func<TState, T21, TResult> case21)
 				
 				public FlatBufferUnion(T17 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -17375,7 +17375,7 @@ System.Func<TState, T21, TResult> case21)
 				
 				public FlatBufferUnion(T18 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -17387,7 +17387,7 @@ System.Func<TState, T21, TResult> case21)
 				
 				public FlatBufferUnion(T19 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -17399,7 +17399,7 @@ System.Func<TState, T21, TResult> case21)
 				
 				public FlatBufferUnion(T20 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -17411,7 +17411,7 @@ System.Func<TState, T21, TResult> case21)
 				
 				public FlatBufferUnion(T21 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -17423,7 +17423,7 @@ System.Func<TState, T21, TResult> case21)
 				
 				public FlatBufferUnion(T22 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -18735,7 +18735,7 @@ System.Func<TState, T22, TResult> case22)
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -18747,7 +18747,7 @@ System.Func<TState, T22, TResult> case22)
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -18759,7 +18759,7 @@ System.Func<TState, T22, TResult> case22)
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -18771,7 +18771,7 @@ System.Func<TState, T22, TResult> case22)
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -18783,7 +18783,7 @@ System.Func<TState, T22, TResult> case22)
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -18795,7 +18795,7 @@ System.Func<TState, T22, TResult> case22)
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -18807,7 +18807,7 @@ System.Func<TState, T22, TResult> case22)
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -18819,7 +18819,7 @@ System.Func<TState, T22, TResult> case22)
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -18831,7 +18831,7 @@ System.Func<TState, T22, TResult> case22)
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -18843,7 +18843,7 @@ System.Func<TState, T22, TResult> case22)
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -18855,7 +18855,7 @@ System.Func<TState, T22, TResult> case22)
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -18867,7 +18867,7 @@ System.Func<TState, T22, TResult> case22)
 				
 				public FlatBufferUnion(T12 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -18879,7 +18879,7 @@ System.Func<TState, T22, TResult> case22)
 				
 				public FlatBufferUnion(T13 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -18891,7 +18891,7 @@ System.Func<TState, T22, TResult> case22)
 				
 				public FlatBufferUnion(T14 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -18903,7 +18903,7 @@ System.Func<TState, T22, TResult> case22)
 				
 				public FlatBufferUnion(T15 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -18915,7 +18915,7 @@ System.Func<TState, T22, TResult> case22)
 				
 				public FlatBufferUnion(T16 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -18927,7 +18927,7 @@ System.Func<TState, T22, TResult> case22)
 				
 				public FlatBufferUnion(T17 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -18939,7 +18939,7 @@ System.Func<TState, T22, TResult> case22)
 				
 				public FlatBufferUnion(T18 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -18951,7 +18951,7 @@ System.Func<TState, T22, TResult> case22)
 				
 				public FlatBufferUnion(T19 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -18963,7 +18963,7 @@ System.Func<TState, T22, TResult> case22)
 				
 				public FlatBufferUnion(T20 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -18975,7 +18975,7 @@ System.Func<TState, T22, TResult> case22)
 				
 				public FlatBufferUnion(T21 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -18987,7 +18987,7 @@ System.Func<TState, T22, TResult> case22)
 				
 				public FlatBufferUnion(T22 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -18999,7 +18999,7 @@ System.Func<TState, T22, TResult> case22)
 				
 				public FlatBufferUnion(T23 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -20367,7 +20367,7 @@ System.Func<TState, T23, TResult> case23)
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -20379,7 +20379,7 @@ System.Func<TState, T23, TResult> case23)
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -20391,7 +20391,7 @@ System.Func<TState, T23, TResult> case23)
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -20403,7 +20403,7 @@ System.Func<TState, T23, TResult> case23)
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -20415,7 +20415,7 @@ System.Func<TState, T23, TResult> case23)
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -20427,7 +20427,7 @@ System.Func<TState, T23, TResult> case23)
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -20439,7 +20439,7 @@ System.Func<TState, T23, TResult> case23)
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -20451,7 +20451,7 @@ System.Func<TState, T23, TResult> case23)
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -20463,7 +20463,7 @@ System.Func<TState, T23, TResult> case23)
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -20475,7 +20475,7 @@ System.Func<TState, T23, TResult> case23)
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -20487,7 +20487,7 @@ System.Func<TState, T23, TResult> case23)
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -20499,7 +20499,7 @@ System.Func<TState, T23, TResult> case23)
 				
 				public FlatBufferUnion(T12 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -20511,7 +20511,7 @@ System.Func<TState, T23, TResult> case23)
 				
 				public FlatBufferUnion(T13 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -20523,7 +20523,7 @@ System.Func<TState, T23, TResult> case23)
 				
 				public FlatBufferUnion(T14 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -20535,7 +20535,7 @@ System.Func<TState, T23, TResult> case23)
 				
 				public FlatBufferUnion(T15 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -20547,7 +20547,7 @@ System.Func<TState, T23, TResult> case23)
 				
 				public FlatBufferUnion(T16 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -20559,7 +20559,7 @@ System.Func<TState, T23, TResult> case23)
 				
 				public FlatBufferUnion(T17 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -20571,7 +20571,7 @@ System.Func<TState, T23, TResult> case23)
 				
 				public FlatBufferUnion(T18 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -20583,7 +20583,7 @@ System.Func<TState, T23, TResult> case23)
 				
 				public FlatBufferUnion(T19 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -20595,7 +20595,7 @@ System.Func<TState, T23, TResult> case23)
 				
 				public FlatBufferUnion(T20 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -20607,7 +20607,7 @@ System.Func<TState, T23, TResult> case23)
 				
 				public FlatBufferUnion(T21 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -20619,7 +20619,7 @@ System.Func<TState, T23, TResult> case23)
 				
 				public FlatBufferUnion(T22 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -20631,7 +20631,7 @@ System.Func<TState, T23, TResult> case23)
 				
 				public FlatBufferUnion(T23 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -20643,7 +20643,7 @@ System.Func<TState, T23, TResult> case23)
 				
 				public FlatBufferUnion(T24 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -22067,7 +22067,7 @@ System.Func<TState, T24, TResult> case24)
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -22079,7 +22079,7 @@ System.Func<TState, T24, TResult> case24)
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -22091,7 +22091,7 @@ System.Func<TState, T24, TResult> case24)
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -22103,7 +22103,7 @@ System.Func<TState, T24, TResult> case24)
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -22115,7 +22115,7 @@ System.Func<TState, T24, TResult> case24)
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -22127,7 +22127,7 @@ System.Func<TState, T24, TResult> case24)
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -22139,7 +22139,7 @@ System.Func<TState, T24, TResult> case24)
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -22151,7 +22151,7 @@ System.Func<TState, T24, TResult> case24)
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -22163,7 +22163,7 @@ System.Func<TState, T24, TResult> case24)
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -22175,7 +22175,7 @@ System.Func<TState, T24, TResult> case24)
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -22187,7 +22187,7 @@ System.Func<TState, T24, TResult> case24)
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -22199,7 +22199,7 @@ System.Func<TState, T24, TResult> case24)
 				
 				public FlatBufferUnion(T12 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -22211,7 +22211,7 @@ System.Func<TState, T24, TResult> case24)
 				
 				public FlatBufferUnion(T13 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -22223,7 +22223,7 @@ System.Func<TState, T24, TResult> case24)
 				
 				public FlatBufferUnion(T14 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -22235,7 +22235,7 @@ System.Func<TState, T24, TResult> case24)
 				
 				public FlatBufferUnion(T15 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -22247,7 +22247,7 @@ System.Func<TState, T24, TResult> case24)
 				
 				public FlatBufferUnion(T16 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -22259,7 +22259,7 @@ System.Func<TState, T24, TResult> case24)
 				
 				public FlatBufferUnion(T17 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -22271,7 +22271,7 @@ System.Func<TState, T24, TResult> case24)
 				
 				public FlatBufferUnion(T18 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -22283,7 +22283,7 @@ System.Func<TState, T24, TResult> case24)
 				
 				public FlatBufferUnion(T19 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -22295,7 +22295,7 @@ System.Func<TState, T24, TResult> case24)
 				
 				public FlatBufferUnion(T20 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -22307,7 +22307,7 @@ System.Func<TState, T24, TResult> case24)
 				
 				public FlatBufferUnion(T21 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -22319,7 +22319,7 @@ System.Func<TState, T24, TResult> case24)
 				
 				public FlatBufferUnion(T22 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -22331,7 +22331,7 @@ System.Func<TState, T24, TResult> case24)
 				
 				public FlatBufferUnion(T23 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -22343,7 +22343,7 @@ System.Func<TState, T24, TResult> case24)
 				
 				public FlatBufferUnion(T24 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -22355,7 +22355,7 @@ System.Func<TState, T24, TResult> case24)
 				
 				public FlatBufferUnion(T25 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -23835,7 +23835,7 @@ System.Func<TState, T25, TResult> case25)
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -23847,7 +23847,7 @@ System.Func<TState, T25, TResult> case25)
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -23859,7 +23859,7 @@ System.Func<TState, T25, TResult> case25)
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -23871,7 +23871,7 @@ System.Func<TState, T25, TResult> case25)
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -23883,7 +23883,7 @@ System.Func<TState, T25, TResult> case25)
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -23895,7 +23895,7 @@ System.Func<TState, T25, TResult> case25)
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -23907,7 +23907,7 @@ System.Func<TState, T25, TResult> case25)
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -23919,7 +23919,7 @@ System.Func<TState, T25, TResult> case25)
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -23931,7 +23931,7 @@ System.Func<TState, T25, TResult> case25)
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -23943,7 +23943,7 @@ System.Func<TState, T25, TResult> case25)
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -23955,7 +23955,7 @@ System.Func<TState, T25, TResult> case25)
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -23967,7 +23967,7 @@ System.Func<TState, T25, TResult> case25)
 				
 				public FlatBufferUnion(T12 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -23979,7 +23979,7 @@ System.Func<TState, T25, TResult> case25)
 				
 				public FlatBufferUnion(T13 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -23991,7 +23991,7 @@ System.Func<TState, T25, TResult> case25)
 				
 				public FlatBufferUnion(T14 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -24003,7 +24003,7 @@ System.Func<TState, T25, TResult> case25)
 				
 				public FlatBufferUnion(T15 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -24015,7 +24015,7 @@ System.Func<TState, T25, TResult> case25)
 				
 				public FlatBufferUnion(T16 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -24027,7 +24027,7 @@ System.Func<TState, T25, TResult> case25)
 				
 				public FlatBufferUnion(T17 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -24039,7 +24039,7 @@ System.Func<TState, T25, TResult> case25)
 				
 				public FlatBufferUnion(T18 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -24051,7 +24051,7 @@ System.Func<TState, T25, TResult> case25)
 				
 				public FlatBufferUnion(T19 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -24063,7 +24063,7 @@ System.Func<TState, T25, TResult> case25)
 				
 				public FlatBufferUnion(T20 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -24075,7 +24075,7 @@ System.Func<TState, T25, TResult> case25)
 				
 				public FlatBufferUnion(T21 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -24087,7 +24087,7 @@ System.Func<TState, T25, TResult> case25)
 				
 				public FlatBufferUnion(T22 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -24099,7 +24099,7 @@ System.Func<TState, T25, TResult> case25)
 				
 				public FlatBufferUnion(T23 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -24111,7 +24111,7 @@ System.Func<TState, T25, TResult> case25)
 				
 				public FlatBufferUnion(T24 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -24123,7 +24123,7 @@ System.Func<TState, T25, TResult> case25)
 				
 				public FlatBufferUnion(T25 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -24135,7 +24135,7 @@ System.Func<TState, T25, TResult> case25)
 				
 				public FlatBufferUnion(T26 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -25671,7 +25671,7 @@ System.Func<TState, T26, TResult> case26)
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -25683,7 +25683,7 @@ System.Func<TState, T26, TResult> case26)
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -25695,7 +25695,7 @@ System.Func<TState, T26, TResult> case26)
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -25707,7 +25707,7 @@ System.Func<TState, T26, TResult> case26)
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -25719,7 +25719,7 @@ System.Func<TState, T26, TResult> case26)
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -25731,7 +25731,7 @@ System.Func<TState, T26, TResult> case26)
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -25743,7 +25743,7 @@ System.Func<TState, T26, TResult> case26)
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -25755,7 +25755,7 @@ System.Func<TState, T26, TResult> case26)
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -25767,7 +25767,7 @@ System.Func<TState, T26, TResult> case26)
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -25779,7 +25779,7 @@ System.Func<TState, T26, TResult> case26)
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -25791,7 +25791,7 @@ System.Func<TState, T26, TResult> case26)
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -25803,7 +25803,7 @@ System.Func<TState, T26, TResult> case26)
 				
 				public FlatBufferUnion(T12 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -25815,7 +25815,7 @@ System.Func<TState, T26, TResult> case26)
 				
 				public FlatBufferUnion(T13 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -25827,7 +25827,7 @@ System.Func<TState, T26, TResult> case26)
 				
 				public FlatBufferUnion(T14 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -25839,7 +25839,7 @@ System.Func<TState, T26, TResult> case26)
 				
 				public FlatBufferUnion(T15 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -25851,7 +25851,7 @@ System.Func<TState, T26, TResult> case26)
 				
 				public FlatBufferUnion(T16 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -25863,7 +25863,7 @@ System.Func<TState, T26, TResult> case26)
 				
 				public FlatBufferUnion(T17 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -25875,7 +25875,7 @@ System.Func<TState, T26, TResult> case26)
 				
 				public FlatBufferUnion(T18 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -25887,7 +25887,7 @@ System.Func<TState, T26, TResult> case26)
 				
 				public FlatBufferUnion(T19 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -25899,7 +25899,7 @@ System.Func<TState, T26, TResult> case26)
 				
 				public FlatBufferUnion(T20 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -25911,7 +25911,7 @@ System.Func<TState, T26, TResult> case26)
 				
 				public FlatBufferUnion(T21 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -25923,7 +25923,7 @@ System.Func<TState, T26, TResult> case26)
 				
 				public FlatBufferUnion(T22 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -25935,7 +25935,7 @@ System.Func<TState, T26, TResult> case26)
 				
 				public FlatBufferUnion(T23 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -25947,7 +25947,7 @@ System.Func<TState, T26, TResult> case26)
 				
 				public FlatBufferUnion(T24 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -25959,7 +25959,7 @@ System.Func<TState, T26, TResult> case26)
 				
 				public FlatBufferUnion(T25 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -25971,7 +25971,7 @@ System.Func<TState, T26, TResult> case26)
 				
 				public FlatBufferUnion(T26 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -25983,7 +25983,7 @@ System.Func<TState, T26, TResult> case26)
 				
 				public FlatBufferUnion(T27 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -27575,7 +27575,7 @@ System.Func<TState, T27, TResult> case27)
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -27587,7 +27587,7 @@ System.Func<TState, T27, TResult> case27)
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -27599,7 +27599,7 @@ System.Func<TState, T27, TResult> case27)
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -27611,7 +27611,7 @@ System.Func<TState, T27, TResult> case27)
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -27623,7 +27623,7 @@ System.Func<TState, T27, TResult> case27)
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -27635,7 +27635,7 @@ System.Func<TState, T27, TResult> case27)
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -27647,7 +27647,7 @@ System.Func<TState, T27, TResult> case27)
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -27659,7 +27659,7 @@ System.Func<TState, T27, TResult> case27)
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -27671,7 +27671,7 @@ System.Func<TState, T27, TResult> case27)
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -27683,7 +27683,7 @@ System.Func<TState, T27, TResult> case27)
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -27695,7 +27695,7 @@ System.Func<TState, T27, TResult> case27)
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -27707,7 +27707,7 @@ System.Func<TState, T27, TResult> case27)
 				
 				public FlatBufferUnion(T12 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -27719,7 +27719,7 @@ System.Func<TState, T27, TResult> case27)
 				
 				public FlatBufferUnion(T13 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -27731,7 +27731,7 @@ System.Func<TState, T27, TResult> case27)
 				
 				public FlatBufferUnion(T14 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -27743,7 +27743,7 @@ System.Func<TState, T27, TResult> case27)
 				
 				public FlatBufferUnion(T15 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -27755,7 +27755,7 @@ System.Func<TState, T27, TResult> case27)
 				
 				public FlatBufferUnion(T16 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -27767,7 +27767,7 @@ System.Func<TState, T27, TResult> case27)
 				
 				public FlatBufferUnion(T17 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -27779,7 +27779,7 @@ System.Func<TState, T27, TResult> case27)
 				
 				public FlatBufferUnion(T18 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -27791,7 +27791,7 @@ System.Func<TState, T27, TResult> case27)
 				
 				public FlatBufferUnion(T19 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -27803,7 +27803,7 @@ System.Func<TState, T27, TResult> case27)
 				
 				public FlatBufferUnion(T20 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -27815,7 +27815,7 @@ System.Func<TState, T27, TResult> case27)
 				
 				public FlatBufferUnion(T21 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -27827,7 +27827,7 @@ System.Func<TState, T27, TResult> case27)
 				
 				public FlatBufferUnion(T22 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -27839,7 +27839,7 @@ System.Func<TState, T27, TResult> case27)
 				
 				public FlatBufferUnion(T23 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -27851,7 +27851,7 @@ System.Func<TState, T27, TResult> case27)
 				
 				public FlatBufferUnion(T24 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -27863,7 +27863,7 @@ System.Func<TState, T27, TResult> case27)
 				
 				public FlatBufferUnion(T25 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -27875,7 +27875,7 @@ System.Func<TState, T27, TResult> case27)
 				
 				public FlatBufferUnion(T26 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -27887,7 +27887,7 @@ System.Func<TState, T27, TResult> case27)
 				
 				public FlatBufferUnion(T27 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -27899,7 +27899,7 @@ System.Func<TState, T27, TResult> case27)
 				
 				public FlatBufferUnion(T28 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -29547,7 +29547,7 @@ System.Func<TState, T28, TResult> case28)
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -29559,7 +29559,7 @@ System.Func<TState, T28, TResult> case28)
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -29571,7 +29571,7 @@ System.Func<TState, T28, TResult> case28)
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -29583,7 +29583,7 @@ System.Func<TState, T28, TResult> case28)
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -29595,7 +29595,7 @@ System.Func<TState, T28, TResult> case28)
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -29607,7 +29607,7 @@ System.Func<TState, T28, TResult> case28)
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -29619,7 +29619,7 @@ System.Func<TState, T28, TResult> case28)
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -29631,7 +29631,7 @@ System.Func<TState, T28, TResult> case28)
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -29643,7 +29643,7 @@ System.Func<TState, T28, TResult> case28)
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -29655,7 +29655,7 @@ System.Func<TState, T28, TResult> case28)
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -29667,7 +29667,7 @@ System.Func<TState, T28, TResult> case28)
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -29679,7 +29679,7 @@ System.Func<TState, T28, TResult> case28)
 				
 				public FlatBufferUnion(T12 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -29691,7 +29691,7 @@ System.Func<TState, T28, TResult> case28)
 				
 				public FlatBufferUnion(T13 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -29703,7 +29703,7 @@ System.Func<TState, T28, TResult> case28)
 				
 				public FlatBufferUnion(T14 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -29715,7 +29715,7 @@ System.Func<TState, T28, TResult> case28)
 				
 				public FlatBufferUnion(T15 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -29727,7 +29727,7 @@ System.Func<TState, T28, TResult> case28)
 				
 				public FlatBufferUnion(T16 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -29739,7 +29739,7 @@ System.Func<TState, T28, TResult> case28)
 				
 				public FlatBufferUnion(T17 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -29751,7 +29751,7 @@ System.Func<TState, T28, TResult> case28)
 				
 				public FlatBufferUnion(T18 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -29763,7 +29763,7 @@ System.Func<TState, T28, TResult> case28)
 				
 				public FlatBufferUnion(T19 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -29775,7 +29775,7 @@ System.Func<TState, T28, TResult> case28)
 				
 				public FlatBufferUnion(T20 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -29787,7 +29787,7 @@ System.Func<TState, T28, TResult> case28)
 				
 				public FlatBufferUnion(T21 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -29799,7 +29799,7 @@ System.Func<TState, T28, TResult> case28)
 				
 				public FlatBufferUnion(T22 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -29811,7 +29811,7 @@ System.Func<TState, T28, TResult> case28)
 				
 				public FlatBufferUnion(T23 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -29823,7 +29823,7 @@ System.Func<TState, T28, TResult> case28)
 				
 				public FlatBufferUnion(T24 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -29835,7 +29835,7 @@ System.Func<TState, T28, TResult> case28)
 				
 				public FlatBufferUnion(T25 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -29847,7 +29847,7 @@ System.Func<TState, T28, TResult> case28)
 				
 				public FlatBufferUnion(T26 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -29859,7 +29859,7 @@ System.Func<TState, T28, TResult> case28)
 				
 				public FlatBufferUnion(T27 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -29871,7 +29871,7 @@ System.Func<TState, T28, TResult> case28)
 				
 				public FlatBufferUnion(T28 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -29883,7 +29883,7 @@ System.Func<TState, T28, TResult> case28)
 				
 				public FlatBufferUnion(T29 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -31587,7 +31587,7 @@ System.Func<TState, T29, TResult> case29)
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -31599,7 +31599,7 @@ System.Func<TState, T29, TResult> case29)
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -31611,7 +31611,7 @@ System.Func<TState, T29, TResult> case29)
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -31623,7 +31623,7 @@ System.Func<TState, T29, TResult> case29)
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -31635,7 +31635,7 @@ System.Func<TState, T29, TResult> case29)
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -31647,7 +31647,7 @@ System.Func<TState, T29, TResult> case29)
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -31659,7 +31659,7 @@ System.Func<TState, T29, TResult> case29)
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -31671,7 +31671,7 @@ System.Func<TState, T29, TResult> case29)
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -31683,7 +31683,7 @@ System.Func<TState, T29, TResult> case29)
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -31695,7 +31695,7 @@ System.Func<TState, T29, TResult> case29)
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -31707,7 +31707,7 @@ System.Func<TState, T29, TResult> case29)
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -31719,7 +31719,7 @@ System.Func<TState, T29, TResult> case29)
 				
 				public FlatBufferUnion(T12 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -31731,7 +31731,7 @@ System.Func<TState, T29, TResult> case29)
 				
 				public FlatBufferUnion(T13 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -31743,7 +31743,7 @@ System.Func<TState, T29, TResult> case29)
 				
 				public FlatBufferUnion(T14 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -31755,7 +31755,7 @@ System.Func<TState, T29, TResult> case29)
 				
 				public FlatBufferUnion(T15 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -31767,7 +31767,7 @@ System.Func<TState, T29, TResult> case29)
 				
 				public FlatBufferUnion(T16 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -31779,7 +31779,7 @@ System.Func<TState, T29, TResult> case29)
 				
 				public FlatBufferUnion(T17 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -31791,7 +31791,7 @@ System.Func<TState, T29, TResult> case29)
 				
 				public FlatBufferUnion(T18 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -31803,7 +31803,7 @@ System.Func<TState, T29, TResult> case29)
 				
 				public FlatBufferUnion(T19 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -31815,7 +31815,7 @@ System.Func<TState, T29, TResult> case29)
 				
 				public FlatBufferUnion(T20 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -31827,7 +31827,7 @@ System.Func<TState, T29, TResult> case29)
 				
 				public FlatBufferUnion(T21 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -31839,7 +31839,7 @@ System.Func<TState, T29, TResult> case29)
 				
 				public FlatBufferUnion(T22 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -31851,7 +31851,7 @@ System.Func<TState, T29, TResult> case29)
 				
 				public FlatBufferUnion(T23 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -31863,7 +31863,7 @@ System.Func<TState, T29, TResult> case29)
 				
 				public FlatBufferUnion(T24 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -31875,7 +31875,7 @@ System.Func<TState, T29, TResult> case29)
 				
 				public FlatBufferUnion(T25 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -31887,7 +31887,7 @@ System.Func<TState, T29, TResult> case29)
 				
 				public FlatBufferUnion(T26 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -31899,7 +31899,7 @@ System.Func<TState, T29, TResult> case29)
 				
 				public FlatBufferUnion(T27 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -31911,7 +31911,7 @@ System.Func<TState, T29, TResult> case29)
 				
 				public FlatBufferUnion(T28 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -31923,7 +31923,7 @@ System.Func<TState, T29, TResult> case29)
 				
 				public FlatBufferUnion(T29 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
@@ -31935,7 +31935,7 @@ System.Func<TState, T29, TResult> case29)
 				
 				public FlatBufferUnion(T30 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}

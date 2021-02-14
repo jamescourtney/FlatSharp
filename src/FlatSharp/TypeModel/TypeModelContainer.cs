@@ -69,36 +69,36 @@ namespace FlatSharp.TypeModel
         /// code using the Facade type.
         /// </summary>
         /// <typeparam name="TUnderlyingType">The underlying type.</typeparam>
-        /// <typeparam name="TType">The exposed type.</typeparam>
-        /// <typeparam name="TConverter">The converter between <typeparamref name="TUnderlyingType"/> and <typeparamref name="TType"/>.</typeparam>
+        /// <typeparam name="TFacadeType">The Facade (exposed) type.</typeparam>
+        /// <typeparam name="TConverter">The converter between <typeparamref name="TUnderlyingType"/> and <typeparamref name="TFacadeType"/>.</typeparam>
         /// <param name="throwOnTypeConflict">
         /// When set, throws an exception when registring a Facade for a type already resolved by this container.
-        /// It is recommended to pass <code>true</code> as this parameter to make you aware if future versions of FlatSharp
+        /// It is recommended to pass 'true' as this parameter to make you aware if future versions of FlatSharp
         /// begin supporting a type for which you have defined a facade.
         /// </param>
-        public void RegisterTypeFacade<TUnderlyingType, TType, TConverter>(bool throwOnTypeConflict = true)
-            where TConverter : struct, IFacadeTypeConverter<TUnderlyingType, TType>
+        public void RegisterTypeFacade<TUnderlyingType, TFacadeType, TConverter>(bool throwOnTypeConflict = true)
+            where TConverter : struct, ITypeFacadeConverter<TUnderlyingType, TFacadeType>
         {
             if (!this.TryCreateTypeModel(typeof(TUnderlyingType), out ITypeModel model))
             {
                 throw new InvalidOperationException($"Unable to resolve type model for type '{typeof(TUnderlyingType).FullName}'.");
             }
 
-            if (throwOnTypeConflict && this.TryCreateTypeModel(typeof(TType), out _))
+            if (throwOnTypeConflict && this.TryCreateTypeModel(typeof(TFacadeType), out _))
             {
                 throw new InvalidOperationException($"The Type model container already contains a type model for '{typeof(TUnderlyingType).FullName}', which may lead to unexpected behaviors.");
             }
 
             if (typeof(TUnderlyingType).IsValueType && Nullable.GetUnderlyingType(typeof(TUnderlyingType)) == null)
             {
-                // non-nullable value type.
-                var facadeContainer = new FacadeTypeModelProvider<TConverter, TUnderlyingType, TType>(model);
+                // non-nullable value type: omit the null check
+                var facadeContainer = new TypeFacadeTypeModelProvider<TConverter, TUnderlyingType, TFacadeType>(model);
                 this.RegisterProvider(facadeContainer);
             }
             else
             {
                 // reference type or nullable value type.
-                var facadeContainer = new FacadeTypeModelProvider<NullCheckingFacadeTypeConverter<TUnderlyingType, TType, TConverter>, TUnderlyingType, TType>(model);
+                var facadeContainer = new TypeFacadeTypeModelProvider<NullCheckingTypeFacadeConverter<TUnderlyingType, TFacadeType, TConverter>, TUnderlyingType, TFacadeType>(model);
                 this.RegisterProvider(facadeContainer);
             }
         }

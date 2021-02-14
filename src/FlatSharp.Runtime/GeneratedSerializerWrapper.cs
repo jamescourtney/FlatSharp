@@ -53,7 +53,7 @@ namespace FlatSharp
 
         public int GetMaxSize(T item)
         {
-            if (object.ReferenceEquals(item, null))
+            if (item is null)
             {
                 throw new InvalidDataException("The root table may not be null.");
             }
@@ -80,7 +80,7 @@ namespace FlatSharp
 
         public int Write(ISpanWriter writer, Span<byte> destination, T item)
         {
-            if (object.ReferenceEquals(item, null))
+            if (item is null)
             {
                 throw new InvalidDataException("The root table may not be null.");
             }

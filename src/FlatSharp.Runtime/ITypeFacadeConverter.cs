@@ -24,7 +24,7 @@ namespace FlatSharp.Runtime
     /// </summary>
     /// <typeparam name="TUnderlyingType">The underlying type used for literal storage in the FlatBuffer.</typeparam>
     /// <typeparam name="TFacadeType">The facade type.</typeparam>
-    public interface IFacadeTypeConverter<TUnderlyingType, TFacadeType>
+    public interface ITypeFacadeConverter<TUnderlyingType, TFacadeType>
     {
         /// <summary>
         /// Converts from the facade type to the underlying type. Note that the conversion must return non-null in all situations.
