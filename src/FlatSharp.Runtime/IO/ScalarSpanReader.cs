@@ -101,7 +101,7 @@ namespace FlatSharp
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string ReadString(ReadOnlySpan<byte> span, Encoding encoding)
         {
-#if NETCOREAPP
+#if NETCOREAPP || NETSTANDARD2_1
             return encoding.GetString(span);
 #else
             return encoding.GetString(span.ToArray());

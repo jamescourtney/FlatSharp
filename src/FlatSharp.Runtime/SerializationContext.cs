@@ -61,11 +61,7 @@ namespace FlatSharp
         /// <summary>
         /// The shared string writer used for this serialization operation.
         /// </summary>
-        public ISharedStringWriter SharedStringWriter
-        {
-            get;
-            set;
-        }
+        public ISharedStringWriter? SharedStringWriter { get; set; }
 
         /// <summary>
         /// Resets the context.

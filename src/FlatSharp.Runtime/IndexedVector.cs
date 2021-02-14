@@ -19,8 +19,7 @@ namespace FlatSharp
     using System;
     using System.Collections;
     using System.Collections.Generic;
-
-#nullable enable
+    using System.Diagnostics.CodeAnalysis;
 
     /// <summary>
     /// An indexed vector.
@@ -99,7 +98,12 @@ namespace FlatSharp
         /// <summary>
         /// Tries to get the given value from the backing dictionary.
         /// </summary>
-        public bool TryGetValue(TKey key, out TValue? value)
+        public bool TryGetValue(
+            TKey key,
+#if NETSTANDARD2_1
+            [NotNullWhen(true)]
+#endif
+            out TValue? value)
         {
             return this.backingDictionary.TryGetValue(key, out value);
         }

@@ -41,8 +41,6 @@ namespace FlatSharp
 
     using FlatSharp.Attributes;
 
-#nullable enable
-
     /// <summary>
     /// Helper methods for dealing with sorted vectors. This class provides functionality for both sorting vectors and
     /// binary searching through them.

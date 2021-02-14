@@ -18,7 +18,7 @@ namespace FlatSharp
 {
     using System;
     using System.Diagnostics;
-    using System.Runtime.CompilerServices;
+    using System.Diagnostics.CodeAnalysis;
 
     /// <summary>
     /// Represents a shared string
@@ -34,9 +34,12 @@ namespace FlatSharp
             this.str = str;
         }
 
-        public static SharedString Create(string str)
+#if NETSTANDARD2_1
+        [return: NotNullIfNotNull("str")]
+#endif
+        public static SharedString? Create(string? str)
         {
-            if (str == null)
+            if (str is null)
             {
                 return null;
             }
@@ -46,9 +49,9 @@ namespace FlatSharp
 
         public string String => this.str;
 
-        public bool Equals(SharedString other)
+        public bool Equals(SharedString? other)
         {
-            if ((object)other == null)
+            if (other is null)
             {
                 return false;
             }
@@ -72,7 +75,7 @@ namespace FlatSharp
             return hashCode;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj switch 
             { 
@@ -82,38 +85,44 @@ namespace FlatSharp
             };
         }
 
-        public bool Equals(string other)
+        public bool Equals(string? other)
         {
             return this.str == other;
         }
 
-        public static bool operator ==(SharedString x, SharedString y) => StaticEquals(x, y);
+        public static bool operator ==(SharedString? x, SharedString? y) => StaticEquals(x, y);
 
-        public static bool operator ==(SharedString x, string y) => x?.str == y;
+        public static bool operator ==(SharedString? x, string? y) => x?.str == y;
 
-        public static bool operator ==(string x, SharedString y) => y?.str == x;
+        public static bool operator ==(string? x, SharedString? y) => y?.str == x;
 
-        public static bool operator !=(SharedString x, SharedString y) => !StaticEquals(x, y);
+        public static bool operator !=(SharedString? x, SharedString? y) => !StaticEquals(x, y);
 
-        public static bool operator !=(SharedString x, string y) => !(x == y);
+        public static bool operator !=(SharedString? x, string? y) => !(x == y);
 
-        public static bool operator !=(string x, SharedString y) => !(x == y);
+        public static bool operator !=(string? x, SharedString? y) => !(x == y);
 
-        public static implicit operator string(SharedString sharedString) => sharedString?.str;
+#if NETSTANDARD2_1
+        [return: NotNullIfNotNull("sharedString")]
+#endif
+        public static implicit operator string?(SharedString? sharedString) => sharedString?.str;
 
-        public static implicit operator SharedString(string x) => SharedString.Create(x);
+#if NETSTANDARD2_1
+        [return: NotNullIfNotNull("x")]
+#endif
+        public static implicit operator SharedString?(string? x) => SharedString.Create(x);
 
-        internal static bool StaticEquals(SharedString x, SharedString y)
+        internal static bool StaticEquals(SharedString? x, SharedString? y)
         {
-            bool xNull = (object)x == null;
-            bool yNull = (object)y == null;
+            bool xNull = x is null;
+            bool yNull = y is null;
 
             if (xNull || yNull)
             {
                 return xNull && yNull;
             }
 
-            return x.GetHashCode() == y.GetHashCode() &&
+            return x!.GetHashCode() == y!.GetHashCode() &&
                    x.str == y.str;
         }
     }

@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-#nullable enable
 namespace FlatSharp
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
 
     /// <summary>
@@ -45,7 +45,12 @@ namespace FlatSharp
         /// <summary>
         /// Tries to get the value of the given key.
         /// </summary>
-        bool TryGetValue(TKey key, out TValue? value);
+        bool TryGetValue(
+            TKey key,
+#if NETSTANDARD2_1
+            [NotNullWhen(true)]
+#endif
+            out TValue? value);
 
         /// <summary>
         /// Returns true if the vector contains the given key.

@@ -27,7 +27,7 @@ namespace FlatSharp
         /// <summary>
         /// Gets or sets the SharedStringReader for this buffer.
         /// </summary>
-        ISharedStringReader SharedStringReader { get; set; }
+        ISharedStringReader? SharedStringReader { get; set; }
 
         /// <summary>
         /// Gets the length of this input buffer.

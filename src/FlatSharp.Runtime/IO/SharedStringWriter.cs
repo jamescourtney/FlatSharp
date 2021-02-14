@@ -84,9 +84,10 @@ namespace FlatSharp
             }
 
             var offsets = line.Offsets;
-            if (line.String is not null)
+            SharedString? sharedString = line.String;
+            if (sharedString is not null)
             {
-                FlushSharedString(spanWriter, data, line.String, offsets, context);
+                FlushSharedString(spanWriter, data, sharedString, offsets, context);
             }
 
             line.String = value;
@@ -134,7 +135,7 @@ namespace FlatSharp
         private struct WriteCacheEntry
         {
             // The string
-            public SharedString String;
+            public SharedString? String;
 
             public List<int> Offsets;
         }

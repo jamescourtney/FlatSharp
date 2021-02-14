@@ -27,17 +27,17 @@ namespace FlatSharp
         /// <summary>
         /// Gets the C# code that FlatSharp generated to produce this serializer.
         /// </summary>
-        string CSharp { get; }
+        string? CSharp { get; }
 
         /// <summary>
         /// Gets the Assembly FlatSharp generated to produce this serializer.
         /// </summary>
-        Assembly Assembly { get; }
+        Assembly? Assembly { get; }
 
         /// <summary>
         /// Gets the raw data of the <see cref="Assembly"/> property. Can be saved to disk and decompiled, referenced, etc.
         /// </summary>
-        byte[] AssemblyBytes { get; }
+        byte[]? AssemblyBytes { get; }
 
         /// <summary>
         /// Writes the given item to the buffer using the given spanwriter.
