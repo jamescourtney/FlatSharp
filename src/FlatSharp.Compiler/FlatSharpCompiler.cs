@@ -27,12 +27,26 @@ namespace FlatSharp.Compiler
     using System.Threading;
     using Antlr4.Runtime;
     using Antlr4.Runtime.Misc;
+    using CommandLine;
     using FlatSharp.TypeModel;
 
-    public static class FlatSharpCompiler
+    public class FlatSharpCompiler
     {
         static int Main(string[] args)
         {
+            int exitCode = -1;
+
+            CommandLine.Parser.Default.ParseArguments<CompilerOptions>(args)
+                .WithParsed(x =>
+                {
+                    exitCode = RunCompiler(x);
+                });
+
+            return exitCode;
+        }
+
+        private static int RunCompiler(CompilerOptions options)
+        { 
             using (var context = ErrorContext.Current)
             {
                 try
@@ -40,10 +54,9 @@ namespace FlatSharp.Compiler
                     context.PushScope("$");
 
                     // Read existing file to see if we even need to do any work.
-                    string fbsFileName = Path.GetFileName(args[0]);
+                    string fbsFileName = Path.GetFileName(options.InputFile);
                     string outputFileName = fbsFileName + ".generated.cs";
-                    string outputPath = args.Length < 2 || string.IsNullOrEmpty(args[1]) ? Path.GetDirectoryName(args[0]) : args[1];
-                    string outputFullPath = Path.Combine(outputPath, outputFileName);
+                    string outputFullPath = Path.Combine(options.OutputDirectory, outputFileName);
                     // string fbsText = File.ReadAllText(args[0]);
 
                     int attemptCount = 0;
@@ -51,7 +64,7 @@ namespace FlatSharp.Compiler
                     {
                         try
                         {
-                            RootNodeDefinition rootNode = ParseSyntax(args[0], new IncludeFileLoader());
+                            RootNodeDefinition rootNode = ParseSyntax(options.InputFile, new IncludeFileLoader());
 
                             if (File.Exists(outputFullPath))
                             {
@@ -63,7 +76,7 @@ namespace FlatSharp.Compiler
                                 }
                             }
 
-                            string cSharp = CreateCSharp(rootNode);
+                            string cSharp = CreateCSharp(rootNode, options);
                             File.WriteAllText(outputFullPath, cSharp);
                         }
                         catch (IOException)
@@ -96,7 +109,7 @@ namespace FlatSharp.Compiler
                 }
                 catch (FileNotFoundException)
                 {
-                    Console.Error.WriteLine($"File '{args[0]}' was not found");
+                    Console.Error.WriteLine($"File '{options.InputFile}' was not found");
                     return -1;
                 }
                 catch (IndexOutOfRangeException)
@@ -115,6 +128,7 @@ namespace FlatSharp.Compiler
 
         internal static Assembly CompileAndLoadAssembly(
             string fbsSchema,
+            CompilerOptions options,
             IEnumerable<Assembly> additionalReferences = null,
             Dictionary<string, string> additionalIncludes = null)
         {
@@ -138,7 +152,7 @@ namespace FlatSharp.Compiler
                 {
                     Assembly[] additionalRefs = additionalReferences?.ToArray() ?? Array.Empty<Assembly>();
                     var rootNode = ParseSyntax("root.fbs", includeLoader);
-                    string cSharp = CreateCSharp(rootNode);
+                    string cSharp = CreateCSharp(rootNode, options);
                     var (assembly, formattedText, _) = RoslynSerializerGenerator.CompileAssembly(cSharp, true, additionalRefs);
                     string debugText = formattedText();
                     return assembly;
@@ -228,7 +242,10 @@ namespace FlatSharp.Compiler
             return parser;
         }
 
-        internal static string TestHookCreateCSharp(string fbsSchema, Dictionary<string, string> includes = null)
+        internal static string TestHookCreateCSharp(
+            string fbsSchema,
+            CompilerOptions options,
+            Dictionary<string, string> includes = null)
         {
             InMemoryIncludeLoader includeLoader = new InMemoryIncludeLoader
             {
@@ -245,11 +262,11 @@ namespace FlatSharp.Compiler
 
             using (ErrorContext.Current)
             {
-                return CreateCSharp(ParseSyntax("root.fbs", includeLoader));
+                return CreateCSharp(ParseSyntax("root.fbs", includeLoader), options);
             }
         }
 
-        private static string CreateCSharp(BaseSchemaMember rootNode)
+        private static string CreateCSharp(BaseSchemaMember rootNode, CompilerOptions options)
         {
             if (ErrorContext.Current.Errors.Any())
             {
@@ -258,12 +275,13 @@ namespace FlatSharp.Compiler
 
             var tablesNeedingSerializers = new List<TableOrStructDefinition>();
             var rpcDefinitions = new List<RpcDefinition>();
+
             FindItemsRequiringSecondCodePass(rootNode, tablesNeedingSerializers, rpcDefinitions);
 
             if (tablesNeedingSerializers.Count == 0 && rpcDefinitions.Count == 0)
             {
                 // Hey, no serializers or RPCs. We're all done. Go ahead and return the code we already generated.
-                CodeWriter tempWriter = new CodeWriter();
+                CodeWriter tempWriter = new CodeWriter(options);
                 rootNode.WriteCode(tempWriter, CodeWritingPass.SecondPass, rootNode.DeclaringFile, new Dictionary<string, string>());
 
                 if (ErrorContext.Current.Errors.Any())
@@ -274,10 +292,11 @@ namespace FlatSharp.Compiler
                 return tempWriter.ToString();
             }
 
-            // Compile the assembly so that we may generate serializers for the data contracts defined in this FBS file.;
+            // Compile the assembly so that we may generate serializers for the data contracts defined in this FBS file.
             // Compile with firstpass here to include all data (even stuff from includes).
-            CodeWriter writer = new CodeWriter();
+            CodeWriter writer = new CodeWriter(options);
             rootNode.WriteCode(writer, CodeWritingPass.FirstPass, rootNode.DeclaringFile, new Dictionary<string, string>());
+
             if (ErrorContext.Current.Errors.Any())
             {
                 throw new InvalidFbsFileException(ErrorContext.Current.Errors);
@@ -292,7 +311,7 @@ namespace FlatSharp.Compiler
                 generatedSerializers[definition.FullName] = GenerateSerializerForType(assembly, definition);
             }
 
-            writer = new CodeWriter();
+            writer = new CodeWriter(options);
             rootNode.WriteCode(writer, CodeWritingPass.SecondPass, rootNode.DeclaringFile, generatedSerializers);
 
             if (ErrorContext.Current.Errors.Any())
@@ -361,20 +380,6 @@ namespace FlatSharp.Compiler
             {
                 FindItemsRequiringSecondCodePass(childNode, tables, rpcs);
             }
-        }
-    }
-
-    internal class CustomErrorListener : IAntlrErrorListener<IToken>
-    {
-        public void SyntaxError(
-            [NotNull] IRecognizer recognizer,
-            [Nullable] IToken offendingSymbol,
-            int line,
-            int charPositionInLine,
-            [NotNull] string msg,
-            [Nullable] RecognitionException e)
-        {
-            ErrorContext.Current?.RegisterError($"Syntax error FBS file: Token='{offendingSymbol.Text}', Msg='{msg}' Line='{line}:{charPositionInLine}");
         }
     }
 }

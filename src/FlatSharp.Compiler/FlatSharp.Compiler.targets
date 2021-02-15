@@ -20,9 +20,9 @@
       <CompilerInvocation>dotnet $(CompilerPath)</CompilerInvocation>
     </PropertyGroup>
 
-    <Message Text="$(TargetFramework) $(TargetFrameworkIdentifier): $(CompilerInvocation) &quot;%(FlatSharpSchema.fullpath)&quot;" Importance="high" />
+    <Message Text="$(TargetFramework) $(TargetFrameworkIdentifier): $(CompilerInvocation) --input &quot;%(FlatSharpSchema.fullpath)&quot;" Importance="high" />
     <Exec 
-        Command="$(CompilerInvocation) &quot;%(FlatSharpSchema.fullpath)&quot; $(IntermediateOutputPath)" 
+        Command="$(CompilerInvocation) --input &quot;%(FlatSharpSchema.fullpath)&quot; --output &quot;$(IntermediateOutputPath)&quot;" 
         CustomErrorRegularExpression=".*" 
         Condition=" '%(FlatSharpSchema.fullpath)' != '' " />
     
