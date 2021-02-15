@@ -139,7 +139,7 @@ namespace FlatSharp
 
             TKey key = KeyGetter(value);
 
-#if NETCOREAPP
+#if NETCOREAPP || NET5_0
             return this.backingDictionary.TryAdd(key, value);
 #else
             if (this.backingDictionary.ContainsKey(key))

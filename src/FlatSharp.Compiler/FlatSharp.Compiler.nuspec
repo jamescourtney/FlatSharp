@@ -15,23 +15,28 @@
      <dependencies>
       <group targetFramework=".NETFramework4.7" />
       <group targetFramework=".NETCoreApp2.1" />
+      <group targetFramework="net5.0" />
     </dependencies>
   </metadata>
   <files>
     <file src="_._" target="lib/netcoreapp2.1/" />
+    <file src="_._" target="lib/net5.0/" />
     <file src="_._" target="lib/net47/" />
     
     <file src="FlatSharp.Compiler.targets" target="build/netcoreapp2.1/FlatSharp.Compiler.targets" />
     <file src="FlatSharp.Compiler.targets" target="build/net47/FlatSharp.Compiler.targets" />
+    <file src="FlatSharp.Compiler.targets" target="build/net5.0/FlatSharp.Compiler.targets" />
     
     <file src="FlatSharp.Compiler.targets" target="tools/" />
     
-    <file src="$AntlrRuntime$\lib\net45\**\*.dll" target="tools/net47" />
     <file src="$OutDir$\net47\*.dll" target="tools/net47" />
     <file src="$OutDir$\net47\*.exe" target="tools/net47" />
     
-    <file src="$AntlrRuntime$\lib\netstandard1.1\**\*.dll" target="tools/netcoreapp2.1" />
     <file src="$OutDir$\netcoreapp2.1\**.dll" target="tools/netcoreapp2.1" />
     <file src="$OutDir$\netcoreapp2.1\*.json" target="tools/netcoreapp2.1" />
+
+    <file src="$OutDir$\net5.0\**.dll" target="tools/net5.0" />
+    <file src="$OutDir$\net5.0\**.exe" target="tools/net5.0" />
+    <file src="$OutDir$\net5.0\*.json" target="tools/net5.0" />
   </files>
 </package>

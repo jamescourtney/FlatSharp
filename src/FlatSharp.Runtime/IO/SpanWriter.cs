@@ -105,7 +105,7 @@ namespace FlatSharp
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int GetStringBytes(Span<byte> destination, string value, Encoding encoding)
         {
-#if NETCOREAPP
+#if NETCOREAPP || NET5_0
             int bytesWritten = encoding.GetBytes(value, destination);
 #else
             var bytes = encoding.GetBytes(value);

@@ -2,7 +2,7 @@
   <Import Project="..\common.props" />
   
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net47</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.1;net47;net5.0</TargetFrameworks>
     <AssemblyName>FlatSharp.Compiler</AssemblyName>
     <RootNamespace>FlatSharp.Compiler</RootNamespace>
     <OutputType>Exe</OutputType>
@@ -20,6 +20,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Antlr4.Runtime" Version="$(AntlrVersion)" />
+    <PackageReference Include="NETStandard.Library" Version="2.0.3" />
   </ItemGroup>
 
   <ItemGroup>
