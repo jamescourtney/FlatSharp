@@ -208,20 +208,17 @@ namespace FlatSharp.Compiler
                 isNonVirtual = parent.NonVirtual.Value;
             }
 
-            string accessModifier = this.SetterKind switch
+            string setter = this.SetterKind switch
             {
-                SetterKind.Public => string.Empty, // setter has same access as getter.
-                SetterKind.Protected => "protected",
-                SetterKind.ProtectedInternal => "protected internal",
-                SetterKind.None => null,
+                SetterKind.Public => "set;", // setter has same access as getter.
+                SetterKind.PublicInit => "init;",
+                SetterKind.Protected => "protected set;",
+                SetterKind.ProtectedInit => "protected init;",
+                SetterKind.ProtectedInternal => "protected internal set;",
+                SetterKind.ProtectedInternalInit => "protected internal init;",
+                SetterKind.None => string.Empty,
                 _ => string.Empty,
             };
-
-            string setter = $"{accessModifier} set;";
-            if (accessModifier == null)
-            {
-                setter = string.Empty;
-            }
 
             writer.AppendLine($"[FlatBufferItem({this.Index}{defaultValueAttribute}{isDeprecated}{sortedVector}{isKey})]");
             writer.AppendLine($"public {(isNonVirtual ? string.Empty : "virtual ")}{clrTypeName} {name} {{ get; {setter} }}{defaultValueAssignment}");

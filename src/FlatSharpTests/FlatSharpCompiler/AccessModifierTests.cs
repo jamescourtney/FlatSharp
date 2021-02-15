@@ -27,9 +27,9 @@ namespace FlatSharpTests.Compiler
     public class AccessModifierTests
     {
         [TestMethod]
-        public void TestAccessModifierCombinations()
+        public void TestAccessModifierCombinations_Setters()
         {
-            foreach (SetterKind setterKind in Enum.GetValues(typeof(SetterKind)))
+            foreach (SetterKind setterKind in new[] { SetterKind.None, SetterKind.Public, SetterKind.Protected, SetterKind.ProtectedInternal })
             {
                 foreach (FlatBufferDeserializationOption option in Enum.GetValues(typeof(FlatBufferDeserializationOption)))
                 {
@@ -37,6 +37,20 @@ namespace FlatSharpTests.Compiler
                 }
             }
         }
+
+#if NET5_0
+        [TestMethod]
+        public void TestAccessModifierCombinations_Init()
+        {
+            foreach (SetterKind setterKind in new[] { SetterKind.PublicInit, SetterKind.ProtectedInit, SetterKind.ProtectedInternalInit })
+            {
+                foreach (FlatBufferDeserializationOption option in Enum.GetValues(typeof(FlatBufferDeserializationOption)))
+                {
+                    this.Test(setterKind, option);
+                }
+            }
+        }
+#endif
 
         private void Test(SetterKind setterKind, FlatBufferDeserializationOption option)
         {
@@ -73,25 +87,34 @@ namespace FlatSharpTests.Compiler
                 Assert.IsTrue(forcedVirtualProperty.GetMethod.IsPublic);
                 Assert.IsTrue(forcedNonVirtualProperty.GetMethod.IsPublic);
 
+                if (setterKind == SetterKind.PublicInit ||
+                    setterKind == SetterKind.ProtectedInit ||
+                    setterKind == SetterKind.ProtectedInternalInit)
+                {
+                    Assert.IsNotNull(defaultProperty.SetMethod.ReturnParameter.GetRequiredCustomModifiers().Any(x => x.FullName == "System.Runtime.CompilerServices.IsExternalInit"));
+                    Assert.IsNotNull(forcedVirtualProperty.SetMethod.ReturnParameter.GetRequiredCustomModifiers().Any(x => x.FullName == "System.Runtime.CompilerServices.IsExternalInit"));
+                    Assert.IsNotNull(forcedNonVirtualProperty.SetMethod.ReturnParameter.GetRequiredCustomModifiers().Any(x => x.FullName == "System.Runtime.CompilerServices.IsExternalInit"));
+                }
+
                 if (setterKind == SetterKind.None)
                 {
                     Assert.IsNull(defaultProperty.SetMethod);
                     Assert.IsNull(forcedVirtualProperty.SetMethod);
                     Assert.IsNotNull(forcedNonVirtualProperty.SetMethod); // non-virtual can't have null setters.
                 }
-                else if (setterKind == SetterKind.Protected)
+                else if (setterKind == SetterKind.Protected || setterKind == SetterKind.ProtectedInit)
                 {
                     Assert.IsTrue(defaultProperty.SetMethod.IsFamily);
                     Assert.IsTrue(forcedVirtualProperty.SetMethod.IsFamily);
                     Assert.IsTrue(forcedNonVirtualProperty.SetMethod.IsFamily);
                 }
-                else if (setterKind == SetterKind.ProtectedInternal)
+                else if (setterKind == SetterKind.ProtectedInternal || setterKind == SetterKind.ProtectedInternalInit)
                 {
                     Assert.IsTrue(defaultProperty.SetMethod.IsFamilyOrAssembly);
                     Assert.IsTrue(forcedVirtualProperty.SetMethod.IsFamilyOrAssembly);
                     Assert.IsTrue(forcedNonVirtualProperty.SetMethod.IsFamilyOrAssembly);
                 }
-                else if (setterKind == SetterKind.Public)
+                else if (setterKind == SetterKind.Public || setterKind == SetterKind.PublicInit)
                 {
                     Assert.IsTrue(defaultProperty.SetMethod.IsPublic);
                     Assert.IsTrue(forcedVirtualProperty.SetMethod.IsPublic);

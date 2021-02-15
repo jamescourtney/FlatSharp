@@ -44,7 +44,7 @@ namespace FlatSharpTests
         [TestMethod]
         public void BuildSerializer_AccessMethods_NonVirtual()
         {
-            FlatBufferSerializer.Default.GetMaxSize(new TestClass());
+            FlatBufferSerializer.Default.GetMaxSize(new TestClassNonVirtual());
         }
 
         [FlatBufferTable]
@@ -61,6 +61,17 @@ namespace FlatSharpTests
 
             [FlatBufferItem(3)]
             public virtual TestStruct Struct { get; protected set; }
+
+#if NET5_0
+            [FlatBufferItem(4)]
+            public virtual int BothPublicInit { get; init; }
+
+            [FlatBufferItem(5)]
+            public virtual int PublicGetterProtectedInternalInit { get; protected internal init; }
+
+            [FlatBufferItem(6)]
+            public virtual int PublicGetterProtectedInit { get; protected init; }
+#endif
         }
 
         [FlatBufferStruct]
@@ -74,6 +85,17 @@ namespace FlatSharpTests
 
             [FlatBufferItem(2)]
             public virtual int PublicGetterProtectedSetter { get; protected set; }
+
+#if NET5_0
+            [FlatBufferItem(3)]
+            public virtual int BothPublicInit { get; init; }
+
+            [FlatBufferItem(4)]
+            public virtual int PublicGetterProtectedInternalInit { get; protected internal init; }
+
+            [FlatBufferItem(5)]
+            public virtual int PublicGetterProtectedInit { get; protected init; }
+#endif
         }
 
 
@@ -91,6 +113,18 @@ namespace FlatSharpTests
 
             [FlatBufferItem(3)]
             public TestStructNonVirtual Struct { get; protected set; }
+
+#if NET5_0
+            [FlatBufferItem(4)]
+            public int BothPublicInit { get; init; }
+
+            [FlatBufferItem(5)]
+            public int PublicGetterProtectedInternalInit { get; protected internal init; }
+
+            [FlatBufferItem(6)]
+            public int PublicGetterProtectedInit { get; protected init; }
+#endif
+
         }
 
         [FlatBufferStruct]
@@ -104,6 +138,14 @@ namespace FlatSharpTests
 
             [FlatBufferItem(2)]
             public int PublicGetterProtectedSetter { get; protected set; }
+
+#if NET5_0
+            [FlatBufferItem(3)]
+            public int PublicGetterProtectedInternalInit { get; protected internal init; }
+
+            [FlatBufferItem(4)]
+            public int PublicGetterProtectedInit { get; protected init; }
+#endif
         }
     }
 }
