@@ -29,6 +29,11 @@ namespace FlatSharp
 
         internal static string GetCompilableTypeName(Type t)
         {
+            if (string.IsNullOrEmpty(t.FullName))
+            {
+                throw new InvalidOperationException($"FlatSharp.Unexpected: {t} has null/empty fully name.");
+            }
+
             string name;
             if (t.IsGenericType)
             {
@@ -42,7 +47,7 @@ namespace FlatSharp
             }
             else if (t.IsArray)
             {
-                name = $"{GetCompilableTypeName(t.GetElementType())}[]";
+                name = $"{GetCompilableTypeName(t.GetElementType()!)}[]";
             }
             else
             {
@@ -56,6 +61,11 @@ namespace FlatSharp
         internal static (string propertyModifier, string getModifer, string setModifier) GetPropertyAccessModifiers(
             PropertyInfo property)
         {
+            if (property.GetMethod is null)
+            {
+                throw new InvalidOperationException($"FlatSharp internal error: Property {property.DeclaringType?.Name}.{property.Name} has null get method.");
+            }
+
             var getTuple = GetAccessModifier(property.GetMethod);
 
             if (property.SetMethod is null)

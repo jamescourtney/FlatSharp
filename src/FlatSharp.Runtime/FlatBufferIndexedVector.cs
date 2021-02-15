@@ -29,6 +29,7 @@ namespace FlatSharp
     [EditorBrowsable(EditorBrowsableState.Never)]
     public class FlatBufferIndexedVector<TKey, TValue> : IIndexedVector<TKey, TValue>
         where TValue : class
+        where TKey : notnull
     {
         private readonly IReadOnlyList<TValue> vector;
 

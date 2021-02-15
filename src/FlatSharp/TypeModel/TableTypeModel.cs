@@ -268,16 +268,18 @@
                 throw new InvalidFlatBufferDefinitionException($"Can't create type model from type {type.Name} because it is not public.");
             }
 
-            defaultConstructor =
+            var defaultCtor =
                 type.GetConstructors(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
                 .Where(c => c.IsPublic || c.IsFamily || c.IsFamilyOrAssembly)
                 .Where(c => c.GetParameters().Length == 0)
                 .SingleOrDefault();
 
-            if (defaultConstructor == null)
+            if (defaultCtor is null)
             {
                 throw new InvalidFlatBufferDefinitionException($"Can't find a public/protected default default constructor for {type.Name}");
             }
+
+            defaultConstructor = defaultCtor;
         }
 
         public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
@@ -380,7 +382,7 @@ $@"
                     !keyMember.ItemTypeModel.TryGetSpanComparerType(out Type? spanComparerType) ||
                     keyMember.ItemTypeModel.PhysicalLayout.Length != 1)
                 {
-                    string vtm = memberModel.ItemTypeModel.ClrType.FullName;
+                    string? vtm = memberModel.ItemTypeModel.ClrType.FullName;
                     string? ttm = tableModel?.GetType().FullName;
                     string? ttn = tableModel?.ClrType.FullName;
 

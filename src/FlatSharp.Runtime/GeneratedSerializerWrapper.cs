@@ -89,7 +89,7 @@ namespace FlatSharp
             int expectedMaxSize = this.GetMaxSize(item);
 #endif
 
-            var serializationContext = SerializationContext.ThreadLocalContext.Value;
+            var serializationContext = SerializationContext.ThreadLocalContext.Value!;
             serializationContext.Reset(destination.Length);
 
             var sharedStringWriter = this.sharedStringWriter?.Value;

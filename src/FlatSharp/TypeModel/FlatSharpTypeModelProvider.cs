@@ -101,14 +101,11 @@ namespace FlatSharp.TypeModel
                 return true;
             }
 
-            if (Nullable.GetUnderlyingType(type) != null)
+            var underlyingType = Nullable.GetUnderlyingType(type);
+            if (underlyingType is not null && underlyingType.IsEnum)
             {
-                var underlyingType = Nullable.GetUnderlyingType(type);
-                if (underlyingType.IsEnum)
-                {
-                    typeModel = new NullableEnumTypeModel(type, container);
-                    return true;
-                }
+                typeModel = new NullableEnumTypeModel(type, container);
+                return true;
             }
 
             var tableAttribute = type.GetCustomAttribute<FlatBufferTableAttribute>();

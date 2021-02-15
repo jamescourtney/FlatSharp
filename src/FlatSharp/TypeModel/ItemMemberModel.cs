@@ -73,11 +73,11 @@ namespace FlatSharp.TypeModel
             }
         }
 
-        private static bool ValidateNonVirtualMethod(MethodInfo method)
+        private static bool ValidateNonVirtualMethod(MethodInfo? method)
         {
-            if (method == null ||
-                method.IsAbstract ||
-                method.IsVirtual)
+            if (method is null
+                || method.IsAbstract
+                || method.IsVirtual)
             {
                 return false;
             }
@@ -85,9 +85,9 @@ namespace FlatSharp.TypeModel
             return method.IsPublic || method.IsFamily || method.IsFamilyOrAssembly;
         }
 
-        private static bool ValidateVirtualPropertyMethod(MethodInfo method, bool allowNull)
+        private static bool ValidateVirtualPropertyMethod(MethodInfo? method, bool allowNull)
         {
-            if (method == null)
+            if (method is null)
             {
                 return allowNull;
             }

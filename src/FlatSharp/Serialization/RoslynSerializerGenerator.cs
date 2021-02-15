@@ -81,7 +81,8 @@ namespace FlatSharp
 
                         using var resourceStream = typeof(RoslynSerializerGenerator).Assembly.GetManifestResourceStream(embeddedResourceName);
                         using var memoryStream = new MemoryStream();
-                        resourceStream.CopyTo(memoryStream);
+
+                        resourceStream!.CopyTo(memoryStream);
                         assembly = Assembly.Load(memoryStream.ToArray());
                     }
                 }
@@ -117,14 +118,17 @@ $@"
 
             (Assembly assembly, Func<string> formattedTextFactory, byte[] assemblyData) = CompileAssembly(template, this.options.EnableAppDomainInterceptOnAssemblyLoad, typeof(TRoot).Assembly);
 
-            object item = Activator.CreateInstance(assembly.GetTypes()[0]);
-            var serializer = (IGeneratedSerializer<TRoot>)item;
+            object? item = Activator.CreateInstance(assembly.GetTypes()[0]);
+            if (item is IGeneratedSerializer<TRoot> serializer)
+            {
+                return new GeneratedSerializerWrapper<TRoot>(
+                    serializer,
+                    assembly,
+                    formattedTextFactory,
+                    assemblyData);
+            }
 
-            return new GeneratedSerializerWrapper<TRoot>(
-                serializer,
-                assembly,
-                formattedTextFactory,
-                assemblyData);
+            throw new InvalidOperationException($"Unexpected FlatSharp Error: Compilation succeeded, but created instance {item}, Type = {assembly.GetTypes()[0]}");
         }
 
         internal string GenerateCSharp<TRoot>(string visibility = "public")
@@ -179,7 +183,9 @@ $@"
             List<MetadataReference> references = new List<MetadataReference>(commonReferences);
             foreach (Assembly additionalReference in additionalReferences)
             {
-                if (AssemblyNameReferenceMapping.TryGetValue(additionalReference.GetName().Name, out var compilationRef))
+                var referenceName = additionalReference.GetName().Name;
+
+                if (referenceName is not null && AssemblyNameReferenceMapping.TryGetValue(referenceName, out var compilationRef))
                 {
                     references.Add(MetadataReference.CreateFromImage(compilationRef.Item2));
                 }
@@ -250,7 +256,7 @@ $@"
                     handler = (s, e) =>
                     {
                         AssemblyName requestedName = new AssemblyName(e.Name);
-                        if (AssemblyNameReferenceMapping.TryGetValue(requestedName.Name, out var value))
+                        if (requestedName.Name is not null && AssemblyNameReferenceMapping.TryGetValue(requestedName.Name, out var value))
                         {
                             return value.Item1;
                         }

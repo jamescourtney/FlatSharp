@@ -158,7 +158,7 @@ namespace FlatSharp
                 .Single();
 
             var genericMethod = method.MakeGenericMethod(item.GetType());
-            return (int)genericMethod.Invoke(this, new[] { item, destination });
+            return (int)genericMethod.Invoke(this, new[] { item, destination })!;
         }
 
         internal object ReflectionParse(Type type, byte[] data)
@@ -170,7 +170,7 @@ namespace FlatSharp
                 .Single();
 
             var genericMethod = method.MakeGenericMethod(type);
-            return genericMethod.Invoke(this, new[] { data });
+            return genericMethod.Invoke(this, new[] { data })!;
         }
 
         private T ParseInternal<T>(byte[] buffer) where T : class
@@ -185,7 +185,7 @@ namespace FlatSharp
 
         private ISerializer<TRoot> GetOrCreateSerializer<TRoot>() where TRoot : class
         {
-            if (!this.serializerCache.TryGetValue(typeof(TRoot), out object serializer))
+            if (!this.serializerCache.TryGetValue(typeof(TRoot), out object? serializer))
             {
                 lock (SharedLock.Instance)
                 {

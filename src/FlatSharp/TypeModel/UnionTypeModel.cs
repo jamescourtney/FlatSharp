@@ -222,7 +222,7 @@ $@"
 
             // Look for the actual FlatBufferUnion.
             Type unionType = this.ClrType;
-            while (unionType.BaseType != typeof(object))
+            while (unionType.BaseType != typeof(object) && unionType.BaseType is not null)
             {
                 unionType = unionType.BaseType;
             }

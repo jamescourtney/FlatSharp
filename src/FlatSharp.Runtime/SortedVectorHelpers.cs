@@ -217,6 +217,11 @@ namespace FlatSharp
                 }
 
                 PropertyInfo keyProperty = keys[0];
+                if (keyProperty.GetMethod is null)
+                {
+                    throw new InvalidOperationException($"Table '{typeof(TTable).Name}' declares key property '{keyProperty.Name}' without a get method.");
+                }
+
                 var keyGetterDelegate = (Func<TTable, TKey>)Delegate.CreateDelegate(typeof(Func<TTable, TKey>), keyProperty.GetMethod);
                 value = (keyProperty.PropertyType, keyGetterDelegate);
                 KeyGetterCallbacks[typeof(TTable)] = value;

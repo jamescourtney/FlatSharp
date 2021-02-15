@@ -26,6 +26,7 @@ namespace FlatSharp
     /// </summary>
     public interface IIndexedVector<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>>
         where TValue : class
+        where TKey : notnull
     {
         /// <summary>
         /// Looks up the value by key.
@@ -88,7 +89,9 @@ namespace FlatSharp
         /// </summary>
         public static IIndexedVector<TKey, TValue> Clone<TKey, TValue>(
             this IIndexedVector<TKey, TValue> source,
-            Func<TValue, TValue> valueClone) where TValue : class
+            Func<TValue, TValue> valueClone) 
+            where TValue : class
+            where TKey : notnull
         {
             return new IndexedVector<TKey, TValue>(source.Select(x => valueClone(x.Value)), source.Count, mutable: false);
         }

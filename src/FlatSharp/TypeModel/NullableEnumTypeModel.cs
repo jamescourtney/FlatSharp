@@ -47,12 +47,14 @@ namespace FlatSharp.TypeModel
             base.Initialize();
 
             Type nullableType = this.ClrType;
-            this.enumType = Nullable.GetUnderlyingType(nullableType);
+            Type? enumType = Nullable.GetUnderlyingType(nullableType);
 
-            if (this.enumType is null)
+            if (enumType is null)
             {
                 throw new InvalidOperationException($"Invalid flatsharp error: type: {nullableType.AssemblyQualifiedName} was not nullable.");
             }
+
+            this.enumType = enumType;
 
             Type underlyingType = Enum.GetUnderlyingType(this.enumType);
             this.underlyingTypeModel = this.typeModelContainer.CreateTypeModel(underlyingType);

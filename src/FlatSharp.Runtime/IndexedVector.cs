@@ -22,10 +22,11 @@ namespace FlatSharp
     using System.Diagnostics.CodeAnalysis;
 
     /// <summary>
-    /// An indexed vector.
+    /// An <see cref="IIndexedVector{TKey, TValue}"/> implementation based on a <see cref="Dictionary{TKey, TValue}"/>.
     /// </summary>
     public sealed class IndexedVector<TKey, TValue> : IIndexedVector<TKey, TValue>
         where TValue : class
+        where TKey : notnull
     {
         private static readonly Func<TValue, TKey> KeyGetter;
 

@@ -189,9 +189,9 @@ $@"
                 .Select(x => new
                 {
                     Property = x,
-                    Attribute = x.GetCustomAttribute<FlatBufferItemAttribute>()
+                    Attribute = x.GetCustomAttribute<FlatBufferItemAttribute>()! // suppress check here; we filter on the next line.
                 })
-                .Where(x => x.Attribute != null)
+                .Where(x => x.Attribute is not null)
                 .OrderBy(x => x.Attribute.Index);
 
             ushort expectedIndex = 0;

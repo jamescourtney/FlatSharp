@@ -136,8 +136,8 @@ $@"
                 lines.Add($@"{accessModifiers.propertyModifier} override {CSharpHelpers.GetCompilableTypeName(this.propertyInfo.PropertyType)} {this.propertyInfo.Name} {{");
                 lines.Add($"{accessModifiers.getModifer} get {{ {this.GetterBody} }}");
 
-                MethodInfo methodInfo = this.propertyInfo.SetMethod;
-                if (methodInfo != null)
+                MethodInfo? methodInfo = this.propertyInfo.SetMethod;
+                if (methodInfo is not null)
                 {
                     // see if set is init-only.
                     bool isInitOnly = methodInfo.ReturnParameter.GetRequiredCustomModifiers().Any(x => x.FullName == "System.Runtime.CompilerServices.IsExternalInit");
