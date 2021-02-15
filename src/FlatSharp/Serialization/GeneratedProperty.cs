@@ -16,10 +16,11 @@
 
 namespace FlatSharp
 {
-    using FlatSharp.TypeModel;
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Reflection;
+    using FlatSharp.TypeModel;
 
     /// <summary>
     /// A helper to assist with generating property overrides for table and struct readers.
@@ -138,7 +139,11 @@ $@"
                 MethodInfo methodInfo = this.propertyInfo.SetMethod;
                 if (methodInfo != null)
                 {
-                    lines.Add($"{accessModifiers.setModifier} set {{ {this.SetterBody} }}");
+                    // see if set is init-only.
+                    bool isInitOnly = methodInfo.ReturnParameter.GetRequiredCustomModifiers().Any(x => x.FullName == "System.Runtime.CompilerServices.IsExternalInit");
+                    string setterKind = isInitOnly ? "init" : "set";
+
+                    lines.Add($"{accessModifiers.setModifier} {setterKind} {{ {this.SetterBody} }}");
                 }
 
                 lines.Add("}");

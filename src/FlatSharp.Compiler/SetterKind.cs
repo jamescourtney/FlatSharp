@@ -37,8 +37,23 @@ namespace FlatSharp.Compiler
         ProtectedInternal = 2,
 
         /// <summary>
+        /// A public init-only setter.
+        /// </summary>
+        PublicInit = 3,
+
+        /// <summary>
+        /// A projected init-only setter.
+        /// </summary>
+        ProtectedInit = 4,
+
+        /// <summary>
+        /// A protected internal init-only setter.
+        /// </summary>
+        ProtectedInternalInit = 5,
+
+        /// <summary>
         /// No setter.
         /// </summary>
-        None = 3,
+        None = 6,
     }
 }

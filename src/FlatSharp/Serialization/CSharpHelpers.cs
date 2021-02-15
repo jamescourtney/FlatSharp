@@ -18,11 +18,7 @@ namespace FlatSharp
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Reflection;
-    using System.Security.Cryptography.X509Certificates;
-    using FlatSharp.TypeModel;
-    using Microsoft.CodeAnalysis.CSharp;
 
     /// <summary>
     /// Some C# codegen helpers.
