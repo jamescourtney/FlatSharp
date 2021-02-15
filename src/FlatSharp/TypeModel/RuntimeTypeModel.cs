@@ -19,6 +19,7 @@ namespace FlatSharp.TypeModel
     using System;
     using System.Collections.Generic;
     using System.Collections.Immutable;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
 
     /// <summary>
@@ -131,31 +132,31 @@ namespace FlatSharp.TypeModel
 
         public abstract void TraverseObjectGraph(HashSet<Type> seenTypes);
 
-        public virtual bool TryFormatDefaultValueAsLiteral(object defaultValue, out string literal)
+        public virtual bool TryFormatDefaultValueAsLiteral(object defaultValue, [NotNullWhen(true)] out string? literal)
         {
             literal = null;
             return false;
         }
 
-        public virtual bool TryFormatStringAsLiteral(string value, out string literal)
+        public virtual bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
         {
             literal = null;
             return false;
         }
 
-        public virtual bool TryGetUnderlyingVectorType(out ITypeModel typeModel)
+        public virtual bool TryGetUnderlyingVectorType([NotNullWhen(true)] out ITypeModel? typeModel)
         {
             typeModel = null;
             return false;
         }
 
-        public virtual bool TryGetSpanComparerType(out Type comparerType)
+        public virtual bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType)
         {
             comparerType = null;
             return false;
         }
 
-        public virtual bool TryGetTableKeyMember(out TableMemberModel tableMember)
+        public virtual bool TryGetTableKeyMember([NotNullWhen(true)] out TableMemberModel? tableMember)
         {
             tableMember = null;
             return false;

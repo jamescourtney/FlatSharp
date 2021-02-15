@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-#nullable enable
 namespace FlatSharp
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
 
     /// <summary>
@@ -26,6 +26,7 @@ namespace FlatSharp
     /// </summary>
     public interface IIndexedVector<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>>
         where TValue : class
+        where TKey : notnull
     {
         /// <summary>
         /// Looks up the value by key.
@@ -45,7 +46,7 @@ namespace FlatSharp
         /// <summary>
         /// Tries to get the value of the given key.
         /// </summary>
-        bool TryGetValue(TKey key, out TValue? value);
+        bool TryGetValue(TKey key, [NotNullWhen(true)] out TValue? value);
 
         /// <summary>
         /// Returns true if the vector contains the given key.
@@ -88,7 +89,9 @@ namespace FlatSharp
         /// </summary>
         public static IIndexedVector<TKey, TValue> Clone<TKey, TValue>(
             this IIndexedVector<TKey, TValue> source,
-            Func<TValue, TValue> valueClone) where TValue : class
+            Func<TValue, TValue> valueClone) 
+            where TValue : class
+            where TKey : notnull
         {
             return new IndexedVector<TKey, TValue>(source.Select(x => valueClone(x.Value)), source.Count, mutable: false);
         }

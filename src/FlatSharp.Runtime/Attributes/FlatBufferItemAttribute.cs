@@ -57,6 +57,6 @@ namespace FlatSharp.Attributes
         /// For table items, gets or sets the default value. The type of the object must match the
         /// type of the property.
         /// </summary>
-        public object DefaultValue { get; set; }
+        public object? DefaultValue { get; set; }
     }
 }

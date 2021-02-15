@@ -27,6 +27,7 @@ namespace FlatSharp.TypeModel
 
         internal ArrayVectorTypeModel(Type vectorType, TypeModelContainer provider) : base(vectorType, provider)
         {
+            this.itemTypeModel = null!;
         }
 
         public override ITypeModel ItemTypeModel => this.itemTypeModel;
@@ -45,7 +46,7 @@ namespace FlatSharp.TypeModel
                 throw new InvalidFlatBufferDefinitionException($"Array vectors may only be single-dimensional.");
             }
 
-            this.itemTypeModel = this.typeModelContainer.CreateTypeModel(this.ClrType.GetElementType());
+            this.itemTypeModel = this.typeModelContainer.CreateTypeModel(this.ClrType.GetElementType()!);
             if (!this.itemTypeModel.IsValidVectorMember)
             {
                 throw new InvalidFlatBufferDefinitionException($"Type '{this.itemTypeModel.ClrType.Name}' is not a valid vector member.");
@@ -56,9 +57,14 @@ namespace FlatSharp.TypeModel
         {
             string body;
 
-            (string vectorClassDef, string vectorClassName) = (null, null);
+            if (this.itemTypeModel is null)
+            {
+                throw new InvalidOperationException($"Flatsharp internal error: ItemTypeModel null");
+            }
 
-            if (itemTypeModel.ClrType == typeof(byte))
+            (string vectorClassDef, string vectorClassName) = (string.Empty, string.Empty);
+
+            if (this.itemTypeModel.ClrType == typeof(byte))
             {
                 // can handle this as memory.
                 string method = nameof(InputBufferExtensions.ReadByteMemoryBlock);

@@ -13,12 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
- namespace FlatSharp.TypeModel
+
+namespace FlatSharp.TypeModel
 {
+    using System.Diagnostics.CodeAnalysis;
+
     public partial class DoubleTypeModel
     {
-        public override bool TryFormatDefaultValueAsLiteral(object defaultValue, out string literal)
+        public override bool TryFormatDefaultValueAsLiteral(object defaultValue, [NotNullWhen(true)] out string? literal)
         {
             literal = null;
 
@@ -34,7 +36,7 @@
 
     public partial class FloatTypeModel
     {
-        public override bool TryFormatDefaultValueAsLiteral(object defaultValue, out string literal)
+        public override bool TryFormatDefaultValueAsLiteral(object defaultValue, [NotNullWhen(true)] out string? literal)
         {
             literal = null;
 
@@ -50,7 +52,7 @@
 
     public partial class BoolTypeModel
     {
-        public override bool TryFormatDefaultValueAsLiteral(object defaultValue, out string literal)
+        public override bool TryFormatDefaultValueAsLiteral(object defaultValue, [NotNullWhen(true)] out string? literal)
         {
             literal = null;
 

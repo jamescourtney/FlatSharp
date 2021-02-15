@@ -18,6 +18,7 @@ namespace FlatSharp.TypeModel
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Reflection;
 
     using FlatSharp.Attributes;
@@ -30,13 +31,13 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// Tries to resolve an FBS alias into a type model.
         /// </summary>
-        public bool TryResolveFbsAlias(TypeModelContainer container, string alias, out ITypeModel typeModel)
+        public bool TryResolveFbsAlias(TypeModelContainer container, string alias, [NotNullWhen(true)] out ITypeModel? typeModel)
         {
             typeModel = null;
 
             if (alias == "string")
             {
-                typeModel = new StringTypeModel();
+                typeModel = new StringTypeModel(container);
                 return true;
             }
 
@@ -46,17 +47,17 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// Tries to create a type model based on the given type.
         /// </summary>
-        public bool TryCreateTypeModel(TypeModelContainer container, Type type, out ITypeModel typeModel)
+        public bool TryCreateTypeModel(TypeModelContainer container, Type type, [NotNullWhen(true)] out ITypeModel? typeModel)
         {
             if (type == typeof(string))
             {
-                typeModel = new StringTypeModel();
+                typeModel = new StringTypeModel(container);
                 return true;
             }
 
             if (type == typeof(SharedString))
             {
-                typeModel = new SharedStringTypeModel();
+                typeModel = new SharedStringTypeModel(container);
                 return true;
             }
 
@@ -100,14 +101,11 @@ namespace FlatSharp.TypeModel
                 return true;
             }
 
-            if (Nullable.GetUnderlyingType(type) != null)
+            var underlyingType = Nullable.GetUnderlyingType(type);
+            if (underlyingType is not null && underlyingType.IsEnum)
             {
-                var underlyingType = Nullable.GetUnderlyingType(type);
-                if (underlyingType.IsEnum)
-                {
-                    typeModel = new NullableEnumTypeModel(type, container);
-                    return true;
-                }
+                typeModel = new NullableEnumTypeModel(type, container);
+                return true;
             }
 
             var tableAttribute = type.GetCustomAttribute<FlatBufferTableAttribute>();

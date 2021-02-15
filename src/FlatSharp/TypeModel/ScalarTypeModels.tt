@@ -43,6 +43,7 @@ namespace FlatSharp.TypeModel
 {
 	using System;
 	using System.ComponentModel;
+	using System.Diagnostics.CodeAnalysis;
 
 	<#
 		foreach (var pair in types)
@@ -58,7 +59,7 @@ namespace FlatSharp.TypeModel
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public partial class <#= className #> : ScalarTypeModel
     {
-        public <#= className #>() : base(typeof(<#=typeName#>), sizeof(<#=typeName#>)) 
+        public <#= className #>(TypeModelContainer container) : base(container, typeof(<#=typeName#>), sizeof(<#=typeName#>)) 
         {
         }
 		
@@ -68,7 +69,7 @@ namespace FlatSharp.TypeModel
 			return true;
 		}
 
-        public override bool TryGetSpanComparerType(out Type comparerType)
+        public override bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType)
         {
             comparerType = typeof(<#= casedName #>SpanComparer);
             return true;
@@ -86,11 +87,11 @@ namespace FlatSharp.TypeModel
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public partial class Nullable<#= className #> : ScalarTypeModel
     {
-        public Nullable<#= className #>() : base(typeof(<#=typeName#>?), sizeof(<#=typeName#>)) 
+        public Nullable<#= className #>(TypeModelContainer container) : base(container, typeof(<#=typeName#>?), sizeof(<#=typeName#>)) 
         {
         }
 
-        public override bool TryGetSpanComparerType(out Type comparerType)
+        public override bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType)
         {
             comparerType = null;
             return false;
@@ -105,7 +106,10 @@ namespace FlatSharp.TypeModel
 
 	public class ScalarTypeModelProvider : ITypeModelProvider
 	{
-        public bool TryCreateTypeModel(TypeModelContainer container, Type type, out ITypeModel typeModel)
+        public bool TryCreateTypeModel(
+			TypeModelContainer container, 
+			Type type, 
+            [NotNullWhen(true)] out ITypeModel? typeModel)
 		{
 			typeModel = null;
 		<#
@@ -118,13 +122,13 @@ namespace FlatSharp.TypeModel
 
 			if (type == typeof(<#= typeName #>))
 			{
-				typeModel = new <#= className #>(); 
+				typeModel = new <#= className #>(container); 
 				return true;
 			}
 
 			if (type == typeof(<#= typeName #>?))
 			{
-				typeModel = new Nullable<#= className #>(); 
+				typeModel = new Nullable<#= className #>(container); 
 				return true;
 			}
 
@@ -133,7 +137,10 @@ namespace FlatSharp.TypeModel
 			return false;
 		}
 		
-        public bool TryResolveFbsAlias(TypeModelContainer container, string alias, out ITypeModel typeModel)
+        public bool TryResolveFbsAlias(
+			TypeModelContainer container, 
+			string alias, 
+            [NotNullWhen(true)] out ITypeModel? typeModel)
 		{
 			typeModel = null;
 			switch (alias)
@@ -151,13 +158,13 @@ namespace FlatSharp.TypeModel
 		<# 
 			} 
 		#>
-					typeModel = new <#= className #>();
+					typeModel = new <#= className #>(container);
 					break;
 
 		<# } #>
 			}
 
-			return typeModel != null;
+			return typeModel is not null;
 		}
 	}
 }

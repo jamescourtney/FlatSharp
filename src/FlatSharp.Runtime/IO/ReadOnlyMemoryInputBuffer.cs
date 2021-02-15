@@ -42,7 +42,7 @@ namespace FlatSharp
             get => this.memory.Length;
         }
 
-        public ISharedStringReader SharedStringReader
+        public ISharedStringReader? SharedStringReader
         {
             get;
             set; 
@@ -146,7 +146,12 @@ namespace FlatSharp
 
             public Wrapper(ReadOnlyMemoryInputBuffer buffer) => this.buffer = buffer;
 
-            public ISharedStringReader SharedStringReader { get => this.buffer.SharedStringReader; set => this.buffer.SharedStringReader = value; }
+            public ISharedStringReader? SharedStringReader 
+            { 
+                get => this.buffer.SharedStringReader; 
+                set => this.buffer.SharedStringReader = value; 
+            }
+
             public int Length
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]

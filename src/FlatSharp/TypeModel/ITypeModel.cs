@@ -19,6 +19,7 @@ namespace FlatSharp.TypeModel
     using System;
     using System.Collections.Generic;
     using System.Collections.Immutable;
+    using System.Diagnostics.CodeAnalysis;
 
     /// <summary>
     /// A type model. Declares both properties of a type and how to serialize/parse that type.
@@ -128,27 +129,27 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// Attempts to format the given default value into a C# literal. Not all implementations support this.
         /// </summary>
-        bool TryFormatDefaultValueAsLiteral(object defaultValue, out string literal);
+        bool TryFormatDefaultValueAsLiteral(object defaultValue, [NotNullWhen(true)] out string? literal);
 
         /// <summary>
         /// Attempts to format the given string as a literal of this type. Not all implementations support this.
         /// </summary>
-        bool TryFormatStringAsLiteral(string value, out string literal);
+        bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal);
 
         /// <summary>
         /// For vectors, retrieves the inner type model. Other types return false.
         /// </summary>
-        bool TryGetUnderlyingVectorType(out ITypeModel typeModel);
+        bool TryGetUnderlyingVectorType([NotNullWhen(true)] out ITypeModel? typeModel);
 
         /// <summary>
         /// Attempts to get the type implementing <see cref="ISpanComparer"/> for the type model.
         /// </summary>
-        bool TryGetSpanComparerType(out Type comparerType);
+        bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType);
 
         /// <summary>
         /// Attempts to get the key of the table. Will return false when there is no key or the type model does not represent a table.
         /// </summary>
-        bool TryGetTableKeyMember(out TableMemberModel tableMember);
+        bool TryGetTableKeyMember([NotNullWhen(true)] out TableMemberModel? tableMember);
 
         /// <summary>
         /// Returns any additional types that must have their assemblies referenced.

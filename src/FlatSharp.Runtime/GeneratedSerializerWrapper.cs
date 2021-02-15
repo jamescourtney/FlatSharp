@@ -28,28 +28,28 @@ namespace FlatSharp
     internal class GeneratedSerializerWrapper<T> : ISerializer<T> where T : class
     {
         private readonly IGeneratedSerializer<T> innerSerializer;
-        private readonly Lazy<string> lazyCSharp;
+        private readonly Lazy<string?> lazyCSharp;
 
-        private ThreadLocal<ISharedStringWriter> sharedStringWriter;
-        private SerializerSettings settings;
+        private ThreadLocal<ISharedStringWriter>? sharedStringWriter;
+        private SerializerSettings? settings;
 
         public GeneratedSerializerWrapper(
-            IGeneratedSerializer<T> innerSerializer,
-            Assembly generatedAssembly,
-            Func<string> generatedCSharp,
-            byte[] generatedAssemblyBytes)
+            IGeneratedSerializer<T>? innerSerializer,
+            Assembly? generatedAssembly,
+            Func<string?> generatedCSharp,
+            byte[]? generatedAssemblyBytes)
         {
-            this.lazyCSharp = new Lazy<string>(generatedCSharp);
+            this.lazyCSharp = new Lazy<string?>(generatedCSharp);
             this.Assembly = generatedAssembly;
-            this.AssemblyBytes =generatedAssemblyBytes;
-            this.innerSerializer = innerSerializer;
+            this.AssemblyBytes = generatedAssemblyBytes;
+            this.innerSerializer = innerSerializer ?? throw new ArgumentNullException(nameof(innerSerializer));
         }
 
-        public string CSharp => this.lazyCSharp.Value;
+        public string? CSharp => this.lazyCSharp.Value;
 
-        public Assembly Assembly { get; }
+        public Assembly? Assembly { get; }
 
-        public byte[] AssemblyBytes { get; }
+        public byte[]? AssemblyBytes { get; }
 
         public int GetMaxSize(T item)
         {
@@ -89,7 +89,7 @@ namespace FlatSharp
             int expectedMaxSize = this.GetMaxSize(item);
 #endif
 
-            var serializationContext = SerializationContext.ThreadLocalContext.Value;
+            var serializationContext = SerializationContext.ThreadLocalContext.Value!;
             serializationContext.Reset(destination.Length);
 
             var sharedStringWriter = this.sharedStringWriter?.Value;

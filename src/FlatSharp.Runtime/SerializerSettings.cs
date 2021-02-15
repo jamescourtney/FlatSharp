@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-using System;
-
 namespace FlatSharp
 {
+    using System;
+
     /// <summary>
     /// Settings that can be applied to an <see cref="ISerializer{T}"/> instance.
     /// </summary>
@@ -27,7 +26,7 @@ namespace FlatSharp
         /// A factory delegate that produces <see cref="ISharedStringReader"/> instances. The given delegate
         /// must produce a new, unique <see cref="ISharedStringReader"/> each time it is invoked.
         /// </summary>
-        public Func<ISharedStringReader> SharedStringReaderFactory
+        public Func<ISharedStringReader>? SharedStringReaderFactory
         {
             get;
             set;
@@ -37,7 +36,7 @@ namespace FlatSharp
         /// A factory delegate that produces <see cref="ISharedStringWriter"/> instances. The given delegate
         /// must produce a new, unique <see cref="ISharedStringWriter"/> each time it is invoked.
         /// </summary>
-        public Func<ISharedStringWriter> SharedStringWriterFactory
+        public Func<ISharedStringWriter>? SharedStringWriterFactory
         {
             get;
             set;

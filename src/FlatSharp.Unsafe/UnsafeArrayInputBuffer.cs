@@ -29,6 +29,11 @@ namespace FlatSharp.Unsafe
 
         public UnsafeArrayInputBuffer(ArraySegment<byte> memory)
         {
+            if (memory.Array is null)
+            {
+                throw new ArgumentException("ArraySegment had null array", nameof(memory));
+            }
+
             this.length = memory.Count;
             this.offset = memory.Offset;
             this.array = memory.Array;
@@ -45,7 +50,7 @@ namespace FlatSharp.Unsafe
 
         public int Length => this.length;
 
-        public ISharedStringReader SharedStringReader { get; set; }
+        public ISharedStringReader? SharedStringReader { get; set; }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte ReadByte(int offset)
@@ -237,7 +242,12 @@ namespace FlatSharp.Unsafe
 
             public Wrapper(UnsafeArrayInputBuffer buffer) => this.buffer = buffer;
 
-            public ISharedStringReader SharedStringReader { get => this.buffer.SharedStringReader; set => this.buffer.SharedStringReader = value; }
+            public ISharedStringReader? SharedStringReader 
+            { 
+                get => this.buffer.SharedStringReader; 
+                set => this.buffer.SharedStringReader = value; 
+            }
+
             public int Length
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]

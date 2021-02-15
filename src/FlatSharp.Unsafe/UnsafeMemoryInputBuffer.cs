@@ -78,7 +78,7 @@ namespace FlatSharp.Unsafe
         /// </summary>
         public int Length => this.length;
 
-        public ISharedStringReader SharedStringReader { get; set; }
+        public ISharedStringReader? SharedStringReader { get; set; }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte ReadByte(int offset)
@@ -242,7 +242,12 @@ namespace FlatSharp.Unsafe
 
             public Wrapper(UnsafeMemoryInputBuffer buffer) => this.buffer = buffer;
 
-            public ISharedStringReader SharedStringReader { get => this.buffer.SharedStringReader; set => this.buffer.SharedStringReader = value; }
+            public ISharedStringReader? SharedStringReader 
+            { 
+                get => this.buffer.SharedStringReader; 
+                set => this.buffer.SharedStringReader = value; 
+            }
+
             public int Length
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -33,7 +33,7 @@ namespace FlatSharp
         private readonly int itemSize;
         private readonly int count;
 
-        public FlatBufferVector(
+        protected FlatBufferVector(
             TInputBuffer memory,
             int offset,
             int itemSize)
@@ -82,13 +82,18 @@ namespace FlatSharp
             throw new NotMutableException("FlatBufferVector does not support clearing.");
         }
 
-        public bool Contains(T item)
+        public bool Contains(T? item)
         {
             return this.IndexOf(item) >= 0;
         }
 
-        public void CopyTo(T[] array, int arrayIndex)
+        public void CopyTo(T[]? array, int arrayIndex)
         {
+            if (array is null)
+            {
+                throw new ArgumentNullException(nameof(array));
+            }
+
             var count = this.count;
             var memory = this.memory;
             var offset = this.offset;
@@ -131,7 +136,7 @@ namespace FlatSharp
             }
         }
 
-        public int IndexOf(T item)
+        public int IndexOf(T? item)
         {
             // FlatBuffer vectors are not allowed to have null by definition.
             if (item is null)
@@ -159,15 +164,17 @@ namespace FlatSharp
 
         public List<T> FlatBufferVectorToList()
         {
-            return new List<T>(this);
+            var list = new List<T>(this.count);
+            list.AddRange(this);
+            return list;
         }
 
-        public void Insert(int index, T item)
+        public void Insert(int index, T? item)
         {
             throw new NotMutableException("FlatBufferVector does not support inserting.");
         }
 
-        public bool Remove(T item)
+        public bool Remove(T? item)
         {
             throw new NotMutableException("FlatBufferVector does not support removing.");
         }

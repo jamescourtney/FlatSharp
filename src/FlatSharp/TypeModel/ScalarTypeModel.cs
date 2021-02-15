@@ -16,25 +16,26 @@
  
  namespace FlatSharp.TypeModel
 {
-    using Microsoft.CodeAnalysis.CSharp.Syntax;
     using System;
     using System.Collections.Generic;
     using System.Collections.Immutable;
+    using System.Diagnostics.CodeAnalysis;
 
     /// <summary>
     /// Defines a scalar FlatSharp type model.
     /// </summary>
     public abstract class ScalarTypeModel : RuntimeTypeModel
     {
-        protected readonly bool isNullable;
+        protected readonly Type? nullableUnderlyingType;
         private readonly int size;
 
         internal ScalarTypeModel(
+            TypeModelContainer container,
             Type type,
-            int size) : base(type, null)
+            int size) : base(type, container)
         {
             this.size = size;
-            this.isNullable = Nullable.GetUnderlyingType(type) != null;
+            this.nullableUnderlyingType = Nullable.GetUnderlyingType(type);
         }
 
         /// <summary>
@@ -55,7 +56,7 @@
         /// <summary>
         /// Scalars can be part of Structs.
         /// </summary>
-        public override bool IsValidStructMember => !this.isNullable;
+        public override bool IsValidStructMember => this.nullableUnderlyingType is null;
 
         /// <summary>
         /// Scalars can be part of Tables.
@@ -70,12 +71,12 @@
         /// <summary>
         /// Scalars can be part of Vectors.
         /// </summary>
-        public override bool IsValidVectorMember => !this.isNullable;
+        public override bool IsValidVectorMember => this.nullableUnderlyingType is null;
 
         /// <summary>
         /// Scalars can be sorted vector keys.
         /// </summary>
-        public override bool IsValidSortedVectorKey => !this.isNullable;
+        public override bool IsValidSortedVectorKey => this.nullableUnderlyingType is null;
 
         /// <summary>
         /// Scalars are written inline.
@@ -95,19 +96,19 @@
         /// <summary>
         /// Force children to reimplement.
         /// </summary>
-        public abstract override bool TryGetSpanComparerType(out Type comparerType);
+        public abstract override bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType);
 
         /// <summary>
         /// Validates a default value.
         /// </summary>
         public override bool ValidateDefaultValue(object defaultValue)
         {
-            if (this.isNullable)
+            if (this.nullableUnderlyingType is null)
             {
-                return false;
+                return defaultValue.GetType() == this.ClrType;
             }
 
-            return defaultValue.GetType() == this.ClrType;
+            return false;
         }
 
         public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
@@ -131,7 +132,7 @@
         public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
         {
             string variableName = context.ValueVariableName;
-            if (this.isNullable)
+            if (this.nullableUnderlyingType is not null)
             {
                 variableName += ".Value";
             }
@@ -145,7 +146,7 @@
 
         public override string GetThrowIfNullInvocation(string itemVariableName)
         {
-            if (this.isNullable)
+            if (this.nullableUnderlyingType is not null)
             {
                 return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
             }
@@ -157,7 +158,7 @@
 
         public override string GetNonNullConditionExpression(string itemVariableName)
         {
-            if (this.isNullable)
+            if (this.nullableUnderlyingType is not null)
             {
                 return $"{itemVariableName}.HasValue";
             }
@@ -170,17 +171,17 @@
         public override void TraverseObjectGraph(HashSet<Type> seenTypes)
         {
             seenTypes.Add(this.ClrType);
-            if (this.isNullable)
+            if (this.nullableUnderlyingType is not null)
             {
-                seenTypes.Add(Nullable.GetUnderlyingType(this.ClrType));
+                seenTypes.Add(this.nullableUnderlyingType);
             }
         }
 
-        public override bool TryFormatDefaultValueAsLiteral(object defaultValue, out string literal)
+        public override bool TryFormatDefaultValueAsLiteral(object defaultValue, [NotNullWhen(true)] out string? literal)
         {
             literal = null;
 
-            if (defaultValue.GetType() == this.ClrType)
+            if (defaultValue?.GetType() == this.ClrType)
             {
                 literal = $"({CSharpHelpers.GetCompilableTypeName(this.ClrType)})({defaultValue})";
                 return true;
