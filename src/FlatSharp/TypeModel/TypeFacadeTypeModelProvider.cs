@@ -121,9 +121,13 @@ namespace FlatSharp.TypeModel
             {
                 bool isNullable = Nullable.GetUnderlyingType(this.ClrType) is not null;
 
-                if (this.ClrType.IsClass || isNullable)
+                if (this.ClrType.IsClass)
                 {
-                    return $"{itemVariableName} is not null";
+                    return $"!object.ReferenceEquals({itemVariableName}, null)";
+                }
+                else if (isNullable)
+                {
+                    return $"{itemVariableName}.HasValue";
                 }
 
                 return "true";

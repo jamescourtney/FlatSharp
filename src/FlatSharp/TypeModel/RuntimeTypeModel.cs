@@ -126,7 +126,7 @@ namespace FlatSharp.TypeModel
 
         public virtual string GetNonNullConditionExpression(string itemVariableName)
         {
-            return $"{itemVariableName} is not null";
+            return $"!object.ReferenceEquals({itemVariableName}, null)";
         }
 
         public abstract void TraverseObjectGraph(HashSet<Type> seenTypes);

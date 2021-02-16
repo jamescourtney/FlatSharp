@@ -16,7 +16,7 @@
     <Copyright>2020</Copyright>
     <RepositoryUrl>https://github.com/jamescourtney/FlatSharp/</RepositoryUrl>
     <PackageTags>flatbuffers serialization flatbuffer flatsharp</PackageTags>
-    <PackageReleaseNotes>v4.2.2: Support 'id' attribute in FBS files and add Type Facades feature</PackageReleaseNotes>
+    <PackageReleaseNotes>v4.2.3: Support 'id' attribute in FBS files and add Type Facades feature</PackageReleaseNotes>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>    
     <NuspecProperties>version=$(Version);releaseNotes=$(PackageReleaseNotes)</NuspecProperties>
