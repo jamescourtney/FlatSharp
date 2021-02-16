@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2020 James Courtney
+ * Copyright 2021 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,8 @@ namespace FlatSharp.Compiler
     using System.Security.Cryptography;
     using System.Text;
     using System.Threading;
+
     using Antlr4.Runtime;
-    using Antlr4.Runtime.Misc;
     using CommandLine;
     using FlatSharp.TypeModel;
 
@@ -57,7 +57,6 @@ namespace FlatSharp.Compiler
                     string fbsFileName = Path.GetFileName(options.InputFile);
                     string outputFileName = fbsFileName + ".generated.cs";
                     string outputFullPath = Path.Combine(options.OutputDirectory, outputFileName);
-                    // string fbsText = File.ReadAllText(args[0]);
 
                     int attemptCount = 0;
                     while (attemptCount++ <= 5)
@@ -274,28 +273,21 @@ namespace FlatSharp.Compiler
             }
 
             var tablesNeedingSerializers = new List<TableOrStructDefinition>();
-            var rpcDefinitions = new List<RpcDefinition>();
-
-            FindItemsRequiringSecondCodePass(rootNode, tablesNeedingSerializers, rpcDefinitions);
-
-            if (tablesNeedingSerializers.Count == 0 && rpcDefinitions.Count == 0)
-            {
-                // Hey, no serializers or RPCs. We're all done. Go ahead and return the code we already generated.
-                CodeWriter tempWriter = new CodeWriter(options);
-                rootNode.WriteCode(tempWriter, CodeWritingPass.SecondPass, rootNode.DeclaringFile, new Dictionary<string, string>());
-
-                if (ErrorContext.Current.Errors.Any())
-                {
-                    throw new InvalidFbsFileException(ErrorContext.Current.Errors);
-                }
-
-                return tempWriter.ToString();
-            }
+            FindItemsRequiringSecondCodePass(rootNode, tablesNeedingSerializers);
 
             // Compile the assembly so that we may generate serializers for the data contracts defined in this FBS file.
             // Compile with firstpass here to include all data (even stuff from includes).
-            CodeWriter writer = new CodeWriter(options);
-            rootNode.WriteCode(writer, CodeWritingPass.FirstPass, rootNode.DeclaringFile, new Dictionary<string, string>());
+            CodeWriter writer = new CodeWriter();
+            rootNode.WriteCode(
+                writer,
+                new CompileContext
+                {
+                    CompilePass = CodeWritingPass.FirstPass,
+                    Options = options,
+                    RootFile = rootNode.DeclaringFile,
+                    PrecompiledSerializers = new Dictionary<string, string>(),
+                    PreviousAssembly = null,
+                });
 
             if (ErrorContext.Current.Errors.Any())
             {
@@ -311,8 +303,17 @@ namespace FlatSharp.Compiler
                 generatedSerializers[definition.FullName] = GenerateSerializerForType(assembly, definition);
             }
 
-            writer = new CodeWriter(options);
-            rootNode.WriteCode(writer, CodeWritingPass.SecondPass, rootNode.DeclaringFile, generatedSerializers);
+            writer = new CodeWriter();
+            rootNode.WriteCode(
+                writer,
+                new CompileContext
+                {
+                    CompilePass = CodeWritingPass.SecondPass,
+                    Options = options,
+                    RootFile = rootNode.DeclaringFile,
+                    PrecompiledSerializers = generatedSerializers,
+                    PreviousAssembly = assembly,
+                });
 
             if (ErrorContext.Current.Errors.Any())
             {
@@ -361,8 +362,7 @@ namespace FlatSharp.Compiler
         /// </summary>
         private static void FindItemsRequiringSecondCodePass(
             BaseSchemaMember node,
-            List<TableOrStructDefinition> tables,
-            List<RpcDefinition> rpcs)
+            List<TableOrStructDefinition> tables)
         {
             if (node is TableOrStructDefinition tableOrStruct)
             {
@@ -371,14 +371,10 @@ namespace FlatSharp.Compiler
                     tables.Add(tableOrStruct);
                 }
             }
-            else if (node is RpcDefinition rpc)
-            {
-                rpcs.Add(rpc);
-            }
 
             foreach (var childNode in node.Children.Values)
             {
-                FindItemsRequiringSecondCodePass(childNode, tables, rpcs);
+                FindItemsRequiringSecondCodePass(childNode, tables);
             }
         }
     }

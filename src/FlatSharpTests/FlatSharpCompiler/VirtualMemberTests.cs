@@ -52,7 +52,7 @@ namespace FlatSharpTests.Compiler
             table DefaultTable (PrecompiledSerializer:lazy) {{ Default:int; Struct:DefaultStruct; }}
             struct DefaultStruct {{ Default:int; }}";
 
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema);
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
 
             foreach (var typeName in new[] { "VirtualTests.VirtualTable", "VirtualTests.VirtualStruct" })
             {

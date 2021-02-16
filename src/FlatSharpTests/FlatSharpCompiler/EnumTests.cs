@@ -102,28 +102,28 @@ namespace FlatSharpTests.Compiler
         public void InvalidEnumTest_DuplicateValues()
         {
             string fbs = $"namespace Foo.Bar; enum MyEnum : ubyte {{ Red = 0x0, Blue = 0X10, Yellow = 16 }}";
-            Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(fbs));
+            Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(fbs, new()));
         }
 
         [TestMethod]
         public void InvalidEnumTest_NonAscendingValues()
         {
             string fbs = $"namespace Foo.Bar; enum MyEnum : ubyte {{ Red = 0x0, Blue = 3, Yellow = 2 }}";
-            var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(fbs));
+            var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(fbs, new()));
         }
 
         [TestMethod]
         public void InvalidEnumTest_ValueOutOfRangeOfUnderlyingType()
         {
             string fbs = $"namespace Foo.Bar; enum MyEnum : ubyte {{ Red = 0x0, Blue = 255, Yellow = 256 }}";
-            Assert.ThrowsException<FlatSharpCompilationException>(() => FlatSharpCompiler.CompileAndLoadAssembly(fbs));
+            Assert.ThrowsException<FlatSharpCompilationException>(() => FlatSharpCompiler.CompileAndLoadAssembly(fbs, new()));
         }
 
         [TestMethod]
         public void BasicEnumTest_HexNumber()
         {
             string fbs = $"namespace Foo.Bar; enum MyEnum : ubyte {{ Red = 0x0, Blue = 0X01, Green = 2, Yellow = 0X10 }}";
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(fbs);
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(fbs, new());
 
             Type t = asm.GetTypes().Single(x => x.FullName == "Foo.Bar.MyEnum");
             Assert.IsTrue(t.IsEnum);
@@ -141,7 +141,7 @@ namespace FlatSharpTests.Compiler
         public void BasicEnumTest_NegativeNumbers()
         {
             string fbs = $"namespace Foo.Bar; enum MyEnum : byte {{ Red = -0x02, Blue = -1, Green = 0, Yellow = 0X1, Purple = 0x02 }}";
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(fbs);
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(fbs, new());
 
             Type t = asm.GetTypes().Single(x => x.FullName == "Foo.Bar.MyEnum");
             Assert.IsTrue(t.IsEnum);
@@ -159,7 +159,7 @@ namespace FlatSharpTests.Compiler
         public void EnumTest<T>(string flatBufferType) where T : struct
         {
             string fbs = $"namespace Foo.Bar; enum MyEnum : {flatBufferType} {{ Red, Blue = 3, Green, Yellow }}";
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(fbs);
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(fbs, new());
 
             Type t = asm.GetTypes().Single(x => x.FullName == "Foo.Bar.MyEnum");
 

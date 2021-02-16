@@ -80,7 +80,7 @@ namespace FlatSharp.Compiler
                 });
         }
 
-    protected override void OnWriteCode(CodeWriter writer, CodeWritingPass pass, string forFile, IReadOnlyDictionary<string, string> precompiledSerializers)
+    protected override void OnWriteCode(CodeWriter writer, CompileContext context)
         {
             this.AssignIndexes();
 
@@ -117,12 +117,12 @@ namespace FlatSharp.Compiler
                         ErrorContext.Current?.RegisterError($"FlatBuffer structs may not have deprecated fields.");
                     }
 
-                    field.WriteField(writer, this);
+                    field.WriteField(writer, this, context);
                 }
 
-                if (pass == CodeWritingPass.SecondPass && precompiledSerializers != null && this.RequestedSerializer != null)
+                if (context.CompilePass == CodeWritingPass.SecondPass && context.PrecompiledSerializers != null && this.RequestedSerializer != null)
                 {
-                    if (precompiledSerializers.TryGetValue(this.FullName, out string serializer))
+                    if (context.PrecompiledSerializers.TryGetValue(this.FullName, out string serializer))
                     {
                         writer.AppendLine($"public static ISerializer<{this.FullName}> Serializer {{ get; }} = new {RoslynSerializerGenerator.GeneratedSerializerClassName}().AsISerializer();");
                         writer.AppendLine(string.Empty);
@@ -142,7 +142,15 @@ namespace FlatSharp.Compiler
 
         protected override string OnGetCopyExpression(string source)
         {
-            return $"{source} != null ? new {this.FullName}({source}) : null";
+            if (this.IsTable)
+            {
+                return $"{source} != null ? new {this.FullName}({source}) : null";
+            }
+            else
+            {
+                // structs can't be null; coalesce if needed using default ctor.
+                return $"{source} != null ? new {this.FullName}({source}) : new {this.FullName}()";
+            }
         }
     }
 }

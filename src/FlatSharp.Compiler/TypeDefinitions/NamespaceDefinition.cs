@@ -26,7 +26,7 @@ namespace FlatSharp.Compiler
 
         protected override bool SupportsChildren => true;
 
-        protected override void OnWriteCode(CodeWriter writer, CodeWritingPass pass, string forFile, IReadOnlyDictionary<string, string> precompiledSerializers)
+        protected override void OnWriteCode(CodeWriter writer, CompileContext context)
         {
             writer.AppendLine($"namespace {this.Name}");
             writer.AppendLine($"{{");
@@ -34,7 +34,7 @@ namespace FlatSharp.Compiler
             {
                 foreach (var type in this.Children.Values)
                 {
-                    type.WriteCode(writer, pass, forFile, precompiledSerializers);
+                    type.WriteCode(writer, context);
                 }
             }
             writer.AppendLine($"}}");

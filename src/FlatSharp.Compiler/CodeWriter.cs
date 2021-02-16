@@ -30,13 +30,6 @@ namespace FlatSharp.Compiler
         private int indent;
         private readonly StringBuilder builder = new StringBuilder();
 
-        public CodeWriter (CompilerOptions options)
-        {
-            this.Options = options;
-        }
-
-        public CompilerOptions Options { get; }
-
         public void AppendLine(string line)
         {
             for (int i = 0; i < this.indent; ++i)

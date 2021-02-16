@@ -34,7 +34,7 @@ namespace FlatSharpTests.Compiler
                 { "OtherTable.fbs", "namespace Foo; table OtherTable { Foo:string; }" }
             };
 
-            string cSharp = FlatSharpCompiler.TestHookCreateCSharp(baseFbs, includes);
+            string cSharp = FlatSharpCompiler.TestHookCreateCSharp(baseFbs, new(), includes);
             Assert.IsTrue(!string.IsNullOrEmpty(cSharp));
 
             BaseSchemaMember member = FlatSharpCompiler.TestHookParseSyntax(baseFbs, includes);
@@ -69,7 +69,7 @@ namespace FlatSharpTests.Compiler
                 { "B.fbs", "namespace Foo; table OtherTableB { Foo:string; }" }
             };
 
-            string cSharp = FlatSharpCompiler.TestHookCreateCSharp(baseFbs, includes);
+            string cSharp = FlatSharpCompiler.TestHookCreateCSharp(baseFbs, new(), includes);
             Assert.IsTrue(!string.IsNullOrEmpty(cSharp));
 
             BaseSchemaMember member = FlatSharpCompiler.TestHookParseSyntax(baseFbs, includes);
@@ -106,7 +106,7 @@ namespace FlatSharpTests.Compiler
                 { "A.fbs", "include \"root.fbs\"; namespace Foo; table OtherTable (PrecompiledSerializer) { Foo:BaseTable; }" },
             };
 
-            string cSharp = FlatSharpCompiler.TestHookCreateCSharp(baseFbs, includes);
+            string cSharp = FlatSharpCompiler.TestHookCreateCSharp(baseFbs, new(), includes);
             Assert.IsTrue(!string.IsNullOrEmpty(cSharp));
             Assert.IsTrue(cSharp.Contains("public static ISerializer<Foo.BaseTable> Serializer"));
             Assert.IsFalse(cSharp.Contains("public static ISerializer<Foo.OtherTable> Serializer"));
@@ -142,7 +142,7 @@ namespace FlatSharpTests.Compiler
                 { "A.fbs", "namespace Foo; table BaseTable { BaseTable:BaseTable; }" },
             };
 
-            var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.TestHookCreateCSharp(baseFbs, includes));
+            var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.TestHookCreateCSharp(baseFbs, new(), includes));
             Assert.IsTrue(ex.Message.Contains("Duplicate member name"));
         }
 

@@ -74,9 +74,10 @@ namespace routeguide;
         distance:int;
         elapsed_time:int;
     }";
-            string cSharp = FlatSharpCompiler.TestHookCreateCSharp(schema);
+            string cSharp = FlatSharpCompiler.TestHookCreateCSharp(schema, new());
             Assembly compiled = FlatSharpCompiler.CompileAndLoadAssembly(
-                schema, 
+                schema,
+                new(),
                 additionalReferences: new[] { typeof(Grpc.Core.AsyncClientStreamingCall<,>).Assembly });
 
             var rpcType = compiled.GetType("routeguide.RouteGuide");
@@ -125,7 +126,7 @@ namespace RpcUnknownType;
         longitude:int32;
     }";
 
-            Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.TestHookCreateCSharp(schema));
+            Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.TestHookCreateCSharp(schema, new()));
         }
 
         [TestMethod]
@@ -145,7 +146,7 @@ namespace RpcUnknownStreamingType;
         longitude:int32;
     }";
 
-            Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.TestHookCreateCSharp(schema));
+            Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.TestHookCreateCSharp(schema, new()));
         }
 
         [TestMethod]
@@ -165,7 +166,7 @@ namespace RpcReturnsAStruct;
         longitude:int32;
     }";
 
-            Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.TestHookCreateCSharp(schema));
+            Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.TestHookCreateCSharp(schema, new()));
         }
 
         [TestMethod]
@@ -185,7 +186,7 @@ namespace NoPrecompiledSerializer;
         longitude:int32;
     }";
 
-            Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.TestHookCreateCSharp(schema));
+            Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.TestHookCreateCSharp(schema, new()));
         }
     }
 }

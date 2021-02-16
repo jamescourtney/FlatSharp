@@ -73,9 +73,9 @@ namespace FlatSharp.Compiler
 
         protected override bool SupportsChildren => false;
 
-        protected override void OnWriteCode(CodeWriter writer, CodeWritingPass pass, string forFile, IReadOnlyDictionary<string, string> precompiledSerializers)
+        protected override void OnWriteCode(CodeWriter writer, CompileContext context)
         {
-            if (pass == CodeWritingPass.FirstPass)
+            if (context.CompilePass == CodeWritingPass.FirstPass)
             {
                 this.ValidateReferencedTables();
                 return;

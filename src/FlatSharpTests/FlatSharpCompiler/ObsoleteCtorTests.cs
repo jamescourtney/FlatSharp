@@ -31,7 +31,7 @@ namespace FlatSharpTests.Compiler
         {
             string schema = "namespace Foo; table BaseTable (obsoleteDefaultConstructor) { Int:int; }";
 
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema);
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
             Type baseTableType = asm.GetTypes().Single(x => x.Name == "BaseTable");
 
             var constructor = baseTableType.GetConstructor(new Type[0]);
@@ -43,7 +43,7 @@ namespace FlatSharpTests.Compiler
         {
             string schema = "namespace Foo; table BaseTable (obsoleteDefaultConstructor:\"true\") { Int:int; }";
 
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema);
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
             Type baseTableType = asm.GetTypes().Single(x => x.Name == "BaseTable");
 
             var constructor = baseTableType.GetConstructor(new Type[0]);
@@ -55,7 +55,7 @@ namespace FlatSharpTests.Compiler
         {
             string schema = "namespace Foo; table BaseTable { Int:int; }";
 
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema);
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
             Type baseTableType = asm.GetTypes().Single(x => x.Name == "BaseTable");
 
             var constructor = baseTableType.GetConstructor(new Type[0]);
@@ -67,7 +67,7 @@ namespace FlatSharpTests.Compiler
         {
             string schema = "namespace Foo; table BaseTable (obsoleteDefaultConstructor:\"false\") { Int:int; }";
 
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema);
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
             Type baseTableType = asm.GetTypes().Single(x => x.Name == "BaseTable");
 
             var constructor = baseTableType.GetConstructor(new Type[0]);

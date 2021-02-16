@@ -64,7 +64,7 @@ table Weapon (PrecompiledSerializer:lazy) {
 
 root_type Monster;"; 
 
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema);
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
 
             Type weaponType = asm.GetType("MyGame.Weapon");
             Type monsterType = asm.GetTypes().Single(x => x.FullName == "MyGame.Monster");
@@ -81,7 +81,7 @@ root_type Monster;";
             Assert.AreEqual((short)100, dMonster.hp);
             Assert.IsFalse(dMonster.friendly);
             Assert.AreEqual("Blue", dMonster.color.ToString());
-            Assert.IsNull(dMonster.pos);
+            Assert.IsNotNull(dMonster.pos);
 
             Assert.AreEqual(typeof(IList<byte>), monsterType.GetProperty("inventory").PropertyType);
             Assert.AreEqual(typeof(IList<>).MakeGenericType(vecType), monsterType.GetProperty("path").PropertyType);
@@ -158,7 +158,7 @@ root_type Monster;";
         private void TestFlags(FlatBufferDeserializationOption expectedFlags, string metadata)
         {
             string schema = $"namespace Test; table FooTable ({metadata}) {{ foo:string; bar:string (virtual:\"false\"); }}";
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema);
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
 
             Type type = asm.GetType("Test.FooTable");
             Assert.IsNotNull(type);

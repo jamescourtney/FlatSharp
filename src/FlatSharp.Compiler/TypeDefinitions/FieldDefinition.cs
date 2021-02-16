@@ -17,6 +17,7 @@
 using FlatSharp.TypeModel;
 using System;
 using System.Linq;
+using System.Reflection;
 
 namespace FlatSharp.Compiler
 {
@@ -81,7 +82,7 @@ namespace FlatSharp.Compiler
             }
             else if (this.SharedString)
             {
-                clrType = $"global::{typeof(SharedString).FullName}";
+                clrType = $"{typeof(SharedString).FullName}";
             }
 
             return this.GetClrTypeName(clrType, sortKeyType);
@@ -139,7 +140,7 @@ namespace FlatSharp.Compiler
         private string GetLinqSelectStatement(bool isBuiltIn, BaseSchemaMember nodeType) => 
             isBuiltIn ? string.Empty : $".Select(x => {nodeType.GetCopyExpression("x")})";
 
-        public void WriteField(CodeWriter writer, TableOrStructDefinition parent)
+        public void WriteField(CodeWriter writer, TableOrStructDefinition parent, CompileContext context)
         {
             ErrorContext.Current.WithScope(this.Name, (Action)(() =>
             {
@@ -160,7 +161,7 @@ namespace FlatSharp.Compiler
                 string defaultValue = this.GetDefaultValue(builtInType, enumDefinition, clrType);
 
                 this.VerifySetterKindIsValid();
-                this.WriteField(writer, this.GetClrTypeName(parent), defaultValue, this.Name, parent);
+                this.WriteField(writer, this.GetClrTypeName(parent), defaultValue, this.Name, parent, context);
             }));
         }
 
@@ -169,7 +170,8 @@ namespace FlatSharp.Compiler
             string clrTypeName,
             string defaultValue,
             string name,
-            TableOrStructDefinition parent)
+            TableOrStructDefinition parent,
+            CompileContext context)
         {
             string defaultValueAttribute = string.Empty;
             string defaultValueAssignment = string.Empty;
@@ -177,10 +179,21 @@ namespace FlatSharp.Compiler
             string sortedVector = string.Empty;
             string isDeprecated = string.Empty;
 
+            ITypeModel typeModel = null;
+            if (context.PreviousAssembly != null)
+            {
+                typeModel = this.GetTypeModel(parent, context);
+            }
+
             if (!string.IsNullOrEmpty(defaultValue))
             {
                 defaultValueAttribute = $", DefaultValue = {defaultValue}";
                 defaultValueAssignment = $" = {defaultValue};";
+            }
+            else if (typeModel?.SchemaType == FlatBufferSchemaType.Struct)
+            {
+                // structs are non-null but Flatsharp uses classes for structs, so we need to initialize them
+                defaultValueAssignment = $" = new {clrTypeName}();";
             }
 
             if (this.SortedVector)
@@ -220,8 +233,37 @@ namespace FlatSharp.Compiler
                 _ => string.Empty,
             };
 
+            string nullableReferenceIndicator = string.Empty;
+            if (context.Options.NullableAnnotations && context.CompilePass == CodeWritingPass.SecondPass)
+            {
+                if (typeModel.SchemaType == FlatBufferSchemaType.Table ||
+                    typeModel.SchemaType == FlatBufferSchemaType.Vector ||
+                    typeModel.SchemaType == FlatBufferSchemaType.Union ||
+                    typeModel.SchemaType == FlatBufferSchemaType.String)
+                {
+                    if (!typeModel.ClrType.IsValueType)
+                    {
+                        nullableReferenceIndicator = "?";
+                    }
+                }
+            }
+
             writer.AppendLine($"[FlatBufferItem({this.Index}{defaultValueAttribute}{isDeprecated}{sortedVector}{isKey})]");
-            writer.AppendLine($"public {(isNonVirtual ? string.Empty : "virtual ")}{clrTypeName} {name} {{ get; {setter} }}{defaultValueAssignment}");
+            writer.AppendLine($"public {(isNonVirtual ? string.Empty : "virtual ")}{clrTypeName}{nullableReferenceIndicator} {name} {{ get; {setter} }}{defaultValueAssignment}");
+        }
+
+        private ITypeModel GetTypeModel(
+            BaseSchemaMember parent,
+            CompileContext context)
+        {
+            if (context.PreviousAssembly == null)
+            {
+                return null;
+            }
+
+            Type parentType = context.PreviousAssembly.GetType(parent.FullName);
+            var thisProperty = parentType.GetProperty(this.Name);
+            return context.TypeModelContainer.CreateTypeModel(thisProperty.PropertyType);
         }
 
         private string GetDefaultValue(ITypeModel builtInType, EnumDefinition enumDefinition, string clrType)

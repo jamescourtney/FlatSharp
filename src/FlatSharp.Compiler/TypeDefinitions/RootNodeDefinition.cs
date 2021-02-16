@@ -35,7 +35,7 @@ namespace FlatSharp.Compiler
 
         protected override bool SupportsChildren => true;
 
-        protected override void OnWriteCode(CodeWriter writer, CodeWritingPass pass, string forFile, IReadOnlyDictionary<string, string> precompiledSerializers)
+        protected override void OnWriteCode(CodeWriter writer, CompileContext context)
         {
             writer.AppendLine($@"
 //------------------------------------------------------------------------------
@@ -55,10 +55,26 @@ namespace FlatSharp.Compiler
             writer.AppendLine("using FlatSharp;");
             writer.AppendLine("using FlatSharp.Attributes;");
 
+            // disable obsolete warnings. Flatsharp allows marking default constructors
+            // as obsolete and we don't want to raise warnings for our own code.
+            writer.AppendLine("#pragma warning disable 0618");
+
+            if (context.CompilePass == CodeWritingPass.SecondPass && context.Options.NullableAnnotations)
+            {
+                writer.AppendLine("#nullable enable");
+            }
+
             foreach (var child in this.Children.Values)
             {
-                child.WriteCode(writer, pass, forFile, precompiledSerializers);
+                child.WriteCode(writer, context);
             }
+
+            if (context.CompilePass == CodeWritingPass.SecondPass && context.Options.NullableAnnotations)
+            {
+                writer.AppendLine("#nullable restore");
+            }
+
+            writer.AppendLine("#pragma warning restore 0618");
         }
 
         protected override string OnGetCopyExpression(string source)

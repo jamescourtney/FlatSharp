@@ -134,7 +134,7 @@ namespace FlatSharpTests.Compiler
 
             string schema = $@"table MyTable {typeMetadata} {{ Field:{fieldType} {fieldMetadata}; }} table OtherTable {{ String:string (key); }}";
 
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema);
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
             var type = asm.GetType("MyTable");
             var propInfo = type.GetProperty("Field");
             var attribute = propInfo.GetCustomAttribute<FlatBufferItemAttribute>();

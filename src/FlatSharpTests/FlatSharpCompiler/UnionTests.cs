@@ -41,7 +41,7 @@ union TestUnion { First:A, B, Foobar.C }
 table D (PrecompiledSerializer) { Union:TestUnion; }
 
 ";
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(Schema);
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(Schema, new());
             Type unionType = asm.GetType("Foobar.TestUnion");
             Type aType = asm.GetType("Foobar.A");
             Type bType = asm.GetType("Foobar.B");
@@ -137,7 +137,7 @@ table D (PrecompiledSerializer) { Union:TestUnion; }
 
 ";
             // Simply ensure that the union is generated as FlatBufferUnion and no custom class is created.
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(Schema);
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(Schema, new());
             Type unionType = asm.GetType("Foobar.TestUnion");
             Assert.IsNull(unionType);
 
@@ -165,7 +165,7 @@ table D (PrecompiledSerializer) { Union:TestUnion; }
 
 ";
             // Simply ensure that the union is generated as FlatBufferUnion and no custom class is created.
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(Schema);
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(Schema, new());
             Type unionType = asm.GetType("Foobar.TestUnion");
 
             Type dType = asm.GetType("Foobar.D");
@@ -189,7 +189,7 @@ table D (PrecompiledSerializer) { Union:TestUnion; }
 
 ";
             // Simply ensure that the union is generated as FlatBufferUnion and no custom class is created.
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(Schema);
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(Schema, new());
             Type unionType = asm.GetType("Foobar.TestUnion");
             Type dType = asm.GetType("Foobar.D");
 

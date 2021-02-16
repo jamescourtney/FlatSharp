@@ -77,17 +77,12 @@ namespace FlatSharp.Compiler
             return resolvedComponentNames;
         }
 
-        protected override void OnWriteCode(
-            CodeWriter writer, 
-            CodeWritingPass pass, 
-            string forFile, 
-            IReadOnlyDictionary<string, string> precompiledSerializers)
+        protected override void OnWriteCode(CodeWriter writer, CompileContext context)
         {
             if (!this.GenerateCustomUnionType)
             {
                 return;
             }
-
 
             var resolvedComponents = this.GetResolvedComponents();
             string baseTypeName = string.Join(", ", resolvedComponents.Select(x => x.fullyQualifiedType));

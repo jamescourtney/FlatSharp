@@ -50,7 +50,7 @@ namespace FlatSharpTests.Compiler
               size:ushort;
             }"; 
 
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema);
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
 
             Type tableType = asm.GetTypes().Single(x => x.FullName == "StructTests.Table");
             object table = Activator.CreateInstance(tableType);

@@ -53,21 +53,17 @@ namespace FlatSharp.Compiler
 
         protected abstract bool SupportsChildren { get; }
         
-        public void WriteCode(
-            CodeWriter writer, 
-            CodeWritingPass pass, 
-            string forFile,
-            IReadOnlyDictionary<string, string> precompiledSerailizers)
+        public void WriteCode(CodeWriter writer, CompileContext context)
         {
             // First pass: write all definitions (even from other files)
             //  the first pass is internal and is intended to produce a large
             //  file full of type definitions that FlatSharp can use to build serializers.
             // Second pass: only write things for the target file.
             //   the second pass generates only files in the root fbs file.
-            if (pass == CodeWritingPass.FirstPass || forFile == this.DeclaringFile)
+            if (context.CompilePass == CodeWritingPass.FirstPass || context.RootFile == this.DeclaringFile)
             {
                 ErrorContext.Current.WithScope(
-                    this.Name, () => this.OnWriteCode(writer, pass, forFile, precompiledSerailizers));
+                    this.Name, () => this.OnWriteCode(writer, context));
             }
         }
 
@@ -77,7 +73,7 @@ namespace FlatSharp.Compiler
                 this.Name, () => this.OnGetCopyExpression(source));
         }
 
-        protected virtual void OnWriteCode(CodeWriter writer, CodeWritingPass pass, string forFile, IReadOnlyDictionary<string, string> precompiledSerializers)
+        protected virtual void OnWriteCode(CodeWriter writer, CompileContext context)
         {
         }
 

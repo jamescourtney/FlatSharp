@@ -76,7 +76,7 @@ table SecondTableInA {
         [TestMethod]
         public void TestMultipleNamespaces()
         {
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(Schema);
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(Schema, new());
 
             Assert.IsNotNull(asm.GetType("NamespaceA.NamespaceB.TableInNestedNS"));
             Assert.IsNotNull(asm.GetType("NamespaceA.NamespaceB.EnumInNestedNS"));
@@ -121,7 +121,7 @@ table T3
 	Union:A.Either;
 }";
 
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema);
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
         }
     }
 }

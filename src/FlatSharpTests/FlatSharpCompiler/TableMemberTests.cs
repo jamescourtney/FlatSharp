@@ -96,7 +96,7 @@ namespace FlatSharpTests.Compiler
       try
       {
         const string Schema = "namespace TableMemberTests; table Table { member:string (id:1); member2:int (id:0); }";
-        var assembly = FlatSharpCompiler.CompileAndLoadAssembly(Schema);
+        var assembly = FlatSharpCompiler.CompileAndLoadAssembly(Schema, new());
 
         var tableType = assembly.GetType("TableMemberTests.Table");
         var property = tableType.GetProperty("member");
@@ -122,7 +122,7 @@ namespace FlatSharpTests.Compiler
       try
       {
         const string Schema = "namespace TableMemberTests; table Table { member:string (id:1); member2:int; }";
-        Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(Schema));
+        Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(Schema, new()));
       }
       catch (TargetInvocationException ex)
       {
@@ -136,7 +136,7 @@ namespace FlatSharpTests.Compiler
       try
       {
         const string Schema = "namespace TableMemberTests; table Table { member:string (id:0); member2:int (id:-1); }";
-        Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(Schema));
+        Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(Schema, new()));
       }
       catch (TargetInvocationException ex)
       {
@@ -150,7 +150,7 @@ namespace FlatSharpTests.Compiler
       try
       {
         const string Schema = "namespace TableMemberTests; table Table { member:string (id:0); member2:int (id); }";
-        Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(Schema));
+        Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(Schema, new()));
       }
       catch (TargetInvocationException ex)
       {
@@ -164,7 +164,7 @@ namespace FlatSharpTests.Compiler
       try
       {
         const string Schema = "namespace TableMemberTests; struct Struct { member:string (id:1); member2:int (id:0); }";
-        Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(Schema));
+        Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(Schema, new()));
       }
       catch (TargetInvocationException ex)
       {
@@ -217,7 +217,7 @@ namespace FlatSharpTests.Compiler
             try
             {
                 string schema = $@"namespace TableMemberTests; table Table {{ member:{fbsType}; member2:int; }}";
-                Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema);
+                Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
 
                 Type tableType = asm.GetType("TableMemberTests.Table");
                 PropertyInfo property = tableType.GetProperty("member");

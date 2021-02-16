@@ -111,7 +111,7 @@ table Weapon {{
   damage:short;
 }}"; 
 
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema);
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
 
             Type weaponType = asm.GetType("MyGame.Weapon");
             Type monsterType = asm.GetTypes().Single(x => x.FullName == "MyGame.Monster");
@@ -127,7 +127,7 @@ table Weapon {{
             Assert.AreEqual((short)100, dMonster.hp);
             Assert.IsFalse(dMonster.friendly);
             Assert.AreEqual("Blue", dMonster.color.ToString());
-            Assert.IsNull(dMonster.pos);
+            Assert.IsNotNull(dMonster.pos);
 
             Assert.AreEqual(typeof(IList<byte>), monsterType.GetProperty("inventory").PropertyType);
             Assert.AreEqual(typeof(IList<>).MakeGenericType(vec3Type), monsterType.GetProperty("path").PropertyType);
