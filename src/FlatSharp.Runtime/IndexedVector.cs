@@ -44,6 +44,12 @@ namespace FlatSharp
             this.mutable = true;
         }
 
+        public IndexedVector(int capacity)
+        {
+            this.backingDictionary = new Dictionary<TKey, TValue>(capacity);
+            this.mutable = true;
+        }
+
         public IndexedVector(IEnumerable<TValue> items, int capacity, bool mutable)
         {
             var dictionary = new Dictionary<TKey, TValue>(capacity);

@@ -25,7 +25,9 @@ namespace FlatSharp
 
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public class FlatBufferUnion<T1> : IUnion
-			{
+
+							where T1 : notnull
+						{
 				private readonly byte discriminator;
 				
 				
@@ -158,7 +160,10 @@ namespace FlatSharp
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public class FlatBufferUnion<T1, T2> : IUnion
-			{
+
+							where T1 : notnull
+							where T2 : notnull
+						{
 				private readonly byte discriminator;
 				
 				
@@ -359,7 +364,11 @@ System.Func<TState, T2, TResult> case2)
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public class FlatBufferUnion<T1, T2, T3> : IUnion
-			{
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+						{
 				private readonly byte discriminator;
 				
 				
@@ -628,7 +637,12 @@ System.Func<TState, T3, TResult> case3)
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public class FlatBufferUnion<T1, T2, T3, T4> : IUnion
-			{
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+						{
 				private readonly byte discriminator;
 				
 				
@@ -965,7 +979,13 @@ System.Func<TState, T4, TResult> case4)
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public class FlatBufferUnion<T1, T2, T3, T4, T5> : IUnion
-			{
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+						{
 				private readonly byte discriminator;
 				
 				
@@ -1370,7 +1390,14 @@ System.Func<TState, T5, TResult> case5)
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6> : IUnion
-			{
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+						{
 				private readonly byte discriminator;
 				
 				
@@ -1843,7 +1870,15 @@ System.Func<TState, T6, TResult> case6)
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7> : IUnion
-			{
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+						{
 				private readonly byte discriminator;
 				
 				
@@ -2384,7 +2419,16 @@ System.Func<TState, T7, TResult> case7)
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8> : IUnion
-			{
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+						{
 				private readonly byte discriminator;
 				
 				
@@ -2993,7 +3037,17 @@ System.Func<TState, T8, TResult> case8)
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9> : IUnion
-			{
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+						{
 				private readonly byte discriminator;
 				
 				
@@ -3670,7 +3724,18 @@ System.Func<TState, T9, TResult> case9)
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> : IUnion
-			{
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+						{
 				private readonly byte discriminator;
 				
 				
@@ -4415,7 +4480,19 @@ System.Func<TState, T10, TResult> case10)
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> : IUnion
-			{
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+						{
 				private readonly byte discriminator;
 				
 				
@@ -5228,7 +5305,20 @@ System.Func<TState, T11, TResult> case11)
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> : IUnion
-			{
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+							where T12 : notnull
+						{
 				private readonly byte discriminator;
 				
 				
@@ -6109,7 +6199,21 @@ System.Func<TState, T12, TResult> case12)
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> : IUnion
-			{
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+							where T12 : notnull
+							where T13 : notnull
+						{
 				private readonly byte discriminator;
 				
 				
@@ -7058,7 +7162,22 @@ System.Func<TState, T13, TResult> case13)
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> : IUnion
-			{
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+							where T12 : notnull
+							where T13 : notnull
+							where T14 : notnull
+						{
 				private readonly byte discriminator;
 				
 				
@@ -8075,7 +8194,23 @@ System.Func<TState, T14, TResult> case14)
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> : IUnion
-			{
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+							where T12 : notnull
+							where T13 : notnull
+							where T14 : notnull
+							where T15 : notnull
+						{
 				private readonly byte discriminator;
 				
 				
@@ -9160,7 +9295,24 @@ System.Func<TState, T15, TResult> case15)
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> : IUnion
-			{
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+							where T12 : notnull
+							where T13 : notnull
+							where T14 : notnull
+							where T15 : notnull
+							where T16 : notnull
+						{
 				private readonly byte discriminator;
 				
 				
@@ -10313,7 +10465,25 @@ System.Func<TState, T16, TResult> case16)
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17> : IUnion
-			{
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+							where T12 : notnull
+							where T13 : notnull
+							where T14 : notnull
+							where T15 : notnull
+							where T16 : notnull
+							where T17 : notnull
+						{
 				private readonly byte discriminator;
 				
 				
@@ -11534,7 +11704,26 @@ System.Func<TState, T17, TResult> case17)
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18> : IUnion
-			{
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+							where T12 : notnull
+							where T13 : notnull
+							where T14 : notnull
+							where T15 : notnull
+							where T16 : notnull
+							where T17 : notnull
+							where T18 : notnull
+						{
 				private readonly byte discriminator;
 				
 				
@@ -12823,7 +13012,27 @@ System.Func<TState, T18, TResult> case18)
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19> : IUnion
-			{
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+							where T12 : notnull
+							where T13 : notnull
+							where T14 : notnull
+							where T15 : notnull
+							where T16 : notnull
+							where T17 : notnull
+							where T18 : notnull
+							where T19 : notnull
+						{
 				private readonly byte discriminator;
 				
 				
@@ -14180,7 +14389,28 @@ System.Func<TState, T19, TResult> case19)
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20> : IUnion
-			{
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+							where T12 : notnull
+							where T13 : notnull
+							where T14 : notnull
+							where T15 : notnull
+							where T16 : notnull
+							where T17 : notnull
+							where T18 : notnull
+							where T19 : notnull
+							where T20 : notnull
+						{
 				private readonly byte discriminator;
 				
 				
@@ -15605,7 +15835,29 @@ System.Func<TState, T20, TResult> case20)
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21> : IUnion
-			{
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+							where T12 : notnull
+							where T13 : notnull
+							where T14 : notnull
+							where T15 : notnull
+							where T16 : notnull
+							where T17 : notnull
+							where T18 : notnull
+							where T19 : notnull
+							where T20 : notnull
+							where T21 : notnull
+						{
 				private readonly byte discriminator;
 				
 				
@@ -17098,7 +17350,30 @@ System.Func<TState, T21, TResult> case21)
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22> : IUnion
-			{
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+							where T12 : notnull
+							where T13 : notnull
+							where T14 : notnull
+							where T15 : notnull
+							where T16 : notnull
+							where T17 : notnull
+							where T18 : notnull
+							where T19 : notnull
+							where T20 : notnull
+							where T21 : notnull
+							where T22 : notnull
+						{
 				private readonly byte discriminator;
 				
 				
@@ -18659,7 +18934,31 @@ System.Func<TState, T22, TResult> case22)
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23> : IUnion
-			{
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+							where T12 : notnull
+							where T13 : notnull
+							where T14 : notnull
+							where T15 : notnull
+							where T16 : notnull
+							where T17 : notnull
+							where T18 : notnull
+							where T19 : notnull
+							where T20 : notnull
+							where T21 : notnull
+							where T22 : notnull
+							where T23 : notnull
+						{
 				private readonly byte discriminator;
 				
 				
@@ -20288,7 +20587,32 @@ System.Func<TState, T23, TResult> case23)
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24> : IUnion
-			{
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+							where T12 : notnull
+							where T13 : notnull
+							where T14 : notnull
+							where T15 : notnull
+							where T16 : notnull
+							where T17 : notnull
+							where T18 : notnull
+							where T19 : notnull
+							where T20 : notnull
+							where T21 : notnull
+							where T22 : notnull
+							where T23 : notnull
+							where T24 : notnull
+						{
 				private readonly byte discriminator;
 				
 				
@@ -21985,7 +22309,33 @@ System.Func<TState, T24, TResult> case24)
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25> : IUnion
-			{
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+							where T12 : notnull
+							where T13 : notnull
+							where T14 : notnull
+							where T15 : notnull
+							where T16 : notnull
+							where T17 : notnull
+							where T18 : notnull
+							where T19 : notnull
+							where T20 : notnull
+							where T21 : notnull
+							where T22 : notnull
+							where T23 : notnull
+							where T24 : notnull
+							where T25 : notnull
+						{
 				private readonly byte discriminator;
 				
 				
@@ -23750,7 +24100,34 @@ System.Func<TState, T25, TResult> case25)
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26> : IUnion
-			{
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+							where T12 : notnull
+							where T13 : notnull
+							where T14 : notnull
+							where T15 : notnull
+							where T16 : notnull
+							where T17 : notnull
+							where T18 : notnull
+							where T19 : notnull
+							where T20 : notnull
+							where T21 : notnull
+							where T22 : notnull
+							where T23 : notnull
+							where T24 : notnull
+							where T25 : notnull
+							where T26 : notnull
+						{
 				private readonly byte discriminator;
 				
 				
@@ -25583,7 +25960,35 @@ System.Func<TState, T26, TResult> case26)
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27> : IUnion
-			{
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+							where T12 : notnull
+							where T13 : notnull
+							where T14 : notnull
+							where T15 : notnull
+							where T16 : notnull
+							where T17 : notnull
+							where T18 : notnull
+							where T19 : notnull
+							where T20 : notnull
+							where T21 : notnull
+							where T22 : notnull
+							where T23 : notnull
+							where T24 : notnull
+							where T25 : notnull
+							where T26 : notnull
+							where T27 : notnull
+						{
 				private readonly byte discriminator;
 				
 				
@@ -27484,7 +27889,36 @@ System.Func<TState, T27, TResult> case27)
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28> : IUnion
-			{
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+							where T12 : notnull
+							where T13 : notnull
+							where T14 : notnull
+							where T15 : notnull
+							where T16 : notnull
+							where T17 : notnull
+							where T18 : notnull
+							where T19 : notnull
+							where T20 : notnull
+							where T21 : notnull
+							where T22 : notnull
+							where T23 : notnull
+							where T24 : notnull
+							where T25 : notnull
+							where T26 : notnull
+							where T27 : notnull
+							where T28 : notnull
+						{
 				private readonly byte discriminator;
 				
 				
@@ -29453,7 +29887,37 @@ System.Func<TState, T28, TResult> case28)
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29> : IUnion
-			{
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+							where T12 : notnull
+							where T13 : notnull
+							where T14 : notnull
+							where T15 : notnull
+							where T16 : notnull
+							where T17 : notnull
+							where T18 : notnull
+							where T19 : notnull
+							where T20 : notnull
+							where T21 : notnull
+							where T22 : notnull
+							where T23 : notnull
+							where T24 : notnull
+							where T25 : notnull
+							where T26 : notnull
+							where T27 : notnull
+							where T28 : notnull
+							where T29 : notnull
+						{
 				private readonly byte discriminator;
 				
 				
@@ -31490,7 +31954,38 @@ System.Func<TState, T29, TResult> case29)
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30> : IUnion
-			{
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+							where T12 : notnull
+							where T13 : notnull
+							where T14 : notnull
+							where T15 : notnull
+							where T16 : notnull
+							where T17 : notnull
+							where T18 : notnull
+							where T19 : notnull
+							where T20 : notnull
+							where T21 : notnull
+							where T22 : notnull
+							where T23 : notnull
+							where T24 : notnull
+							where T25 : notnull
+							where T26 : notnull
+							where T27 : notnull
+							where T28 : notnull
+							where T29 : notnull
+							where T30 : notnull
+						{
 				private readonly byte discriminator;
 				
 				

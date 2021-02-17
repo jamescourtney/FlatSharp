@@ -82,6 +82,14 @@ namespace FlatSharp.TypeModel
             return new CodeGeneratedMethod { MethodBody = body };
         }
 
+        public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
+        {
+            return new CodeGeneratedMethod
+            {
+                MethodBody = $"return {context.ItemVariableName}?.ToArray();",
+            };
+        }
+
         public override string GetNonNullConditionExpression(string itemVariableName)
         {
             return "true";

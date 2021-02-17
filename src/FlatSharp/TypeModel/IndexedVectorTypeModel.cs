@@ -169,6 +169,14 @@ namespace FlatSharp.TypeModel
             return new CodeGeneratedMethod { MethodBody = body, IsMethodInline = false };
         }
 
+        public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
+        {
+            return new CodeGeneratedMethod
+            {
+                MethodBody = $"return {context.ItemVariableName}?.Clone();"
+            };
+        }
+
         public override void TraverseObjectGraph(HashSet<Type> seenTypes)
         {
             seenTypes.Add(this.ClrType);

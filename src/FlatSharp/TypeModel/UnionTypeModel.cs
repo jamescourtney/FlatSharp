@@ -19,6 +19,7 @@ namespace FlatSharp.TypeModel
     using System;
     using System.Collections.Generic;
     using System.Collections.Immutable;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
 
     /// <summary>
@@ -210,6 +211,26 @@ $@"
             return new CodeGeneratedMethod { MethodBody = serializeBlock };
         }
 
+        public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
+        {
+            var typeName = CSharpHelpers.GetCompilableTypeName(this.ClrType);
+            List<string> lines = new List<string>();
+
+            foreach (var item in this.memberTypeModels)
+            {
+                lines.Add($"x => {context.MethodNameMap[item.ClrType]}(x)");
+            }
+
+            string body = $@"
+                return {context.ItemVariableName}?.Clone(
+                    {string.Join(", ", lines)});";
+
+            return new CodeGeneratedMethod
+            {
+                MethodBody = body,
+            };
+        }
+
         public override string GetThrowIfNullInvocation(string itemVariableName)
         {
             return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
@@ -262,6 +283,12 @@ $@"
                     member.TraverseObjectGraph(seenTypes);
                 }
             }
+        }
+
+        public override bool TryGetUnderlyingUnionTypes([NotNullWhen(true)] out ITypeModel[]? typeModels)
+        {
+            typeModels = this.UnionElementTypeModel.ToArray();
+            return true;
         }
     }
 }

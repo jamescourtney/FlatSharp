@@ -348,7 +348,7 @@ namespace FlatSharpTests
         {
             var model = RuntimeTypeModel.CreateFrom(typeof(TaggedEnum?));
 
-            Assert.IsTrue(model is NullableEnumTypeModel enumModel);
+            Assert.IsTrue(model is NullableTypeModel nullableModel);
             Assert.AreEqual(typeof(TaggedEnum?), model.ClrType);
             Assert.IsTrue(model.IsFixedSize);
         }

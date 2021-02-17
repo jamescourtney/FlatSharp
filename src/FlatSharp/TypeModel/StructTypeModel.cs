@@ -169,6 +169,15 @@ $@"
             };
         }
 
+        public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
+        {
+            var typeName = CSharpHelpers.GetCompilableTypeName(this.ClrType);
+            return new CodeGeneratedMethod
+            {
+                MethodBody = $"return {context.ItemVariableName} is not null ? new {typeName}({context.ItemVariableName}) : new {typeName}();",
+            };
+        }
+
         public override string GetThrowIfNullInvocation(string itemVariableName)
         {
             return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";

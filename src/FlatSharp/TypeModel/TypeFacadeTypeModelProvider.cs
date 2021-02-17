@@ -116,6 +116,18 @@ namespace FlatSharp.TypeModel
                     context.With(valueVariableName: GetConvertToUnderlyingInvocation(context.ValueVariableName)));
             }
 
+            public CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
+            {
+                string toUnderlying = GetConvertToUnderlyingInvocation(context.ItemVariableName);
+                string clone = context.MethodNameMap[this.underlyingModel.ClrType];
+                string fromUnderlying = GetConvertFromUnderlyingInvocation($"{clone}({toUnderlying})");
+
+                return new CodeGeneratedMethod
+                {
+                    MethodBody = $"return {fromUnderlying}"
+                };
+            }
+
             public string GetNonNullConditionExpression(string itemVariableName)
             {
                 bool isNullable = Nullable.GetUnderlyingType(this.ClrType) is not null;
@@ -176,6 +188,9 @@ namespace FlatSharp.TypeModel
             public bool ValidateDefaultValue(object? defaultValue) => false;
 
             public IEnumerable<Type> GetReferencedTypes() => new[] { typeof(TConverter), this.ClrType };
+
+            public bool TryGetUnderlyingUnionTypes([NotNullWhen(true)] out ITypeModel[]? typeModels) 
+                => this.underlyingModel.TryGetUnderlyingUnionTypes(out typeModels);
 
             private static string GetConvertToUnderlyingInvocation(string source)
             {

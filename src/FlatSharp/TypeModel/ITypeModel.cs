@@ -109,6 +109,11 @@ namespace FlatSharp.TypeModel
         CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context);
 
         /// <summary>
+        /// Implements a method to clone the given instance of the type model.
+        /// </summary>
+        CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context);
+
+        /// <summary>
         /// Returns an expression that asserts the given item is non-null. 
         /// </summary>
         /// <param name="itemVariableName">The variable name of the item.</param>
@@ -140,6 +145,11 @@ namespace FlatSharp.TypeModel
         /// For vectors, retrieves the inner type model. Other types return false.
         /// </summary>
         bool TryGetUnderlyingVectorType([NotNullWhen(true)] out ITypeModel? typeModel);
+
+        /// <summary>
+        /// For unions, retrieves the component type models of this union.
+        /// </summary>
+        bool TryGetUnderlyingUnionTypes([NotNullWhen(true)] out ITypeModel[]? typeModels);
 
         /// <summary>
         /// Attempts to get the type implementing <see cref="ISpanComparer"/> for the type model.

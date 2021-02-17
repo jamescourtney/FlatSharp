@@ -103,6 +103,14 @@ namespace FlatSharp.TypeModel
             };
         }
 
+        public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
+        {
+            return new CodeGeneratedMethod
+            {
+                MethodBody = $"return {context.ItemVariableName};"
+            };
+        }
+
         public override string GetThrowIfNullInvocation(string itemVariableName)
         {
             return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";

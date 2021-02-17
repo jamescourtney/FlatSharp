@@ -94,5 +94,26 @@ namespace FlatSharp.TypeModel
 
             return new CodeGeneratedMethod { MethodBody = body, ClassDefinition = vectorClassDef };
         }
+
+        public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
+        {
+            var itemTypeName = CSharpHelpers.GetCompilableTypeName(this.itemTypeModel.ClrType);
+            var cloneMethodName = context.MethodNameMap[this.itemTypeModel.ClrType];
+
+            string body = 
+            $@"
+                if ({context.ItemVariableName} is null) return null;
+
+                var length = {context.ItemVariableName}.{nameof(Array.Length)};
+                var clone = new {itemTypeName}[length];
+                for (int i = 0; i < length; ++i)
+                {{
+                    clone[i] = {cloneMethodName}({context.ItemVariableName}[i]);
+                }}
+
+                return clone;";
+
+            return new CodeGeneratedMethod { MethodBody = body };
+        }
     }
 }

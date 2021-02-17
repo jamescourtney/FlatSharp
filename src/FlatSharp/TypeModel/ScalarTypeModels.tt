@@ -36,7 +36,7 @@
 		("ULong", "ulong", "ul", new[] { "ulong", "uint64" }, null, null),
 		("Float", "float", "f", new[] { "float", "float32" }, null, null),
 		("Double", "double", "d", new[] { "double", "float64" }, null, null),
-	};
+	}; 
 #>
 
 namespace FlatSharp.TypeModel
@@ -80,28 +80,6 @@ namespace FlatSharp.TypeModel
         protected override string SpanWriterWriteMethodName => nameof(<#= pair.writeNameClass ?? "ISpanWriter" #>.Write<#= casedName #>);
     }
 
-	
-    /// <summary>
-    /// Type Model for <see cref="<#= typeName #>?"/>.
-    /// </summary>
-	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class Nullable<#= className #> : ScalarTypeModel
-    {
-        public Nullable<#= className #>(TypeModelContainer container) : base(container, typeof(<#=typeName#>?), sizeof(<#=typeName#>)) 
-        {
-        }
-
-        public override bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType)
-        {
-            comparerType = null;
-            return false;
-        }
-		
-        protected override string InputBufferReadMethodName => nameof(<#= pair.readNameClass ?? "IInputBuffer" #>.Read<#= casedName #>);
-
-        protected override string SpanWriterWriteMethodName => nameof(<#= pair.writeNameClass ?? "ISpanWriter" #>.Write<#= casedName #>);
-    }
-
 	<# } #>
 
 	public class ScalarTypeModelProvider : ITypeModelProvider
@@ -123,12 +101,6 @@ namespace FlatSharp.TypeModel
 			if (type == typeof(<#= typeName #>))
 			{
 				typeModel = new <#= className #>(container); 
-				return true;
-			}
-
-			if (type == typeof(<#= typeName #>?))
-			{
-				typeModel = new Nullable<#= className #>(container); 
 				return true;
 			}
 

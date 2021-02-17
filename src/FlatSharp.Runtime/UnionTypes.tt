@@ -39,6 +39,10 @@ namespace FlatSharp
 	#>
 			[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public class FlatBufferUnion<<#= string.Join(", ", range.Select(x => "T" + x)) #>> : IUnion
+
+			<# foreach (var genericType in range) { #>
+				where T<#= genericType #> : notnull
+			<# } #>
 			{
 				private readonly byte discriminator;
 				

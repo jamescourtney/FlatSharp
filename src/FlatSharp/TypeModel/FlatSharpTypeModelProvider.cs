@@ -102,9 +102,9 @@ namespace FlatSharp.TypeModel
             }
 
             var underlyingType = Nullable.GetUnderlyingType(type);
-            if (underlyingType is not null && underlyingType.IsEnum)
+            if (underlyingType is not null)
             {
-                typeModel = new NullableEnumTypeModel(type, container);
+                typeModel = new NullableTypeModel(container, type);
                 return true;
             }
 

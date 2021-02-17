@@ -103,6 +103,15 @@ namespace FlatSharp.TypeModel
             };
         }
 
+        public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
+        {
+            // shared string is immutable.
+            return new CodeGeneratedMethod
+            {
+                MethodBody = $"return {context.ItemVariableName};",
+            };
+        }
+
         public override string GetThrowIfNullInvocation(string itemVariableName)
         {
             return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";

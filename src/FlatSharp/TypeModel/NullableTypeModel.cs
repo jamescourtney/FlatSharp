@@ -1,0 +1,176 @@
+﻿/*
+ * Copyright 2020 James Courtney
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+ 
+ namespace FlatSharp.TypeModel
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Collections.Immutable;
+    using System.Diagnostics.CodeAnalysis;
+
+    /// <summary>
+    /// Defines a FlatSharp type model for nullable value types.
+    /// </summary>
+    public class NullableTypeModel : RuntimeTypeModel
+    {
+        private Type underlyingType;
+        private ITypeModel underlyingTypeModel;
+
+        internal NullableTypeModel(TypeModelContainer container, Type type) : base(type, container)
+        {
+            this.underlyingType = null!;
+            this.underlyingTypeModel = null!;
+        }
+
+        /// <summary>
+        /// Gets the schema type.
+        /// </summary>
+        public override FlatBufferSchemaType SchemaType => FlatBufferSchemaType.Scalar;
+
+        /// <summary>
+        /// Layout when in a vtable.
+        /// </summary>
+        public override ImmutableArray<PhysicalLayoutElement> PhysicalLayout => this.underlyingTypeModel.PhysicalLayout;
+
+        /// <summary>
+        /// Scalars are fixed size.
+        /// </summary>
+        public override bool IsFixedSize => this.underlyingTypeModel.IsFixedSize;
+
+        /// <summary>
+        /// Scalars can be part of Structs.
+        /// </summary>
+        public override bool IsValidStructMember => false;
+
+        /// <summary>
+        /// Scalars can be part of Tables.
+        /// </summary>
+        public override bool IsValidTableMember => this.underlyingTypeModel.IsValidTableMember;
+
+        /// <summary>
+        /// Scalars can't be part of Unions.
+        /// </summary>
+        public override bool IsValidUnionMember => false;
+
+        /// <summary>
+        /// Optionals can't be part of unions.
+        /// </summary>
+        public override bool IsValidVectorMember => false;
+
+        /// <summary>
+        /// Optionals can't be keys.
+        /// </summary>
+        public override bool IsValidSortedVectorKey => false;
+
+        /// <summary>
+        /// Defer to underlying type for serializing.
+        /// </summary>
+        public override bool SerializesInline => this.underlyingTypeModel.SerializesInline;
+
+        /// <summary>
+        /// Validates a default value.
+        /// </summary>
+        public override bool ValidateDefaultValue(object defaultValue) => false;
+
+        public override void Initialize()
+        {
+            base.Initialize();
+
+            Type? under = Nullable.GetUnderlyingType(this.ClrType);
+            if (under is null)
+            {
+                throw new InvalidFlatBufferDefinitionException("Nullable type model created for non-nullable type.");
+            }
+
+            this.underlyingType = under;
+            this.underlyingTypeModel = this.typeModelContainer.CreateTypeModel(this.underlyingType);
+        }
+
+        public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
+        {
+            string body = $@"
+                if ({context.ValueVariableName} is not null)
+                {{
+                    return {context.MethodNameMap[this.underlyingType]}({context.ValueVariableName}.Value);
+                }}
+
+                return 0;
+            ";
+
+            return new CodeGeneratedMethod
+            {
+                IsMethodInline = true,
+                MethodBody = body
+            };
+        }
+
+        public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
+        {
+            return new CodeGeneratedMethod
+            {
+                IsMethodInline = true,
+                MethodBody = $"return {context.MethodNameMap[this.underlyingType]}({context.InputBufferVariableName}, {context.OffsetVariableName});"
+            };
+        }
+
+        public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
+        {
+            var method = context.MethodNameMap[this.underlyingType];
+            string variableName = context.ValueVariableName;
+
+            return new CodeGeneratedMethod 
+            {
+                MethodBody = $"{method}({context.SpanWriterVariableName}, {context.SpanVariableName}, {variableName}.Value, {context.OffsetVariableName}, {context.SerializationContextVariableName});",
+                IsMethodInline = true,
+            };
+        }
+
+        public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
+        {
+            string body = $@"
+                if ({context.ItemVariableName} is not null)
+                {{
+                    return {context.MethodNameMap[this.underlyingType]}({context.ItemVariableName}.Value);
+                }}
+
+                return null;
+            ";
+
+            return new CodeGeneratedMethod
+            {
+                IsMethodInline = true,
+                MethodBody = body
+            };
+        }
+
+        public override string GetThrowIfNullInvocation(string itemVariableName)
+        {
+            return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
+        }
+
+        public override string GetNonNullConditionExpression(string itemVariableName)
+        {
+            return $"{itemVariableName}.HasValue";
+        }
+
+        public override void TraverseObjectGraph(HashSet<Type> seenTypes)
+        {
+            seenTypes.Add(this.ClrType);
+            seenTypes.Add(this.underlyingType);
+            this.underlyingTypeModel.TraverseObjectGraph(seenTypes);
+        }
+    }
+}

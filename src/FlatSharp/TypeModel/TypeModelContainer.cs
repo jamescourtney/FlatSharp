@@ -85,23 +85,25 @@ namespace FlatSharp.TypeModel
                 throw new InvalidOperationException($"Unable to resolve type model for type '{typeof(TUnderlyingType).FullName}'.");
             }
 
-            if (throwOnTypeConflict && this.TryCreateTypeModel(typeof(TFacadeType), out _))
+            if (throwOnTypeConflict && this.TryCreateTypeModel(typeof(TFacadeType), throwOnError: false, out _))
             {
                 throw new InvalidOperationException($"The Type model container already contains a type model for '{typeof(TUnderlyingType).FullName}', which may lead to unexpected behaviors.");
             }
 
+            ITypeModelProvider provider;
             if (typeof(TUnderlyingType).IsValueType && Nullable.GetUnderlyingType(typeof(TUnderlyingType)) == null)
             {
                 // non-nullable value type: omit the null check
-                var facadeContainer = new TypeFacadeTypeModelProvider<TConverter, TUnderlyingType, TFacadeType>(model);
-                this.RegisterProvider(facadeContainer);
+                provider = new TypeFacadeTypeModelProvider<TConverter, TUnderlyingType, TFacadeType>(model);
             }
             else
             {
                 // reference type or nullable value type.
-                var facadeContainer = new TypeFacadeTypeModelProvider<NullCheckingTypeFacadeConverter<TUnderlyingType, TFacadeType, TConverter>, TUnderlyingType, TFacadeType>(model);
-                this.RegisterProvider(facadeContainer);
+                provider = new TypeFacadeTypeModelProvider<NullCheckingTypeFacadeConverter<TUnderlyingType, TFacadeType, TConverter>, TUnderlyingType, TFacadeType>(model);
             }
+
+            // add first.
+            this.providers.Insert(0, provider);
         }
 
         /// <summary>
@@ -128,7 +130,17 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// Attempts to resolve a type model from the given type.
         /// </summary>
-        public bool TryCreateTypeModel(Type type, [NotNullWhen(true)] out ITypeModel? typeModel)
+        public bool TryCreateTypeModel(
+            Type type,
+            [NotNullWhen(true)] out ITypeModel? typeModel) => this.TryCreateTypeModel(type, true, out typeModel);
+
+        /// <summary>
+        /// Attempts to resolve a type model from the given type.
+        /// </summary>
+        public bool TryCreateTypeModel(
+            Type type, 
+            bool throwOnError,
+            [NotNullWhen(true)] out ITypeModel? typeModel)
         {
             if (this.cache.TryGetValue(type, out typeModel))
             {
@@ -155,7 +167,15 @@ namespace FlatSharp.TypeModel
                 catch
                 {
                     this.cache.TryRemove(type, out _);
-                    throw;
+
+                    if (throwOnError)
+                    {
+                        throw;
+                    }
+                    else
+                    {
+                        return false;
+                    }
                 }
             }
             else

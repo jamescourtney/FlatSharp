@@ -123,6 +123,8 @@ namespace FlatSharp.TypeModel
 
         public abstract CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context);
 
+        public abstract CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context);
+
         public abstract string GetThrowIfNullInvocation(string itemVariableName);
 
         public virtual string GetNonNullConditionExpression(string itemVariableName)
@@ -159,6 +161,12 @@ namespace FlatSharp.TypeModel
         public virtual bool TryGetTableKeyMember([NotNullWhen(true)] out TableMemberModel? tableMember)
         {
             tableMember = null;
+            return false;
+        }
+
+        public virtual bool TryGetUnderlyingUnionTypes([NotNullWhen(true)] out ITypeModel[]? typeModels)
+        {
+            typeModels = null;
             return false;
         }
 

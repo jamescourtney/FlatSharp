@@ -585,6 +585,15 @@ $@"
             return new CodeGeneratedMethod { MethodBody = body };
         }
 
+        public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
+        {
+            var typeName = CSharpHelpers.GetCompilableTypeName(this.ClrType);
+            return new CodeGeneratedMethod
+            {
+                MethodBody = $"return {context.ItemVariableName} is not null ? new {typeName}({context.ItemVariableName}) : null;",
+            };
+        }
+
         public override string GetNonNullConditionExpression(string itemVariableName)
         {
             return $"{itemVariableName} != null";
