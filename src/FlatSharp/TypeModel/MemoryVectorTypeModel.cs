@@ -86,7 +86,8 @@ namespace FlatSharp.TypeModel
         {
             return new CodeGeneratedMethod
             {
-                MethodBody = $"return {context.ItemVariableName}?.ToArray();",
+                MethodBody = $"return {context.ItemVariableName}.ToArray().AsMemory();",
+                IsMethodInline = true,
             };
         }
 

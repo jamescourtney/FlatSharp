@@ -75,7 +75,7 @@ namespace FlatSharp.Compiler
 
         protected override void OnWriteCode(CodeWriter writer, CompileContext context)
         {
-            if (context.CompilePass == CodeWritingPass.FirstPass)
+            if (context.CompilePass == CodeWritingPass.IntermediatePass)
             {
                 this.ValidateReferencedTables();
                 return;

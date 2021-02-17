@@ -92,6 +92,7 @@ namespace FlatSharp.Compiler
             using (writer.WithBlock())
             {
                 // Generate an internal type enum.
+                writer.AppendLine("[FlatBufferEnum(typeof(byte))]");
                 writer.AppendLine("public enum ItemKind : byte");
                 using (writer.WithBlock())
                 {

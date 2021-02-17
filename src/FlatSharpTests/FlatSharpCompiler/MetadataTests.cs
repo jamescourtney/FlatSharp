@@ -40,7 +40,7 @@ namespace FlatSharpTests.Compiler
         [TestMethod]
         public void DeprecatedSortedVector()
         {
-            var (prop, type, attribute) = this.CompileAndGetProperty("", "[string]", "deprecated,sortedvector");
+            var (prop, type, attribute) = this.CompileAndGetProperty("", "[OtherTable]", "deprecated,sortedvector");
             Assert.IsTrue(attribute.Deprecated);
             Assert.IsTrue(attribute.SortedVector);
         }
@@ -132,7 +132,7 @@ namespace FlatSharpTests.Compiler
                 fieldMetadata = $"({fieldMetadata})";
             }
 
-            string schema = $@"table MyTable {typeMetadata} {{ Field:{fieldType} {fieldMetadata}; }} table OtherTable {{ String:string (key); }}";
+            string schema = $@"table MyTable {typeMetadata} {{ Field:{fieldType} {fieldMetadata}; Fake:string; }} table OtherTable {{ String:string (key); }}";
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
             var type = asm.GetType("MyTable");

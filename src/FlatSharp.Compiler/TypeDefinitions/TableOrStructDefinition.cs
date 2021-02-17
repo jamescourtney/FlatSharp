@@ -80,7 +80,7 @@ namespace FlatSharp.Compiler
                 });
         }
 
-    protected override void OnWriteCode(CodeWriter writer, CompileContext context)
+        protected override void OnWriteCode(CodeWriter writer, CompileContext context)
         {
             this.AssignIndexes();
 
@@ -96,18 +96,37 @@ namespace FlatSharp.Compiler
                 writer.AppendLine($"partial void OnInitialized();");
 
                 // default ctor.
-                string obsolete = this.ObsoleteDefaultConstructor ? $"[Obsolete]" : string.Empty;
-                writer.AppendLine($"{obsolete} public {this.Name}() {{ this.OnInitialized(); }}");
+                if (this.ObsoleteDefaultConstructor)
+                {
+                    writer.AppendLine("[Obsolete]");
+                }
+
+                writer.AppendLine($"public {this.Name}()");
+                using (writer.WithBlock())
+                {
+                    if (context.CompilePass == CodeWritingPass.FinalPass)
+                    {
+                        foreach (var field in this.Fields)
+                        {
+                            field.WriteDefaultConstructorLine(writer, context);
+                        }
+
+                        writer.AppendLine("this.OnInitialized();");
+                    }
+                }
 
                 writer.AppendLine($"public {this.Name}({this.Name} source)");
                 using (writer.WithBlock())
                 {
-                    foreach (var field in this.Fields)
+                    if (context.CompilePass == CodeWritingPass.FinalPass)
                     {
-                        field.WriteCopyConstructorLine(writer, "source", this);
-                    }
+                        foreach (var field in this.Fields)
+                        {
+                            field.WriteCopyConstructorLine(writer, "source", this, context);
+                        }
 
-                    writer.AppendLine("this.OnInitialized();");
+                        writer.AppendLine("this.OnInitialized();");
+                    }
                 }
 
                 foreach (var field in this.Fields)
@@ -120,7 +139,7 @@ namespace FlatSharp.Compiler
                     field.WriteField(writer, this, context);
                 }
 
-                if (context.CompilePass == CodeWritingPass.SecondPass && context.PrecompiledSerializers != null && this.RequestedSerializer != null)
+                if (context.CompilePass == CodeWritingPass.FinalPass && context.PrecompiledSerializers != null && this.RequestedSerializer != null)
                 {
                     if (context.PrecompiledSerializers.TryGetValue(this.FullName, out string serializer))
                     {

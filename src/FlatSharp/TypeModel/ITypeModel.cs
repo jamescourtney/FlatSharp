@@ -84,6 +84,7 @@ namespace FlatSharp.TypeModel
 
         /// <summary>
         /// When true, indicates that this type model serializes directly at the offset provided (ie, it does not write a uoffset).
+        /// This is the equivalent of a FlatBuffer "value" type.
         /// </summary>
         bool SerializesInline { get; }
 

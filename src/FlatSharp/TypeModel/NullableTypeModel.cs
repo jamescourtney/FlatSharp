@@ -92,7 +92,7 @@
             Type? under = Nullable.GetUnderlyingType(this.ClrType);
             if (under is null)
             {
-                throw new InvalidFlatBufferDefinitionException("Nullable type model created for non-nullable type.");
+                throw new InvalidFlatBufferDefinitionException("Nullable type model created for a type that is not Nullable<T>.");
             }
 
             this.underlyingType = under;

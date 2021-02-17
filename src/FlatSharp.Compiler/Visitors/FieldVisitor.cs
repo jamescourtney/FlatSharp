@@ -24,9 +24,9 @@ namespace FlatSharp.Compiler
     {
         private readonly FieldDefinition definition;
 
-        public FieldVisitor()
+        public FieldVisitor(TableOrStructDefinition parent)
         {
-            this.definition = new FieldDefinition();
+            this.definition = new FieldDefinition(parent);
         }
 
         public override FieldDefinition VisitField_decl([NotNull] FlatBuffersParser.Field_declContext context)

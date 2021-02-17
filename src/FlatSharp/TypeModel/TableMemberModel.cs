@@ -30,11 +30,13 @@
             ushort index, 
             object? defaultValue,
             bool isSortedVector,
-            bool isKey) : base(propertyModel, propertyInfo, index)
+            bool isKey,
+            bool isDeprecated) : base(propertyModel, propertyInfo, index)
         {
             this.DefaultValue = defaultValue;
             this.IsSortedVector = isSortedVector;
             this.IsKey = isKey;
+            this.IsDeprecated = isDeprecated;
 
             if (!propertyModel.IsValidTableMember)
             {
@@ -61,6 +63,11 @@
         /// Indicates that this property is the key for the table.
         /// </summary>
         public bool IsKey { get; }
+
+        /// <summary>
+        /// Indicates that this property is deprecated and serializers need not be generated for it.
+        /// </summary>
+        public bool IsDeprecated { get; }
 
         public string DefaultValueToken
         {

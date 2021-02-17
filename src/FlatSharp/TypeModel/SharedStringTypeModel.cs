@@ -109,6 +109,7 @@ namespace FlatSharp.TypeModel
             return new CodeGeneratedMethod
             {
                 MethodBody = $"return {context.ItemVariableName};",
+                IsMethodInline = true,
             };
         }
 

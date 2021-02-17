@@ -60,7 +60,7 @@ namespace FlatSharp.Compiler
             //  file full of type definitions that FlatSharp can use to build serializers.
             // Second pass: only write things for the target file.
             //   the second pass generates only files in the root fbs file.
-            if (context.CompilePass == CodeWritingPass.FirstPass || context.RootFile == this.DeclaringFile)
+            if (context.CompilePass == CodeWritingPass.IntermediatePass || context.RootFile == this.DeclaringFile)
             {
                 ErrorContext.Current.WithScope(
                     this.Name, () => this.OnWriteCode(writer, context));

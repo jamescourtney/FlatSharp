@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2020 James Courtney
+ * Copyright 2021 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,27 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Compiler
+namespace FlatSharp.TypeModel
 {
+    using System;
+
     /// <summary>
-    /// Enumerates the values for code write pass. 
+    /// Extensions for <see cref="ITypeModel"/>.
     /// </summary>
-    internal enum CodeWritingPass
+    internal static class ITypeModelExtensions
     {
         /// <summary>
-        /// Only writing out table and struct definitions.
+        /// Indicates if the given type model should be modeled as a nullable reference.
         /// </summary>
-        IntermediatePass,
+        /// <returns>True if the item is a nullable reference, false if it is a non-nullable reference, and null if it is a value type.</returns>
+        public static bool? IsNullableReference(this ITypeModel typeModel)
+        {
+            if (typeModel.ClrType.IsValueType)
+            {
+                return null;
+            }
 
-        /// <summary>
-        /// Writing Serializers and RPC definitions.
-        /// </summary>
-        FinalPass
+            return !typeModel.SerializesInline;
+        }
     }
 }

@@ -277,25 +277,33 @@ namespace FlatSharp.Compiler
 
             // Compile the assembly so that we may generate serializers for the data contracts defined in this FBS file.
             // Compile with firstpass here to include all data (even stuff from includes).
-            CodeWriter writer = new CodeWriter();
-            rootNode.WriteCode(
-                writer,
-                new CompileContext
-                {
-                    CompilePass = CodeWritingPass.FirstPass,
-                    Options = options,
-                    RootFile = rootNode.DeclaringFile,
-                    PrecompiledSerializers = new Dictionary<string, string>(),
-                    PreviousAssembly = null,
-                });
+            Assembly assembly = null;
+            CodeWriter writer;
 
-            if (ErrorContext.Current.Errors.Any())
+            for (int i = 0; i < 2; ++i)
             {
-                throw new InvalidFbsFileException(ErrorContext.Current.Errors);
-            }
+                writer = new CodeWriter();
 
-            string code = writer.ToString();
-            var (assembly, _, _) = RoslynSerializerGenerator.CompileAssembly(code, true);
+                rootNode.WriteCode(
+                    writer,
+                    new CompileContext
+                    {
+                        CompilePass = CodeWritingPass.IntermediatePass,
+                        Options = options,
+                        RootFile = rootNode.DeclaringFile,
+                        PrecompiledSerializers = new Dictionary<string, string>(),
+                        PreviousAssembly = assembly,
+                        TypeModelContainer = TypeModelContainer.CreateDefault(),
+                    });
+
+                if (ErrorContext.Current.Errors.Any())
+                {
+                    throw new InvalidFbsFileException(ErrorContext.Current.Errors);
+                }
+
+                string code = writer.ToString();
+                (assembly, _, _) = RoslynSerializerGenerator.CompileAssembly(code, true);
+            }
 
             Dictionary<string, string> generatedSerializers = new Dictionary<string, string>();
             foreach (var definition in tablesNeedingSerializers)
@@ -308,11 +316,12 @@ namespace FlatSharp.Compiler
                 writer,
                 new CompileContext
                 {
-                    CompilePass = CodeWritingPass.SecondPass,
+                    CompilePass = CodeWritingPass.FinalPass,
                     Options = options,
                     RootFile = rootNode.DeclaringFile,
                     PrecompiledSerializers = generatedSerializers,
                     PreviousAssembly = assembly,
+                    TypeModelContainer = TypeModelContainer.CreateDefault(),
                 });
 
             if (ErrorContext.Current.Errors.Any())

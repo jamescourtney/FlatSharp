@@ -136,7 +136,8 @@
         {
             return new CodeGeneratedMethod
             {
-                MethodBody = $"return {context.ItemVariableName};"
+                MethodBody = $"return {context.ItemVariableName};",
+                IsMethodInline = true,
             };
         }
 

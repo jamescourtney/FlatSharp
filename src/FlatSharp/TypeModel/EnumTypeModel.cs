@@ -115,6 +115,7 @@
             return new CodeGeneratedMethod
             {
                 MethodBody = $"return {context.ItemVariableName};",
+                IsMethodInline = true,
             };
         }
 
@@ -145,6 +146,24 @@
             }
 
             return false;
+        }
+
+        public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
+        {
+            object result;
+            try
+            {
+                // TryParse not available non-generically.
+                result = Enum.Parse(this.ClrType, value, false);
+            }
+            catch
+            {
+                literal = null;
+                return false;
+            }
+
+            literal = $"{CSharpHelpers.GetCompilableTypeName(this.ClrType)}.{result}";
+            return true;
         }
 
         /// <summary>

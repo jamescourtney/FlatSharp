@@ -59,9 +59,14 @@ namespace FlatSharp.Compiler
             // as obsolete and we don't want to raise warnings for our own code.
             writer.AppendLine("#pragma warning disable 0618");
 
-            if (context.CompilePass == CodeWritingPass.SecondPass && context.Options.NullableAnnotations)
+            if (context.Options.NullableAnnotations)
             {
                 writer.AppendLine("#nullable enable");
+            }
+            else
+            {
+                writer.AppendLine("#nullable enable annotations");
+                writer.AppendLine("#nullable disable warnings");
             }
 
             foreach (var child in this.Children.Values)
@@ -69,11 +74,16 @@ namespace FlatSharp.Compiler
                 child.WriteCode(writer, context);
             }
 
-            if (context.CompilePass == CodeWritingPass.SecondPass && context.Options.NullableAnnotations)
+            if (context.CompilePass == CodeWritingPass.FinalPass)
             {
-                writer.AppendLine("#nullable restore");
+                CloneMethodsGenerator.GenerateCloneMethodsForAssembly(
+                    writer,
+                    context.Options,
+                    context.PreviousAssembly,
+                    context.TypeModelContainer);
             }
 
+            writer.AppendLine("#nullable restore");
             writer.AppendLine("#pragma warning restore 0618");
         }
 

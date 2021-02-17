@@ -80,9 +80,9 @@ namespace FlatSharp.TypeModel
         public override bool IsValidSortedVectorKey => false;
 
         /// <summary>
-        /// Unions are written inline (though they are really just a pointer).
+        /// Unions are pointers.
         /// </summary>
-        public override bool SerializesInline => true;
+        public override bool SerializesInline => false;
 
         /// <summary>
         /// Gets the type model for this union's members. Index 0 corresponds to discriminator 1.
@@ -213,7 +213,6 @@ $@"
 
         public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
         {
-            var typeName = CSharpHelpers.GetCompilableTypeName(this.ClrType);
             List<string> lines = new List<string>();
 
             foreach (var item in this.memberTypeModels)

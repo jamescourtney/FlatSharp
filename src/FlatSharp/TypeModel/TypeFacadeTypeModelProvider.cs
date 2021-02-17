@@ -124,7 +124,8 @@ namespace FlatSharp.TypeModel
 
                 return new CodeGeneratedMethod
                 {
-                    MethodBody = $"return {fromUnderlying}"
+                    MethodBody = $"return {fromUnderlying}",
+                    IsMethodInline = true,
                 };
             }
 

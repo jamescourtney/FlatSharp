@@ -140,7 +140,6 @@
                     Attribute = x.GetCustomAttribute<FlatBufferItemAttribute>(),
                 })
                 .Where(x => x.Attribute != null)
-                .Where(x => !x.Attribute.Deprecated)
                 .Select(x => new
                 {
                     x.Property,
@@ -153,7 +152,7 @@
 
             if (!properties.Any())
             {
-                throw new InvalidFlatBufferDefinitionException($"Can't create table type model from type {this.ClrType.Name} because it does not have any non-static [FlatBufferItem] properties.");
+                throw new InvalidFlatBufferDefinitionException($"Can't create table type model from type {this.ClrType.Name} because it does not have any non-static, non-deprecated [FlatBufferItem] properties.");
             }
 
             foreach (var property in properties)
@@ -167,7 +166,8 @@
                     index,
                     property.Attribute.DefaultValue,
                     property.Attribute.SortedVector,
-                    property.Attribute.Key);
+                    property.Attribute.Key,
+                    property.Attribute.Deprecated);
 
                 model = property.ItemTypeModel.AdjustTableMember(model);
 
@@ -186,6 +186,11 @@
                     if (!property.ItemTypeModel.TryGetSpanComparerType(out _))
                     {
                         throw new InvalidFlatBufferDefinitionException($"Table {this.ClrType.Name} declares a key property on a type whose type model does not supply a ISpanComparer type.");
+                    }
+
+                    if (model.IsDeprecated)
+                    {
+                        throw new InvalidFlatBufferDefinitionException($"Table {this.ClrType.Name} declares a key property that is deprecated.");
                     }
 
                     this.KeyMember = model;
@@ -304,7 +309,7 @@ $@"
             List<string> writers = new List<string>();
 
             // load the properties of the object into locals.
-            foreach (var kvp in this.IndexToMemberMap)
+            foreach (var kvp in this.IndexToMemberMap.Where(x => !x.Value.IsDeprecated))
             {
                 var (prepare, write) = GetStandardSerializeBlocks(kvp.Key, kvp.Value, context);
                 body.Add(prepare);
@@ -447,7 +452,7 @@ $@"
 
             // Build up a list of property overrides.
             var propertyOverrides = new List<GeneratedProperty>();
-            foreach (var item in this.IndexToMemberMap)
+            foreach (var item in this.IndexToMemberMap.Where(x => !x.Value.IsDeprecated))
             {
                 int index = item.Key;
                 var value = item.Value;
@@ -551,10 +556,11 @@ $@"
             int maxTableSize = this.NonPaddedMaxTableInlineSize + SerializationHelpers.GetMaxPadding(this.PhysicalLayout.Single().Alignment);
 
             List<string> statements = new List<string>();
-            foreach (var kvp in this.IndexToMemberMap)
+            foreach (var kvp in this.IndexToMemberMap.Where(x => !x.Value.IsDeprecated))
             {
                 int index = kvp.Key;
                 var member = kvp.Value;
+
                 var itemModel = member.ItemTypeModel;
 
                 if (itemModel.IsFixedSize)
@@ -591,6 +597,7 @@ $@"
             return new CodeGeneratedMethod
             {
                 MethodBody = $"return {context.ItemVariableName} is not null ? new {typeName}({context.ItemVariableName}) : null;",
+                IsMethodInline = true,
             };
         }
 

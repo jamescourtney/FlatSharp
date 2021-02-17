@@ -175,6 +175,7 @@ $@"
             return new CodeGeneratedMethod
             {
                 MethodBody = $"return {context.ItemVariableName} is not null ? new {typeName}({context.ItemVariableName}) : new {typeName}();",
+                IsMethodInline = true,
             };
         }
 

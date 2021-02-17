@@ -91,7 +91,8 @@ namespace FlatSharp.TypeModel
                 source.Index,
                 source.DefaultValue,
                 isSortedVector: true,
-                source.IsKey);
+                source.IsKey,
+                source.IsDeprecated);
         }
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
@@ -171,25 +172,33 @@ namespace FlatSharp.TypeModel
 
         public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
         {
-            return new CodeGeneratedMethod
-            {
-                MethodBody = $"return {context.ItemVariableName}?.Clone();"
-            };
+            var valueTypeName = CSharpHelpers.GetCompilableTypeName(this.valueTypeModel.ClrType);
+            var keyTypeName = CSharpHelpers.GetCompilableTypeName(this.keyTypeModel.ClrType);
+
+            var cloneMethodName = context.MethodNameMap[this.valueTypeModel.ClrType];
+
+            string body =
+            $@"
+                if ({context.ItemVariableName} is null) return null;
+
+                var length = {context.ItemVariableName}.{nameof(IIndexedVector<string, string>.Count)};
+                var clone = new {nameof(IndexedVector<string, string>)}<{keyTypeName}, {valueTypeName}>(length);
+
+                foreach (var kvp in {context.ItemVariableName})
+                {{
+                    clone.{nameof(IIndexedVector<int, string>.AddOrReplace)}({cloneMethodName}(kvp.Value));
+                }}
+
+                return clone;";
+
+            return new CodeGeneratedMethod { MethodBody = body };
         }
 
         public override void TraverseObjectGraph(HashSet<Type> seenTypes)
         {
             seenTypes.Add(this.ClrType);
-
-            if (seenTypes.Add(this.keyTypeModel.ClrType))
-            {
-                this.keyTypeModel.TraverseObjectGraph(seenTypes);
-            }
-
-            if (seenTypes.Add(this.valueTypeModel.ClrType))
-            {
-                this.valueTypeModel.TraverseObjectGraph(seenTypes);
-            }
+            this.keyTypeModel.TraverseObjectGraph(seenTypes);
+            this.valueTypeModel.TraverseObjectGraph(seenTypes);
         }
     }
 }
