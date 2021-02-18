@@ -13,11 +13,24 @@
     {
         public void EmitBasicDefinition(CodeWriter writer, FieldDefinition fieldDefinition, CompileContext context)
         {
-            // basic definitions: all vectors are sorted by a string key. We'll figure out the real sort key type in the next pass.
+            // Indexed Vectors require two generic parameters:
+            // TKeyType, TableType
+            // We have a chicken-egg problem here, because we need the compiled version
+            // to discover the key type, but we need the key type to build the compiled version.
+            // In the first pass, where we don't have any type model information, we can break
+            // this circular loop by changing indexed vectors to arrays. Following that,
+            // we can introspect on the key type and build the proper indexed vector definition
+            // in pass #2.
+            VectorType type = fieldDefinition.VectorType;
+            if (type == VectorType.IIndexedVector)
+            {
+                type = VectorType.Array;
+            }
+
             string clrType = this.GetClrVectorTypeName(
-                fieldDefinition.VectorType, 
+                type,
                 this.GetBasicClrTypeName(fieldDefinition, context), 
-                "System.String");
+                string.Empty);
 
             writer.AppendLine(this.FormatAttribute(fieldDefinition, null));
             writer.AppendLine(this.FormatPropertyDeclaration(fieldDefinition, null, clrType));
@@ -37,12 +50,12 @@
             }
 
             string clrType = this.GetBasicClrTypeName(fieldDefinition, context);
-            string vectorKeyType = "System.String";
+            string vectorKeyType = string.Empty;
 
             if (model.TryGetUnderlyingVectorType(out ITypeModel? vectorItemModel) &&
                 vectorItemModel.TryGetTableKeyMember(out TableMemberModel? memberModel))
             {
-                vectorKeyType = memberModel.ItemTypeModel.ClrType.FullName;
+                vectorKeyType = CSharpHelpers.GetCompilableTypeName(memberModel.ItemTypeModel.ClrType);
             }
 
             clrType = this.GetClrVectorTypeName(fieldDefinition.VectorType, clrType, vectorKeyType);
@@ -117,7 +130,7 @@
         {
             string @virtual = "virtual";
 
-            if (definition.NonVirtual == true)
+            if (definition.NonVirtual ?? definition.Parent.NonVirtual == true)
             {
                 @virtual = string.Empty;
             }

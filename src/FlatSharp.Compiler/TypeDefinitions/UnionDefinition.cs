@@ -29,26 +29,13 @@ namespace FlatSharp.Compiler
         {
         }
 
-        public bool GenerateCustomUnionType { get; set; } = true;
-
         public List<(string alias, string type)> Components { get; set; } = new List<(string alias, string type)>();
 
         public string ClrTypeName
         {
             get
             {
-                if (this.GenerateCustomUnionType)
-                {
-                    return this.GlobalName;
-                }
-
-                List<string> genericParts = new List<string>();
-                foreach (var item in this.GetResolvedComponents())
-                {
-                    genericParts.Add(item.fullyQualifiedType);
-                }
-
-                return $"FlatBufferUnion<{string.Join(", ", genericParts)}>";
+                return this.GlobalName;
             }
         }
 
@@ -79,11 +66,6 @@ namespace FlatSharp.Compiler
 
         protected override void OnWriteCode(CodeWriter writer, CompileContext context)
         {
-            if (!this.GenerateCustomUnionType)
-            {
-                return;
-            }
-
             var resolvedComponents = this.GetResolvedComponents();
             string baseTypeName = string.Join(", ", resolvedComponents.Select(x => x.fullyQualifiedType));
 

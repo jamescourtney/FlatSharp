@@ -97,11 +97,6 @@ namespace FlatSharp.TypeModel
         public virtual int MaxInlineSize => this.PhysicalLayout.Sum(x => x.InlineSize + SerializationHelpers.GetMaxPadding(x.Alignment));
 
         /// <summary>
-        /// In general, we don't set this to true.
-        /// </summary>
-        public virtual bool MustAlwaysSerialize => false;
-
-        /// <summary>
         /// Validates a default value.
         /// </summary>
         public virtual bool ValidateDefaultValue(object defaultValue)
@@ -127,6 +122,16 @@ namespace FlatSharp.TypeModel
 
         public abstract string GetThrowIfNullInvocation(string itemVariableName);
 
+        public virtual string GetNotEqualToDefaultValueExpression(string itemVariableName, object? defaultValue)
+        {
+            if (!this.TryFormatDefaultValueAsLiteral(defaultValue, out string? literal))
+            {
+                throw new InvalidFlatBufferDefinitionException($"Unable to format default value '{defaultValue}' as literal of type '{this.ClrType.FullName}'.");
+            }
+
+            return $"{itemVariableName} is not {literal}";
+        }
+
         public virtual string GetNonNullConditionExpression(string itemVariableName)
         {
             return $"{itemVariableName} is not null";
@@ -134,10 +139,10 @@ namespace FlatSharp.TypeModel
 
         public abstract void TraverseObjectGraph(HashSet<Type> seenTypes);
 
-        public virtual bool TryFormatDefaultValueAsLiteral(object defaultValue, [NotNullWhen(true)] out string? literal)
+        public virtual bool TryFormatDefaultValueAsLiteral(object? defaultValue, [NotNullWhen(true)] out string? literal)
         {
-            literal = null;
-            return false;
+            literal = $"default({CSharpHelpers.GetCompilableTypeName(this.ClrType)})";
+            return true;
         }
 
         public virtual bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)

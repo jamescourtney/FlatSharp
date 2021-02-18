@@ -348,12 +348,7 @@ $@"
 
             string valueVariableName = $"index{index}Value";
 
-            // Set up a condition for serializing, unless the type model tells us not to.
-            string condition = $"if ({valueVariableName} != {memberModel.DefaultValueToken})";
-            if (memberModel.ItemTypeModel.MustAlwaysSerialize)
-            {
-                condition = string.Empty;
-            }
+            string condition = $"if ({memberModel.ItemTypeModel.GetNotEqualToDefaultValueExpression(valueVariableName, memberModel.DefaultValue)})";
 
             List<string> prepareBlockComponents = new List<string>();
             int vtableEntries = memberModel.ItemTypeModel.PhysicalLayout.Length;

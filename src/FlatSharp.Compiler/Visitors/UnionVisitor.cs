@@ -36,10 +36,6 @@ namespace FlatSharp.Compiler
             this.unionDef = new UnionDefinition(context.IDENT().GetText(), this.parent);
 
             var metadata = new MetadataVisitor().VisitMetadata(context.metadata());
-            if (metadata.ContainsKey("NoCustomType"))
-            {
-                this.unionDef.GenerateCustomUnionType = false;
-            }
 
             ErrorContext.Current.WithScope(this.unionDef.Name, () =>
             {

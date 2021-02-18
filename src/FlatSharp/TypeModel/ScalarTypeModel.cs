@@ -156,17 +156,15 @@
             seenTypes.Add(this.ClrType);
         }
 
-        public override bool TryFormatDefaultValueAsLiteral(object defaultValue, [NotNullWhen(true)] out string? literal)
+        public override bool TryFormatDefaultValueAsLiteral(object? defaultValue, [NotNullWhen(true)] out string? literal)
         {
-            literal = null;
-
             if (defaultValue?.GetType() == this.ClrType)
             {
                 literal = $"({CSharpHelpers.GetCompilableTypeName(this.ClrType)})({defaultValue})";
                 return true;
             }
 
-            return false;
+            return base.TryFormatDefaultValueAsLiteral(defaultValue, out literal);
         }
     }
 }

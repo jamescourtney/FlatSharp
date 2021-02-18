@@ -122,34 +122,6 @@ table D (PrecompiledSerializer) { Union:TestUnion; }
         }
 
         [TestMethod]
-        public void TestUnionWithNoCustomClassGeneration()
-        {
-            const string Schema = @"
-namespace Foobar;
-
-table A { Value:int32; }
-table B { Value:int32; }
-struct C { Value:int32; }
-
-union TestUnion (NoCustomType) { First:A, B, Foobar.C }
-
-table D (PrecompiledSerializer) { Union:TestUnion; }
-
-";
-            // Simply ensure that the union is generated as FlatBufferUnion and no custom class is created.
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(Schema, new());
-            Type unionType = asm.GetType("Foobar.TestUnion");
-            Assert.IsNull(unionType);
-
-            Type aType = asm.GetType("Foobar.A");
-            Type bType = asm.GetType("Foobar.B");
-            Type cType = asm.GetType("Foobar.C");
-            Type dType = asm.GetType("Foobar.D");
-
-            Assert.AreEqual(typeof(FlatBufferUnion<,,>).MakeGenericType(aType, bType, cType), dType.GetProperty("Union").PropertyType);
-        }
-
-        [TestMethod]
         public void TestUnionWithStringGeneration()
         {
             const string Schema = @"

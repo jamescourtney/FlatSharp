@@ -31,11 +31,6 @@ namespace FlatSharp.TypeModel
             this.itemTypeModel = null!;
         }
 
-        /// <summary>
-        /// Memory vectors are always serialized because they are structs and vector's can't have default values.
-        /// </summary>
-        public override bool MustAlwaysSerialize => true;
-
         public override ITypeModel ItemTypeModel => this.itemTypeModel;
 
         public override string LengthPropertyName => nameof(Memory<byte>.Length);
@@ -92,6 +87,16 @@ namespace FlatSharp.TypeModel
         }
 
         public override string GetNonNullConditionExpression(string itemVariableName)
+        {
+            return "true";
+        }
+
+        /// <summary>
+        /// Non-nullable memory vectors are *never* equal to the default value, since they
+        /// at least have length 0, while FlatBuffer vectors default is null. So we always serialize them
+        /// even if the length is 0.
+        /// </summary>
+        public override string GetNotEqualToDefaultValueExpression(string itemVariableName, object? defaultValue)
         {
             return "true";
         }

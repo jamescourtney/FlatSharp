@@ -84,8 +84,6 @@ namespace FlatSharp.TypeModel
 
             public int MaxInlineSize => this.underlyingModel.MaxInlineSize;
 
-            public bool MustAlwaysSerialize => this.underlyingModel.MustAlwaysSerialize;
-
             public bool SerializesInline => this.underlyingModel.SerializesInline;
 
             public TableMemberModel AdjustTableMember(TableMemberModel source) => this.underlyingModel.AdjustTableMember(source);
@@ -165,10 +163,15 @@ namespace FlatSharp.TypeModel
                 this.underlyingModel.TraverseObjectGraph(seenTypes);
             }
 
-            public bool TryFormatDefaultValueAsLiteral(object defaultValue, [NotNullWhen(true)] out string? literal)
+            public string GetNotEqualToDefaultValueExpression(string itemVariableName, object? defaultValue)
             {
-                literal = null;
-                return false;
+                return $"{itemVariableName} is not default({CSharpHelpers.GetCompilableTypeName(this.ClrType)})";
+            }
+
+            public bool TryFormatDefaultValueAsLiteral(object? defaultValue, [NotNullWhen(true)] out string? literal)
+            {
+                literal = $"default({CSharpHelpers.GetCompilableTypeName(this.ClrType)})";
+                return true;
             }
 
             public bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)

@@ -78,11 +78,6 @@ namespace FlatSharp.TypeModel
         int MaxInlineSize { get; }
 
         /// <summary>
-        /// When true, indicates that this type model must always be written to the buffer. This suppresses null checks and default value checks.
-        /// </summary>
-        bool MustAlwaysSerialize { get; }
-
-        /// <summary>
         /// When true, indicates that this type model serializes directly at the offset provided (ie, it does not write a uoffset).
         /// This is the equivalent of a FlatBuffer "value" type.
         /// </summary>
@@ -128,6 +123,14 @@ namespace FlatSharp.TypeModel
         string GetNonNullConditionExpression(string itemVariableName);
 
         /// <summary>
+        /// Returns a boolean expression that compares the given variable name to the default value.
+        /// </summary>
+        /// <param name="itemVariableName">The name of the item being compared.</param>
+        /// <param name="defaultValue">The default value. This will be null or a constant of the type of the current type model.</param>
+        /// <returns>A boolean expression that returns true when the given item is equal to the given default value.</returns>
+        string GetNotEqualToDefaultValueExpression(string itemVariableName, object? defaultValue);
+
+        /// <summary>
         /// Travses the object graph to identify types needed to build a serializer.
         /// </summary>
         void TraverseObjectGraph(HashSet<Type> seenTypes);
@@ -135,7 +138,7 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// Attempts to format the given default value into a C# literal. Not all implementations support this.
         /// </summary>
-        bool TryFormatDefaultValueAsLiteral(object defaultValue, [NotNullWhen(true)] out string? literal);
+        bool TryFormatDefaultValueAsLiteral(object? defaultValue, [NotNullWhen(true)] out string? literal);
 
         /// <summary>
         /// Attempts to format the given string as a literal of this type. Not all implementations support this.
