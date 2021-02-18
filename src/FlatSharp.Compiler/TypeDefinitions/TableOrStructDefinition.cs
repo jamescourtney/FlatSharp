@@ -14,21 +14,25 @@
  * limitations under the License.
  */
 
+#nullable enable
+
 namespace FlatSharp.Compiler
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection;
+    using System.Runtime.ExceptionServices;
 
     internal class TableOrStructDefinition : BaseSchemaMember
     {
+        internal const string SerializerPropertyName = "Serializer";
+
         public TableOrStructDefinition(
             string name, 
             BaseSchemaMember parent) : base(name, parent)
         {
         }
-
-        public IReadOnlyDictionary<string, string> Metadata { get; }
 
         public List<FieldDefinition> Fields { get; set; } = new List<FieldDefinition>();
         
@@ -104,29 +108,23 @@ namespace FlatSharp.Compiler
                 writer.AppendLine($"public {this.Name}()");
                 using (writer.WithBlock())
                 {
-                    if (context.CompilePass == CodeWritingPass.FinalPass)
+                    foreach (var field in this.Fields)
                     {
-                        foreach (var field in this.Fields)
-                        {
-                            field.WriteDefaultConstructorLine(writer, context);
-                        }
-
-                        writer.AppendLine("this.OnInitialized();");
+                        field.WriteDefaultConstructorLine(writer, context);
                     }
+
+                    writer.AppendLine("this.OnInitialized();");
                 }
 
                 writer.AppendLine($"public {this.Name}({this.Name} source)");
                 using (writer.WithBlock())
                 {
-                    if (context.CompilePass == CodeWritingPass.FinalPass)
+                    foreach (var field in this.Fields)
                     {
-                        foreach (var field in this.Fields)
-                        {
-                            field.WriteCopyConstructorLine(writer, "source", this, context);
-                        }
-
-                        writer.AppendLine("this.OnInitialized();");
+                        field.WriteCopyConstructorLine(writer, "source", this, context);
                     }
+
+                    writer.AppendLine("this.OnInitialized();");
                 }
 
                 foreach (var field in this.Fields)
@@ -139,36 +137,60 @@ namespace FlatSharp.Compiler
                     field.WriteField(writer, this, context);
                 }
 
-                if (context.CompilePass == CodeWritingPass.FinalPass && context.PrecompiledSerializers != null && this.RequestedSerializer != null)
+                if (context.CompilePass >= CodeWritingPass.SerializerGeneration && this.RequestedSerializer is not null)
                 {
-                    if (context.PrecompiledSerializers.TryGetValue(this.FullName, out string serializer))
-                    {
-                        writer.AppendLine($"public static ISerializer<{this.FullName}> Serializer {{ get; }} = new {RoslynSerializerGenerator.GeneratedSerializerClassName}().AsISerializer();");
-                        writer.AppendLine(string.Empty);
-                        writer.AppendLine($"#region Serializer for {this.FullName}");
-                        writer.AppendLine(serializer);
-                        writer.AppendLine($"#endregion");
-                    }
-                    else
-                    {
-                        ErrorContext.Current.RegisterError($"Table {this.FullName} requested serializer, but none was found.");
-                    }
+                    // generate the serializer.
+                    string serializer = this.GenerateSerializerForType(
+                        context,
+                        this.RequestedSerializer.Value);
+
+                    writer.AppendLine($"public static ISerializer<{this.FullName}> {SerializerPropertyName} {{ get; }} = new {RoslynSerializerGenerator.GeneratedSerializerClassName}().AsISerializer();");
+                    writer.AppendLine(string.Empty);
+                    writer.AppendLine($"#region Serializer for {this.FullName}");
+                    writer.AppendLine(serializer);
+                    writer.AppendLine($"#endregion");
                 }
             }
 
             writer.AppendLine($"}}");
         }
 
-        protected override string OnGetCopyExpression(string source)
+        private string GenerateSerializerForType(
+            CompileContext context,
+            FlatBufferDeserializationOption deserializationOption)
         {
-            if (this.IsTable)
+            try
             {
-                return $"{source} != null ? new {this.FullName}({source}) : null";
+                CSharpHelpers.ConvertProtectedInternalToProtected = false;
+
+                Type? type = context.PreviousAssembly?.GetType(this.FullName);
+                if (type is null)
+                {
+                    ErrorContext.Current.RegisterError($"Flatsharp failed to find expected type '{this.FullName}' in assembly.");
+                    return string.Empty;
+                }
+
+                var options = new FlatBufferSerializerOptions(deserializationOption);
+                var generator = new RoslynSerializerGenerator(options, context.TypeModelContainer);
+
+                MethodInfo method = generator.GetType()
+                                             .GetMethod(nameof(RoslynSerializerGenerator.GenerateCSharp), BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)!
+                                             .MakeGenericMethod(type);
+
+                try
+                {
+                    string code = (string)method.Invoke(generator, new[] { "private" })!;
+                    return code;
+                }
+                catch (TargetInvocationException ex)
+                {
+                    ExceptionDispatchInfo.Capture(ex.InnerException!).Throw();
+                    throw;
+                }
             }
-            else
+            finally
             {
-                // structs can't be null; coalesce if needed using default ctor.
-                return $"{source} != null ? new {this.FullName}({source}) : new {this.FullName}()";
+                CSharpHelpers.ConvertProtectedInternalToProtected = true;
             }
         }
     }

@@ -16,8 +16,12 @@
 
 namespace FlatSharp.Compiler
 {
+    using FlatSharp.TypeModel;
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
+
+#nullable enable
 
     internal abstract class BaseSchemaMember
     {
@@ -36,18 +40,18 @@ namespace FlatSharp.Compiler
             }
         }
 
-        public BaseSchemaMember Parent { get; }
-
-        public virtual HashSet<AttributeOption> Options => this.Parent.Options;
+        public BaseSchemaMember? Parent { get; }
 
         public string Name { get; }
 
         public string FullName { get; }
 
+        public virtual string Namespace => this.Parent?.Namespace ?? string.Empty;
+
         public string GlobalName => $"global::{this.FullName}";
 
         // File that declared this type.
-        public string DeclaringFile { get; set; }
+        public string? DeclaringFile { get; set; }
 
         public IReadOnlyDictionary<string, BaseSchemaMember> Children => this.children;
 
@@ -55,29 +59,23 @@ namespace FlatSharp.Compiler
         
         public void WriteCode(CodeWriter writer, CompileContext context)
         {
-            // First pass: write all definitions (even from other files)
-            //  the first pass is internal and is intended to produce a large
-            //  file full of type definitions that FlatSharp can use to build serializers.
-            // Second pass: only write things for the target file.
-            //   the second pass generates only files in the root fbs file.
-            if (context.CompilePass == CodeWritingPass.IntermediatePass || context.RootFile == this.DeclaringFile)
+            // Prior to last pass: 
+            //      Write all definitions (even from other files)
+            //      These passes are internal are are intended to produce a bunch of type definitions 
+            //      that FlatSharp can use to build serializers.
+            // Last Pass: 
+            //      Only write things for the target file. This pass consumes the output
+            //      of previous passes but doesn't generate all types.
+            if (context.CompilePass < CodeWritingPass.LastPass || context.RootFile == this.DeclaringFile)
             {
                 ErrorContext.Current.WithScope(
                     this.Name, () => this.OnWriteCode(writer, context));
             }
         }
 
-        public string GetCopyExpression(string source)
-        {
-            return ErrorContext.Current.WithScope(
-                this.Name, () => this.OnGetCopyExpression(source));
-        }
-
         protected virtual void OnWriteCode(CodeWriter writer, CompileContext context)
         {
         }
-
-        protected abstract string OnGetCopyExpression(string source);
 
         public void AddChild(BaseSchemaMember child)
         {           
@@ -100,7 +98,7 @@ namespace FlatSharp.Compiler
         /// <summary>
         /// Resolves a name according to the relative namespace path.
         /// </summary>
-        public bool TryResolveName(string name, out BaseSchemaMember node)
+        public bool TryResolveName(string name, [NotNullWhen(true)] out BaseSchemaMember? node)
         {
             Span<string> parts = name.Split('.');
 
@@ -108,7 +106,7 @@ namespace FlatSharp.Compiler
             BaseSchemaMember rootNode = this;
             while (!(rootNode is NamespaceDefinition) && !(rootNode is RootNodeDefinition))
             {
-                rootNode = rootNode.Parent;
+                rootNode = rootNode.Parent!;
             }
 
             if (this.TryResolveDescendentsFromNode(rootNode, parts, out node))
@@ -124,7 +122,28 @@ namespace FlatSharp.Compiler
             return this.TryResolveDescendentsFromNode(rootNode, parts, out node);
         }
 
-        private bool TryResolveDescendentsFromNode(BaseSchemaMember startNode, Span<string> parts, out BaseSchemaMember node)
+        public bool TryResolveTypeModelWithError(string name, CompileContext context, [NotNullWhen(true)] out ITypeModel? typeModel)
+        {
+            // FBS alias.
+            if (context.TypeModelContainer.TryResolveFbsAlias(name, out typeModel))
+            {
+                return true;
+            }
+
+            if (this.TryResolveName(name, out var node))
+            {
+                Type? type = context.PreviousAssembly?.GetType(node.FullName);
+                if (type != null && context.TypeModelContainer.TryCreateTypeModel(type, out typeModel))
+                {
+                    return true;
+                }
+            }
+
+            ErrorContext.Current.RegisterError($"Unable to resolve type: '{name}'. Context = '{this.FullName}'.");
+            return false;
+        }
+
+        private bool TryResolveDescendentsFromNode(BaseSchemaMember startNode, Span<string> parts, [NotNullWhen(true)] out BaseSchemaMember? node)
         {
             node = startNode;
             while (node.Children.TryGetValue(parts[0], out node))

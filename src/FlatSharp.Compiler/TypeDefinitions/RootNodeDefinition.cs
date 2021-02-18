@@ -25,15 +25,14 @@ namespace FlatSharp.Compiler
     {
         public RootNodeDefinition(string fileName) : base("", null)
         {
-            this.Options = new HashSet<AttributeOption>();
             this.DeclaringFile = fileName;
         }
-
-        public override HashSet<AttributeOption> Options { get; }
 
         public string InputHash { get; set; }
 
         protected override bool SupportsChildren => true;
+
+        public override string Namespace => string.Empty;
 
         protected override void OnWriteCode(CodeWriter writer, CompileContext context)
         {
@@ -69,27 +68,21 @@ namespace FlatSharp.Compiler
                 writer.AppendLine("#nullable disable warnings");
             }
 
+            if (context.CompilePass > CodeWritingPass.Initialization)
+            {
+                context.FullyQualifiedCloneMethodName = CloneMethodsGenerator.GenerateCloneMethodsForAssembly(
+                    writer,
+                    context.PreviousAssembly,
+                    context.TypeModelContainer);
+            }
+
             foreach (var child in this.Children.Values)
             {
                 child.WriteCode(writer, context);
             }
 
-            if (context.CompilePass == CodeWritingPass.FinalPass)
-            {
-                CloneMethodsGenerator.GenerateCloneMethodsForAssembly(
-                    writer,
-                    context.Options,
-                    context.PreviousAssembly,
-                    context.TypeModelContainer);
-            }
-
             writer.AppendLine("#nullable restore");
             writer.AppendLine("#pragma warning restore 0618");
-        }
-
-        protected override string OnGetCopyExpression(string source)
-        {
-            throw new System.NotImplementedException();
         }
     }
 }

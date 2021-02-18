@@ -74,7 +74,6 @@ namespace routeguide;
         distance:int;
         elapsed_time:int;
     }";
-            string cSharp = FlatSharpCompiler.TestHookCreateCSharp(schema, new());
             Assembly compiled = FlatSharpCompiler.CompileAndLoadAssembly(
                 schema,
                 new(),

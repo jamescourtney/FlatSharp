@@ -23,16 +23,28 @@ namespace FlatSharp.Compiler
 
     internal static class CloneMethodsGenerator
     {
-        public static void GenerateCloneMethodsForAssembly(
+        /// <summary>
+        /// Returns the fully qualified clone method name.
+        /// </summary>
+        public static string GenerateCloneMethodsForAssembly(
             CodeWriter writer,
-            CompilerOptions options, 
             Assembly assembly, 
             TypeModelContainer container)
         {
+            string @namespace = $"FlatSharp.Compiler.Generated";
+            string className = $"CloneHelpers_{Guid.NewGuid():n}";
+            string methodName = "Clone";
+
+            string fullyQualifiedMethodName = $"{@namespace}.{className}.{methodName}";
+
             HashSet<Type> seenTypes = new HashSet<Type>();
             foreach (var type in assembly.GetTypes())
             {
-                // generate clone method.
+                if (type.IsNested)
+                {
+                    continue;
+                }
+
                 if (container.TryCreateTypeModel(type, out var typeModel))
                 {
                     typeModel.TraverseObjectGraph(seenTypes);
@@ -42,13 +54,13 @@ namespace FlatSharp.Compiler
             Dictionary<Type, string> methodNameMap = new Dictionary<Type, string>();
             foreach (var seenType in seenTypes)
             {
-                methodNameMap[seenType] = "FlatSharp.Generated.CloneHelpers.Clone";
+                methodNameMap[seenType] = fullyQualifiedMethodName;
             }
 
-            writer.AppendLine("namespace FlatSharp.Generated");
+            writer.AppendLine($"namespace {@namespace}");
             using (writer.WithBlock())
             {
-                writer.AppendLine("internal static class CloneHelpers");
+                writer.AppendLine($"internal static class {className}");
                 using (writer.WithBlock())
                 {
                     foreach (var seenType in seenTypes)
@@ -63,6 +75,8 @@ namespace FlatSharp.Compiler
                     }
                 }
             }
+
+            return fullyQualifiedMethodName;
         }
 
         private static void GenerateCloneMethod(

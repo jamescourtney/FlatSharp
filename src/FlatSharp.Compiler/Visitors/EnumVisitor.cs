@@ -52,8 +52,8 @@ namespace FlatSharp.Compiler
         {
             string name = context.IDENT().GetText();
             string value = context.integer_const()?.GetText();
+            this.enumDef.NameValuePairs.Add((name, value));
 
-            this.enumDef.AddNameValuePair(name, value);
             return null;
         }
     }

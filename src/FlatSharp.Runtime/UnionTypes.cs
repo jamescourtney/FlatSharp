@@ -78,19 +78,6 @@ namespace FlatSharp
 				}
 				
 				
-				public FlatBufferUnion<T1> Clone(
-				System.Func<T1, T1> cloneT1
-				)
-				{
-					switch (this.discriminator)
-					{
-											case 1:
-							return new FlatBufferUnion<T1>(cloneT1(this.item1!));
-										}
-
-					throw new System.InvalidOperationException();
-				}
-
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1)
@@ -257,22 +244,6 @@ namespace FlatSharp
 				}
 				
 				
-				public FlatBufferUnion<T1, T2> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2
-				)
-				{
-					switch (this.discriminator)
-					{
-											case 1:
-							return new FlatBufferUnion<T1, T2>(cloneT1(this.item1!));
-											case 2:
-							return new FlatBufferUnion<T1, T2>(cloneT2(this.item2!));
-										}
-
-					throw new System.InvalidOperationException();
-				}
-
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -505,25 +476,6 @@ System.Func<TState, T2, TResult> case2)
 				}
 				
 				
-				public FlatBufferUnion<T1, T2, T3> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3
-				)
-				{
-					switch (this.discriminator)
-					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3>(cloneT1(this.item1!));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3>(cloneT2(this.item2!));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3>(cloneT3(this.item3!));
-										}
-
-					throw new System.InvalidOperationException();
-				}
-
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -822,28 +774,6 @@ System.Func<TState, T3, TResult> case3)
 				}
 				
 				
-				public FlatBufferUnion<T1, T2, T3, T4> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4
-				)
-				{
-					switch (this.discriminator)
-					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4>(cloneT1(this.item1!));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4>(cloneT2(this.item2!));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4>(cloneT3(this.item3!));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4>(cloneT4(this.item4!));
-										}
-
-					throw new System.InvalidOperationException();
-				}
-
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -1208,31 +1138,6 @@ System.Func<TState, T4, TResult> case4)
 				}
 				
 				
-				public FlatBufferUnion<T1, T2, T3, T4, T5> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5
-				)
-				{
-					switch (this.discriminator)
-					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5>(cloneT1(this.item1!));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5>(cloneT2(this.item2!));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5>(cloneT3(this.item3!));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5>(cloneT4(this.item4!));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5>(cloneT5(this.item5!));
-										}
-
-					throw new System.InvalidOperationException();
-				}
-
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -1663,34 +1568,6 @@ System.Func<TState, T5, TResult> case5)
 				}
 				
 				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6
-				)
-				{
-					switch (this.discriminator)
-					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6>(cloneT1(this.item1!));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6>(cloneT2(this.item2!));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6>(cloneT3(this.item3!));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6>(cloneT4(this.item4!));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6>(cloneT5(this.item5!));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6>(cloneT6(this.item6!));
-										}
-
-					throw new System.InvalidOperationException();
-				}
-
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -2187,37 +2064,6 @@ System.Func<TState, T6, TResult> case6)
 				}
 				
 				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7
-				)
-				{
-					switch (this.discriminator)
-					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7>(cloneT1(this.item1!));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7>(cloneT2(this.item2!));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7>(cloneT3(this.item3!));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7>(cloneT4(this.item4!));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7>(cloneT5(this.item5!));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7>(cloneT6(this.item6!));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7>(cloneT7(this.item7!));
-										}
-
-					throw new System.InvalidOperationException();
-				}
-
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -2780,40 +2626,6 @@ System.Func<TState, T7, TResult> case7)
 				}
 				
 				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8
-				)
-				{
-					switch (this.discriminator)
-					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8>(cloneT1(this.item1!));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8>(cloneT2(this.item2!));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8>(cloneT3(this.item3!));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8>(cloneT4(this.item4!));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8>(cloneT5(this.item5!));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8>(cloneT6(this.item6!));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8>(cloneT7(this.item7!));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8>(cloneT8(this.item8!));
-										}
-
-					throw new System.InvalidOperationException();
-				}
-
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -3442,43 +3254,6 @@ System.Func<TState, T8, TResult> case8)
 				}
 				
 				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9
-				)
-				{
-					switch (this.discriminator)
-					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9>(cloneT1(this.item1!));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9>(cloneT2(this.item2!));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9>(cloneT3(this.item3!));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9>(cloneT4(this.item4!));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9>(cloneT5(this.item5!));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9>(cloneT6(this.item6!));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9>(cloneT7(this.item7!));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9>(cloneT8(this.item8!));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9>(cloneT9(this.item9!));
-										}
-
-					throw new System.InvalidOperationException();
-				}
-
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -4173,46 +3948,6 @@ System.Func<TState, T9, TResult> case9)
 				}
 				
 				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10
-				)
-				{
-					switch (this.discriminator)
-					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(cloneT1(this.item1!));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(cloneT2(this.item2!));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(cloneT3(this.item3!));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(cloneT4(this.item4!));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(cloneT5(this.item5!));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(cloneT6(this.item6!));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(cloneT7(this.item7!));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(cloneT8(this.item8!));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(cloneT9(this.item9!));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(cloneT10(this.item10!));
-										}
-
-					throw new System.InvalidOperationException();
-				}
-
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -4973,49 +4708,6 @@ System.Func<TState, T10, TResult> case10)
 				}
 				
 				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11
-				)
-				{
-					switch (this.discriminator)
-					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(cloneT1(this.item1!));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(cloneT2(this.item2!));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(cloneT3(this.item3!));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(cloneT4(this.item4!));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(cloneT5(this.item5!));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(cloneT6(this.item6!));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(cloneT7(this.item7!));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(cloneT8(this.item8!));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(cloneT9(this.item9!));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(cloneT10(this.item10!));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(cloneT11(this.item11!));
-										}
-
-					throw new System.InvalidOperationException();
-				}
-
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -5842,52 +5534,6 @@ System.Func<TState, T11, TResult> case11)
 				}
 				
 				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11,
-System.Func<T12, T12> cloneT12
-				)
-				{
-					switch (this.discriminator)
-					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(cloneT1(this.item1!));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(cloneT2(this.item2!));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(cloneT3(this.item3!));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(cloneT4(this.item4!));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(cloneT5(this.item5!));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(cloneT6(this.item6!));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(cloneT7(this.item7!));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(cloneT8(this.item8!));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(cloneT9(this.item9!));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(cloneT10(this.item10!));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(cloneT11(this.item11!));
-											case 12:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(cloneT12(this.item12!));
-										}
-
-					throw new System.InvalidOperationException();
-				}
-
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -6780,55 +6426,6 @@ System.Func<TState, T12, TResult> case12)
 				}
 				
 				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11,
-System.Func<T12, T12> cloneT12,
-System.Func<T13, T13> cloneT13
-				)
-				{
-					switch (this.discriminator)
-					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(cloneT1(this.item1!));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(cloneT2(this.item2!));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(cloneT3(this.item3!));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(cloneT4(this.item4!));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(cloneT5(this.item5!));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(cloneT6(this.item6!));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(cloneT7(this.item7!));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(cloneT8(this.item8!));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(cloneT9(this.item9!));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(cloneT10(this.item10!));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(cloneT11(this.item11!));
-											case 12:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(cloneT12(this.item12!));
-											case 13:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(cloneT13(this.item13!));
-										}
-
-					throw new System.InvalidOperationException();
-				}
-
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -7787,58 +7384,6 @@ System.Func<TState, T13, TResult> case13)
 				}
 				
 				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11,
-System.Func<T12, T12> cloneT12,
-System.Func<T13, T13> cloneT13,
-System.Func<T14, T14> cloneT14
-				)
-				{
-					switch (this.discriminator)
-					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(cloneT1(this.item1!));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(cloneT2(this.item2!));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(cloneT3(this.item3!));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(cloneT4(this.item4!));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(cloneT5(this.item5!));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(cloneT6(this.item6!));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(cloneT7(this.item7!));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(cloneT8(this.item8!));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(cloneT9(this.item9!));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(cloneT10(this.item10!));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(cloneT11(this.item11!));
-											case 12:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(cloneT12(this.item12!));
-											case 13:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(cloneT13(this.item13!));
-											case 14:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(cloneT14(this.item14!));
-										}
-
-					throw new System.InvalidOperationException();
-				}
-
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -8863,61 +8408,6 @@ System.Func<TState, T14, TResult> case14)
 				}
 				
 				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11,
-System.Func<T12, T12> cloneT12,
-System.Func<T13, T13> cloneT13,
-System.Func<T14, T14> cloneT14,
-System.Func<T15, T15> cloneT15
-				)
-				{
-					switch (this.discriminator)
-					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(cloneT1(this.item1!));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(cloneT2(this.item2!));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(cloneT3(this.item3!));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(cloneT4(this.item4!));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(cloneT5(this.item5!));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(cloneT6(this.item6!));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(cloneT7(this.item7!));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(cloneT8(this.item8!));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(cloneT9(this.item9!));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(cloneT10(this.item10!));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(cloneT11(this.item11!));
-											case 12:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(cloneT12(this.item12!));
-											case 13:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(cloneT13(this.item13!));
-											case 14:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(cloneT14(this.item14!));
-											case 15:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(cloneT15(this.item15!));
-										}
-
-					throw new System.InvalidOperationException();
-				}
-
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -10008,64 +9498,6 @@ System.Func<TState, T15, TResult> case15)
 				}
 				
 				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11,
-System.Func<T12, T12> cloneT12,
-System.Func<T13, T13> cloneT13,
-System.Func<T14, T14> cloneT14,
-System.Func<T15, T15> cloneT15,
-System.Func<T16, T16> cloneT16
-				)
-				{
-					switch (this.discriminator)
-					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(cloneT1(this.item1!));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(cloneT2(this.item2!));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(cloneT3(this.item3!));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(cloneT4(this.item4!));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(cloneT5(this.item5!));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(cloneT6(this.item6!));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(cloneT7(this.item7!));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(cloneT8(this.item8!));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(cloneT9(this.item9!));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(cloneT10(this.item10!));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(cloneT11(this.item11!));
-											case 12:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(cloneT12(this.item12!));
-											case 13:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(cloneT13(this.item13!));
-											case 14:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(cloneT14(this.item14!));
-											case 15:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(cloneT15(this.item15!));
-											case 16:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(cloneT16(this.item16!));
-										}
-
-					throw new System.InvalidOperationException();
-				}
-
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -11222,67 +10654,6 @@ System.Func<TState, T16, TResult> case16)
 				}
 				
 				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11,
-System.Func<T12, T12> cloneT12,
-System.Func<T13, T13> cloneT13,
-System.Func<T14, T14> cloneT14,
-System.Func<T15, T15> cloneT15,
-System.Func<T16, T16> cloneT16,
-System.Func<T17, T17> cloneT17
-				)
-				{
-					switch (this.discriminator)
-					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(cloneT1(this.item1!));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(cloneT2(this.item2!));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(cloneT3(this.item3!));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(cloneT4(this.item4!));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(cloneT5(this.item5!));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(cloneT6(this.item6!));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(cloneT7(this.item7!));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(cloneT8(this.item8!));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(cloneT9(this.item9!));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(cloneT10(this.item10!));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(cloneT11(this.item11!));
-											case 12:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(cloneT12(this.item12!));
-											case 13:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(cloneT13(this.item13!));
-											case 14:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(cloneT14(this.item14!));
-											case 15:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(cloneT15(this.item15!));
-											case 16:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(cloneT16(this.item16!));
-											case 17:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(cloneT17(this.item17!));
-										}
-
-					throw new System.InvalidOperationException();
-				}
-
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -12505,70 +11876,6 @@ System.Func<TState, T17, TResult> case17)
 				}
 				
 				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11,
-System.Func<T12, T12> cloneT12,
-System.Func<T13, T13> cloneT13,
-System.Func<T14, T14> cloneT14,
-System.Func<T15, T15> cloneT15,
-System.Func<T16, T16> cloneT16,
-System.Func<T17, T17> cloneT17,
-System.Func<T18, T18> cloneT18
-				)
-				{
-					switch (this.discriminator)
-					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(cloneT1(this.item1!));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(cloneT2(this.item2!));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(cloneT3(this.item3!));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(cloneT4(this.item4!));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(cloneT5(this.item5!));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(cloneT6(this.item6!));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(cloneT7(this.item7!));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(cloneT8(this.item8!));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(cloneT9(this.item9!));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(cloneT10(this.item10!));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(cloneT11(this.item11!));
-											case 12:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(cloneT12(this.item12!));
-											case 13:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(cloneT13(this.item13!));
-											case 14:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(cloneT14(this.item14!));
-											case 15:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(cloneT15(this.item15!));
-											case 16:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(cloneT16(this.item16!));
-											case 17:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(cloneT17(this.item17!));
-											case 18:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(cloneT18(this.item18!));
-										}
-
-					throw new System.InvalidOperationException();
-				}
-
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -13857,73 +13164,6 @@ System.Func<TState, T18, TResult> case18)
 				}
 				
 				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11,
-System.Func<T12, T12> cloneT12,
-System.Func<T13, T13> cloneT13,
-System.Func<T14, T14> cloneT14,
-System.Func<T15, T15> cloneT15,
-System.Func<T16, T16> cloneT16,
-System.Func<T17, T17> cloneT17,
-System.Func<T18, T18> cloneT18,
-System.Func<T19, T19> cloneT19
-				)
-				{
-					switch (this.discriminator)
-					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(cloneT1(this.item1!));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(cloneT2(this.item2!));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(cloneT3(this.item3!));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(cloneT4(this.item4!));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(cloneT5(this.item5!));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(cloneT6(this.item6!));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(cloneT7(this.item7!));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(cloneT8(this.item8!));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(cloneT9(this.item9!));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(cloneT10(this.item10!));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(cloneT11(this.item11!));
-											case 12:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(cloneT12(this.item12!));
-											case 13:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(cloneT13(this.item13!));
-											case 14:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(cloneT14(this.item14!));
-											case 15:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(cloneT15(this.item15!));
-											case 16:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(cloneT16(this.item16!));
-											case 17:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(cloneT17(this.item17!));
-											case 18:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(cloneT18(this.item18!));
-											case 19:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(cloneT19(this.item19!));
-										}
-
-					throw new System.InvalidOperationException();
-				}
-
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -15278,76 +14518,6 @@ System.Func<TState, T19, TResult> case19)
 				}
 				
 				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11,
-System.Func<T12, T12> cloneT12,
-System.Func<T13, T13> cloneT13,
-System.Func<T14, T14> cloneT14,
-System.Func<T15, T15> cloneT15,
-System.Func<T16, T16> cloneT16,
-System.Func<T17, T17> cloneT17,
-System.Func<T18, T18> cloneT18,
-System.Func<T19, T19> cloneT19,
-System.Func<T20, T20> cloneT20
-				)
-				{
-					switch (this.discriminator)
-					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT1(this.item1!));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT2(this.item2!));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT3(this.item3!));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT4(this.item4!));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT5(this.item5!));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT6(this.item6!));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT7(this.item7!));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT8(this.item8!));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT9(this.item9!));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT10(this.item10!));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT11(this.item11!));
-											case 12:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT12(this.item12!));
-											case 13:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT13(this.item13!));
-											case 14:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT14(this.item14!));
-											case 15:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT15(this.item15!));
-											case 16:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT16(this.item16!));
-											case 17:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT17(this.item17!));
-											case 18:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT18(this.item18!));
-											case 19:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT19(this.item19!));
-											case 20:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT20(this.item20!));
-										}
-
-					throw new System.InvalidOperationException();
-				}
-
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -16768,79 +15938,6 @@ System.Func<TState, T20, TResult> case20)
 				}
 				
 				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11,
-System.Func<T12, T12> cloneT12,
-System.Func<T13, T13> cloneT13,
-System.Func<T14, T14> cloneT14,
-System.Func<T15, T15> cloneT15,
-System.Func<T16, T16> cloneT16,
-System.Func<T17, T17> cloneT17,
-System.Func<T18, T18> cloneT18,
-System.Func<T19, T19> cloneT19,
-System.Func<T20, T20> cloneT20,
-System.Func<T21, T21> cloneT21
-				)
-				{
-					switch (this.discriminator)
-					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT1(this.item1!));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT2(this.item2!));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT3(this.item3!));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT4(this.item4!));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT5(this.item5!));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT6(this.item6!));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT7(this.item7!));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT8(this.item8!));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT9(this.item9!));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT10(this.item10!));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT11(this.item11!));
-											case 12:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT12(this.item12!));
-											case 13:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT13(this.item13!));
-											case 14:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT14(this.item14!));
-											case 15:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT15(this.item15!));
-											case 16:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT16(this.item16!));
-											case 17:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT17(this.item17!));
-											case 18:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT18(this.item18!));
-											case 19:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT19(this.item19!));
-											case 20:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT20(this.item20!));
-											case 21:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT21(this.item21!));
-										}
-
-					throw new System.InvalidOperationException();
-				}
-
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -18327,82 +17424,6 @@ System.Func<TState, T21, TResult> case21)
 				}
 				
 				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11,
-System.Func<T12, T12> cloneT12,
-System.Func<T13, T13> cloneT13,
-System.Func<T14, T14> cloneT14,
-System.Func<T15, T15> cloneT15,
-System.Func<T16, T16> cloneT16,
-System.Func<T17, T17> cloneT17,
-System.Func<T18, T18> cloneT18,
-System.Func<T19, T19> cloneT19,
-System.Func<T20, T20> cloneT20,
-System.Func<T21, T21> cloneT21,
-System.Func<T22, T22> cloneT22
-				)
-				{
-					switch (this.discriminator)
-					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT1(this.item1!));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT2(this.item2!));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT3(this.item3!));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT4(this.item4!));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT5(this.item5!));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT6(this.item6!));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT7(this.item7!));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT8(this.item8!));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT9(this.item9!));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT10(this.item10!));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT11(this.item11!));
-											case 12:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT12(this.item12!));
-											case 13:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT13(this.item13!));
-											case 14:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT14(this.item14!));
-											case 15:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT15(this.item15!));
-											case 16:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT16(this.item16!));
-											case 17:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT17(this.item17!));
-											case 18:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT18(this.item18!));
-											case 19:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT19(this.item19!));
-											case 20:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT20(this.item20!));
-											case 21:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT21(this.item21!));
-											case 22:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT22(this.item22!));
-										}
-
-					throw new System.InvalidOperationException();
-				}
-
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -19955,85 +18976,6 @@ System.Func<TState, T22, TResult> case22)
 				}
 				
 				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11,
-System.Func<T12, T12> cloneT12,
-System.Func<T13, T13> cloneT13,
-System.Func<T14, T14> cloneT14,
-System.Func<T15, T15> cloneT15,
-System.Func<T16, T16> cloneT16,
-System.Func<T17, T17> cloneT17,
-System.Func<T18, T18> cloneT18,
-System.Func<T19, T19> cloneT19,
-System.Func<T20, T20> cloneT20,
-System.Func<T21, T21> cloneT21,
-System.Func<T22, T22> cloneT22,
-System.Func<T23, T23> cloneT23
-				)
-				{
-					switch (this.discriminator)
-					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT1(this.item1!));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT2(this.item2!));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT3(this.item3!));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT4(this.item4!));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT5(this.item5!));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT6(this.item6!));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT7(this.item7!));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT8(this.item8!));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT9(this.item9!));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT10(this.item10!));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT11(this.item11!));
-											case 12:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT12(this.item12!));
-											case 13:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT13(this.item13!));
-											case 14:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT14(this.item14!));
-											case 15:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT15(this.item15!));
-											case 16:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT16(this.item16!));
-											case 17:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT17(this.item17!));
-											case 18:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT18(this.item18!));
-											case 19:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT19(this.item19!));
-											case 20:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT20(this.item20!));
-											case 21:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT21(this.item21!));
-											case 22:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT22(this.item22!));
-											case 23:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT23(this.item23!));
-										}
-
-					throw new System.InvalidOperationException();
-				}
-
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -21652,88 +20594,6 @@ System.Func<TState, T23, TResult> case23)
 				}
 				
 				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11,
-System.Func<T12, T12> cloneT12,
-System.Func<T13, T13> cloneT13,
-System.Func<T14, T14> cloneT14,
-System.Func<T15, T15> cloneT15,
-System.Func<T16, T16> cloneT16,
-System.Func<T17, T17> cloneT17,
-System.Func<T18, T18> cloneT18,
-System.Func<T19, T19> cloneT19,
-System.Func<T20, T20> cloneT20,
-System.Func<T21, T21> cloneT21,
-System.Func<T22, T22> cloneT22,
-System.Func<T23, T23> cloneT23,
-System.Func<T24, T24> cloneT24
-				)
-				{
-					switch (this.discriminator)
-					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT1(this.item1!));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT2(this.item2!));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT3(this.item3!));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT4(this.item4!));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT5(this.item5!));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT6(this.item6!));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT7(this.item7!));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT8(this.item8!));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT9(this.item9!));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT10(this.item10!));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT11(this.item11!));
-											case 12:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT12(this.item12!));
-											case 13:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT13(this.item13!));
-											case 14:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT14(this.item14!));
-											case 15:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT15(this.item15!));
-											case 16:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT16(this.item16!));
-											case 17:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT17(this.item17!));
-											case 18:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT18(this.item18!));
-											case 19:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT19(this.item19!));
-											case 20:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT20(this.item20!));
-											case 21:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT21(this.item21!));
-											case 22:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT22(this.item22!));
-											case 23:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT23(this.item23!));
-											case 24:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT24(this.item24!));
-										}
-
-					throw new System.InvalidOperationException();
-				}
-
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -23418,91 +22278,6 @@ System.Func<TState, T24, TResult> case24)
 				}
 				
 				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11,
-System.Func<T12, T12> cloneT12,
-System.Func<T13, T13> cloneT13,
-System.Func<T14, T14> cloneT14,
-System.Func<T15, T15> cloneT15,
-System.Func<T16, T16> cloneT16,
-System.Func<T17, T17> cloneT17,
-System.Func<T18, T18> cloneT18,
-System.Func<T19, T19> cloneT19,
-System.Func<T20, T20> cloneT20,
-System.Func<T21, T21> cloneT21,
-System.Func<T22, T22> cloneT22,
-System.Func<T23, T23> cloneT23,
-System.Func<T24, T24> cloneT24,
-System.Func<T25, T25> cloneT25
-				)
-				{
-					switch (this.discriminator)
-					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT1(this.item1!));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT2(this.item2!));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT3(this.item3!));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT4(this.item4!));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT5(this.item5!));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT6(this.item6!));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT7(this.item7!));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT8(this.item8!));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT9(this.item9!));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT10(this.item10!));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT11(this.item11!));
-											case 12:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT12(this.item12!));
-											case 13:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT13(this.item13!));
-											case 14:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT14(this.item14!));
-											case 15:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT15(this.item15!));
-											case 16:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT16(this.item16!));
-											case 17:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT17(this.item17!));
-											case 18:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT18(this.item18!));
-											case 19:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT19(this.item19!));
-											case 20:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT20(this.item20!));
-											case 21:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT21(this.item21!));
-											case 22:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT22(this.item22!));
-											case 23:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT23(this.item23!));
-											case 24:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT24(this.item24!));
-											case 25:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT25(this.item25!));
-										}
-
-					throw new System.InvalidOperationException();
-				}
-
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -25253,94 +24028,6 @@ System.Func<TState, T25, TResult> case25)
 				}
 				
 				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11,
-System.Func<T12, T12> cloneT12,
-System.Func<T13, T13> cloneT13,
-System.Func<T14, T14> cloneT14,
-System.Func<T15, T15> cloneT15,
-System.Func<T16, T16> cloneT16,
-System.Func<T17, T17> cloneT17,
-System.Func<T18, T18> cloneT18,
-System.Func<T19, T19> cloneT19,
-System.Func<T20, T20> cloneT20,
-System.Func<T21, T21> cloneT21,
-System.Func<T22, T22> cloneT22,
-System.Func<T23, T23> cloneT23,
-System.Func<T24, T24> cloneT24,
-System.Func<T25, T25> cloneT25,
-System.Func<T26, T26> cloneT26
-				)
-				{
-					switch (this.discriminator)
-					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT1(this.item1!));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT2(this.item2!));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT3(this.item3!));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT4(this.item4!));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT5(this.item5!));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT6(this.item6!));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT7(this.item7!));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT8(this.item8!));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT9(this.item9!));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT10(this.item10!));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT11(this.item11!));
-											case 12:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT12(this.item12!));
-											case 13:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT13(this.item13!));
-											case 14:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT14(this.item14!));
-											case 15:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT15(this.item15!));
-											case 16:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT16(this.item16!));
-											case 17:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT17(this.item17!));
-											case 18:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT18(this.item18!));
-											case 19:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT19(this.item19!));
-											case 20:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT20(this.item20!));
-											case 21:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT21(this.item21!));
-											case 22:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT22(this.item22!));
-											case 23:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT23(this.item23!));
-											case 24:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT24(this.item24!));
-											case 25:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT25(this.item25!));
-											case 26:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT26(this.item26!));
-										}
-
-					throw new System.InvalidOperationException();
-				}
-
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -27157,97 +25844,6 @@ System.Func<TState, T26, TResult> case26)
 				}
 				
 				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11,
-System.Func<T12, T12> cloneT12,
-System.Func<T13, T13> cloneT13,
-System.Func<T14, T14> cloneT14,
-System.Func<T15, T15> cloneT15,
-System.Func<T16, T16> cloneT16,
-System.Func<T17, T17> cloneT17,
-System.Func<T18, T18> cloneT18,
-System.Func<T19, T19> cloneT19,
-System.Func<T20, T20> cloneT20,
-System.Func<T21, T21> cloneT21,
-System.Func<T22, T22> cloneT22,
-System.Func<T23, T23> cloneT23,
-System.Func<T24, T24> cloneT24,
-System.Func<T25, T25> cloneT25,
-System.Func<T26, T26> cloneT26,
-System.Func<T27, T27> cloneT27
-				)
-				{
-					switch (this.discriminator)
-					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT1(this.item1!));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT2(this.item2!));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT3(this.item3!));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT4(this.item4!));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT5(this.item5!));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT6(this.item6!));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT7(this.item7!));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT8(this.item8!));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT9(this.item9!));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT10(this.item10!));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT11(this.item11!));
-											case 12:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT12(this.item12!));
-											case 13:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT13(this.item13!));
-											case 14:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT14(this.item14!));
-											case 15:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT15(this.item15!));
-											case 16:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT16(this.item16!));
-											case 17:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT17(this.item17!));
-											case 18:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT18(this.item18!));
-											case 19:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT19(this.item19!));
-											case 20:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT20(this.item20!));
-											case 21:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT21(this.item21!));
-											case 22:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT22(this.item22!));
-											case 23:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT23(this.item23!));
-											case 24:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT24(this.item24!));
-											case 25:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT25(this.item25!));
-											case 26:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT26(this.item26!));
-											case 27:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT27(this.item27!));
-										}
-
-					throw new System.InvalidOperationException();
-				}
-
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -29130,100 +27726,6 @@ System.Func<TState, T27, TResult> case27)
 				}
 				
 				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11,
-System.Func<T12, T12> cloneT12,
-System.Func<T13, T13> cloneT13,
-System.Func<T14, T14> cloneT14,
-System.Func<T15, T15> cloneT15,
-System.Func<T16, T16> cloneT16,
-System.Func<T17, T17> cloneT17,
-System.Func<T18, T18> cloneT18,
-System.Func<T19, T19> cloneT19,
-System.Func<T20, T20> cloneT20,
-System.Func<T21, T21> cloneT21,
-System.Func<T22, T22> cloneT22,
-System.Func<T23, T23> cloneT23,
-System.Func<T24, T24> cloneT24,
-System.Func<T25, T25> cloneT25,
-System.Func<T26, T26> cloneT26,
-System.Func<T27, T27> cloneT27,
-System.Func<T28, T28> cloneT28
-				)
-				{
-					switch (this.discriminator)
-					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT1(this.item1!));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT2(this.item2!));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT3(this.item3!));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT4(this.item4!));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT5(this.item5!));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT6(this.item6!));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT7(this.item7!));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT8(this.item8!));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT9(this.item9!));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT10(this.item10!));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT11(this.item11!));
-											case 12:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT12(this.item12!));
-											case 13:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT13(this.item13!));
-											case 14:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT14(this.item14!));
-											case 15:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT15(this.item15!));
-											case 16:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT16(this.item16!));
-											case 17:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT17(this.item17!));
-											case 18:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT18(this.item18!));
-											case 19:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT19(this.item19!));
-											case 20:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT20(this.item20!));
-											case 21:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT21(this.item21!));
-											case 22:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT22(this.item22!));
-											case 23:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT23(this.item23!));
-											case 24:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT24(this.item24!));
-											case 25:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT25(this.item25!));
-											case 26:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT26(this.item26!));
-											case 27:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT27(this.item27!));
-											case 28:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT28(this.item28!));
-										}
-
-					throw new System.InvalidOperationException();
-				}
-
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -31172,103 +29674,6 @@ System.Func<TState, T28, TResult> case28)
 				}
 				
 				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11,
-System.Func<T12, T12> cloneT12,
-System.Func<T13, T13> cloneT13,
-System.Func<T14, T14> cloneT14,
-System.Func<T15, T15> cloneT15,
-System.Func<T16, T16> cloneT16,
-System.Func<T17, T17> cloneT17,
-System.Func<T18, T18> cloneT18,
-System.Func<T19, T19> cloneT19,
-System.Func<T20, T20> cloneT20,
-System.Func<T21, T21> cloneT21,
-System.Func<T22, T22> cloneT22,
-System.Func<T23, T23> cloneT23,
-System.Func<T24, T24> cloneT24,
-System.Func<T25, T25> cloneT25,
-System.Func<T26, T26> cloneT26,
-System.Func<T27, T27> cloneT27,
-System.Func<T28, T28> cloneT28,
-System.Func<T29, T29> cloneT29
-				)
-				{
-					switch (this.discriminator)
-					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT1(this.item1!));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT2(this.item2!));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT3(this.item3!));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT4(this.item4!));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT5(this.item5!));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT6(this.item6!));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT7(this.item7!));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT8(this.item8!));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT9(this.item9!));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT10(this.item10!));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT11(this.item11!));
-											case 12:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT12(this.item12!));
-											case 13:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT13(this.item13!));
-											case 14:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT14(this.item14!));
-											case 15:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT15(this.item15!));
-											case 16:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT16(this.item16!));
-											case 17:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT17(this.item17!));
-											case 18:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT18(this.item18!));
-											case 19:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT19(this.item19!));
-											case 20:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT20(this.item20!));
-											case 21:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT21(this.item21!));
-											case 22:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT22(this.item22!));
-											case 23:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT23(this.item23!));
-											case 24:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT24(this.item24!));
-											case 25:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT25(this.item25!));
-											case 26:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT26(this.item26!));
-											case 27:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT27(this.item27!));
-											case 28:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT28(this.item28!));
-											case 29:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT29(this.item29!));
-										}
-
-					throw new System.InvalidOperationException();
-				}
-
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -33283,106 +31688,6 @@ System.Func<TState, T29, TResult> case29)
 				}
 				
 				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11,
-System.Func<T12, T12> cloneT12,
-System.Func<T13, T13> cloneT13,
-System.Func<T14, T14> cloneT14,
-System.Func<T15, T15> cloneT15,
-System.Func<T16, T16> cloneT16,
-System.Func<T17, T17> cloneT17,
-System.Func<T18, T18> cloneT18,
-System.Func<T19, T19> cloneT19,
-System.Func<T20, T20> cloneT20,
-System.Func<T21, T21> cloneT21,
-System.Func<T22, T22> cloneT22,
-System.Func<T23, T23> cloneT23,
-System.Func<T24, T24> cloneT24,
-System.Func<T25, T25> cloneT25,
-System.Func<T26, T26> cloneT26,
-System.Func<T27, T27> cloneT27,
-System.Func<T28, T28> cloneT28,
-System.Func<T29, T29> cloneT29,
-System.Func<T30, T30> cloneT30
-				)
-				{
-					switch (this.discriminator)
-					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT1(this.item1!));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT2(this.item2!));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT3(this.item3!));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT4(this.item4!));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT5(this.item5!));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT6(this.item6!));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT7(this.item7!));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT8(this.item8!));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT9(this.item9!));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT10(this.item10!));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT11(this.item11!));
-											case 12:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT12(this.item12!));
-											case 13:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT13(this.item13!));
-											case 14:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT14(this.item14!));
-											case 15:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT15(this.item15!));
-											case 16:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT16(this.item16!));
-											case 17:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT17(this.item17!));
-											case 18:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT18(this.item18!));
-											case 19:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT19(this.item19!));
-											case 20:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT20(this.item20!));
-											case 21:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT21(this.item21!));
-											case 22:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT22(this.item22!));
-											case 23:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT23(this.item23!));
-											case 24:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT24(this.item24!));
-											case 25:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT25(this.item25!));
-											case 26:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT26(this.item26!));
-											case 27:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT27(this.item27!));
-											case 28:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT28(this.item28!));
-											case 29:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT29(this.item29!));
-											case 30:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT30(this.item30!));
-										}
-
-					throw new System.InvalidOperationException();
-				}
-
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,

@@ -22,40 +22,47 @@ namespace FlatSharp.Compiler
 
     internal class FieldVisitor : FlatBuffersBaseVisitor<FieldDefinition>
     {
-        private readonly FieldDefinition definition;
+        private readonly TableOrStructDefinition parent;
 
         public FieldVisitor(TableOrStructDefinition parent)
         {
-            this.definition = new FieldDefinition(parent);
+            this.parent = parent;
         }
 
         public override FieldDefinition VisitField_decl([NotNull] FlatBuffersParser.Field_declContext context)
         {
-            this.definition.Name = context.IDENT().GetText();
+            string name = context.IDENT().GetText();
 
-            ErrorContext.Current.WithScope(this.definition.Name, () =>
+            return ErrorContext.Current.WithScope(name, () =>
             {
                 Dictionary<string, string> metadata = new MetadataVisitor().VisitMetadata(context.metadata());
-                this.SetFbsFieldType(context, metadata);
+
+                var (fieldType, vectorType) = GetFbsFieldType(context, metadata);
+
+                var definition = new FieldDefinition(this.parent, name, fieldType)
+                {
+                    VectorType = vectorType
+                };
 
                 string defaultValue = context.defaultValue_decl()?.GetText();
                 if (defaultValue == "null")
                 {
-                    this.definition.IsOptionalScalar = true;
+                    definition.IsOptionalScalar = true;
                 }
                 else if (!string.IsNullOrEmpty(defaultValue))
                 {
-                    this.definition.DefaultValue = defaultValue;
+                    definition.DefaultValue = defaultValue;
                 }
 
-                this.definition.Deprecated = metadata.ParseBooleanMetadata("deprecated");
-                this.definition.IsKey = metadata.ParseBooleanMetadata("key");
-                this.definition.NonVirtual = metadata.ParseNullableBooleanMetadata("nonVirtual");
-                this.definition.SortedVector = metadata.ParseBooleanMetadata("sortedvector");
-                this.definition.SharedString = metadata.ParseBooleanMetadata("sharedstring");
+                definition.Deprecated = metadata.ParseBooleanMetadata("deprecated");
+                definition.IsKey = metadata.ParseBooleanMetadata("key");
+                definition.NonVirtual = metadata.ParseNullableBooleanMetadata("nonVirtual");
+                definition.SortedVector = metadata.ParseBooleanMetadata("sortedvector"); 
+                definition.SharedString = metadata.ParseBooleanMetadata("sharedstring");
 
-                this.ParseIdMetadata(metadata);
-                this.definition.SetterKind = metadata.ParseMetadata(
+                this.ParseIdMetadata(definition, metadata);
+
+                definition.SetterKind = metadata.ParseMetadata(
                     "setter",
                     ParseSetterKind,
                     SetterKind.Public,
@@ -74,12 +81,14 @@ namespace FlatSharp.Compiler
                         ErrorContext.Current?.RegisterError($"FlatSharpCompiler does not support the '{unsupportedAttribute}' attribute in FBS files.");
                     }
                 }
-            });
 
-            return this.definition;
+                return definition;
+            });
         }
 
-        private void ParseIdMetadata(IDictionary<string, string> metadata)
+        private void ParseIdMetadata(
+            FieldDefinition definition,
+            IDictionary<string, string> metadata)
         {
             if (!metadata.TryParseIntegerMetadata("id", out int index))
             {
@@ -105,38 +114,34 @@ namespace FlatSharp.Compiler
             return Enum.TryParse<SetterKind>(value, true, out setter);
         }
 
-        private void SetFbsFieldType(FlatBuffersParser.Field_declContext context, Dictionary<string, string> metadata)
+        private (string fieldType, VectorType vectorType) GetFbsFieldType(FlatBuffersParser.Field_declContext context, Dictionary<string, string> metadata)
         {
             string fbsFieldType = context.type().GetText();
-
-            this.definition.VectorType = VectorType.None;
+            VectorType vectorType = VectorType.None;
 
             if (fbsFieldType.StartsWith("["))
             {
-                this.definition.VectorType = VectorType.IList;
+                vectorType = VectorType.IList;
 
                 // Trim the starting and ending square brackets.
                 fbsFieldType = fbsFieldType.Substring(1, fbsFieldType.Length - 2);
 
-                this.definition.VectorType = VectorType.IList;
                 if (metadata.TryGetValue("vectortype", out string vectorTypeString))
                 {
-                    if (!Enum.TryParse<VectorType>(vectorTypeString, true, out var vectorType))
+                    if (!Enum.TryParse<VectorType>(vectorTypeString, true, out vectorType))
                     {
                         ErrorContext.Current?.RegisterError(
                             $"Unable to parse '{vectorTypeString}' as a vector type. Valid choices are: {string.Join(", ", Enum.GetNames(typeof(VectorType)))}.");
                     }
-
-                    this.definition.VectorType = vectorType;
                 }
             }
             else if (metadata.ContainsKey("vectortype"))
             {
                 ErrorContext.Current?.RegisterError(
-                    $"Non-vectors may not have the 'vectortype' attribute. Field = '{this.definition.Name}'");
+                    $"Non-vectors may not have the 'vectortype' attribute.");
             }
 
-            this.definition.FbsFieldType = fbsFieldType;
+            return (fbsFieldType, vectorType);
         }
     }
 }

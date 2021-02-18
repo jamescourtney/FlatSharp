@@ -38,7 +38,7 @@
 
         public bool EmitDefinition(CodeWriter writer, FieldDefinition fieldDefinition, CompileContext context)
         {
-            if (context.PreviousAssembly == null)
+            if (context.CompilePass == CodeWritingPass.Initialization)
             {
                 this.EmitBasicDefinition(writer, fieldDefinition, context);
                 return true;
@@ -68,16 +68,26 @@
 
         public void EmitCloneLine(CodeWriter writer, string variableName, FieldDefinition fieldDefinition, CompileContext context)
         {
-            if (!this.TryGetTypeModel(fieldDefinition, context, out var model))
+            if (context.CompilePass <= CodeWritingPass.PropertyModeling)
             {
                 return;
             }
 
-            writer.AppendLine($"this.{fieldDefinition.Name} = FlatSharp.Generated.CloneHelpers.Clone({variableName}.{fieldDefinition.Name});");
+            if (!fieldDefinition.Parent.TryResolveTypeModelWithError(fieldDefinition.FbsFieldType, context, out _))
+            {
+                return;
+            }
+
+            writer.AppendLine($"this.{fieldDefinition.Name} = {context.FullyQualifiedCloneMethodName}({variableName}.{fieldDefinition.Name});");
         }
 
         public void EmitDefaultInitializationLine(CodeWriter writer, FieldDefinition fieldDefinition, CompileContext compileContext)
         {
+            if (compileContext.CompilePass <= CodeWritingPass.PropertyModeling)
+            {
+                return;
+            }
+
             if (!this.TryGetTypeModel(fieldDefinition, compileContext, out var model))
             {
                 return;
@@ -214,14 +224,14 @@
         {
             if (definition.SharedString)
             {
-                return typeof(SharedString).FullName;
+                return typeof(SharedString).FullName ?? throw new InvalidOperationException("Full name was null");
             }
 
             string clrType = definition.FbsFieldType;
 
             if (context.TypeModelContainer.TryResolveFbsAlias(definition.FbsFieldType, out ITypeModel? resolvedTypeModel))
             {
-                clrType = resolvedTypeModel.ClrType.FullName;
+                clrType = resolvedTypeModel.ClrType.FullName ?? throw new InvalidOperationException("Full name was null");
             }
             else if (definition.Parent.TryResolveName(definition.FbsFieldType, out var node))
             {

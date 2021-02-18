@@ -272,26 +272,33 @@ namespace FlatSharp.Compiler
                 throw new InvalidFbsFileException(ErrorContext.Current.Errors);
             }
 
-            var tablesNeedingSerializers = new List<TableOrStructDefinition>();
-            FindItemsRequiringSecondCodePass(rootNode, tablesNeedingSerializers);
-
-            // Compile the assembly so that we may generate serializers for the data contracts defined in this FBS file.
-            // Compile with firstpass here to include all data (even stuff from includes).
             Assembly assembly = null;
-            CodeWriter writer;
+            CodeWriter writer = null;
+            var steps = new[] 
+            { 
+                CodeWritingPass.Initialization, 
+                CodeWritingPass.PropertyModeling, 
+                CodeWritingPass.SerializerGeneration, 
+                CodeWritingPass.RpcGeneration, 
+            };
 
-            for (int i = 0; i < 2; ++i)
+            foreach (var step in steps)
             {
+                if (writer != null)
+                {
+                    string code = writer.ToString();
+                    (assembly, _, _) = RoslynSerializerGenerator.CompileAssembly(code, true);
+                }
+
                 writer = new CodeWriter();
 
                 rootNode.WriteCode(
                     writer,
                     new CompileContext
                     {
-                        CompilePass = CodeWritingPass.IntermediatePass,
+                        CompilePass = step,
                         Options = options,
                         RootFile = rootNode.DeclaringFile,
-                        PrecompiledSerializers = new Dictionary<string, string>(),
                         PreviousAssembly = assembly,
                         TypeModelContainer = TypeModelContainer.CreateDefault(),
                     });
@@ -300,91 +307,11 @@ namespace FlatSharp.Compiler
                 {
                     throw new InvalidFbsFileException(ErrorContext.Current.Errors);
                 }
-
-                string code = writer.ToString();
-                (assembly, _, _) = RoslynSerializerGenerator.CompileAssembly(code, true);
-            }
-
-            Dictionary<string, string> generatedSerializers = new Dictionary<string, string>();
-            foreach (var definition in tablesNeedingSerializers)
-            {
-                generatedSerializers[definition.FullName] = GenerateSerializerForType(assembly, definition);
-            }
-
-            writer = new CodeWriter();
-            rootNode.WriteCode(
-                writer,
-                new CompileContext
-                {
-                    CompilePass = CodeWritingPass.FinalPass,
-                    Options = options,
-                    RootFile = rootNode.DeclaringFile,
-                    PrecompiledSerializers = generatedSerializers,
-                    PreviousAssembly = assembly,
-                    TypeModelContainer = TypeModelContainer.CreateDefault(),
-                });
-
-            if (ErrorContext.Current.Errors.Any())
-            {
-                throw new InvalidFbsFileException(ErrorContext.Current.Errors);
             }
 
             string rawCode = writer.ToString();
             string formattedCode = RoslynSerializerGenerator.GetFormattedText(rawCode);
             return formattedCode;
-        }
-
-        // TODO: consider moving to TableOrStructDefinition.
-        private static string GenerateSerializerForType(Assembly assembly, TableOrStructDefinition tableOrStruct)
-        {
-            CSharpHelpers.ConvertProtectedInternalToProtected = false;
-            try
-            {
-                Type type = assembly.GetType(tableOrStruct.FullName);
-                var options = new FlatBufferSerializerOptions(tableOrStruct.RequestedSerializer.Value);
-                var generator = new RoslynSerializerGenerator(options, TypeModelContainer.CreateDefault());
-
-                var method = generator
-                    .GetType()
-                    .GetMethod(nameof(RoslynSerializerGenerator.GenerateCSharp), BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
-                    .MakeGenericMethod(type);
-
-                try
-                {
-                    string code = (string)method.Invoke(generator, new[] { "private" });
-                    return code;
-                }
-                catch (TargetInvocationException ex)
-                {
-                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
-                    throw;
-                }
-            }
-            finally
-            {
-                CSharpHelpers.ConvertProtectedInternalToProtected = true;
-            }
-        }
-
-        /// <summary>
-        /// Recursively find tables for which the schema has asked for us to generate serializers.
-        /// </summary>
-        private static void FindItemsRequiringSecondCodePass(
-            BaseSchemaMember node,
-            List<TableOrStructDefinition> tables)
-        {
-            if (node is TableOrStructDefinition tableOrStruct)
-            {
-                if (tableOrStruct.RequestedSerializer != null)
-                {
-                    tables.Add(tableOrStruct);
-                }
-            }
-
-            foreach (var childNode in node.Children.Values)
-            {
-                FindItemsRequiringSecondCodePass(childNode, tables);
-            }
         }
     }
 }

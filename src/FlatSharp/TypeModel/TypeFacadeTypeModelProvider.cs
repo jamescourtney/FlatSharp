@@ -165,7 +165,30 @@ namespace FlatSharp.TypeModel
 
             public string GetNotEqualToDefaultValueExpression(string itemVariableName, object? defaultValue)
             {
-                return $"{itemVariableName} is not default({CSharpHelpers.GetCompilableTypeName(this.ClrType)})";
+                if (this.ClrType.IsValueType && Nullable.GetUnderlyingType(this.ClrType) is null)
+                {
+                    // Structs are really weird.
+                    // Value types are not guaranteed to have an equality operator defined, so we can't just assume
+                    // that '==' will work, so we do a little reflection, and use the operator if it is defined.
+                    // otherwise, we assume that the operands are not equal no matter what.
+
+                    var equalityMethod = this.ClrType.GetMethod("op_Inequality", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                    if (equalityMethod is not null)
+                    {
+                        // Let's hope it's rational.
+                        return $"{itemVariableName} != default({CSharpHelpers.GetCompilableTypeName(this.ClrType)})";
+                    }
+                    else
+                    {
+                        // structs without an equality overload have to be assumed to be not equal.
+                        return "true";
+                    }
+                }
+                else
+                {
+                    // Nullable<T> and reference types are easy.
+                    return $"{itemVariableName} is not null";
+                }
             }
 
             public bool TryFormatDefaultValueAsLiteral(object? defaultValue, [NotNullWhen(true)] out string? literal)

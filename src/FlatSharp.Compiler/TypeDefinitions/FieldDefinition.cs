@@ -14,18 +14,26 @@
  * limitations under the License.
  */
 
-using FlatSharp.TypeModel;
-using System;
-using System.Linq;
-using System.Reflection;
+#nullable enable
 
 namespace FlatSharp.Compiler
 {
+
+    using FlatSharp.TypeModel;
+    using System;
+    using System.Linq;
+    using System.Reflection;
+
     internal class FieldDefinition
     {
-        public FieldDefinition(TableOrStructDefinition parentDefinition)
+        public FieldDefinition(
+            TableOrStructDefinition parentDefinition,
+            string name,
+            string fieldType)
         {
             this.Parent = parentDefinition;
+            this.Name = name;
+            this.FbsFieldType = fieldType;
         }
 
         public int Index { get; set; }
@@ -44,7 +52,7 @@ namespace FlatSharp.Compiler
 
         public bool? NonVirtual { get; set; }
 
-        public string DefaultValue { get; set; }
+        public string? DefaultValue { get; set; }
 
         public bool IsOptionalScalar { get; set; }
 

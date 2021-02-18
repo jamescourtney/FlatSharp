@@ -31,14 +31,6 @@ namespace FlatSharp.Compiler
 
         public List<(string alias, string type)> Components { get; set; } = new List<(string alias, string type)>();
 
-        public string ClrTypeName
-        {
-            get
-            {
-                return this.GlobalName;
-            }
-        }
-
         private List<(int index, string alias, string fullyQualifiedType)> GetResolvedComponents()
         {
             var resolvedComponentNames = new List<(int, string, string)>();
@@ -46,6 +38,7 @@ namespace FlatSharp.Compiler
             foreach (var component in this.Components)
             {
                 string fallbackName = component.type.Split('.').Last();
+
                 if (fallbackName == "string")
                 {
                     fallbackName = "String";
@@ -74,7 +67,6 @@ namespace FlatSharp.Compiler
             using (writer.WithBlock())
             {
                 // Generate an internal type enum.
-                writer.AppendLine("[FlatBufferEnum(typeof(byte))]");
                 writer.AppendLine("public enum ItemKind : byte");
                 using (writer.WithBlock())
                 {
@@ -97,53 +89,11 @@ namespace FlatSharp.Compiler
                 }
 
                 // Clone method
-                this.WriteCloneMethod(writer, resolvedComponents);
                 this.WriteSwitchMethod(writer, true, true, resolvedComponents);
                 this.WriteSwitchMethod(writer, true, false, resolvedComponents);
                 this.WriteSwitchMethod(writer, false, true, resolvedComponents); 
                 this.WriteSwitchMethod(writer, false, false, resolvedComponents);
             }
-        }
-
-        private void WriteCloneMethod(CodeWriter writer, List<(int index, string alias, string fullyQualifiedName)> components)
-        {
-            writer.AppendLine();
-            writer.AppendLine($"public new {this.Name} Clone(");
-            using (writer.IncreaseIndent())
-            {
-                bool first = true;
-                foreach (var item in components)
-                {
-                    string line = $"Func<{item.fullyQualifiedName}, {item.fullyQualifiedName}> clone{item.alias}";
-                    if (!first)
-                    {
-                        line = $", {line}";
-                    }
-                    first = false;
-
-                    writer.AppendLine(line);
-                }
-            }
-            writer.AppendLine(")");
-
-            using (writer.WithBlock())
-            {
-                writer.AppendLine("switch (base.Discriminator)");
-                using (writer.WithBlock())
-                {
-                    foreach (var item in components)
-                    {
-                        writer.AppendLine($"case {item.index}:");
-                        using (writer.IncreaseIndent())
-                        {
-                            writer.AppendLine($"return new {this.Name}(clone{item.alias}(base.item{item.index}));");
-                        }
-                    }
-                }
-
-                writer.AppendLine("throw new System.InvalidOperationException();");
-            }
-            writer.AppendLine();
         }
 
         private void WriteSwitchMethod(CodeWriter writer, bool hasReturn, bool hasState, List<(int index, string alias, string fullyQualifiedName)> components)
@@ -209,29 +159,6 @@ namespace FlatSharp.Compiler
             string stateParam = hasState ? "state, " : string.Empty;
 
             writer.AppendLine($") => base.Switch{genericArgsWithEnds}({stateParam}caseDefault, {string.Join(", ", args)});");
-        }
-
-        protected override string OnGetCopyExpression(string source)
-        {
-            List<string> cloners = new List<string>();
-            foreach (var item in this.Components)
-            {
-                if (this.TryResolveName(item.type, out var node))
-                {
-                    string subClone = node.GetCopyExpression("x");
-                    cloners.Add($"x => {subClone}");
-                }
-                else if (item.type == "string")
-                {
-                    cloners.Add("x => x");
-                }
-                else
-                {
-                    ErrorContext.Current.RegisterError("Unable to resolve type: " + item);
-                }
-            }
-
-            return $"{source}?.Clone({string.Join(",\r\n", cloners)})";
         }
 
         protected override bool SupportsChildren => false;

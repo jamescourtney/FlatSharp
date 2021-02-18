@@ -20,6 +20,8 @@ namespace FlatSharp.Compiler
     using System.Collections.Generic;
     using System.Reflection;
 
+#nullable enable
+
     /// <summary>
     /// Compilation context
     /// </summary>
@@ -33,17 +35,17 @@ namespace FlatSharp.Compiler
         /// <summary>
         /// The assembly from the previous step, if any.
         /// </summary>
-        public Assembly PreviousAssembly { get; init; }
-
-        /// <summary>
-        /// Collection of serializers to insert in the compilation.
-        /// </summary>
-        public IReadOnlyDictionary<string, string> PrecompiledSerializers { get; init; } = new Dictionary<string, string>();
+        public Assembly? PreviousAssembly { get; init; }
 
         /// <summary>
         /// The root FBS file in the compilation.
         /// </summary>
         public string RootFile { get; init; } = string.Empty;
+
+        /// <summary>
+        /// The fully qualified name of a static method to deep-clone an item.
+        /// </summary>
+        public string? FullyQualifiedCloneMethodName { get; set; }
 
         /// <summary>
         /// The command line options.

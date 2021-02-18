@@ -213,16 +213,22 @@ $@"
 
         public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
         {
-            List<string> lines = new List<string>();
+            List<string> switchCases = new List<string>();
 
-            foreach (var item in this.memberTypeModels)
+            for (int i = 0; i < this.memberTypeModels.Length; ++i)
             {
-                lines.Add($"x => {context.MethodNameMap[item.ClrType]}(x)");
+                int discriminator = i + 1;
+                switchCases.Add($"{discriminator} => new {CSharpHelpers.GetCompilableTypeName(this.ClrType)}({context.ItemVariableName}.Item{discriminator}),");
             }
 
+            switchCases.Add("_ => throw new InvalidOperationException(\"Unexpected union discriminator\")");
+
             string body = $@"
-                return {context.ItemVariableName}?.Clone(
-                    {string.Join(", ", lines)});";
+                if ({context.ItemVariableName} is null) return null;
+                
+                return {context.ItemVariableName}.{nameof(FlatBufferUnion<string>.Discriminator)} switch {{
+                    {string.Join("\r\n", switchCases)}
+                }};";
 
             return new CodeGeneratedMethod
             {

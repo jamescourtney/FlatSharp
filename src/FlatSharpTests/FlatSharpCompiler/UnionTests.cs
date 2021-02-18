@@ -73,20 +73,6 @@ table D (PrecompiledSerializer) { Union:TestUnion; }
                 Assert.IsNotNull(ctor);
             }
 
-            // Custom union defines a clone method.
-            var cloneMethod = unionType.GetMethod("Clone");
-            Assert.IsNotNull(cloneMethod);
-            Assert.AreEqual(unionType, cloneMethod.ReturnType); // returns same type.
-            Assert.IsTrue(cloneMethod.IsHideBySig); // hides base clone method.
-
-            var parameters = cloneMethod.GetParameters();
-            Assert.AreEqual(3, parameters.Length);
-            for (int i = 0; i < parameters.Length; ++i)
-            {
-                Assert.AreEqual(typeof(Func<,>).MakeGenericType(new[] { types[i], types[i] }), parameters[i].ParameterType);
-                Assert.AreEqual("clone" + expectedAliases[i], parameters[i].Name);
-            }
-
             var switchMethods = unionType.GetMethods().Where(m => m.Name == "Switch").Where(m => m.DeclaringType == unionType).ToArray();
             Assert.AreEqual(4, switchMethods.Length);
             Assert.AreEqual(2, switchMethods.Count(x => x.ReturnType.FullName != "System.Void")); // 2 of them return something.
@@ -94,7 +80,7 @@ table D (PrecompiledSerializer) { Union:TestUnion; }
 
             // Validate parameter names on switch method.
             var switchMethod = switchMethods.Single(x => x.ReturnType.FullName == "System.Void" && !x.IsGenericMethod);
-            parameters = switchMethod.GetParameters();
+            var parameters = switchMethod.GetParameters();
             Assert.AreEqual(types.Length + 1, parameters.Length);
             Assert.AreEqual(typeof(Action), parameters[0].ParameterType);
             Assert.AreEqual("caseDefault", parameters[0].Name);
