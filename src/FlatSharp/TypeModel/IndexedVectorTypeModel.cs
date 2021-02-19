@@ -171,26 +171,14 @@ namespace FlatSharp.TypeModel
 
         public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
         {
-            var valueTypeName = CSharpHelpers.GetCompilableTypeName(this.valueTypeModel.ClrType);
-            var keyTypeName = CSharpHelpers.GetCompilableTypeName(this.keyTypeModel.ClrType);
+            string parameters = $"{context.ItemVariableName}, {context.MethodNameMap[this.ItemTypeModel.ClrType]}";
+            string genericArgs = $"{this.keyTypeModel.GetCompilableTypeName()}, {this.ItemTypeModel.GetCompilableTypeName()}";
 
-            var cloneMethodName = context.MethodNameMap[this.valueTypeModel.ClrType];
-
-            string body =
-            $@"
-                if ({context.ItemVariableName} is null) return null;
-
-                var length = {context.ItemVariableName}.{nameof(IIndexedVector<string, string>.Count)};
-                var clone = new {nameof(IndexedVector<string, string>)}<{keyTypeName}, {valueTypeName}>(length);
-
-                foreach (var kvp in {context.ItemVariableName})
-                {{
-                    clone.{nameof(IIndexedVector<int, string>.AddOrReplace)}({cloneMethodName}(kvp.Value));
-                }}
-
-                return clone;";
-
-            return new CodeGeneratedMethod(body);
+            string body = $"return {nameof(VectorCloneHelpers)}.{nameof(VectorCloneHelpers.Clone)}<{genericArgs}>({parameters});";
+            return new CodeGeneratedMethod(body)
+            {
+                IsMethodInline = true,
+            };
         }
 
         public override void TraverseObjectGraph(HashSet<Type> seenTypes)
