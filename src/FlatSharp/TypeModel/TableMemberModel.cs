@@ -69,17 +69,9 @@
         /// </summary>
         public bool IsDeprecated { get; }
 
-        public string DefaultValueToken
-        {
-            get
-            {
-                if (!this.ItemTypeModel.TryFormatDefaultValueAsLiteral(this.DefaultValue, out var defaultValue))
-                {
-                    throw new InvalidFlatBufferDefinitionException($"Unable to format {this.DefaultValue} (type {this.DefaultValue?.GetType().Name}) as a literal.");
-                }
-
-                return defaultValue;
-            }
-        }
+        /// <summary>
+        /// Returns a C# literal that is equal to the default value.
+        /// </summary>
+        public string DefaultValueLiteral => this.ItemTypeModel.FormatDefaultValueAsLiteral(this.DefaultValue);
     }
 }

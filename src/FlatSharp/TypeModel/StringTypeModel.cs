@@ -102,11 +102,6 @@ namespace FlatSharp.TypeModel
             };
         }
 
-        public override string GetThrowIfNullInvocation(string itemVariableName)
-        {
-            return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
-        }
-
         public override void TraverseObjectGraph(HashSet<Type> seenTypes)
         {
             seenTypes.Add(this.ClrType);

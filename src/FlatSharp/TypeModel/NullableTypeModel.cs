@@ -157,26 +157,6 @@ namespace FlatSharp.TypeModel
             };
         }
 
-        public override string GetThrowIfNullInvocation(string itemVariableName)
-        {
-            return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
-        }
-
-        public override string GetNonNullConditionExpression(string itemVariableName)
-        {
-            return $"{itemVariableName}.HasValue";
-        }
-
-        public override string GetNotEqualToDefaultValueExpression(string itemVariableName, object? defaultValue)
-        {
-            if (defaultValue is not null)
-            {
-                throw new InvalidFlatBufferDefinitionException($"Optional types must have a null default value. Type: {this.ClrType.Name}");
-            }
-
-            return $"{itemVariableName}.HasValue";
-        }
-
         public override void TraverseObjectGraph(HashSet<Type> seenTypes)
         {
             seenTypes.Add(this.ClrType);

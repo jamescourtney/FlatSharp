@@ -116,7 +116,10 @@ $@"
                 {code}
             }}";
 
-            (Assembly assembly, Func<string> formattedTextFactory, byte[] assemblyData) = CompileAssembly(template, this.options.EnableAppDomainInterceptOnAssemblyLoad, typeof(TRoot).Assembly);
+            var externalRefs = this.TraverseAssemblyReferenceGraph<TRoot>();
+
+            (Assembly assembly, Func<string> formattedTextFactory, byte[] assemblyData) = 
+                CompileAssembly(template, this.options.EnableAppDomainInterceptOnAssemblyLoad, externalRefs.ToArray());
 
             object? item = Activator.CreateInstance(assembly.GetTypes()[0]);
             if (item is IGeneratedSerializer<TRoot> serializer)
@@ -290,10 +293,10 @@ $@"
         /// <summary>
         /// Recursively crawls through the object graph and looks for methods to define.
         /// </summary>
-        private void DefineMethods(ITypeModel model)
+        private void DefineMethods(ITypeModel rootModel)
         {
             HashSet<Type> types = new HashSet<Type>();
-            model.TraverseObjectGraph(types);
+            rootModel.TraverseObjectGraph(types);
 
             foreach (var type in types)
             {
@@ -302,6 +305,39 @@ $@"
                 this.maxSizeMethods[type] = $"GetMaxSizeOf_{nameBase}";
                 this.readMethods[type] = $"Read_{nameBase}";
             }
+        }
+
+        private HashSet<Assembly> TraverseAssemblyReferenceGraph<TRoot>()
+        {
+            var rootModel = this.typeModelContainer.CreateTypeModel(typeof(TRoot));
+
+            // all type model types.
+            HashSet<Type> types = new HashSet<Type>();
+            rootModel.TraverseObjectGraph(types);
+
+            Queue<Assembly> pendingAssemblies = new Queue<Assembly>(types.Select(x => x.Assembly));
+            HashSet<Assembly> seenAssemblies = new HashSet<Assembly>();
+
+            while (pendingAssemblies.Count > 0)
+            {
+                var assembly = pendingAssemblies.Dequeue();
+
+                if (seenAssemblies.Add(assembly))
+                {
+                    foreach (var assemblyName in assembly.GetReferencedAssemblies())
+                    {
+                        try
+                        {
+                            pendingAssemblies.Enqueue(Assembly.Load(assemblyName));
+                        }
+                        catch
+                        {
+                        }
+                    }
+                }
+            }
+
+            return seenAssemblies;
         }
 
         private void ImplementInterfaceMethod(Type rootType)

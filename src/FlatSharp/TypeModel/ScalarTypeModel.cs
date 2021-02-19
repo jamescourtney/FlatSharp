@@ -137,40 +137,19 @@
             };
         }
 
-        public override string GetNotEqualToDefaultValueExpression(string itemVariableName, object? defaultValue)
-        {
-            if (!this.TryFormatDefaultValueAsLiteral(defaultValue, out string? literal))
-            {
-                throw new InvalidOperationException($"FlatSharp.Internal: Unable to format '{defaultValue}' to a default value.");
-            }
-
-            return $"{itemVariableName} != {literal}";
-        }
-
-        public override string GetThrowIfNullInvocation(string itemVariableName)
-        {
-            return string.Empty;
-        }
-
-        public override string GetNonNullConditionExpression(string itemVariableName)
-        {
-            return "true";
-        }
-
         public override void TraverseObjectGraph(HashSet<Type> seenTypes)
         {
             seenTypes.Add(this.ClrType);
         }
 
-        public override bool TryFormatDefaultValueAsLiteral(object? defaultValue, [NotNullWhen(true)] out string? literal)
+        public override string FormatDefaultValueAsLiteral(object? defaultValue)
         {
-            if (defaultValue?.GetType() == this.ClrType)
+            if (defaultValue is not null)
             {
-                literal = $"({CSharpHelpers.GetCompilableTypeName(this.ClrType)})({defaultValue})";
-                return true;
+                return $"({this.GetCompilableTypeName()})({defaultValue})";
             }
 
-            return base.TryFormatDefaultValueAsLiteral(defaultValue, out literal);
+            return base.FormatDefaultValueAsLiteral(defaultValue);
         }
     }
 }

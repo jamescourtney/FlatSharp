@@ -167,17 +167,12 @@ $@"
 
         public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
         {
-            var typeName = CSharpHelpers.GetCompilableTypeName(this.ClrType);
+            var typeName = this.GetCompilableTypeName();
             string body = $"return {context.ItemVariableName} is null ? new {typeName}() : new {typeName}({context.ItemVariableName});";
             return new CodeGeneratedMethod(body)
             {
                 IsMethodInline = true,
             };
-        }
-
-        public override string GetThrowIfNullInvocation(string itemVariableName)
-        {
-            return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
         }
 
         public override void Initialize()

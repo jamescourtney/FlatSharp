@@ -81,7 +81,7 @@ namespace FlatSharp
         /// Add generic constraint to catch errors calling this for value types.
         /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void EnsureNonNull<T>(T item) where T : class
+        public static void EnsureNonNull<T>(T? item) where T : class
         {
             if (item is null)
             {
@@ -98,7 +98,7 @@ namespace FlatSharp
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void EnsureNonNull<T>(T? item) where T : struct
         {
-            if (!item.HasValue)
+            if (item is null)
             {
                 ThrowNonNullException();
             }

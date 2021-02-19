@@ -20,43 +20,40 @@ namespace FlatSharp.TypeModel
 
     public partial class DoubleTypeModel
     {
-        public override bool TryFormatDefaultValueAsLiteral(object? defaultValue, [NotNullWhen(true)] out string? literal)
+        public override string FormatDefaultValueAsLiteral(object? defaultValue)
         {
             if (defaultValue is double d)
             {
-                literal = $"{d:G17}d";
-                return true;
+                return $"{d:G17}d";
             }
 
-            return base.TryFormatDefaultValueAsLiteral(defaultValue, out literal);
+            return base.FormatDefaultValueAsLiteral(defaultValue);
         }
     }
 
     public partial class FloatTypeModel
     {
-        public override bool TryFormatDefaultValueAsLiteral(object? defaultValue, [NotNullWhen(true)] out string? literal)
+        public override string FormatDefaultValueAsLiteral(object? defaultValue)
         {
             if (defaultValue is float f)
             {
-                literal = $"{f:G17}f";
-                return true;
+                return $"{f:G17}f";
             }
 
-            return base.TryFormatDefaultValueAsLiteral(defaultValue, out literal);
+            return base.FormatDefaultValueAsLiteral(defaultValue);
         }
     }
 
     public partial class BoolTypeModel
     {
-        public override bool TryFormatDefaultValueAsLiteral(object? defaultValue, [NotNullWhen(true)] out string? literal)
+        public override string FormatDefaultValueAsLiteral(object? defaultValue)
         {
             if (defaultValue is bool b)
             {
-                literal = b.ToString().ToLower();
-                return true;
+                return b.ToString().ToLower();
             }
 
-            return base.TryFormatDefaultValueAsLiteral(defaultValue, out literal);
+            return base.FormatDefaultValueAsLiteral(defaultValue);
         }
     }
 }

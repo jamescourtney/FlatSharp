@@ -87,7 +87,7 @@ namespace FlatSharp.Compiler
             string typeName = CSharpHelpers.GetCompilableTypeName(typeModel.ClrType);
             CodeGeneratedMethod method = typeModel.CreateCloneMethodBody(new CloneCodeGenContext("item", methodNameMap));
 
-            if (typeModel.IsNullableReference() == true)
+            if (typeModel.IsFlatBufferNullableReference() == true)
             {
                 typeName += "?";
             }

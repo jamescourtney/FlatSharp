@@ -132,26 +132,6 @@ namespace FlatSharp.TypeModel
                 };
             }
 
-            public string GetNonNullConditionExpression(string itemVariableName)
-            {
-                if (this.ClrType.IsClass || Nullable.GetUnderlyingType(this.ClrType) is not null)
-                {
-                    return $"!({itemVariableName} is null)";
-                }
-
-                return "true";
-            }
-
-            public string GetThrowIfNullInvocation(string itemVariableName)
-            {
-                if (this.ClrType.IsClass || Nullable.GetUnderlyingType(this.ClrType) is not null)
-                {
-                    return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
-                }
-
-                return string.Empty;
-            }
-
             public void Initialize()
             {
             }
@@ -164,39 +144,7 @@ namespace FlatSharp.TypeModel
                 this.underlyingModel.TraverseObjectGraph(seenTypes);
             }
 
-            public string GetNotEqualToDefaultValueExpression(string itemVariableName, object? defaultValue)
-            {
-                if (this.ClrType.IsValueType && Nullable.GetUnderlyingType(this.ClrType) is null)
-                {
-                    // Structs are really weird.
-                    // Value types are not guaranteed to have an equality operator defined, so we can't just assume
-                    // that '==' will work, so we do a little reflection, and use the operator if it is defined.
-                    // otherwise, we assume that the operands are not equal no matter what.
-
-                    var equalityMethod = this.ClrType.GetMethod("op_Inequality", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
-                    if (equalityMethod is not null)
-                    {
-                        // Let's hope it's rational.
-                        return $"{itemVariableName} != default({CSharpHelpers.GetCompilableTypeName(this.ClrType)})";
-                    }
-                    else
-                    {
-                        // structs without an equality overload have to be assumed to be not equal.
-                        return "true";
-                    }
-                }
-                else
-                {
-                    // Nullable<T> and reference types are easy.
-                    return $"!({itemVariableName} is null)";
-                }
-            }
-
-            public bool TryFormatDefaultValueAsLiteral(object? defaultValue, [NotNullWhen(true)] out string? literal)
-            {
-                literal = $"default({CSharpHelpers.GetCompilableTypeName(this.ClrType)})";
-                return true;
-            }
+            public string FormatDefaultValueAsLiteral(object? defaultValue) => this.GetTypeDefaultExpression();
 
             public bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
             {
@@ -216,9 +164,6 @@ namespace FlatSharp.TypeModel
             public bool ValidateDefaultValue(object? defaultValue) => false;
 
             public IEnumerable<Type> GetReferencedTypes() => new[] { typeof(TConverter), this.ClrType };
-
-            public bool TryGetUnderlyingUnionTypes([NotNullWhen(true)] out ITypeModel[]? typeModels) 
-                => this.underlyingModel.TryGetUnderlyingUnionTypes(out typeModels);
 
             private static string GetConvertToUnderlyingInvocation(string source)
             {

@@ -344,7 +344,7 @@ $@"
             string OffsetVariableName(int i) => $"index{index + i}Offset";
 
             string valueVariableName = $"index{index}Value";
-            string condition = $"if ({memberModel.ItemTypeModel.GetNotEqualToDefaultValueExpression(valueVariableName, memberModel.DefaultValue)})";
+            string condition = $"if ({memberModel.ItemTypeModel.GetNotEqualToDefaultValueLiteralExpression(valueVariableName, memberModel.DefaultValueLiteral)})";
 
             List<string> prepareBlockComponents = new List<string>();
             int vtableEntries = memberModel.ItemTypeModel.PhysicalLayout.Length;
@@ -386,7 +386,6 @@ $@"
                 }
 
                 string inlineSize = keyMember.ItemTypeModel.IsFixedSize ? keyMember.ItemTypeModel.PhysicalLayout[0].InlineSize.ToString() : "null";
-                string defaultValue = keyMember.DefaultValueToken;
 
                 sortInvocation = @$"
                     {context.SerializationContextVariableName}.{nameof(SerializationContext.AddPostSerializeAction)}(
@@ -396,7 +395,7 @@ $@"
                             {OffsetVariableName(0)}, 
                             {keyMember.Index}, 
                             {inlineSize}, 
-                            new {CSharpHelpers.GetCompilableTypeName(spanComparerType)}({defaultValue})));";
+                            new {CSharpHelpers.GetCompilableTypeName(spanComparerType)}({keyMember.DefaultValueLiteral})));";
             }
 
             string serializeBlock;
@@ -491,10 +490,12 @@ $@"
                     private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {GeneratedProperty.GetReadValueMethodName(index)}({context.InputBufferTypeName} buffer, int offset)
                     {{
                         int absoluteLocation = buffer.{nameof(InputBufferExtensions.GetAbsoluteTableFieldLocation)}(offset, {index});
-                        if (absoluteLocation == 0) {{
-                            return {memberModel.DefaultValueToken};
+                        if (absoluteLocation == 0) 
+                        {{
+                            return {memberModel.DefaultValueLiteral};
                         }}
-                        else {{
+                        else 
+                        {{
                             return {context.MethodNameMap[propertyType]}(buffer, absoluteLocation);
                         }}
                     }}
@@ -527,7 +528,7 @@ $@"
                         int {FirstLocationVariableName} = buffer.{nameof(InputBufferExtensions.GetAbsoluteTableFieldLocation)}(offset, {index});
                         if ({FirstLocationVariableName} == 0)
                         {{
-                            return {memberModel.DefaultValueToken};
+                            return {memberModel.DefaultValueLiteral};
                         }}
 
                         var absoluteLocations = ({string.Join(", ", locationGetters)});
@@ -565,7 +566,7 @@ $@"
 
                 string statement =
 $@" 
-                    if ({itemModel.GetNonNullConditionExpression(variableName)})
+                    if ({itemModel.GetNotEqualToDefaultValueLiteralExpression(variableName, member.DefaultValueLiteral)})
                     {{
                         runningSum += {context.MethodNameMap[itemModel.ClrType]}({variableName});
                     }}";
@@ -584,22 +585,11 @@ $@"
 
         public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
         {
-            var typeName = CSharpHelpers.GetCompilableTypeName(this.ClrType);
-            string body = $"return {context.ItemVariableName} is null ? null : new {typeName}({context.ItemVariableName});";
+            string body = $"return {context.ItemVariableName} is null ? null : new {this.GetCompilableTypeName()}({context.ItemVariableName});";
             return new CodeGeneratedMethod(body)
             {
                 IsMethodInline = true,
             };
-        }
-
-        public override string GetNonNullConditionExpression(string itemVariableName)
-        {
-            return $"{itemVariableName} != null";
-        }
-
-        public override string GetThrowIfNullInvocation(string itemVariableName)
-        {
-            return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
         }
 
         public override bool TryGetTableKeyMember([NotNullWhen(true)] out TableMemberModel? tableMember)

@@ -96,7 +96,7 @@
             {
                 assignment = defaultValueLiteral;
             }
-            else if (model.IsNullableReference() == false)
+            else if (model.IsFlatBufferNullableReference() == false)
             {
                 var cSharpTypeName = CSharpHelpers.GetCompilableTypeName(model.ClrType);
                 assignment = $"new {cSharpTypeName}()";
@@ -155,7 +155,7 @@
                 _ => string.Empty,
             };
 
-            if (thisTypeModel?.IsNullableReference() == true)
+            if (thisTypeModel?.IsFlatBufferNullableReference() == true)
             {
                 clrTypeName += "?";
             }

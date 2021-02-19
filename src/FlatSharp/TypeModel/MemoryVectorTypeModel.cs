@@ -85,25 +85,5 @@ namespace FlatSharp.TypeModel
                 IsMethodInline = true,
             };
         }
-
-        public override string GetNonNullConditionExpression(string itemVariableName)
-        {
-            return "true";
-        }
-
-        /// <summary>
-        /// Non-nullable memory vectors are *never* equal to the default value, since they
-        /// at least have length 0, while FlatBuffer vectors default is null. So we always serialize them
-        /// even if the length is 0.
-        /// </summary>
-        public override string GetNotEqualToDefaultValueExpression(string itemVariableName, object? defaultValue)
-        {
-            return "true";
-        }
-
-        public override string GetThrowIfNullInvocation(string itemVariableName)
-        {
-            return string.Empty;
-        }
     }
 }

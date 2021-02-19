@@ -135,7 +135,7 @@ $@"
 $@"
                     case {unionIndex}:
                         {inlineAdjustment}
-                        return new {CSharpHelpers.GetCompilableTypeName(this.ClrType)}({context.MethodNameMap[unionMember.ClrType]}(buffer, offsetLocation));
+                        return new {this.GetCompilableTypeName()}({context.MethodNameMap[unionMember.ClrType]}(buffer, offsetLocation));
 ";
                 switchCases.Add(@case);
             }
@@ -218,7 +218,7 @@ $@"
             for (int i = 0; i < this.memberTypeModels.Length; ++i)
             {
                 int discriminator = i + 1;
-                switchCases.Add($"{discriminator} => new {CSharpHelpers.GetCompilableTypeName(this.ClrType)}({context.ItemVariableName}.Item{discriminator}),");
+                switchCases.Add($"{discriminator} => new {this.GetCompilableTypeName()}({context.ItemVariableName}.Item{discriminator}),");
             }
 
             switchCases.Add("_ => throw new InvalidOperationException(\"Unexpected union discriminator\")");
@@ -231,11 +231,6 @@ $@"
                 }};";
 
             return new CodeGeneratedMethod(body);
-        }
-
-        public override string GetThrowIfNullInvocation(string itemVariableName)
-        {
-            return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
         }
 
         public override void Initialize()
@@ -285,12 +280,6 @@ $@"
                     member.TraverseObjectGraph(seenTypes);
                 }
             }
-        }
-
-        public override bool TryGetUnderlyingUnionTypes([NotNullWhen(true)] out ITypeModel[]? typeModels)
-        {
-            typeModels = this.UnionElementTypeModel.ToArray();
-            return true;
         }
     }
 }

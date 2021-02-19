@@ -110,35 +110,15 @@ namespace FlatSharp.TypeModel
         CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context);
 
         /// <summary>
-        /// Returns an expression that asserts the given item is non-null. 
-        /// </summary>
-        /// <param name="itemVariableName">The variable name of the item.</param>
-        /// <returns>An expression that tests for null (ie, "item == null").</returns>
-        string GetThrowIfNullInvocation(string itemVariableName);
-
-        /// <summary>
-        /// Returns a boolean expression testing if the given item is null or not.
-        /// </summary>
-        /// <param name="itemVariableName">The variable name of the item.</param>
-        string GetNonNullConditionExpression(string itemVariableName);
-
-        /// <summary>
-        /// Returns a boolean expression that compares the given variable name to the default value.
-        /// </summary>
-        /// <param name="itemVariableName">The name of the item being compared.</param>
-        /// <param name="defaultValue">The default value. This will be null or a constant of the type of the current type model.</param>
-        /// <returns>A boolean expression that returns true when the given item is equal to the given default value.</returns>
-        string GetNotEqualToDefaultValueExpression(string itemVariableName, object? defaultValue);
-
-        /// <summary>
         /// Travses the object graph to identify types needed to build a serializer.
         /// </summary>
         void TraverseObjectGraph(HashSet<Type> seenTypes);
 
         /// <summary>
-        /// Attempts to format the given default value into a C# literal. Not all implementations support this.
+        /// Formats the given default value into a C# literal. If the default value is null, it indicates that
+        /// there is no default value and the type default should be returned.
         /// </summary>
-        bool TryFormatDefaultValueAsLiteral(object? defaultValue, [NotNullWhen(true)] out string? literal);
+        string FormatDefaultValueAsLiteral(object? defaultValue);
 
         /// <summary>
         /// Attempts to format the given string as a literal of this type. Not all implementations support this.
@@ -149,11 +129,6 @@ namespace FlatSharp.TypeModel
         /// For vectors, retrieves the inner type model. Other types return false.
         /// </summary>
         bool TryGetUnderlyingVectorType([NotNullWhen(true)] out ITypeModel? typeModel);
-
-        /// <summary>
-        /// For unions, retrieves the component type models of this union.
-        /// </summary>
-        bool TryGetUnderlyingUnionTypes([NotNullWhen(true)] out ITypeModel[]? typeModels);
 
         /// <summary>
         /// Attempts to get the type implementing <see cref="ISpanComparer"/> for the type model.

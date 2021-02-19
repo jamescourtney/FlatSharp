@@ -120,30 +120,9 @@ namespace FlatSharp.TypeModel
 
         public abstract CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context);
 
-        public abstract string GetThrowIfNullInvocation(string itemVariableName);
-
-        public virtual string GetNotEqualToDefaultValueExpression(string itemVariableName, object? defaultValue)
-        {
-            if (!this.TryFormatDefaultValueAsLiteral(defaultValue, out string? literal))
-            {
-                throw new InvalidFlatBufferDefinitionException($"Unable to format default value '{defaultValue}' as literal of type '{this.ClrType.FullName}'.");
-            }
-
-            return $"!({itemVariableName} is {literal})";
-        }
-
-        public virtual string GetNonNullConditionExpression(string itemVariableName)
-        {
-            return $"!({itemVariableName} is null)";
-        }
-
         public abstract void TraverseObjectGraph(HashSet<Type> seenTypes);
 
-        public virtual bool TryFormatDefaultValueAsLiteral(object? defaultValue, [NotNullWhen(true)] out string? literal)
-        {
-            literal = $"default({CSharpHelpers.GetCompilableTypeName(this.ClrType)})";
-            return true;
-        }
+        public virtual string FormatDefaultValueAsLiteral(object? defaultValue) => this.GetTypeDefaultExpression();
 
         public virtual bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
         {
@@ -166,12 +145,6 @@ namespace FlatSharp.TypeModel
         public virtual bool TryGetTableKeyMember([NotNullWhen(true)] out TableMemberModel? tableMember)
         {
             tableMember = null;
-            return false;
-        }
-
-        public virtual bool TryGetUnderlyingUnionTypes([NotNullWhen(true)] out ITypeModel[]? typeModels)
-        {
-            typeModels = null;
             return false;
         }
 
