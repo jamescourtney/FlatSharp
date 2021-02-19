@@ -78,9 +78,10 @@
         {
             Type underlyingType = this.underlyingTypeModel.ClrType;
             string underlyingTypeName = CSharpHelpers.GetCompilableTypeName(underlyingType);
+            string body = context.With(valueVariableName: $"({underlyingTypeName}){context.ValueVariableName}")
+                                 .GetMaxSizeInvocation(underlyingType);
 
-            string body = $"return {context.MethodNameMap[underlyingType]}(({underlyingTypeName}){context.ValueVariableName});";
-            return new CodeGeneratedMethod(body)
+            return new CodeGeneratedMethod($"return {body};")
             { 
                 IsMethodInline = true,
             };
@@ -90,7 +91,7 @@
         {
             Type underlyingType = this.underlyingTypeModel.ClrType;
             string typeName = CSharpHelpers.GetCompilableTypeName(this.ClrType);
-            string body = $"return ({typeName}){context.MethodNameMap[underlyingType]}({context.InputBufferVariableName}, {context.OffsetVariableName});";
+            string body = $"return ({typeName}){context.GetParseInvocation(underlyingType)};";
 
             return new CodeGeneratedMethod(body)
             {
@@ -103,8 +104,10 @@
             Type underlyingType = this.underlyingTypeModel.ClrType;
             string underlyingTypeName = CSharpHelpers.GetCompilableTypeName(underlyingType);
 
-            string body = $"{context.MethodNameMap[underlyingType]}({context.SpanWriterVariableName}, {context.SpanVariableName}, ({underlyingTypeName}){context.ValueVariableName}, {context.OffsetVariableName}, {context.SerializationContextVariableName});";
-            return new CodeGeneratedMethod(body)
+            string body = context.With(valueVariableName: $"({underlyingTypeName}){context.ValueVariableName}")
+                                 .GetSerializeInvocation(underlyingType);
+
+            return new CodeGeneratedMethod($"{body};")
             {
                 IsMethodInline = true,
             };

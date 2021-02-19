@@ -344,7 +344,6 @@ $@"
             string OffsetVariableName(int i) => $"index{index + i}Offset";
 
             string valueVariableName = $"index{index}Value";
-
             string condition = $"if ({memberModel.ItemTypeModel.GetNotEqualToDefaultValueExpression(valueVariableName, memberModel.DefaultValue)})";
 
             List<string> prepareBlockComponents = new List<string>();
@@ -586,7 +585,8 @@ $@"
         public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
         {
             var typeName = CSharpHelpers.GetCompilableTypeName(this.ClrType);
-            return new CodeGeneratedMethod($"return {context.ItemVariableName} is not null ? new {typeName}({context.ItemVariableName}) : null;")
+            string body = $"return {context.ItemVariableName} is null ? null : new {typeName}({context.ItemVariableName});";
+            return new CodeGeneratedMethod(body)
             {
                 IsMethodInline = true,
             };

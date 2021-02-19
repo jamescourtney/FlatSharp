@@ -134,11 +134,9 @@ namespace FlatSharp.TypeModel
 
             public string GetNonNullConditionExpression(string itemVariableName)
             {
-                bool isNullable = Nullable.GetUnderlyingType(this.ClrType) is not null;
-
-                if (this.ClrType.IsClass || isNullable)
+                if (this.ClrType.IsClass || Nullable.GetUnderlyingType(this.ClrType) is not null)
                 {
-                    return $"{itemVariableName} is not null";
+                    return $"!({itemVariableName} is null)";
                 }
 
                 return "true";
@@ -146,9 +144,7 @@ namespace FlatSharp.TypeModel
 
             public string GetThrowIfNullInvocation(string itemVariableName)
             {
-                bool isNullable = Nullable.GetUnderlyingType(this.ClrType) is not null;
-
-                if (this.ClrType.IsClass || isNullable)
+                if (this.ClrType.IsClass || Nullable.GetUnderlyingType(this.ClrType) is not null)
                 {
                     return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
                 }
@@ -192,7 +188,7 @@ namespace FlatSharp.TypeModel
                 else
                 {
                     // Nullable<T> and reference types are easy.
-                    return $"{itemVariableName} is not null";
+                    return $"!({itemVariableName} is null)";
                 }
             }
 

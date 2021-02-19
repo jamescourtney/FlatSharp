@@ -101,10 +101,12 @@ namespace FlatSharp.TypeModel
 
         public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
         {
+            var ctx = context.With(valueVariableName: $"{context.ValueVariableName}.Value");
+
             string body = $@"
-                if ({context.ValueVariableName} is not null)
+                if ({context.ValueVariableName}.HasValue)
                 {{
-                    return {context.MethodNameMap[this.underlyingType]}({context.ValueVariableName}.Value);
+                    return {ctx.GetMaxSizeInvocation(this.underlyingType)};
                 }}
 
                 return 0;
@@ -118,7 +120,10 @@ namespace FlatSharp.TypeModel
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
-            return new CodeGeneratedMethod($"return {context.MethodNameMap[this.underlyingType]}({context.InputBufferVariableName}, {context.OffsetVariableName});")
+            string innerParse = context.GetParseInvocation(this.underlyingType);
+            string body = $"return {innerParse};";
+
+            return new CodeGeneratedMethod(body)
             {
                 IsMethodInline = true,
             };
@@ -126,11 +131,10 @@ namespace FlatSharp.TypeModel
 
         public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
         {
-            var method = context.MethodNameMap[this.underlyingType];
             string variableName = context.ValueVariableName;
-            string body = $"{method}({context.SpanWriterVariableName}, {context.SpanVariableName}, {variableName}.Value, {context.OffsetVariableName}, {context.SerializationContextVariableName});";
+            string body = context.With(valueVariableName: $"{variableName}.Value").GetSerializeInvocation(this.underlyingType);
 
-            return new CodeGeneratedMethod(body)
+            return new CodeGeneratedMethod($"{body};")
             {
                 IsMethodInline = true,
             };
@@ -139,7 +143,7 @@ namespace FlatSharp.TypeModel
         public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
         {
             string body = $@"
-                if ({context.ItemVariableName} is not null)
+                if ({context.ItemVariableName}.HasValue)
                 {{
                     return {context.MethodNameMap[this.underlyingType]}({context.ItemVariableName}.Value);
                 }}

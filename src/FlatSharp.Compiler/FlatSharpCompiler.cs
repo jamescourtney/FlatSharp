@@ -312,7 +312,7 @@ namespace FlatSharp.Compiler
 
             foreach (var step in steps)
             {
-                if (writer != null)
+                if (step > CodeWritingPass.Initialization)
                 {
                     string code = writer.ToString();
                     (assembly, _, _) = RoslynSerializerGenerator.CompileAssembly(code, true);

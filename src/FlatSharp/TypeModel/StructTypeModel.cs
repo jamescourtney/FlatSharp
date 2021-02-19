@@ -168,7 +168,8 @@ $@"
         public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
         {
             var typeName = CSharpHelpers.GetCompilableTypeName(this.ClrType);
-            return new CodeGeneratedMethod($"return {context.ItemVariableName} is not null ? new {typeName}({context.ItemVariableName}) : new {typeName}();")
+            string body = $"return {context.ItemVariableName} is null ? new {typeName}() : new {typeName}({context.ItemVariableName});";
+            return new CodeGeneratedMethod(body)
             {
                 IsMethodInline = true,
             };

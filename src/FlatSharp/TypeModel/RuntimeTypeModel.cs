@@ -129,12 +129,12 @@ namespace FlatSharp.TypeModel
                 throw new InvalidFlatBufferDefinitionException($"Unable to format default value '{defaultValue}' as literal of type '{this.ClrType.FullName}'.");
             }
 
-            return $"{itemVariableName} is not {literal}";
+            return $"!({itemVariableName} is {literal})";
         }
 
         public virtual string GetNonNullConditionExpression(string itemVariableName)
         {
-            return $"{itemVariableName} is not null";
+            return $"!({itemVariableName} is null)";
         }
 
         public abstract void TraverseObjectGraph(HashSet<Type> seenTypes);

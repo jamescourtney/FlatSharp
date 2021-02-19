@@ -137,6 +137,16 @@
             };
         }
 
+        public override string GetNotEqualToDefaultValueExpression(string itemVariableName, object? defaultValue)
+        {
+            if (!this.TryFormatDefaultValueAsLiteral(defaultValue, out string? literal))
+            {
+                throw new InvalidOperationException($"FlatSharp.Internal: Unable to format '{defaultValue}' to a default value.");
+            }
+
+            return $"{itemVariableName} != {literal}";
+        }
+
         public override string GetThrowIfNullInvocation(string itemVariableName)
         {
             return string.Empty;
