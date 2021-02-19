@@ -21,10 +21,10 @@ namespace FlatSharp.Compiler
     public class CompilerOptions
     {
         [Option('i', "input", HelpText = "FBS input file", Required = true)]
-        public string InputFile { get; set; }
+        public string? InputFile { get; set; }
 
         [Option('o', "output", HelpText = "Output directory", Required = true)]
-        public string OutputDirectory { get; set; }
+        public string? OutputDirectory { get; set; }
 
         [Option("nullable-annotations", Default = false)]
         public bool NullableAnnotations { get; set; }

@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-#nullable enable
-
 namespace FlatSharp.Compiler
 {
 

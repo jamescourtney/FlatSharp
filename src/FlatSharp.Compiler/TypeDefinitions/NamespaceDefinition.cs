@@ -26,8 +26,6 @@ namespace FlatSharp.Compiler
 
         protected override bool SupportsChildren => true;
 
-        public override string Namespace => this.Parent is RootNodeDefinition ? this.Name : $"{this.Parent.Namespace}.{this.Name}";
-
         protected override void OnWriteCode(CodeWriter writer, CompileContext context)
         {
             writer.AppendLine($"namespace {this.Name}");

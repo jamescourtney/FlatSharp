@@ -66,7 +66,7 @@ namespace FlatSharp.TypeModel
                 body = $"return {memoryVectorRead};";
             }
 
-            return new CodeGeneratedMethod { MethodBody = body };
+            return new CodeGeneratedMethod(body);
         }
 
         public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
@@ -74,14 +74,14 @@ namespace FlatSharp.TypeModel
             string body = 
                 $"{context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteReadOnlyByteMemoryBlock)}({context.SpanVariableName}, {context.ValueVariableName}, {context.OffsetVariableName}, {context.SerializationContextVariableName});";
 
-            return new CodeGeneratedMethod { MethodBody = body };
+            return new CodeGeneratedMethod(body);
         }
 
         public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
         {
-            return new CodeGeneratedMethod
+            string body = $"return {context.ItemVariableName}.ToArray().AsMemory();";
+            return new CodeGeneratedMethod(body)
             {
-                MethodBody = $"return {context.ItemVariableName}.ToArray().AsMemory();",
                 IsMethodInline = true,
             };
         }

@@ -65,7 +65,7 @@ namespace FlatSharp.Compiler
                 {
                     foreach (var seenType in seenTypes)
                     {
-                        if (!container.TryCreateTypeModel(seenType, out ITypeModel model))
+                        if (!container.TryCreateTypeModel(seenType, out ITypeModel? model))
                         {
                             ErrorContext.Current.RegisterError($"Unable to create type model for Type '{seenType.FullName}.'");
                             continue;
@@ -92,6 +92,7 @@ namespace FlatSharp.Compiler
                 typeName += "?";
             }
 
+            codeWriter.AppendLine(method.GetMethodImplAttribute());
             codeWriter.AppendLine($"public static {typeName} Clone({typeName} item)");
             using (codeWriter.WithBlock())
             {

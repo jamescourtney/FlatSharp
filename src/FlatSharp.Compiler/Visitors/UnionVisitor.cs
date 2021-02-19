@@ -16,25 +16,24 @@
 
 namespace FlatSharp.Compiler
 {
-    using Antlr4.Runtime.Misc;
+    using System;
 
     /// <summary>
     /// Parses a union definition. Returns a FlatBuffer union type declaration (FlatBufferUnion{T1, T2, T3}).
     /// </summary>
-    internal class UnionVisitor : FlatBuffersBaseVisitor<UnionDefinition>
+    internal class UnionVisitor : FlatBuffersBaseVisitor<UnionDefinition?>
     {
         private readonly BaseSchemaMember parent;
-        private UnionDefinition unionDef;
+        private UnionDefinition? unionDef;
 
         public UnionVisitor(BaseSchemaMember parent)
         {
             this.parent = parent;
         }
 
-        public override UnionDefinition VisitUnion_decl([NotNull] FlatBuffersParser.Union_declContext context)
+        public override UnionDefinition? VisitUnion_decl([Antlr4.Runtime.Misc.NotNull] FlatBuffersParser.Union_declContext context)
         {
             this.unionDef = new UnionDefinition(context.IDENT().GetText(), this.parent);
-
             var metadata = new MetadataVisitor().VisitMetadata(context.metadata());
 
             ErrorContext.Current.WithScope(this.unionDef.Name, () =>
@@ -45,11 +44,13 @@ namespace FlatSharp.Compiler
             return this.unionDef;
         }
 
-        public override UnionDefinition VisitUnionval_decl([NotNull] FlatBuffersParser.Unionval_declContext context)
+        public override UnionDefinition? VisitUnionval_decl([Antlr4.Runtime.Misc.NotNull] FlatBuffersParser.Unionval_declContext context)
         {
+            UnionDefinition definition = this.unionDef ?? throw new InvalidOperationException("union def not initialized correctly");
+
             string type = context.type().GetText();
-            string alias = context.IDENT()?.GetText();
-            this.unionDef.Components.Add((alias, type));
+            string? alias = context.IDENT()?.GetText();
+            definition.Components.Add((alias, type));
 
             return null;
         }

@@ -22,7 +22,7 @@ namespace FlatSharp.Compiler
     using Antlr4.Runtime.Misc;
     using Antlr4.Runtime.Tree;
 
-    internal class SchemaVisitor : FlatBuffersBaseVisitor<BaseSchemaMember>
+    internal class SchemaVisitor : FlatBuffersBaseVisitor<BaseSchemaMember?>
     {
         private BaseSchemaMember schemaRoot;
         private readonly Stack<BaseSchemaMember> parseStack = new Stack<BaseSchemaMember>();
@@ -32,7 +32,7 @@ namespace FlatSharp.Compiler
             this.schemaRoot = rootNode;
         }
 
-        public string CurrentFileName { get; set; }
+        public string? CurrentFileName { get; set; }
 
         public override BaseSchemaMember Visit([NotNull] IParseTree tree)
         {
@@ -43,7 +43,7 @@ namespace FlatSharp.Compiler
             return this.schemaRoot;
         }
 
-        public override BaseSchemaMember VisitNamespace_decl([NotNull] FlatBuffersParser.Namespace_declContext context)
+        public override BaseSchemaMember? VisitNamespace_decl([NotNull] FlatBuffersParser.Namespace_declContext context)
         {
             // Namespaces reset the whole stack.
             while (this.parseStack.Peek() != this.schemaRoot)
@@ -53,6 +53,73 @@ namespace FlatSharp.Compiler
 
             string[] nsParts = context.IDENT().Select(x => x.GetText()).ToArray();
             this.parseStack.Push(this.GetOrCreateNamespace(nsParts, this.schemaRoot));
+
+            return null;
+        }
+
+        public override BaseSchemaMember? VisitType_decl([NotNull] FlatBuffersParser.Type_declContext context)
+        {
+            var top = this.parseStack.Peek();
+            ErrorContext.Current.WithScope(top.FullName, () =>
+            {
+                TableOrStructDefinition def = new TypeVisitor(top).Visit(context);
+                def.DeclaringFile = this.CurrentFileName;
+                top.AddChild(def);
+            });
+
+            return null;
+        }
+
+        public override BaseSchemaMember? VisitEnum_decl([NotNull] FlatBuffersParser.Enum_declContext context)
+        {
+            var top = this.parseStack.Peek();
+            ErrorContext.Current.WithScope(top.FullName, () =>
+            {
+                EnumDefinition? def = new EnumVisitor(top).Visit(context);
+                if (def is null)
+                {
+                    throw new InvalidOperationException("FlatSharp.Internal: Enum definition visitor returned null");
+                }
+
+                def.DeclaringFile = this.CurrentFileName;
+                top.AddChild(def);
+            });
+
+            return null;
+        }
+
+        public override BaseSchemaMember? VisitUnion_decl([NotNull] FlatBuffersParser.Union_declContext context)
+        {
+            var top = this.parseStack.Peek();
+            ErrorContext.Current.WithScope(top.FullName, () =>
+            {
+                UnionDefinition? def = new UnionVisitor(top).Visit(context);
+                if (def is null)
+                {
+                    throw new InvalidOperationException("FlatSharp.Internal: Union definition visitor returned null");
+                }
+
+                def.DeclaringFile = this.CurrentFileName;
+                top.AddChild(def);
+            });
+
+            return null;
+        }
+
+        public override BaseSchemaMember? VisitRpc_decl([NotNull] FlatBuffersParser.Rpc_declContext context)
+        {
+            var top = this.parseStack.Peek();
+            ErrorContext.Current.WithScope(top.FullName, () =>
+            {
+                RpcDefinition? def = new RpcVisitor(top).Visit(context);
+                if (def is null)
+                {
+                    throw new InvalidOperationException("FlatSharp.Internal: RPC definition visitor returned null");
+                }
+
+                def.DeclaringFile = this.CurrentFileName;
+                top.AddChild(def);
+            });
 
             return null;
         }
@@ -72,58 +139,6 @@ namespace FlatSharp.Compiler
             }
 
             return this.GetOrCreateNamespace(parts.Slice(1), existingNode);
-        }
-
-        public override BaseSchemaMember VisitType_decl([NotNull] FlatBuffersParser.Type_declContext context)
-        {
-            var top = this.parseStack.Peek();
-            ErrorContext.Current.WithScope(top.FullName, () =>
-            {
-                TableOrStructDefinition def = new TypeVisitor(top).Visit(context);
-                def.DeclaringFile = this.CurrentFileName;
-                top.AddChild(def);
-            });
-
-            return null;
-        }
-
-        public override BaseSchemaMember VisitEnum_decl([NotNull] FlatBuffersParser.Enum_declContext context)
-        {
-            var top = this.parseStack.Peek();
-            ErrorContext.Current.WithScope(top.FullName, () =>
-            {
-                EnumDefinition def = new EnumVisitor(top).Visit(context);
-                def.DeclaringFile = this.CurrentFileName;
-                top.AddChild(def);
-            });
-
-            return null;
-        }
-
-        public override BaseSchemaMember VisitUnion_decl([NotNull] FlatBuffersParser.Union_declContext context)
-        {
-            var top = this.parseStack.Peek();
-            ErrorContext.Current.WithScope(top.FullName, () =>
-            {
-                UnionDefinition def = new UnionVisitor(top).Visit(context);
-                def.DeclaringFile = this.CurrentFileName;
-                top.AddChild(def);
-            });
-
-            return null;
-        }
-
-        public override BaseSchemaMember VisitRpc_decl([NotNull] FlatBuffersParser.Rpc_declContext context)
-        {
-            var top = this.parseStack.Peek();
-            ErrorContext.Current.WithScope(top.FullName, () =>
-            {
-                RpcDefinition def = new RpcVisitor(top).Visit(context);
-                def.DeclaringFile = this.CurrentFileName;
-                top.AddChild(def);
-            });
-
-            return null;
         }
     }
 }

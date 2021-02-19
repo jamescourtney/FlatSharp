@@ -90,9 +90,9 @@
 
         public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
         {
-            return new CodeGeneratedMethod
+            return new CodeGeneratedMethod($"return {this.MaxInlineSize};")
             {
-                MethodBody = $"return {this.MaxInlineSize};",
+                IsMethodInline = true
             };
         }
 
@@ -135,10 +135,9 @@ $@"
                     context.Options);
             }
 
-            return new CodeGeneratedMethod
+            return new CodeGeneratedMethod($"return new {className}<{context.InputBufferTypeName}>({context.InputBufferVariableName}, {context.OffsetVariableName});")
             {
-                ClassDefinition = classDefinition,
-                MethodBody = $"return new {className}<{context.InputBufferTypeName}>({context.InputBufferVariableName}, {context.OffsetVariableName});",
+                ClassDefinition = classDefinition
             };
         }
 
@@ -163,18 +162,14 @@ $@"
                 body.Add(propContext.GetSerializeInvocation(memberInfo.ItemTypeModel.ClrType) + ";");
             }
 
-            return new CodeGeneratedMethod
-            {
-                MethodBody = string.Join("\r\n", body)
-            };
+            return new CodeGeneratedMethod(string.Join("\r\n", body));
         }
 
         public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
         {
             var typeName = CSharpHelpers.GetCompilableTypeName(this.ClrType);
-            return new CodeGeneratedMethod
+            return new CodeGeneratedMethod($"return {context.ItemVariableName} is not null ? new {typeName}({context.ItemVariableName}) : new {typeName}();")
             {
-                MethodBody = $"return {context.ItemVariableName} is not null ? new {typeName}({context.ItemVariableName}) : new {typeName}();",
                 IsMethodInline = true,
             };
         }

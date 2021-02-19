@@ -21,10 +21,15 @@ namespace FlatSharp
     /// </summary>
     public class CodeGeneratedMethod
     {
+        public CodeGeneratedMethod(string methodBody)
+        {
+            this.MethodBody = methodBody;
+        }
+
         /// <summary>
         /// The body of the method.
         /// </summary>
-        public string? MethodBody { get; set; }
+        public string MethodBody { get; set; }
 
         /// <summary>
         /// A class definition.
@@ -35,5 +40,18 @@ namespace FlatSharp
         /// Indicates if the method should be marked with aggressive inlining.
         /// </summary>
         public bool IsMethodInline { get; set; }
+
+        public string GetMethodImplAttribute()
+        {
+            if (this.IsMethodInline)
+            {
+                string inlining = "System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining";
+                return $"[{typeof(System.Runtime.CompilerServices.MethodImplAttribute).FullName}({inlining})]";
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
     }
 }

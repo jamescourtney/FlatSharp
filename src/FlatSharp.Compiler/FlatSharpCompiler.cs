@@ -53,6 +53,16 @@ namespace FlatSharp.Compiler
                 {
                     context.PushScope("$");
 
+                    if (string.IsNullOrEmpty(options.InputFile))
+                    {
+                        throw new InvalidFbsFileException("No input file specified.");
+                    }
+
+                    if (string.IsNullOrEmpty(options.OutputDirectory))
+                    {
+                        throw new InvalidFbsFileException("No output directory specified.");
+                    }
+
                     // Read existing file to see if we even need to do any work.
                     string fbsFileName = Path.GetFileName(options.InputFile);
                     string outputFileName = fbsFileName + ".generated.cs";
@@ -64,6 +74,11 @@ namespace FlatSharp.Compiler
                         try
                         {
                             RootNodeDefinition rootNode = ParseSyntax(options.InputFile, new IncludeFileLoader());
+
+                            if (string.IsNullOrEmpty(rootNode.InputHash))
+                            {
+                                throw new InvalidFbsFileException("Failed to compute input hash");
+                            }
 
                             if (File.Exists(outputFullPath))
                             {
@@ -128,8 +143,8 @@ namespace FlatSharp.Compiler
         internal static Assembly CompileAndLoadAssembly(
             string fbsSchema,
             CompilerOptions options,
-            IEnumerable<Assembly> additionalReferences = null,
-            Dictionary<string, string> additionalIncludes = null)
+            IEnumerable<Assembly>? additionalReferences = null,
+            Dictionary<string, string>? additionalIncludes = null)
         {
             InMemoryIncludeLoader includeLoader = new InMemoryIncludeLoader
             {
@@ -163,7 +178,7 @@ namespace FlatSharp.Compiler
             }
         }
 
-        internal static RootNodeDefinition TestHookParseSyntax(string fbsSchema, Dictionary<string, string> includes = null)
+        internal static RootNodeDefinition TestHookParseSyntax(string fbsSchema, Dictionary<string, string>? includes = null)
         {
             InMemoryIncludeLoader includeLoader = new InMemoryIncludeLoader
             {
@@ -244,7 +259,7 @@ namespace FlatSharp.Compiler
         internal static string TestHookCreateCSharp(
             string fbsSchema,
             CompilerOptions options,
-            Dictionary<string, string> includes = null)
+            Dictionary<string, string>? includes = null)
         {
             InMemoryIncludeLoader includeLoader = new InMemoryIncludeLoader
             {
@@ -272,8 +287,13 @@ namespace FlatSharp.Compiler
                 throw new InvalidFbsFileException(ErrorContext.Current.Errors);
             }
 
-            Assembly assembly = null;
-            CodeWriter writer = null;
+            if (string.IsNullOrEmpty(rootNode.DeclaringFile))
+            {
+                throw new InvalidFbsFileException("FlatSharp.Internal: RootNode missing declaring file");
+            }
+
+            Assembly? assembly = null;
+            CodeWriter writer = new CodeWriter();
             var steps = new[] 
             { 
                 CodeWritingPass.Initialization, 

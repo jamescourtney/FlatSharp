@@ -106,37 +106,33 @@
 
         public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
         {
-            return new CodeGeneratedMethod
+            return new CodeGeneratedMethod($"return {this.MaxInlineSize};")
             {
                 IsMethodInline = true,
-                MethodBody = $"return {this.MaxInlineSize};"
             };
         }
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
-            return new CodeGeneratedMethod
+            return new CodeGeneratedMethod($"return {context.InputBufferVariableName}.{this.InputBufferReadMethodName}({context.OffsetVariableName});")
             {
                 IsMethodInline = true,
-                MethodBody = $"return {context.InputBufferVariableName}.{this.InputBufferReadMethodName}({context.OffsetVariableName});"
             };
         }
 
         public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
         {
             string variableName = context.ValueVariableName;
-            return new CodeGeneratedMethod 
+            return new CodeGeneratedMethod($"{context.SpanWriterVariableName}.{this.SpanWriterWriteMethodName}({context.SpanVariableName}, {variableName}, {context.OffsetVariableName}, {context.SerializationContextVariableName});")
             {
-                MethodBody = $"{context.SpanWriterVariableName}.{this.SpanWriterWriteMethodName}({context.SpanVariableName}, {variableName}, {context.OffsetVariableName}, {context.SerializationContextVariableName});",
                 IsMethodInline = true,
             };
         }
 
         public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
         {
-            return new CodeGeneratedMethod
+            return new CodeGeneratedMethod($"return {context.ItemVariableName};")
             {
-                MethodBody = $"return {context.ItemVariableName};",
                 IsMethodInline = true,
             };
         }

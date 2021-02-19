@@ -17,15 +17,15 @@
 namespace FlatSharp.Compiler
 {
     using Antlr4.Runtime.Misc;
+    using System;
 
     /// <summary>
     /// Parses an enum definition.
     /// </summary>
-    internal class EnumVisitor : FlatBuffersBaseVisitor<EnumDefinition>
+    internal class EnumVisitor : FlatBuffersBaseVisitor<EnumDefinition?>
     {
         private readonly BaseSchemaMember parent;
-
-        private EnumDefinition enumDef;
+        private EnumDefinition? enumDef;
 
         public EnumVisitor(BaseSchemaMember parent)
         {
@@ -35,6 +35,7 @@ namespace FlatSharp.Compiler
         public override EnumDefinition VisitEnum_decl([NotNull] FlatBuffersParser.Enum_declContext context)
         {
             string typeName = context.IDENT().GetText();
+
             this.enumDef = new EnumDefinition(
                 typeName: typeName,
                 underlyingTypeName: context.type().GetText(),
@@ -48,11 +49,13 @@ namespace FlatSharp.Compiler
             return this.enumDef;
         }
 
-        public override EnumDefinition VisitEnumval_decl([NotNull] FlatBuffersParser.Enumval_declContext context)
+        public override EnumDefinition? VisitEnumval_decl([NotNull] FlatBuffersParser.Enumval_declContext context)
         {
+            EnumDefinition enumDef = this.enumDef ?? throw new InvalidOperationException("enum def not initialized correctly");
+
             string name = context.IDENT().GetText();
-            string value = context.integer_const()?.GetText();
-            this.enumDef.NameValuePairs.Add((name, value));
+            string? value = context.integer_const()?.GetText();
+            enumDef.NameValuePairs.Add((name, value));
 
             return null;
         }

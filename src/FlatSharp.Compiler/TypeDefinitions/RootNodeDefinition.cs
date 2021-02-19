@@ -28,11 +28,9 @@ namespace FlatSharp.Compiler
             this.DeclaringFile = fileName;
         }
 
-        public string InputHash { get; set; }
+        public string? InputHash { get; set; }
 
         protected override bool SupportsChildren => true;
-
-        public override string Namespace => string.Empty;
 
         protected override void OnWriteCode(CodeWriter writer, CompileContext context)
         {
@@ -68,7 +66,7 @@ namespace FlatSharp.Compiler
                 writer.AppendLine("#nullable disable warnings");
             }
 
-            if (context.CompilePass > CodeWritingPass.Initialization)
+            if (context.CompilePass > CodeWritingPass.Initialization && context.PreviousAssembly is not null)
             {
                 context.FullyQualifiedCloneMethodName = CloneMethodsGenerator.GenerateCloneMethodsForAssembly(
                     writer,

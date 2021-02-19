@@ -114,7 +114,7 @@ $@"
                     throw new System.InvalidOperationException(""Exception determining type of union. Discriminator = "" + {context.ValueVariableName}.{discriminatorPropertyName});
             }}
 ";
-            return new CodeGeneratedMethod { MethodBody = body };
+            return new CodeGeneratedMethod(body);
         }
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
@@ -154,7 +154,7 @@ $@"
                 }}
             ";
 
-            return new CodeGeneratedMethod { MethodBody = body };
+            return new CodeGeneratedMethod(body);
         }
 
         public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
@@ -208,7 +208,7 @@ $@"
                     default: throw new InvalidOperationException(""Unexpected"");
                 }}";
 
-            return new CodeGeneratedMethod { MethodBody = serializeBlock };
+            return new CodeGeneratedMethod(serializeBlock);
         }
 
         public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
@@ -230,10 +230,7 @@ $@"
                     {string.Join("\r\n", switchCases)}
                 }};";
 
-            return new CodeGeneratedMethod
-            {
-                MethodBody = body,
-            };
+            return new CodeGeneratedMethod(body);
         }
 
         public override string GetThrowIfNullInvocation(string itemVariableName)

@@ -405,15 +405,9 @@ $@"
         /// </summary>
         private void GenerateGetMaxSizeMethod(Type type, CodeGeneratedMethod method, GetMaxSizeCodeGenContext context)
         {
-            string inlineDeclaration = "[MethodImpl(MethodImplOptions.AggressiveInlining)]";
-            if (!method.IsMethodInline)
-            {
-                inlineDeclaration = string.Empty;
-            }
-
             string declaration =
 $@"
-            {inlineDeclaration}
+            {method.GetMethodImplAttribute()}
             private static int {this.maxSizeMethods[type]}({CSharpHelpers.GetCompilableTypeName(type)} {context.ValueVariableName})
             {{
                 {method.MethodBody}
@@ -431,14 +425,9 @@ $@"
 
         private void GenerateParseMethod(ITypeModel typeModel, CodeGeneratedMethod method, ParserCodeGenContext context)
         {
-            string inlineDeclaration = "[MethodImpl(MethodImplOptions.AggressiveInlining)]";
-            if (!method.IsMethodInline)
-            {
-                inlineDeclaration = string.Empty;
-            }
             string declaration =
 $@"
-            {inlineDeclaration}
+            {method.GetMethodImplAttribute()}
             private static {CSharpHelpers.GetCompilableTypeName(typeModel.ClrType)} {this.readMethods[typeModel.ClrType]}<TInputBuffer>(
                 TInputBuffer {context.InputBufferVariableName}, 
                 {GetVTableOffsetVariableType(typeModel.PhysicalLayout.Length)} {context.OffsetVariableName}) where TInputBuffer : IInputBuffer

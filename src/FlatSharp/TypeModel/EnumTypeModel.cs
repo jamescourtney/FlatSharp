@@ -79,9 +79,9 @@
             Type underlyingType = this.underlyingTypeModel.ClrType;
             string underlyingTypeName = CSharpHelpers.GetCompilableTypeName(underlyingType);
 
-            return new CodeGeneratedMethod 
+            string body = $"return {context.MethodNameMap[underlyingType]}(({underlyingTypeName}){context.ValueVariableName});";
+            return new CodeGeneratedMethod(body)
             { 
-                MethodBody = $"return {context.MethodNameMap[underlyingType]}(({underlyingTypeName}){context.ValueVariableName});",
                 IsMethodInline = true,
             };
         }
@@ -90,10 +90,10 @@
         {
             Type underlyingType = this.underlyingTypeModel.ClrType;
             string typeName = CSharpHelpers.GetCompilableTypeName(this.ClrType);
+            string body = $"return ({typeName}){context.MethodNameMap[underlyingType]}({context.InputBufferVariableName}, {context.OffsetVariableName});";
 
-            return new CodeGeneratedMethod
+            return new CodeGeneratedMethod(body)
             {
-                MethodBody = $"return ({typeName}){context.MethodNameMap[underlyingType]}({context.InputBufferVariableName}, {context.OffsetVariableName});",
                 IsMethodInline = true,
             };
         }
@@ -103,18 +103,17 @@
             Type underlyingType = this.underlyingTypeModel.ClrType;
             string underlyingTypeName = CSharpHelpers.GetCompilableTypeName(underlyingType);
 
-            return new CodeGeneratedMethod
+            string body = $"{context.MethodNameMap[underlyingType]}({context.SpanWriterVariableName}, {context.SpanVariableName}, ({underlyingTypeName}){context.ValueVariableName}, {context.OffsetVariableName}, {context.SerializationContextVariableName});";
+            return new CodeGeneratedMethod(body)
             {
-                MethodBody = $"{context.MethodNameMap[underlyingType]}({context.SpanWriterVariableName}, {context.SpanVariableName}, ({underlyingTypeName}){context.ValueVariableName}, {context.OffsetVariableName}, {context.SerializationContextVariableName});",
                 IsMethodInline = true,
             };
         }
 
         public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
         {
-            return new CodeGeneratedMethod
+            return new CodeGeneratedMethod($"return {context.ItemVariableName};")
             {
-                MethodBody = $"return {context.ItemVariableName};",
                 IsMethodInline = true,
             };
         }
@@ -137,7 +136,7 @@
             return "true";
         }
 
-        public override bool TryFormatDefaultValueAsLiteral(object defaultValue, [NotNullWhen(true)] out string? literal)
+        public override bool TryFormatDefaultValueAsLiteral(object? defaultValue, [NotNullWhen(true)] out string? literal)
         {
             if (this.underlyingTypeModel.TryFormatDefaultValueAsLiteral(Convert.ChangeType(defaultValue, this.underlyingTypeModel.ClrType), out literal))
             {

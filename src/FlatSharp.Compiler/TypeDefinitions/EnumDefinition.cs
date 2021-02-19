@@ -22,8 +22,6 @@ namespace FlatSharp.Compiler
     using System.Linq;
     using System.Numerics;
 
-#nullable enable
-
     /// <summary>
     /// Defines an enum.
     /// </summary>
@@ -39,7 +37,7 @@ namespace FlatSharp.Compiler
 
         public string FbsUnderlyingType { get; }
 
-        public List<(string name, string value)> NameValuePairs { get; } = new List<(string, string)>();
+        public List<(string name, string? value)> NameValuePairs { get; } = new List<(string, string?)>();
 
         protected override void OnWriteCode(CodeWriter writer, CompileContext context)
         {
@@ -73,7 +71,7 @@ namespace FlatSharp.Compiler
             foreach (var kvp in this.NameValuePairs)
             {
                 string key = kvp.name;
-                string value = kvp.value;
+                string? value = kvp.value;
 
                 if (results.ContainsKey(key))
                 {

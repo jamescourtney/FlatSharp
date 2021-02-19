@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
- namespace FlatSharp.TypeModel
+
+namespace FlatSharp.TypeModel
 {
     using System;
     using System.Collections.Generic;
@@ -110,19 +110,17 @@
                 return 0;
             ";
 
-            return new CodeGeneratedMethod
+            return new CodeGeneratedMethod(body)
             {
-                IsMethodInline = true,
-                MethodBody = body
+                IsMethodInline = true
             };
         }
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
-            return new CodeGeneratedMethod
+            return new CodeGeneratedMethod($"return {context.MethodNameMap[this.underlyingType]}({context.InputBufferVariableName}, {context.OffsetVariableName});")
             {
                 IsMethodInline = true,
-                MethodBody = $"return {context.MethodNameMap[this.underlyingType]}({context.InputBufferVariableName}, {context.OffsetVariableName});"
             };
         }
 
@@ -130,10 +128,10 @@
         {
             var method = context.MethodNameMap[this.underlyingType];
             string variableName = context.ValueVariableName;
+            string body = $"{method}({context.SpanWriterVariableName}, {context.SpanVariableName}, {variableName}.Value, {context.OffsetVariableName}, {context.SerializationContextVariableName});";
 
-            return new CodeGeneratedMethod 
+            return new CodeGeneratedMethod(body)
             {
-                MethodBody = $"{method}({context.SpanWriterVariableName}, {context.SpanVariableName}, {variableName}.Value, {context.OffsetVariableName}, {context.SerializationContextVariableName});",
                 IsMethodInline = true,
             };
         }
@@ -149,10 +147,9 @@
                 return null;
             ";
 
-            return new CodeGeneratedMethod
+            return new CodeGeneratedMethod(body)
             {
                 IsMethodInline = true,
-                MethodBody = body
             };
         }
 

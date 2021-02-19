@@ -81,34 +81,28 @@ namespace FlatSharp.TypeModel
 
         public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
         {
-            return new CodeGeneratedMethod
-            {
-                MethodBody = $"return {nameof(SerializationHelpers)}.{nameof(SerializationHelpers.GetMaxSize)}({context.ValueVariableName});",
-            };
+            return new CodeGeneratedMethod($"return {nameof(SerializationHelpers)}.{nameof(SerializationHelpers.GetMaxSize)}({context.ValueVariableName});");
         }
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
-            return new CodeGeneratedMethod
-            {
-                MethodBody = $"return {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadSharedString)}({context.OffsetVariableName});",
-            };
+            return new CodeGeneratedMethod($"return {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadSharedString)}({context.OffsetVariableName});");
         }
 
         public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
         {
-            return new CodeGeneratedMethod
+            string body = $"{context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteSharedString)}({context.SpanVariableName}, {context.ValueVariableName}, {context.OffsetVariableName}, {context.SerializationContextVariableName});";
+            return new CodeGeneratedMethod(body)
             {
-                MethodBody = $"{context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteSharedString)}({context.SpanVariableName}, {context.ValueVariableName}, {context.OffsetVariableName}, {context.SerializationContextVariableName});",
+                IsMethodInline = true,
             };
         }
 
         public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
         {
             // shared string is immutable.
-            return new CodeGeneratedMethod
+            return new CodeGeneratedMethod($"return {context.ItemVariableName};")
             {
-                MethodBody = $"return {context.ItemVariableName};",
                 IsMethodInline = true,
             };
         }

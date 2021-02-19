@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-#nullable enable
-
 namespace FlatSharp.Compiler
 {
     using System;
@@ -45,44 +43,6 @@ namespace FlatSharp.Compiler
         public FlatBufferDeserializationOption? RequestedSerializer { get; set; }
 
         protected override bool SupportsChildren => false;
-
-        private void AssignIndexes()
-        {
-            ErrorContext.Current.WithScope(
-                this.Name,
-                () =>
-                {
-                    if (this.Fields.Any(field => field.IsIndexSetManually))
-                    {
-                        if (!this.IsTable)
-                        {
-                            ErrorContext.Current.RegisterError("Structure fields can not have 'id' attribute set.");
-                        }
-
-                        if (!this.Fields.TrueForAll(field => field.IsIndexSetManually))
-                        {
-                            ErrorContext.Current.RegisterError("All or none fields should have 'id' attribute set.");
-                        }
-
-                        return;
-                    }
-
-                    int nextIndex = 0;
-                    foreach (var field in this.Fields)
-                    {
-                        field.Index = nextIndex;
-
-                        nextIndex++;
-
-                        if (this.TryResolveName(field.FbsFieldType, out var typeDef) &&
-                            typeDef is UnionDefinition)
-                        {
-                            // Unions are double-wide.
-                            nextIndex++;
-                        }
-                    }
-                });
-        }
 
         protected override void OnWriteCode(CodeWriter writer, CompileContext context)
         {
@@ -192,6 +152,43 @@ namespace FlatSharp.Compiler
             {
                 CSharpHelpers.ConvertProtectedInternalToProtected = true;
             }
+        }
+
+        private void AssignIndexes()
+        {
+            ErrorContext.Current.WithScope(
+                this.Name,
+                () =>
+                {
+                    if (this.Fields.Any(field => field.IsIndexSetManually))
+                    {
+                        if (!this.IsTable)
+                        {
+                            ErrorContext.Current.RegisterError("Structure fields may not have 'id' attribute set.");
+                        }
+
+                        if (!this.Fields.TrueForAll(field => field.IsIndexSetManually))
+                        {
+                            ErrorContext.Current.RegisterError("All or none fields should have 'id' attribute set.");
+                        }
+
+                        return;
+                    }
+
+                    int nextIndex = 0;
+                    foreach (var field in this.Fields)
+                    {
+                        field.Index = nextIndex;
+
+                        nextIndex++;
+
+                        if (this.TryResolveName(field.FbsFieldType, out var typeDef) && typeDef is UnionDefinition)
+                        {
+                            // Unions are double-wide.
+                            nextIndex++;
+                        }
+                    }
+                });
         }
     }
 }

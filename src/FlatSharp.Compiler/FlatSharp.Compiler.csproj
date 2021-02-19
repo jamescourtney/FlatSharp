@@ -12,6 +12,12 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <AntlrRuntimeRoot>$(NugetPackageRoot)\Antlr4.Runtime\$(AntlrVersion)</AntlrRuntimeRoot>
     <NuspecProperties>$(NuspecProperties);AntlrRuntime=$(AntlrRuntimeRoot);OutDir=$(MSBuildThisFileDirectory)\bin\$(Configuration)</NuspecProperties>
+    <Nullable>annotations</Nullable>
+    <NoWarn>CS3021;3021</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net5.0' ">
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   
   <ItemGroup>

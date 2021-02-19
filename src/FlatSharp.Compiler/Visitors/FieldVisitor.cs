@@ -20,7 +20,7 @@ namespace FlatSharp.Compiler
     using System.Collections.Generic;
     using Antlr4.Runtime.Misc;
 
-    internal class FieldVisitor : FlatBuffersBaseVisitor<FieldDefinition>
+    internal class FieldVisitor : FlatBuffersBaseVisitor<FieldDefinition?>
     {
         private readonly TableOrStructDefinition parent;
 
@@ -29,13 +29,13 @@ namespace FlatSharp.Compiler
             this.parent = parent;
         }
 
-        public override FieldDefinition VisitField_decl([NotNull] FlatBuffersParser.Field_declContext context)
+        public override FieldDefinition? VisitField_decl([NotNull] FlatBuffersParser.Field_declContext context)
         {
             string name = context.IDENT().GetText();
 
             return ErrorContext.Current.WithScope(name, () =>
             {
-                Dictionary<string, string> metadata = new MetadataVisitor().VisitMetadata(context.metadata());
+                Dictionary<string, string?> metadata = new MetadataVisitor().VisitMetadata(context.metadata());
 
                 var (fieldType, vectorType) = GetFbsFieldType(context, metadata);
 
@@ -44,7 +44,7 @@ namespace FlatSharp.Compiler
                     VectorType = vectorType
                 };
 
-                string defaultValue = context.defaultValue_decl()?.GetText();
+                string? defaultValue = context.defaultValue_decl()?.GetText();
                 if (defaultValue == "null")
                 {
                     definition.IsOptionalScalar = true;
@@ -88,7 +88,7 @@ namespace FlatSharp.Compiler
 
         private void ParseIdMetadata(
             FieldDefinition definition,
-            IDictionary<string, string> metadata)
+            IDictionary<string, string?> metadata)
         {
             if (!metadata.TryParseIntegerMetadata("id", out int index))
             {
@@ -114,7 +114,7 @@ namespace FlatSharp.Compiler
             return Enum.TryParse<SetterKind>(value, true, out setter);
         }
 
-        private (string fieldType, VectorType vectorType) GetFbsFieldType(FlatBuffersParser.Field_declContext context, Dictionary<string, string> metadata)
+        private (string fieldType, VectorType vectorType) GetFbsFieldType(FlatBuffersParser.Field_declContext context, Dictionary<string, string?> metadata)
         {
             string fbsFieldType = context.type().GetText();
             VectorType vectorType = VectorType.None;
@@ -126,7 +126,7 @@ namespace FlatSharp.Compiler
                 // Trim the starting and ending square brackets.
                 fbsFieldType = fbsFieldType.Substring(1, fbsFieldType.Length - 2);
 
-                if (metadata.TryGetValue("vectortype", out string vectorTypeString))
+                if (metadata.TryGetValue("vectortype", out string? vectorTypeString))
                 {
                     if (!Enum.TryParse<VectorType>(vectorTypeString, true, out vectorType))
                     {

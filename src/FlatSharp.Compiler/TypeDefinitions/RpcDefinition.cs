@@ -20,8 +20,6 @@ namespace FlatSharp.Compiler
     using System.Collections.Generic;
     using System.Reflection;
 
-#nullable enable
-
     public enum RpcStreamingType
     {
         Unary = 0,

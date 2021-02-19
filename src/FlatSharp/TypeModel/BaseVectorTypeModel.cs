@@ -136,10 +136,7 @@ namespace FlatSharp.TypeModel
                     return runningSum;";
             }
 
-            return new CodeGeneratedMethod
-            {
-                MethodBody = body,
-            };
+            return new CodeGeneratedMethod(body);
         }
 
         public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
@@ -161,7 +158,7 @@ namespace FlatSharp.TypeModel
                       vectorOffset += {this.PaddedMemberInlineSize};
                 }}";
 
-            return new CodeGeneratedMethod { MethodBody = body };
+            return new CodeGeneratedMethod(body);
         }
 
         public override string GetThrowIfNullInvocation(string itemVariableName)

@@ -25,11 +25,11 @@ namespace FlatSharp.Compiler
     /// </summary>
     internal class UnionDefinition : BaseSchemaMember
     {
-        public UnionDefinition(string name, BaseSchemaMember parent) : base(name, parent)
+        public UnionDefinition(string name, BaseSchemaMember? parent) : base(name, parent)
         {
         }
 
-        public List<(string alias, string type)> Components { get; set; } = new List<(string alias, string type)>();
+        public List<(string? alias, string type)> Components { get; set; } = new List<(string? alias, string type)>();
 
         private List<(int index, string alias, string fullyQualifiedType)> GetResolvedComponents()
         {

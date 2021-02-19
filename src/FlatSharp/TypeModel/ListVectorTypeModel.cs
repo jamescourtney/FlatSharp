@@ -87,7 +87,7 @@ namespace FlatSharp.TypeModel
                 body = $"return {createFlatBufferVector};";
             }
 
-            return new CodeGeneratedMethod { MethodBody = body, ClassDefinition = vectorClassDef };
+            return new CodeGeneratedMethod(body) { ClassDefinition = vectorClassDef };
         }
 
         public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
@@ -108,7 +108,7 @@ namespace FlatSharp.TypeModel
 
                 return clone;";
 
-            return new CodeGeneratedMethod { MethodBody = body };
+            return new CodeGeneratedMethod(body);
         }
     }
 }

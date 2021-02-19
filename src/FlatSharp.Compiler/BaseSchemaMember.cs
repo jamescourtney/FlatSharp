@@ -21,13 +21,11 @@ namespace FlatSharp.Compiler
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
 
-#nullable enable
-
     internal abstract class BaseSchemaMember
     {
         private readonly Dictionary<string, BaseSchemaMember> children;
 
-        protected BaseSchemaMember(string name, BaseSchemaMember parent)
+        protected BaseSchemaMember(string name, BaseSchemaMember? parent)
         {
             this.children = new Dictionary<string, BaseSchemaMember>();
             this.Parent = parent;
@@ -45,8 +43,6 @@ namespace FlatSharp.Compiler
         public string Name { get; }
 
         public string FullName { get; }
-
-        public virtual string Namespace => this.Parent?.Namespace ?? string.Empty;
 
         public string GlobalName => $"global::{this.FullName}";
 

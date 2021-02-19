@@ -17,10 +17,7 @@
 namespace FlatSharp.Compiler
 {
     using FlatSharp.TypeModel;
-    using System.Collections.Generic;
     using System.Reflection;
-
-#nullable enable
 
     /// <summary>
     /// Compilation context

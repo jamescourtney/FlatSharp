@@ -7,8 +7,6 @@
     using System.Text;
     using System.Diagnostics.CodeAnalysis;
 
-#nullable enable
-
     internal class FieldDefinitionEmitter : IFieldDefinitionEmitter
     {
         public void EmitBasicDefinition(CodeWriter writer, FieldDefinition fieldDefinition, CompileContext context)

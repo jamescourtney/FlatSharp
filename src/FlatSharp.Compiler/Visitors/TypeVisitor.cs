@@ -33,7 +33,7 @@ namespace FlatSharp.Compiler
 
         public override TableOrStructDefinition VisitType_decl([NotNull] FlatBuffersParser.Type_declContext context)
         {
-            Dictionary<string, string> metadata = new MetadataVisitor().Visit(context.metadata());
+            Dictionary<string, string?> metadata = new MetadataVisitor().Visit(context.metadata());
 
             TableOrStructDefinition definition = new TableOrStructDefinition(
                 context.IDENT().GetText(),
@@ -60,7 +60,7 @@ namespace FlatSharp.Compiler
                 var fields = context.field_decl();
                 if (fields != null)
                 {
-                    definition.Fields = fields.Select(x => new FieldVisitor(definition).VisitField_decl(x)).ToList();
+                    definition.Fields = fields.Select(x => new FieldVisitor(definition).VisitField_decl(x)).Where(x => x is not null).ToList()!;
                 }
             });
 

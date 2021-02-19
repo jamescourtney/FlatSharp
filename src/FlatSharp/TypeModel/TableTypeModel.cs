@@ -333,10 +333,7 @@ $@"
             body.AddRange(writers);
 
             // These methods are often enormous, and inlining can have a detrimental effect on perf.
-            return new CodeGeneratedMethod
-            {
-                MethodBody = $"{methodStart} \r\n {string.Join("\r\n", body)}",
-            };
+            return new CodeGeneratedMethod($"{methodStart} \r\n {string.Join("\r\n", body)}");
         }
 
         private (string prepareBlock, string serializeBlock) GetStandardSerializeBlocks(
@@ -471,10 +468,10 @@ $@"
                 propertyOverrides,
                 context.Options);
 
-            return new CodeGeneratedMethod
+            string body = $"return new {className}<{context.InputBufferTypeName}>({context.InputBufferVariableName}, {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}));";
+            return new CodeGeneratedMethod(body)
             {
-                ClassDefinition = classDefinition,
-                MethodBody = $"return new {className}<{context.InputBufferTypeName}>({context.InputBufferVariableName}, {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}));"
+                ClassDefinition = classDefinition
             };
         }
 
@@ -583,15 +580,14 @@ $@"
             {string.Join("\r\n", statements)};
             return runningSum;
 ";
-            return new CodeGeneratedMethod { MethodBody = body };
+            return new CodeGeneratedMethod(body);
         }
 
         public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
         {
             var typeName = CSharpHelpers.GetCompilableTypeName(this.ClrType);
-            return new CodeGeneratedMethod
+            return new CodeGeneratedMethod($"return {context.ItemVariableName} is not null ? new {typeName}({context.ItemVariableName}) : null;")
             {
-                MethodBody = $"return {context.ItemVariableName} is not null ? new {typeName}({context.ItemVariableName}) : null;",
                 IsMethodInline = true,
             };
         }

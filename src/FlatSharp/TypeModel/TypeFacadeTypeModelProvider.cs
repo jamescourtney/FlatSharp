@@ -90,28 +90,34 @@ namespace FlatSharp.TypeModel
 
             public CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
             {
-                return this.underlyingModel.CreateGetMaxSizeMethodBody(
+                var method = this.underlyingModel.CreateGetMaxSizeMethodBody(
                     context.With(GetConvertToUnderlyingInvocation(context.ValueVariableName)));
+
+                method.IsMethodInline = true;
+                return method;
             }
 
             public CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
             {
                 // Parse buffer as underlying type name.
-                string parseUnderlying = context.MethodNameMap[typeof(TUnderlying)];
-
-                string parseInvocation = 
-                    $"{parseUnderlying}({context.InputBufferVariableName}, {context.OffsetVariableName})";
-
-                return new CodeGeneratedMethod
+                string parseUnderlying = context.GetParseInvocation(typeof(TUnderlying));
+                string body = $"return {GetConvertFromUnderlyingInvocation(parseUnderlying)};";
+                return new CodeGeneratedMethod(body)
                 {
-                    MethodBody = $"return {GetConvertFromUnderlyingInvocation(parseInvocation)};"
+                    IsMethodInline = true,
                 };
             }
 
             public CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
             {
-                return this.underlyingModel.CreateSerializeMethodBody(
-                    context.With(valueVariableName: GetConvertToUnderlyingInvocation(context.ValueVariableName)));
+                string invocation = context
+                    .With(valueVariableName: GetConvertToUnderlyingInvocation(context.ValueVariableName))
+                    .GetSerializeInvocation(typeof(TUnderlying));
+
+                return new CodeGeneratedMethod($"{invocation};")
+                {
+                    IsMethodInline = true,
+                };
             }
 
             public CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
@@ -120,9 +126,8 @@ namespace FlatSharp.TypeModel
                 string clone = context.MethodNameMap[this.underlyingModel.ClrType];
                 string fromUnderlying = GetConvertFromUnderlyingInvocation($"{clone}({toUnderlying})");
 
-                return new CodeGeneratedMethod
+                return new CodeGeneratedMethod($"return {fromUnderlying};")
                 {
-                    MethodBody = $"return {fromUnderlying}",
                     IsMethodInline = true,
                 };
             }

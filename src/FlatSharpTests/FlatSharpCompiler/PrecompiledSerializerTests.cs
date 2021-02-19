@@ -36,7 +36,7 @@ namespace FlatSharpTests.Compiler
 namespace MyGame;
 enum Color:byte { Red = 0, Green, Blue = 2 }
 
-union Equipment { Weapon } // Optionally add more tables.
+union Equipment { Weapon, Vec3 } // Optionally add more tables.
 
 struct Vec3 {
   x:float;
@@ -86,7 +86,7 @@ root_type Monster;";
             Assert.AreEqual(typeof(IList<byte>), monsterType.GetProperty("inventory").PropertyType);
             Assert.AreEqual(typeof(IList<>).MakeGenericType(vecType), monsterType.GetProperty("path").PropertyType);
             Assert.AreEqual(typeof(IList<>).MakeGenericType(weaponType), monsterType.GetProperty("weapons").PropertyType);
-            Assert.IsTrue(typeof(FlatBufferUnion<>).MakeGenericType(weaponType).IsAssignableFrom(monsterType.GetProperty("equipped").PropertyType));
+            Assert.IsTrue(typeof(FlatBufferUnion<,>).MakeGenericType(weaponType, vecType).IsAssignableFrom(monsterType.GetProperty("equipped").PropertyType));
             Assert.AreEqual(typeof(string), monsterType.GetProperty("name").PropertyType);
             Assert.IsTrue(monsterType.GetProperty("friendly").GetCustomAttribute<FlatBufferItemAttribute>().Deprecated);
 
