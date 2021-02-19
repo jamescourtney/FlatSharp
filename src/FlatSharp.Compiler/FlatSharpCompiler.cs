@@ -36,17 +36,25 @@ namespace FlatSharp.Compiler
         {
             int exitCode = -1;
 
-            CommandLine.Parser.Default.ParseArguments<CompilerOptions>(args)
-                .WithParsed(x =>
-                {
-                    exitCode = RunCompiler(x);
-                });
+            try
+            {
+                CommandLine.Parser.Default.ParseArguments<CompilerOptions>(args)
+                    .WithParsed(x =>
+                    {
+                        exitCode = RunCompiler(x);
+                    });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                throw;
+            }
 
             return exitCode;
         }
 
         private static int RunCompiler(CompilerOptions options)
-        { 
+        {
             using (var context = ErrorContext.Current)
             {
                 try
@@ -294,12 +302,12 @@ namespace FlatSharp.Compiler
 
             Assembly? assembly = null;
             CodeWriter writer = new CodeWriter();
-            var steps = new[] 
-            { 
-                CodeWritingPass.Initialization, 
-                CodeWritingPass.PropertyModeling, 
-                CodeWritingPass.SerializerGeneration, 
-                CodeWritingPass.RpcGeneration, 
+            var steps = new[]
+            {
+                CodeWritingPass.Initialization,
+                CodeWritingPass.PropertyModeling,
+                CodeWritingPass.SerializerGeneration,
+                CodeWritingPass.RpcGeneration,
             };
 
             foreach (var step in steps)

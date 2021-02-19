@@ -138,13 +138,21 @@
 
         public override bool TryFormatDefaultValueAsLiteral(object? defaultValue, [NotNullWhen(true)] out string? literal)
         {
-            if (this.underlyingTypeModel.TryFormatDefaultValueAsLiteral(Convert.ChangeType(defaultValue, this.underlyingTypeModel.ClrType), out literal))
+            if (defaultValue is not null)
             {
-                literal = $"({CSharpHelpers.GetCompilableTypeName(this.ClrType)}){literal}";
-                return true;
+                if (this.underlyingTypeModel.TryFormatDefaultValueAsLiteral(Convert.ChangeType(defaultValue, this.underlyingTypeModel.ClrType), out literal))
+                {
+                    literal = $"({CSharpHelpers.GetCompilableTypeName(this.ClrType)}){literal}";
+                    return true;
+                }
+                else
+                {
+                    literal = null;
+                    return false;
+                }
             }
 
-            return false;
+            return base.TryFormatDefaultValueAsLiteral(defaultValue, out literal); ;
         }
 
         public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
