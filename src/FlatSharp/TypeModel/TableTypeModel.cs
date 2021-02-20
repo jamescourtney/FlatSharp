@@ -398,8 +398,9 @@ $@"
                             new {CSharpHelpers.GetCompilableTypeName(spanComparerType)}({keyMember.DefaultValueLiteral})));";
             }
 
+            // NULL FORGIVENESS
             string nullForgiving = string.Empty;
-            if (!memberModel.ItemTypeModel.ClrType.IsValueType)
+            if (memberModel.ItemTypeModel.ClassifyContextually(this.SchemaType).IsOptionalReference())
             {
                 nullForgiving = "!";
             }
