@@ -314,14 +314,15 @@ namespace FlatSharp.Compiler
             {
                 var localOptions = options;
 
+                if (step <= CodeWritingPass.PropertyModeling)
+                {
+                    localOptions = localOptions with { NullableWarnings = false };
+                }
+
                 if (step > CodeWritingPass.Initialization)
                 {
                     string code = writer.ToString();
                     (assembly, _, _) = RoslynSerializerGenerator.CompileAssembly(code, true);
-                }
-                else
-                {
-                    localOptions = localOptions with { NullableWarnings = false };
                 }
 
                 writer = new CodeWriter();

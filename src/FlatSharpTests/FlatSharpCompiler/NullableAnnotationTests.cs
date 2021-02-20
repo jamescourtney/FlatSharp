@@ -54,10 +54,7 @@ namespace FlatSharpTests.Compiler
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(
                 schema, 
-                new CompilerOptions
-                {
-                    NullableWarnings = true,
-                });
+                new());
         }
     }
 }

@@ -369,7 +369,7 @@ namespace FlatSharp.Compiler
             string responseType,
             Dictionary<string, string> methodMap)
         {
-            writer.AppendLine($"public virtual {GrpcCore}.{returnType}<{responseType}> {methodName}({requestType} request, {GrpcCore}.Metadata headers = null, System.DateTime? deadline = null, {CancellationToken} cancellationToken = default({CancellationToken}))");
+            writer.AppendLine($"public virtual {GrpcCore}.{returnType}<{responseType}> {methodName}({requestType} request, {GrpcCore}.Metadata? headers = null, System.DateTime? deadline = null, {CancellationToken} cancellationToken = default({CancellationToken}))");
             using (writer.WithBlock())
             {
                 writer.AppendLine($"return {methodName}(request, new {GrpcCore}.CallOptions(headers, deadline, cancellationToken));");
@@ -390,7 +390,7 @@ namespace FlatSharp.Compiler
             string responseType,
             Dictionary<string, string> methodMap)
         {
-            writer.AppendLine($"public virtual {GrpcCore}.{key}<{requestType}, {responseType}> {methodName}({GrpcCore}.Metadata headers = null, System.DateTime? deadline = null, {CancellationToken} cancellationToken = default({CancellationToken}))");
+            writer.AppendLine($"public virtual {GrpcCore}.{key}<{requestType}, {responseType}> {methodName}({GrpcCore}.Metadata? headers = null, System.DateTime? deadline = null, {CancellationToken} cancellationToken = default({CancellationToken}))");
             using (writer.WithBlock())
             {
                 writer.AppendLine($"return {methodName}(new {GrpcCore}.CallOptions(headers, deadline, cancellationToken));");

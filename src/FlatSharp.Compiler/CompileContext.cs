@@ -22,7 +22,7 @@ namespace FlatSharp.Compiler
     /// <summary>
     /// Compilation context
     /// </summary>
-    internal class CompileContext
+    internal record CompileContext
     {
         /// <summary>
         /// The current compilation pass.

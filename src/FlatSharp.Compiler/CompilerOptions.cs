@@ -27,6 +27,6 @@ namespace FlatSharp.Compiler
         public string? OutputDirectory { get; set; }
 
         [Option("nullable-warnings", Default = false)]
-        public bool NullableWarnings { get; set; }
+        public bool? NullableWarnings { get; set; }
     }
 }
