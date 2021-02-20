@@ -24,7 +24,7 @@ namespace FlatSharpTests
     public class NestedStructs
     {
         [FlatBufferItem(0)]
-        public virtual OuterStruct OuterStruct { get; set; }
+        public virtual OuterStruct? OuterStruct { get; set; }
     }
 
     [FlatBufferStruct]

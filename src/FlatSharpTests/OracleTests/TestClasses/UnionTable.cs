@@ -23,7 +23,7 @@ namespace FlatSharpTests
     public class UnionTable
     {
         [FlatBufferItem(0)]
-        public virtual FlatBufferUnion<BasicTypes, Location, string> Union
+        public virtual FlatBufferUnion<BasicTypes, Location, string>? Union
         {
             get;
             set;

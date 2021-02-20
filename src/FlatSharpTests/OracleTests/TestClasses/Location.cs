@@ -23,13 +23,13 @@ namespace FlatSharpTests
     public class LocationHolder
     {
         [FlatBufferItem(0)]
-        public virtual Location Location { get; set; }
+        public virtual Location? Location { get; set; }
 
         [FlatBufferItem(1)]
-        public virtual string Fake { get; set; }
+        public virtual string? Fake { get; set; }
 
         [FlatBufferItem(2)]
-        public virtual IList<Location> LocationVector { get; set; }
+        public virtual IList<Location>? LocationVector { get; set; }
     }
 
     [FlatBufferStruct]

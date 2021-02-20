@@ -251,16 +251,16 @@ namespace FlatSharpTests
         public class SimpleTable
         {
             [FlatBufferItem(0)]
-            public virtual string String { get; set; }
+            public virtual string? String { get; set; }
 
             [FlatBufferItem(1)]
-            public virtual SimpleStruct Struct { get; set; }
+            public virtual SimpleStruct? Struct { get; set; }
 
             [FlatBufferItem(2)]
-            public virtual IList<SimpleStruct> StructVector { get; set; }
+            public virtual IList<SimpleStruct>? StructVector { get; set; }
 
             [FlatBufferItem(4)]
-            public virtual SimpleTable InnerTable { get; set; }
+            public virtual SimpleTable? InnerTable { get; set; }
 
             [FlatBufferItem(5, DefaultValue = 0L)]
             public virtual long NoSetter { get; }
@@ -283,16 +283,16 @@ namespace FlatSharpTests
         public class SimpleTableNonVirtual
         {
             [FlatBufferItem(0)]
-            public string String { get; set; }
+            public string? String { get; set; }
 
             [FlatBufferItem(1)]
-            public SimpleStructNonVirtual Struct { get; set; }
+            public SimpleStructNonVirtual? Struct { get; set; }
 
             [FlatBufferItem(2)]
-            public IList<SimpleStructNonVirtual> StructVector { get; set; }
+            public IList<SimpleStructNonVirtual>? StructVector { get; set; }
 
             [FlatBufferItem(4)]
-            public SimpleTableNonVirtual InnerTable { get; set; }
+            public SimpleTableNonVirtual? InnerTable { get; set; }
         }
 
         [FlatBufferStruct]

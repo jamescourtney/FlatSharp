@@ -56,7 +56,7 @@ namespace FlatSharpTests.Compiler
                 schema, 
                 new CompilerOptions
                 {
-                    NullableAnnotations = true,
+                    NullableWarnings = true,
                 });
         }
     }

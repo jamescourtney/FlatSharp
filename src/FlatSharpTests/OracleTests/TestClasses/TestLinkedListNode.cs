@@ -22,9 +22,9 @@ namespace FlatSharpTests
     public class TestLinkedListNode
     {
         [FlatBufferItem(0)]
-        public virtual string Value { get; set; }
+        public virtual string? Value { get; set; }
 
         [FlatBufferItem(1)]
-        public virtual TestLinkedListNode Next { get; set; }
+        public virtual TestLinkedListNode? Next { get; set; }
     }
 }

@@ -16,8 +16,6 @@
 
 namespace FlatSharp.Compiler
 {
-    using System.Collections.Generic;
-
     /// <summary>
     /// Defines the node at the root of the schema.
     /// </summary>
@@ -56,14 +54,13 @@ namespace FlatSharp.Compiler
             // as obsolete and we don't want to raise warnings for our own code.
             writer.AppendLine("#pragma warning disable 0618");
 
-            if (context.Options.NullableAnnotations)
+            if (context.Options.NullableWarnings)
             {
                 writer.AppendLine("#nullable enable");
             }
             else
             {
                 writer.AppendLine("#nullable enable annotations");
-                writer.AppendLine("#nullable disable warnings");
             }
 
             if (context.CompilePass > CodeWritingPass.Initialization && context.PreviousAssembly is not null)

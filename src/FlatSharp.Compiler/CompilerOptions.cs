@@ -18,7 +18,7 @@ namespace FlatSharp.Compiler
 {
     using CommandLine;
 
-    public class CompilerOptions
+    public record CompilerOptions
     {
         [Option('i', "input", HelpText = "FBS input file", Required = true)]
         public string? InputFile { get; set; }
@@ -26,7 +26,7 @@ namespace FlatSharp.Compiler
         [Option('o', "output", HelpText = "Output directory", Required = true)]
         public string? OutputDirectory { get; set; }
 
-        [Option("nullable-annotations", Default = false)]
-        public bool NullableAnnotations { get; set; }
+        [Option("nullable-warnings", Default = false)]
+        public bool NullableWarnings { get; set; }
     }
 }

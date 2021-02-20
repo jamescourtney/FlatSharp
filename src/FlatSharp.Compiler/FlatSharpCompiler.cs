@@ -151,7 +151,6 @@ namespace FlatSharp.Compiler
         internal static Assembly CompileAndLoadAssembly(
             string fbsSchema,
             CompilerOptions options,
-            bool warningsAsErrors = true,
             IEnumerable<Assembly>? additionalReferences = null,
             Dictionary<string, string>? additionalIncludes = null)
         {
@@ -176,7 +175,7 @@ namespace FlatSharp.Compiler
                     Assembly[] additionalRefs = additionalReferences?.ToArray() ?? Array.Empty<Assembly>();
                     var rootNode = ParseSyntax("root.fbs", includeLoader);
                     string cSharp = CreateCSharp(rootNode, options);
-                    var (assembly, formattedText, _) = RoslynSerializerGenerator.CompileAssembly(cSharp, true, warningsAsErrors, additionalRefs);
+                    var (assembly, formattedText, _) = RoslynSerializerGenerator.CompileAssembly(cSharp, true, additionalRefs);
                     string debugText = formattedText();
                     return assembly;
                 }
@@ -313,16 +312,16 @@ namespace FlatSharp.Compiler
 
             foreach (var step in steps)
             {
+                var localOptions = options;
+
                 if (step > CodeWritingPass.Initialization)
                 {
                     string code = writer.ToString();
-#if DEBUG
-                    bool warningsAsErrors = step == CodeWritingPass.LastPass;
-#else
-                    bool warningsAsErrors = false;
-#endif
-
-                    (assembly, _, _) = RoslynSerializerGenerator.CompileAssembly(code, true, warningsAsErrors);
+                    (assembly, _, _) = RoslynSerializerGenerator.CompileAssembly(code, true);
+                }
+                else
+                {
+                    localOptions = localOptions with { NullableWarnings = false };
                 }
 
                 writer = new CodeWriter();
@@ -332,7 +331,7 @@ namespace FlatSharp.Compiler
                     new CompileContext
                     {
                         CompilePass = step,
-                        Options = options,
+                        Options = localOptions,
                         RootFile = rootNode.DeclaringFile,
                         PreviousAssembly = assembly,
                         TypeModelContainer = TypeModelContainer.CreateDefault(),

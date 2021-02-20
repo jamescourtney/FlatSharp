@@ -92,6 +92,12 @@ namespace FlatSharp
             }
         }
 
+        /// <summary>
+        /// Enables "treat warnings as errors" functionality. This is great for unit test contexts, but 
+        /// less great for real-life scenarios. 
+        /// </summary>
+        internal static bool EnableStrictValidation { get; set; }
+
         public RoslynSerializerGenerator(FlatBufferSerializerOptions options, TypeModelContainer typeModelContainer)
         {
             this.options = options;
@@ -118,16 +124,10 @@ $@"
 
             var externalRefs = this.TraverseAssemblyReferenceGraph<TRoot>();
 
-            bool warningsAsErrors = false;
-#if DEBUG
-            warningsAsErrors = true;
-#endif
-
             (Assembly assembly, Func<string> formattedTextFactory, byte[] assemblyData) = 
                 CompileAssembly(
                     template, 
                     this.options.EnableAppDomainInterceptOnAssemblyLoad,
-                    warningsAsErrors,
                     externalRefs.ToArray());
 
             Type? type = assembly.GetType($"Generated.{GeneratedSerializerClassName}");
@@ -196,15 +196,8 @@ $@"
         internal static (Assembly assembly, Func<string> formattedTextFactory, byte[] assemblyData) CompileAssembly(
             string sourceCode,
             bool enableAppDomainIntercept,
-            bool warningsAsErrors,
             params Assembly[] additionalReferences)
         {
-
-#if RELEASE || !DEBUG
-            // defense in depth: we don't want to accidentally turn this on for production code.
-            // it's a unit-test validation mechanism to ensure we are writing "good" code.
-            warningsAsErrors = false;
-#endif
 
             List<MetadataReference> references = new List<MetadataReference>(commonReferences);
             foreach (Assembly additionalReference in additionalReferences)
@@ -263,7 +256,7 @@ $@"
             {
                 EmitResult result = compilation.Emit(ms);
 
-                if (!result.Success || warningsAsErrors)
+                if (!result.Success || EnableStrictValidation)
                 {
                     string[] failures = result.Diagnostics
                         .Where(d => d.Id != "CS8019") // unnecessary using directive.

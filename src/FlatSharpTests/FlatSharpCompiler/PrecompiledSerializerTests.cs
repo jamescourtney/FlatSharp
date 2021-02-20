@@ -64,7 +64,7 @@ table Weapon (PrecompiledSerializer:lazy) {
 
 root_type Monster;"; 
 
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new CompilerOptions { NullableAnnotations = true });
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new CompilerOptions { NullableWarnings = true });
 
             Type weaponType = asm.GetType("MyGame.Weapon");
             Type monsterType = asm.GetTypes().Single(x => x.FullName == "MyGame.Monster");

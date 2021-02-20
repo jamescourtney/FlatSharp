@@ -93,7 +93,7 @@ namespace FlatSharp.Compiler
             {
                 typeName += "?";
 
-                if (options.NullableAnnotations)
+                if (options.NullableWarnings)
                 {
                     codeWriter.AppendLine("[return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull(\"item\")]");
                 }
