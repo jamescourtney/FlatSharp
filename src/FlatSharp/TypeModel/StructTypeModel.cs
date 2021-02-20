@@ -125,7 +125,7 @@ $@"
                     }}
 ";
 
-                    propertyOverrides.Add(new GeneratedProperty(context.Options, index, value, readValueMethod));
+                    propertyOverrides.Add(new GeneratedProperty(this, context.Options, index, value, readValueMethod));
                 }
 
                 classDefinition = CSharpHelpers.CreateDeserializeClass(
@@ -168,7 +168,7 @@ $@"
         public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
         {
             var typeName = this.GetCompilableTypeName();
-            string body = $"return {context.ItemVariableName} is null ? new {typeName}() : new {typeName}({context.ItemVariableName});";
+            string body = $"return {context.ItemVariableName} is null ? null : new {typeName}({context.ItemVariableName});";
             return new CodeGeneratedMethod(body)
             {
                 IsMethodInline = true,

@@ -398,6 +398,12 @@ $@"
                             new {CSharpHelpers.GetCompilableTypeName(spanComparerType)}({keyMember.DefaultValueLiteral})));";
             }
 
+            string nullForgiving = string.Empty;
+            if (!memberModel.ItemTypeModel.ClrType.IsValueType)
+            {
+                nullForgiving = "!";
+            }
+
             string serializeBlock;
             if (vtableEntries == 1)
             {
@@ -408,7 +414,7 @@ $@"
                         {context.MethodNameMap[memberModel.ItemTypeModel.ClrType]}(
                             {context.SpanWriterVariableName},
                             {context.SpanVariableName},
-                            {valueVariableName},
+                            {valueVariableName}{nullForgiving},
                             {OffsetVariableName(0)},
                             {context.SerializationContextVariableName});
                         {sortInvocation}
@@ -424,7 +430,7 @@ $@"
                         {context.MethodNameMap[memberModel.ItemTypeModel.ClrType]}(
                             {context.SpanWriterVariableName},
                             {context.SpanVariableName},
-                            {valueVariableName},
+                            {valueVariableName}{nullForgiving},
                             ref offsetTuple,
                             {context.SerializationContextVariableName});
                         {sortInvocation}
@@ -476,23 +482,26 @@ $@"
         /// <summary>
         /// Generates a standard getter for a normal vtable entry.
         /// </summary>
-        private static GeneratedProperty CreateStandardTableProperty(
+        private GeneratedProperty CreateStandardTableProperty(
             TableMemberModel memberModel, 
             int index, 
             ParserCodeGenContext context)
         {
             Type propertyType = memberModel.ItemTypeModel.ClrType;
 
+            string typeName = memberModel.ItemTypeModel.GetNullableAnnotationTypeName(this.SchemaType);
+            string defaultValue = memberModel.DefaultValueLiteral;
+
             // These are always inline as they are only invoked from one place.
             var methodDefinition =
 $@"
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {GeneratedProperty.GetReadValueMethodName(index)}({context.InputBufferTypeName} buffer, int offset)
+                    private static {typeName} {GeneratedProperty.GetReadValueMethodName(index)}({context.InputBufferTypeName} buffer, int offset)
                     {{
                         int absoluteLocation = buffer.{nameof(InputBufferExtensions.GetAbsoluteTableFieldLocation)}(offset, {index});
                         if (absoluteLocation == 0) 
                         {{
-                            return {memberModel.DefaultValueLiteral};
+                            return {defaultValue};
                         }}
                         else 
                         {{
@@ -501,16 +510,17 @@ $@"
                     }}
 ";
 
-            return new GeneratedProperty(context.Options, index, memberModel, methodDefinition);
+            return new GeneratedProperty(this, context.Options, index, memberModel, methodDefinition);
         }
 
-        private static GeneratedProperty CreateWideTableProperty(
+        private GeneratedProperty CreateWideTableProperty(
             TableMemberModel memberModel,
             int index,
             ParserCodeGenContext context)
         {
             const string FirstLocationVariableName = "firstLocation";
 
+            string typeName = memberModel.ItemTypeModel.GetNullableAnnotationTypeName(this.SchemaType);
             Type propertyType = memberModel.ItemTypeModel.ClrType;
 
             List<string> locationGetters = new List<string> { FirstLocationVariableName };
@@ -523,7 +533,7 @@ $@"
             var methodDefinition =
 $@"
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {GeneratedProperty.GetReadValueMethodName(index)}({context.InputBufferTypeName} buffer, int offset)
+                    private static {typeName} {GeneratedProperty.GetReadValueMethodName(index)}({context.InputBufferTypeName} buffer, int offset)
                     {{
                         int {FirstLocationVariableName} = buffer.{nameof(InputBufferExtensions.GetAbsoluteTableFieldLocation)}(offset, {index});
                         if ({FirstLocationVariableName} == 0)
@@ -536,7 +546,7 @@ $@"
                     }}
 ";
 
-            return new GeneratedProperty(context.Options, index, memberModel, methodDefinition);
+            return new GeneratedProperty(this, context.Options, index, memberModel, methodDefinition);
         }
 
         public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)

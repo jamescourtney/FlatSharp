@@ -96,7 +96,7 @@
             {
                 assignment = defaultValueLiteral;
             }
-            else if (model.IsFlatBufferNullableReference() == false)
+            else if (model.ClassifyContextually(fieldDefinition.Parent.SchemaType).IsRequiredReference())
             {
                 var cSharpTypeName = CSharpHelpers.GetCompilableTypeName(model.ClrType);
                 assignment = $"new {cSharpTypeName}()";
@@ -155,7 +155,7 @@
                 _ => string.Empty,
             };
 
-            if (thisTypeModel?.IsFlatBufferNullableReference() == true)
+            if (thisTypeModel?.ClassifyContextually(definition.Parent.SchemaType).IsOptionalReference() == true)
             {
                 clrTypeName += "?";
             }

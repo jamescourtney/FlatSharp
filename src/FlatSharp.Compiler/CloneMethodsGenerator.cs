@@ -28,6 +28,7 @@ namespace FlatSharp.Compiler
         /// </summary>
         public static string GenerateCloneMethodsForAssembly(
             CodeWriter writer,
+            CompilerOptions options,
             Assembly assembly, 
             TypeModelContainer container)
         {
@@ -71,7 +72,7 @@ namespace FlatSharp.Compiler
                             continue;
                         }
 
-                        GenerateCloneMethod(writer, model, methodNameMap);
+                        GenerateCloneMethod(writer, options, model, methodNameMap);
                     }
                 }
             }
@@ -81,15 +82,21 @@ namespace FlatSharp.Compiler
 
         private static void GenerateCloneMethod(
             CodeWriter codeWriter, 
+            CompilerOptions options,
             ITypeModel typeModel, 
             Dictionary<Type, string> methodNameMap)
         {
             string typeName = CSharpHelpers.GetCompilableTypeName(typeModel.ClrType);
             CodeGeneratedMethod method = typeModel.CreateCloneMethodBody(new CloneCodeGenContext("item", methodNameMap));
 
-            if (typeModel.IsFlatBufferNullableReference() == true)
+            if (!typeModel.ClrType.IsValueType)
             {
                 typeName += "?";
+
+                if (options.NullableAnnotations)
+                {
+                    codeWriter.AppendLine("[return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull(\"item\")]");
+                }
             }
 
             codeWriter.AppendLine(method.GetMethodImplAttribute());

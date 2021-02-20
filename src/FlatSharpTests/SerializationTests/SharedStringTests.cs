@@ -382,20 +382,20 @@ namespace FlatSharpTests
         public class StringsVector<T> : object
         {
             [FlatBufferItem(0)]
-            public virtual IList<T> StringVector { get; set; }
+            public virtual IList<T>? StringVector { get; set; }
         }
 
         [FlatBufferTable]
         public class StringsTable<T> : object
         {
             [FlatBufferItem(0)]
-            public virtual T String1 { get; set; }
+            public virtual T? String1 { get; set; }
 
             [FlatBufferItem(1)]
-            public virtual T String2 { get; set; }
+            public virtual T? String2 { get; set; }
 
             [FlatBufferItem(2)]
-            public virtual T String3 { get; set; }
+            public virtual T? String3 { get; set; }
         }
     }
 }

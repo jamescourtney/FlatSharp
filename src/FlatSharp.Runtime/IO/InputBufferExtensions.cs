@@ -51,7 +51,7 @@ namespace FlatSharp
         /// <summary>
         /// Reads a shared string at the given offset.
         /// </summary>
-        public static SharedString? ReadSharedString<TBuffer>(this TBuffer buffer, int offset) where TBuffer : IInputBuffer
+        public static SharedString ReadSharedString<TBuffer>(this TBuffer buffer, int offset) where TBuffer : IInputBuffer
         {
             checked
             {

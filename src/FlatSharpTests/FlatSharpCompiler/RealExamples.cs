@@ -127,7 +127,7 @@ table Weapon {{
             Assert.AreEqual((short)100, dMonster.hp);
             Assert.IsFalse(dMonster.friendly);
             Assert.AreEqual("Blue", dMonster.color.ToString());
-            Assert.IsNotNull(dMonster.pos);
+            Assert.IsNull(dMonster.pos);
 
             Assert.AreEqual(typeof(IList<byte>), monsterType.GetProperty("inventory").PropertyType);
             Assert.AreEqual(typeof(IList<>).MakeGenericType(vec3Type), monsterType.GetProperty("path").PropertyType);

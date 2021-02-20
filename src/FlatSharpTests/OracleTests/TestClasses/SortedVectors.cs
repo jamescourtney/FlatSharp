@@ -25,20 +25,20 @@ namespace FlatSharpTests
     public class SortedVectorTest<TIntVectorType>
     {
         [FlatBufferItem(0, SortedVector = true)]
-        public virtual IList<TIntVectorType> IntVector { get; set; }
+        public virtual IList<TIntVectorType>? IntVector { get; set; }
 
         [FlatBufferItem(1, SortedVector = true)]
-        public virtual IList<SortedVectorItem<string>> StringVector { get; set; }
+        public virtual IList<SortedVectorItem<string>>? StringVector { get; set; }
 
         [FlatBufferItem(2, SortedVector = true)]
-        public virtual IList<SortedVectorItem<double>> Double { get; set; }
+        public virtual IList<SortedVectorItem<double>>? Double { get; set; }
     }
 
     [FlatBufferTable]
     public class SortedVectorItem<T>
     {
         [FlatBufferItem(0, Key = true)]
-        public virtual T Value { get; set; }
+        public virtual T? Value { get; set; }
     }
 
     [FlatBufferTable]

@@ -19,7 +19,7 @@ namespace FlatSharp
     using System;
     using System.Collections.Generic;
     using System.ComponentModel;
-    using System.Runtime.CompilerServices;
+    using System.Diagnostics.CodeAnalysis;
 
     /// <summary>
     /// Helper methods for deep-cloning vectors.
@@ -27,6 +27,10 @@ namespace FlatSharp
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static class VectorCloneHelpers
     {
+        [return: NotNullIfNotNull("item")]
+        public delegate T? CloneCallback<T>(T? item);
+
+        [return: NotNullIfNotNull("source")]
         public static IList<T>? Clone<T>(IList<T>? source)
             where T : struct
         {
@@ -46,6 +50,7 @@ namespace FlatSharp
             return newList;
         }
 
+        [return: NotNullIfNotNull("source")]
         public static IReadOnlyList<T>? Clone<T>(IReadOnlyList<T>? source)
             where T : struct
         {
@@ -65,7 +70,8 @@ namespace FlatSharp
             return newList;
         }
 
-        public static IReadOnlyList<T>? Clone<T>(IReadOnlyList<T>? source, Func<T, T> cloneItem)
+        [return: NotNullIfNotNull("source")]
+        public static IReadOnlyList<T>? Clone<T>(IReadOnlyList<T>? source, CloneCallback<T> cloneItem)
             where T : class
         {
             if (source is null)
@@ -77,12 +83,14 @@ namespace FlatSharp
             List<T> newList = new List<T>(count);
             for (int i = 0; i < count; ++i)
             {
-                newList.Add(cloneItem(source[i]));
+                var item = cloneItem(source[i]);
+                newList.Add(item);
             }
 
             return newList;
         }
 
+        [return: NotNullIfNotNull("source")]
         public static IList<T>? Clone<T>(IList<T>? source, Func<T, T> cloneItem)
             where T : class
         {
@@ -95,12 +103,14 @@ namespace FlatSharp
             List<T> newList = new List<T>(count);
             for (int i = 0; i < count; ++i)
             {
-                newList.Add(cloneItem(source[i]));
+                var item = cloneItem(source[i]);
+                newList.Add(item);
             }
 
             return newList;
         }
 
+        [return: NotNullIfNotNull("source")]
         public static T[]? Clone<T>(T[]? source)
             where T : struct
         {
@@ -116,6 +126,7 @@ namespace FlatSharp
             return clone;
         }
 
+        [return: NotNullIfNotNull("source")]
         public static T[]? Clone<T>(T[]? source, Func<T, T> cloneItem)
             where T : class
         {
@@ -128,13 +139,15 @@ namespace FlatSharp
             T[] clone = new T[count];
             for (int i = 0; i < count; ++i)
             {
-                clone[i] = cloneItem(source[i]);
+                var item = cloneItem(source[i]);
+                clone[i] = cloneItem(item);
             }
 
             return clone;
         }
 
-        public static IIndexedVector<TKey, TValue>? Clone<TKey, TValue>(IIndexedVector<TKey, TValue>? source, Func<TValue, TValue> clone)
+        [return: NotNullIfNotNull("source")]
+        public static IIndexedVector<TKey, TValue>? Clone<TKey, TValue>(IIndexedVector<TKey, TValue>? source, Func<TValue, TValue> cloneItem)
             where TKey : notnull
             where TValue : class
         {
@@ -146,7 +159,8 @@ namespace FlatSharp
             IndexedVector<TKey, TValue> vector = new IndexedVector<TKey, TValue>(source.Count);
             foreach (var pair in source)
             {
-                vector.Add(clone(pair.Value));
+                var item = cloneItem(pair.Value);
+                vector.Add(item);
             }
 
             return vector;

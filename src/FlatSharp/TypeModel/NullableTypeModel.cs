@@ -132,7 +132,7 @@ namespace FlatSharp.TypeModel
         public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
         {
             string variableName = context.ValueVariableName;
-            string body = context.With(valueVariableName: $"{variableName}.Value").GetSerializeInvocation(this.underlyingType);
+            string body = context.With(valueVariableName: $"{variableName}!.Value").GetSerializeInvocation(this.underlyingType);
 
             return new CodeGeneratedMethod($"{body};")
             {

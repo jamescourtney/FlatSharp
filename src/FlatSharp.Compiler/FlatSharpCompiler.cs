@@ -151,6 +151,7 @@ namespace FlatSharp.Compiler
         internal static Assembly CompileAndLoadAssembly(
             string fbsSchema,
             CompilerOptions options,
+            bool warningsAsErrors = true,
             IEnumerable<Assembly>? additionalReferences = null,
             Dictionary<string, string>? additionalIncludes = null)
         {
@@ -175,7 +176,7 @@ namespace FlatSharp.Compiler
                     Assembly[] additionalRefs = additionalReferences?.ToArray() ?? Array.Empty<Assembly>();
                     var rootNode = ParseSyntax("root.fbs", includeLoader);
                     string cSharp = CreateCSharp(rootNode, options);
-                    var (assembly, formattedText, _) = RoslynSerializerGenerator.CompileAssembly(cSharp, true, additionalRefs);
+                    var (assembly, formattedText, _) = RoslynSerializerGenerator.CompileAssembly(cSharp, true, warningsAsErrors, additionalRefs);
                     string debugText = formattedText();
                     return assembly;
                 }
@@ -315,7 +316,13 @@ namespace FlatSharp.Compiler
                 if (step > CodeWritingPass.Initialization)
                 {
                     string code = writer.ToString();
-                    (assembly, _, _) = RoslynSerializerGenerator.CompileAssembly(code, true);
+#if DEBUG
+                    bool warningsAsErrors = step == CodeWritingPass.LastPass;
+#else
+                    bool warningsAsErrors = false;
+#endif
+
+                    (assembly, _, _) = RoslynSerializerGenerator.CompileAssembly(code, true, warningsAsErrors);
                 }
 
                 writer = new CodeWriter();

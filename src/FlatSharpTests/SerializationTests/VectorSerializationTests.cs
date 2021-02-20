@@ -898,24 +898,24 @@ namespace FlatSharpTests
         public class RootTable<TVector>
         {
             [FlatBufferItem(0)]
-            public virtual TVector Vector { get; set; }
+            public virtual TVector? Vector { get; set; }
         }
 
         [FlatBufferTable]
         public class RootTableSorted<TVector>
         {
             [FlatBufferItem(0, SortedVector = true)]
-            public virtual TVector Vector { get; set; }
+            public virtual TVector? Vector { get; set; }
         }
 
         [FlatBufferTable]
         public class TableWithKey<TKey>
         {
             [FlatBufferItem(0)]
-            public virtual string Value { get; set; }
+            public virtual string? Value { get; set; }
 
             [FlatBufferItem(1, Key = true)]
-            public virtual TKey Key { get; set; }
+            public virtual TKey? Key { get; set; }
         }
 
         [FlatBufferTable]
@@ -925,7 +925,7 @@ namespace FlatSharpTests
             public virtual byte AlignmentImp { get; set; }
 
             [FlatBufferItem(1)]
-            public virtual TVector Vector { get; set; }
+            public virtual TVector? Vector { get; set; }
         }
 
         [FlatBufferStruct]

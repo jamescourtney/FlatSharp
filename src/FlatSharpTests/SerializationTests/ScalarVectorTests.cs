@@ -269,17 +269,17 @@ namespace FlatSharpTests
         public class RootTable<TVector>
         {
             [FlatBufferItem(0)]
-            public virtual TVector Vector { get; set; }
+            public virtual TVector? Vector { get; set; }
 
             [FlatBufferItem(1)]
-            public virtual InnerTable<TVector> Inner { get; set; }
+            public virtual InnerTable<TVector>? Inner { get; set; }
         }
 
         [FlatBufferTable]
         public class InnerTable<TVector>
         {
             [FlatBufferItem(0)]
-            public virtual TVector Vector { get; set; }
+            public virtual TVector? Vector { get; set; }
         }
     }
 }

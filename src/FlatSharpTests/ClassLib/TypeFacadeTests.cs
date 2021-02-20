@@ -194,7 +194,7 @@ namespace FlatSharpTests
         public class ExtensionTable<T>
         {
             [FlatBufferItem(0)]
-            public virtual T Item { get; set; }
+            public virtual T? Item { get; set; }
         }
 
         public struct NullableDateTimeTicksConverter : ITypeFacadeConverter<long?, DateTimeOffset?>

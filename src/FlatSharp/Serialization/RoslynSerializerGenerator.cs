@@ -118,10 +118,25 @@ $@"
 
             var externalRefs = this.TraverseAssemblyReferenceGraph<TRoot>();
 
-            (Assembly assembly, Func<string> formattedTextFactory, byte[] assemblyData) = 
-                CompileAssembly(template, this.options.EnableAppDomainInterceptOnAssemblyLoad, externalRefs.ToArray());
+            bool warningsAsErrors = false;
+#if DEBUG
+            warningsAsErrors = true;
+#endif
 
-            object? item = Activator.CreateInstance(assembly.GetTypes()[0]);
+            (Assembly assembly, Func<string> formattedTextFactory, byte[] assemblyData) = 
+                CompileAssembly(
+                    template, 
+                    this.options.EnableAppDomainInterceptOnAssemblyLoad,
+                    warningsAsErrors,
+                    externalRefs.ToArray());
+
+            Type? type = assembly.GetType($"Generated.{GeneratedSerializerClassName}");
+            if (type is null)
+            {
+                throw new InvalidOperationException("Generated assembly did not contain serializer type.");
+            }
+
+            object? item = Activator.CreateInstance(type);
             if (item is IGeneratedSerializer<TRoot> serializer)
             {
                 return new GeneratedSerializerWrapper<TRoot>(
@@ -181,8 +196,16 @@ $@"
         internal static (Assembly assembly, Func<string> formattedTextFactory, byte[] assemblyData) CompileAssembly(
             string sourceCode,
             bool enableAppDomainIntercept,
+            bool warningsAsErrors,
             params Assembly[] additionalReferences)
         {
+
+#if RELEASE || !DEBUG
+            // defense in depth: we don't want to accidentally turn this on for production code.
+            // it's a unit-test validation mechanism to ensure we are writing "good" code.
+            warningsAsErrors = false;
+#endif
+
             List<MetadataReference> references = new List<MetadataReference>(commonReferences);
             foreach (Assembly additionalReference in additionalReferences)
             {
@@ -227,7 +250,8 @@ $@"
             var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
                 .WithModuleName(name)
                 .WithAllowUnsafe(false)
-                .WithOptimizationLevel(OptimizationLevel.Release);
+                .WithOptimizationLevel(OptimizationLevel.Release)
+                .WithNullableContextOptions(NullableContextOptions.Enable);
 
             CSharpCompilation compilation = CSharpCompilation.Create(
                 name,
@@ -239,14 +263,18 @@ $@"
             {
                 EmitResult result = compilation.Emit(ms);
 
-                if (!result.Success)
+                if (!result.Success || warningsAsErrors)
                 {
                     string[] failures = result.Diagnostics
-                        .Where(diagnostic => diagnostic.IsWarningAsError || diagnostic.Severity == DiagnosticSeverity.Error)
+                        .Where(d => d.Id != "CS8019") // unnecessary using directive.
+                        .Where(d => d.Id != "CS1701") // DLL version mismatch
                         .Select(d => d.ToString())
                         .ToArray();
 
-                    throw new FlatSharpCompilationException(failures, formattedTextFactory());
+                    if (failures.Length > 0)
+                    {
+                        throw new FlatSharpCompilationException(failures, formattedTextFactory());
+                    }
                 }
 
                 var metadataRef = compilation.ToMetadataReference();
@@ -461,10 +489,12 @@ $@"
 
         private void GenerateParseMethod(ITypeModel typeModel, CodeGeneratedMethod method, ParserCodeGenContext context)
         {
+            string clrType = typeModel.GetCompilableTypeName();
+
             string declaration =
-$@"
+            $@"
             {method.GetMethodImplAttribute()}
-            private static {CSharpHelpers.GetCompilableTypeName(typeModel.ClrType)} {this.readMethods[typeModel.ClrType]}<TInputBuffer>(
+            private static {clrType} {this.readMethods[typeModel.ClrType]}<TInputBuffer>(
                 TInputBuffer {context.InputBufferVariableName}, 
                 {GetVTableOffsetVariableType(typeModel.PhysicalLayout.Length)} {context.OffsetVariableName}) where TInputBuffer : IInputBuffer
             {{

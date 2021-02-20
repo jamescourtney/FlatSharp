@@ -19,30 +19,107 @@ namespace FlatSharp.TypeModel
     using System;
     using System.Reflection;
 
+    [Flags]
+    public enum ContextualTypeModelClassification
+    {
+        /// <summary>
+        /// Default -- no flags.
+        /// </summary>
+        Undefined = 0,
+
+        /// <summary>
+        /// Indicates that the field is optional
+        /// </summary>
+        Optional = 1,
+
+        /// <summary>
+        /// Indicates that the field is required.
+        /// </summary>
+        Required = 2,
+
+        /// <summary>
+        /// Indicates that the field is a reference.
+        /// </summary>
+        ReferenceType = 4,
+
+        /// <summary>
+        /// Indicates that the field is a value.
+        /// </summary>
+        ValueType = 8,
+    }
+
     /// <summary>
     /// Extensions for <see cref="ITypeModel"/>.
     /// </summary>
     internal static class ITypeModelExtensions
     {
         /// <summary>
-        /// Indicates if the given type model should be modeled as a nullable reference.
+        /// Indicates if the given type model is a nullable reference in the given context.
         /// </summary>
-        /// <returns>True if the item is a nullable reference, false if it is a non-nullable reference, and null if it is a value type.</returns>
-        public static bool? IsFlatBufferNullableReference(this ITypeModel typeModel)
+        /// <param name="typeModel">The type model.</param>
+        /// <param name="context">The context (ie, table, struct, vector, etc)</param>
+        public static ContextualTypeModelClassification ClassifyContextually(this ITypeModel typeModel, FlatBufferSchemaType context)
         {
+            var flags = ContextualTypeModelClassification.Undefined;
+
             if (typeModel.ClrType.IsValueType)
             {
-                return null;
+                flags |= ContextualTypeModelClassification.ValueType;
+
+                if (Nullable.GetUnderlyingType(typeModel.ClrType) == null)
+                {
+                    flags |= ContextualTypeModelClassification.Required;
+                }
+                else
+                {
+                    flags |= ContextualTypeModelClassification.Optional;
+                }
+            }
+            else
+            {
+                flags |= ContextualTypeModelClassification.ReferenceType;
+
+                if (context == FlatBufferSchemaType.Table)
+                {
+                    flags |= ContextualTypeModelClassification.Optional;
+                }
+                else
+                {
+                    flags |= ContextualTypeModelClassification.Required;
+                }
             }
 
-            return !typeModel.SerializesInline;
+            return flags;
         }
+
+        public static bool IsRequiredReference(this ContextualTypeModelClassification flags)
+            => flags.HasFlag(ContextualTypeModelClassification.ReferenceType | ContextualTypeModelClassification.Required);
+
+        public static bool IsOptionalReference(this ContextualTypeModelClassification flags)
+            => flags.HasFlag(ContextualTypeModelClassification.ReferenceType | ContextualTypeModelClassification.Optional);
+
+        public static bool IsRequiredValue(this ContextualTypeModelClassification flags)
+            => flags.HasFlag(ContextualTypeModelClassification.ValueType | ContextualTypeModelClassification.Required);
+
+        public static bool IsOptionalValue(this ContextualTypeModelClassification flags)
+            => flags.HasFlag(ContextualTypeModelClassification.ValueType | ContextualTypeModelClassification.Optional);
 
         /// <summary>
         /// Shortcut for getting compilable type name.
         /// </summary>
         public static string GetCompilableTypeName(this ITypeModel typeModel) 
             => CSharpHelpers.GetCompilableTypeName(typeModel.ClrType);
+
+        public static string GetNullableAnnotationTypeName(this ITypeModel typeModel, FlatBufferSchemaType context)
+        {
+            var typeName = typeModel.GetCompilableTypeName();
+            if (typeModel.ClassifyContextually(context).IsOptionalReference())
+            {
+                typeName += "?";
+            }
+
+            return typeName;
+        }
 
         /// <summary>
         /// Gets a value indicating if the type of this type model is a non-nullable CLR value type.

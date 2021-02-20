@@ -70,6 +70,7 @@ namespace FlatSharp.Compiler
             {
                 context.FullyQualifiedCloneMethodName = CloneMethodsGenerator.GenerateCloneMethodsForAssembly(
                     writer,
+                    context.Options,
                     context.PreviousAssembly,
                     context.TypeModelContainer);
             }

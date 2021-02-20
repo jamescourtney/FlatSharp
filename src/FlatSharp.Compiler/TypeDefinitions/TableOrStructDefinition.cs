@@ -16,6 +16,7 @@
 
 namespace FlatSharp.Compiler
 {
+    using FlatSharp.TypeModel;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -35,6 +36,9 @@ namespace FlatSharp.Compiler
         public List<FieldDefinition> Fields { get; set; } = new List<FieldDefinition>();
         
         public bool IsTable { get; set; }
+
+        public FlatBufferSchemaType SchemaType =>
+            this.IsTable ? FlatBufferSchemaType.Table : FlatBufferSchemaType.Struct;
 
         public bool? NonVirtual { get; set; }
 
