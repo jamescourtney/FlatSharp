@@ -361,15 +361,6 @@ $@"
                 ");
             }
 
-            string prepareBlock =
-$@"
-                    var {valueVariableName} = {context.ValueVariableName}.{memberModel.PropertyInfo.Name};
-                    {string.Join("\r\n", Enumerable.Range(0, vtableEntries).Select(x => $"var {OffsetVariableName(x)} = 0;"))}
-                    {condition} 
-                    {{
-                            {string.Join("\r\n", prepareBlockComponents)}
-                    }}";
-
             string sortInvocation = string.Empty;
             if (memberModel.IsSortedVector)
             {
@@ -405,38 +396,52 @@ $@"
                 nullForgiving = "!";
             }
 
-            string serializeBlock;
+            string serializeBlockCore;
             if (vtableEntries == 1)
             {
-                serializeBlock =
-                    $@"
-                    if ({OffsetVariableName(0)} != 0)
-                    {{
-                        {context.MethodNameMap[memberModel.ItemTypeModel.ClrType]}(
-                            {context.SpanWriterVariableName},
-                            {context.SpanVariableName},
-                            {valueVariableName}{nullForgiving},
-                            {OffsetVariableName(0)},
-                            {context.SerializationContextVariableName});
-                        {sortInvocation}
-                    }}";
+                serializeBlockCore = $@"
+                    {context.MethodNameMap[memberModel.ItemTypeModel.ClrType]}(
+                        {context.SpanWriterVariableName},
+                        {context.SpanVariableName},
+                        {valueVariableName}{nullForgiving},
+                        {OffsetVariableName(0)},
+                        {context.SerializationContextVariableName});
+                    {sortInvocation}";
             }
             else
             {
-                serializeBlock =
-                    $@"
+                serializeBlockCore = $@"
+                    var offsetTuple = ({string.Join(", ", Enumerable.Range(0, vtableEntries).Select(x => OffsetVariableName(x)))});
+                    {context.MethodNameMap[memberModel.ItemTypeModel.ClrType]}(
+                        {context.SpanWriterVariableName},
+                        {context.SpanVariableName},
+                        {valueVariableName}{nullForgiving},
+                        ref offsetTuple,
+                        {context.SerializationContextVariableName});
+                    {sortInvocation}";
+            }
+
+            string serializeBlock = string.Empty;
+            if (memberModel.ItemTypeModel.SerializesInline)
+            {
+                prepareBlockComponents.Add(serializeBlockCore);
+            }
+            else
+            {
+                serializeBlock = $@"
                     if ({OffsetVariableName(0)} != 0)
                     {{
-                        var offsetTuple = ({string.Join(", ", Enumerable.Range(0, vtableEntries).Select(x => OffsetVariableName(x)))});
-                        {context.MethodNameMap[memberModel.ItemTypeModel.ClrType]}(
-                            {context.SpanWriterVariableName},
-                            {context.SpanVariableName},
-                            {valueVariableName}{nullForgiving},
-                            ref offsetTuple,
-                            {context.SerializationContextVariableName});
-                        {sortInvocation}
+                        {serializeBlockCore}
                     }}";
             }
+
+            string prepareBlock = $@"
+                    var {valueVariableName} = {context.ValueVariableName}.{memberModel.PropertyInfo.Name};
+                    {string.Join("\r\n", Enumerable.Range(0, vtableEntries).Select(x => $"var {OffsetVariableName(x)} = 0;"))}
+                    {condition} 
+                    {{
+                            {string.Join("\r\n", prepareBlockComponents)}
+                    }}";
 
             return (prepareBlock, serializeBlock);
         }

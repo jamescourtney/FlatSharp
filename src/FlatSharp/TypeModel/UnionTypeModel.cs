@@ -218,7 +218,8 @@ $@"
             for (int i = 0; i < this.memberTypeModels.Length; ++i)
             {
                 int discriminator = i + 1;
-                switchCases.Add($"{discriminator} => new {this.GetCompilableTypeName()}({context.ItemVariableName}.Item{discriminator}),");
+                string cloneMethod = context.MethodNameMap[this.memberTypeModels[i].ClrType];
+                switchCases.Add($"{discriminator} => new {this.GetCompilableTypeName()}({cloneMethod}({context.ItemVariableName}.Item{discriminator})),");
             }
 
             switchCases.Add("_ => throw new InvalidOperationException(\"Unexpected union discriminator\")");

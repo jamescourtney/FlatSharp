@@ -38,7 +38,7 @@ namespace CopyConstructorTest;
 
 union Union { OuterTable, InnerTable, OuterStruct, InnerStruct } // Optionally add more tables.
 
-table OuterTable (PrecompiledSerializer: ""Lazy"") {
+table OuterTable (PrecompiledSerializer: ""Greedy"") {
   A:string;
 
   B:byte;
@@ -61,6 +61,7 @@ table OuterTable (PrecompiledSerializer: ""Lazy"") {
 
   ByteVector:[ubyte] (VectorType:""Memory"");
   ByteVector_RO:[ubyte] (VectorType:""ReadOnlyMemory"");
+  Union:Union;
 }
 
 struct OuterStruct {
@@ -96,11 +97,13 @@ table InnerTable {
                 IntVector_Array = new[] { 7, 8, 9, },
                 IntVector_List = new[] { 10, 11, 12, }.ToList(),
                 IntVector_RoList = new[] { 13, 14, 15 }.ToList(),
-                
+
                 TableVector_Array = CreateInner("Rocket", "Molly", "Jingle"),
                 TableVector_Indexed = new IndexedVector<string, InnerTable>(CreateInner("Pudge", "Sunshine", "Gypsy"), false),
                 TableVector_List = CreateInner("Finnegan", "Daisy"),
                 TableVector_RoList = CreateInner("Gordita", "Lunchbox"),
+
+                Union = new FlatBufferUnion<OuterTable, InnerTable, OuterStruct, InnerStruct>(new OuterStruct())
             };
 
             byte[] data = new byte[FlatBufferSerializer.Default.GetMaxSize(original)];
@@ -115,8 +118,9 @@ table InnerTable {
             dynamic copied = Activator.CreateInstance(outerTableType, (object)parsed);
             //dynamic copied = new CopyConstructorTest.OuterTable((CopyConstructorTest.OuterTable)parsedObj);
 
+            // Strings can be copied by reference since they are immutable.
             Assert.AreEqual(original.A, copied.A);
-            Assert.IsFalse(ReferenceEquals(parsed.A, copied.A));
+            Assert.AreEqual(original.A, parsed.A);
 
             Assert.AreEqual(original.B, copied.B);
             Assert.AreEqual(original.C, copied.C);
@@ -127,16 +131,28 @@ table InnerTable {
             Assert.AreEqual(original.H, copied.H);
             Assert.AreEqual(original.I, copied.I);
 
+            Assert.AreEqual((byte)3, original.Union.Discriminator);
+            Assert.AreEqual((byte)3, parsed.Union.Discriminator);
+            Assert.AreEqual((byte)3, copied.Union.Discriminator);
+            Assert.AreEqual("CopyConstructorTest.OuterStruct", copied.Union.Item3.GetType().FullName);
+            Assert.AreNotEqual("CopyConstructorTest.OuterStruct", parsed.Union.Item3.GetType().FullName);
+            Assert.AreNotSame(parsed.Union, copied.Union);
+            Assert.AreNotSame(parsed.Union.Item3, copied.Union.Item3);
+
             Memory<byte>? mem = copied.ByteVector;
+            Memory<byte>? pMem = parsed.ByteVector;
             Assert.IsTrue(original.ByteVector.Value.Span.SequenceEqual(mem.Value.Span));
+            Assert.IsFalse(mem.Value.Span.Overlaps(pMem.Value.Span));
 
             ReadOnlyMemory<byte>? roMem = copied.ByteVector_RO;
+            ReadOnlyMemory<byte>? pRoMem = parsed.ByteVector_RO;
             Assert.IsTrue(original.ByteVector_RO.Value.Span.SequenceEqual(roMem.Value.Span));
+            Assert.IsFalse(roMem.Value.Span.Overlaps(pRoMem.Value.Span));
 
             // array of table
             {
                 int count = original.TableVector_Array.Length;
-                Assert.IsFalse(object.ReferenceEquals(parsed.TableVector_Array, copied.TableVector_Array));
+                Assert.AreNotSame(parsed.TableVector_Array, copied.TableVector_Array);
                 for (int i = 0; i < count; ++i)
                 {
                     var p = parsed.TableVector_Array[i];
@@ -214,18 +230,33 @@ table InnerTable {
 
         private static void DeepCompareInnerTable(InnerTable a, dynamic p, dynamic c)
         {
-            Assert.IsFalse(object.ReferenceEquals(p, c));
-            Assert.IsFalse(object.ReferenceEquals(p.OuterStruct, c.OuterStruct));
-            Assert.IsFalse(object.ReferenceEquals(p.OuterStruct.InnerStruct, c.OuterStruct.InnerStruct));
+            Assert.AreNotSame(p, c);
+
+            Assert.AreNotEqual("CopyConstructorTest.InnerTable", (string)p.GetType().FullName);
+            Assert.AreEqual("CopyConstructorTest.InnerTable", (string)c.GetType().FullName);
 
             Assert.AreEqual(a.Name, p.Name);
             Assert.AreEqual(a.Name, c.Name);
 
-            Assert.AreEqual(a.OuterStruct.Value, p.OuterStruct.Value);
-            Assert.AreEqual(a.OuterStruct.InnerStruct.LongValue, p.OuterStruct.InnerStruct.LongValue);
+            var pOuter = p.OuterStruct;
+            var cOuter = c.OuterStruct;
 
-            Assert.AreEqual(a.OuterStruct.Value, c.OuterStruct.Value);
-            Assert.AreEqual(a.OuterStruct.InnerStruct.LongValue, c.OuterStruct.InnerStruct.LongValue);
+            Assert.AreNotSame(pOuter, cOuter);
+            Assert.AreNotEqual("CopyConstructorTest.OuterStruct", (string)pOuter.GetType().FullName);
+            Assert.AreEqual("CopyConstructorTest.OuterStruct", (string)cOuter.GetType().FullName);
+
+            Assert.AreEqual(a.OuterStruct.Value, pOuter.Value);
+            Assert.AreEqual(a.OuterStruct.Value, cOuter.Value);
+
+            var pInner = pOuter.InnerStruct;
+            var cInner = cOuter.InnerStruct;
+
+            Assert.AreNotSame(pInner, cInner);
+            Assert.AreNotEqual("CopyConstructorTest.InnerStruct", (string)pInner.GetType().FullName);
+            Assert.AreEqual("CopyConstructorTest.InnerStruct", (string)cInner.GetType().FullName);
+
+            Assert.AreEqual(a.OuterStruct.InnerStruct.LongValue, pInner.LongValue);
+            Assert.AreEqual(a.OuterStruct.InnerStruct.LongValue, cInner.LongValue);
         }
 
         [FlatBufferTable]
@@ -284,6 +315,9 @@ table InnerTable {
 
             [FlatBufferItem(17)]
             public ReadOnlyMemory<byte>? ByteVector_RO { get; set; }
+
+            [FlatBufferItem(18)]
+            public FlatBufferUnion<OuterTable, InnerTable, OuterStruct, InnerStruct>? Union { get; set; }
         }
 
         [FlatBufferTable]
