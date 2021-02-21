@@ -56,7 +56,7 @@ namespace FlatSharp
             checked
             {
                 var reader = buffer.SharedStringReader;
-                if (reader != null)
+                if (reader is not null)
                 {
                     int uoffset = offset + buffer.ReadUOffset(offset);
                     return reader.ReadSharedString(buffer, uoffset);
