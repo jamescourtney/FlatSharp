@@ -139,8 +139,7 @@ namespace FlatSharp
             T[] clone = new T[count];
             for (int i = 0; i < count; ++i)
             {
-                var item = cloneItem(source[i]);
-                clone[i] = cloneItem(item);
+                clone[i] = cloneItem(source[i]);
             }
 
             return clone;
