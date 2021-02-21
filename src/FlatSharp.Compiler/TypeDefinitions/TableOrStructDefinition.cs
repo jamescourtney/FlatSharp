@@ -61,7 +61,7 @@ namespace FlatSharp.Compiler
 
             using (writer.IncreaseIndent())
             {
-                writer.AppendLine($"partial void OnInitialized();");
+                writer.AppendLine($"partial void OnInitialized({nameof(FlatSharpConstructorContext)}? context);");
 
                 // default ctor.
                 if (this.ObsoleteDefaultConstructor)
@@ -77,8 +77,16 @@ namespace FlatSharp.Compiler
                         field.WriteDefaultConstructorLine(writer, context);
                     }
 
-                    writer.AppendLine("this.OnInitialized();");
+                    writer.AppendLine("this.OnInitialized(null);");
                 }
+
+                writer.AppendLine("#pragma warning disable CS8618"); // NULL FORGIVING
+                writer.AppendLine($"protected {this.Name}({nameof(FlatSharpConstructorContext)} context)");
+                using (writer.WithBlock())
+                {
+                    writer.AppendLine("this.OnInitialized(context);");
+                }
+                writer.AppendLine("#pragma warning restore CS8618"); // NULL FORGIVING
 
                 writer.AppendLine($"public {this.Name}({this.Name} source)");
                 using (writer.WithBlock())
@@ -88,16 +96,11 @@ namespace FlatSharp.Compiler
                         field.WriteCopyConstructorLine(writer, "source", this, context);
                     }
 
-                    writer.AppendLine("this.OnInitialized();");
+                    writer.AppendLine("this.OnInitialized(null);");
                 }
 
                 foreach (var field in this.Fields)
                 {
-                    if (!this.IsTable && field.Deprecated)
-                    {
-                        ErrorContext.Current?.RegisterError($"FlatBuffer structs may not have deprecated fields.");
-                    }
-
                     field.WriteField(writer, this, context);
                 }
 

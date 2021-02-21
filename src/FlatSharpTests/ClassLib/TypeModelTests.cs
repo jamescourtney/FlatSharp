@@ -58,14 +58,13 @@ namespace FlatSharpTests
         [TestMethod]
         public void TypeModel_Table_InterfaceImplementationNonVirtual()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
-                RuntimeTypeModel.CreateFrom(typeof(InterfaceTableFailure)));
+            RuntimeTypeModel.CreateFrom(typeof(InterfaceTableNonVirtual));
         }
 
         [TestMethod]
         public void TypeModel_Table_InterfaceImplementationVirtual()
         {
-            RuntimeTypeModel.CreateFrom(typeof(InterfaceTableSuccess));
+            RuntimeTypeModel.CreateFrom(typeof(InterfaceTableVirtual));
         }
         
         [TestMethod]
@@ -210,14 +209,13 @@ namespace FlatSharpTests
         [TestMethod]
         public void TypeModel_Struct_InterfaceImplementationNonVirtual()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
-                RuntimeTypeModel.CreateFrom(typeof(InterfaceStructFailure)));
+            RuntimeTypeModel.CreateFrom(typeof(InterfaceStructNonVirtual));
         }
 
         [TestMethod]
         public void TypeModel_Struct_InterfaceImplementationVirtual()
         {
-            RuntimeTypeModel.CreateFrom(typeof(InterfaceStructSuccess));
+            RuntimeTypeModel.CreateFrom(typeof(InterfaceStructVirtual));
         }
 
         [TestMethod]
@@ -847,14 +845,14 @@ namespace FlatSharpTests
         // Properties that implement interfaces are virtual according to the property info. It's possible to be both
         // virtual and final.
         [FlatBufferTable]
-        public class InterfaceTableFailure : IInterface
+        public class InterfaceTableNonVirtual : IInterface
         {
             [FlatBufferItem(0)]
             public int Foo { get; set; }
         }
 
         [FlatBufferTable]
-        public class InterfaceTableSuccess : IInterface
+        public class InterfaceTableVirtual : IInterface
         {
             [FlatBufferItem(0)]
             public virtual int Foo { get; set; }
@@ -863,14 +861,14 @@ namespace FlatSharpTests
         // Properties that implement interfaces are virtual according to the property info. It's possible to be both
         // virtual and final.
         [FlatBufferStruct]
-        public class InterfaceStructFailure : IInterface
+        public class InterfaceStructNonVirtual : IInterface
         {
             [FlatBufferItem(0)]
             public int Foo { get; set; }
         }
 
         [FlatBufferTable]
-        public class InterfaceStructSuccess : IInterface
+        public class InterfaceStructVirtual : IInterface
         {
             [FlatBufferItem(0)]
             public virtual int Foo { get; set; }

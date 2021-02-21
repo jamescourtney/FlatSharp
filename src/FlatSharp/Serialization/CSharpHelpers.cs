@@ -19,6 +19,7 @@ namespace FlatSharp
     using System;
     using System.Collections.Generic;
     using System.Reflection;
+    using FlatSharp.TypeModel;
 
     /// <summary>
     /// Some C# codegen helpers.
@@ -113,8 +114,8 @@ namespace FlatSharp
         }
 
         internal static string CreateDeserializeClass(
-            string className, 
-            Type baseType, 
+            string className,
+            Type baseType,
             IEnumerable<GeneratedProperty> propertyOverrides,
             FlatBufferSerializerOptions options)
         {
@@ -151,14 +152,40 @@ namespace FlatSharp
                 }
             }
 
+            ConstructorInfo? specialCtor = null;
+            foreach (var ctor in baseType.GetConstructors(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.CreateInstance | BindingFlags.Instance))
+            {
+                var @params = ctor.GetParameters();
+                if (@params.Length == 1 &&
+                    @params[0].ParameterType == typeof(FlatSharpConstructorContext))
+                {
+                    specialCtor = ctor;
+                    break;
+                }
+            }
+
+            if (specialCtor is not null && 
+                !specialCtor.IsPublic &&
+                !specialCtor.IsFamily &&
+                !specialCtor.IsFamilyOrAssembly)
+            {
+                throw new InvalidFlatBufferDefinitionException(
+                    $"Class '{CSharpHelpers.GetCompilableTypeName(baseType)}' defines a constructor accepting {nameof(FlatSharpConstructorContext)}, but the constructor is not visible to derived classes.");
+            }
+
+            string baseParams = specialCtor is not null ? "CtorContext" : string.Empty;
+
             return
 $@"
                 private sealed class {className}<TInputBuffer> : {GetCompilableTypeName(baseType)} where TInputBuffer : IInputBuffer
                 {{
+                    private static readonly {nameof(FlatSharpConstructorContext)} CtorContext 
+                        = new {nameof(FlatSharpConstructorContext)}({nameof(FlatBufferDeserializationOption)}.{options.DeserializationOption});
+
                     {inputBufferFieldDef}
                     {offsetFieldDef}
         
-                    public {className}(TInputBuffer buffer, int offset)
+                    public {className}(TInputBuffer buffer, int offset) : base({baseParams})
                     {{
                         {string.Join("\r\n", ctorStatements)}
                     }}

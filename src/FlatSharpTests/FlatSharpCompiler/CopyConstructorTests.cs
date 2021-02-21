@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#if NET5_0
 
 namespace FlatSharpTests.Compiler
 {
@@ -25,6 +24,8 @@ namespace FlatSharpTests.Compiler
     using FlatSharp.Attributes;
     using FlatSharp.Compiler;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+#if NET5_0 || NETCOREAPP3_1
 
     [TestClass]
     public class CopyConstructorTests
@@ -109,8 +110,10 @@ table InnerTable {
 
             Type outerTableType = asm.GetType("CopyConstructorTest.OuterTable");
             dynamic serializer = outerTableType.GetProperty("Serializer", BindingFlags.Public | BindingFlags.Static).GetValue(null);
-            dynamic parsed = serializer.Parse(new ArrayInputBuffer(data));
+            object parsedObj = serializer.Parse(new ArrayInputBuffer(data));
+            dynamic parsed = parsedObj;
             dynamic copied = Activator.CreateInstance(outerTableType, (object)parsed);
+            //dynamic copied = new CopyConstructorTest.OuterTable((CopyConstructorTest.OuterTable)parsedObj);
 
             Assert.AreEqual(original.A, copied.A);
             Assert.IsFalse(ReferenceEquals(parsed.A, copied.A));
@@ -319,6 +322,6 @@ table InnerTable {
             }
         }
     }
-}
 
 #endif
+}

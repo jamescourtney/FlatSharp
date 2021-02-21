@@ -46,7 +46,7 @@ namespace FlatSharp.TypeModel
                 throw new InvalidFlatBufferDefinitionException($"Property {propertyInfo.Name} must declare a public getter.");
             }
 
-            if (getMethod.IsVirtual)
+            if (CanBeOverridden(getMethod))
             {
                 this.IsVirtual = true;
                 if (!ValidateVirtualPropertyMethod(getMethod, false))
@@ -72,12 +72,30 @@ namespace FlatSharp.TypeModel
                 }
             }
         }
+        private static bool CanBeOverridden(MethodInfo method)
+        {
+            // Note: !IsFinal is different than IsVirtual.
+            // The difference is that interface implementations cause the "virtual" flag to be set,
+            // so a method implementing an interface that is not virtual is both final and virtual.
+
+            // Truth table:
+            //                                     | IsVirtual | IsFinal  |  Overridable?
+            // ------------------------------------|-----------|----------|--------------
+            // NonVirtual Interface implementation |   True    |   True   |   False
+            //    Virtual Interface Implementation |   True    |   False  |   True
+            //    NonVirtual Method (no interface) |   False   |   False  |   False
+            //       Virtual Method (no interface) |   True    |   False  |   True
+            // NB: No confirmed examples of Final = True, Virtual = False.
+            // Relationship appears to be: Overriddable = Virtual && !Final
+            // https://docs.microsoft.com/en-us/dotnet/api/system.reflection.methodbase.isvirtual?view=net-5.0
+            return method.IsVirtual && !method.IsFinal;
+        }
 
         private static bool ValidateNonVirtualMethod(MethodInfo? method)
         {
             if (method is null
                 || method.IsAbstract
-                || method.IsVirtual)
+                || CanBeOverridden(method))
             {
                 return false;
             }
@@ -92,7 +110,7 @@ namespace FlatSharp.TypeModel
                 return allowNull;
             }
 
-            if (!method.IsVirtual || method.IsFinal)
+            if (!CanBeOverridden(method))
             {
                 return false;
             }
