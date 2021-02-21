@@ -17,8 +17,6 @@
 namespace Benchmark.FBBench
 {
     using BenchmarkDotNet.Attributes;
-    using FlatSharp;
-    using System;
 
     public class FBSerializeBench : FBBenchCore
     {
@@ -66,5 +64,8 @@ namespace Benchmark.FBBench
 
         [Benchmark]
         public override void FlatSharp_Serialize_IntVector_Unsorted() => base.FlatSharp_Serialize_IntVector_Unsorted();
+
+        [Benchmark]
+        public override void FlatSharp_Serialize_ValueTableVector() => base.FlatSharp_Serialize_ValueTableVector();
     }
 }

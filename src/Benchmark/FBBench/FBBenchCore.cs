@@ -46,6 +46,7 @@ namespace Benchmark.FBBench
         public SortedVectorTable<int> sortedIntContainer;
         public UnsortedVectorTable<string> unsortedStringContainer;
         public UnsortedVectorTable<int> unsortedIntContainer;
+        public ValueTableVector valueTableVector;
 
         protected MemoryStream pbdn_writeBuffer = new MemoryStream(64 * 1024);
         protected MemoryStream pbdn_readBuffer = new MemoryStream(64 * 1024);
@@ -155,6 +156,24 @@ namespace Benchmark.FBBench
                 this.unsortedIntContainer.Vector.Add(new UnsortedVectorTableItem<int> { Key = rng.Next() });
                 this.unsortedStringContainer.Vector.Add(new UnsortedVectorTableItem<string> { Key = Guid.NewGuid().ToString() });
             }
+
+            this.valueTableVector = new ValueTableVector
+            {
+                ValueTables = Enumerable.Range(0, this.VectorLength).Select(x => new ValueTable
+                {
+                    A = 1,
+                    B = 2,
+                    C = 3,
+                    D = 4,
+                    E = 5,
+                    F = 6,
+                    G = 7,
+                    H = 8,
+                    I = 9,
+                    J = 10,
+                    K = true,
+                }).ToArray()
+            };
 
             {
                 var options = new FlatBufferSerializerOptions(this.DeserializeOption);
@@ -510,6 +529,11 @@ namespace Benchmark.FBBench
             this.fs_serializer.Serialize(this.unsortedIntContainer, this.fs_writeMemory);
         }
 
+        public virtual void FlatSharp_Serialize_ValueTableVector()
+        {
+            this.fs_serializer.Serialize(this.valueTableVector, this.fs_writeMemory);
+        }
+
         #endregion
 
         #region PBDN
@@ -761,6 +785,50 @@ namespace Benchmark.FBBench
 
         [ProtoMember(4), FlatBufferItem(3)]
         public virtual string Location { get; set; }
+    }
+
+    [FlatBufferTable]
+    public class ValueTableVector
+    {
+        [FlatBufferItem(0)]
+        public ValueTable[] ValueTables { get; set; }
+    }
+
+    [FlatBufferTable]
+    public class ValueTable
+    {
+        [FlatBufferItem(0)]
+        public byte A { get; set; }
+
+        [FlatBufferItem(1)]
+        public sbyte B { get; set; }
+
+        [FlatBufferItem(2)]
+        public ushort C { get; set; }
+
+        [FlatBufferItem(3)]
+        public short D { get; set; }
+
+        [FlatBufferItem(4)]
+        public uint E { get; set; }
+
+        [FlatBufferItem(5)]
+        public int F { get; set; }
+
+        [FlatBufferItem(6)]
+        public float G { get; set; }
+
+        [FlatBufferItem(7)]
+        public ulong H { get; set; }
+
+        [FlatBufferItem(8)]
+        public long I { get; set; }
+
+        [FlatBufferItem(9)]
+        public double J { get; set; }
+
+        [FlatBufferItem(10)]
+        public bool K { get; set; }
     }
 
     #endregion
