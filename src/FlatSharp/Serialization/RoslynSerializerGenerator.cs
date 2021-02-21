@@ -336,6 +336,12 @@ $@"
             HashSet<Type> types = new HashSet<Type>();
             rootModel.TraverseObjectGraph(types);
 
+            foreach (var type in types.ToArray())
+            {
+                ITypeModel typeModel = this.typeModelContainer.CreateTypeModel(type);
+                types.UnionWith(typeModel.GetReferencedTypes());
+            }
+
             Queue<Assembly> pendingAssemblies = new Queue<Assembly>(types.Select(x => x.Assembly));
             HashSet<Assembly> seenAssemblies = new HashSet<Assembly>();
 
