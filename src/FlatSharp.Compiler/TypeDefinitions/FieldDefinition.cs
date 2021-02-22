@@ -16,11 +16,10 @@
 
 namespace FlatSharp.Compiler
 {
-
-    using FlatSharp.TypeModel;
     using System;
-    using System.Linq;
-    using System.Reflection;
+    using System.Diagnostics.CodeAnalysis;
+    using FlatSharp.Attributes;
+    using FlatSharp.TypeModel;
 
     internal class FieldDefinition
     {
@@ -66,23 +65,267 @@ namespace FlatSharp.Compiler
 
         public void WriteDefaultConstructorLine(CodeWriter writer, CompileContext context)
         {
-            FieldDefinitionEmitter emitter = new FieldDefinitionEmitter();
-            emitter.EmitDefaultInitializationLine(writer, this, context);
+            ErrorContext.Current.WithScope(this.Name, () =>
+            {
+                if (context.CompilePass <= CodeWritingPass.PropertyModeling ||
+                !this.TryGetTypeModel(context, out var model))
+                {
+                    return;
+                }
+
+                string? assignment = null;
+                if (this.TryGetDefaultValueLiteral(model, out var defaultValueLiteral))
+                {
+                    assignment = defaultValueLiteral;
+                }
+                else if (model.ClassifyContextually(this.Parent.SchemaType).IsRequiredReference())
+                {
+                    var cSharpTypeName = CSharpHelpers.GetCompilableTypeName(model.ClrType);
+                    assignment = $"new {cSharpTypeName}()";
+                }
+
+                if (!string.IsNullOrEmpty(assignment))
+                {
+                    writer.AppendLine($"this.{this.Name} = {assignment};");
+                }
+            });
         }
 
-        public void WriteCopyConstructorLine(CodeWriter writer, string sourceName, BaseSchemaMember parent, CompileContext context)
+        public void WriteCopyConstructorLine(CodeWriter writer, string sourceName, CompileContext context)
         {
-            FieldDefinitionEmitter emitter = new FieldDefinitionEmitter();
-            emitter.EmitCloneLine(writer, sourceName, this, context);
+            ErrorContext.Current.WithScope(this.Name, () =>
+            {
+                if (context.CompilePass <= CodeWritingPass.PropertyModeling)
+                {
+                    return;
+                }
+
+                if (!this.Parent.TryResolveTypeModelWithError(this.FbsFieldType, context, out _))
+                {
+                    return;
+                }
+
+                writer.AppendLine($"this.{this.Name} = {context.FullyQualifiedCloneMethodName}({sourceName}.{this.Name});");
+            });
         }
 
         public void WriteField(CodeWriter writer, TableOrStructDefinition parent, CompileContext context)
         {
             ErrorContext.Current.WithScope(this.Name, () =>
             {
-                FieldDefinitionEmitter emitter = new FieldDefinitionEmitter();
-                emitter.EmitDefinition(writer, this, context);
+                if (context.CompilePass == CodeWritingPass.Initialization)
+                {
+                    this.EmitBasicDefinition(writer, context);
+                    return;
+                }
+
+                if (!this.TryGetTypeModel(context, out var model))
+                {
+                    return;
+                }
+
+                string clrType = this.GetBasicClrTypeName(context);
+                string vectorKeyType = string.Empty;
+
+                if (model.TryGetUnderlyingVectorType(out ITypeModel? vectorItemModel) &&
+                    vectorItemModel.TryGetTableKeyMember(out TableMemberModel? memberModel))
+                {
+                    vectorKeyType = CSharpHelpers.GetCompilableTypeName(memberModel.ItemTypeModel.ClrType);
+                }
+
+                clrType = this.GetClrVectorTypeName(this.VectorType, clrType, vectorKeyType);
+
+                writer.AppendLine(this.FormatAttribute(model));
+                writer.AppendLine(this.FormatPropertyDeclaration(model, clrType));
             });
+        }
+
+        private bool TryGetTypeModel(
+            CompileContext context,
+            [NotNullWhen(true)] out ITypeModel? typeModel)
+        {
+            typeModel = null;
+            Type? propertyType = context.PreviousAssembly?.GetType(this.Parent.FullName)?.GetProperty(this.Name)?.PropertyType;
+
+            if (propertyType is null)
+            {
+                ErrorContext.Current.RegisterError($"Unable to find property '{this.Name}' from parent '{this.Parent.Name}'.");
+                return false;
+            }
+
+            if (!context.TypeModelContainer.TryCreateTypeModel(propertyType, out typeModel))
+            {
+                ErrorContext.Current.RegisterError($"Type model container failed to create type model for type '{propertyType}'.");
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool TryGetDefaultValueLiteral(ITypeModel? typeModel, [NotNullWhen(true)] out string? literal)
+        {
+            if (typeModel is not null && !string.IsNullOrEmpty(this.DefaultValue))
+            {
+                if (typeModel.TryFormatStringAsLiteral(this.DefaultValue, out literal))
+                {
+                    return true;
+                }
+                else
+                {
+                    ErrorContext.Current.RegisterError($"Unable to format default value '{this.DefaultValue}' as a literal.");
+                }
+            }
+
+            literal = null;
+            return false;
+        }
+
+        private void EmitBasicDefinition(CodeWriter writer, CompileContext context)
+        {
+            // Indexed Vectors require two generic parameters:
+            // TKeyType, TableType
+            // We have a chicken-egg problem here, because we need the compiled version
+            // to discover the key type, but we need the key type to build the compiled version.
+            // In the first pass, where we don't have any type model information, we can break
+            // this circular loop by changing indexed vectors to arrays. Following that,
+            // we can introspect on the key type and build the proper indexed vector definition
+            // in pass #2.
+            VectorType type = this.VectorType;
+            if (type == VectorType.IIndexedVector)
+            {
+                type = VectorType.Array;
+            }
+
+            string clrType = this.GetClrVectorTypeName(
+                type,
+                this.GetBasicClrTypeName(context),
+                string.Empty);
+
+            writer.AppendLine(this.FormatAttribute(null));
+            writer.AppendLine(this.FormatPropertyDeclaration(null, clrType));
+        }
+
+        private string FormatPropertyDeclaration(ITypeModel? thisTypeModel, string clrTypeName)
+        {
+            string @virtual = "virtual";
+
+            if (this.NonVirtual ?? this.Parent.NonVirtual == true)
+            {
+                @virtual = string.Empty;
+            }
+
+            string setter = this.SetterKind switch
+            {
+                SetterKind.Public => "set;", // setter has same access as getter.
+                SetterKind.PublicInit => "init;",
+                SetterKind.Protected => "protected set;",
+                SetterKind.ProtectedInit => "protected init;",
+                SetterKind.ProtectedInternal => "protected internal set;",
+                SetterKind.ProtectedInternalInit => "protected internal init;",
+                SetterKind.None => string.Empty,
+                _ => string.Empty,
+            };
+
+            if (thisTypeModel?.ClassifyContextually(this.Parent.SchemaType).IsOptionalReference() == true)
+            {
+                clrTypeName += "?";
+            }
+
+            return $"public {@virtual} {clrTypeName} {this.Name} {{ get; {setter} }}";
+        }
+
+        private string FormatAttribute(ITypeModel? thisTypeModel)
+        {
+            string isKey = string.Empty;
+            string sortedVector = string.Empty;
+            string defaultValue = string.Empty;
+            string isDeprecated = string.Empty;
+
+            if (this.IsKey)
+            {
+                isKey = $", {nameof(FlatBufferItemAttribute.Key)} = true";
+            }
+
+            if (this.SortedVector)
+            {
+                sortedVector = $", {nameof(FlatBufferItemAttribute.SortedVector)} = true";
+            }
+
+            if (this.Deprecated)
+            {
+                isDeprecated = $", {nameof(FlatBufferItemAttribute.Deprecated)} = true";
+            }
+
+            if (this.TryGetDefaultValueLiteral(thisTypeModel, out var literal))
+            {
+                defaultValue = $", {nameof(FlatBufferItemAttribute.DefaultValue)} = {literal}";
+            }
+
+            return $"[{nameof(FlatBufferItemAttribute)}({this.Index}{defaultValue}{isDeprecated}{sortedVector}{isKey})]";
+        }
+
+        /// <summary>
+        /// Returns the basic CLR type. Non-vectorized.
+        /// </summary>
+        private string GetBasicClrTypeName(CompileContext context)
+        {
+            if (this.SharedString)
+            {
+                return typeof(SharedString).FullName ?? throw new InvalidOperationException("Full name was null");
+            }
+
+            string clrType = this.FbsFieldType;
+
+            if (context.TypeModelContainer.TryResolveFbsAlias(this.FbsFieldType, out ITypeModel? resolvedTypeModel))
+            {
+                clrType = resolvedTypeModel.ClrType.FullName ?? throw new InvalidOperationException("Full name was null");
+            }
+            else if (this.Parent.TryResolveName(this.FbsFieldType, out var node))
+            {
+                clrType = node.GlobalName;
+            }
+
+            if (this.IsOptionalScalar)
+            {
+                clrType += "?";
+            }
+
+            return clrType;
+        }
+
+        private string GetClrVectorTypeName(VectorType vectorType, string clrType, string sortKeyType)
+        {
+            switch (vectorType)
+            {
+                case VectorType.Array:
+                    return $"{clrType}[]";
+
+                case VectorType.IList:
+                    return $"IList<{clrType}>";
+
+                case VectorType.IReadOnlyList:
+                    return $"IReadOnlyList<{clrType}>";
+
+                case VectorType.Memory:
+                    return $"Memory<{clrType}>?";
+
+                case VectorType.ReadOnlyMemory:
+                    return $"ReadOnlyMemory<{clrType}>?";
+
+                case VectorType.IIndexedVector:
+                    if (string.IsNullOrWhiteSpace(sortKeyType))
+                    {
+                        ErrorContext.Current.RegisterError($"Unable to determine key type for table {clrType}. Please make sure a property has the 'Key' metadata.");
+                    }
+
+                    return $"IIndexedVector<{sortKeyType}, {clrType}>";
+
+                case VectorType.None:
+                    return clrType;
+
+                default:
+                    throw new InvalidOperationException($"Unexpected value for vectortype: '{vectorType}'");
+            }
         }
     }
 }
