@@ -308,8 +308,8 @@ $@"
             List<string> body = new List<string>();
             List<string> writers = new List<string>();
 
-            // pack from biggest -> smallest by alignment. For unions and double-wide stuff, 
-            // is probably not optimal.
+            // Pack from biggest to smallest.
+            // Not optimal for double-wide items. 
             var ordering = this.IndexToMemberMap
                 .Where(x => !x.Value.IsDeprecated)
                 .OrderBy(x => x.Value.ItemTypeModel.PhysicalLayout.Length) // ensure single-width properties come first
@@ -358,11 +358,16 @@ $@"
             {
                 var layout = memberModel.ItemTypeModel.PhysicalLayout[i];
 
+                // use if-set instead of Math.Max -- better perf.
+                // likely because it avoids assignment in some cases.
                 prepareBlockComponents.Add($@"
                             currentOffset += {nameof(SerializationHelpers)}.{nameof(SerializationHelpers.GetAlignmentError)}(currentOffset, {layout.Alignment});
                             {OffsetVariableName(i)} = currentOffset;
                             {context.SpanWriterVariableName}.{nameof(ISpanWriter.WriteUShort)}(vtable, (ushort)(currentOffset - tableStart), {4 + 2 * (index + i)}, {context.SerializationContextVariableName});
-                            maxVtableIndex = Math.Max(maxVtableIndex, {index + i});
+                            if ({index + i} > maxVtableIndex)
+                            {{
+                                maxVtableIndex = {index + i};
+                            }}
                             currentOffset += {layout.InlineSize};
                 ");
             }
