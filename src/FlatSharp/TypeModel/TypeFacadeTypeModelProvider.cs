@@ -84,60 +84,52 @@ namespace FlatSharp.TypeModel
 
             public int MaxInlineSize => this.underlyingModel.MaxInlineSize;
 
-            public bool MustAlwaysSerialize => this.underlyingModel.MustAlwaysSerialize;
-
             public bool SerializesInline => this.underlyingModel.SerializesInline;
 
             public TableMemberModel AdjustTableMember(TableMemberModel source) => this.underlyingModel.AdjustTableMember(source);
 
             public CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
             {
-                return this.underlyingModel.CreateGetMaxSizeMethodBody(
-                    context.With(GetConvertToUnderlyingInvocation(context.ValueVariableName)));
+                var body = context
+                    .With(GetConvertToUnderlyingInvocation(context.ValueVariableName))
+                    .GetMaxSizeInvocation(this.underlyingModel.ClrType);
+
+                return new CodeGeneratedMethod($"return {body};") { IsMethodInline = true };
             }
 
             public CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
             {
                 // Parse buffer as underlying type name.
-                string parseUnderlying = context.MethodNameMap[typeof(TUnderlying)];
-
-                string parseInvocation = 
-                    $"{parseUnderlying}({context.InputBufferVariableName}, {context.OffsetVariableName})";
-
-                return new CodeGeneratedMethod
+                string parseUnderlying = context.GetParseInvocation(typeof(TUnderlying));
+                string body = $"return {GetConvertFromUnderlyingInvocation(parseUnderlying)};";
+                return new CodeGeneratedMethod(body)
                 {
-                    MethodBody = $"return {GetConvertFromUnderlyingInvocation(parseInvocation)};"
+                    IsMethodInline = true,
                 };
             }
 
             public CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
             {
-                return this.underlyingModel.CreateSerializeMethodBody(
-                    context.With(valueVariableName: GetConvertToUnderlyingInvocation(context.ValueVariableName)));
+                string invocation = context
+                    .With(valueVariableName: GetConvertToUnderlyingInvocation(context.ValueVariableName))
+                    .GetSerializeInvocation(typeof(TUnderlying));
+
+                return new CodeGeneratedMethod($"{invocation};")
+                {
+                    IsMethodInline = true,
+                };
             }
 
-            public string GetNonNullConditionExpression(string itemVariableName)
+            public CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
             {
-                bool isNullable = Nullable.GetUnderlyingType(this.ClrType) is not null;
+                string toUnderlying = GetConvertToUnderlyingInvocation(context.ItemVariableName);
+                string clone = context.MethodNameMap[this.underlyingModel.ClrType];
+                string fromUnderlying = GetConvertFromUnderlyingInvocation($"{clone}({toUnderlying})");
 
-                if (this.ClrType.IsClass || isNullable)
+                return new CodeGeneratedMethod($"return {fromUnderlying};")
                 {
-                    return $"{itemVariableName} is not null";
-                }
-
-                return "true";
-            }
-
-            public string GetThrowIfNullInvocation(string itemVariableName)
-            {
-                bool isNullable = Nullable.GetUnderlyingType(this.ClrType) is not null;
-
-                if (this.ClrType.IsClass || isNullable)
-                {
-                    return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
-                }
-
-                return string.Empty;
+                    IsMethodInline = true,
+                };
             }
 
             public void Initialize()
@@ -152,11 +144,7 @@ namespace FlatSharp.TypeModel
                 this.underlyingModel.TraverseObjectGraph(seenTypes);
             }
 
-            public bool TryFormatDefaultValueAsLiteral(object defaultValue, [NotNullWhen(true)] out string? literal)
-            {
-                literal = null;
-                return false;
-            }
+            public string FormatDefaultValueAsLiteral(object? defaultValue) => this.GetTypeDefaultExpression();
 
             public bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
             {

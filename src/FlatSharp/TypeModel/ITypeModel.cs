@@ -78,12 +78,8 @@ namespace FlatSharp.TypeModel
         int MaxInlineSize { get; }
 
         /// <summary>
-        /// When true, indicates that this type model must always be written to the buffer. This suppresses null checks and default value checks.
-        /// </summary>
-        bool MustAlwaysSerialize { get; }
-
-        /// <summary>
         /// When true, indicates that this type model serializes directly at the offset provided (ie, it does not write a uoffset).
+        /// This is the equivalent of a FlatBuffer "value" type.
         /// </summary>
         bool SerializesInline { get; }
 
@@ -109,17 +105,9 @@ namespace FlatSharp.TypeModel
         CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context);
 
         /// <summary>
-        /// Returns an expression that asserts the given item is non-null. 
+        /// Implements a method to clone the given instance of the type model.
         /// </summary>
-        /// <param name="itemVariableName">The variable name of the item.</param>
-        /// <returns>An expression that tests for null (ie, "item == null").</returns>
-        string GetThrowIfNullInvocation(string itemVariableName);
-
-        /// <summary>
-        /// Returns a boolean expression testing if the given item is null or not.
-        /// </summary>
-        /// <param name="itemVariableName">The variable name of the item.</param>
-        string GetNonNullConditionExpression(string itemVariableName);
+        CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context);
 
         /// <summary>
         /// Travses the object graph to identify types needed to build a serializer.
@@ -127,9 +115,10 @@ namespace FlatSharp.TypeModel
         void TraverseObjectGraph(HashSet<Type> seenTypes);
 
         /// <summary>
-        /// Attempts to format the given default value into a C# literal. Not all implementations support this.
+        /// Formats the given default value into a C# literal. If the default value is null, it indicates that
+        /// there is no default value and the type default should be returned.
         /// </summary>
-        bool TryFormatDefaultValueAsLiteral(object defaultValue, [NotNullWhen(true)] out string? literal);
+        string FormatDefaultValueAsLiteral(object? defaultValue);
 
         /// <summary>
         /// Attempts to format the given string as a literal of this type. Not all implementations support this.

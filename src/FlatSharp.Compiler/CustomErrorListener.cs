@@ -16,14 +16,21 @@
 
 namespace FlatSharp.Compiler
 {
-    /// <summary>
-    /// Enumerates the values for code write pass. 
-    /// </summary>
-    internal enum AttributeOption
+    using System;
+    using Antlr4.Runtime;
+    using Antlr4.Runtime.Misc;
+
+    internal class CustomErrorListener : IAntlrErrorListener<IToken>
     {
-        /// <summary>
-        /// Generate copy constructors for all tables and structs.
-        /// </summary>
-        GenerateCopyConstructors = 1,
+        public void SyntaxError(
+            [NotNull] IRecognizer recognizer,
+            [Nullable] IToken offendingSymbol,
+            int line,
+            int charPositionInLine,
+            [NotNull] string msg,
+            [Nullable] RecognitionException e)
+        {
+            ErrorContext.Current?.RegisterError($"Syntax error FBS file: Token='{offendingSymbol.Text}', Msg='{msg}' Line='{line}:{charPositionInLine}");
+        }
     }
 }

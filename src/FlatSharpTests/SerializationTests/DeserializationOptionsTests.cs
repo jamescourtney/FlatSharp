@@ -19,10 +19,6 @@ namespace FlatSharpTests
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
-    using System.Linq;
-    using System.Reflection;
-    using System.Runtime.CompilerServices;
-    using System.Runtime.InteropServices;
     using FlatSharp;
     using FlatSharp.Attributes;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -591,22 +587,22 @@ namespace FlatSharpTests
         }
 
         [FlatBufferTable]
-        public class InnerTable<TVector>
+        public class InnerTable<TVector> where TVector : notnull
         {
             [FlatBufferItem(0)]
-            public virtual TVector Vector { get; set; }
+            public virtual TVector? Vector { get; set; }
 
             [FlatBufferItem(1)]
-            public virtual string String { get; set; }
+            public virtual string? String { get; set; }
 
             [FlatBufferItem(2)]
-            public virtual FirstStruct First { get; set; }
+            public virtual FirstStruct? First { get; set; }
 
             [FlatBufferItem(3)]
-            public virtual SecondStruct Second { get; set; }
+            public virtual SecondStruct? Second { get; set; }
 
             [FlatBufferItem(4)]
-            public virtual FlatBufferUnion<FirstStruct, SecondStruct, string> Union { get; set; }
+            public virtual FlatBufferUnion<FirstStruct, SecondStruct, string>? Union { get; set; }
 
             [FlatBufferItem(6)]
             public virtual ulong NoSetter { get; }
@@ -620,6 +616,9 @@ namespace FlatSharpTests
 
             [FlatBufferItem(1)]
             public virtual ulong NoSetter { get; }
+
+            [FlatBufferItem(2)]
+            public SecondStruct SecondStruct { get; set; }
         }
 
         [FlatBufferStruct]

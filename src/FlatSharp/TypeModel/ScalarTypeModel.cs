@@ -26,7 +26,6 @@
     /// </summary>
     public abstract class ScalarTypeModel : RuntimeTypeModel
     {
-        protected readonly Type? nullableUnderlyingType;
         private readonly int size;
 
         internal ScalarTypeModel(
@@ -35,7 +34,6 @@
             int size) : base(type, container)
         {
             this.size = size;
-            this.nullableUnderlyingType = Nullable.GetUnderlyingType(type);
         }
 
         /// <summary>
@@ -56,7 +54,7 @@
         /// <summary>
         /// Scalars can be part of Structs.
         /// </summary>
-        public override bool IsValidStructMember => this.nullableUnderlyingType is null;
+        public override bool IsValidStructMember => true;
 
         /// <summary>
         /// Scalars can be part of Tables.
@@ -71,12 +69,12 @@
         /// <summary>
         /// Scalars can be part of Vectors.
         /// </summary>
-        public override bool IsValidVectorMember => this.nullableUnderlyingType is null;
+        public override bool IsValidVectorMember => true;
 
         /// <summary>
         /// Scalars can be sorted vector keys.
         /// </summary>
-        public override bool IsValidSortedVectorKey => this.nullableUnderlyingType is null;
+        public override bool IsValidSortedVectorKey => true;
 
         /// <summary>
         /// Scalars are written inline.
@@ -103,91 +101,55 @@
         /// </summary>
         public override bool ValidateDefaultValue(object defaultValue)
         {
-            if (this.nullableUnderlyingType is null)
-            {
-                return defaultValue.GetType() == this.ClrType;
-            }
-
-            return false;
+            return defaultValue.GetType() == this.ClrType;
         }
 
         public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
         {
-            return new CodeGeneratedMethod
+            return new CodeGeneratedMethod($"return {this.MaxInlineSize};")
             {
                 IsMethodInline = true,
-                MethodBody = $"return {this.MaxInlineSize};"
             };
         }
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
-            return new CodeGeneratedMethod
+            return new CodeGeneratedMethod($"return {context.InputBufferVariableName}.{this.InputBufferReadMethodName}({context.OffsetVariableName});")
             {
                 IsMethodInline = true,
-                MethodBody = $"return {context.InputBufferVariableName}.{this.InputBufferReadMethodName}({context.OffsetVariableName});"
             };
         }
 
         public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
         {
             string variableName = context.ValueVariableName;
-            if (this.nullableUnderlyingType is not null)
+            return new CodeGeneratedMethod($"{context.SpanWriterVariableName}.{this.SpanWriterWriteMethodName}({context.SpanVariableName}, {variableName}, {context.OffsetVariableName}, {context.SerializationContextVariableName});")
             {
-                variableName += ".Value";
-            }
-
-            return new CodeGeneratedMethod 
-            {
-                MethodBody = $"{context.SpanWriterVariableName}.{this.SpanWriterWriteMethodName}({context.SpanVariableName}, {variableName}, {context.OffsetVariableName}, {context.SerializationContextVariableName});",
                 IsMethodInline = true,
             };
         }
 
-        public override string GetThrowIfNullInvocation(string itemVariableName)
+        public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
         {
-            if (this.nullableUnderlyingType is not null)
+            return new CodeGeneratedMethod($"return {context.ItemVariableName};")
             {
-                return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
-            }
-            else
-            {
-                return string.Empty;
-            }
-        }
-
-        public override string GetNonNullConditionExpression(string itemVariableName)
-        {
-            if (this.nullableUnderlyingType is not null)
-            {
-                return $"{itemVariableName}.HasValue";
-            }
-            else
-            {
-                return "true";
-            }
+                IsMethodInline = true,
+            };
         }
 
         public override void TraverseObjectGraph(HashSet<Type> seenTypes)
         {
             seenTypes.Add(this.ClrType);
-            if (this.nullableUnderlyingType is not null)
-            {
-                seenTypes.Add(this.nullableUnderlyingType);
-            }
         }
 
-        public override bool TryFormatDefaultValueAsLiteral(object defaultValue, [NotNullWhen(true)] out string? literal)
+        public override string FormatDefaultValueAsLiteral(object? defaultValue)
         {
-            literal = null;
-
-            if (defaultValue?.GetType() == this.ClrType)
+            if (defaultValue is not null)
             {
-                literal = $"({CSharpHelpers.GetCompilableTypeName(this.ClrType)})({defaultValue})";
-                return true;
+                return $"({this.GetCompilableTypeName()})({defaultValue})";
             }
 
-            return false;
+            return base.FormatDefaultValueAsLiteral(defaultValue);
         }
     }
 }

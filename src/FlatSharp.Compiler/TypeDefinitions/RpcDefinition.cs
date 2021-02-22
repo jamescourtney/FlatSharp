@@ -18,6 +18,7 @@ namespace FlatSharp.Compiler
 {
     using System;
     using System.Collections.Generic;
+    using System.Reflection;
 
     public enum RpcStreamingType
     {
@@ -73,11 +74,15 @@ namespace FlatSharp.Compiler
 
         protected override bool SupportsChildren => false;
 
-        protected override void OnWriteCode(CodeWriter writer, CodeWritingPass pass, string forFile, IReadOnlyDictionary<string, string> precompiledSerializers)
+        protected override void OnWriteCode(CodeWriter writer, CompileContext context)
         {
-            if (pass == CodeWritingPass.FirstPass)
+            if (context.CompilePass < CodeWritingPass.RpcGeneration)
             {
-                this.ValidateReferencedTables();
+                return;
+            }
+
+            if (!this.ValidateReferencedTables(context))
+            {
                 return;
             }
 
@@ -100,47 +105,47 @@ namespace FlatSharp.Compiler
             }
         }
 
-        private void ValidateReferencedTables()
+        private bool ValidateReferencedTables(CompileContext context)
         {
+            bool success = true;
             foreach (var method in this.methods)
             {
                 ErrorContext.Current.WithScope(method.Key, () => 
                 {
                     (string requestType, string responseType, _) = method.Value;
 
-                    this.ValidateDependency(requestType);
-                    this.ValidateDependency(responseType);
+                    success &= this.ValidateDependency(context, requestType);
+                    success &= this.ValidateDependency(context, responseType);
                 });
             }
+
+            return success;
         }
 
-        private void ValidateDependency(string typeName)
+        private bool ValidateDependency(CompileContext context, string typeName)
         {
-            ErrorContext.Current.WithScope(typeName, () =>
+            return ErrorContext.Current.WithScope(typeName, () =>
             {
-                if (!this.TryResolveName(typeName, out BaseSchemaMember node))
+                if (!base.TryResolveTypeModelWithError(typeName, context, out var typeModel))
                 {
-                    ErrorContext.Current.RegisterError($"Unable to resolve '{typeName}'.");
-                    return;
+                    return false;
                 }
 
-                if (node is TableOrStructDefinition tableOrStruct)
+                if (typeModel.SchemaType == TypeModel.FlatBufferSchemaType.Table)
                 {
-                    if (!tableOrStruct.IsTable)
-                    {
-                        ErrorContext.Current.RegisterError("RPC definitions can only operate on tables. Structs are not allowed.");
-                        return;
-                    }
-
-                    if (tableOrStruct.RequestedSerializer == null)
+                    if (typeModel.ClrType.GetProperty(TableOrStructDefinition.SerializerPropertyName, BindingFlags.Static | BindingFlags.Public) == null)
                     {
                         ErrorContext.Current.RegisterError("Types declared in RPC definitions must have PrecompiledSerializers enabled.");
+                        return false;
                     }
                 }
                 else
                 {
-                    ErrorContext.Current.RegisterError($"RPC definitions can only operate on tables. Unable to resolve '{typeName}' as a table.");
+                    ErrorContext.Current.RegisterError($"RPC definitions can only operate on tables. Unable to resolve '{typeName}' as a table. It is detected as a '{typeModel.SchemaType}'");
+                    return false;
                 }
+
+                return true;
             });
         }
 
@@ -364,7 +369,7 @@ namespace FlatSharp.Compiler
             string responseType,
             Dictionary<string, string> methodMap)
         {
-            writer.AppendLine($"public virtual {GrpcCore}.{returnType}<{responseType}> {methodName}({requestType} request, {GrpcCore}.Metadata headers = null, System.DateTime? deadline = null, {CancellationToken} cancellationToken = default({CancellationToken}))");
+            writer.AppendLine($"public virtual {GrpcCore}.{returnType}<{responseType}> {methodName}({requestType} request, {GrpcCore}.Metadata? headers = null, System.DateTime? deadline = null, {CancellationToken} cancellationToken = default({CancellationToken}))");
             using (writer.WithBlock())
             {
                 writer.AppendLine($"return {methodName}(request, new {GrpcCore}.CallOptions(headers, deadline, cancellationToken));");
@@ -385,7 +390,7 @@ namespace FlatSharp.Compiler
             string responseType,
             Dictionary<string, string> methodMap)
         {
-            writer.AppendLine($"public virtual {GrpcCore}.{key}<{requestType}, {responseType}> {methodName}({GrpcCore}.Metadata headers = null, System.DateTime? deadline = null, {CancellationToken} cancellationToken = default({CancellationToken}))");
+            writer.AppendLine($"public virtual {GrpcCore}.{key}<{requestType}, {responseType}> {methodName}({GrpcCore}.Metadata? headers = null, System.DateTime? deadline = null, {CancellationToken} cancellationToken = default({CancellationToken}))");
             using (writer.WithBlock())
             {
                 writer.AppendLine($"return {methodName}(new {GrpcCore}.CallOptions(headers, deadline, cancellationToken));");
@@ -396,11 +401,6 @@ namespace FlatSharp.Compiler
             {
                 writer.AppendLine($"return CallInvoker.{key}({methodMap[methodName]}, null, options);");
             }
-        }
-
-        protected override string OnGetCopyExpression(string source)
-        {
-            throw new NotImplementedException();
         }
 
         private string GetServerHandlerDelegate(string name, string requestType, string responseType, RpcStreamingType streamingType)

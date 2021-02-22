@@ -38,7 +38,7 @@ namespace FlatSharpTests.Compiler
                 baz:[SharedString] (VectorType:ilist);
             }"; 
 
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema);
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
 
             Type tableType = asm.GetTypes().Single(x => x.FullName == "SharedStringTests.Table");
             var property = tableType.GetProperty("foo");
@@ -59,7 +59,7 @@ namespace FlatSharpTests.Compiler
                 baz:[string] (VectorType:ilist, sharedstring);
             }";
 
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema);
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
 
             Type tableType = asm.GetTypes().Single(x => x.FullName == "SharedStringTests.Table");
             var property = tableType.GetProperty("foo");

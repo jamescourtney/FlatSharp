@@ -36,7 +36,7 @@ namespace FlatSharpTests.Compiler
 namespace MyGame;
 enum Color:byte { Red = 0, Green, Blue = 2 }
 
-union Equipment { Weapon } // Optionally add more tables.
+union Equipment { Weapon, Vec3 } // Optionally add more tables.
 
 struct Vec3 {
   x:float;
@@ -64,7 +64,7 @@ table Weapon (PrecompiledSerializer:lazy) {
 
 root_type Monster;"; 
 
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema);
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
 
             Type weaponType = asm.GetType("MyGame.Weapon");
             Type monsterType = asm.GetTypes().Single(x => x.FullName == "MyGame.Monster");
@@ -86,7 +86,7 @@ root_type Monster;";
             Assert.AreEqual(typeof(IList<byte>), monsterType.GetProperty("inventory").PropertyType);
             Assert.AreEqual(typeof(IList<>).MakeGenericType(vecType), monsterType.GetProperty("path").PropertyType);
             Assert.AreEqual(typeof(IList<>).MakeGenericType(weaponType), monsterType.GetProperty("weapons").PropertyType);
-            Assert.IsTrue(typeof(FlatBufferUnion<>).MakeGenericType(weaponType).IsAssignableFrom(monsterType.GetProperty("equipped").PropertyType));
+            Assert.IsTrue(typeof(FlatBufferUnion<,>).MakeGenericType(weaponType, vecType).IsAssignableFrom(monsterType.GetProperty("equipped").PropertyType));
             Assert.AreEqual(typeof(string), monsterType.GetProperty("name").PropertyType);
             Assert.IsTrue(monsterType.GetProperty("friendly").GetCustomAttribute<FlatBufferItemAttribute>().Deprecated);
 
@@ -158,7 +158,7 @@ root_type Monster;";
         private void TestFlags(FlatBufferDeserializationOption expectedFlags, string metadata)
         {
             string schema = $"namespace Test; table FooTable ({metadata}) {{ foo:string; bar:string (virtual:\"false\"); }}";
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema);
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
 
             Type type = asm.GetType("Test.FooTable");
             Assert.IsNotNull(type);

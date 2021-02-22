@@ -41,7 +41,7 @@ namespace FlatSharp
     {
         public const string GeneratedSerializerClassName = "GeneratedSerializer";
 
-        private static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(LanguageVersion.Latest);
+        private static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(LanguageVersion.CSharp8);
         private static readonly Dictionary<string, (Assembly, byte[])> AssemblyNameReferenceMapping = new Dictionary<string, (Assembly, byte[])>();
 
         private readonly Dictionary<Type, string> maxSizeMethods = new Dictionary<Type, string>();
@@ -92,6 +92,12 @@ namespace FlatSharp
             }
         }
 
+        /// <summary>
+        /// Enables "treat warnings as errors" functionality. This is great for unit test contexts, but 
+        /// less great for real-life scenarios. 
+        /// </summary>
+        internal static bool EnableStrictValidation { get; set; }
+
         public RoslynSerializerGenerator(FlatBufferSerializerOptions options, TypeModelContainer typeModelContainer)
         {
             this.options = options;
@@ -116,9 +122,21 @@ $@"
                 {code}
             }}";
 
-            (Assembly assembly, Func<string> formattedTextFactory, byte[] assemblyData) = CompileAssembly(template, this.options.EnableAppDomainInterceptOnAssemblyLoad, typeof(TRoot).Assembly);
+            var externalRefs = this.TraverseAssemblyReferenceGraph<TRoot>();
 
-            object? item = Activator.CreateInstance(assembly.GetTypes()[0]);
+            (Assembly assembly, Func<string> formattedTextFactory, byte[] assemblyData) = 
+                CompileAssembly(
+                    template, 
+                    this.options.EnableAppDomainInterceptOnAssemblyLoad,
+                    externalRefs.ToArray());
+
+            Type? type = assembly.GetType($"Generated.{GeneratedSerializerClassName}");
+            if (type is null)
+            {
+                throw new InvalidOperationException("Generated assembly did not contain serializer type.");
+            }
+
+            object? item = Activator.CreateInstance(type);
             if (item is IGeneratedSerializer<TRoot> serializer)
             {
                 return new GeneratedSerializerWrapper<TRoot>(
@@ -180,6 +198,7 @@ $@"
             bool enableAppDomainIntercept,
             params Assembly[] additionalReferences)
         {
+
             List<MetadataReference> references = new List<MetadataReference>(commonReferences);
             foreach (Assembly additionalReference in additionalReferences)
             {
@@ -224,7 +243,8 @@ $@"
             var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
                 .WithModuleName(name)
                 .WithAllowUnsafe(false)
-                .WithOptimizationLevel(OptimizationLevel.Release);
+                .WithOptimizationLevel(OptimizationLevel.Release)
+                .WithNullableContextOptions(NullableContextOptions.Enable);
 
             CSharpCompilation compilation = CSharpCompilation.Create(
                 name,
@@ -236,14 +256,18 @@ $@"
             {
                 EmitResult result = compilation.Emit(ms);
 
-                if (!result.Success)
+                if (!result.Success || EnableStrictValidation)
                 {
                     string[] failures = result.Diagnostics
-                        .Where(diagnostic => diagnostic.IsWarningAsError || diagnostic.Severity == DiagnosticSeverity.Error)
+                        .Where(d => d.Id != "CS8019") // unnecessary using directive.
+                        .Where(d => d.Id != "CS1701") // DLL version mismatch
                         .Select(d => d.ToString())
                         .ToArray();
 
-                    throw new FlatSharpCompilationException(failures, formattedTextFactory());
+                    if (failures.Length > 0)
+                    {
+                        throw new FlatSharpCompilationException(failures, formattedTextFactory());
+                    }
                 }
 
                 var metadataRef = compilation.ToMetadataReference();
@@ -290,10 +314,10 @@ $@"
         /// <summary>
         /// Recursively crawls through the object graph and looks for methods to define.
         /// </summary>
-        private void DefineMethods(ITypeModel model)
+        private void DefineMethods(ITypeModel rootModel)
         {
             HashSet<Type> types = new HashSet<Type>();
-            model.TraverseObjectGraph(types);
+            rootModel.TraverseObjectGraph(types);
 
             foreach (var type in types)
             {
@@ -302,6 +326,45 @@ $@"
                 this.maxSizeMethods[type] = $"GetMaxSizeOf_{nameBase}";
                 this.readMethods[type] = $"Read_{nameBase}";
             }
+        }
+
+        private HashSet<Assembly> TraverseAssemblyReferenceGraph<TRoot>()
+        {
+            var rootModel = this.typeModelContainer.CreateTypeModel(typeof(TRoot));
+
+            // all type model types.
+            HashSet<Type> types = new HashSet<Type>();
+            rootModel.TraverseObjectGraph(types);
+
+            foreach (var type in types.ToArray())
+            {
+                ITypeModel typeModel = this.typeModelContainer.CreateTypeModel(type);
+                types.UnionWith(typeModel.GetReferencedTypes());
+            }
+
+            Queue<Assembly> pendingAssemblies = new Queue<Assembly>(types.Select(x => x.Assembly));
+            HashSet<Assembly> seenAssemblies = new HashSet<Assembly>();
+
+            while (pendingAssemblies.Count > 0)
+            {
+                var assembly = pendingAssemblies.Dequeue();
+
+                if (seenAssemblies.Add(assembly))
+                {
+                    foreach (var assemblyName in assembly.GetReferencedAssemblies())
+                    {
+                        try
+                        {
+                            pendingAssemblies.Enqueue(Assembly.Load(assemblyName));
+                        }
+                        catch
+                        {
+                        }
+                    }
+                }
+            }
+
+            return seenAssemblies;
         }
 
         private void ImplementInterfaceMethod(Type rootType)
@@ -405,15 +468,9 @@ $@"
         /// </summary>
         private void GenerateGetMaxSizeMethod(Type type, CodeGeneratedMethod method, GetMaxSizeCodeGenContext context)
         {
-            string inlineDeclaration = "[MethodImpl(MethodImplOptions.AggressiveInlining)]";
-            if (!method.IsMethodInline)
-            {
-                inlineDeclaration = string.Empty;
-            }
-
             string declaration =
 $@"
-            {inlineDeclaration}
+            {method.GetMethodImplAttribute()}
             private static int {this.maxSizeMethods[type]}({CSharpHelpers.GetCompilableTypeName(type)} {context.ValueVariableName})
             {{
                 {method.MethodBody}
@@ -431,15 +488,12 @@ $@"
 
         private void GenerateParseMethod(ITypeModel typeModel, CodeGeneratedMethod method, ParserCodeGenContext context)
         {
-            string inlineDeclaration = "[MethodImpl(MethodImplOptions.AggressiveInlining)]";
-            if (!method.IsMethodInline)
-            {
-                inlineDeclaration = string.Empty;
-            }
+            string clrType = typeModel.GetCompilableTypeName();
+
             string declaration =
-$@"
-            {inlineDeclaration}
-            private static {CSharpHelpers.GetCompilableTypeName(typeModel.ClrType)} {this.readMethods[typeModel.ClrType]}<TInputBuffer>(
+            $@"
+            {method.GetMethodImplAttribute()}
+            private static {clrType} {this.readMethods[typeModel.ClrType]}<TInputBuffer>(
                 TInputBuffer {context.InputBufferVariableName}, 
                 {GetVTableOffsetVariableType(typeModel.PhysicalLayout.Length)} {context.OffsetVariableName}) where TInputBuffer : IInputBuffer
             {{

@@ -45,7 +45,7 @@ table VectorMember {
 "; 
             // We are just verifying that the schema can be generated and compiled. The testing of the logic portion of the sorted vector code takes
             // place elsewhere.
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema);
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
 
             var memberType = asm.GetType("VectorMember");
 
@@ -75,7 +75,7 @@ table VectorMember {
 ";
             // We are just verifying that the schema can be generated and compiled. The testing of the logic portion of the sorted vector code takes
             // place elsewhere.
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema);
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
 
             var memberType = asm.GetType("VectorMember");
 
@@ -103,29 +103,44 @@ enum TestEnum : ubyte { One = 1, Two = 2 }
 union TestUnion { VectorMember }
 
 table Monster {
-  Vector:[VectorMember] (VectorType:IReadOnlyList, SortedVector, Key);
+  Vector:[VectorMember] (VectorType:IReadOnlyList, SortedVector);
 }
-struct FakeStruct { Data:int32 (key); }
+struct FakeStruct { StructData:int32; }
 
 table VectorMember {
-    Data:string (SortedVector, Key);
-    Key:int32 (SortedVector, Key);
-    Enum:TestEnum (SortedVector, Key);
-    Struct:FakeStruct (SortedVector, key);
-    Union:TestUnion (SortedVector, Key);
-    StructVector:[FakeStruct] (SortedVector, key);
+    Data:string (Key);
+    Key:int32;
+    Enum:TestEnum;
+    Struct:FakeStruct;
+    Union:TestUnion;
+    StructVector:[FakeStruct];
 }
 
 ";
             // We are just verifying that the schema can be generated and compiled. The testing of the logic portion of the sorted vector code takes
             // place elsewhere.
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema);
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
 
             var memberType = asm.GetType("VectorMember");
             foreach (var prop in memberType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
-                Assert.IsTrue(prop.GetCustomAttribute<FlatBufferItemAttribute>().Key);
-                Assert.IsTrue(prop.GetCustomAttribute<FlatBufferItemAttribute>().SortedVector);
+                if (prop.Name == "Vector")
+                {
+                    Assert.IsTrue(prop.GetCustomAttribute<FlatBufferItemAttribute>().SortedVector);
+                }
+                else
+                {
+                    Assert.IsFalse(prop.GetCustomAttribute<FlatBufferItemAttribute>().SortedVector);
+                }
+
+                if (prop.Name == "Data")
+                {
+                    Assert.IsTrue(prop.GetCustomAttribute<FlatBufferItemAttribute>().Key);
+                }
+                else
+                {
+                    Assert.IsFalse(prop.GetCustomAttribute<FlatBufferItemAttribute>().Key);
+                }
             }
         }
 
@@ -152,7 +167,7 @@ table VectorMember {
 }
 
 ";
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema));
+            Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
         }
 
         [TestMethod]
@@ -204,7 +219,7 @@ table Monster (PrecompiledSerializer) {{
 table VectorMember {{
     Data:string;
 }}";
-            Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema));
+            Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
         }
 
         private void SortedVector_IndexedVector_KeyTypesCorrect<TKeyType>(string type, string metadata = null)
@@ -216,7 +231,7 @@ table Monster (PrecompiledSerializer) {{
 table VectorMember {{
     Data:{type} (Key {(!string.IsNullOrEmpty(metadata) ? ", " : "")}{metadata});
 }}";
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema);
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
             var monsterType = asm.GetTypes().Single(t => t.Name == "Monster");
             var vectorMemberType = asm.GetTypes().Single(t => t.Name == "VectorMember");
 

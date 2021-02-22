@@ -1,2 +1,2 @@
-dotnet test /p:AltCoverForce=true /p:AltCover=true /p:AltCoverAttributeFilter=ExcludeFromCodeCoverage /p:AltCoverStrongNameKey=..\..\misc\strongname.snk -v d -f netcoreapp2.1
-dotnet %UserProfile%\.nuget\packages\reportgenerator\4.1.2\tools\netcoreapp2.1\ReportGenerator.dll -reports:coverage.netcoreapp2.1.xml -targetdir:.coverage\
+dotnet test /p:AltCoverForce=true /p:AltCover=true /p:AltCoverAttributeFilter=ExcludeFromCodeCoverage /p:AltCoverStrongNameKey=..\..\misc\strongname.snk -v d -f net5.0
+dotnet %UserProfile%\.nuget\packages\reportgenerator\4.1.2\tools\netcoreapp2.1\ReportGenerator.dll -reports:coverage.net5.0.xml -targetdir:.coverage\

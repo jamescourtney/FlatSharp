@@ -10,7 +10,7 @@
 
     <!-- next try .net5.0. Note that this can have various prefixes (net5.0-windows, etc) -->
     <PropertyGroup Condition="$(TargetFramework.StartsWith('net5.0'))">
-      <CompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\tools\net5.0\FlatSharp.Compiler.exe'))</CompilerPath>
+      <CompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\tools\net5.0\FlatSharp.Compiler.dll'))</CompilerPath>
       <CompilerInvocation>dotnet $(CompilerPath)</CompilerInvocation>
     </PropertyGroup>
 
@@ -20,9 +20,9 @@
       <CompilerInvocation>dotnet $(CompilerPath)</CompilerInvocation>
     </PropertyGroup>
 
-    <Message Text="$(TargetFramework) $(TargetFrameworkIdentifier): $(CompilerInvocation) &quot;%(FlatSharpSchema.fullpath)&quot;" Importance="high" />
+    <Message Text="$(TargetFramework) $(TargetFrameworkIdentifier): $(CompilerInvocation) --input &quot;%(FlatSharpSchema.fullpath)&quot; --output $(IntermediateOutputPath)" Importance="high" />
     <Exec 
-        Command="$(CompilerInvocation) &quot;%(FlatSharpSchema.fullpath)&quot; $(IntermediateOutputPath)" 
+        Command="$(CompilerInvocation) --input &quot;%(FlatSharpSchema.fullpath)&quot; --output $(IntermediateOutputPath) "
         CustomErrorRegularExpression=".*" 
         Condition=" '%(FlatSharpSchema.fullpath)' != '' " />
     

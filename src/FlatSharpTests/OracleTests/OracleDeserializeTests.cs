@@ -139,7 +139,7 @@
                 Assert.AreEqual(7 + i, longItems[i]);
             }
 
-            Memory<byte> mem = parsed.ByteVector2;
+            Memory<byte> mem = parsed.ByteVector2.Value;
             Assert.AreEqual(5, mem.Length);
             for (int i = 1; i <= 5; ++i)
             {

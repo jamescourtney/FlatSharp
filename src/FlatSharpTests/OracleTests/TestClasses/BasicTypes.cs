@@ -36,6 +36,6 @@ namespace FlatSharpTests
         [FlatBufferItem(9)] public virtual float Float { get; set; }
         [FlatBufferItem(10)] public virtual double Double { get; set; }
 
-        [FlatBufferItem(11)] public virtual string String { get; set; }
+        [FlatBufferItem(11)] public virtual string? String { get; set; }
     }
 }

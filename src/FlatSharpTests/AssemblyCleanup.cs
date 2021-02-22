@@ -23,10 +23,16 @@ namespace FlatSharpTests
     [TestClass]
     public partial class AssemblyCleanupClass
     {
-        [TestMethod]
-        public void CompileTest()
+        [AssemblyInitialize]
+        public static void AssemblyInitialize(TestContext ctx)
         {
-            FlatBufferSerializer.Default.Compile<BasicTypes>();
+            RoslynSerializerGenerator.EnableStrictValidation = true;
+        }
+
+        [AssemblyCleanup]
+        public static void AssemblyCleanup()
+        {
+            RoslynSerializerGenerator.EnableStrictValidation = false;
         }
     }
 }

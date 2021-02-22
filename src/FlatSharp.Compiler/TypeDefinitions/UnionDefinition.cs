@@ -25,32 +25,11 @@ namespace FlatSharp.Compiler
     /// </summary>
     internal class UnionDefinition : BaseSchemaMember
     {
-        public UnionDefinition(string name, BaseSchemaMember parent) : base(name, parent)
+        public UnionDefinition(string name, BaseSchemaMember? parent) : base(name, parent)
         {
         }
 
-        public bool GenerateCustomUnionType { get; set; } = true;
-
-        public List<(string alias, string type)> Components { get; set; } = new List<(string alias, string type)>();
-
-        public string ClrTypeName
-        {
-            get
-            {
-                if (this.GenerateCustomUnionType)
-                {
-                    return this.GlobalName;
-                }
-
-                List<string> genericParts = new List<string>();
-                foreach (var item in this.GetResolvedComponents())
-                {
-                    genericParts.Add(item.fullyQualifiedType);
-                }
-
-                return $"FlatBufferUnion<{string.Join(", ", genericParts)}>";
-            }
-        }
+        public List<(string? alias, string type)> Components { get; set; } = new List<(string? alias, string type)>();
 
         private List<(int index, string alias, string fullyQualifiedType)> GetResolvedComponents()
         {
@@ -59,6 +38,7 @@ namespace FlatSharp.Compiler
             foreach (var component in this.Components)
             {
                 string fallbackName = component.type.Split('.').Last();
+
                 if (fallbackName == "string")
                 {
                     fallbackName = "String";
@@ -77,18 +57,8 @@ namespace FlatSharp.Compiler
             return resolvedComponentNames;
         }
 
-        protected override void OnWriteCode(
-            CodeWriter writer, 
-            CodeWritingPass pass, 
-            string forFile, 
-            IReadOnlyDictionary<string, string> precompiledSerializers)
+        protected override void OnWriteCode(CodeWriter writer, CompileContext context)
         {
-            if (!this.GenerateCustomUnionType)
-            {
-                return;
-            }
-
-
             var resolvedComponents = this.GetResolvedComponents();
             string baseTypeName = string.Join(", ", resolvedComponents.Select(x => x.fullyQualifiedType));
 
@@ -119,53 +89,11 @@ namespace FlatSharp.Compiler
                 }
 
                 // Clone method
-                this.WriteCloneMethod(writer, resolvedComponents);
                 this.WriteSwitchMethod(writer, true, true, resolvedComponents);
                 this.WriteSwitchMethod(writer, true, false, resolvedComponents);
                 this.WriteSwitchMethod(writer, false, true, resolvedComponents); 
                 this.WriteSwitchMethod(writer, false, false, resolvedComponents);
             }
-        }
-
-        private void WriteCloneMethod(CodeWriter writer, List<(int index, string alias, string fullyQualifiedName)> components)
-        {
-            writer.AppendLine();
-            writer.AppendLine($"public new {this.Name} Clone(");
-            using (writer.IncreaseIndent())
-            {
-                bool first = true;
-                foreach (var item in components)
-                {
-                    string line = $"Func<{item.fullyQualifiedName}, {item.fullyQualifiedName}> clone{item.alias}";
-                    if (!first)
-                    {
-                        line = $", {line}";
-                    }
-                    first = false;
-
-                    writer.AppendLine(line);
-                }
-            }
-            writer.AppendLine(")");
-
-            using (writer.WithBlock())
-            {
-                writer.AppendLine("switch (base.Discriminator)");
-                using (writer.WithBlock())
-                {
-                    foreach (var item in components)
-                    {
-                        writer.AppendLine($"case {item.index}:");
-                        using (writer.IncreaseIndent())
-                        {
-                            writer.AppendLine($"return new {this.Name}(clone{item.alias}(base.item{item.index}));");
-                        }
-                    }
-                }
-
-                writer.AppendLine("throw new System.InvalidOperationException();");
-            }
-            writer.AppendLine();
         }
 
         private void WriteSwitchMethod(CodeWriter writer, bool hasReturn, bool hasState, List<(int index, string alias, string fullyQualifiedName)> components)
@@ -231,29 +159,6 @@ namespace FlatSharp.Compiler
             string stateParam = hasState ? "state, " : string.Empty;
 
             writer.AppendLine($") => base.Switch{genericArgsWithEnds}({stateParam}caseDefault, {string.Join(", ", args)});");
-        }
-
-        protected override string OnGetCopyExpression(string source)
-        {
-            List<string> cloners = new List<string>();
-            foreach (var item in this.Components)
-            {
-                if (this.TryResolveName(item.type, out var node))
-                {
-                    string subClone = node.GetCopyExpression("x");
-                    cloners.Add($"x => {subClone}");
-                }
-                else if (item.type == "string")
-                {
-                    cloners.Add("x => x");
-                }
-                else
-                {
-                    ErrorContext.Current.RegisterError("Unable to resolve type: " + item);
-                }
-            }
-
-            return $"{source}?.Clone({string.Join(",\r\n", cloners)})";
         }
 
         protected override bool SupportsChildren => false;

@@ -31,11 +31,6 @@ namespace FlatSharp.TypeModel
             this.itemTypeModel = null!;
         }
 
-        /// <summary>
-        /// Memory vectors are always serialized because they are structs and vector's can't have default values.
-        /// </summary>
-        public override bool MustAlwaysSerialize => true;
-
         public override ITypeModel ItemTypeModel => this.itemTypeModel;
 
         public override string LengthPropertyName => nameof(Memory<byte>.Length);
@@ -71,7 +66,7 @@ namespace FlatSharp.TypeModel
                 body = $"return {memoryVectorRead};";
             }
 
-            return new CodeGeneratedMethod { MethodBody = body };
+            return new CodeGeneratedMethod(body);
         }
 
         public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
@@ -79,17 +74,16 @@ namespace FlatSharp.TypeModel
             string body = 
                 $"{context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteReadOnlyByteMemoryBlock)}({context.SpanVariableName}, {context.ValueVariableName}, {context.OffsetVariableName}, {context.SerializationContextVariableName});";
 
-            return new CodeGeneratedMethod { MethodBody = body };
+            return new CodeGeneratedMethod(body);
         }
 
-        public override string GetNonNullConditionExpression(string itemVariableName)
+        public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
         {
-            return "true";
-        }
-
-        public override string GetThrowIfNullInvocation(string itemVariableName)
-        {
-            return string.Empty;
+            string body = $"return {context.ItemVariableName}.ToArray().AsMemory();";
+            return new CodeGeneratedMethod(body)
+            {
+                IsMethodInline = true,
+            };
         }
     }
 }

@@ -169,7 +169,7 @@ namespace FlatSharpTests
         public class UnionTable<T1, T2>
         {
             [FlatBufferItem(0)]
-            public virtual FlatBufferUnion<T1, T2> Item { get; set; }
+            public virtual FlatBufferUnion<T1, T2>? Item { get; set; }
         }
 
         [FlatBufferTable]

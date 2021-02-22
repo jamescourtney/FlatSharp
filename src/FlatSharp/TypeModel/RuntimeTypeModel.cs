@@ -97,11 +97,6 @@ namespace FlatSharp.TypeModel
         public virtual int MaxInlineSize => this.PhysicalLayout.Sum(x => x.InlineSize + SerializationHelpers.GetMaxPadding(x.Alignment));
 
         /// <summary>
-        /// In general, we don't set this to true.
-        /// </summary>
-        public virtual bool MustAlwaysSerialize => false;
-
-        /// <summary>
         /// Validates a default value.
         /// </summary>
         public virtual bool ValidateDefaultValue(object defaultValue)
@@ -123,20 +118,11 @@ namespace FlatSharp.TypeModel
 
         public abstract CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context);
 
-        public abstract string GetThrowIfNullInvocation(string itemVariableName);
-
-        public virtual string GetNonNullConditionExpression(string itemVariableName)
-        {
-            return $"{itemVariableName} is not null";
-        }
+        public abstract CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context);
 
         public abstract void TraverseObjectGraph(HashSet<Type> seenTypes);
 
-        public virtual bool TryFormatDefaultValueAsLiteral(object defaultValue, [NotNullWhen(true)] out string? literal)
-        {
-            literal = null;
-            return false;
-        }
+        public virtual string FormatDefaultValueAsLiteral(object? defaultValue) => this.GetTypeDefaultExpression();
 
         public virtual bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
         {

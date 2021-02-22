@@ -12,6 +12,13 @@
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net5.0' ">
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Update="TypeModel\ScalarTypeModels.tt">
+      <LastGenOutput>ScalarTypeModels.cs</LastGenOutput>
+      <Generator>TextTemplatingFileGenerator</Generator>
+    </None>
+  </ItemGroup>
   
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.8.0" />
@@ -32,7 +39,9 @@
   <ItemGroup>
     <ProjectReference Include="..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
   </ItemGroup>
-
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
   <ItemGroup>
     <Compile Update="TypeModel\ScalarTypeModels.cs">
       <DesignTime>True</DesignTime>

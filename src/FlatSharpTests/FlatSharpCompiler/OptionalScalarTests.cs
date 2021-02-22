@@ -54,7 +54,7 @@ namespace FlatSharpTests.Compiler
                 Enum : TestEnum = null;
             }";
 
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema);
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
 
             Type tableType = asm.GetTypes().Single(x => x.FullName == "OptionalScalarTests.Table");
 

@@ -30,17 +30,22 @@ namespace FlatSharp
         private readonly FlatBufferSerializerOptions options;
         private readonly PropertyInfo propertyInfo;
         private readonly int index;
+        private readonly ITypeModel typeModel;
+        private readonly ITypeModel containerModel;
 
         public GeneratedProperty(
+            ITypeModel containerModel,
             FlatBufferSerializerOptions options, 
             int index, 
             ItemMemberModel memberModel,
             string readValueMethodDefinition)
         {
+            this.containerModel = containerModel;
             this.options = options;
-            this.propertyInfo = memberModel.PropertyInfo;
             this.MemberModel = memberModel;
             this.index = index;
+            this.typeModel = memberModel.ItemTypeModel;
+            this.propertyInfo = memberModel.PropertyInfo;
 
             this.ReadValueMethodDefinition = readValueMethodDefinition;
 
@@ -119,11 +124,13 @@ $@"
         {
             List<string> lines = new List<string>();
 
+            string typeName = this.typeModel.GetNullableAnnotationTypeName(this.containerModel.SchemaType);
+
             if (this.MemberModel.IsVirtual)
             {
                 if (!string.IsNullOrEmpty(this.BackingFieldName))
                 {
-                    lines.Add($"private {CSharpHelpers.GetCompilableTypeName(this.propertyInfo.PropertyType)} {this.BackingFieldName};");
+                    lines.Add($"private {typeName} {this.BackingFieldName};");
                 }
 
                 if (!string.IsNullOrEmpty(this.HasValueFieldName))
@@ -133,7 +140,7 @@ $@"
 
                 var accessModifiers = CSharpHelpers.GetPropertyAccessModifiers(this.propertyInfo);
 
-                lines.Add($@"{accessModifiers.propertyModifier} override {CSharpHelpers.GetCompilableTypeName(this.propertyInfo.PropertyType)} {this.propertyInfo.Name} {{");
+                lines.Add($@"{accessModifiers.propertyModifier} override {typeName} {this.propertyInfo.Name} {{");
                 lines.Add($"{accessModifiers.getModifer} get {{ {this.GetterBody} }}");
 
                 MethodInfo? methodInfo = this.propertyInfo.SetMethod;

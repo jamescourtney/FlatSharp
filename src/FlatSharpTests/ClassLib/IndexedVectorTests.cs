@@ -178,20 +178,20 @@ namespace FlatSharpTests
         }
 
         [FlatBufferTable]
-        public class TableVector<TKey>
+        public class TableVector<TKey> where TKey : notnull
         {
             [FlatBufferItem(0)]
-            public virtual IIndexedVector<TKey, VectorMember<TKey>> Vector { get; set; }
+            public virtual IIndexedVector<TKey, VectorMember<TKey>>? Vector { get; set; }
         }
 
         [FlatBufferTable]
-        public class VectorMember<TKey>
+        public class VectorMember<TKey> where TKey : notnull
         {
             [FlatBufferItem(0, Key = true)]
-            public virtual TKey Key { get; set; }
+            public virtual TKey? Key { get; set; }
 
             [FlatBufferItem(1)]
-            public virtual string Value { get; set; }
+            public virtual string? Value { get; set; }
         }
     }
 }

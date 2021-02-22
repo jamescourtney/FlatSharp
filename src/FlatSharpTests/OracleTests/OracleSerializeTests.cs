@@ -168,7 +168,7 @@ namespace FlatSharpTests
             Assert.AreEqual(table.IntVector.Count, oracle.IntVectorLength);
             Assert.AreEqual(table.LongVector.Count, oracle.LongVectorLength);
             Assert.AreEqual(table.ByteVector1.Count, oracle.ByteVector1Length);
-            Assert.AreEqual(table.ByteVector2.Length, oracle.ByteVector2Length);
+            Assert.AreEqual(table.ByteVector2.Value.Length, oracle.ByteVector2Length);
 
             for (int i = 0; i < table.IntVector.Count; ++i)
             {
@@ -185,9 +185,9 @@ namespace FlatSharpTests
                 Assert.AreEqual(table.ByteVector1[i], oracle.ByteVector1(i));
             }
 
-            for (int i = 0; i < table.ByteVector2.Length; ++i)
+            for (int i = 0; i < table.ByteVector2.Value.Length; ++i)
             {
-                Assert.AreEqual(table.ByteVector2.Span[i], oracle.ByteVector2(i));
+                Assert.AreEqual(table.ByteVector2.Value.Span[i], oracle.ByteVector2(i));
             }
         }
 

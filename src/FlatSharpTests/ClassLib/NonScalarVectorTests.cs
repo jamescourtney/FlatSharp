@@ -170,14 +170,14 @@ namespace FlatSharpTests
         public class RootTable<TVector>
         {
             [FlatBufferItem(0)]
-            public virtual TVector Vector { get; set; }
+            public virtual TVector? Vector { get; set; }
         }
 
         [FlatBufferTable]
         public class InnerTable : IEquatable<InnerTable>
         {
             [FlatBufferItem(0)]
-            public virtual string Value { get; set; }
+            public virtual string? Value { get; set; }
 
             public bool Equals(InnerTable other)
             {

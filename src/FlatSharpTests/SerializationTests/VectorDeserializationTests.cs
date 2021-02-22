@@ -365,7 +365,7 @@ namespace FlatSharpTests
         public class RootTable<TVector>
         {
             [FlatBufferItem(0)]
-            public virtual TVector Vector { get; set; }
+            public virtual TVector? Vector { get; set; }
         }
     }
 }

@@ -92,7 +92,7 @@ namespace FlatSharp.TypeModel
                 body = $"return ({createFlatBufferVector}).ToArray();";
             }
 
-            return new CodeGeneratedMethod { MethodBody = body, ClassDefinition = vectorClassDef };
+            return new CodeGeneratedMethod(body) { ClassDefinition = vectorClassDef };
         }
     }
 }

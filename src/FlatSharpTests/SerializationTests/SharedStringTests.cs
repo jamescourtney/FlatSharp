@@ -336,6 +336,33 @@ namespace FlatSharpTests
             Assert.IsTrue(object.ReferenceEquals(table.String1.String, table.String3.String));
         }
 
+
+        /// <summary>
+        /// Tests reading shared strings.
+        /// </summary>
+        [TestMethod]
+        public void Test_ReadSharedStrings_NoFactories()
+        {
+            var t = new StringsTable<SharedString>
+            {
+                String1 = "string",
+                String2 = "foo",
+                String3 = "string",
+            };
+
+            byte[] destination = new byte[1024];
+            var serializer = FlatBufferSerializer.Default.Compile<StringsTable<SharedString>>();
+
+            int bytesWritten = serializer.Write(SpanWriter.Instance, destination, t);
+
+            var table = serializer.Parse(destination);
+            Assert.AreEqual("string", (string)table.String1);
+            Assert.AreEqual("foo", (string)table.String2);
+            Assert.AreEqual("string", (string)table.String3);
+
+            Assert.IsFalse(object.ReferenceEquals(table.String1.String, table.String3.String));
+        }
+
         [TestMethod]
         public void Test_SharedStringEqualityOverloads()
         {
@@ -382,20 +409,20 @@ namespace FlatSharpTests
         public class StringsVector<T> : object
         {
             [FlatBufferItem(0)]
-            public virtual IList<T> StringVector { get; set; }
+            public virtual IList<T>? StringVector { get; set; }
         }
 
         [FlatBufferTable]
         public class StringsTable<T> : object
         {
             [FlatBufferItem(0)]
-            public virtual T String1 { get; set; }
+            public virtual T? String1 { get; set; }
 
             [FlatBufferItem(1)]
-            public virtual T String2 { get; set; }
+            public virtual T? String2 { get; set; }
 
             [FlatBufferItem(2)]
-            public virtual T String3 { get; set; }
+            public virtual T? String3 { get; set; }
         }
     }
 }

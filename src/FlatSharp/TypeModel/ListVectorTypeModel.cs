@@ -53,7 +53,6 @@ namespace FlatSharp.TypeModel
             }
         }
 
-
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
             (string vectorClassDef, string vectorClassName) = FlatBufferVectorHelpers.CreateFlatBufferVectorSubclass(
@@ -88,7 +87,7 @@ namespace FlatSharp.TypeModel
                 body = $"return {createFlatBufferVector};";
             }
 
-            return new CodeGeneratedMethod { MethodBody = body, ClassDefinition = vectorClassDef };
+            return new CodeGeneratedMethod(body) { ClassDefinition = vectorClassDef };
         }
     }
 }

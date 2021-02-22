@@ -141,7 +141,7 @@ namespace FlatSharpTests
         public class TableVector<T>
         {
             [FlatBufferItem(0)]
-            public virtual IList<T> Vector { get; set; }
+            public virtual IList<T>? Vector { get; set; }
         }
     }
 }

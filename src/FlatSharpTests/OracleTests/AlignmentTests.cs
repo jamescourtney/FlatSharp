@@ -104,7 +104,7 @@ namespace FlatSharpTests
         public class AlignmentTestDataHolder
         {
             [FlatBufferItem(0)]
-            public virtual AlignmentTestOuter Value { get; set; }
+            public virtual AlignmentTestOuter? Value { get; set; }
         }
 
         /// <summary>

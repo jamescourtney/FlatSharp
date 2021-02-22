@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
- namespace FlatSharp.TypeModel
+
+namespace FlatSharp.TypeModel
 {
     using System;
     using System.Collections.Generic;
@@ -111,7 +111,7 @@
         /// The property type used as a key.
         /// </summary>
         public TableMemberModel? KeyMember { get; private set; }
-        
+
         /// <summary>
         /// Gets the maximum size of a table assuming all members are populated include the vtable offset. 
         /// Does not consider alignment of the table, but does consider worst-case alignment of the members.
@@ -140,7 +140,6 @@
                     Attribute = x.GetCustomAttribute<FlatBufferItemAttribute>(),
                 })
                 .Where(x => x.Attribute != null)
-                .Where(x => !x.Attribute.Deprecated)
                 .Select(x => new
                 {
                     x.Property,
@@ -153,7 +152,7 @@
 
             if (!properties.Any())
             {
-                throw new InvalidFlatBufferDefinitionException($"Can't create table type model from type {this.ClrType.Name} because it does not have any non-static [FlatBufferItem] properties.");
+                throw new InvalidFlatBufferDefinitionException($"Can't create table type model from type {this.ClrType.Name} because it does not have any non-static, non-deprecated [FlatBufferItem] properties.");
             }
 
             foreach (var property in properties)
@@ -167,7 +166,8 @@
                     index,
                     property.Attribute.DefaultValue,
                     property.Attribute.SortedVector,
-                    property.Attribute.Key);
+                    property.Attribute.Key,
+                    property.Attribute.Deprecated);
 
                 model = property.ItemTypeModel.AdjustTableMember(model);
 
@@ -177,7 +177,7 @@
                     {
                         throw new InvalidFlatBufferDefinitionException($"Table {this.ClrType.Name} has more than one [FlatBufferItemAttribute] with Key set to true.");
                     }
-                    
+
                     if (!property.ItemTypeModel.IsValidSortedVectorKey)
                     {
                         throw new InvalidFlatBufferDefinitionException($"Table {this.ClrType.Name} declares a key property on a type that that does not support being a key in a sorted vector.");
@@ -186,6 +186,11 @@
                     if (!property.ItemTypeModel.TryGetSpanComparerType(out _))
                     {
                         throw new InvalidFlatBufferDefinitionException($"Table {this.ClrType.Name} declares a key property on a type whose type model does not supply a ISpanComparer type.");
+                    }
+
+                    if (model.IsDeprecated)
+                    {
+                        throw new InvalidFlatBufferDefinitionException($"Table {this.ClrType.Name} declares a key property that is deprecated.");
                     }
 
                     this.KeyMember = model;
@@ -303,8 +308,14 @@ $@"
             List<string> body = new List<string>();
             List<string> writers = new List<string>();
 
-            // load the properties of the object into locals.
-            foreach (var kvp in this.IndexToMemberMap)
+            // Pack from biggest to smallest.
+            // Not optimal for double-wide items. Todo: Consider not storing double-wide items adjacently.
+            var ordering = this.IndexToMemberMap
+                .Where(x => !x.Value.IsDeprecated)
+                .OrderBy(x => x.Value.ItemTypeModel.PhysicalLayout.Length) // ensure single-width properties come first
+                .ThenByDescending(x => x.Value.ItemTypeModel.PhysicalLayout[0].Alignment);
+
+            foreach (var kvp in ordering)
             {
                 var (prepare, write) = GetStandardSerializeBlocks(kvp.Key, kvp.Value, context);
                 body.Add(prepare);
@@ -328,27 +339,18 @@ $@"
             body.AddRange(writers);
 
             // These methods are often enormous, and inlining can have a detrimental effect on perf.
-            return new CodeGeneratedMethod
-            {
-                MethodBody = $"{methodStart} \r\n {string.Join("\r\n", body)}",
-            };
+            return new CodeGeneratedMethod($"{methodStart} \r\n {string.Join("\r\n", body)}");
         }
 
         private (string prepareBlock, string serializeBlock) GetStandardSerializeBlocks(
-            int index, 
+            int index,
             TableMemberModel memberModel,
             SerializationCodeGenContext context)
         {
             string OffsetVariableName(int i) => $"index{index + i}Offset";
 
             string valueVariableName = $"index{index}Value";
-
-            // Set up a condition for serializing, unless the type model tells us not to.
-            string condition = $"if ({valueVariableName} != {memberModel.DefaultValueToken})";
-            if (memberModel.ItemTypeModel.MustAlwaysSerialize)
-            {
-                condition = string.Empty;
-            }
+            string condition = $"if ({memberModel.ItemTypeModel.GetNotEqualToDefaultValueLiteralExpression(valueVariableName, memberModel.DefaultValueLiteral)})";
 
             List<string> prepareBlockComponents = new List<string>();
             int vtableEntries = memberModel.ItemTypeModel.PhysicalLayout.Length;
@@ -356,23 +358,19 @@ $@"
             {
                 var layout = memberModel.ItemTypeModel.PhysicalLayout[i];
 
+                // use if-set instead of Math.Max -- better perf.
+                // likely because it avoids assignment in some cases.
                 prepareBlockComponents.Add($@"
                             currentOffset += {nameof(SerializationHelpers)}.{nameof(SerializationHelpers.GetAlignmentError)}(currentOffset, {layout.Alignment});
                             {OffsetVariableName(i)} = currentOffset;
                             {context.SpanWriterVariableName}.{nameof(ISpanWriter.WriteUShort)}(vtable, (ushort)(currentOffset - tableStart), {4 + 2 * (index + i)}, {context.SerializationContextVariableName});
-                            maxVtableIndex = {index + i};
+                            if ({index + i} > maxVtableIndex)
+                            {{
+                                maxVtableIndex = {index + i};
+                            }}
                             currentOffset += {layout.InlineSize};
                 ");
             }
-
-            string prepareBlock =
-$@"
-                    var {valueVariableName} = {context.ValueVariableName}.{memberModel.PropertyInfo.Name};
-                    {string.Join("\r\n", Enumerable.Range(0, vtableEntries).Select(x => $"var {OffsetVariableName(x)} = 0;"))}
-                    {condition} 
-                    {{
-                            {string.Join("\r\n", prepareBlockComponents)}
-                    }}";
 
             string sortInvocation = string.Empty;
             if (memberModel.IsSortedVector)
@@ -390,7 +388,6 @@ $@"
                 }
 
                 string inlineSize = keyMember.ItemTypeModel.IsFixedSize ? keyMember.ItemTypeModel.PhysicalLayout[0].InlineSize.ToString() : "null";
-                string defaultValue = keyMember.DefaultValueToken;
 
                 sortInvocation = @$"
                     {context.SerializationContextVariableName}.{nameof(SerializationContext.AddPostSerializeAction)}(
@@ -400,41 +397,62 @@ $@"
                             {OffsetVariableName(0)}, 
                             {keyMember.Index}, 
                             {inlineSize}, 
-                            new {CSharpHelpers.GetCompilableTypeName(spanComparerType)}({defaultValue})));";
+                            new {CSharpHelpers.GetCompilableTypeName(spanComparerType)}({keyMember.DefaultValueLiteral})));";
             }
 
-            string serializeBlock;
+            // NULL FORGIVENESS
+            string nullForgiving = string.Empty;
+            if (memberModel.ItemTypeModel.ClassifyContextually(this.SchemaType).IsOptionalReference())
+            {
+                nullForgiving = "!";
+            }
+
+            string serializeBlockCore;
             if (vtableEntries == 1)
             {
-                serializeBlock =
-                    $@"
-                    if ({OffsetVariableName(0)} != 0)
-                    {{
-                        {context.MethodNameMap[memberModel.ItemTypeModel.ClrType]}(
-                            {context.SpanWriterVariableName},
-                            {context.SpanVariableName},
-                            {valueVariableName},
-                            {OffsetVariableName(0)},
-                            {context.SerializationContextVariableName});
-                        {sortInvocation}
-                    }}";
+                serializeBlockCore = $@"
+                    {context.MethodNameMap[memberModel.ItemTypeModel.ClrType]}(
+                        {context.SpanWriterVariableName},
+                        {context.SpanVariableName},
+                        {valueVariableName}{nullForgiving},
+                        {OffsetVariableName(0)},
+                        {context.SerializationContextVariableName});
+                    {sortInvocation}";
             }
             else
             {
-                serializeBlock =
-                    $@"
+                serializeBlockCore = $@"
+                    var offsetTuple = ({string.Join(", ", Enumerable.Range(0, vtableEntries).Select(x => OffsetVariableName(x)))});
+                    {context.MethodNameMap[memberModel.ItemTypeModel.ClrType]}(
+                        {context.SpanWriterVariableName},
+                        {context.SpanVariableName},
+                        {valueVariableName}{nullForgiving},
+                        ref offsetTuple,
+                        {context.SerializationContextVariableName});
+                    {sortInvocation}";
+            }
+
+            string serializeBlock = string.Empty;
+            if (memberModel.ItemTypeModel.SerializesInline)
+            {
+                prepareBlockComponents.Add(serializeBlockCore);
+            }
+            else
+            {
+                serializeBlock = $@"
                     if ({OffsetVariableName(0)} != 0)
                     {{
-                        var offsetTuple = ({string.Join(", ", Enumerable.Range(0, vtableEntries).Select(x => OffsetVariableName(x)))});
-                        {context.MethodNameMap[memberModel.ItemTypeModel.ClrType]}(
-                            {context.SpanWriterVariableName},
-                            {context.SpanVariableName},
-                            {valueVariableName},
-                            ref offsetTuple,
-                            {context.SerializationContextVariableName});
-                        {sortInvocation}
+                        {serializeBlockCore}
                     }}";
             }
+
+            string prepareBlock = $@"
+                    var {valueVariableName} = {context.ValueVariableName}.{memberModel.PropertyInfo.Name};
+                    {string.Join("\r\n", Enumerable.Range(0, vtableEntries).Select(x => $"var {OffsetVariableName(x)} = 0;"))}
+                    {condition} 
+                    {{
+                            {string.Join("\r\n", prepareBlockComponents)}
+                    }}";
 
             return (prepareBlock, serializeBlock);
         }
@@ -447,7 +465,7 @@ $@"
 
             // Build up a list of property overrides.
             var propertyOverrides = new List<GeneratedProperty>();
-            foreach (var item in this.IndexToMemberMap)
+            foreach (var item in this.IndexToMemberMap.Where(x => !x.Value.IsDeprecated))
             {
                 int index = item.Key;
                 var value = item.Value;
@@ -471,49 +489,55 @@ $@"
                 propertyOverrides,
                 context.Options);
 
-            return new CodeGeneratedMethod
+            string body = $"return new {className}<{context.InputBufferTypeName}>({context.InputBufferVariableName}, {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}));";
+            return new CodeGeneratedMethod(body)
             {
-                ClassDefinition = classDefinition,
-                MethodBody = $"return new {className}<{context.InputBufferTypeName}>({context.InputBufferVariableName}, {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}));"
+                ClassDefinition = classDefinition
             };
         }
 
         /// <summary>
         /// Generates a standard getter for a normal vtable entry.
         /// </summary>
-        private static GeneratedProperty CreateStandardTableProperty(
-            TableMemberModel memberModel, 
-            int index, 
+        private GeneratedProperty CreateStandardTableProperty(
+            TableMemberModel memberModel,
+            int index,
             ParserCodeGenContext context)
         {
             Type propertyType = memberModel.ItemTypeModel.ClrType;
+
+            string typeName = memberModel.ItemTypeModel.GetNullableAnnotationTypeName(this.SchemaType);
+            string defaultValue = memberModel.DefaultValueLiteral;
 
             // These are always inline as they are only invoked from one place.
             var methodDefinition =
 $@"
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {GeneratedProperty.GetReadValueMethodName(index)}({context.InputBufferTypeName} buffer, int offset)
+                    private static {typeName} {GeneratedProperty.GetReadValueMethodName(index)}({context.InputBufferTypeName} buffer, int offset)
                     {{
                         int absoluteLocation = buffer.{nameof(InputBufferExtensions.GetAbsoluteTableFieldLocation)}(offset, {index});
-                        if (absoluteLocation == 0) {{
-                            return {memberModel.DefaultValueToken};
+                        if (absoluteLocation == 0) 
+                        {{
+                            return {defaultValue};
                         }}
-                        else {{
+                        else 
+                        {{
                             return {context.MethodNameMap[propertyType]}(buffer, absoluteLocation);
                         }}
                     }}
 ";
 
-            return new GeneratedProperty(context.Options, index, memberModel, methodDefinition);
+            return new GeneratedProperty(this, context.Options, index, memberModel, methodDefinition);
         }
 
-        private static GeneratedProperty CreateWideTableProperty(
+        private GeneratedProperty CreateWideTableProperty(
             TableMemberModel memberModel,
             int index,
             ParserCodeGenContext context)
         {
             const string FirstLocationVariableName = "firstLocation";
 
+            string typeName = memberModel.ItemTypeModel.GetNullableAnnotationTypeName(this.SchemaType);
             Type propertyType = memberModel.ItemTypeModel.ClrType;
 
             List<string> locationGetters = new List<string> { FirstLocationVariableName };
@@ -526,12 +550,12 @@ $@"
             var methodDefinition =
 $@"
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {GeneratedProperty.GetReadValueMethodName(index)}({context.InputBufferTypeName} buffer, int offset)
+                    private static {typeName} {GeneratedProperty.GetReadValueMethodName(index)}({context.InputBufferTypeName} buffer, int offset)
                     {{
                         int {FirstLocationVariableName} = buffer.{nameof(InputBufferExtensions.GetAbsoluteTableFieldLocation)}(offset, {index});
                         if ({FirstLocationVariableName} == 0)
                         {{
-                            return {memberModel.DefaultValueToken};
+                            return {memberModel.DefaultValueLiteral};
                         }}
 
                         var absoluteLocations = ({string.Join(", ", locationGetters)});
@@ -539,7 +563,7 @@ $@"
                     }}
 ";
 
-            return new GeneratedProperty(context.Options, index, memberModel, methodDefinition);
+            return new GeneratedProperty(this, context.Options, index, memberModel, methodDefinition);
         }
 
         public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
@@ -551,10 +575,11 @@ $@"
             int maxTableSize = this.NonPaddedMaxTableInlineSize + SerializationHelpers.GetMaxPadding(this.PhysicalLayout.Single().Alignment);
 
             List<string> statements = new List<string>();
-            foreach (var kvp in this.IndexToMemberMap)
+            foreach (var kvp in this.IndexToMemberMap.Where(x => !x.Value.IsDeprecated))
             {
                 int index = kvp.Key;
                 var member = kvp.Value;
+
                 var itemModel = member.ItemTypeModel;
 
                 if (itemModel.IsFixedSize)
@@ -568,7 +593,7 @@ $@"
 
                 string statement =
 $@" 
-                    if ({itemModel.GetNonNullConditionExpression(variableName)})
+                    if ({itemModel.GetNotEqualToDefaultValueLiteralExpression(variableName, member.DefaultValueLiteral)})
                     {{
                         runningSum += {context.MethodNameMap[itemModel.ClrType]}({variableName});
                     }}";
@@ -582,17 +607,16 @@ $@"
             {string.Join("\r\n", statements)};
             return runningSum;
 ";
-            return new CodeGeneratedMethod { MethodBody = body };
+            return new CodeGeneratedMethod(body);
         }
 
-        public override string GetNonNullConditionExpression(string itemVariableName)
+        public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
         {
-            return $"{itemVariableName} != null";
-        }
-
-        public override string GetThrowIfNullInvocation(string itemVariableName)
-        {
-            return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
+            string body = $"return {context.ItemVariableName} is null ? null : new {this.GetCompilableTypeName()}({context.ItemVariableName});";
+            return new CodeGeneratedMethod(body)
+            {
+                IsMethodInline = true,
+            };
         }
 
         public override bool TryGetTableKeyMember([NotNullWhen(true)] out TableMemberModel? tableMember)

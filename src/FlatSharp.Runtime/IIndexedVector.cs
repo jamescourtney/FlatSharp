@@ -19,7 +19,6 @@ namespace FlatSharp
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
-    using System.Linq;
 
     /// <summary>
     /// An indexed vector -- suitable for accessing values by their keys.
@@ -77,23 +76,5 @@ namespace FlatSharp
         /// Removes the item identified by the key. This method returns false if the key is not present.
         /// </summary>
         bool Remove(TKey key);
-    }
-
-    /// <summary>
-    /// Extensions for the IIndexedVector interface.
-    /// </summary>
-    public static class IIndexedVectorExtensions
-    {
-        /// <summary>
-        /// Clones the given indexed vector.
-        /// </summary>
-        public static IIndexedVector<TKey, TValue> Clone<TKey, TValue>(
-            this IIndexedVector<TKey, TValue> source,
-            Func<TValue, TValue> valueClone) 
-            where TValue : class
-            where TKey : notnull
-        {
-            return new IndexedVector<TKey, TValue>(source.Select(x => valueClone(x.Value)), source.Count, mutable: false);
-        }
     }
 }

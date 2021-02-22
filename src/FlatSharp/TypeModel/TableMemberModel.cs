@@ -30,11 +30,13 @@
             ushort index, 
             object? defaultValue,
             bool isSortedVector,
-            bool isKey) : base(propertyModel, propertyInfo, index)
+            bool isKey,
+            bool isDeprecated) : base(propertyModel, propertyInfo, index)
         {
             this.DefaultValue = defaultValue;
             this.IsSortedVector = isSortedVector;
             this.IsKey = isKey;
+            this.IsDeprecated = isDeprecated;
 
             if (!propertyModel.IsValidTableMember)
             {
@@ -62,21 +64,14 @@
         /// </summary>
         public bool IsKey { get; }
 
-        public string DefaultValueToken
-        {
-            get
-            {
-                string? defaultValue = $"default({CSharpHelpers.GetCompilableTypeName(this.ItemTypeModel.ClrType)})";
-                if (this.DefaultValue is not null)
-                {
-                    if (!this.ItemTypeModel.TryFormatDefaultValueAsLiteral(this.DefaultValue, out defaultValue))
-                    {
-                        throw new InvalidFlatBufferDefinitionException($"Unable to format {this.DefaultValue} (type {this.DefaultValue.GetType().Name}) as a literal.");
-                    }
-                }
+        /// <summary>
+        /// Indicates that this property is deprecated and serializers need not be generated for it.
+        /// </summary>
+        public bool IsDeprecated { get; }
 
-                return defaultValue;
-            }
-        }
+        /// <summary>
+        /// Returns a C# literal that is equal to the default value.
+        /// </summary>
+        public string DefaultValueLiteral => this.ItemTypeModel.FormatDefaultValueAsLiteral(this.DefaultValue);
     }
 }

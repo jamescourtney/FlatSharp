@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2018 James Courtney
+ * Copyright 2021 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// Layout of the vtable.
         /// </summary>
-        public override ImmutableArray<PhysicalLayoutElement> PhysicalLayout => 
+        public override ImmutableArray<PhysicalLayoutElement> PhysicalLayout =>
             new PhysicalLayoutElement[] { new PhysicalLayoutElement(sizeof(uint), sizeof(uint)) }.ToImmutableArray();
 
         /// <summary>
@@ -99,7 +99,7 @@ namespace FlatSharp.TypeModel
                 int itemInlineSize = this.ItemTypeModel.PhysicalLayout[0].InlineSize;
                 int itemAlignment = this.ItemTypeModel.PhysicalLayout[0].Alignment;
 
-                return itemInlineSize + SerializationHelpers.GetAlignmentError(itemInlineSize, itemAlignment); 
+                return itemInlineSize + SerializationHelpers.GetAlignmentError(itemInlineSize, itemAlignment);
             }
         }
 
@@ -130,16 +130,13 @@ namespace FlatSharp.TypeModel
                     for (int i = 0; i < length; ++i)
                     {{
                         var itemTemp = {context.ValueVariableName}[i];
-                        {this.ItemTypeModel.GetThrowIfNullInvocation("itemTemp")};
+                        {this.GetThrowIfNullStatement("itemTemp")}
                         runningSum += {itemContext.GetMaxSizeInvocation(this.ItemTypeModel.ClrType)};
                     }}
                     return runningSum;";
             }
 
-            return new CodeGeneratedMethod
-            {
-                MethodBody = body,
-            };
+            return new CodeGeneratedMethod(body);
         }
 
         public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
@@ -156,17 +153,31 @@ namespace FlatSharp.TypeModel
                 for (int i = 0; i < count; ++i)
                 {{
                       var current = {context.ValueVariableName}[i];
-                      {itemTypeModel.GetThrowIfNullInvocation("current")};
+                      {this.GetThrowIfNullStatement("current")}
                       {context.MethodNameMap[itemTypeModel.ClrType]}({context.SpanWriterVariableName}, {context.SpanVariableName}, current, vectorOffset, {context.SerializationContextVariableName});
                       vectorOffset += {this.PaddedMemberInlineSize};
                 }}";
 
-            return new CodeGeneratedMethod { MethodBody = body };
+            return new CodeGeneratedMethod(body);
         }
 
-        public override string GetThrowIfNullInvocation(string itemVariableName)
+        public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
         {
-            return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
+            string parameters;
+            if (this.ItemTypeModel.ClrType.IsValueType)
+            {
+                parameters = context.ItemVariableName;
+            }
+            else
+            {
+                parameters = $"{context.ItemVariableName}, {context.MethodNameMap[this.ItemTypeModel.ClrType]}";
+            }
+
+            string body =  $"return {nameof(VectorCloneHelpers)}.{nameof(VectorCloneHelpers.Clone)}<{this.ItemTypeModel.GetCompilableTypeName()}>({parameters});";
+            return new CodeGeneratedMethod(body)
+            {
+                IsMethodInline = true,
+            };
         }
 
         public sealed override void Initialize()
@@ -189,6 +200,17 @@ namespace FlatSharp.TypeModel
             {
                 this.ItemTypeModel.TraverseObjectGraph(seenTypes);
             }
+        }
+
+        private string GetThrowIfNullStatement(string variableName)
+        {
+            if (this.ItemTypeModel.IsNonNullableClrValueType())
+            {
+                // can't be null.
+                return string.Empty;
+            }
+
+            return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({variableName});";
         }
     }
 }

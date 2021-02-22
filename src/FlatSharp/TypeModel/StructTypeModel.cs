@@ -90,9 +90,9 @@
 
         public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
         {
-            return new CodeGeneratedMethod
+            return new CodeGeneratedMethod($"return {this.MaxInlineSize};")
             {
-                MethodBody = $"return {this.MaxInlineSize};",
+                IsMethodInline = true
             };
         }
 
@@ -125,7 +125,7 @@ $@"
                     }}
 ";
 
-                    propertyOverrides.Add(new GeneratedProperty(context.Options, index, value, readValueMethod));
+                    propertyOverrides.Add(new GeneratedProperty(this, context.Options, index, value, readValueMethod));
                 }
 
                 classDefinition = CSharpHelpers.CreateDeserializeClass(
@@ -135,10 +135,9 @@ $@"
                     context.Options);
             }
 
-            return new CodeGeneratedMethod
+            return new CodeGeneratedMethod($"return new {className}<{context.InputBufferTypeName}>({context.InputBufferVariableName}, {context.OffsetVariableName});")
             {
-                ClassDefinition = classDefinition,
-                MethodBody = $"return new {className}<{context.InputBufferTypeName}>({context.InputBufferVariableName}, {context.OffsetVariableName});",
+                ClassDefinition = classDefinition
             };
         }
 
@@ -163,15 +162,17 @@ $@"
                 body.Add(propContext.GetSerializeInvocation(memberInfo.ItemTypeModel.ClrType) + ";");
             }
 
-            return new CodeGeneratedMethod
-            {
-                MethodBody = string.Join("\r\n", body)
-            };
+            return new CodeGeneratedMethod(string.Join("\r\n", body));
         }
 
-        public override string GetThrowIfNullInvocation(string itemVariableName)
+        public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
         {
-            return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
+            var typeName = this.GetCompilableTypeName();
+            string body = $"return {context.ItemVariableName} is null ? null : new {typeName}({context.ItemVariableName});";
+            return new CodeGeneratedMethod(body)
+            {
+                IsMethodInline = true,
+            };
         }
 
         public override void Initialize()

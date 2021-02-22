@@ -387,20 +387,19 @@ namespace FlatSharpTests
             int offset = FlatBufferSerializer.Default.Serialize(root, target);
             target = target.Slice(0, offset);
 
-            byte[] expectedResult =
+            byte[] expectedResult = 
             {
                 4, 0, 0, 0,                     // offset to table start
-                244, 255, 255, 255,             // soffset to vtable (-12)
+                246, 255, 255, 255,             // soffset to vtable (-10)
+                20, 0, 0, 0,                    // uoffset_t to vector
                 0,                              // alignment imp
-                0, 0, 0,                        // padding
-                16, 0, 0, 0,                    // uoffset_t to vector
-
+                0,                              // padding
                 8, 0,                           // vtable length
-                12, 0,                          // table length
-                4, 0,                           // offset to index 0 field
-                8, 0,                           // offset of index 1 field
+                9, 0,                           // table length
+                8, 0,                           // offset to index 0 field
+                4, 0,                           // offset of index 1 field
 
-                0, 0, 0, 0,                     // padding
+                0, 0, 0, 0, 0, 0,               // padding to 8 byte alignment for struct.
                 2, 0, 0, 0,                     // vector length
                 1, 0, 0, 0, 0, 0, 0, 0,         // index 0.Long
                 1,                              // index 0.Byte
@@ -898,24 +897,24 @@ namespace FlatSharpTests
         public class RootTable<TVector>
         {
             [FlatBufferItem(0)]
-            public virtual TVector Vector { get; set; }
+            public virtual TVector? Vector { get; set; }
         }
 
         [FlatBufferTable]
         public class RootTableSorted<TVector>
         {
             [FlatBufferItem(0, SortedVector = true)]
-            public virtual TVector Vector { get; set; }
+            public virtual TVector? Vector { get; set; }
         }
 
         [FlatBufferTable]
         public class TableWithKey<TKey>
         {
             [FlatBufferItem(0)]
-            public virtual string Value { get; set; }
+            public virtual string? Value { get; set; }
 
             [FlatBufferItem(1, Key = true)]
-            public virtual TKey Key { get; set; }
+            public virtual TKey? Key { get; set; }
         }
 
         [FlatBufferTable]
@@ -925,7 +924,7 @@ namespace FlatSharpTests
             public virtual byte AlignmentImp { get; set; }
 
             [FlatBufferItem(1)]
-            public virtual TVector Vector { get; set; }
+            public virtual TVector? Vector { get; set; }
         }
 
         [FlatBufferStruct]

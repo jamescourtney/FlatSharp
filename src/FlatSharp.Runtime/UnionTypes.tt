@@ -39,6 +39,10 @@ namespace FlatSharp
 	#>
 			[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 			public class FlatBufferUnion<<#= string.Join(", ", range.Select(x => "T" + x)) #>> : IUnion
+
+			<# foreach (var genericType in range) { #>
+				where T<#= genericType #> : notnull
+			<# } #>
 			{
 				private readonly byte discriminator;
 				
@@ -97,21 +101,6 @@ namespace FlatSharp
 				<# 
 				} 
 				#>
-
-				public FlatBufferUnion<<#= string.Join(", ", range.Select(x => "T" + x)) #>> Clone(
-				<#= string.Join(",\r\n", range.Select(x => $"System.Func<T{x}, T{x}> cloneT{x}")) #>
-				)
-				{
-					switch (this.discriminator)
-					{
-					<# foreach (var genericType in range) { #>
-						case <#= genericType #>:
-							return new FlatBufferUnion<<#= string.Join(", ", range.Select(x => "T" + x)) #>>(cloneT<#= genericType #>(this.item<#= genericType #>!));
-					<# } #>
-					}
-
-					throw new System.InvalidOperationException();
-				}
 
 				public void Switch(
 					System.Action defaultCase,

@@ -60,7 +60,7 @@ namespace FlatSharpTests
             public virtual int PublicGetterProtectedSetter { get; protected set; }
 
             [FlatBufferItem(3)]
-            public virtual TestStruct Struct { get; protected set; }
+            public virtual TestStruct? Struct { get; protected set; }
 
 #if NET5_0
             [FlatBufferItem(4)]
@@ -112,7 +112,7 @@ namespace FlatSharpTests
             public int PublicGetterProtectedSetter { get; protected set; }
 
             [FlatBufferItem(3)]
-            public TestStructNonVirtual Struct { get; protected set; }
+            public TestStructNonVirtual? Struct { get; protected set; }
 
 #if NET5_0
             [FlatBufferItem(4)]

@@ -69,7 +69,7 @@ namespace FlatSharpTests.Compiler
                 ForcedNonVirtual:int (nonVirtual:""true"", setter:""{(setterKind != SetterKind.None ? setterKind : SetterKind.Public)}"");
             }}";
 
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema);
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
 
             foreach (var typeName in new[] { "VirtualTests.VirtualTable", "VirtualTests.VirtualStruct" })
             {

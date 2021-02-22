@@ -102,17 +102,15 @@ namespace FlatSharpTests
             byte[] expectedData =
             {
                 4, 0, 0, 0,             // uoffset to table start
-                228, 255, 255, 255,     // soffet to vtable (4 - x = 24 => x = -20)
-                32, 0, 0, 0,            // uoffset to string
-                0, 0, 0, 0,             // padding
+                232, 255, 255, 255,     // soffet to vtable (4 - x = 24 => x = -20)
                 2, 0, 0, 0, 0, 0, 0, 0, // struct.long
-                1,                      // struct.byte
-                0, 0, 0,                // padding
+                1, 0, 0, 0,             // struct.byte + padding
                 3, 0, 0, 0,             // struct.uint
+                12, 0, 0, 0,            // uoffset to string
                 8, 0,                   // vtable length
-                28, 0,                  // table length
-                4, 0,                   // index 0 offset
-                12, 0,                  // Index 1 offset
+                24, 0,                  // table length
+                20, 0,                  // index 0 offset
+                4, 0,                   // Index 1 offset
                 2, 0, 0, 0,             // string length
                 104, 105, 0,            // hi + null terminator
             };
@@ -135,17 +133,15 @@ namespace FlatSharpTests
             byte[] expectedData =
             {
                 4, 0, 0, 0,             // uoffset to table start
-                228, 255, 255, 255,     // soffet to vtable (4 - x = 24 => x = -20)
-                32, 0, 0, 0,            // uoffset to string
-                0, 0, 0, 0,             // padding
+                232, 255, 255, 255,     // soffet to vtable (4 - x = 24 => x = -20)
                 2, 0, 0, 0, 0, 0, 0, 0, // struct.long
-                1,                      // struct.byte
-                0, 0, 0,                // padding
+                1, 0, 0, 0,             // struct.byte + padding
                 3, 0, 0, 0,             // struct.uint
+                12, 0, 0, 0,            // uoffset to string
                 8, 0,                   // vtable length
-                28, 0,                  // table length
-                4, 0,                   // index 0 offset
-                12, 0,                  // Index 1 offset
+                24, 0,                  // table length
+                20, 0,                  // index 0 offset
+                4, 0,                   // Index 1 offset
                 2, 0, 0, 0,             // string length
                 104, 105, 0,            // hi + null terminator
             };
@@ -251,16 +247,16 @@ namespace FlatSharpTests
         public class SimpleTable
         {
             [FlatBufferItem(0)]
-            public virtual string String { get; set; }
+            public virtual string? String { get; set; }
 
             [FlatBufferItem(1)]
-            public virtual SimpleStruct Struct { get; set; }
+            public virtual SimpleStruct? Struct { get; set; }
 
             [FlatBufferItem(2)]
-            public virtual IList<SimpleStruct> StructVector { get; set; }
+            public virtual IList<SimpleStruct>? StructVector { get; set; }
 
             [FlatBufferItem(4)]
-            public virtual SimpleTable InnerTable { get; set; }
+            public virtual SimpleTable? InnerTable { get; set; }
 
             [FlatBufferItem(5, DefaultValue = 0L)]
             public virtual long NoSetter { get; }
@@ -283,16 +279,16 @@ namespace FlatSharpTests
         public class SimpleTableNonVirtual
         {
             [FlatBufferItem(0)]
-            public string String { get; set; }
+            public string? String { get; set; }
 
             [FlatBufferItem(1)]
-            public SimpleStructNonVirtual Struct { get; set; }
+            public SimpleStructNonVirtual? Struct { get; set; }
 
             [FlatBufferItem(2)]
-            public IList<SimpleStructNonVirtual> StructVector { get; set; }
+            public IList<SimpleStructNonVirtual>? StructVector { get; set; }
 
             [FlatBufferItem(4)]
-            public SimpleTableNonVirtual InnerTable { get; set; }
+            public SimpleTableNonVirtual? InnerTable { get; set; }
         }
 
         [FlatBufferStruct]

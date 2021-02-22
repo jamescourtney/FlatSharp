@@ -24,7 +24,7 @@ namespace FlatSharpTests
     public class FiveByteStructTable
     {
         [FlatBufferItem(0)]
-        public virtual FiveByteStruct[] Vector { get; set; }
+        public virtual FiveByteStruct[]? Vector { get; set; }
     }
 
     [FlatBufferStruct]

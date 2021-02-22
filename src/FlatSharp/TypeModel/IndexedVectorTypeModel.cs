@@ -91,7 +91,8 @@ namespace FlatSharp.TypeModel
                 source.Index,
                 source.DefaultValue,
                 isSortedVector: true,
-                source.IsKey);
+                source.IsKey,
+                source.IsDeprecated);
         }
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
@@ -123,7 +124,7 @@ namespace FlatSharp.TypeModel
                 body = $@"return new {nameof(FlatBufferIndexedVector<string, string>)}<{keyTypeName}, {valueTypeName}>({createFlatBufferVector});";
             }
 
-            return new CodeGeneratedMethod { MethodBody = body, IsMethodInline = true, ClassDefinition = vectorClassDef };
+            return new CodeGeneratedMethod(body) { IsMethodInline = true, ClassDefinition = vectorClassDef };
         }
 
         public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
@@ -139,9 +140,8 @@ namespace FlatSharp.TypeModel
 
                 return runningSum;";
 
-            return new CodeGeneratedMethod
+            return new CodeGeneratedMethod(body)
             {
-                MethodBody = body,
                 IsMethodInline = false,
             };
         }
@@ -166,22 +166,26 @@ namespace FlatSharp.TypeModel
                       vectorOffset += {this.PaddedMemberInlineSize};
                 }}";
 
-            return new CodeGeneratedMethod { MethodBody = body, IsMethodInline = false };
+            return new CodeGeneratedMethod(body) { IsMethodInline = false };
+        }
+
+        public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
+        {
+            string parameters = $"{context.ItemVariableName}, {context.MethodNameMap[this.ItemTypeModel.ClrType]}";
+            string genericArgs = $"{this.keyTypeModel.GetCompilableTypeName()}, {this.ItemTypeModel.GetCompilableTypeName()}";
+
+            string body = $"return {nameof(VectorCloneHelpers)}.{nameof(VectorCloneHelpers.Clone)}<{genericArgs}>({parameters});";
+            return new CodeGeneratedMethod(body)
+            {
+                IsMethodInline = true,
+            };
         }
 
         public override void TraverseObjectGraph(HashSet<Type> seenTypes)
         {
             seenTypes.Add(this.ClrType);
-
-            if (seenTypes.Add(this.keyTypeModel.ClrType))
-            {
-                this.keyTypeModel.TraverseObjectGraph(seenTypes);
-            }
-
-            if (seenTypes.Add(this.valueTypeModel.ClrType))
-            {
-                this.valueTypeModel.TraverseObjectGraph(seenTypes);
-            }
+            this.keyTypeModel.TraverseObjectGraph(seenTypes);
+            this.valueTypeModel.TraverseObjectGraph(seenTypes);
         }
     }
 }
