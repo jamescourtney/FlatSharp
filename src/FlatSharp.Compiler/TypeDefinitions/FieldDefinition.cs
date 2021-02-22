@@ -62,6 +62,8 @@ namespace FlatSharp.Compiler
 
         public TableOrStructDefinition Parent { get; }
 
+        public int? StructVectorLength { get; set; }
+
         public void WriteDefaultConstructorLine(CodeWriter writer, CompileContext context)
         {
             FieldDefinitionEmitter emitter = new FieldDefinitionEmitter();

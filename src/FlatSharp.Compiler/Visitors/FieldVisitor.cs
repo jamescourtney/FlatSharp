@@ -36,12 +36,13 @@ namespace FlatSharp.Compiler
             return ErrorContext.Current.WithScope(name, () =>
             {
                 Dictionary<string, string?> metadata = new MetadataVisitor().VisitMetadata(context.metadata());
-
-                var (fieldType, vectorType) = GetFbsFieldType(context, metadata);
+                
+                var (fieldType, vectorType, structVectorLength) = GetFbsFieldType(context, metadata);
 
                 var definition = new FieldDefinition(this.parent, name, fieldType)
                 {
-                    VectorType = vectorType
+                    VectorType = vectorType,
+                    StructVectorLength = structVectorLength,
                 };
 
                 string? defaultValue = context.defaultValue_decl()?.GetText();
@@ -114,17 +115,16 @@ namespace FlatSharp.Compiler
             return Enum.TryParse<SetterKind>(value, true, out setter);
         }
 
-        private (string fieldType, VectorType vectorType) GetFbsFieldType(FlatBuffersParser.Field_declContext context, Dictionary<string, string?> metadata)
+        private (string fieldType, VectorType vectorType, int structVectorLength) GetFbsFieldType(FlatBuffersParser.Field_declContext context, Dictionary<string, string?> metadata)
         {
-            string fbsFieldType = context.type().GetText();
             VectorType vectorType = VectorType.None;
+            int structVectorLength = 0;
+            FlatBuffersParser.TypeContext? typeContext = null;
 
-            if (fbsFieldType.StartsWith("["))
+            if (context.type().vector_type() is not null)
             {
                 vectorType = VectorType.IList;
-
-                // Trim the starting and ending square brackets.
-                fbsFieldType = fbsFieldType.Substring(1, fbsFieldType.Length - 2);
+                typeContext = context.type().vector_type().type();
 
                 if (metadata.TryGetValue("vectortype", out string? vectorTypeString))
                 {
@@ -141,7 +141,29 @@ namespace FlatSharp.Compiler
                     $"Non-vectors may not have the 'vectortype' attribute.");
             }
 
-            return (fbsFieldType, vectorType);
+            if (context.type().structvector_type() is not null)
+            {
+                typeContext = context.type().structvector_type().type();
+                string toParse = context.type().structvector_type().INTEGER_CONSTANT().GetText();
+
+                if (!int.TryParse(toParse, out structVectorLength) || structVectorLength < 0)
+                {
+                    ErrorContext.Current?.RegisterError(
+                        $"Unable to parse '{toParse}' as a struct vector length. Lengths should be a nonnegative base 10 integer.");
+                }
+            }
+
+            string fbsFieldType;
+            if (typeContext is not null)
+            {
+                fbsFieldType = typeContext.GetText();
+            }
+            else
+            {
+                fbsFieldType = context.type().GetText();
+            }
+
+            return (fbsFieldType, vectorType, structVectorLength);
         }
     }
 }
