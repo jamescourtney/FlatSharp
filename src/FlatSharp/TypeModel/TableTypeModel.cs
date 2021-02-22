@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
- namespace FlatSharp.TypeModel
+
+namespace FlatSharp.TypeModel
 {
     using System;
     using System.Collections.Generic;
@@ -111,7 +111,7 @@
         /// The property type used as a key.
         /// </summary>
         public TableMemberModel? KeyMember { get; private set; }
-        
+
         /// <summary>
         /// Gets the maximum size of a table assuming all members are populated include the vtable offset. 
         /// Does not consider alignment of the table, but does consider worst-case alignment of the members.
@@ -177,7 +177,7 @@
                     {
                         throw new InvalidFlatBufferDefinitionException($"Table {this.ClrType.Name} has more than one [FlatBufferItemAttribute] with Key set to true.");
                     }
-                    
+
                     if (!property.ItemTypeModel.IsValidSortedVectorKey)
                     {
                         throw new InvalidFlatBufferDefinitionException($"Table {this.ClrType.Name} declares a key property on a type that that does not support being a key in a sorted vector.");
@@ -309,7 +309,7 @@ $@"
             List<string> writers = new List<string>();
 
             // Pack from biggest to smallest.
-            // Not optimal for double-wide items. 
+            // Not optimal for double-wide items. Todo: Consider not storing double-wide items adjacently.
             var ordering = this.IndexToMemberMap
                 .Where(x => !x.Value.IsDeprecated)
                 .OrderBy(x => x.Value.ItemTypeModel.PhysicalLayout.Length) // ensure single-width properties come first
@@ -343,7 +343,7 @@ $@"
         }
 
         private (string prepareBlock, string serializeBlock) GetStandardSerializeBlocks(
-            int index, 
+            int index,
             TableMemberModel memberModel,
             SerializationCodeGenContext context)
         {
@@ -500,8 +500,8 @@ $@"
         /// Generates a standard getter for a normal vtable entry.
         /// </summary>
         private GeneratedProperty CreateStandardTableProperty(
-            TableMemberModel memberModel, 
-            int index, 
+            TableMemberModel memberModel,
+            int index,
             ParserCodeGenContext context)
         {
             Type propertyType = memberModel.ItemTypeModel.ClrType;
