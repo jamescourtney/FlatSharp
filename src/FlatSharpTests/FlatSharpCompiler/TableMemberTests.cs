@@ -106,9 +106,16 @@ namespace FlatSharpTests.Compiler
 
                 Assert.AreEqual(1, attribute.Index);
 
+                dynamic item = Activator.CreateInstance(tableType);
+                item.member = "member";
+                item.member2 = 57;
+
                 var data = new byte[100];
-                CompilerTestHelpers.CompilerTestSerializer.ReflectionSerialize(Activator.CreateInstance(tableType), data);
-                CompilerTestHelpers.CompilerTestSerializer.ReflectionParse(tableType, data);
+                CompilerTestHelpers.CompilerTestSerializer.ReflectionSerialize(item, data);
+                dynamic parsed = CompilerTestHelpers.CompilerTestSerializer.ReflectionParse(tableType, data);
+
+                Assert.AreEqual("member", parsed.member);
+                Assert.AreEqual(57, parsed.member2);
             }
             catch (TargetInvocationException ex)
             {

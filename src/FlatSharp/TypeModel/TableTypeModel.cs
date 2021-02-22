@@ -308,8 +308,14 @@ $@"
             List<string> body = new List<string>();
             List<string> writers = new List<string>();
 
-            // load the properties of the object into locals.
-            foreach (var kvp in this.IndexToMemberMap.Where(x => !x.Value.IsDeprecated))
+            // pack from biggest -> smallest by alignment. For unions and double-wide stuff, 
+            // is probably not optimal.
+            var ordering = this.IndexToMemberMap
+                .Where(x => !x.Value.IsDeprecated)
+                .OrderBy(x => x.Value.ItemTypeModel.PhysicalLayout.Length) // ensure single-width properties come first
+                .ThenByDescending(x => x.Value.ItemTypeModel.PhysicalLayout[0].Alignment);
+
+            foreach (var kvp in ordering)
             {
                 var (prepare, write) = GetStandardSerializeBlocks(kvp.Key, kvp.Value, context);
                 body.Add(prepare);
@@ -356,7 +362,7 @@ $@"
                             currentOffset += {nameof(SerializationHelpers)}.{nameof(SerializationHelpers.GetAlignmentError)}(currentOffset, {layout.Alignment});
                             {OffsetVariableName(i)} = currentOffset;
                             {context.SpanWriterVariableName}.{nameof(ISpanWriter.WriteUShort)}(vtable, (ushort)(currentOffset - tableStart), {4 + 2 * (index + i)}, {context.SerializationContextVariableName});
-                            maxVtableIndex = {index + i};
+                            maxVtableIndex = Math.Max(maxVtableIndex, {index + i});
                             currentOffset += {layout.InlineSize};
                 ");
             }
