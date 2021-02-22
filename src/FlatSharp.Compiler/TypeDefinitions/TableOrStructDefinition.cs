@@ -93,7 +93,7 @@ namespace FlatSharp.Compiler
                 {
                     foreach (var field in this.Fields)
                     {
-                        field.WriteCopyConstructorLine(writer, "source", this, context);
+                        field.WriteCopyConstructorLine(writer, "source", context);
                     }
 
                     writer.AppendLine("this.OnInitialized(null);");
