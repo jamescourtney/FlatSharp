@@ -60,7 +60,10 @@ namespace FlatSharp.Compiler
                 var fields = context.field_decl();
                 if (fields != null)
                 {
-                    definition.Fields = fields.Select(x => new FieldVisitor(definition).VisitField_decl(x)).Where(x => x is not null).ToList()!;
+                    foreach (var f in fields)
+                    {
+                        new FieldVisitor(definition).VisitField_decl(f);
+                    }
                 }
             });
 

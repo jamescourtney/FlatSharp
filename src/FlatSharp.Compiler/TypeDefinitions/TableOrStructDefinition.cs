@@ -34,6 +34,8 @@ namespace FlatSharp.Compiler
         }
 
         public List<FieldDefinition> Fields { get; set; } = new List<FieldDefinition>();
+
+        public List<StructVectorDefinition> StructVectors { get; set; } = new List<StructVectorDefinition>();
         
         public bool IsTable { get; set; }
 
@@ -104,6 +106,11 @@ namespace FlatSharp.Compiler
                     field.WriteField(writer, this, context);
                 }
 
+                foreach (var structVector in this.StructVectors)
+                {
+                    structVector.EmitStructVector(this, writer, context);
+                }
+
                 if (context.CompilePass >= CodeWritingPass.SerializerGeneration && this.RequestedSerializer is not null)
                 {
                     // generate the serializer.
@@ -120,6 +127,20 @@ namespace FlatSharp.Compiler
             }
 
             writer.AppendLine($"}}");
+        }
+
+        public string ResolveTypeName(string fbsFieldType, CompileContext context)
+        {
+            if (context.TypeModelContainer.TryResolveFbsAlias(fbsFieldType, out ITypeModel? resolvedTypeModel))
+            {
+                fbsFieldType = resolvedTypeModel.ClrType.FullName ?? throw new InvalidOperationException("Full name was null");
+            }
+            else if (this.TryResolveName(fbsFieldType, out var node))
+            {
+                fbsFieldType = node.GlobalName;
+            }
+
+            return fbsFieldType;
         }
 
         private string GenerateSerializerForType(

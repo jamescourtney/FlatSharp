@@ -20,7 +20,7 @@ namespace FlatSharp.Compiler
     using System.Collections.Generic;
     using Antlr4.Runtime.Misc;
 
-    internal class FieldVisitor : FlatBuffersBaseVisitor<FieldDefinition?>
+    internal class FieldVisitor : FlatBuffersBaseVisitor<bool>
     {
         private readonly TableOrStructDefinition parent;
 
@@ -29,11 +29,11 @@ namespace FlatSharp.Compiler
             this.parent = parent;
         }
 
-        public override FieldDefinition? VisitField_decl([NotNull] FlatBuffersParser.Field_declContext context)
+        public override bool VisitField_decl([NotNull] FlatBuffersParser.Field_declContext context)
         {
             string name = context.IDENT().GetText();
 
-            return ErrorContext.Current.WithScope(name, () =>
+            ErrorContext.Current.WithScope(name, () =>
             {
                 Dictionary<string, string?> metadata = new MetadataVisitor().VisitMetadata(context.metadata());
                 
@@ -42,7 +42,6 @@ namespace FlatSharp.Compiler
                 var definition = new FieldDefinition(this.parent, name, fieldType)
                 {
                     VectorType = vectorType,
-                    StructVectorLength = structVectorLength,
                 };
 
                 string? defaultValue = context.defaultValue_decl()?.GetText();
@@ -83,8 +82,30 @@ namespace FlatSharp.Compiler
                     }
                 }
 
-                return definition;
+                if (structVectorLength == null)
+                {
+                    this.parent.Fields.Add(definition);
+                }
+                else if (this.parent.IsTable)
+                {
+                    ErrorContext.Current.RegisterError("Only structs may contain fixed-length vectors");
+                }
+                else
+                {
+                    List<string> groupNames = new List<string>();
+
+                    for (int i = 0; i < structVectorLength.Value; ++i)
+                    {
+                        string name = $"__flatsharp__{definition.Name}_{i}";
+                        this.parent.Fields.Add(definition with { Name = name, SetterKind = SetterKind.Public, IsHidden = true });
+                        groupNames.Add(name);
+                    }
+
+                    this.parent.StructVectors.Add(new StructVectorDefinition(definition.Name, definition.FbsFieldType, definition.SetterKind, groupNames));
+                }
             });
+
+            return true;
         }
 
         private void ParseIdMetadata(
@@ -115,10 +136,10 @@ namespace FlatSharp.Compiler
             return Enum.TryParse<SetterKind>(value, true, out setter);
         }
 
-        private (string fieldType, VectorType vectorType, int structVectorLength) GetFbsFieldType(FlatBuffersParser.Field_declContext context, Dictionary<string, string?> metadata)
+        private (string fieldType, VectorType vectorType, int? structVectorLength) GetFbsFieldType(FlatBuffersParser.Field_declContext context, Dictionary<string, string?> metadata)
         {
             VectorType vectorType = VectorType.None;
-            int structVectorLength = 0;
+            int? structVectorLength = null;
             FlatBuffersParser.TypeContext? typeContext = null;
 
             if (context.type().vector_type() is not null)
@@ -146,10 +167,14 @@ namespace FlatSharp.Compiler
                 typeContext = context.type().structvector_type().type();
                 string toParse = context.type().structvector_type().INTEGER_CONSTANT().GetText();
 
-                if (!int.TryParse(toParse, out structVectorLength) || structVectorLength < 0)
+                if (!int.TryParse(toParse, out var length) || length < 0)
                 {
                     ErrorContext.Current?.RegisterError(
                         $"Unable to parse '{toParse}' as a struct vector length. Lengths should be a nonnegative base 10 integer.");
+                }
+                else
+                {
+                    structVectorLength = length;
                 }
             }
 
