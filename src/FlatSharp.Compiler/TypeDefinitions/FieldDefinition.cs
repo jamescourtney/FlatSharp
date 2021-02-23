@@ -151,11 +151,8 @@ namespace FlatSharp.Compiler
             CompileContext context,
             [NotNullWhen(true)] out ITypeModel? typeModel)
         {
-            typeModel = null;
-            Type? propertyType = context.PreviousAssembly?
-                .GetType(this.Parent.FullName)?
-                .GetProperty(this.Name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)?
-                .PropertyType;
+            typeModel = null; 
+            Type? propertyType = context.PreviousAssembly?.GetType(this.Parent.FullName)?.GetProperty(this.Name)?.PropertyType;
 
             if (propertyType is null)
             {
