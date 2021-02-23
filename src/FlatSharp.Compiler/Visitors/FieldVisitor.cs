@@ -183,6 +183,11 @@ namespace FlatSharp.Compiler
                 typeContext = context.type().core_type();
             }
 
+            if (typeContext is null)
+            {
+                throw new InvalidOperationException("Flatsharp encountered an internal error: Type context was null when parsing");
+            }
+
             string fbsFieldType = typeContext.GetText();
 
             return (fbsFieldType, vectorType, structVectorLength);
