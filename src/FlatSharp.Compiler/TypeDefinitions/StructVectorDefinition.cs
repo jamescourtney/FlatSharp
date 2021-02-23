@@ -47,7 +47,8 @@ namespace FlatSharp.Compiler
             string className = $"{this.Name}Vector";
 
             // two parts: property definition and class definition.
-            writer.AppendLine($"public {className} {this.Name} => new {className}(this);");
+            writer.AppendLine($"private {className}? _{this.Name};");
+            writer.AppendLine($"public {className} {this.Name} => (this._{this.Name} ??= new {className}(this));");
             writer.AppendLine();
 
             // class is next.
