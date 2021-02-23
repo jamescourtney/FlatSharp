@@ -140,12 +140,12 @@ namespace FlatSharp.Compiler
         {
             VectorType vectorType = VectorType.None;
             int? structVectorLength = null;
-            FlatBuffersParser.TypeContext? typeContext = null;
+            FlatBuffersParser.Core_typeContext? typeContext = null;
 
             if (context.type().vector_type() is not null)
             {
                 vectorType = VectorType.IList;
-                typeContext = context.type().vector_type().type();
+                typeContext = context.type().vector_type().core_type();
 
                 if (metadata.TryGetValue("vectortype", out string? vectorTypeString))
                 {
@@ -164,7 +164,7 @@ namespace FlatSharp.Compiler
 
             if (context.type().structvector_type() is not null)
             {
-                typeContext = context.type().structvector_type().type();
+                typeContext = context.type().structvector_type().core_type();
                 string toParse = context.type().structvector_type().INTEGER_CONSTANT().GetText();
 
                 if (!int.TryParse(toParse, out var length) || length < 0)
@@ -178,15 +178,12 @@ namespace FlatSharp.Compiler
                 }
             }
 
-            string fbsFieldType;
-            if (typeContext is not null)
+            if (context.type().core_type() is not null)
             {
-                fbsFieldType = typeContext.GetText();
+                typeContext = context.type().core_type();
             }
-            else
-            {
-                fbsFieldType = context.type().GetText();
-            }
+
+            string fbsFieldType = typeContext.GetText();
 
             return (fbsFieldType, vectorType, structVectorLength);
         }
