@@ -18,10 +18,11 @@ namespace FlatSharp.Compiler
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
+    using System.Reflection;
     using FlatSharp.Attributes;
     using FlatSharp.TypeModel;
 
-    internal class FieldDefinition
+    internal record FieldDefinition
     {
         public FieldDefinition(
             TableOrStructDefinition parentDefinition,
@@ -44,6 +45,8 @@ namespace FlatSharp.Compiler
         public bool Deprecated { get; set; }
 
         public bool SortedVector { get; set; }
+
+        public bool IsHidden { get; set; }
 
         public bool IsKey { get; set; }
 
@@ -133,8 +136,14 @@ namespace FlatSharp.Compiler
 
                 clrType = this.GetClrVectorTypeName(this.VectorType, clrType, vectorKeyType);
 
+                if (this.IsHidden)
+                {
+                    writer.AppendLine($"[System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]");
+                }
+
                 writer.AppendLine(this.FormatAttribute(model));
                 writer.AppendLine(this.FormatPropertyDeclaration(model, clrType));
+                writer.AppendLine();
             });
         }
 
@@ -142,7 +151,7 @@ namespace FlatSharp.Compiler
             CompileContext context,
             [NotNullWhen(true)] out ITypeModel? typeModel)
         {
-            typeModel = null;
+            typeModel = null; 
             Type? propertyType = context.PreviousAssembly?.GetType(this.Parent.FullName)?.GetProperty(this.Name)?.PropertyType;
 
             if (propertyType is null)
@@ -201,6 +210,7 @@ namespace FlatSharp.Compiler
 
             writer.AppendLine(this.FormatAttribute(null));
             writer.AppendLine(this.FormatPropertyDeclaration(null, clrType));
+            writer.AppendLine();
         }
 
         private string FormatPropertyDeclaration(ITypeModel? thisTypeModel, string clrTypeName)
@@ -272,16 +282,7 @@ namespace FlatSharp.Compiler
                 return typeof(SharedString).FullName ?? throw new InvalidOperationException("Full name was null");
             }
 
-            string clrType = this.FbsFieldType;
-
-            if (context.TypeModelContainer.TryResolveFbsAlias(this.FbsFieldType, out ITypeModel? resolvedTypeModel))
-            {
-                clrType = resolvedTypeModel.ClrType.FullName ?? throw new InvalidOperationException("Full name was null");
-            }
-            else if (this.Parent.TryResolveName(this.FbsFieldType, out var node))
-            {
-                clrType = node.GlobalName;
-            }
+            string clrType = this.Parent.ResolveTypeName(this.FbsFieldType, context);
 
             if (this.IsOptionalScalar)
             {

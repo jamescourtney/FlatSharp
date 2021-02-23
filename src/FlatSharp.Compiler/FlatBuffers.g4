@@ -27,7 +27,10 @@ rpc_decl : 'rpc_service' IDENT '{' rpc_method+ '}' ;
 rpc_method : IDENT '(' IDENT ')' ':' IDENT metadata ';' ;
 
 // fixed original grammar: allow namespaces for IDENTs
-type : '[' ( ns_ident | BASE_TYPE_NAME ) ']' | BASE_TYPE_NAME | ns_ident ;
+type : vector_type | structvector_type | core_type ;
+core_type : BASE_TYPE_NAME | ns_ident ;
+vector_type : '[' core_type ']' ;
+structvector_type : '[' core_type ':' INTEGER_CONSTANT ']' ;
 
 enumval_decl : IDENT ( '=' integer_const )? ;
 
