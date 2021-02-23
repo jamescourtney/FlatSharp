@@ -83,7 +83,7 @@ namespace FlatSharpTests.Compiler
             }}
             struct Bar {{ A:ubyte; B:ulong; }}
             struct Foo {{
-              V:[Bar:{length}];
+              V:[Bar:{length}] (nonVirtual);
             }}";
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(
@@ -92,6 +92,10 @@ namespace FlatSharpTests.Compiler
 
             Type tableType = asm.GetType("StructVectorTests.Table");
             Type fooType = asm.GetType("StructVectorTests.Foo");
+
+            Assert.IsFalse(fooType.GetProperty("__flatsharp__V_0").GetMethod.IsVirtual);
+            Assert.IsFalse(fooType.GetProperty("__flatsharp__V_0").SetMethod.IsVirtual);
+
             Type barType = asm.GetType("StructVectorTests.Bar");
 
             dynamic table = Activator.CreateInstance(tableType);
@@ -153,6 +157,8 @@ namespace FlatSharpTests.Compiler
                 PropertyInfo p = fooType.GetProperty($"__flatsharp__V_{i}");
                 Assert.IsTrue(p.GetMethod.IsPublic);
                 Assert.IsTrue(p.SetMethod.IsPublic);
+                Assert.IsTrue(p.GetMethod.IsVirtual);
+                Assert.IsTrue(p.SetMethod.IsVirtual);
 
                 var attr = p.GetCustomAttribute<FlatBufferItemAttribute>();
                 Assert.IsNotNull(attr);
@@ -167,6 +173,7 @@ namespace FlatSharpTests.Compiler
             Assert.IsNull(vectorProperty.GetCustomAttribute<FlatBufferItemAttribute>()); // pseudo-item, not actual.
             Assert.IsNull(vectorProperty.GetCustomAttribute<EditorBrowsableAttribute>());
             Assert.IsTrue(vectorProperty.GetMethod.IsPublic);
+            Assert.IsFalse(vectorProperty.GetMethod.IsVirtual);
             Assert.IsNull(vectorProperty.SetMethod);
 
             dynamic table = Activator.CreateInstance(tableType);
