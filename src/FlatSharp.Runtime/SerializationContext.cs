@@ -17,9 +17,9 @@
 namespace FlatSharp
 {
     using System;
-    using System.Buffers.Binary;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Runtime.CompilerServices;
     using System.Threading;
 
     /// <summary>
@@ -38,7 +38,7 @@ namespace FlatSharp
         private int offset;
         private int capacity;
         private readonly List<PostSerializeAction> postSerializeActions;
-        private readonly List<int> vtableOffsets;
+        private readonly LinkedList<int> vtableOffsets;
 
         /// <summary>
         /// Initializes a new serialization context.
@@ -46,7 +46,7 @@ namespace FlatSharp
         public SerializationContext()
         {
             this.postSerializeActions = new List<PostSerializeAction>();
-            this.vtableOffsets = new List<int>();
+            this.vtableOffsets = new();
         }
 
         /// <summary>
@@ -127,7 +127,6 @@ namespace FlatSharp
 
                 Debug.Assert(offset % 4 == 0);
                 Debug.Assert((offset + 4) % itemAlignment == 0);
-                Debug.WriteLine($"Allocating vector! NItems={numberOfItems}, SizePerItem={sizePerItem}, Offset={offset}, Length={bytesNeeded}");
 
                 return offset;
             }
@@ -156,30 +155,109 @@ namespace FlatSharp
             }
         }
 
-        public int FinishVTable(Span<byte> buffer, Span<byte> vtable)
+        public int FinishVTable<TSpanWriter>(
+            TSpanWriter writer,
+            int tableLength,
+            Span<byte> buffer, 
+            Span<byte> vtable) where TSpanWriter : ISpanWriter
         {
-            var offsets = this.vtableOffsets;
-            int offsetCount = offsets.Count;
-
-            for (int i = 0; i < offsetCount; ++i)
+            checked
             {
-                int offset = offsets[i];
-                ReadOnlySpan<byte> existingVTable = buffer.Slice(offset);
-                existingVTable = existingVTable.Slice(0, BinaryPrimitives.ReadUInt16LittleEndian(existingVTable));
+                var offsets = this.vtableOffsets;
 
-                if (existingVTable.SequenceEqual(vtable))
+                // write table length.
+                writer.WriteUShort(vtable, (ushort)tableLength, sizeof(ushort), this);
+
+                // find vtable length
+                while (ScalarSpanReader.ReadUShort(vtable.Slice(vtable.Length - sizeof(ushort))) == 0)
                 {
-                    // We already have a vtable that matches this specification. Return that offset.
-                    return offset;
+                    vtable = vtable.Slice(0, vtable.Length - sizeof(ushort));
                 }
+
+                writer.WriteUShort(vtable, (ushort)vtable.Length, 0, this);
+
+                var node = offsets.First;
+                while (node is not null)
+                {
+                    var offset = node.Value;
+
+                    ReadOnlySpan<byte> existingVTable = buffer.Slice(offset);
+                    existingVTable = existingVTable.Slice(0, ScalarSpanReader.ReadUShort(existingVTable));
+
+                    if (CompareEquality(existingVTable, vtable))
+                    {
+                        if (node.Previous is not null)
+                        {
+                            // Move the current vtable to the head of the list.
+                            offsets.Remove(node);
+                            offsets.AddFirst(node);
+                        }
+
+                        // We already have a vtable that matches this specification. Return that offset.
+                        return offset;
+                    }
+
+                    node = node.Next;
+                }
+
+                // Oh, well. Write the new table.
+                int newVTableOffset = this.AllocateSpace(vtable.Length, sizeof(ushort));
+                vtable.CopyTo(buffer.Slice(newVTableOffset));
+                offsets.AddFirst(newVTableOffset);
+
+                return newVTableOffset;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool CompareEquality(ReadOnlySpan<byte> left, ReadOnlySpan<byte> right)
+        {
+            if (left.Length != right.Length)
+            {
+                return false;
             }
 
-            // Oh, well. Write the new table.
-            int newVTableOffset = this.AllocateSpace(vtable.Length, sizeof(ushort));
-            vtable.CopyTo(buffer.Slice(newVTableOffset));
-            offsets.Add(newVTableOffset);
+            int length = left.Length;
+            if (length <= 16)
+            {
+                while (left.Length >= sizeof(ulong))
+                {
+                    if (ScalarSpanReader.ReadULong(left) != ScalarSpanReader.ReadULong(right))
+                    {
+                        return false;
+                    }
 
-            return newVTableOffset;
+                    left = left.Slice(sizeof(ulong));
+                    right = right.Slice(sizeof(ulong));
+                }
+
+                if (left.Length >= 4)
+                {
+                    if (ScalarSpanReader.ReadUInt(left) != ScalarSpanReader.ReadUInt(right))
+                    {
+                        return false;
+                    }
+
+                    left = left.Slice(sizeof(uint));
+                    right = right.Slice(sizeof(uint));
+                }
+
+                for (int i = 0; i < left.Length; ++i)
+                {
+                    if (left[i] != right[i])
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+            else
+            {
+                // even in the fallback case, we can often fast-fail in the first word.
+                // length is > 16 here by assertion of the if statement above.
+                return ScalarSpanReader.ReadULong(left) == ScalarSpanReader.ReadULong(right) && left.SequenceEqual(right);
+            }
         }
     }
 }
