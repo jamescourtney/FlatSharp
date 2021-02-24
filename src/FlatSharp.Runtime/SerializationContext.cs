@@ -212,12 +212,15 @@ namespace FlatSharp
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool CompareEquality(ReadOnlySpan<byte> left, ReadOnlySpan<byte> right)
         {
-            if (left.Length != right.Length)
+            int length = left.Length;
+
+            if (length != right.Length)
             {
                 return false;
             }
 
-            int length = left.Length;
+            // Experimentally, it is cheaper to do the comparison ourselves for 
+            // small spans before asking the core libs to check for us.
             if (length <= 16)
             {
                 while (left.Length >= sizeof(ulong))
