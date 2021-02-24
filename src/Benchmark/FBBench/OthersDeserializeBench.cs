@@ -49,5 +49,11 @@ namespace Benchmark.FBBench
 
         [Benchmark]
         public override void PBDN_ParseAndTraversePartial_NonVirtual() => base.PBDN_ParseAndTraversePartial_NonVirtual();
+
+        [Benchmark]
+        public override void MsgPack_ParseAndTraverse() => base.MsgPack_ParseAndTraverse();
+
+        [Benchmark]
+        public override void MsgPack_ParseAndTraversePartial() => base.MsgPack_ParseAndTraversePartial();
     }
 }

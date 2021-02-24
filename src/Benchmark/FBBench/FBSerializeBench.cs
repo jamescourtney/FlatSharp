@@ -24,7 +24,7 @@ namespace Benchmark.FBBench
         public override void Google_FlatBuffers_Serialize() => base.Google_FlatBuffers_Serialize();
 
         [Benchmark]
-        public override void Google_FlatBuffers_Serialize_ObjectApi() => base.Google_FlatBuffers_Serialize_ObjectApi();
+        public override int Google_FlatBuffers_Serialize_ObjectApi() => base.Google_FlatBuffers_Serialize_ObjectApi();
 
         [Benchmark]
         public override void Google_Flatbuffers_StringVector_Sorted() => base.Google_Flatbuffers_StringVector_Sorted();
@@ -67,5 +67,8 @@ namespace Benchmark.FBBench
 
         [Benchmark]
         public override void FlatSharp_Serialize_ValueTableVector() => base.FlatSharp_Serialize_ValueTableVector();
+
+        [Benchmark]
+        public override void MsgPack_Serialize_NonVirtual() => base.MsgPack_Serialize_NonVirtual();
     }
 }
