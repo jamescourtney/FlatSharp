@@ -478,7 +478,7 @@ $@"
 
             string classDefinition = CSharpHelpers.CreateDeserializeClass(
                 className,
-                this.ClrType,
+                this,
                 propertyOverrides,
                 context.Options);
 
@@ -506,19 +506,23 @@ $@"
             var methodDefinition =
 $@"
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    private static {typeName} {GeneratedProperty.GetReadValueMethodName(index)}({context.InputBufferTypeName} buffer, int offset)
+                    private {typeName} {GeneratedProperty.GetReadValueMethodName(index)}({context.InputBufferTypeName} buffer, int offset)
                     {{
-                        int absoluteLocation = buffer.{nameof(InputBufferExtensions.GetAbsoluteTableFieldLocation)}(offset, {index});
-                        if (absoluteLocation == 0) 
+                        if ({index} > this.maxVTableIndex)
                         {{
                             return {defaultValue};
                         }}
-                        else 
+
+                        ushort relativeOffset = buffer.ReadUShort(this.vtableOffset + {4 + (2 * index)});
+                        if (relativeOffset == 0)
                         {{
-                            return {context.MethodNameMap[propertyType]}(buffer, absoluteLocation);
+                            return {defaultValue};
                         }}
+
+                        int absoluteLocation = offset + relativeOffset;
+                        return {context.MethodNameMap[propertyType]}(buffer, absoluteLocation);
                     }}
-";
+                ";
 
             return new GeneratedProperty(this, context.Options, index, memberModel, methodDefinition);
         }

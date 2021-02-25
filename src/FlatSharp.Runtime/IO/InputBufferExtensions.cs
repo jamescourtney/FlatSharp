@@ -104,6 +104,28 @@ namespace FlatSharp
         }
 
         /// <summary>
+        /// Validates a vtable and reads the initial bytes of a vtable.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void InitializeVTable<TBuffer>(
+            this TBuffer buffer, 
+            int tableOffset,
+            out int vtableOffset,
+            out int maxVTableIndex) where TBuffer : IInputBuffer
+        {
+            vtableOffset = tableOffset - buffer.ReadInt(tableOffset);
+            ushort vtableLength = buffer.ReadUShort(vtableOffset);
+
+            if (vtableLength < 4)
+            {
+                ThrowInvalidVtableException();
+            }
+
+            // Can be negative when all indexes are absent. This is by design.
+            maxVTableIndex = (vtableLength / 2) - 3;
+        }
+
+        /// <summary>
         /// Traverses a vtable to find the absolute offset of a table field.
         /// </summary>
         public static int GetAbsoluteTableFieldLocation<TBuffer>(this TBuffer buffer, int tableOffset, int index) where TBuffer : IInputBuffer
@@ -132,6 +154,35 @@ namespace FlatSharp
                 }
 
                 ushort relativeOffset = buffer.ReadUShort(vtableOffset + 2 * (2 + index));
+                if (relativeOffset == 0)
+                {
+                    return 0;
+                }
+
+                return tableOffset + relativeOffset;
+            }
+        }
+
+        /// <summary>
+        /// Traverses a vtable to find the absolute offset of a table field.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetAbsoluteTableFieldLocation<TBuffer>(
+            this TBuffer buffer, 
+            int tableOffset,
+            int index, 
+            int vtableOffset, 
+            int maxIndex) where TBuffer : IInputBuffer
+        {
+            checked
+            {
+                if (index > maxIndex)
+                {
+                    // Not present, return 0. 0 is an indication that that field is not present.
+                    return 0;
+                }
+
+                ushort relativeOffset = buffer.ReadUShort(vtableOffset + (2 * (2 + index)));
                 if (relativeOffset == 0)
                 {
                     return 0;
