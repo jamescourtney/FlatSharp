@@ -30,13 +30,13 @@ namespace FlatSharpTests.Compiler
         [TestMethod, Ignore]
         public void SharedStringInlineTypeTest()
         {
-            string schema = @"
+            string schema = $@"
             namespace SharedStringTests;
-            table Table {
+            table Table {{
                 foo:SharedString;
-                bar:[SharedString] (VectorType:array);
-                baz:[SharedString] (VectorType:ilist);
-            }"; 
+                bar:[SharedString] ({MetdataKeys.VectorKind}:array);
+                baz:[SharedString] ({MetdataKeys.VectorKindLegacy}:ilist);
+            }}"; 
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
 
@@ -51,13 +51,13 @@ namespace FlatSharpTests.Compiler
         [TestMethod]
         public void SharedStringMetadataTypeTest()
         {
-            string schema = @"
+            string schema = $@"
             namespace SharedStringTests;
-            table Table {
-                foo:string (sharedstring);
-                bar:[string] (VectorType:array, sharedstring);
-                baz:[string] (VectorType:ilist, sharedstring);
-            }";
+            table Table {{
+                foo:string ({MetdataKeys.SharedString});
+                bar:[string] ({MetdataKeys.VectorKind}:array, {MetdataKeys.SharedString});
+                baz:[string] ({MetdataKeys.VectorKind}:ilist, {MetdataKeys.SharedStringLegacy});
+            }}";
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
 

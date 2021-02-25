@@ -323,7 +323,7 @@ namespace FlatSharp.Compiler
                     return clrType;
 
                 default:
-                    throw new InvalidOperationException($"Unexpected value for vectortype: '{vectorType}'");
+                    throw new InvalidOperationException($"Unexpected value for '{MetdataKeys.VectorKind}': '{vectorType}'");
             }
         }
     }

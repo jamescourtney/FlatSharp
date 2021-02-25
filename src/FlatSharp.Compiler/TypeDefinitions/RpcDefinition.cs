@@ -135,7 +135,7 @@ namespace FlatSharp.Compiler
                 {
                     if (typeModel.ClrType.GetProperty(TableOrStructDefinition.SerializerPropertyName, BindingFlags.Static | BindingFlags.Public) == null)
                     {
-                        ErrorContext.Current.RegisterError("Types declared in RPC definitions must have PrecompiledSerializers enabled.");
+                        ErrorContext.Current.RegisterError($"Types declared in RPC definitions must have serializers enabled using the '{MetdataKeys.SerializerKind}' attribute.");
                         return false;
                     }
                 }

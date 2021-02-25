@@ -32,35 +32,35 @@ namespace FlatSharpTests.Compiler
         public void MonsterTest()
         {
             // https://github.com/google/flatbuffers/blob/master/samples/monster.fbs
-            string schema = @"
+            string schema = $@"
 namespace MyGame;
-enum Color:byte { Red = 0, Green, Blue = 2 }
+enum Color:byte {{ Red = 0, Green, Blue = 2 }}
 
-union Equipment { Weapon, Vec3 } // Optionally add more tables.
+union Equipment {{ Weapon, Vec3 }} // Optionally add more tables.
 
-struct Vec3 {
+struct Vec3 {{
   x:float;
   y:float;
   z:float;
-}
+}}
 
-table Monster (PrecompiledSerializer:""greedymutable"") {
+table Monster ({MetdataKeys.SerializerKind}:""greedymutable"") {{
   pos:Vec3;
   mana:short = 150;
   hp:short = 100;
   name:string;
-  friendly:bool = false (deprecated);
+  friendly:bool = false ({MetdataKeys.Deprecated});
   inventory:[ubyte];
   color:Color = Blue;
   weapons:[Weapon];
   equipped:Equipment;
   path:[Vec3];
-}
+}}
 
-table Weapon (PrecompiledSerializer:lazy) {
+table Weapon ({MetdataKeys.SerializerKind}:lazy) {{
   name:string;
   damage:short;
-}
+}}
 
 root_type Monster;"; 
 
@@ -101,63 +101,63 @@ root_type Monster;";
         [TestMethod]
         public void FlagsOptions_Greedy()
         {
-            this.TestFlags(FlatBufferDeserializationOption.Greedy, $"PrecompiledSerializer:{nameof(FlatBufferDeserializationOption.Greedy)}");
+            this.TestFlags(FlatBufferDeserializationOption.Greedy, $"{MetdataKeys.SerializerKind}:{nameof(FlatBufferDeserializationOption.Greedy)}");
         }
 
         [TestMethod]
         public void FlagsOptions_MutableGreedy()
         {
-            this.TestFlags(FlatBufferDeserializationOption.GreedyMutable, $"PrecompiledSerializer:{nameof(FlatBufferDeserializationOption.GreedyMutable)}");
+            this.TestFlags(FlatBufferDeserializationOption.GreedyMutable, $"{MetdataKeys.SerializerKind}:{nameof(FlatBufferDeserializationOption.GreedyMutable)}");
         }
 
         [TestMethod]
         public void FlagsOptions_Default()
         {
-            this.TestFlags(FlatBufferDeserializationOption.Default, $"PrecompiledSerializer:{nameof(FlatBufferDeserializationOption.Default)}");
+            this.TestFlags(FlatBufferDeserializationOption.Default, $"{MetdataKeys.SerializerKind}:{nameof(FlatBufferDeserializationOption.Default)}");
         }
 
         [TestMethod]
         public void FlagsOptions_Default_Implicit()
         {
-            this.TestFlags(FlatBufferDeserializationOption.Default, $"PrecompiledSerializer");
+            this.TestFlags(FlatBufferDeserializationOption.Default, $"{MetdataKeys.SerializerKind}");
         }
 
         [TestMethod]
         public void FlagsOptions_Lazy()
         {
-            this.TestFlags(FlatBufferDeserializationOption.Lazy, $"PrecompiledSerializer:{nameof(FlatBufferDeserializationOption.Lazy)}");
+            this.TestFlags(FlatBufferDeserializationOption.Lazy, $"{MetdataKeys.SerializerKind}:{nameof(FlatBufferDeserializationOption.Lazy)}");
         }
 
         [TestMethod]
         public void FlagsOptions_MutableVectorCache()
         {
-            this.TestFlags(FlatBufferDeserializationOption.VectorCacheMutable, $"PrecompiledSerializer:{nameof(FlatBufferDeserializationOption.VectorCacheMutable)}");
+            this.TestFlags(FlatBufferDeserializationOption.VectorCacheMutable, $"{MetdataKeys.SerializerKind}:{nameof(FlatBufferDeserializationOption.VectorCacheMutable)}");
         }
 
         [TestMethod]
         public void FlagsOptions_VectorCache()
         {
-            this.TestFlags(FlatBufferDeserializationOption.VectorCache, $"PrecompiledSerializer:{nameof(FlatBufferDeserializationOption.VectorCache)}");
+            this.TestFlags(FlatBufferDeserializationOption.VectorCache, $"{MetdataKeys.SerializerKind}:{nameof(FlatBufferDeserializationOption.VectorCache)}");
         }
 
         [TestMethod]
         public void FlagsOptions_PropertyCache()
         {
-            this.TestFlags(FlatBufferDeserializationOption.PropertyCache, $"PrecompiledSerializer:{nameof(FlatBufferDeserializationOption.PropertyCache)}");
+            this.TestFlags(FlatBufferDeserializationOption.PropertyCache, $"{MetdataKeys.SerializerKind}:{nameof(FlatBufferDeserializationOption.PropertyCache)}");
         }
 
         [TestMethod]
         public void FlagsOptions_Invalid()
         {
-            Assert.ThrowsException<InvalidFbsFileException>(() => this.TestFlags(default, $"PrecompiledSerializer:banana"));
-            Assert.ThrowsException<InvalidFbsFileException>(() => this.TestFlags(default, $"PrecompiledSerializer:\"banana\""));
-            Assert.ThrowsException<InvalidFbsFileException>(() => this.TestFlags(default, $"PrecompiledSerializer:\"greedy|banana\""));
-            Assert.ThrowsException<InvalidFbsFileException>(() => this.TestFlags(default, $"PrecompiledSerializer:\"greedy|mutablegreedy\""));
+            Assert.ThrowsException<InvalidFbsFileException>(() => this.TestFlags(default, $"{MetdataKeys.SerializerKind}:banana"));
+            Assert.ThrowsException<InvalidFbsFileException>(() => this.TestFlags(default, $"{MetdataKeys.SerializerKind}:\"banana\""));
+            Assert.ThrowsException<InvalidFbsFileException>(() => this.TestFlags(default, $"{MetdataKeys.SerializerKind}:\"greedy|banana\""));
+            Assert.ThrowsException<InvalidFbsFileException>(() => this.TestFlags(default, $"{MetdataKeys.SerializerKind}:\"greedy|mutablegreedy\""));
         }
 
         private void TestFlags(FlatBufferDeserializationOption expectedFlags, string metadata)
         {
-            string schema = $"namespace Test; table FooTable ({metadata}) {{ foo:string; bar:string (virtual:\"false\"); }}";
+            string schema = $"namespace Test; table FooTable ({metadata}) {{ foo:string; bar:string; }}";
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
 
             Type type = asm.GetType("Test.FooTable");

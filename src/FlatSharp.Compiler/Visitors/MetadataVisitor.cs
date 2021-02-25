@@ -44,6 +44,14 @@ namespace FlatSharp.Compiler
                 }
             }
 
+            foreach (var unsupportedAttribute in MetdataKeys.UnsupportedStandardAttributes)
+            {
+                if (pairs.ContainsKey(unsupportedAttribute))
+                {
+                    ErrorContext.Current?.RegisterError($"FlatSharpCompiler does not support the '{unsupportedAttribute}' attribute in FBS files.");
+                }
+            }
+
             return pairs;
         }
     }
