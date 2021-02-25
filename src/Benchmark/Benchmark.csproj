@@ -3,11 +3,11 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>netcoreapp2.1;net47</TargetFrameworks>
+    <TargetFrameworks>net5.0</TargetFrameworks>
     <DelaySign>false</DelaySign>
     <SignAssembly>false</SignAssembly>
     <AssemblyOriginatorKeyFile>..\..\misc\strongname.snk</AssemblyOriginatorKeyFile>
-    <DefineConstants>$(DefineContants);FLATSHARP_NONVIRTUAL</DefineConstants>
+    <DefineConstants>$(DefineContants);RUN_COMPARISON_BENCHMARKS;CURRENT_VERSION_ONLY</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
