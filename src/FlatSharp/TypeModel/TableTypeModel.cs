@@ -301,8 +301,6 @@ $@"
                 int currentOffset = tableStart + sizeof(int); // skip past vtable soffset_t.
 
                 Span<byte> vtable = stackalloc byte[{4 + 2 * (maxIndex + 1)}];
-                int maxVtableIndex = -1;
-                vtable.Clear(); // reset to 0. Random memory from the stack isn't trustworthy.
 ";
 
             List<string> body = new List<string>();
@@ -327,13 +325,8 @@ $@"
             body.Add("int tableLength = currentOffset - tableStart;");
             body.Add($"{context.SerializationContextVariableName}.{nameof(SerializationContext.Offset)} -= {maxInlineSize} - tableLength;");
 
-            // write vtable header
-            body.Add($"int vtableLength = 6 + (2 * maxVtableIndex);");
-            body.Add($"{context.SpanWriterVariableName}.{nameof(ISpanWriter.WriteUShort)}(vtable, (ushort)vtableLength, 0, {context.SerializationContextVariableName});");
-            body.Add($"{context.SpanWriterVariableName}.{nameof(ISpanWriter.WriteUShort)}(vtable, (ushort)tableLength, sizeof(ushort), {context.SerializationContextVariableName});");
-
             // Finish vtable.
-            body.Add($"int vtablePosition = {context.SerializationContextVariableName}.{nameof(SerializationContext.FinishVTable)}({context.SpanVariableName}, vtable.Slice(0, vtableLength));");
+            body.Add($"int vtablePosition = {context.SerializationContextVariableName}.{nameof(SerializationContext.FinishVTable)}({context.SpanWriterVariableName}, tableLength, {context.SpanVariableName}, vtable);");
             body.Add($"{context.SpanWriterVariableName}.{nameof(SpanWriter.WriteInt)}({context.SpanVariableName}, tableStart - vtablePosition, tableStart, {context.SerializationContextVariableName});");
 
             body.AddRange(writers);
@@ -353,23 +346,20 @@ $@"
             string condition = $"if ({memberModel.ItemTypeModel.GetNotEqualToDefaultValueLiteralExpression(valueVariableName, memberModel.DefaultValueLiteral)})";
 
             List<string> prepareBlockComponents = new List<string>();
+            List<string> postPrepareBlockComponents = new List<string>();
+
             int vtableEntries = memberModel.ItemTypeModel.PhysicalLayout.Length;
             for (int i = 0; i < vtableEntries; ++i)
             {
                 var layout = memberModel.ItemTypeModel.PhysicalLayout[i];
 
-                // use if-set instead of Math.Max -- better perf.
-                // likely because it avoids assignment in some cases.
                 prepareBlockComponents.Add($@"
                             currentOffset += {nameof(SerializationHelpers)}.{nameof(SerializationHelpers.GetAlignmentError)}(currentOffset, {layout.Alignment});
                             {OffsetVariableName(i)} = currentOffset;
-                            {context.SpanWriterVariableName}.{nameof(ISpanWriter.WriteUShort)}(vtable, (ushort)(currentOffset - tableStart), {4 + 2 * (index + i)}, {context.SerializationContextVariableName});
-                            if ({index + i} > maxVtableIndex)
-                            {{
-                                maxVtableIndex = {index + i};
-                            }}
                             currentOffset += {layout.InlineSize};
                 ");
+
+                postPrepareBlockComponents.Add($"{context.SpanWriterVariableName}.{nameof(ISpanWriter.WriteUShort)}(vtable, (ushort)({OffsetVariableName(i)} - tableStart), {4 + 2 * (index + i)}, {context.SerializationContextVariableName});");
             }
 
             string sortInvocation = string.Empty;
@@ -440,7 +430,7 @@ $@"
             else
             {
                 serializeBlock = $@"
-                    if ({OffsetVariableName(0)} != 0)
+                    if ({OffsetVariableName(0)} != tableStart)
                     {{
                         {serializeBlockCore}
                     }}";
@@ -448,11 +438,14 @@ $@"
 
             string prepareBlock = $@"
                     var {valueVariableName} = {context.ValueVariableName}.{memberModel.PropertyInfo.Name};
-                    {string.Join("\r\n", Enumerable.Range(0, vtableEntries).Select(x => $"var {OffsetVariableName(x)} = 0;"))}
+                    {string.Join("\r\n", Enumerable.Range(0, vtableEntries).Select(x => $"var {OffsetVariableName(x)} = tableStart;"))}
                     {condition} 
                     {{
-                            {string.Join("\r\n", prepareBlockComponents)}
-                    }}";
+                        {string.Join("\r\n", prepareBlockComponents)}
+                    }}
+
+                    {string.Join("\r\n", postPrepareBlockComponents)}
+                    ";
 
             return (prepareBlock, serializeBlock);
         }

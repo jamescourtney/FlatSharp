@@ -17,6 +17,7 @@
     <PackageReference Include="FlatSharp.Runtime" Version="3.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="protobuf-net" Version="2.4.0" />
+    <PackageReference Include="MessagePack" Version="2.2.85" />
   </ItemGroup>
 
   <ItemGroup>

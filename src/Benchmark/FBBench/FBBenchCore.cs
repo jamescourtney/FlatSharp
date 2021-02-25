@@ -17,6 +17,7 @@
 namespace Benchmark.FBBench
 {
     using System;
+    using System.Buffers;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
@@ -52,6 +53,8 @@ namespace Benchmark.FBBench
         protected MemoryStream pbdn_readBuffer = new MemoryStream(64 * 1024);
 
         private FlatBufferSerializer fs_serializer;
+
+        private byte[] msgPackWriteData;
 
         protected byte[] fs_readMemory;
         protected readonly byte[] fs_writeMemory = new byte[64 * 1024];
@@ -186,9 +189,11 @@ namespace Benchmark.FBBench
                 this.FlatSharp_ParseAndTraverse();
             }
 
+            int googleLength = 0;
             {
                 this.google_ByteBuffer = new FlatBuffers.ByteBuffer(this.fs_readMemory.ToArray());
                 this.google_defaultContainer = Google.FooBarContainer.GetRootAsFooBarContainer(this.google_ByteBuffer).UnPack();
+                googleLength = this.Google_FlatBuffers_Serialize_ObjectApi();
             }
 
             {
@@ -198,7 +203,16 @@ namespace Benchmark.FBBench
                 this.PBDN_ParseAndTraverse();
             }
 
+            {
+                this.MsgPack_Serialize_NonVirtual();
+            }
+
             Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.RealTime;
+
+            Console.WriteLine($"Sizes: MsgPack: {this.msgPackWriteData.Length}");
+            Console.WriteLine($"Sizes: FlatSharp: {this.fs_readMemory.Length}");
+            Console.WriteLine($"Sizes: Google: {googleLength}");
+            Console.WriteLine($"Sizes: Pbdn: {this.pbdn_writeBuffer.Length}");
         }
 
         #region Google.FlatBuffers
@@ -207,7 +221,6 @@ namespace Benchmark.FBBench
         {
             var builder = this.google_flatBufferBuilder;
             builder.Clear();
-
             var vectorLength = this.VectorLength;
 
             Offset<Google.FooBar>[] offsets = new Offset<Google.FooBar>[vectorLength];
@@ -242,12 +255,13 @@ namespace Benchmark.FBBench
             builder.Finish(foobarOffset.Value);
         }
 
-        public virtual void Google_FlatBuffers_Serialize_ObjectApi()
+        public virtual int Google_FlatBuffers_Serialize_ObjectApi()
         {
             var builder = this.google_flatBufferBuilder;
             builder.Clear();
             var offset = Google.FooBarContainer.Pack(builder, this.google_defaultContainer);
             builder.Finish(offset.Value);
+            return offset.Value;
         }
 
         public virtual int Google_Flatbuffers_ParseAndTraverse()
@@ -580,6 +594,27 @@ namespace Benchmark.FBBench
 
         #endregion
 
+        #region MsgPack
+
+        public virtual void MsgPack_Serialize_NonVirtual()
+        {
+            this.msgPackWriteData = MessagePack.MessagePackSerializer.Serialize(this.defaultContainerNonVirtual);
+        }
+
+        public virtual void MsgPack_ParseAndTraverse()
+        {
+            var item = MessagePack.MessagePackSerializer.Deserialize<FooBarListContainerNonVirtual>(this.msgPackWriteData, out int len);
+            this.TraverseFooBarContainer(item);
+        }
+
+        public virtual void MsgPack_ParseAndTraversePartial()
+        {
+            var item = MessagePack.MessagePackSerializer.Deserialize<FooBarListContainerNonVirtual>(this.msgPackWriteData, out int len);
+            this.TraverseFooBarContainerPartial(item);
+        }
+
+        #endregion
+
         public int TraverseFooBarContainer(FooBarListContainer foobar)
         {
             var iterations = this.TraversalCount;
@@ -646,7 +681,6 @@ namespace Benchmark.FBBench
 
             return sum;
         }
-
 
         public int TraverseFooBarContainer(FooBarListContainerNonVirtual foobar)
         {
@@ -715,7 +749,6 @@ namespace Benchmark.FBBench
             return sum;
         }
     }
-
 
     #region Shared Contracts -- Virtual
 
@@ -833,74 +866,77 @@ namespace Benchmark.FBBench
 
     #endregion
 
-
     #region Shared Contracts -- NonVirtual
 
     [ProtoContract]
     [FlatBufferStruct]
+    [MessagePack.MessagePackObject]
     public class FooNonVirtual
     {
-        [ProtoMember(1), FlatBufferItem(0)]
+        [ProtoMember(1), FlatBufferItem(0), MessagePack.Key(0)]
         public ulong Id { get; set; }
 
-        [ProtoMember(2), FlatBufferItem(1)]
+        [ProtoMember(2), FlatBufferItem(1), MessagePack.Key(1)]
         public short Count { get; set; }
 
-        [ProtoMember(3), FlatBufferItem(2)]
+        [ProtoMember(3), FlatBufferItem(2), MessagePack.Key(2)]
         public sbyte Prefix { get; set; }
 
-        [ProtoMember(4), FlatBufferItem(3)]
+        [ProtoMember(4), FlatBufferItem(3), MessagePack.Key(3)]
         public uint Length { get; set; }
     }
 
     [ProtoContract]
     [FlatBufferStruct]
+    [MessagePack.MessagePackObject]
     public class BarNonVirtual
     {
-        [ProtoMember(1), FlatBufferItem(0)]
+        [ProtoMember(1), FlatBufferItem(0), MessagePack.Key(0)]
         public FooNonVirtual Parent { get; set; }
 
-        [ProtoMember(2), FlatBufferItem(1)]
+        [ProtoMember(2), FlatBufferItem(1), MessagePack.Key(1)]
         public int Time { get; set; }
 
-        [ProtoMember(3), FlatBufferItem(2)]
+        [ProtoMember(3), FlatBufferItem(2), MessagePack.Key(2)]
         public float Ratio { get; set; }
 
-        [ProtoMember(4), FlatBufferItem(3)]
+        [ProtoMember(4), FlatBufferItem(3), MessagePack.Key(3)]
         public ushort Size { get; set; }
     }
 
     [ProtoContract]
     [FlatBufferTable]
+    [MessagePack.MessagePackObject]
     public class FooBarNonVirtual
     {
-        [ProtoMember(1), FlatBufferItem(0)]
+        [ProtoMember(1), FlatBufferItem(0), MessagePack.Key(0)]
         public BarNonVirtual Sibling { get; set; }
 
-        [ProtoMember(2), FlatBufferItem(1)]
+        [ProtoMember(2), FlatBufferItem(1), MessagePack.Key(1)]
         public string Name { get; set; }
 
-        [ProtoMember(3), FlatBufferItem(2)]
+        [ProtoMember(3), FlatBufferItem(2), MessagePack.Key(2)]
         public double Rating { get; set; }
 
-        [ProtoMember(4), FlatBufferItem(3)]
+        [ProtoMember(4), FlatBufferItem(3), MessagePack.Key(3)]
         public byte PostFix { get; set; }
     }
 
     [ProtoContract]
     [FlatBufferTable]
+    [MessagePack.MessagePackObject]
     public class FooBarListContainerNonVirtual
     {
-        [ProtoMember(1), FlatBufferItem(0)]
+        [ProtoMember(1), FlatBufferItem(0), MessagePack.Key(0)]
         public IList<FooBarNonVirtual> List { get; set; }
 
-        [ProtoMember(2), FlatBufferItem(1)]
+        [ProtoMember(2), FlatBufferItem(1), MessagePack.Key(1)]
         public bool Initialized { get; set; }
 
-        [ProtoMember(3), FlatBufferItem(2)]
+        [ProtoMember(3), FlatBufferItem(2), MessagePack.Key(2)]
         public short Fruit { get; set; }
 
-        [ProtoMember(4), FlatBufferItem(3)]
+        [ProtoMember(4), FlatBufferItem(3), MessagePack.Key(3)]
         public string Location { get; set; }
     }
 
