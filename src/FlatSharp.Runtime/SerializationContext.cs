@@ -38,7 +38,7 @@ namespace FlatSharp
         private int offset;
         private int capacity;
         private readonly List<PostSerializeAction> postSerializeActions;
-        private readonly LinkedList<int> vtableOffsets;
+        private readonly List<int> vtableOffsets;
 
         /// <summary>
         /// Initializes a new serialization context.
@@ -163,8 +163,6 @@ namespace FlatSharp
         {
             checked
             {
-                var offsets = this.vtableOffsets;
-
                 // write table length.
                 writer.WriteUShort(vtable, (ushort)tableLength, sizeof(ushort), this);
 
@@ -176,37 +174,55 @@ namespace FlatSharp
 
                 writer.WriteUShort(vtable, (ushort)vtable.Length, 0, this);
 
-                var node = offsets.First;
-                while (node is not null)
+                var offsets = this.vtableOffsets;
+                int count = offsets.Count;
+                for (int i = 0; i < count; ++i)
                 {
-                    var offset = node.Value;
+                    int offset = offsets[i];
 
                     ReadOnlySpan<byte> existingVTable = buffer.Slice(offset);
                     existingVTable = existingVTable.Slice(0, ScalarSpanReader.ReadUShort(existingVTable));
 
                     if (CompareEquality(existingVTable, vtable))
                     {
-                        if (node.Previous is not null)
+                        // Slowly bubble used things towards the front of the list.
+                        // This is not exact, but should keep frequently used
+                        // items towards the front.
+                        if (i != 0)
                         {
-                            // Move the current vtable to the head of the list.
-                            offsets.Remove(node);
-                            offsets.AddFirst(node);
+                            Promote(i, offsets);
                         }
 
-                        // We already have a vtable that matches this specification. Return that offset.
                         return offset;
                     }
-
-                    node = node.Next;
                 }
 
                 // Oh, well. Write the new table.
                 int newVTableOffset = this.AllocateSpace(vtable.Length, sizeof(ushort));
                 vtable.CopyTo(buffer.Slice(newVTableOffset));
-                offsets.AddFirst(newVTableOffset);
+                offsets.Add(newVTableOffset);
+
+                // "Insert" this item in the middle of the list.
+                int maxIndex = offsets.Count - 1;
+                Promote(maxIndex, offsets);
 
                 return newVTableOffset;
             }
+        }
+
+        /// <summary>
+        /// Promote frequently-used items to be closer to the front of the list.
+        /// This is done with a swap to avoid shuffling the whole list by inserting
+        /// at a given index. An alternative might be an unrolled linked list data structure.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void Promote(int i, List<int> offsets)
+        {
+            int swapIndex = i / 2;
+
+            int temp = offsets[i];
+            offsets[i] = offsets[swapIndex];
+            offsets[swapIndex] = temp;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
