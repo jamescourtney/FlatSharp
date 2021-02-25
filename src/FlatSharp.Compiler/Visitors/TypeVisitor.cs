@@ -43,18 +43,18 @@ namespace FlatSharp.Compiler
             {
                 definition.IsTable = context.GetChild(0).GetText() == "table";
 
-                definition.NonVirtual = metadata.ParseNullableBooleanMetadata("nonVirtual");
-                definition.ObsoleteDefaultConstructor = metadata.ParseBooleanMetadata("obsoleteDefaultConstructor");
+                definition.NonVirtual = metadata.ParseNullableBooleanMetadata(MetdataKeys.NonVirtualProperty, MetdataKeys.NonVirtualPropertyLegacy);
+                definition.ObsoleteDefaultConstructor = metadata.ParseBooleanMetadata(MetdataKeys.ObsoleteDefaultConstructor, MetdataKeys.ObsoleteDefaultConstructorLegacy);
 
                 definition.RequestedSerializer = metadata.ParseMetadata<FlatBufferDeserializationOption?>(
-                    "PrecompiledSerializer",
+                    new[] { MetdataKeys.SerializerKind, MetdataKeys.PrecompiledSerializerLegacy },
                     ParseSerailizerFlags,
                     FlatBufferDeserializationOption.Default,
                     null);
 
                 if (!definition.IsTable && definition.RequestedSerializer != null)
                 {
-                    ErrorContext.Current.RegisterError("Structs may not have precompiled serializers.");
+                    ErrorContext.Current.RegisterError("Structs may not have serializers.");
                 }
 
                 var fields = context.field_decl();

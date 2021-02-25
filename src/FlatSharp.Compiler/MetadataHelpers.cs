@@ -24,54 +24,59 @@ namespace FlatSharp.Compiler
 
         public static T ParseMetadata<T>(
             this IDictionary<string, string?> metadata,
-            string key,
+            string[] keys,
             TryParse<T> tryParse,
             T defaultValueIfPresent,
             T defaultValueIfNotPresent)
         {
-            if (!metadata.TryGetValue(key, out string? value))
+            foreach (string key in keys)
             {
-                return defaultValueIfNotPresent;
-            }
+                if (!metadata.TryGetValue(key, out string? value))
+                {
+                    continue;
+                }
 
-            if (string.IsNullOrEmpty(value))
-            {
+                if (string.IsNullOrEmpty(value))
+                {
+                    return defaultValueIfPresent;
+                }
+
+                if (tryParse(value, out var parsed))
+                {
+                    return parsed;
+                }
+
+                ErrorContext.Current?.RegisterError(
+                  $"Unable to parse attribute '{key}' with value '{value}' as as type '{typeof(T).Name}'. ");
+
                 return defaultValueIfPresent;
             }
 
-            if (tryParse(value, out var parsed))
-            {
-                return parsed;
-            }
-
-            ErrorContext.Current?.RegisterError(
-              $"Unable to parse attribute '{key}' with value '{value}' as as type '{typeof(T).Name}'. ");
-
-            return defaultValueIfPresent;
+            return defaultValueIfNotPresent;
         }
 
-        public static bool ParseBooleanMetadata(this IDictionary<string, string?> metadata, string key)
+        public static bool ParseBooleanMetadata(this IDictionary<string, string?> metadata, params string[] keys)
         {
             return ParseMetadata(
                 metadata,
-                key,
+                keys,
                 bool.TryParse,
                 true,
                 false);
         }
 
-        public static bool TryParseIntegerMetadata(this IDictionary<string, string?> metadata, string key, out int value)
+        public static bool TryParseIntegerMetadata(this IDictionary<string, string?> metadata, string[] keys, out int value)
         {
             const int DefaultIntegerAttributeValueIfNotPresent = -2;
-            value = ParseMetadata(metadata, key, int.TryParse, DefaultIntegerAttributeValueIfPresent, DefaultIntegerAttributeValueIfNotPresent);
+            value = ParseMetadata(metadata, keys, int.TryParse, DefaultIntegerAttributeValueIfPresent, DefaultIntegerAttributeValueIfNotPresent);
             return value >= 0;
         }
 
-        public static bool? ParseNullableBooleanMetadata(this IDictionary<string, string?> metadata, string key)
+        public static bool? ParseNullableBooleanMetadata(this IDictionary<string, string?> metadata, params string[] keys)
         {
             return ParseMetadata<bool?>(
                 metadata,
-                key,
+                keys,
                 TryParseNullableBool,
                 true,
                 null);
@@ -79,9 +84,14 @@ namespace FlatSharp.Compiler
 
         private static bool TryParseNullableBool(string value, out bool? result)
         {
-            bool returnValue = bool.TryParse(value, out var parsed);
-            result = parsed;
-            return returnValue;
+            result = null;
+            if (bool.TryParse(value, out var parsed))
+            {
+                result = parsed;
+                return true;
+            }
+
+            return false;
         }
 
         internal const int DefaultIntegerAttributeValueIfPresent = -1;

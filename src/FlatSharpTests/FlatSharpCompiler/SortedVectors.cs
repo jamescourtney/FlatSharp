@@ -33,15 +33,15 @@ namespace FlatSharpTests.Compiler
         [TestMethod]
         public void SortedVector_StringKey()
         {
-            string schema = @"
-table Monster (PrecompiledSerializer) {
-  Vector:[VectorMember] (VectorType:IReadOnlyList, SortedVector);
-}
+            string schema = $@"
+table Monster ({MetdataKeys.SerializerKind}) {{
+  Vector:[VectorMember] ({MetdataKeys.VectorKind}:IReadOnlyList, {MetdataKeys.SortedVector});
+}}
 
-table VectorMember {
-    Key:string (key);
+table VectorMember {{
+    Key:string ({MetdataKeys.Key});
     Data:int32;
-}
+}}
 "; 
             // We are just verifying that the schema can be generated and compiled. The testing of the logic portion of the sorted vector code takes
             // place elsewhere.
@@ -63,15 +63,15 @@ table VectorMember {
         [TestMethod]
         public void SortedVector_IntKey()
         {
-            string schema = @"
-table Monster (PrecompiledSerializer) {
-  Vector:[VectorMember] (VectorType:IReadOnlyList, SortedVector);
-}
+            string schema = $@"
+table Monster ({MetdataKeys.SerializerKind}) {{
+  Vector:[VectorMember] ({MetdataKeys.VectorKind}:IReadOnlyList, {MetdataKeys.SortedVector});
+}}
 
-table VectorMember {
+table VectorMember {{
     Data:string;
     Key:int32 (Key);
-}
+}}
 ";
             // We are just verifying that the schema can be generated and compiled. The testing of the logic portion of the sorted vector code takes
             // place elsewhere.
@@ -97,24 +97,24 @@ table VectorMember {
         [TestMethod]
         public void SortedVector_InvalidKeys_NoSerializer()
         {
-            string schema = @"
-enum TestEnum : ubyte { One = 1, Two = 2 }
+            string schema = $@"
+enum TestEnum : ubyte {{ One = 1, Two = 2 }}
 
-union TestUnion { VectorMember }
+union TestUnion {{ VectorMember }}
 
-table Monster {
-  Vector:[VectorMember] (VectorType:IReadOnlyList, SortedVector);
-}
-struct FakeStruct { StructData:int32; }
+table Monster {{
+  Vector:[VectorMember] ({MetdataKeys.VectorKind}:IReadOnlyList, {MetdataKeys.SortedVector});
+}}
+struct FakeStruct {{ StructData:int32; }}
 
-table VectorMember {
-    Data:string (Key);
+table VectorMember {{
+    Data:string ({MetdataKeys.Key});
     Key:int32;
     Enum:TestEnum;
     Struct:FakeStruct;
     Union:TestUnion;
     StructVector:[FakeStruct];
-}
+}}
 
 ";
             // We are just verifying that the schema can be generated and compiled. The testing of the logic portion of the sorted vector code takes
@@ -147,31 +147,31 @@ table VectorMember {
         [TestMethod]
         public void SortedVector_InvalidKeys_WithSerializer()
         {
-            string schema = @"
-enum TestEnum : ubyte { One = 1, Two = 2 }
+            string schema = $@"
+enum TestEnum : ubyte {{ One = 1, Two = 2 }}
 
-union TestUnion { VectorMember }
+union TestUnion {{ VectorMember }}
 
-table Monster (PrecompiledSerializer) {
-  Vector:[VectorMember] (VectorType:IReadOnlyList, SortedVector, Key);
-}
-struct FakeStruct { Data:int32 (key); }
+table Monster ({MetdataKeys.SerializerKind}) {{
+  Vector:[VectorMember] ({MetdataKeys.VectorKind}:IReadOnlyList, {MetdataKeys.SortedVector}, {MetdataKeys.Key});
+}}
+struct FakeStruct {{ Data:int32 ({MetdataKeys.Key}); }}
 
-table VectorMember {
-    Data:string (SortedVector, Key);
-    Key:int32 (SortedVector, Key);
-    Enum:TestEnum (SortedVector, Key);
-    Struct:FakeStruct (SortedVector, key);
-    Union:TestUnion (SortedVector, Key);
-    StructVector:[FakeStruct] (SortedVector, key);
-}
+table VectorMember {{
+    Data:string ({MetdataKeys.SortedVector}, {MetdataKeys.Key});
+    Key:int32 ({MetdataKeys.SortedVector}, {MetdataKeys.Key});
+    Enum:TestEnum ({MetdataKeys.SortedVector}, {MetdataKeys.Key});
+    Struct:FakeStruct ({MetdataKeys.SortedVector}, {MetdataKeys.Key});
+    Union:TestUnion ({MetdataKeys.SortedVector}, {MetdataKeys.Key});
+    StructVector:[FakeStruct] ({MetdataKeys.SortedVector}, {MetdataKeys.Key});
+}}
 
 ";
             Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
         }
 
         [TestMethod]
-        public void SortedVector_IndexedVector_KeyTypesCorrect_SharedString() => this.SortedVector_IndexedVector_KeyTypesCorrect<SharedString>("string", "SharedString");
+        public void SortedVector_IndexedVector_KeyTypesCorrect_SharedString() => this.SortedVector_IndexedVector_KeyTypesCorrect<SharedString>("string", MetdataKeys.SharedString);
 
         [TestMethod]
         public void SortedVector_IndexedVector_KeyTypesCorrect_String() => this.SortedVector_IndexedVector_KeyTypesCorrect<string>("string");
@@ -213,8 +213,8 @@ table VectorMember {
         public void SortedVector_IndexedVector_NoKey()
         {
             string schema = $@"
-table Monster (PrecompiledSerializer) {{
-  Vector:[VectorMember] (VectorType:IIndexedVector);
+table Monster ({MetdataKeys.SerializerKind}) {{
+  Vector:[VectorMember] ({MetdataKeys.VectorKind}:IIndexedVector);
 }}
 table VectorMember {{
     Data:string;
@@ -225,11 +225,11 @@ table VectorMember {{
         private void SortedVector_IndexedVector_KeyTypesCorrect<TKeyType>(string type, string metadata = null)
         {
             string schema = $@"
-table Monster (PrecompiledSerializer) {{
-  Vector:[VectorMember] (VectorType:IIndexedVector);
+table Monster ({MetdataKeys.SerializerKind}) {{
+  Vector:[VectorMember] ({MetdataKeys.VectorKind}:IIndexedVector);
 }}
 table VectorMember {{
-    Data:{type} (Key {(!string.IsNullOrEmpty(metadata) ? ", " : "")}{metadata});
+    Data:{type} ({MetdataKeys.Key} {(!string.IsNullOrEmpty(metadata) ? ", " : "")}{metadata});
 }}";
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
             var monsterType = asm.GetTypes().Single(t => t.Name == "Monster");

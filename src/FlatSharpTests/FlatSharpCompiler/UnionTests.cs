@@ -29,19 +29,19 @@ namespace FlatSharpTests.Compiler
         [TestMethod]
         public void TestUnionCustomClassGeneration()
         {
-            const string Schema = @"
+            string schema = $@"
 namespace Foobar;
 
-table A { Value:int32; }
-table B { Value:int32; }
-struct C { Value:int32; }
+table A {{ Value:int32; }}
+table B {{ Value:int32; }}
+struct C {{ Value:int32; }}
 
-union TestUnion { First:A, B, Foobar.C }
+union TestUnion {{ First:A, B, Foobar.C }}
 
-table D (PrecompiledSerializer) { Union:TestUnion; }
+table D ({MetdataKeys.SerializerKind}) {{ Union:TestUnion; }}
 
 ";
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(Schema, new());
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
             Type unionType = asm.GetType("Foobar.TestUnion");
             Type aType = asm.GetType("Foobar.A");
             Type bType = asm.GetType("Foobar.B");
@@ -110,20 +110,20 @@ table D (PrecompiledSerializer) { Union:TestUnion; }
         [TestMethod]
         public void TestUnionWithStringGeneration()
         {
-            const string Schema = @"
+            string schema = $@"
 namespace Foobar;
 
-table A { Value:int32; }
-table B { Value:int32; }
-struct C { Value:int32; }
+table A {{ Value:int32; }}
+table B {{ Value:int32; }}
+struct C {{ Value:int32; }}
 
-union TestUnion { First:A, B, Foobar.C, string }
+union TestUnion {{ First:A, B, Foobar.C, string }}
 
-table D (PrecompiledSerializer) { Union:TestUnion; }
+table D ({MetdataKeys.SerializerKind}) {{ Union:TestUnion; }}
 
 ";
             // Simply ensure that the union is generated as FlatBufferUnion and no custom class is created.
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(Schema, new());
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
             Type unionType = asm.GetType("Foobar.TestUnion");
 
             Type dType = asm.GetType("Foobar.D");
@@ -134,20 +134,20 @@ table D (PrecompiledSerializer) { Union:TestUnion; }
         [TestMethod]
         public void TestUnionWithAliasedStringGeneration()
         {
-            const string Schema = @"
+            string schema = $@"
 namespace Foobar;
 
-table A { Value:int32; }
-table B { Value:int32; }
-struct C { Value:int32; }
+table A {{ Value:int32; }}
+table B {{ Value:int32; }}
+struct C {{ Value:int32; }}
 
-union TestUnion { First:A, B, Foobar.C, StringAlias:string }
+union TestUnion {{ First:A, B, Foobar.C, StringAlias:string }}
 
-table D (PrecompiledSerializer) { Union:TestUnion; }
+table D ({MetdataKeys.SerializerKind}) {{ Union:TestUnion; }}
 
 ";
             // Simply ensure that the union is generated as FlatBufferUnion and no custom class is created.
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(Schema, new());
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
             Type unionType = asm.GetType("Foobar.TestUnion");
             Type dType = asm.GetType("Foobar.D");
 

@@ -201,21 +201,21 @@ namespace FlatSharpTests.Compiler
         private void RunCompoundTest<T>(string fbsType)
         {
             this.RunSingleTest<T>(fbsType);
-            this.RunSingleTest<T>($"{fbsType} (deprecated)", deprecated: true);
+            this.RunSingleTest<T>($"{fbsType} ({MetdataKeys.Deprecated})", deprecated: true);
             this.RunSingleTest<IList<T>>($"[{fbsType}]");
-            this.RunSingleTest<IList<T>>($"[{fbsType}]  (vectortype: IList)");
-            this.RunSingleTest<T[]>($"[{fbsType}]  (vectortype: Array)");
-            this.RunSingleTest<IReadOnlyList<T>>($"[{fbsType}]  (vectortype: IReadOnlyList)");
+            this.RunSingleTest<IList<T>>($"[{fbsType}]  ({MetdataKeys.VectorKind}: IList)");
+            this.RunSingleTest<T[]>($"[{fbsType}]  ({MetdataKeys.VectorKind}: Array)");
+            this.RunSingleTest<IReadOnlyList<T>>($"[{fbsType}]  ({MetdataKeys.VectorKind}: IReadOnlyList)");
 
             if (typeof(T) == typeof(byte))
             {
-                this.RunSingleTest<Memory<T>?>($"[{fbsType}]  (vectortype: Memory)");
-                this.RunSingleTest<ReadOnlyMemory<T>?>($"[{fbsType}]  (vectortype: ReadOnlyMemory)");
+                this.RunSingleTest<Memory<T>?>($"[{fbsType}]  ({MetdataKeys.VectorKind}: Memory)");
+                this.RunSingleTest<ReadOnlyMemory<T>?>($"[{fbsType}]  ({MetdataKeys.VectorKind}: ReadOnlyMemory)");
             }
             else
             {
-                Assert.ThrowsException<InvalidFbsFileException>(() => this.RunSingleTest<Memory<T>>($"[{fbsType}]  (vectortype: Memory)"));
-                Assert.ThrowsException<InvalidFbsFileException>(() => this.RunSingleTest<ReadOnlyMemory<T>>($"[{fbsType}]  (vectortype: ReadOnlyMemory)"));
+                Assert.ThrowsException<InvalidFbsFileException>(() => this.RunSingleTest<Memory<T>>($"[{fbsType}]  ({MetdataKeys.VectorKind}: Memory)"));
+                Assert.ThrowsException<InvalidFbsFileException>(() => this.RunSingleTest<ReadOnlyMemory<T>>($"[{fbsType}]  ({MetdataKeys.VectorKind}: ReadOnlyMemory)"));
             }
         }
 

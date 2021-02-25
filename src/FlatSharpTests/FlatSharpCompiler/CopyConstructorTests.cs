@@ -33,12 +33,12 @@ namespace FlatSharpTests.Compiler
         [TestMethod]
         public void CopyConstructorsTest()
         {
-            string schema = @"
+            string schema = $@"
 namespace CopyConstructorTest;
 
-union Union { OuterTable, InnerTable, OuterStruct, InnerStruct } // Optionally add more tables.
+union Union {{ OuterTable, InnerTable, OuterStruct, InnerStruct }} // Optionally add more tables.
 
-table OuterTable (PrecompiledSerializer: ""Greedy"") {
+table OuterTable ({MetdataKeys.SerializerKind}: ""Greedy"") {{
   A:string;
 
   B:byte;
@@ -50,33 +50,33 @@ table OuterTable (PrecompiledSerializer: ""Greedy"") {
   H:int64;
   I:uint64;
   
-  IntVector_List:[int] (VectorType:""IList"");
-  IntVector_RoList:[int] (VectorType:""IReadOnlyList"");
-  IntVector_Array:[int] (VectorType:""Array"");
+  IntVector_List:[int] ({MetdataKeys.VectorKind}:""IList"");
+  IntVector_RoList:[int] ({MetdataKeys.VectorKind}:""IReadOnlyList"");
+  IntVector_Array:[int] ({MetdataKeys.VectorKind}:""Array"");
   
-  TableVector_List:[InnerTable] (VectorType:""IList"");
-  TableVector_RoList:[InnerTable] (VectorType:""IReadOnlyList"");
-  TableVector_Indexed:[InnerTable] (VectorType:""IIndexedVector"");
-  TableVector_Array:[InnerTable] (VectorType:""Array"");
+  TableVector_List:[InnerTable] ({MetdataKeys.VectorKind}:""IList"");
+  TableVector_RoList:[InnerTable] ({MetdataKeys.VectorKind}:""IReadOnlyList"");
+  TableVector_Indexed:[InnerTable] ({MetdataKeys.VectorKind}:""IIndexedVector"");
+  TableVector_Array:[InnerTable] ({MetdataKeys.VectorKindLegacy}:""Array"");
 
-  ByteVector:[ubyte] (VectorType:""Memory"");
-  ByteVector_RO:[ubyte] (VectorType:""ReadOnlyMemory"");
+  ByteVector:[ubyte] ({MetdataKeys.VectorKind}:""Memory"");
+  ByteVector_RO:[ubyte] ({MetdataKeys.VectorKind}:""ReadOnlyMemory"");
   Union:Union;
-}
+}}
 
-struct OuterStruct {
+struct OuterStruct {{
     Value:int;
     InnerStruct:InnerStruct;
-}
+}}
 
-struct InnerStruct {
+struct InnerStruct {{
     LongValue:int64;
-}
+}}
 
-table InnerTable {
-  Name:string (key);
+table InnerTable {{
+  Name:string ({MetdataKeys.Key});
   OuterStruct:OuterStruct;
-}
+}}
 
 ";
             OuterTable original = new OuterTable

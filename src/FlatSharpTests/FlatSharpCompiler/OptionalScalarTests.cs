@@ -30,16 +30,16 @@ namespace FlatSharpTests.Compiler
         [TestMethod]
         public void TestOptionalScalars()
         {
-            string schema = @"
+            string schema = $@"
             namespace OptionalScalarTests;
             
             enum TestEnum : ubyte
-            {
+            {{
                 A = 1,
                 B = 2
-            }
+            }}
 
-            table Table (PrecompiledSerializer:greedy) {
+            table Table ({MetdataKeys.SerializerKind}:greedy) {{
                 Bool : bool = null;
                 Byte : ubyte = null;
                 SByte : byte = null;
@@ -52,7 +52,7 @@ namespace FlatSharpTests.Compiler
                 Double : double = null;
                 Float : float32 = null;
                 Enum : TestEnum = null;
-            }";
+            }}";
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
 

@@ -36,7 +36,7 @@ namespace FlatSharp.Compiler
             ErrorContext.Current.WithScope(name, () =>
             {
                 Dictionary<string, string?> metadata = new MetadataVisitor().VisitMetadata(context.metadata());
-                
+
                 var (fieldType, vectorType, structVectorLength) = GetFbsFieldType(context, metadata);
 
                 var definition = new FieldDefinition(this.parent, name, fieldType)
@@ -54,33 +54,22 @@ namespace FlatSharp.Compiler
                     definition.DefaultValue = defaultValue;
                 }
 
-                definition.Deprecated = metadata.ParseBooleanMetadata("deprecated");
-                definition.IsKey = metadata.ParseBooleanMetadata("key");
-                definition.NonVirtual = metadata.ParseNullableBooleanMetadata("nonVirtual");
-                definition.SortedVector = metadata.ParseBooleanMetadata("sortedvector"); 
-                definition.SharedString = metadata.ParseBooleanMetadata("sharedstring");
+                // standard metadata
+                definition.Deprecated = metadata.ParseBooleanMetadata(MetdataKeys.Deprecated);
+                definition.IsKey = metadata.ParseBooleanMetadata(MetdataKeys.Key);
+
+                // Flatsharp custom metadata
+                definition.SortedVector = metadata.ParseBooleanMetadata(MetdataKeys.SortedVector, MetdataKeys.SortedVectorLegacy);
+                definition.SharedString = metadata.ParseBooleanMetadata(MetdataKeys.SharedString, MetdataKeys.SharedStringLegacy);
+                definition.NonVirtual = metadata.ParseNullableBooleanMetadata(MetdataKeys.NonVirtualProperty, MetdataKeys.NonVirtualPropertyLegacy);
 
                 this.ParseIdMetadata(definition, metadata);
 
                 definition.SetterKind = metadata.ParseMetadata(
-                    "setter",
+                    new[] { MetdataKeys.Setter, MetdataKeys.SetterLegacy },
                     ParseSetterKind,
                     SetterKind.Public,
                     SetterKind.Public);
-
-                // Attributes from FlatBuffers that we don't support.
-                string[] unsupportedAttributes =
-                {
-                    "required", "force_align", "bit_flags", "flexbuffer", "hash", "original_order"
-                };
-
-                foreach (var unsupportedAttribute in unsupportedAttributes)
-                {
-                    if (metadata.ContainsKey(unsupportedAttribute))
-                    {
-                        ErrorContext.Current?.RegisterError($"FlatSharpCompiler does not support the '{unsupportedAttribute}' attribute in FBS files.");
-                    }
-                }
 
                 if (structVectorLength == null)
                 {
@@ -112,11 +101,11 @@ namespace FlatSharp.Compiler
             FieldDefinition definition,
             IDictionary<string, string?> metadata)
         {
-            if (!metadata.TryParseIntegerMetadata("id", out int index))
+            if (!metadata.TryParseIntegerMetadata(new[] { MetdataKeys.Id }, out int index))
             {
                 if (index == MetadataHelpers.DefaultIntegerAttributeValueIfPresent)
                 {
-                    ErrorContext.Current?.RegisterError("Value of 'id' attribute should be set if attribute present.");
+                    ErrorContext.Current?.RegisterError($"Value of '{MetdataKeys.Id}' attribute should be set if attribute present.");
                 }
 
                 return;
@@ -124,7 +113,7 @@ namespace FlatSharp.Compiler
 
             if (index < 0)
             {
-                ErrorContext.Current?.RegisterError($"Value of 'id' attribute {index} of '{definition.Name}' field is negative.");
+                ErrorContext.Current?.RegisterError($"Value of '{MetdataKeys.Id}' attribute {index} of '{definition.Name}' field is negative.");
             }
 
             definition.Index = index;
@@ -147,7 +136,8 @@ namespace FlatSharp.Compiler
                 vectorType = VectorType.IList;
                 typeContext = context.type().vector_type().core_type();
 
-                if (metadata.TryGetValue("vectortype", out string? vectorTypeString))
+                if (metadata.TryGetValue(MetdataKeys.VectorKind, out string? vectorTypeString) ||
+                    metadata.TryGetValue(MetdataKeys.VectorKindLegacy, out vectorTypeString))
                 {
                     if (!Enum.TryParse<VectorType>(vectorTypeString, true, out vectorType))
                     {
@@ -156,10 +146,10 @@ namespace FlatSharp.Compiler
                     }
                 }
             }
-            else if (metadata.ContainsKey("vectortype"))
+            else if (metadata.ContainsKey(MetdataKeys.VectorKind) || metadata.ContainsKey(MetdataKeys.VectorKindLegacy))
             {
                 ErrorContext.Current?.RegisterError(
-                    $"Non-vectors may not have the 'vectortype' attribute.");
+                    $"Non-vectors may not have the '{MetdataKeys.VectorKind}' or '{MetdataKeys.VectorKindLegacy}' attributes.");
             }
 
             if (context.type().structvector_type() is not null)

@@ -26,6 +26,7 @@ namespace Benchmark.FBBench
         [Params(1, 5)]
         public override int TraversalCount { get; set; }
 
+#if RUN_COMPARISON_BENCHMARKS
         [Benchmark]
         public override int Google_Flatbuffers_ParseAndTraverse() => base.Google_Flatbuffers_ParseAndTraverse();
 
@@ -55,5 +56,6 @@ namespace Benchmark.FBBench
 
         [Benchmark]
         public override void MsgPack_ParseAndTraversePartial() => base.MsgPack_ParseAndTraversePartial();
+#endif
     }
 }

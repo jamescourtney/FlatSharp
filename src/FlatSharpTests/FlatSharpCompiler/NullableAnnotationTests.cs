@@ -29,28 +29,28 @@ namespace FlatSharpTests.Compiler
         [TestMethod]
         public void NullableAnnotations()
         {
-            string schema = @"
+            string schema = $@"
             namespace NullableAnnotationTests;
 
-            table Table {
+            table Table ({MetdataKeys.SerializerKind}) {{
                 foo:Foo;
                 defaultInt:int32 = 3;
                 str:string;
                 nullableInt:int32 = null;
-                arrayVector:[int32] (vectortype:""Array"");
-                memoryVector:[ubyte] (vectorType:""Memory"");
-                listVector:[int32] (vectorType:""IList"");
+                arrayVector:[int32] ({MetdataKeys.VectorKind}:""Array"");
+                memoryVector:[ubyte] ({MetdataKeys.VectorKind}:""Memory"");
+                listVector:[int32] ({MetdataKeys.VectorKind}:""IList"");
                 nestedTable:InnerTable;
-            }
+            }}
 
-            table InnerTable { str:string; }
+            table InnerTable {{ str:string; }}
 
-            struct Foo {
+            struct Foo {{
               id:ulong;
               count:short;
               prefix:byte;
               length:uint;
-            }";
+            }}";
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(
                 schema, 

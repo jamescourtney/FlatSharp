@@ -100,10 +100,10 @@ namespace FlatSharpTests.Compiler
         [TestMethod]
         public void CircularReferenceInclude()
         {
-            string baseFbs = "include \"A.fbs\"; namespace Foo; table BaseTable (PrecompiledSerializer) { OtherTable:OtherTable; }";
+            string baseFbs = $"include \"A.fbs\"; namespace Foo; table BaseTable ({MetdataKeys.SerializerKind}) {{ OtherTable:OtherTable; }}";
             var includes = new Dictionary<string, string>
             {
-                { "A.fbs", "include \"root.fbs\"; namespace Foo; table OtherTable (PrecompiledSerializer) { Foo:BaseTable; }" },
+                { "A.fbs", $"include \"root.fbs\"; namespace Foo; table OtherTable ({MetdataKeys.SerializerKind}) {{ Foo:BaseTable; }}" },
             };
 
             string cSharp = FlatSharpCompiler.TestHookCreateCSharp(baseFbs, new(), includes);
@@ -136,7 +136,7 @@ namespace FlatSharpTests.Compiler
         [TestMethod]
         public void DuplicateTypesDifferentFiles()
         {
-            string baseFbs = "include \"A.fbs\"; namespace Foo; table BaseTable (PrecompiledSerializer) { BaseTable:BaseTable; }";
+            string baseFbs = $"include \"A.fbs\"; namespace Foo; table BaseTable ({MetdataKeys.SerializerKind}) {{ BaseTable:BaseTable; }}";
             var includes = new Dictionary<string, string>
             {
                 { "A.fbs", "namespace Foo; table BaseTable { BaseTable:BaseTable; }" },

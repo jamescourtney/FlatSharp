@@ -20,6 +20,7 @@ namespace Benchmark.FBBench
 
     public class FBSerializeBench : FBBenchCore
     {
+#if RUN_COMPARISON_BENCHMARKS
         [Benchmark]
         public override void Google_FlatBuffers_Serialize() => base.Google_FlatBuffers_Serialize();
 
@@ -39,6 +40,16 @@ namespace Benchmark.FBBench
         public override void Google_Flatbuffers_IntVector_Unsorted() => base.Google_Flatbuffers_IntVector_Unsorted();
 
         [Benchmark]
+        public override void PBDN_Serialize() => base.PBDN_Serialize();
+
+        [Benchmark]
+        public override void PBDN_Serialize_NonVirtual() => base.PBDN_Serialize_NonVirtual();
+
+        [Benchmark]
+        public override void MsgPack_Serialize_NonVirtual() => base.MsgPack_Serialize_NonVirtual();
+#endif
+
+        [Benchmark]
         public override void FlatSharp_GetMaxSize() => base.FlatSharp_GetMaxSize();
 
         [Benchmark]
@@ -46,12 +57,6 @@ namespace Benchmark.FBBench
 
         [Benchmark]
         public override void FlatSharp_Serialize_NonVirtual() => base.FlatSharp_Serialize_NonVirtual();
-
-        [Benchmark]
-        public override void PBDN_Serialize() => base.PBDN_Serialize();
-
-        [Benchmark]
-        public override void PBDN_Serialize_NonVirtual() => base.PBDN_Serialize_NonVirtual();
 
         [Benchmark]
         public override void FlatSharp_Serialize_StringVector_Sorted() => base.FlatSharp_Serialize_StringVector_Sorted();
@@ -67,8 +72,5 @@ namespace Benchmark.FBBench
 
         [Benchmark]
         public override void FlatSharp_Serialize_ValueTableVector() => base.FlatSharp_Serialize_ValueTableVector();
-
-        [Benchmark]
-        public override void MsgPack_Serialize_NonVirtual() => base.MsgPack_Serialize_NonVirtual();
     }
 }

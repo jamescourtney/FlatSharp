@@ -29,51 +29,51 @@ namespace FlatSharpTests.Compiler
         [TestMethod]
         public void RouteGuideTest()
         {
-            string schema = @"
+            string schema = $@"
 namespace routeguide;
 
     rpc_service RouteGuide
-    {
+    {{
         GetFeature(Point):Feature;
         ListFeatures(Rectangle):Feature (streaming:server);
         RecordRoute(Point):RouteSummary (streaming:client);
         RouteChat(RouteNote):RouteNote (streaming:duplex);
-    }
+    }}
 
-    table Point (PrecompiledSerializer:lazy)
-    {
+    table Point ({MetdataKeys.SerializerKind}:lazy)
+    {{
         latitude:int32;
         longitude:int32;
-    }
+    }}
 
-    table Rectangle (PrecompiledSerializer:lazy)
-    {
+    table Rectangle ({MetdataKeys.PrecompiledSerializerLegacy}:lazy)
+    {{
         lo:Point;
         hi:Point;
-    }
+    }}
 
-    table Feature (PrecompiledSerializer:lazy)
-    {
+    table Feature ({MetdataKeys.SerializerKind}:lazy)
+    {{
         // The name of the feature.
         name:string;
 
         // The point where the feature is detected.
         location:Point;
-    }
+    }}
 
-    table RouteNote (PrecompiledSerializer:lazy)
-    {
+    table RouteNote ({MetdataKeys.SerializerKind}:lazy)
+    {{
         location:Point;
         message:string;
-    }
+    }}
 
-    table RouteSummary (PrecompiledSerializer:greedymutable)
-    {
+    table RouteSummary ({MetdataKeys.SerializerKind}:greedymutable)
+    {{
         point_count:int;
         feature_count:int;
         distance:int;
         elapsed_time:int;
-    }";
+    }}";
             Assembly compiled = FlatSharpCompiler.CompileAndLoadAssembly(
                 schema,
                 new(),
@@ -111,19 +111,19 @@ namespace routeguide;
         [TestMethod]
         public void RpcUnknownType()
         {
-            string schema = @"
+            string schema = $@"
 namespace RpcUnknownType;
 
     rpc_service RouteGuide
-    {
+    {{
         GetFeature(NotExisting):Point;
-    }
+    }}
 
-    table Point (PrecompiledSerializer:lazy)
-    {
+    table Point ({MetdataKeys.SerializerKind}:lazy)
+    {{
         latitude:int32;
         longitude:int32;
-    }";
+    }}";
 
             Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.TestHookCreateCSharp(schema, new()));
         }
@@ -131,19 +131,19 @@ namespace RpcUnknownType;
         [TestMethod]
         public void RpcUnknownStreamingType()
         {
-            string schema = @"
+            string schema = $@"
 namespace RpcUnknownStreamingType;
 
     rpc_service RouteGuide
-    {
+    {{
         GetFeature(Point):Point (streaming:banana);
-    }
+    }}
 
-    table Point (PrecompiledSerializer:lazy)
-    {
+    table Point ({MetdataKeys.SerializerKind}:lazy)
+    {{
         latitude:int32;
         longitude:int32;
-    }";
+    }}";
 
             Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.TestHookCreateCSharp(schema, new()));
         }
@@ -151,19 +151,19 @@ namespace RpcUnknownStreamingType;
         [TestMethod]
         public void RpcReturnsAStruct()
         {
-            string schema = @"
+            string schema = $@"
 namespace RpcReturnsAStruct;
 
     rpc_service RouteGuide
-    {
+    {{
         GetFeature(Point):Point;
-    }
+    }}
 
-    struct Point (PrecompiledSerializer:lazy)
-    {
+    struct Point ({MetdataKeys.SerializerKind}:lazy)
+    {{
         latitude:int32;
         longitude:int32;
-    }";
+    }}";
 
             Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.TestHookCreateCSharp(schema, new()));
         }
@@ -171,19 +171,19 @@ namespace RpcReturnsAStruct;
         [TestMethod]
         public void NoPrecompiledSerializer()
         {
-            string schema = @"
+            string schema = $@"
 namespace NoPrecompiledSerializer;
 
     rpc_service RouteGuide
-    {
+    {{
         GetFeature(Point):Point;
-    }
+    }}
 
     table Point
-    {
+    {{
         latitude:int32;
         longitude:int32;
-    }";
+    }}";
 
             Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.TestHookCreateCSharp(schema, new()));
         }
