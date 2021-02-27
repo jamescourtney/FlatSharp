@@ -76,10 +76,10 @@ namespace FlatSharpTests.Compiler
         public void TableMember_ulong() => this.RunCompoundTestWithDefaultValue<ulong>("uint64");
 
         [TestMethod]
-        public void TableMember_float_alias() => this.RunCompoundTestWithDefaultValue<float>("float", "G17");
+        public void TableMember_float_alias() => this.RunCompoundTestWithDefaultValue<float>("float", "G3", 3.14f);
 
         [TestMethod]
-        public void TableMember_float() => this.RunCompoundTestWithDefaultValue<float>("float32", "G17");
+        public void TableMember_float() => this.RunCompoundTestWithDefaultValue<float>("float32", "G3", 3.14f);
 
         [TestMethod]
         public void TableMember_double_alias() => this.RunCompoundTestWithDefaultValue<double>("double", "G17");
@@ -186,15 +186,22 @@ namespace FlatSharpTests.Compiler
             this.RunCompoundTest<bool>(fbsType);
         }
 
-        private void RunCompoundTestWithDefaultValue<T>(string fbsType, string format = null) where T : struct, IFormattable
+        private void RunCompoundTestWithDefaultValue<T>(string fbsType, string format = null, T? value = null) where T : struct, IFormattable
         {
-            Random random = new Random();
-            byte[] data = new byte[16];
-            random.NextBytes(data);
-            T randomValue = MemoryMarshal.Cast<byte, T>(data)[0];
+            T randomValue;
+            if (value is null)
+            {
+                Random random = new Random();
+                byte[] data = new byte[16];
+                random.NextBytes(data);
+                randomValue = MemoryMarshal.Cast<byte, T>(data)[0];
+            }
+            else
+            {
+                randomValue = value.Value;
+            }
 
             this.RunSingleTest<T>($"{fbsType} = {randomValue.ToString(format, null).ToLowerInvariant()}", hasDefaultValue: true, expectedDefaultValue: randomValue);
-
             this.RunCompoundTest<T>(fbsType);
         }
 
