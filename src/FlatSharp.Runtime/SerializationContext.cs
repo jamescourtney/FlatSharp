@@ -28,8 +28,6 @@ namespace FlatSharp
     /// </summary>
     public sealed class SerializationContext
     {
-        private const int VTableBucketCount = 64;
-
         /// <summary>
         /// A delegate to invoke after the serialization process has completed. Used for sorting vectors.
         /// </summary>
@@ -40,7 +38,7 @@ namespace FlatSharp
         private int offset;
         private int capacity;
         private readonly List<PostSerializeAction> postSerializeActions;
-        private readonly List<int>[] vtableOffsets;
+        private readonly List<int> vtableOffsets;
 
         /// <summary>
         /// Initializes a new serialization context.
@@ -48,12 +46,7 @@ namespace FlatSharp
         public SerializationContext()
         {
             this.postSerializeActions = new List<PostSerializeAction>();
-            this.vtableOffsets = new List<int>[VTableBucketCount];
-
-            for (int i = 0; i < VTableBucketCount; ++i)
-            {
-                this.vtableOffsets[i] = new List<int>();
-            }
+            this.vtableOffsets = new List<int>();
         }
 
         /// <summary>
@@ -79,12 +72,7 @@ namespace FlatSharp
             this.capacity = capacity;
             this.SharedStringWriter = null;
             this.postSerializeActions.Clear();
-
-            var offsets = this.vtableOffsets;
-            for (int i = 0; i < offsets.Length; ++i)
-            {
-                offsets[i].Clear();
-            }
+            this.vtableOffsets.Clear();
         }
 
         /// <summary>
@@ -180,15 +168,13 @@ namespace FlatSharp
 
                 int index = FindLastNonZeroValueIndex(vtable.Slice(2 * sizeof(ushort)));
                 vtable = vtable.Slice(0, 4 + index);
-
                 writer.WriteUShort(vtable, (ushort)vtable.Length, 0, this);
 
-                List<int> bucket = vtableOffsets[GetHash(vtable) % VTableBucketCount];
-                int count = bucket.Count;
-
+                var offsets = this.vtableOffsets;
+                int count = offsets.Count;
                 for (int i = 0; i < count; ++i)
                 {
-                    int offset = bucket[i];
+                    int offset = offsets[i];
 
                     ReadOnlySpan<byte> existingVTable = buffer.Slice(offset);
                     existingVTable = existingVTable.Slice(0, ScalarSpanReader.ReadUShort(existingVTable));
@@ -201,7 +187,7 @@ namespace FlatSharp
                         // means that items should experience low contention.
                         if (i != 0)
                         {
-                            Promote(i, bucket);
+                            Promote(i, offsets);
                         }
 
                         return offset;
@@ -211,35 +197,14 @@ namespace FlatSharp
                 // Oh, well. Write the new table.
                 int newVTableOffset = this.AllocateSpace(vtable.Length, sizeof(ushort));
                 vtable.CopyTo(buffer.Slice(newVTableOffset));
-                bucket.Add(newVTableOffset);
+                offsets.Add(newVTableOffset);
 
                 // "Insert" this item in the middle of the list.
-                int maxIndex = bucket.Count - 1;
-                Promote(maxIndex, bucket);
+                int maxIndex = offsets.Count - 1;
+                Promote(maxIndex, offsets);
 
                 return newVTableOffset;
             }
-        }
-
-        /// <summary>
-        /// Gets a hash code based on the first 64 bits of the vtable.
-        /// If the vtable is not 64 bits long, the length of the vtable is used.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int GetHash(ReadOnlySpan<byte> vtable)
-        {
-            int length = vtable.Length;
-            if (length >= sizeof(ulong))
-            {
-                ulong value = ScalarSpanReader.ReadULong(vtable);
-                ulong high = value >> 32;
-                ulong low = value & uint.MaxValue;
-
-                // force positive
-                return (int)(high ^ low) & int.MaxValue;
-            }
-
-            return length;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
