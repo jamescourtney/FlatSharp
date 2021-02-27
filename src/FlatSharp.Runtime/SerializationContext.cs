@@ -28,6 +28,8 @@ namespace FlatSharp
     /// </summary>
     public sealed class SerializationContext
     {
+        private const int VTableBucketCount = 64;
+
         /// <summary>
         /// A delegate to invoke after the serialization process has completed. Used for sorting vectors.
         /// </summary>
@@ -38,7 +40,7 @@ namespace FlatSharp
         private int offset;
         private int capacity;
         private readonly List<PostSerializeAction> postSerializeActions;
-        private readonly List<int> vtableOffsets;
+        private readonly List<int>[] vtableOffsets;
 
         /// <summary>
         /// Initializes a new serialization context.
@@ -46,7 +48,12 @@ namespace FlatSharp
         public SerializationContext()
         {
             this.postSerializeActions = new List<PostSerializeAction>();
-            this.vtableOffsets = new();
+            this.vtableOffsets = new List<int>[VTableBucketCount];
+
+            for (int i = 0; i < VTableBucketCount; ++i)
+            {
+                this.vtableOffsets[i] = new List<int>();
+            }
         }
 
         /// <summary>
@@ -72,7 +79,12 @@ namespace FlatSharp
             this.capacity = capacity;
             this.SharedStringWriter = null;
             this.postSerializeActions.Clear();
-            this.vtableOffsets.Clear();
+
+            var offsets = this.vtableOffsets;
+            for (int i = 0; i < offsets.Length; ++i)
+            {
+                offsets[i].Clear();
+            }
         }
 
         /// <summary>
@@ -158,7 +170,7 @@ namespace FlatSharp
         public int FinishVTable<TSpanWriter>(
             TSpanWriter writer,
             int tableLength,
-            Span<byte> buffer, 
+            Span<byte> buffer,
             Span<byte> vtable) where TSpanWriter : ISpanWriter
         {
             checked
@@ -166,19 +178,17 @@ namespace FlatSharp
                 // write table length.
                 writer.WriteUShort(vtable, (ushort)tableLength, sizeof(ushort), this);
 
-                // find vtable length
-                while (ScalarSpanReader.ReadUShort(vtable.Slice(vtable.Length - sizeof(ushort))) == 0)
-                {
-                    vtable = vtable.Slice(0, vtable.Length - sizeof(ushort));
-                }
+                int index = FindLastNonZeroValueIndex(vtable.Slice(2 * sizeof(ushort)));
+                vtable = vtable.Slice(0, 4 + index);
 
                 writer.WriteUShort(vtable, (ushort)vtable.Length, 0, this);
 
-                var offsets = this.vtableOffsets;
-                int count = offsets.Count;
+                List<int> bucket = vtableOffsets[GetHash(vtable) % VTableBucketCount];
+                int count = bucket.Count;
+
                 for (int i = 0; i < count; ++i)
                 {
-                    int offset = offsets[i];
+                    int offset = bucket[i];
 
                     ReadOnlySpan<byte> existingVTable = buffer.Slice(offset);
                     existingVTable = existingVTable.Slice(0, ScalarSpanReader.ReadUShort(existingVTable));
@@ -187,10 +197,11 @@ namespace FlatSharp
                     {
                         // Slowly bubble used things towards the front of the list.
                         // This is not exact, but should keep frequently used
-                        // items towards the front.
+                        // items towards the front. We have 64 separate buckets, which
+                        // means that items should experience low contention.
                         if (i != 0)
                         {
-                            Promote(i, offsets);
+                            Promote(i, bucket);
                         }
 
                         return offset;
@@ -200,14 +211,64 @@ namespace FlatSharp
                 // Oh, well. Write the new table.
                 int newVTableOffset = this.AllocateSpace(vtable.Length, sizeof(ushort));
                 vtable.CopyTo(buffer.Slice(newVTableOffset));
-                offsets.Add(newVTableOffset);
+                bucket.Add(newVTableOffset);
 
                 // "Insert" this item in the middle of the list.
-                int maxIndex = offsets.Count - 1;
-                Promote(maxIndex, offsets);
+                int maxIndex = bucket.Count - 1;
+                Promote(maxIndex, bucket);
 
                 return newVTableOffset;
             }
+        }
+
+        /// <summary>
+        /// Gets a hash code based on the first 64 bits of the vtable.
+        /// If the vtable is not 64 bits long, the length of the vtable is used.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static int GetHash(ReadOnlySpan<byte> vtable)
+        {
+            int length = vtable.Length;
+            if (length >= sizeof(ulong))
+            {
+                ulong value = ScalarSpanReader.ReadULong(vtable);
+                ulong high = value >> 32;
+                ulong low = value & uint.MaxValue;
+
+                // force positive
+                return (int)(high ^ low) & int.MaxValue;
+            }
+
+            return length;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static int FindLastNonZeroValueIndex(ReadOnlySpan<byte> values)
+        {
+            Debug.Assert(values.Length % 2 == 0);
+
+            int length = values.Length;
+            int tmp;
+
+            while (length >= sizeof(ulong) &&
+                   ScalarSpanReader.ReadULong(values.Slice(tmp = length - sizeof(ulong))) == 0)
+            {
+                length = tmp;
+            }
+
+            if (length >= sizeof(uint) &&
+                ScalarSpanReader.ReadUInt(values.Slice(tmp = length - sizeof(uint))) == 0)
+            {
+                length = tmp;
+            }
+
+            if (length >= sizeof(ushort) &&
+                ScalarSpanReader.ReadUShort(values.Slice(tmp = length - sizeof(ushort))) == 0)
+            {
+                length = tmp;
+            }
+
+            return length;
         }
 
         /// <summary>
@@ -225,58 +286,54 @@ namespace FlatSharp
             offsets[swapIndex] = temp;
         }
 
+        /// <summary>
+        /// Possible to use SIMD intrinsics here, but they often end up hurting performance.
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool CompareEquality(ReadOnlySpan<byte> left, ReadOnlySpan<byte> right)
         {
             int length = left.Length;
+            int offset = 0;
 
             if (length != right.Length)
             {
                 return false;
             }
 
-            // Experimentally, it is cheaper to do the comparison ourselves for 
-            // small spans before asking the core libs to check for us.
-            if (length <= 16)
+            while (length >= sizeof(ulong))
             {
-                while (left.Length >= sizeof(ulong))
+                if (ScalarSpanReader.ReadULong(left.Slice(offset)) != ScalarSpanReader.ReadULong(right.Slice(offset)))
                 {
-                    if (ScalarSpanReader.ReadULong(left) != ScalarSpanReader.ReadULong(right))
-                    {
-                        return false;
-                    }
-
-                    left = left.Slice(sizeof(ulong));
-                    right = right.Slice(sizeof(ulong));
+                    return false;
                 }
 
-                if (left.Length >= 4)
-                {
-                    if (ScalarSpanReader.ReadUInt(left) != ScalarSpanReader.ReadUInt(right))
-                    {
-                        return false;
-                    }
-
-                    left = left.Slice(sizeof(uint));
-                    right = right.Slice(sizeof(uint));
-                }
-
-                for (int i = 0; i < left.Length; ++i)
-                {
-                    if (left[i] != right[i])
-                    {
-                        return false;
-                    }
-                }
-
-                return true;
+                offset += sizeof(ulong);
+                length -= sizeof(ulong);
             }
-            else
+
+            if (length >= sizeof(uint))
             {
-                // even in the fallback case, we can often fast-fail in the first word.
-                // length is > 16 here by assertion of the if statement above.
-                return ScalarSpanReader.ReadULong(left) == ScalarSpanReader.ReadULong(right) && left.SequenceEqual(right);
+                if (ScalarSpanReader.ReadUInt(left.Slice(offset)) != ScalarSpanReader.ReadUInt(right.Slice(offset)))
+                {
+                    return false;
+                }
+
+                offset += sizeof(uint);
+                length -= sizeof(uint);
             }
+
+            if (length >= sizeof(ushort))
+            {
+                if (ScalarSpanReader.ReadUShort(left.Slice(offset)) != ScalarSpanReader.ReadUShort(right.Slice(offset)))
+                {
+                    return left[offset] == right[offset];
+                }
+
+                offset += sizeof(ushort);
+                length -= sizeof(ushort);
+            }
+
+            return length == 0 || left[offset] == right[offset];
         }
     }
 }

@@ -115,12 +115,14 @@ namespace FlatSharp
 
         internal static string CreateDeserializeClass(
             string className,
-            Type baseType,
+            ITypeModel typeModel,
             IEnumerable<GeneratedProperty> propertyOverrides,
             FlatBufferSerializerOptions options)
         {
             string inputBufferFieldDef = "private readonly TInputBuffer buffer;";
             string offsetFieldDef = "private readonly int offset;";
+            string vtableOffsetDef = string.Empty;
+            string maxVTableIndexDef = string.Empty;
 
             List<string> ctorStatements = new List<string>
             {
@@ -133,6 +135,13 @@ namespace FlatSharp
                 inputBufferFieldDef = string.Empty;
                 offsetFieldDef = string.Empty;
                 ctorStatements.Clear();
+            }
+
+            if (typeModel.SchemaType == FlatBufferSchemaType.Table)
+            {
+                vtableOffsetDef = "private readonly int vtableOffset;";
+                maxVTableIndexDef = "private readonly int maxVTableIndex;";
+                ctorStatements.Add($"buffer.{nameof(InputBufferExtensions.InitializeVTable)}(offset, out this.vtableOffset, out this.maxVTableIndex);");
             }
 
             foreach (var property in propertyOverrides)
@@ -153,7 +162,7 @@ namespace FlatSharp
             }
 
             ConstructorInfo? specialCtor = null;
-            foreach (var ctor in baseType.GetConstructors(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.CreateInstance | BindingFlags.Instance))
+            foreach (var ctor in typeModel.ClrType.GetConstructors(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.CreateInstance | BindingFlags.Instance))
             {
                 var @params = ctor.GetParameters();
                 if (@params.Length == 1 &&
@@ -170,20 +179,22 @@ namespace FlatSharp
                 !specialCtor.IsFamilyOrAssembly)
             {
                 throw new InvalidFlatBufferDefinitionException(
-                    $"Class '{CSharpHelpers.GetCompilableTypeName(baseType)}' defines a constructor accepting {nameof(FlatSharpConstructorContext)}, but the constructor is not visible to derived classes.");
+                    $"Class '{typeModel.GetCompilableTypeName()}' defines a constructor accepting {nameof(FlatSharpConstructorContext)}, but the constructor is not visible to derived classes.");
             }
 
             string baseParams = specialCtor is not null ? "CtorContext" : string.Empty;
 
             return
 $@"
-                private sealed class {className}<TInputBuffer> : {GetCompilableTypeName(baseType)} where TInputBuffer : IInputBuffer
+                private sealed class {className}<TInputBuffer> : {typeModel.GetCompilableTypeName()} where TInputBuffer : IInputBuffer
                 {{
                     private static readonly {nameof(FlatSharpConstructorContext)} CtorContext 
                         = new {nameof(FlatSharpConstructorContext)}({nameof(FlatBufferDeserializationOption)}.{options.DeserializationOption});
 
                     {inputBufferFieldDef}
                     {offsetFieldDef}
+                    {vtableOffsetDef}
+                    {maxVTableIndexDef}
         
                     public {className}(TInputBuffer buffer, int offset) : base({baseParams})
                     {{

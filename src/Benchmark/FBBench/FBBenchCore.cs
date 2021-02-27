@@ -30,7 +30,6 @@ namespace Benchmark.FBBench
 
     using JobKind = BenchmarkDotNet.Attributes.MediumRunJobAttribute;
 
-    [JobKind(BenchmarkDotNet.Jobs.RuntimeMoniker.NetCoreApp31)]
     [JobKind(BenchmarkDotNet.Jobs.RuntimeMoniker.NetCoreApp50)]
     [CsvExporter(BenchmarkDotNet.Exporters.Csv.CsvSeparator.Comma)]
     public abstract class FBBenchCore

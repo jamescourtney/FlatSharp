@@ -130,7 +130,7 @@ $@"
 
                 classDefinition = CSharpHelpers.CreateDeserializeClass(
                     className,
-                    this.ClrType,
+                    this,
                     propertyOverrides,
                     context.Options);
             }

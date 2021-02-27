@@ -37,6 +37,9 @@ namespace Benchmark
 #if !NO_SHARED_STRINGS
             summaries.Add(BenchmarkRunner.Run<FBBench.FBSharedStringBench>());
 #endif
+#if CURRENT_VERSION_ONLY
+            summaries.Add(BenchmarkRunner.Run<SerializationContextBenchmark>());
+#endif
 
             foreach (var item in summaries)
             {

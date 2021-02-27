@@ -71,7 +71,7 @@ namespace FlatSharp
         public static int GetAlignmentError(int offset, int alignment)
         {
             Debug.Assert(alignment == 1 || alignment % 2 == 0);
-            return (~offset + 1) & (alignment - 1);
+            return (-offset) & (alignment - 1);
         }
 
         /// <summary>

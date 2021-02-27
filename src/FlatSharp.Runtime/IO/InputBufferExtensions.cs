@@ -104,6 +104,28 @@ namespace FlatSharp
         }
 
         /// <summary>
+        /// Validates a vtable and reads the initial bytes of a vtable.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void InitializeVTable<TBuffer>(
+            this TBuffer buffer, 
+            int tableOffset,
+            out int vtableOffset,
+            out int maxVTableIndex) where TBuffer : IInputBuffer
+        {
+            vtableOffset = tableOffset - buffer.ReadInt(tableOffset);
+            ushort vtableLength = buffer.ReadUShort(vtableOffset);
+
+            if (vtableLength < 4)
+            {
+                ThrowInvalidVtableException();
+            }
+
+            // Can be negative when all indexes are absent. This is by design.
+            maxVTableIndex = (vtableLength / 2) - 3;
+        }
+
+        /// <summary>
         /// Traverses a vtable to find the absolute offset of a table field.
         /// </summary>
         public static int GetAbsoluteTableFieldLocation<TBuffer>(this TBuffer buffer, int tableOffset, int index) where TBuffer : IInputBuffer
