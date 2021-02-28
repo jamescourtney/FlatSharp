@@ -38,7 +38,7 @@ struct C {{ Value:int32; }}
 
 union TestUnion {{ First:A, B, Foobar.C }}
 
-table D ({MetdataKeys.SerializerKind}) {{ Union:TestUnion; }}
+table D ({MetadataKeys.SerializerKind}) {{ Union:TestUnion; }}
 
 ";
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
@@ -119,7 +119,7 @@ struct C {{ Value:int32; }}
 
 union TestUnion {{ First:A, B, Foobar.C, string }}
 
-table D ({MetdataKeys.SerializerKind}) {{ Union:TestUnion; }}
+table D ({MetadataKeys.SerializerKind}) {{ Union:TestUnion; }}
 
 ";
             // Simply ensure that the union is generated as FlatBufferUnion and no custom class is created.
@@ -143,7 +143,7 @@ struct C {{ Value:int32; }}
 
 union TestUnion {{ First:A, B, Foobar.C, StringAlias:string }}
 
-table D ({MetdataKeys.SerializerKind}) {{ Union:TestUnion; }}
+table D ({MetadataKeys.SerializerKind}) {{ Union:TestUnion; }}
 
 ";
             // Simply ensure that the union is generated as FlatBufferUnion and no custom class is created.

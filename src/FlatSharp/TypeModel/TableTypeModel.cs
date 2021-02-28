@@ -30,6 +30,8 @@ namespace FlatSharp.TypeModel
     /// </summary>
     public class TableTypeModel : RuntimeTypeModel
     {
+        private const int FileIdentifierSize = 4;
+
         private readonly string ParseClassName = "tableReader_" + Guid.NewGuid().ToString("n");
 
         /// <summary>
@@ -129,6 +131,8 @@ namespace FlatSharp.TypeModel
             {
                 throw new InvalidFlatBufferDefinitionException($"Can't create table type model from type {this.ClrType.Name} because it does not have a [FlatBufferTable] attribute.");
             }
+
+            ValidateFileIdentifier(tableAttribute.FileIdentifier);
 
             EnsureClassCanBeInheritedByOutsideAssembly(this.ClrType, out var ctor);
             this.DefaultConstructor = ctor;
@@ -285,6 +289,26 @@ namespace FlatSharp.TypeModel
             }
 
             defaultConstructor = defaultCtor;
+        }
+
+        private static void ValidateFileIdentifier(string? fileIdentifier)
+        {
+            if (!string.IsNullOrEmpty(fileIdentifier))
+            {
+                if (fileIdentifier.Length != FileIdentifierSize)
+                {
+                    throw new InvalidFlatBufferDefinitionException($"File identifier '{fileIdentifier}' is invalid. FileIdentifiers must be exactly {FileIdentifierSize} ASCII characters.");
+                }
+
+                for (int i = 0; i < fileIdentifier.Length; ++i)
+                {
+                    char c = fileIdentifier[i];
+                    if (c >= 128)
+                    {
+                        throw new InvalidFlatBufferDefinitionException($"File identifier '{fileIdentifier}' contains non-ASCII characters. Character '{c}' is invalid.");
+                    }
+                }
+            }
         }
 
         public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)

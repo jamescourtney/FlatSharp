@@ -43,11 +43,11 @@ namespace FlatSharp.Compiler
             {
                 definition.IsTable = context.GetChild(0).GetText() == "table";
 
-                definition.NonVirtual = metadata.ParseNullableBooleanMetadata(MetdataKeys.NonVirtualProperty, MetdataKeys.NonVirtualPropertyLegacy);
-                definition.ObsoleteDefaultConstructor = metadata.ParseBooleanMetadata(MetdataKeys.ObsoleteDefaultConstructor, MetdataKeys.ObsoleteDefaultConstructorLegacy);
+                definition.NonVirtual = metadata.ParseNullableBooleanMetadata(MetadataKeys.NonVirtualProperty, MetadataKeys.NonVirtualPropertyLegacy);
+                definition.ObsoleteDefaultConstructor = metadata.ParseBooleanMetadata(MetadataKeys.ObsoleteDefaultConstructor, MetadataKeys.ObsoleteDefaultConstructorLegacy);
 
                 definition.RequestedSerializer = metadata.ParseMetadata<FlatBufferDeserializationOption?>(
-                    new[] { MetdataKeys.SerializerKind, MetdataKeys.PrecompiledSerializerLegacy },
+                    new[] { MetadataKeys.SerializerKind, MetadataKeys.PrecompiledSerializerLegacy },
                     ParseSerailizerFlags,
                     FlatBufferDeserializationOption.Default,
                     null);
@@ -55,6 +55,16 @@ namespace FlatSharp.Compiler
                 if (!definition.IsTable && definition.RequestedSerializer != null)
                 {
                     ErrorContext.Current.RegisterError("Structs may not have serializers.");
+                }
+
+                if (metadata.TryGetValue(MetadataKeys.FileIdentifier, out var fileId))
+                {
+                    if (!definition.IsTable)
+                    {
+                        ErrorContext.Current.RegisterError("Structs may not have file identifiers.");
+                    }
+
+                    definition.FileIdentifier = fileId;
                 }
 
                 var fields = context.field_decl();

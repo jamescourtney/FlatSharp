@@ -56,17 +56,17 @@ namespace FlatSharpTests.Compiler
         {
             string schema = $@"
             namespace VirtualTests;
-            table VirtualTable ({MetdataKeys.SerializerKind}:""{option}"") {{
-                Default:int ({MetdataKeys.Setter}:""{setterKind}"");
-                ForcedVirtual:int ({MetdataKeys.NonVirtualProperty}:""false"", {MetdataKeys.SetterLegacy}:""{setterKind}"");
-                ForcedNonVirtual:int ({MetdataKeys.NonVirtualProperty}:""true"", {MetdataKeys.Setter}:""{(setterKind != SetterKind.None ? setterKind : SetterKind.Public)}"");
+            table VirtualTable ({MetadataKeys.SerializerKind}:""{option}"") {{
+                Default:int ({MetadataKeys.Setter}:""{setterKind}"");
+                ForcedVirtual:int ({MetadataKeys.NonVirtualProperty}:""false"", {MetadataKeys.SetterLegacy}:""{setterKind}"");
+                ForcedNonVirtual:int ({MetadataKeys.NonVirtualProperty}:""true"", {MetadataKeys.Setter}:""{(setterKind != SetterKind.None ? setterKind : SetterKind.Public)}"");
                 Struct:VirtualStruct;
             }}
 
             struct VirtualStruct {{
-                Default:int ({MetdataKeys.Setter}:""{setterKind}"");
-                ForcedVirtual:int ({MetdataKeys.NonVirtualProperty}:""false"", setter:""{setterKind}"");
-                ForcedNonVirtual:int ({MetdataKeys.NonVirtualProperty}:""true"", setter:""{(setterKind != SetterKind.None ? setterKind : SetterKind.Public)}"");
+                Default:int ({MetadataKeys.Setter}:""{setterKind}"");
+                ForcedVirtual:int ({MetadataKeys.NonVirtualProperty}:""false"", setter:""{setterKind}"");
+                ForcedNonVirtual:int ({MetadataKeys.NonVirtualProperty}:""true"", setter:""{(setterKind != SetterKind.None ? setterKind : SetterKind.Public)}"");
             }}";
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());

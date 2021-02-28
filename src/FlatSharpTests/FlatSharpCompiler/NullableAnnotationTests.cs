@@ -32,14 +32,14 @@ namespace FlatSharpTests.Compiler
             string schema = $@"
             namespace NullableAnnotationTests;
 
-            table Table ({MetdataKeys.SerializerKind}) {{
+            table Table ({MetadataKeys.SerializerKind}) {{
                 foo:Foo;
                 defaultInt:int32 = 3;
                 str:string;
                 nullableInt:int32 = null;
-                arrayVector:[int32] ({MetdataKeys.VectorKind}:""Array"");
-                memoryVector:[ubyte] ({MetdataKeys.VectorKind}:""Memory"");
-                listVector:[int32] ({MetdataKeys.VectorKind}:""IList"");
+                arrayVector:[int32] ({MetadataKeys.VectorKind}:""Array"");
+                memoryVector:[ubyte] ({MetadataKeys.VectorKind}:""Memory"");
+                listVector:[int32] ({MetadataKeys.VectorKind}:""IList"");
                 nestedTable:InnerTable;
             }}
 

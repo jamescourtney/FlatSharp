@@ -89,6 +89,24 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
+        public void TypeModel_Table_FileIdentifiers()
+        {
+            Assert.IsInstanceOfType(RuntimeTypeModel.CreateFrom(typeof(Table_FileIdentifierOK)), typeof(TableTypeModel));
+
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(Table_FileIdentifierTooShort)));
+            Assert.AreEqual("File identifier 'abc' is invalid. FileIdentifiers must be exactly 4 ASCII characters.", ex.Message);
+
+            ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(Table_FileIdentifierTooLong)));
+            Assert.AreEqual("File identifier 'abcde' is invalid. FileIdentifiers must be exactly 4 ASCII characters.", ex.Message);
+
+            ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(Table_FileIdentifierTooFancy)));
+            Assert.AreEqual("File identifier '😍😚😙😵‍' is invalid. FileIdentifiers must be exactly 4 ASCII characters.", ex.Message);
+        }
+
+        [TestMethod]
         public void TypeModel_Struct_NonVirtual_NoSetter()
         {
             Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
@@ -949,6 +967,34 @@ namespace FlatSharpTests
         {
             [FlatBufferItem(0)]
             public int Prop { get; }
+        }
+
+        [FlatBufferTable(FileIdentifier = "abc")]
+        public class Table_FileIdentifierTooShort
+        {
+            [FlatBufferItem(0)]
+            public int Prop { get; set; }
+        }
+
+        [FlatBufferTable(FileIdentifier = "abcd")]
+        public class Table_FileIdentifierOK
+        {
+            [FlatBufferItem(0)]
+            public int Prop { get; set; }
+        }
+
+        [FlatBufferTable(FileIdentifier = "abcde")]
+        public class Table_FileIdentifierTooLong
+        {
+            [FlatBufferItem(0)]
+            public int Prop { get; set; }
+        }
+
+        [FlatBufferTable(FileIdentifier = "😍😚😙😵‍")]
+        public class Table_FileIdentifierTooFancy
+        {
+            [FlatBufferItem(0)]
+            public int Prop { get; set; }
         }
     }
 }

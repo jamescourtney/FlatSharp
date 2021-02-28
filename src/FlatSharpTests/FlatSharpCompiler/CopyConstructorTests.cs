@@ -38,7 +38,7 @@ namespace CopyConstructorTest;
 
 union Union {{ OuterTable, InnerTable, OuterStruct, InnerStruct }} // Optionally add more tables.
 
-table OuterTable ({MetdataKeys.SerializerKind}: ""Greedy"") {{
+table OuterTable ({MetadataKeys.SerializerKind}: ""Greedy"") {{
   A:string;
 
   B:byte;
@@ -50,17 +50,17 @@ table OuterTable ({MetdataKeys.SerializerKind}: ""Greedy"") {{
   H:int64;
   I:uint64;
   
-  IntVector_List:[int] ({MetdataKeys.VectorKind}:""IList"");
-  IntVector_RoList:[int] ({MetdataKeys.VectorKind}:""IReadOnlyList"");
-  IntVector_Array:[int] ({MetdataKeys.VectorKind}:""Array"");
+  IntVector_List:[int] ({MetadataKeys.VectorKind}:""IList"");
+  IntVector_RoList:[int] ({MetadataKeys.VectorKind}:""IReadOnlyList"");
+  IntVector_Array:[int] ({MetadataKeys.VectorKind}:""Array"");
   
-  TableVector_List:[InnerTable] ({MetdataKeys.VectorKind}:""IList"");
-  TableVector_RoList:[InnerTable] ({MetdataKeys.VectorKind}:""IReadOnlyList"");
-  TableVector_Indexed:[InnerTable] ({MetdataKeys.VectorKind}:""IIndexedVector"");
-  TableVector_Array:[InnerTable] ({MetdataKeys.VectorKindLegacy}:""Array"");
+  TableVector_List:[InnerTable] ({MetadataKeys.VectorKind}:""IList"");
+  TableVector_RoList:[InnerTable] ({MetadataKeys.VectorKind}:""IReadOnlyList"");
+  TableVector_Indexed:[InnerTable] ({MetadataKeys.VectorKind}:""IIndexedVector"");
+  TableVector_Array:[InnerTable] ({MetadataKeys.VectorKindLegacy}:""Array"");
 
-  ByteVector:[ubyte] ({MetdataKeys.VectorKind}:""Memory"");
-  ByteVector_RO:[ubyte] ({MetdataKeys.VectorKind}:""ReadOnlyMemory"");
+  ByteVector:[ubyte] ({MetadataKeys.VectorKind}:""Memory"");
+  ByteVector_RO:[ubyte] ({MetadataKeys.VectorKind}:""ReadOnlyMemory"");
   Union:Union;
 }}
 
@@ -74,7 +74,7 @@ struct InnerStruct {{
 }}
 
 table InnerTable {{
-  Name:string ({MetdataKeys.Key});
+  Name:string ({MetadataKeys.Key});
   OuterStruct:OuterStruct;
 }}
 

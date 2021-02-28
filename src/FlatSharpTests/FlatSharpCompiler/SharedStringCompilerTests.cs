@@ -34,8 +34,8 @@ namespace FlatSharpTests.Compiler
             namespace SharedStringTests;
             table Table {{
                 foo:SharedString;
-                bar:[SharedString] ({MetdataKeys.VectorKind}:array);
-                baz:[SharedString] ({MetdataKeys.VectorKindLegacy}:ilist);
+                bar:[SharedString] ({MetadataKeys.VectorKind}:array);
+                baz:[SharedString] ({MetadataKeys.VectorKindLegacy}:ilist);
             }}"; 
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
@@ -54,9 +54,9 @@ namespace FlatSharpTests.Compiler
             string schema = $@"
             namespace SharedStringTests;
             table Table {{
-                foo:string ({MetdataKeys.SharedString});
-                bar:[string] ({MetdataKeys.VectorKind}:array, {MetdataKeys.SharedString});
-                baz:[string] ({MetdataKeys.VectorKind}:ilist, {MetdataKeys.SharedStringLegacy});
+                foo:string ({MetadataKeys.SharedString});
+                bar:[string] ({MetadataKeys.VectorKind}:array, {MetadataKeys.SharedString});
+                baz:[string] ({MetadataKeys.VectorKind}:ilist, {MetadataKeys.SharedStringLegacy});
             }}";
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());

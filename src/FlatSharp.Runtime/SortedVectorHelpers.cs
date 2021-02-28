@@ -32,6 +32,7 @@ furnished to do so, subject to the following conditions:
 namespace FlatSharp
 {
     using System;
+    using System.Buffers;
     using System.Buffers.Binary;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
@@ -74,12 +75,14 @@ namespace FlatSharp
                 int vectorLength = (int)ScalarSpanReader.ReadUInt(buffer.Slice(vectorStartOffset));
                 int index0Position = vectorStartOffset + sizeof(int);
 
+                (int, int, int)[] pooledArray = null;
+
                 // Traverse the vector and figure out the offsets of all the keys.
                 // Store that in some local data, hopefully on the stack. 512 is somewhat arbitrary, but we want to avoid stack overflows.
                 Span<(int offset, int length, int tableOffset)> keyOffsets =
                     vectorLength < 512
                     ? stackalloc (int, int, int)[vectorLength]
-                    : new (int, int, int)[vectorLength];
+                    : (pooledArray = ArrayPool<(int, int, int)>.Shared.Rent(vectorLength)).AsSpan().Slice(0, vectorLength);
 
                 for (int i = 0; i < keyOffsets.Length; ++i)
                 {
@@ -98,6 +101,11 @@ namespace FlatSharp
                     (_, _, int tableOffset) = keyOffsets[i];
                     BinaryPrimitives.WriteUInt32LittleEndian(boundedVector.Slice(sizeof(uint) * i), (uint)(tableOffset - nextPosition));
                     nextPosition += sizeof(uint);
+                }
+
+                if (pooledArray != null)
+                {
+                    ArrayPool<(int, int, int)>.Shared.Return(pooledArray);
                 }
             }
         }

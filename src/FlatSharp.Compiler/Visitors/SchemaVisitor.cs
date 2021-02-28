@@ -24,6 +24,9 @@ namespace FlatSharp.Compiler
 
     internal class SchemaVisitor : FlatBuffersBaseVisitor<BaseSchemaMember?>
     {
+        private (string type, BaseSchemaMember scope)? rootType;
+        private (string id, BaseSchemaMember scope)? rootFileIdentifierName;
+
         private BaseSchemaMember schemaRoot;
         private readonly Stack<BaseSchemaMember> parseStack = new Stack<BaseSchemaMember>();
 
@@ -39,6 +42,7 @@ namespace FlatSharp.Compiler
             this.parseStack.Push(this.schemaRoot);
 
             base.Visit(tree);
+            this.ApplyRootTypeAndFileId();
 
             return this.schemaRoot;
         }
@@ -124,6 +128,36 @@ namespace FlatSharp.Compiler
             return null;
         }
 
+        public override BaseSchemaMember? VisitRoot_decl([NotNull] FlatBuffersParser.Root_declContext context)
+        {
+            string typeName = context.IDENT().GetText();
+            if (this.rootType is null)
+            {
+                this.rootType = (typeName, this.parseStack.Peek());
+            }
+            else
+            {
+                ErrorContext.Current.RegisterError($"Duplicate root types: '{this.rootType.Value.type}' and '{typeName}'.");
+            }
+
+            return null;
+        }
+
+        public override BaseSchemaMember? VisitFile_identifier_decl([NotNull] FlatBuffersParser.File_identifier_declContext context)
+        {
+            string? ident = context.STRING_CONSTANT().ToString()!.Trim('"');
+            if (this.rootFileIdentifierName is null)
+            {
+                this.rootFileIdentifierName = (ident, this.parseStack.Peek());
+            }
+            else
+            {
+                ErrorContext.Current.RegisterError($"Duplicate file identifiers: '{this.rootFileIdentifierName.Value.id}' and '{ident}'.");
+            }
+
+            return null;
+        }
+
         private BaseSchemaMember GetOrCreateNamespace(Span<string> parts, BaseSchemaMember parent)
         {
             if (!parent.TryResolveName(parts[0], out var existingNode))
@@ -139,6 +173,56 @@ namespace FlatSharp.Compiler
             }
 
             return this.GetOrCreateNamespace(parts.Slice(1), existingNode);
+        }
+
+        private void ApplyRootTypeAndFileId()
+        {
+            TableOrStructDefinition? tableDef = this.ValidateAndLookupRootType();
+
+            if (this.rootType is not null && this.rootFileIdentifierName is not null)
+            {
+                var (rootTypeName, rootScope) = this.rootType.Value;
+                var (fileId, fileIdScope) = this.rootFileIdentifierName.Value;
+
+                if (rootScope != fileIdScope)
+                {
+                    ErrorContext.Current.RegisterError($"root_type '{rootTypeName}' and file_identifier '{fileId}' were declared under different namespaces.");
+                }
+                else if (tableDef is not null)
+                {
+                    if (!string.IsNullOrEmpty(tableDef.FileIdentifier) && tableDef.FileIdentifier != fileId)
+                    {
+                        ErrorContext.Current.RegisterError($"root_type '{rootTypeName}' has conflicting file identifiers: '{tableDef.FileIdentifier}' and '{fileId}'.");
+                    }
+                    else
+                    {
+                        tableDef.FileIdentifier = fileId;
+                    }
+                }
+            }
+        }
+
+        private TableOrStructDefinition? ValidateAndLookupRootType()
+        {
+            if (this.rootType is not null)
+            {
+                var (rootTypeName, rootScope) = this.rootType.Value;
+
+                if (!rootScope.TryResolveName(rootTypeName, out var node))
+                {
+                    ErrorContext.Current.RegisterError($"Unable to resolve root_type '{rootTypeName}'.");
+                }
+                else if (node is TableOrStructDefinition tableOrStruct && tableOrStruct.IsTable)
+                {
+                    return tableOrStruct;
+                }
+                else
+                {
+                    ErrorContext.Current.RegisterError($"root_type '{rootTypeName}' does not reference a table.");
+                }
+            }
+
+            return null;
         }
     }
 }
