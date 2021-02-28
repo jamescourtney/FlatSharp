@@ -86,24 +86,24 @@ struct Vec4 {{
   t:float;
 }}
 
-table Monster ({MetdataKeys.SerializerKind}:{flags}) {{
+table Monster ({MetadataKeys.SerializerKind}:{flags}) {{
   pos:Vec3;
   mana:short = 150;
   hp:short = 100;
   name:string;
-  friendly:bool = false ({MetdataKeys.Deprecated});
+  friendly:bool = false ({MetadataKeys.Deprecated});
   inventory:[ubyte];
   color:Color = Blue;
   weapons:[Weapon];
   equipped:Equipment;
   path:[Vec3];
   vec4:Vec4;
-  FakeVector1:[string] ({MetdataKeys.VectorKind}:""IReadOnlyList"");
-  FakeVector2:[string] ({MetdataKeys.VectorKind}:Array);
-  FakeVector3:[string] ({MetdataKeys.VectorKind}:IList);
+  FakeVector1:[string] ({MetadataKeys.VectorKind}:""IReadOnlyList"");
+  FakeVector2:[string] ({MetadataKeys.VectorKind}:Array);
+  FakeVector3:[string] ({MetadataKeys.VectorKind}:IList);
   FakeVector4:[string];
-  FakeMemoryVector:[ubyte] ({MetdataKeys.VectorKind}:Memory);
-  FakeMemoryVectorReadOnly:[ubyte] ({MetdataKeys.VectorKind}:ReadOnlyMemory);
+  FakeMemoryVector:[ubyte] ({MetadataKeys.VectorKind}:Memory);
+  FakeMemoryVectorReadOnly:[ubyte] ({MetadataKeys.VectorKind}:ReadOnlyMemory);
 }}
 
 table Weapon {{

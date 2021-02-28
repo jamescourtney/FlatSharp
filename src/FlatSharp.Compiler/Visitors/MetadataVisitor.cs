@@ -44,7 +44,7 @@ namespace FlatSharp.Compiler
                 }
             }
 
-            foreach (var unsupportedAttribute in MetdataKeys.UnsupportedStandardAttributes)
+            foreach (var unsupportedAttribute in MetadataKeys.UnsupportedStandardAttributes)
             {
                 if (pairs.ContainsKey(unsupportedAttribute))
                 {

@@ -36,20 +36,20 @@ namespace FlatSharpTests.Compiler
         {
             string schema = $@"
             namespace VirtualTests;
-            table VirtualTable ({MetdataKeys.NonVirtualProperty}:""{defaultNonVirtual.ToString().ToLowerInvariant()}"", PrecompiledSerializer:Lazy) {{
+            table VirtualTable ({MetadataKeys.NonVirtualProperty}:""{defaultNonVirtual.ToString().ToLowerInvariant()}"", PrecompiledSerializer:Lazy) {{
                 Default:int;
-                ForcedVirtual:int ({MetdataKeys.NonVirtualProperty}:""false"");
-                ForcedNonVirtual:int ({MetdataKeys.NonVirtualProperty}:""true"");
+                ForcedVirtual:int ({MetadataKeys.NonVirtualProperty}:""false"");
+                ForcedNonVirtual:int ({MetadataKeys.NonVirtualProperty}:""true"");
                 Struct:VirtualStruct;
             }}
 
-            struct VirtualStruct ({MetdataKeys.NonVirtualProperty}:""{defaultNonVirtual.ToString().ToLowerInvariant()}"") {{
+            struct VirtualStruct ({MetadataKeys.NonVirtualProperty}:""{defaultNonVirtual.ToString().ToLowerInvariant()}"") {{
                 Default:int;
-                ForcedVirtual:int ({MetdataKeys.NonVirtualProperty}:""false"");
-                ForcedNonVirtual:int ({MetdataKeys.NonVirtualProperty}:""true"");
+                ForcedVirtual:int ({MetadataKeys.NonVirtualProperty}:""false"");
+                ForcedNonVirtual:int ({MetadataKeys.NonVirtualProperty}:""true"");
             }}
 
-            table DefaultTable ({MetdataKeys.SerializerKind}:lazy) {{ Default:int; Struct:DefaultStruct; }}
+            table DefaultTable ({MetadataKeys.SerializerKind}:lazy) {{ Default:int; Struct:DefaultStruct; }}
             struct DefaultStruct {{ Default:int; }}";
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());

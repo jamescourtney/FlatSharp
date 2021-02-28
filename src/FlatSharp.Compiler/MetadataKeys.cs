@@ -21,7 +21,7 @@ namespace FlatSharp.Compiler
     /// <summary>
     /// Names of attributes specified in FBS files.
     /// </summary>
-    public static class MetdataKeys
+    public static class MetadataKeys
     {
         /// <summary>
         /// Controls the type of serializer generated for the given table.
@@ -82,6 +82,11 @@ namespace FlatSharp.Compiler
         /// </summary>
         public const string Setter = "fs_setter";
         public const string SetterLegacy = "setter";
+
+        /// <summary>
+        /// Controls the file identifier injected into the buffer when serializing. Must be precisely a 4 byte ASCII string.
+        /// </summary>
+        public const string FileIdentifier = "fs_fileId";
 
         /// <summary>
         /// Marks a table field as deprecated. Deprecated fields do not have their values serialized or parsed.

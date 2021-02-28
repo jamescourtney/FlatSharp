@@ -16,6 +16,7 @@
 
 namespace FlatSharp.Compiler
 {
+    using FlatSharp.TypeModel;
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
@@ -87,9 +88,14 @@ namespace FlatSharp.Compiler
                 this.PushScope(scope);
                 return callback();
             }
+            catch (InvalidFlatBufferDefinitionException ex)
+            {
+                this.RegisterError(ex.Message);
+                return default;
+            }
             catch (Exception ex)
             {
-                this.RegisterError("Unexpected compiler exception: " + ex);
+                this.RegisterError("Unexpected FlatSharp compiler error: " + ex);
                 return default;
             }
             finally

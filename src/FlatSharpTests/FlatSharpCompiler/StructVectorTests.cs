@@ -78,12 +78,12 @@ namespace FlatSharpTests.Compiler
             string schema = $@"
             namespace StructVectorTests;
 
-            table Table ({MetdataKeys.SerializerKind}) {{
+            table Table ({MetadataKeys.SerializerKind}) {{
                 foo:Foo;
             }}
             struct Bar {{ A:ubyte; B:ulong; }}
             struct Foo {{
-              V:[Bar:{length}] ({MetdataKeys.NonVirtualProperty});
+              V:[Bar:{length}] ({MetadataKeys.NonVirtualProperty});
             }}";
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(
@@ -136,7 +136,7 @@ namespace FlatSharpTests.Compiler
             string schema = $@"
             namespace StructVectorTests;
 
-            table Table ({MetdataKeys.SerializerKind}) {{
+            table Table ({MetadataKeys.SerializerKind}) {{
                 foo:Foo;
             }}
             struct Foo {{

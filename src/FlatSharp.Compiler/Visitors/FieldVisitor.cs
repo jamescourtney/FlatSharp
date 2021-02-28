@@ -55,18 +55,18 @@ namespace FlatSharp.Compiler
                 }
 
                 // standard metadata
-                definition.Deprecated = metadata.ParseBooleanMetadata(MetdataKeys.Deprecated);
-                definition.IsKey = metadata.ParseBooleanMetadata(MetdataKeys.Key);
+                definition.Deprecated = metadata.ParseBooleanMetadata(MetadataKeys.Deprecated);
+                definition.IsKey = metadata.ParseBooleanMetadata(MetadataKeys.Key);
 
                 // Flatsharp custom metadata
-                definition.SortedVector = metadata.ParseBooleanMetadata(MetdataKeys.SortedVector, MetdataKeys.SortedVectorLegacy);
-                definition.SharedString = metadata.ParseBooleanMetadata(MetdataKeys.SharedString, MetdataKeys.SharedStringLegacy);
-                definition.NonVirtual = metadata.ParseNullableBooleanMetadata(MetdataKeys.NonVirtualProperty, MetdataKeys.NonVirtualPropertyLegacy);
+                definition.SortedVector = metadata.ParseBooleanMetadata(MetadataKeys.SortedVector, MetadataKeys.SortedVectorLegacy);
+                definition.SharedString = metadata.ParseBooleanMetadata(MetadataKeys.SharedString, MetadataKeys.SharedStringLegacy);
+                definition.NonVirtual = metadata.ParseNullableBooleanMetadata(MetadataKeys.NonVirtualProperty, MetadataKeys.NonVirtualPropertyLegacy);
 
                 this.ParseIdMetadata(definition, metadata);
 
                 definition.SetterKind = metadata.ParseMetadata(
-                    new[] { MetdataKeys.Setter, MetdataKeys.SetterLegacy },
+                    new[] { MetadataKeys.Setter, MetadataKeys.SetterLegacy },
                     ParseSetterKind,
                     SetterKind.Public,
                     SetterKind.Public);
@@ -101,11 +101,11 @@ namespace FlatSharp.Compiler
             FieldDefinition definition,
             IDictionary<string, string?> metadata)
         {
-            if (!metadata.TryParseIntegerMetadata(new[] { MetdataKeys.Id }, out int index))
+            if (!metadata.TryParseIntegerMetadata(new[] { MetadataKeys.Id }, out int index))
             {
                 if (index == MetadataHelpers.DefaultIntegerAttributeValueIfPresent)
                 {
-                    ErrorContext.Current?.RegisterError($"Value of '{MetdataKeys.Id}' attribute should be set if attribute present.");
+                    ErrorContext.Current?.RegisterError($"Value of '{MetadataKeys.Id}' attribute should be set if attribute present.");
                 }
 
                 return;
@@ -113,7 +113,7 @@ namespace FlatSharp.Compiler
 
             if (index < 0)
             {
-                ErrorContext.Current?.RegisterError($"Value of '{MetdataKeys.Id}' attribute {index} of '{definition.Name}' field is negative.");
+                ErrorContext.Current?.RegisterError($"Value of '{MetadataKeys.Id}' attribute {index} of '{definition.Name}' field is negative.");
             }
 
             definition.Index = index;
@@ -136,8 +136,8 @@ namespace FlatSharp.Compiler
                 vectorType = VectorType.IList;
                 typeContext = context.type().vector_type().core_type();
 
-                if (metadata.TryGetValue(MetdataKeys.VectorKind, out string? vectorTypeString) ||
-                    metadata.TryGetValue(MetdataKeys.VectorKindLegacy, out vectorTypeString))
+                if (metadata.TryGetValue(MetadataKeys.VectorKind, out string? vectorTypeString) ||
+                    metadata.TryGetValue(MetadataKeys.VectorKindLegacy, out vectorTypeString))
                 {
                     if (!Enum.TryParse<VectorType>(vectorTypeString, true, out vectorType))
                     {
@@ -146,10 +146,10 @@ namespace FlatSharp.Compiler
                     }
                 }
             }
-            else if (metadata.ContainsKey(MetdataKeys.VectorKind) || metadata.ContainsKey(MetdataKeys.VectorKindLegacy))
+            else if (metadata.ContainsKey(MetadataKeys.VectorKind) || metadata.ContainsKey(MetadataKeys.VectorKindLegacy))
             {
                 ErrorContext.Current?.RegisterError(
-                    $"Non-vectors may not have the '{MetdataKeys.VectorKind}' or '{MetdataKeys.VectorKindLegacy}' attributes.");
+                    $"Non-vectors may not have the '{MetadataKeys.VectorKind}' or '{MetadataKeys.VectorKindLegacy}' attributes.");
             }
 
             if (context.type().structvector_type() is not null)

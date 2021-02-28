@@ -34,12 +34,12 @@ namespace FlatSharpTests.Compiler
         public void SortedVector_StringKey()
         {
             string schema = $@"
-table Monster ({MetdataKeys.SerializerKind}) {{
-  Vector:[VectorMember] ({MetdataKeys.VectorKind}:IReadOnlyList, {MetdataKeys.SortedVector});
+table Monster ({MetadataKeys.SerializerKind}) {{
+  Vector:[VectorMember] ({MetadataKeys.VectorKind}:IReadOnlyList, {MetadataKeys.SortedVector});
 }}
 
 table VectorMember {{
-    Key:string ({MetdataKeys.Key});
+    Key:string ({MetadataKeys.Key});
     Data:int32;
 }}
 "; 
@@ -64,8 +64,8 @@ table VectorMember {{
         public void SortedVector_IntKey()
         {
             string schema = $@"
-table Monster ({MetdataKeys.SerializerKind}) {{
-  Vector:[VectorMember] ({MetdataKeys.VectorKind}:IReadOnlyList, {MetdataKeys.SortedVector});
+table Monster ({MetadataKeys.SerializerKind}) {{
+  Vector:[VectorMember] ({MetadataKeys.VectorKind}:IReadOnlyList, {MetadataKeys.SortedVector});
 }}
 
 table VectorMember {{
@@ -103,12 +103,12 @@ enum TestEnum : ubyte {{ One = 1, Two = 2 }}
 union TestUnion {{ VectorMember }}
 
 table Monster {{
-  Vector:[VectorMember] ({MetdataKeys.VectorKind}:IReadOnlyList, {MetdataKeys.SortedVector});
+  Vector:[VectorMember] ({MetadataKeys.VectorKind}:IReadOnlyList, {MetadataKeys.SortedVector});
 }}
 struct FakeStruct {{ StructData:int32; }}
 
 table VectorMember {{
-    Data:string ({MetdataKeys.Key});
+    Data:string ({MetadataKeys.Key});
     Key:int32;
     Enum:TestEnum;
     Struct:FakeStruct;
@@ -152,18 +152,18 @@ enum TestEnum : ubyte {{ One = 1, Two = 2 }}
 
 union TestUnion {{ VectorMember }}
 
-table Monster ({MetdataKeys.SerializerKind}) {{
-  Vector:[VectorMember] ({MetdataKeys.VectorKind}:IReadOnlyList, {MetdataKeys.SortedVector}, {MetdataKeys.Key});
+table Monster ({MetadataKeys.SerializerKind}) {{
+  Vector:[VectorMember] ({MetadataKeys.VectorKind}:IReadOnlyList, {MetadataKeys.SortedVector}, {MetadataKeys.Key});
 }}
-struct FakeStruct {{ Data:int32 ({MetdataKeys.Key}); }}
+struct FakeStruct {{ Data:int32 ({MetadataKeys.Key}); }}
 
 table VectorMember {{
-    Data:string ({MetdataKeys.SortedVector}, {MetdataKeys.Key});
-    Key:int32 ({MetdataKeys.SortedVector}, {MetdataKeys.Key});
-    Enum:TestEnum ({MetdataKeys.SortedVector}, {MetdataKeys.Key});
-    Struct:FakeStruct ({MetdataKeys.SortedVector}, {MetdataKeys.Key});
-    Union:TestUnion ({MetdataKeys.SortedVector}, {MetdataKeys.Key});
-    StructVector:[FakeStruct] ({MetdataKeys.SortedVector}, {MetdataKeys.Key});
+    Data:string ({MetadataKeys.SortedVector}, {MetadataKeys.Key});
+    Key:int32 ({MetadataKeys.SortedVector}, {MetadataKeys.Key});
+    Enum:TestEnum ({MetadataKeys.SortedVector}, {MetadataKeys.Key});
+    Struct:FakeStruct ({MetadataKeys.SortedVector}, {MetadataKeys.Key});
+    Union:TestUnion ({MetadataKeys.SortedVector}, {MetadataKeys.Key});
+    StructVector:[FakeStruct] ({MetadataKeys.SortedVector}, {MetadataKeys.Key});
 }}
 
 ";
@@ -171,7 +171,7 @@ table VectorMember {{
         }
 
         [TestMethod]
-        public void SortedVector_IndexedVector_KeyTypesCorrect_SharedString() => this.SortedVector_IndexedVector_KeyTypesCorrect<SharedString>("string", MetdataKeys.SharedString);
+        public void SortedVector_IndexedVector_KeyTypesCorrect_SharedString() => this.SortedVector_IndexedVector_KeyTypesCorrect<SharedString>("string", MetadataKeys.SharedString);
 
         [TestMethod]
         public void SortedVector_IndexedVector_KeyTypesCorrect_String() => this.SortedVector_IndexedVector_KeyTypesCorrect<string>("string");
@@ -213,8 +213,8 @@ table VectorMember {{
         public void SortedVector_IndexedVector_NoKey()
         {
             string schema = $@"
-table Monster ({MetdataKeys.SerializerKind}) {{
-  Vector:[VectorMember] ({MetdataKeys.VectorKind}:IIndexedVector);
+table Monster ({MetadataKeys.SerializerKind}) {{
+  Vector:[VectorMember] ({MetadataKeys.VectorKind}:IIndexedVector);
 }}
 table VectorMember {{
     Data:string;
@@ -225,11 +225,11 @@ table VectorMember {{
         private void SortedVector_IndexedVector_KeyTypesCorrect<TKeyType>(string type, string metadata = null)
         {
             string schema = $@"
-table Monster ({MetdataKeys.SerializerKind}) {{
-  Vector:[VectorMember] ({MetdataKeys.VectorKind}:IIndexedVector);
+table Monster ({MetadataKeys.SerializerKind}) {{
+  Vector:[VectorMember] ({MetadataKeys.VectorKind}:IIndexedVector);
 }}
 table VectorMember {{
-    Data:{type} ({MetdataKeys.Key} {(!string.IsNullOrEmpty(metadata) ? ", " : "")}{metadata});
+    Data:{type} ({MetadataKeys.Key} {(!string.IsNullOrEmpty(metadata) ? ", " : "")}{metadata});
 }}";
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
             var monsterType = asm.GetTypes().Single(t => t.Name == "Monster");

@@ -40,19 +40,19 @@ namespace routeguide;
         RouteChat(RouteNote):RouteNote (streaming:duplex);
     }}
 
-    table Point ({MetdataKeys.SerializerKind}:lazy)
+    table Point ({MetadataKeys.SerializerKind}:lazy)
     {{
         latitude:int32;
         longitude:int32;
     }}
 
-    table Rectangle ({MetdataKeys.PrecompiledSerializerLegacy}:lazy)
+    table Rectangle ({MetadataKeys.PrecompiledSerializerLegacy}:lazy)
     {{
         lo:Point;
         hi:Point;
     }}
 
-    table Feature ({MetdataKeys.SerializerKind}:lazy)
+    table Feature ({MetadataKeys.SerializerKind}:lazy)
     {{
         // The name of the feature.
         name:string;
@@ -61,13 +61,13 @@ namespace routeguide;
         location:Point;
     }}
 
-    table RouteNote ({MetdataKeys.SerializerKind}:lazy)
+    table RouteNote ({MetadataKeys.SerializerKind}:lazy)
     {{
         location:Point;
         message:string;
     }}
 
-    table RouteSummary ({MetdataKeys.SerializerKind}:greedymutable)
+    table RouteSummary ({MetadataKeys.SerializerKind}:greedymutable)
     {{
         point_count:int;
         feature_count:int;
@@ -119,7 +119,7 @@ namespace RpcUnknownType;
         GetFeature(NotExisting):Point;
     }}
 
-    table Point ({MetdataKeys.SerializerKind}:lazy)
+    table Point ({MetadataKeys.SerializerKind}:lazy)
     {{
         latitude:int32;
         longitude:int32;
@@ -139,7 +139,7 @@ namespace RpcUnknownStreamingType;
         GetFeature(Point):Point (streaming:banana);
     }}
 
-    table Point ({MetdataKeys.SerializerKind}:lazy)
+    table Point ({MetadataKeys.SerializerKind}:lazy)
     {{
         latitude:int32;
         longitude:int32;
@@ -159,7 +159,7 @@ namespace RpcReturnsAStruct;
         GetFeature(Point):Point;
     }}
 
-    struct Point ({MetdataKeys.SerializerKind}:lazy)
+    struct Point ({MetadataKeys.SerializerKind}:lazy)
     {{
         latitude:int32;
         longitude:int32;

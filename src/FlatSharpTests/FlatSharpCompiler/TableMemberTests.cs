@@ -208,21 +208,21 @@ namespace FlatSharpTests.Compiler
         private void RunCompoundTest<T>(string fbsType)
         {
             this.RunSingleTest<T>(fbsType);
-            this.RunSingleTest<T>($"{fbsType} ({MetdataKeys.Deprecated})", deprecated: true);
+            this.RunSingleTest<T>($"{fbsType} ({MetadataKeys.Deprecated})", deprecated: true);
             this.RunSingleTest<IList<T>>($"[{fbsType}]");
-            this.RunSingleTest<IList<T>>($"[{fbsType}]  ({MetdataKeys.VectorKind}: IList)");
-            this.RunSingleTest<T[]>($"[{fbsType}]  ({MetdataKeys.VectorKind}: Array)");
-            this.RunSingleTest<IReadOnlyList<T>>($"[{fbsType}]  ({MetdataKeys.VectorKind}: IReadOnlyList)");
+            this.RunSingleTest<IList<T>>($"[{fbsType}]  ({MetadataKeys.VectorKind}: IList)");
+            this.RunSingleTest<T[]>($"[{fbsType}]  ({MetadataKeys.VectorKind}: Array)");
+            this.RunSingleTest<IReadOnlyList<T>>($"[{fbsType}]  ({MetadataKeys.VectorKind}: IReadOnlyList)");
 
             if (typeof(T) == typeof(byte))
             {
-                this.RunSingleTest<Memory<T>?>($"[{fbsType}]  ({MetdataKeys.VectorKind}: Memory)");
-                this.RunSingleTest<ReadOnlyMemory<T>?>($"[{fbsType}]  ({MetdataKeys.VectorKind}: ReadOnlyMemory)");
+                this.RunSingleTest<Memory<T>?>($"[{fbsType}]  ({MetadataKeys.VectorKind}: Memory)");
+                this.RunSingleTest<ReadOnlyMemory<T>?>($"[{fbsType}]  ({MetadataKeys.VectorKind}: ReadOnlyMemory)");
             }
             else
             {
-                Assert.ThrowsException<InvalidFbsFileException>(() => this.RunSingleTest<Memory<T>>($"[{fbsType}]  ({MetdataKeys.VectorKind}: Memory)"));
-                Assert.ThrowsException<InvalidFbsFileException>(() => this.RunSingleTest<ReadOnlyMemory<T>>($"[{fbsType}]  ({MetdataKeys.VectorKind}: ReadOnlyMemory)"));
+                Assert.ThrowsException<InvalidFbsFileException>(() => this.RunSingleTest<Memory<T>>($"[{fbsType}]  ({MetadataKeys.VectorKind}: Memory)"));
+                Assert.ThrowsException<InvalidFbsFileException>(() => this.RunSingleTest<ReadOnlyMemory<T>>($"[{fbsType}]  ({MetadataKeys.VectorKind}: ReadOnlyMemory)"));
             }
         }
 

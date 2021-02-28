@@ -39,7 +39,7 @@ namespace FlatSharpTests.Compiler
                 B = 2
             }}
 
-            table Table ({MetdataKeys.SerializerKind}:greedy) {{
+            table Table ({MetadataKeys.SerializerKind}:greedy) {{
                 Bool : bool = null;
                 Byte : ubyte = null;
                 SByte : byte = null;

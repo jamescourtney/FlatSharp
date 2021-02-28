@@ -16,6 +16,7 @@
 
 namespace FlatSharp.Compiler
 {
+    using FlatSharp.Attributes;
     using FlatSharp.TypeModel;
     using System;
     using System.Collections.Generic;
@@ -46,6 +47,8 @@ namespace FlatSharp.Compiler
 
         public bool ObsoleteDefaultConstructor { get; set; }
 
+        public string? FileIdentifier { get; set; }
+
         public FlatBufferDeserializationOption? RequestedSerializer { get; set; }
 
         protected override bool SupportsChildren => false;
@@ -54,7 +57,19 @@ namespace FlatSharp.Compiler
         {
             this.AssignIndexes();
 
-            string attribute = this.IsTable ? "[FlatBufferTable]" : "[FlatBufferStruct]";
+            string attribute = "[FlatBufferStruct]";
+
+            if (this.IsTable)
+            {
+                if (string.IsNullOrEmpty(this.FileIdentifier))
+                {
+                    attribute = "[FlatBufferTable]";
+                }
+                else
+                {
+                    attribute = $"[FlatBufferTable({nameof(FlatBufferTableAttribute.FileIdentifier)} = \"{this.FileIdentifier}\")]";
+                }
+            }
 
             writer.AppendLine(attribute);
             writer.AppendLine("[System.Runtime.CompilerServices.CompilerGenerated]");
