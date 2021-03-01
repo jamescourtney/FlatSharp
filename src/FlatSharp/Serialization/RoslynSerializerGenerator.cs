@@ -154,7 +154,7 @@ $@"
             ITypeModel rootModel = this.typeModelContainer.CreateTypeModel(typeof(TRoot));
             if (rootModel.SchemaType != FlatBufferSchemaType.Table)
             {
-                throw new InvalidFlatBufferDefinitionException($"Can only compile [FlatBufferTable] elements as root types. Type '{typeof(TRoot).Name}' is a '{rootModel.GetType().Name}'.");
+                throw new InvalidFlatBufferDefinitionException($"Can only compile [FlatBufferTable] elements as root types. Type '{CSharpHelpers.GetCompilableTypeName(typeof(TRoot))}' is a {rootModel.SchemaType}.");
             }
 
             this.DefineMethods(rootModel);

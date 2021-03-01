@@ -47,12 +47,12 @@
             var attribute = enumType.GetCustomAttribute<FlatBufferEnumAttribute>();
             if (attribute == null)
             {
-                throw new InvalidFlatBufferDefinitionException($"Enums '{enumType.Name}' is not tagged with a [FlatBufferEnum] attribute.");
+                throw new InvalidFlatBufferDefinitionException($"Enum '{CSharpHelpers.GetCompilableTypeName(enumType)}' is not tagged with a [FlatBufferEnum] attribute.");
             }
 
             if (attribute.DeclaredUnderlyingType != Enum.GetUnderlyingType(enumType))
             {
-                throw new InvalidFlatBufferDefinitionException($"Enum '{enumType.Name}' declared underlying type '{attribute.DeclaredUnderlyingType}', but was actually '{Enum.GetUnderlyingType(enumType)}'");
+                throw new InvalidFlatBufferDefinitionException($"Enum '{CSharpHelpers.GetCompilableTypeName(enumType)}' declared underlying type '{attribute.DeclaredUnderlyingType}', but was actually '{CSharpHelpers.GetCompilableTypeName(Enum.GetUnderlyingType(enumType))}'");
             }
         }
 

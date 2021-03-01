@@ -36,14 +36,22 @@ namespace FlatSharp.TypeModel
             this.PropertyInfo = propertyInfo;
             this.Index = index;
 
+            string declaringType = "";
+            if (propertyInfo.DeclaringType is not null)
+            {
+                declaringType = CSharpHelpers.GetCompilableTypeName(propertyInfo.DeclaringType);
+            }
+
+            declaringType = $"{declaringType}.{propertyInfo.Name} (Index {index})";
+
             if (getMethod == null)
             {
-                throw new InvalidFlatBufferDefinitionException($"Property {propertyInfo.Name} did not declare a getter.");
+                throw new InvalidFlatBufferDefinitionException($"Property {declaringType} on did not declare a getter.");
             }
 
             if (!getMethod.IsPublic)
             {
-                throw new InvalidFlatBufferDefinitionException($"Property {propertyInfo.Name} must declare a public getter.");
+                throw new InvalidFlatBufferDefinitionException($"Property {declaringType} must declare a public getter.");
             }
 
             if (CanBeOverridden(getMethod))
@@ -51,24 +59,24 @@ namespace FlatSharp.TypeModel
                 this.IsVirtual = true;
                 if (!ValidateVirtualPropertyMethod(getMethod, false))
                 {
-                    throw new InvalidFlatBufferDefinitionException($"Property {propertyInfo.Name} did not declare a public/protected virtual getter.");
+                    throw new InvalidFlatBufferDefinitionException($"Property {declaringType} did not declare a public/protected virtual getter.");
                 }
 
                 if (!ValidateVirtualPropertyMethod(setMethod, true))
                 {
-                    throw new InvalidFlatBufferDefinitionException($"Property {propertyInfo.Name} declared a set method, but it was not public/protected and virtual.");
+                    throw new InvalidFlatBufferDefinitionException($"Property {declaringType} declared a set method, but it was not public/protected and virtual.");
                 }
             }
             else
             {
                 if (!ValidateNonVirtualMethod(getMethod))
                 {
-                    throw new InvalidFlatBufferDefinitionException($"Non-virtual property {propertyInfo.Name} must declare a public and non-abstract getter.");
+                    throw new InvalidFlatBufferDefinitionException($"Non-virtual property {declaringType} must declare a public and non-abstract getter.");
                 }
 
                 if (!ValidateNonVirtualMethod(setMethod))
                 {
-                    throw new InvalidFlatBufferDefinitionException($"Non-virtual property {propertyInfo.Name} must declare a public/protected and non-abstract setter.");
+                    throw new InvalidFlatBufferDefinitionException($"Non-virtual property {declaringType} must declare a public/protected and non-abstract setter.");
                 }
             }
         }

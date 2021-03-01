@@ -74,8 +74,9 @@ namespace FlatSharpTests
 
             this.TestDeserialize<ReadOnlyMemoryInputBuffer, ReadOnlyMemoryTable>(b => new ReadOnlyMemoryInputBuffer(b));
             this.TestReadByteArray(b => new ReadOnlyMemoryInputBuffer(b));
-            Assert.ThrowsException<InvalidOperationException>(
+            var ex = Assert.ThrowsException<InvalidOperationException>(
                 () => this.TestDeserialize<ReadOnlyMemoryInputBuffer, MemoryTable>(b => new ReadOnlyMemoryInputBuffer(b)));
+            Assert.AreEqual("ReadOnlyMemory inputs may not deserialize writable memory.", ex.Message);
         }
 
         [TestMethod]

@@ -30,29 +30,37 @@ namespace FlatSharpTests
         [TestMethod]
         public void TypeModel_Table_UnrecognizedPropertyType()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(GenericTable<Dictionary<string, string>>)));
+
+            Assert.AreEqual("Failed to create or find type model for type 'System.Collections.Generic.Dictionary<System.String, System.String>'.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_Table_DuplicateIndex()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(DuplicateNumberTable)));
+
+            Assert.AreEqual("FlatBuffer Table FlatSharpTests.TypeModelTests.DuplicateNumberTable already defines a property with index 0. This may happen when unions are declared as these are double-wide members.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_Table_PrivateSetter()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(PrivateSetter)));
+
+            Assert.AreEqual("Property FlatSharpTests.TypeModelTests.PrivateSetter.String (Index 0) declared a set method, but it was not public/protected and virtual.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_Table_InternalSetter()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(InternalSetter)));
+
+            Assert.AreEqual("Property FlatSharpTests.TypeModelTests.InternalSetter.String (Index 0) declared a set method, but it was not public/protected and virtual.", ex.Message);
         }
 
         [TestMethod]
@@ -70,22 +78,25 @@ namespace FlatSharpTests
         [TestMethod]
         public void TypeModel_Table_NoGetter()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(Table_NoGetter)));
+            Assert.AreEqual("Property FlatSharpTests.TypeModelTests.Table_NoGetter.Prop (Index 0) on did not declare a getter.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_Table_NonPublicGetter()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(Table_NonPublicGetter)));
+            Assert.AreEqual("Property FlatSharpTests.TypeModelTests.Table_NonPublicGetter.Prop (Index 0) must declare a public getter.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_Table_NonVirtual_NoSetter()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(Table_NonVirtual_NoSetter)));
+            Assert.AreEqual("Non-virtual property FlatSharpTests.TypeModelTests.Table_NonVirtual_NoSetter.Prop (Index 0) must declare a public/protected and non-abstract setter.", ex.Message);
         }
 
         [TestMethod]
@@ -109,71 +120,81 @@ namespace FlatSharpTests
         [TestMethod]
         public void TypeModel_Struct_NonVirtual_NoSetter()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(Struct_NonVirtual_NoSetter)));
+            Assert.AreEqual("Non-virtual property FlatSharpTests.TypeModelTests.Struct_NonVirtual_NoSetter.Prop (Index 0) must declare a public/protected and non-abstract setter.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_Struct_NoGetter()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(Struct_NoGetter)));
+            Assert.AreEqual("Property FlatSharpTests.TypeModelTests.Struct_NoGetter.Prop (Index 0) on did not declare a getter.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_Struct_NonPublicGetter()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(Struct_NonPublicGetter)));
+            Assert.AreEqual("Property FlatSharpTests.TypeModelTests.Struct_NonPublicGetter.Prop (Index 0) must declare a public getter.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_Struct_StringNotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(GenericStruct<string>)));
+            Assert.AreEqual("Struct 'FlatSharpTests.TypeModelTests.GenericStruct<System.String>' property Value (Index 0) with type System.String cannot be part of a flatbuffer struct.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_Struct_VectorNotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(GenericStruct<Memory<byte>>)));
+            Assert.AreEqual("Struct 'FlatSharpTests.TypeModelTests.GenericStruct<System.Memory<System.Byte>>' property Value (Index 0) with type System.Memory<System.Byte> cannot be part of a flatbuffer struct.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_Struct_TableNotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(GenericStruct<GenericTable<int>>)));
+            Assert.AreEqual("Struct 'FlatSharpTests.TypeModelTests.GenericStruct<FlatSharpTests.TypeModelTests.GenericTable<System.Int32>>' property Value (Index 0) with type FlatSharpTests.TypeModelTests.GenericTable<System.Int32> cannot be part of a flatbuffer struct.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_Struct_UnionNotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(GenericStruct<FlatBufferUnion<string, GenericTable<string>>>)));
+            Assert.AreEqual("Struct 'FlatSharpTests.TypeModelTests.GenericStruct<FlatSharp.FlatBufferUnion<System.String, FlatSharpTests.TypeModelTests.GenericTable<System.String>>>' property Value (Index 0) with type FlatSharp.FlatBufferUnion<System.String, FlatSharpTests.TypeModelTests.GenericTable<System.String>> cannot be part of a flatbuffer struct.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_Struct_Misnumbered()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(MisnumberedStruct<byte>)));
+            Assert.AreEqual("FlatBuffer struct FlatSharpTests.TypeModelTests.MisnumberedStruct<System.Byte> does not declare an item with index 1. Structs must have sequenential indexes starting at 0.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_Struct_InaccessibleConstructor()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(InaccessibleConstructorStruct<byte>)));
+            Assert.AreEqual("Can't find a public/protected default default constructor for FlatSharpTests.TypeModelTests.InaccessibleConstructorStruct<System.Byte>", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_Struct_InternalAccess()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(InternalAccessStruct<byte>)));
+            Assert.AreEqual("Can't create type model from type FlatSharpTests.TypeModelTests.InternalAccessStruct<System.Byte> because it is not public.", ex.Message);
         }
 
         [TestMethod]
@@ -185,43 +206,49 @@ namespace FlatSharpTests
         [TestMethod]
         public void TypeModel_Struct_NonVirtualProperty_PrivateSetter_NotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(NonVirtualPropertyStructPrivateSetter<byte>)));
+            Assert.AreEqual("Non-virtual property FlatSharpTests.TypeModelTests.NonVirtualPropertyStructPrivateSetter<System.Byte>.Value (Index 0) must declare a public/protected and non-abstract setter.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_Struct_Sealed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(SealedStruct<byte>)));
+            Assert.AreEqual("Can't create type model from type FlatSharpTests.TypeModelTests.SealedStruct<System.Byte> because it is sealed.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_Struct_DoesNotInheritFromObject()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(DoesNotInheritFromObjectStruct<byte>)));
+            Assert.AreEqual("Can't create type model from type FlatSharpTests.TypeModelTests.DoesNotInheritFromObjectStruct<System.Byte> its base class is not System.Object.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_Struct_Abstract()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(AbstractStruct<byte>)));
+            Assert.AreEqual("Can't create type model from type FlatSharpTests.TypeModelTests.AbstractStruct<System.Byte> because it is abstract.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_Struct_DuplicateNumbered()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(DuplicateNumberedStruct<byte>)));
+            Assert.AreEqual("FlatBuffer struct FlatSharpTests.TypeModelTests.DuplicateNumberedStruct<System.Byte> does not declare an item with index 2. Structs must have sequenential indexes starting at 0.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_Struct_DefaultValue()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(StructWithDefaultValue)));
+            Assert.AreEqual("FlatBuffer struct FlatSharpTests.TypeModelTests.StructWithDefaultValue declares default value on index 0. Structs may not have default values.", ex.Message);
         }
 
         [TestMethod]
@@ -239,50 +266,57 @@ namespace FlatSharpTests
         [TestMethod]
         public void TypeModel_Struct_OptionalField_NotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(GenericStruct<int?>)));
+            Assert.AreEqual("Struct 'FlatSharpTests.TypeModelTests.GenericStruct<System.Nullable<System.Int32>>' property Value (Index 0) with type System.Nullable<System.Int32> cannot be part of a flatbuffer struct.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_Struct_OptionalEnum_NotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(GenericStruct<TaggedEnum?>)));
+            Assert.AreEqual("Struct 'FlatSharpTests.TypeModelTests.GenericStruct<System.Nullable<FlatSharpTests.TypeModelTests.TaggedEnum>>' property Value (Index 0) with type System.Nullable<FlatSharpTests.TypeModelTests.TaggedEnum> cannot be part of a flatbuffer struct.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_TypeCantBeTableAndStruct()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(InvalidTableAndStruct)));
+            Assert.AreEqual("Type 'FlatSharpTests.TypeModelTests.InvalidTableAndStruct' is declared as both [FlatBufferTable] and [FlatBufferStruct].", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_Vector_VectorNotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(GenericTable<IList<IList<int>>>)));
+            Assert.AreEqual("Type 'System.Collections.Generic.IList<System.Int32>' is not a valid vector member.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_Vector_UnionNotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(GenericTable<IList<FlatBufferUnion<string, GenericTable<string>>>>)));
+            Assert.AreEqual("Type 'FlatSharp.FlatBufferUnion<System.String, FlatSharpTests.TypeModelTests.GenericTable<System.String>>' is not a valid vector member.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_Vector_OptionalScalarNotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(GenericTable<IList<int?>>)));
+            Assert.AreEqual("Type 'System.Nullable<System.Int32>' is not a valid vector member.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_Vector_OptionalEnumNotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(GenericTable<IList<TaggedEnum?>>)));
+            Assert.AreEqual("Type 'System.Nullable<FlatSharpTests.TypeModelTests.TaggedEnum>' is not a valid vector member.", ex.Message);
         }
 
         [TestMethod]
@@ -303,50 +337,57 @@ namespace FlatSharpTests
         [TestMethod]
         public void TypeModel_Vector_IndexedVector_MismatchedKeyTypes_NotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
                 () => RuntimeTypeModel.CreateFrom(typeof(IIndexedVector<int, SortedVectorKeyTable<string>>)));
+            Assert.AreEqual("FlatSharp indexed vector keys must have the same type as the key of the value. KeyType = System.Int32, Value Key Type = 'FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.String>'.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_Vector_IndexedVector_UnkeyedTable_NotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
                 () => RuntimeTypeModel.CreateFrom(typeof(IIndexedVector<int, GenericTable<string>>)));
+            Assert.AreEqual("Indexed vector values must have a property with the key attribute defined. Table = 'FlatSharpTests.TypeModelTests.GenericTable<System.String>'", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_Vector_IndexedVector_Struct_NotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
                 () => RuntimeTypeModel.CreateFrom(typeof(IIndexedVector<int, GenericStruct<int>>)));
+            Assert.AreEqual("Indexed vector values must be flatbuffer tables. Type = 'FlatSharpTests.TypeModelTests.GenericStruct<System.Int32>'", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_Vector_IndexedVector_Vector_NotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
                 () => RuntimeTypeModel.CreateFrom(typeof(IIndexedVector<int, IList<string>>)));
+            Assert.AreEqual("Indexed vector values must be flatbuffer tables. Type = 'System.Collections.Generic.IList<System.String>'", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_Vector_IndexedVector_Union_NotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
                 () => RuntimeTypeModel.CreateFrom(typeof(IIndexedVector<int, FlatBufferUnion<string, GenericTable<string>>>)));
+            Assert.AreEqual("Indexed vector values must be flatbuffer tables. Type = 'FlatSharp.FlatBufferUnion<System.String, FlatSharpTests.TypeModelTests.GenericTable<System.String>>'", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_Enum_UntaggedEnumNotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(UntaggedEnum)));
+            Assert.AreEqual("Enum 'FlatSharpTests.TypeModelTests.UntaggedEnum' is not tagged with a [FlatBufferEnum] attribute.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_Enum_NullableUntaggedEnumNotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(UntaggedEnum?)));
+            Assert.AreEqual("Enum 'FlatSharpTests.TypeModelTests.UntaggedEnum' is not tagged with a [FlatBufferEnum] attribute.", ex.Message);
         }
 
         [TestMethod]
@@ -391,17 +432,33 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
+        public void TypeModel_Vector_NullableMemoryOfByte()
+        {
+            var model = RuntimeTypeModel.CreateFrom(typeof(Memory<byte>?));
+            Assert.IsInstanceOfType(model, typeof(NullableTypeModel));
+        }
+
+        [TestMethod]
+        public void TypeModel_Vector_NullableReadOnlyMemoryOfByte()
+        {
+            var model = RuntimeTypeModel.CreateFrom(typeof(ReadOnlyMemory<byte>?));
+            Assert.IsInstanceOfType(model, typeof(NullableTypeModel));
+        }
+
+        [TestMethod]
         public void TypeModel_Vector_MemoryOfScalar_NotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
                 () => RuntimeTypeModel.CreateFrom(typeof(Memory<int>)));
+            Assert.AreEqual("Memory vectors may only be ReadOnlyMemory<byte> or Memory<byte>.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_Vector_MemoryOfEnum_NotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
                 () => RuntimeTypeModel.CreateFrom(typeof(Memory<TaggedEnum>)));
+            Assert.AreEqual("Memory vectors may only be ReadOnlyMemory<byte> or Memory<byte>.", ex.Message);
         }
 
         [TestMethod]
@@ -414,57 +471,65 @@ namespace FlatSharpTests
         [TestMethod]
         public void TypeModel_Vector_ReadOnlyMemoryOfScalar_NotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
                 () => RuntimeTypeModel.CreateFrom(typeof(ReadOnlyMemory<int>)));
+            Assert.AreEqual("Memory vectors may only be ReadOnlyMemory<byte> or Memory<byte>.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_Vector_ReadOnlyMemoryOfEnum_NotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
                 () => RuntimeTypeModel.CreateFrom(typeof(ReadOnlyMemory<TaggedEnum>)));
+            Assert.AreEqual("Memory vectors may only be ReadOnlyMemory<byte> or Memory<byte>.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_SortedVector_OfStruct_NotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyStruct<int>[]>)));
+            Assert.AreEqual("Property 'Vector' declares a sorted vector, but the member is not a table. Type = FlatSharpTests.TypeModelTests.SortedVectorKeyStruct<System.Int32>[].", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_SortedVector_OfEnum_NotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                    RuntimeTypeModel.CreateFrom(typeof(SortedVector<TaggedEnum[]>)));
+            Assert.AreEqual("Property 'Vector' declares a sorted vector, but the member is not a table. Type = FlatSharpTests.TypeModelTests.TaggedEnum[].", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_SortedVector_OfNullableEnum_NotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                    RuntimeTypeModel.CreateFrom(typeof(SortedVector<TaggedEnum?[]>)));
+            Assert.AreEqual("Type 'System.Nullable<FlatSharpTests.TypeModelTests.TaggedEnum>' is not a valid vector member.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_SortedVector_OfString_NotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                    RuntimeTypeModel.CreateFrom(typeof(SortedVector<string[]>)));
+            Assert.AreEqual("Property 'Vector' declares a sorted vector, but the member is not a table. Type = System.String[].", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_SortedVector_OfScalar_NotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                    RuntimeTypeModel.CreateFrom(typeof(SortedVector<int[]>)));
+            Assert.AreEqual("Property 'Vector' declares a sorted vector, but the member is not a table. Type = System.Int32[].", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_SortedVector_OfNullableScalar_NotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                    RuntimeTypeModel.CreateFrom(typeof(SortedVector<int?[]>)));
+            Assert.AreEqual("Type 'System.Nullable<System.Int32>' is not a valid vector member.", ex.Message);
         }
 
         [TestMethod]
@@ -487,60 +552,89 @@ namespace FlatSharpTests
         [TestMethod]
         public void TypeModel_SortedVector_OfTableWithOptionalKey_NotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<bool?>>)));
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<byte?>[]>)));
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<sbyte?>[]>)));
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<ushort?>[]>)));
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<short?>[]>)));
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<uint?>[]>)));
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<int?>[]>)));
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<ulong?>[]>)));
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<long?>[]>)));
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<float?>[]>)));
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<double?>[]>)));
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<TaggedEnum?>[]>)));
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<bool?>>)));
+            Assert.AreEqual("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.Nullable<System.Boolean>> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
+
+            ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<byte?>[]>)));
+            Assert.AreEqual("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.Nullable<System.Byte>> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
+
+            ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<sbyte?>[]>)));
+            Assert.AreEqual("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.Nullable<System.SByte>> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
+
+            ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<ushort?>[]>)));
+            Assert.AreEqual("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.Nullable<System.UInt16>> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
+
+            ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<short?>[]>)));
+            Assert.AreEqual("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.Nullable<System.Int16>> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
+
+            ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<uint?>[]>)));
+            Assert.AreEqual("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.Nullable<System.UInt32>> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
+
+            ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<int?>[]>)));
+            Assert.AreEqual("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.Nullable<System.Int32>> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
+
+            ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<ulong?>[]>)));
+            Assert.AreEqual("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.Nullable<System.UInt64>> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
+
+            ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<long?>[]>)));
+            Assert.AreEqual("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.Nullable<System.Int64>> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
+
+            ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<float?>[]>)));
+            Assert.AreEqual("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.Nullable<System.Single>> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
+
+            ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<double?>[]>)));
+            Assert.AreEqual("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.Nullable<System.Double>> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
+
+            ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<TaggedEnum?>[]>)));
+            Assert.AreEqual("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.Nullable<FlatSharpTests.TypeModelTests.TaggedEnum>> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_SortedVector_OfTableWithStructKey_NotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(SortedVector<IList<SortedVectorKeyTable<GenericStruct<string>>>>)));
+            Assert.AreEqual("Struct 'FlatSharpTests.TypeModelTests.GenericStruct<System.String>' property Value (Index 0) with type System.String cannot be part of a flatbuffer struct.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_SortedVector_OfTableWithTableKey_NotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(SortedVector<IList<SortedVectorKeyTable<GenericTable<string>>>>)));
+            Assert.AreEqual("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<FlatSharpTests.TypeModelTests.GenericTable<System.String>> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_SortedVector_OfTableWithVectorKey_NotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(SortedVector<IList<SortedVectorKeyTable<string[]>>>)));
+            Assert.AreEqual("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.String[]> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_SortedVector_OfTableWithEnumKey_NotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(SortedVector<IList<SortedVectorKeyTable<TaggedEnum>>>)));
+            Assert.AreEqual("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<FlatSharpTests.TypeModelTests.TaggedEnum> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_SortedVector_OfTableWithNullableEnumKey_NotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(SortedVector<IList<SortedVectorKeyTable<TaggedEnum?>>>)));
+            Assert.AreEqual("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.Nullable<FlatSharpTests.TypeModelTests.TaggedEnum>> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_SortedVector_OfTableWithoutKey_NotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(SortedVector<IList<GenericTable<string>>>)));
+            Assert.AreEqual("Property 'Vector' declares a sorted vector, but the member does not have a key defined. Type = System.Collections.Generic.IList<FlatSharpTests.TypeModelTests.GenericTable<System.String>>.", ex.Message);
         }
 
         [TestMethod]
@@ -552,8 +646,9 @@ namespace FlatSharpTests
         [TestMethod]
         public void TypeModel_SortedVector_OfTableWithMultipleKeys_NotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(SortedVector<IList<SortedVectorMultiKeyTable<string>>>)));
+            Assert.AreEqual("Table FlatSharpTests.TypeModelTests.SortedVectorMultiKeyTable<System.String> has more than one [FlatBufferItemAttribute] with Key set to true.", ex.Message);
         }
 
         private BaseVectorTypeModel VectorTest(Type vectorDefinition, Type innerType)
@@ -577,81 +672,97 @@ namespace FlatSharpTests
         [TestMethod]
         public void TypeModel_Union_VectorsNotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, IList<string>>>)));
+            Assert.AreEqual("Unions may not store 'System.Collections.Generic.IList<System.String>'.", ex.Message);
 
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, IReadOnlyList<string>>>)));
+            Assert.AreEqual("Unions may not store 'System.Collections.Generic.IReadOnlyList<System.String>'.", ex.Message);
 
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
-                RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, Memory<int>>>)));
+            ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, Memory<byte>>>)));
+            Assert.AreEqual("Unions may not store 'System.Memory<System.Byte>'.", ex.Message);
 
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
-                RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, ReadOnlyMemory<int>>>)));
+            ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, ReadOnlyMemory<byte>>>)));
+            Assert.AreEqual("Unions may not store 'System.ReadOnlyMemory<System.Byte>'.", ex.Message);
 
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, string[]>>)));
+            Assert.AreEqual("Unions may not store 'System.String[]'.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_Union_UnionsNotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, FlatBufferUnion<string, GenericStruct<int>>>>)));
+            Assert.AreEqual("Unions may not store 'FlatSharp.FlatBufferUnion<System.String, FlatSharpTests.TypeModelTests.GenericStruct<System.Int32>>'.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_Union_ScalarsNotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, int>>)));
+            Assert.AreEqual("Unions may not store 'System.Int32'.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_Union_OptionalScalarsNotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, int?>>)));
+            Assert.AreEqual("Unions may not store 'System.Nullable<System.Int32>'.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_Union_EnumsNotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, TaggedEnum>>)));
+            Assert.AreEqual("Unions may not store 'EnumTypeModel'.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_Union_OptionalEnumsNotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, TaggedEnum?>>)));
+            Assert.AreEqual("Unions may not store 'NullableTypeModel'.", ex.Message);
         }
 
         [TestMethod]
         public void TypeModel_Union_StringAndSharedStringNotAllowed()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(FlatBufferUnion<string, SharedString>)));
+            Assert.AreEqual("Unions may only contain one string type. String and SharedString cannot cohabit the union.", ex.Message);
 
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(FlatBufferUnion<string, GenericTable<string>, SharedString>)));
+            Assert.AreEqual("Unions may only contain one string type. String and SharedString cannot cohabit the union.", ex.Message);
         }
 
         [TestMethod]
         public void FlatBufferSerializer_OnlyTablesAllowedAsRootType()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 FlatBufferSerializer.Default.Compile<GenericStruct<int>>());
+            Assert.AreEqual("Can only compile [FlatBufferTable] elements as root types. Type 'FlatSharpTests.TypeModelTests.GenericStruct<System.Int32>' is a Struct.", ex.Message);
 
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 FlatBufferSerializer.Default.Compile<IList<int>>());
+            Assert.AreEqual("Can only compile [FlatBufferTable] elements as root types. Type 'System.Collections.Generic.IList<System.Int32>' is a Vector.", ex.Message);
 
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 FlatBufferSerializer.Default.Compile<string>());
+            Assert.AreEqual("Can only compile [FlatBufferTable] elements as root types. Type 'System.String' is a String.", ex.Message);
 
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 FlatBufferSerializer.Default.Compile<FlatBufferUnion<string>>());
+            Assert.AreEqual("Can only compile [FlatBufferTable] elements as root types. Type 'FlatSharp.FlatBufferUnion<System.String>' is a Union.", ex.Message);
         }
 
         [TestMethod]
@@ -718,6 +829,7 @@ namespace FlatSharpTests
         [FlatBufferTable, FlatBufferStruct]
         public class InvalidTableAndStruct
         {
+            [FlatBufferItem(0)]
             public virtual string String { get; set; }
         }
 

@@ -205,18 +205,18 @@ $@"
 
                 if (propertyAttribute.Deprecated)
                 {
-                    throw new InvalidFlatBufferDefinitionException($"FlatBuffer struct {this.ClrType.Name} may not have deprecated properties");
+                    throw new InvalidFlatBufferDefinitionException($"FlatBuffer struct {this.GetCompilableTypeName()} may not have deprecated properties");
                 }
 
                 ushort index = propertyAttribute.Index;
                 if (index != expectedIndex)
                 {
-                    throw new InvalidFlatBufferDefinitionException($"FlatBuffer struct {this.ClrType.Name} does not declare an item with index {expectedIndex}. Structs must have sequenential indexes starting at 0.");
+                    throw new InvalidFlatBufferDefinitionException($"FlatBuffer struct {this.GetCompilableTypeName()} does not declare an item with index {expectedIndex}. Structs must have sequenential indexes starting at 0.");
                 }
                 
                 if (propertyAttribute.DefaultValue is not null)
                 {
-                    throw new InvalidFlatBufferDefinitionException($"FlatBuffer struct {this.ClrType.Name} declares default value on index {expectedIndex}. Structs may not have default values.");
+                    throw new InvalidFlatBufferDefinitionException($"FlatBuffer struct {this.GetCompilableTypeName()} declares default value on index {expectedIndex}. Structs may not have default values.");
                 }
 
                 expectedIndex++;
@@ -224,7 +224,7 @@ $@"
 
                 if (!propertyModel.IsValidStructMember || propertyModel.PhysicalLayout.Length > 1)
                 {
-                    throw new InvalidFlatBufferDefinitionException($"Struct property {property.Name} with type {property.PropertyType.Name} cannot be part of a flatbuffer struct.");
+                    throw new InvalidFlatBufferDefinitionException($"Struct '{this.GetCompilableTypeName()}' property {property.Name} (Index {index}) with type {CSharpHelpers.GetCompilableTypeName(property.PropertyType)} cannot be part of a flatbuffer struct.");
                 }
 
                 int propertySize = propertyModel.PhysicalLayout[0].InlineSize;
