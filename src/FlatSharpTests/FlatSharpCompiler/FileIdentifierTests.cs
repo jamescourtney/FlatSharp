@@ -42,7 +42,7 @@ namespace FlatSharpTests.Compiler
             ";
 
             var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.AreEqual(ex.Errors[0], "Message='Duplicate root types: 'Table' and 'TableB'.', Scope=$");
+            Assert.IsTrue(ex.Errors[0].StartsWith("Message='Duplicate root types: 'Table' and 'TableB'.', Scope=$"));
         }
 
         [TestMethod]
@@ -57,7 +57,7 @@ namespace FlatSharpTests.Compiler
             ";
 
             var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.AreEqual(ex.Errors[0], "Message='Duplicate root types: 'Table' and 'Table'.', Scope=$");
+            Assert.IsTrue(ex.Errors[0].StartsWith("Message='Duplicate root types: 'Table' and 'Table'.', Scope=$"));
         }
 
         [TestMethod]
@@ -75,7 +75,7 @@ namespace FlatSharpTests.Compiler
             ";
 
             var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.AreEqual(ex.Errors[0], "Message='Duplicate file identifiers: 'doof' and 'food'.', Scope=$");
+            Assert.IsTrue(ex.Errors[0].StartsWith("Message='Duplicate file identifiers: 'doof' and 'food'.', Scope=$"));
         }
 
         [TestMethod]
@@ -90,7 +90,7 @@ namespace FlatSharpTests.Compiler
             ";
 
             var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.AreEqual(ex.Errors[0], "Message='Duplicate file identifiers: 'food' and 'doof'.', Scope=$");
+            Assert.IsTrue(ex.Errors[0].StartsWith("Message='Duplicate file identifiers: 'food' and 'doof'.', Scope=$"));
         }
 
         [TestMethod]
@@ -103,7 +103,7 @@ namespace FlatSharpTests.Compiler
             ";
 
             var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.AreEqual(ex.Errors[0], "Message='Unable to resolve root_type 'Something'.', Scope=$");
+            Assert.IsTrue(ex.Errors[0].StartsWith("Message='Unable to resolve root_type 'Something'.', Scope=$"));
         }
 
         [TestMethod]
@@ -117,7 +117,7 @@ namespace FlatSharpTests.Compiler
             ";
 
             var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.AreEqual(ex.Errors[0], "Message='root_type 'Struct' does not reference a table.', Scope=$");
+            Assert.IsTrue(ex.Errors[0].StartsWith("Message='root_type 'Struct' does not reference a table.', Scope=$"));
         }
 
         [TestMethod]
@@ -131,7 +131,7 @@ namespace FlatSharpTests.Compiler
             ";
 
             var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.AreEqual(ex.Errors[0], "Message='root_type 'Enum' does not reference a table.', Scope=$");
+            Assert.IsTrue(ex.Errors[0].StartsWith("Message='root_type 'Enum' does not reference a table.', Scope=$"));
         }
 
         [TestMethod]
@@ -145,7 +145,7 @@ namespace FlatSharpTests.Compiler
             ";
 
             var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.AreEqual(ex.Errors[0], "Message='Unable to resolve root_type 'Something'.', Scope=$");
+            Assert.IsTrue(ex.Errors[0].StartsWith("Message='Unable to resolve root_type 'Something'.', Scope=$"));
         }
 
         [TestMethod]
@@ -203,7 +203,7 @@ namespace FlatSharpTests.Compiler
             ";
 
             var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.AreEqual(ex.Errors[0], "Message='root_type 'Table' has conflicting file identifiers: 'AbCd' and 'abcd'.', Scope=$");
+            Assert.IsTrue(ex.Errors[0].StartsWith("Message='root_type 'Table' has conflicting file identifiers: 'AbCd' and 'abcd'.', Scope=$"));
         }
 
         [TestMethod]

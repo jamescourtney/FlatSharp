@@ -245,8 +245,18 @@ namespace FlatSharp.Compiler
 
                 // Traverse the graph of includes.
                 var includeVisitor = new IncludeVisitor(next, includes, visitOrder);
-                includeVisitor.Visit(GetParser(fbs).schema());
-                schemaVisitor.Visit(GetParser(fbs).schema());
+
+                ErrorContext.Current.WithScope(next, () =>
+                {
+                    var schema = GetParser(fbs).schema();
+                    ErrorContext.Current.ThrowIfHasErrors();
+
+                    includeVisitor.Visit(schema); 
+                    ErrorContext.Current.ThrowIfHasErrors();
+
+                    schemaVisitor.Visit(schema); 
+                    ErrorContext.Current.ThrowIfHasErrors();
+                });
             }
 
             rootNode.InputHash = $"{asmVersion}.{Convert.ToBase64String(hash)}";
@@ -290,10 +300,7 @@ namespace FlatSharp.Compiler
 
         private static string CreateCSharp(BaseSchemaMember rootNode, CompilerOptions options)
         {
-            if (ErrorContext.Current.Errors.Any())
-            {
-                throw new InvalidFbsFileException(ErrorContext.Current.Errors);
-            }
+            ErrorContext.Current.ThrowIfHasErrors();
 
             if (string.IsNullOrEmpty(rootNode.DeclaringFile))
             {
@@ -338,10 +345,7 @@ namespace FlatSharp.Compiler
                         TypeModelContainer = TypeModelContainer.CreateDefault(),
                     });
 
-                if (ErrorContext.Current.Errors.Any())
-                {
-                    throw new InvalidFbsFileException(ErrorContext.Current.Errors);
-                }
+                ErrorContext.Current.ThrowIfHasErrors();
             }
 
             string rawCode = writer.ToString();

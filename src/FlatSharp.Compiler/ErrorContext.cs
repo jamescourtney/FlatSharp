@@ -72,6 +72,14 @@ namespace FlatSharp.Compiler
             this.contextStack.RemoveLast();
         }
 
+        public void ThrowIfHasErrors()
+        {
+            if (this.Errors.Any())
+            {
+                throw new InvalidFbsFileException(this.Errors);
+            }
+        }
+
         public void WithScope(string scope, Action callback)
         {
             this.WithScope(scope, () =>
@@ -92,6 +100,10 @@ namespace FlatSharp.Compiler
             {
                 this.RegisterError(ex.Message);
                 return default;
+            }
+            catch (InvalidFbsFileException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
