@@ -28,6 +28,11 @@ namespace FlatSharp
     {
         internal static bool ConvertProtectedInternalToProtected = true;
 
+        internal const string GeneratedClassInputBufferFieldName = "__buffer";
+        internal const string GeneratedClassOffsetFieldName = "__offset";
+        internal const string GeneratedClassMaxVtableIndexFieldName = "__maxVTableIndex";
+        internal const string GeneratedClassVTableOffsetFieldName = "__vtableOffset";
+
         internal static string GetCompilableTypeName(Type t)
         {
             if (string.IsNullOrEmpty(t.FullName))
@@ -119,29 +124,32 @@ namespace FlatSharp
             IEnumerable<GeneratedProperty> propertyOverrides,
             FlatBufferSerializerOptions options)
         {
-            string inputBufferFieldDef = "private readonly TInputBuffer buffer;";
-            string offsetFieldDef = "private readonly int offset;";
+            string inputBufferFieldDef = $"private readonly TInputBuffer {GeneratedClassInputBufferFieldName};";
+            string offsetFieldDef = $"private readonly int {GeneratedClassOffsetFieldName};";
+            string inputBufferAccessor = $"this.{GeneratedClassInputBufferFieldName}";
+
             string vtableOffsetDef = string.Empty;
             string maxVTableIndexDef = string.Empty;
 
             List<string> ctorStatements = new List<string>
             {
-                "this.buffer = buffer;",
-                "this.offset = offset;"
+                $"this.{GeneratedClassInputBufferFieldName} = buffer;",
+                $"this.{GeneratedClassOffsetFieldName} = offset;"
             };
 
             if (options.GreedyDeserialize)
             {
                 inputBufferFieldDef = string.Empty;
                 offsetFieldDef = string.Empty;
+                inputBufferAccessor = "null";
                 ctorStatements.Clear();
             }
 
             if (typeModel.SchemaType == FlatBufferSchemaType.Table)
             {
-                vtableOffsetDef = "private readonly int vtableOffset;";
-                maxVTableIndexDef = "private readonly int maxVTableIndex;";
-                ctorStatements.Add($"buffer.{nameof(InputBufferExtensions.InitializeVTable)}(offset, out this.vtableOffset, out this.maxVTableIndex);");
+                vtableOffsetDef = $"private readonly int {GeneratedClassVTableOffsetFieldName};";
+                maxVTableIndexDef = $"private readonly int {GeneratedClassMaxVtableIndexFieldName};";
+                ctorStatements.Add($"buffer.{nameof(InputBufferExtensions.InitializeVTable)}(offset, out this.{GeneratedClassVTableOffsetFieldName}, out this.{GeneratedClassMaxVtableIndexFieldName});");
             }
 
             foreach (var property in propertyOverrides)
@@ -166,7 +174,7 @@ namespace FlatSharp
             {
                 var @params = ctor.GetParameters();
                 if (@params.Length == 1 &&
-                    @params[0].ParameterType == typeof(FlatSharpConstructorContext))
+                    @params[0].ParameterType == typeof(FlatSharpDeserializationContext))
                 {
                     specialCtor = ctor;
                     break;
@@ -179,17 +187,20 @@ namespace FlatSharp
                 !specialCtor.IsFamilyOrAssembly)
             {
                 throw new InvalidFlatBufferDefinitionException(
-                    $"Class '{typeModel.GetCompilableTypeName()}' defines a constructor accepting {nameof(FlatSharpConstructorContext)}, but the constructor is not visible to derived classes.");
+                    $"Class '{typeModel.GetCompilableTypeName()}' defines a constructor accepting {nameof(FlatSharpDeserializationContext)}, but the constructor is not visible to derived classes.");
             }
 
-            string baseParams = specialCtor is not null ? "CtorContext" : string.Empty;
+            string baseParams = specialCtor is not null ? "__CtorContext" : string.Empty;
 
             return
 $@"
-                private sealed class {className}<TInputBuffer> : {typeModel.GetCompilableTypeName()} where TInputBuffer : IInputBuffer
+                private sealed class {className}<TInputBuffer> 
+                    : {typeModel.GetCompilableTypeName()} 
+                    , {nameof(IFlatBufferDeserializedObject)}
+                    where TInputBuffer : IInputBuffer
                 {{
-                    private static readonly {nameof(FlatSharpConstructorContext)} CtorContext 
-                        = new {nameof(FlatSharpConstructorContext)}({nameof(FlatBufferDeserializationOption)}.{options.DeserializationOption});
+                    private static readonly {nameof(FlatSharpDeserializationContext)} __CtorContext 
+                        = new {nameof(FlatSharpDeserializationContext)}({nameof(FlatBufferDeserializationOption)}.{options.DeserializationOption});
 
                     {inputBufferFieldDef}
                     {offsetFieldDef}
@@ -200,6 +211,10 @@ $@"
                     {{
                         {string.Join("\r\n", ctorStatements)}
                     }}
+
+                    Type {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.TableOrStructType)} => typeof({typeModel.GetCompilableTypeName()});
+                    {nameof(FlatSharpDeserializationContext)} {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.DeserializationContext)} => __CtorContext;
+                    {nameof(IInputBuffer)}? {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.InputBuffer)} => {inputBufferAccessor};
 
                     {string.Join("\r\n", propertyOverrides)}
                 }}

@@ -77,7 +77,37 @@ namespace FlatSharp
         /// </summary>
         public ISerializer<T> Compile<T>() where T : class
         {
-            return this.GetOrCreateSerializer<T>();
+            return this.GetOrCreateTypedSerializer<T>();
+        }
+
+        /// <summary>
+        /// Gets or creates a serializr that will satisfy the item that
+        /// is a FlatBuffer table.
+        /// </summary>
+        public ISerializer Compile(object item)
+        {
+            // Let's be helpful if they are referencing an object that we deserialized.
+            // The type of a deserialized object won't match the type of the parent object,
+            // but this interface allows us to query.
+            Type actualType;
+            if (item is IFlatBufferDeserializedObject deserialized)
+            {
+                actualType = deserialized.TableOrStructType;
+            }
+            else
+            {
+                actualType = item.GetType();
+            }
+
+            return this.GetOrCreateUntypedSerializer(actualType);
+        }
+
+        /// <summary>
+        /// Gets or creates a serializr that will satisfy the given table type.
+        /// </summary>
+        public ISerializer Compile(Type itemType)
+        {
+            return this.GetOrCreateUntypedSerializer(itemType);
         }
 
         /// <summary>
@@ -118,7 +148,7 @@ namespace FlatSharp
         public T Parse<T>(IInputBuffer buffer)
             where T : class
         {
-            return this.GetOrCreateSerializer<T>().Parse(buffer);
+            return this.GetOrCreateTypedSerializer<T>().Parse(buffer);
         }
 
         /// <summary>
@@ -138,7 +168,7 @@ namespace FlatSharp
             where T : class 
             where TSpanWriter : ISpanWriter
         {
-            return this.GetOrCreateSerializer<T>().Write(writer, destination, item);
+            return this.GetOrCreateTypedSerializer<T>().Write(writer, destination, item);
         }
 
         /// <summary>
@@ -146,7 +176,7 @@ namespace FlatSharp
         /// </summary>
         public int GetMaxSize<T>(T item) where T : class
         {
-            return this.GetOrCreateSerializer<T>().GetMaxSize(item);
+            return this.GetOrCreateUntypedSerializer(typeof(T)).GetMaxSize(item);
         }
 
         internal int ReflectionSerialize(object item, byte[] destination)
@@ -183,7 +213,7 @@ namespace FlatSharp
             return this.Serialize(item, destination);
         }
 
-        private ISerializer<TRoot> GetOrCreateSerializer<TRoot>() where TRoot : class
+        private ISerializer<TRoot> GetOrCreateTypedSerializer<TRoot>() where TRoot : class
         {
             if (!this.serializerCache.TryGetValue(typeof(TRoot), out object? serializer))
             {
@@ -198,6 +228,27 @@ namespace FlatSharp
             }
 
             return (ISerializer<TRoot>)serializer;
+        }
+
+        /// <summary>
+        /// Reflection to call into the method above. This is a one-time call per type of item,
+        /// so not the end of the world.
+        /// </summary>
+        private ISerializer GetOrCreateUntypedSerializer(Type itemType)
+        {
+            if (!this.serializerCache.TryGetValue(itemType, out object? serializer))
+            {
+                var method = 
+                    this.GetType()
+                        .GetMethod(
+                            nameof(GetOrCreateTypedSerializer), 
+                            BindingFlags.NonPublic | BindingFlags.Instance)!
+                        .MakeGenericMethod(itemType);
+
+                serializer = method.Invoke(this, new object[0]);
+            }
+
+            return (ISerializer)serializer!;
         }
     }
 }

@@ -25,7 +25,7 @@ namespace FlatSharp
     /// <summary>
     /// An implementation of <see cref="ISerializer{T}"/> that wraps a <see cref="IGeneratedSerializer{T}"/>.
     /// </summary>
-    internal class GeneratedSerializerWrapper<T> : ISerializer<T> where T : class
+    internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where T : class
     {
         private const int FileIdentifierSize = 4;
 
@@ -51,6 +51,8 @@ namespace FlatSharp
             this.fileIdentifier = tableAttribute?.FileIdentifier;
         }
 
+        Type ISerializer.ItemType => typeof(T);
+
         public string? CSharp => this.lazyCSharp.Value;
 
         public Assembly? Assembly { get; }
@@ -71,6 +73,8 @@ namespace FlatSharp
                                                                      // than to introduce an 'if'.
         }
 
+        int ISerializer.GetMaxSize(object item) => this.GetMaxSize((T)item);
+
         public T Parse(IInputBuffer buffer)
         {
             if (buffer.Length >= int.MaxValue / 2)
@@ -86,6 +90,8 @@ namespace FlatSharp
             buffer.SharedStringReader = this.settings?.SharedStringReaderFactory?.Invoke();
             return buffer.InvokeParse(this.innerSerializer, 0);
         }
+
+        object ISerializer.Parse(IInputBuffer buffer) => this.Parse(buffer);
 
         public int Write(ISpanWriter writer, Span<byte> destination, T item)
         {
@@ -150,6 +156,9 @@ namespace FlatSharp
 
             return serializationContext.Offset;
         }
+
+        int ISerializer.Write(ISpanWriter writer, Span<byte> destination, object item) =>
+            this.Write(writer, destination, (T)item);
 
         public ISerializer<T> WithSettings(SerializerSettings settings)
         {

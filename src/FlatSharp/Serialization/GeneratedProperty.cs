@@ -76,7 +76,7 @@ namespace FlatSharp
                 {
                     if (string.IsNullOrEmpty(this.BackingFieldName))
                     {
-                        return $"return {this.ReadValueMethodName}(this.buffer, this.offset);";
+                        return $"return {this.ReadValueMethodName}(this.{CSharpHelpers.GeneratedClassInputBufferFieldName}, this.{CSharpHelpers.GeneratedClassOffsetFieldName});";
                     }
                     else
                     {
@@ -89,7 +89,7 @@ namespace FlatSharp
 $@"
                             if (!this.{this.HasValueFieldName})
                             {{
-                                this.{this.BackingFieldName} = {this.ReadValueMethodName}(this.buffer, this.offset);
+                                this.{this.BackingFieldName} = {this.ReadValueMethodName}(this.{CSharpHelpers.GeneratedClassInputBufferFieldName}, this.{CSharpHelpers.GeneratedClassOffsetFieldName});
                                 this.{this.HasValueFieldName} = true;
                             }}
                             return this.{this.BackingFieldName};

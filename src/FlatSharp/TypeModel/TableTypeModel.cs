@@ -534,12 +534,12 @@ $@"
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
                     private {typeName} {GeneratedProperty.GetReadValueMethodName(index)}({context.InputBufferTypeName} buffer, int offset)
                     {{
-                        if ({index} > this.maxVTableIndex)
+                        if ({index} > this.{CSharpHelpers.GeneratedClassMaxVtableIndexFieldName})
                         {{
                             return {defaultValue};
                         }}
 
-                        ushort relativeOffset = buffer.ReadUShort(this.vtableOffset + {4 + (2 * index)});
+                        ushort relativeOffset = buffer.ReadUShort(this.{CSharpHelpers.GeneratedClassVTableOffsetFieldName} + {4 + (2 * index)});
                         if (relativeOffset == 0)
                         {{
                             return {defaultValue};

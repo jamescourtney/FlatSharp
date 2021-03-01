@@ -75,7 +75,7 @@ namespace FlatSharp
                 int vectorLength = (int)ScalarSpanReader.ReadUInt(buffer.Slice(vectorStartOffset));
                 int index0Position = vectorStartOffset + sizeof(int);
 
-                (int, int, int)[] pooledArray = null;
+                (int, int, int)[]? pooledArray = null;
 
                 // Traverse the vector and figure out the offsets of all the keys.
                 // Store that in some local data, hopefully on the stack. 512 is somewhat arbitrary, but we want to avoid stack overflows.
@@ -103,7 +103,7 @@ namespace FlatSharp
                     nextPosition += sizeof(uint);
                 }
 
-                if (pooledArray != null)
+                if (pooledArray is not null)
                 {
                     ArrayPool<(int, int, int)>.Shared.Return(pooledArray);
                 }
