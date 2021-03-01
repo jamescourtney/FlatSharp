@@ -258,15 +258,28 @@ $@"
 
                 if (!result.Success || EnableStrictValidation)
                 {
-                    string[] failures = result.Diagnostics
+                    var failures = result.Diagnostics
                         .Where(d => d.Id != "CS8019") // unnecessary using directive.
                         .Where(d => d.Id != "CS1701") // DLL version mismatch
-                        .Select(d => d.ToString())
                         .ToArray();
 
                     if (failures.Length > 0)
                     {
-                        throw new FlatSharpCompilationException(failures, formattedTextFactory());
+                        using var workspace = new AdhocWorkspace();
+                        List<string> errors = new List<string>();
+
+                        foreach (var failure in failures)
+                        {
+                            string error = failure.ToString();
+                            var node = tree.GetRoot().FindNode(failure.Location.SourceSpan).Parent;
+                            var formattedNode = Formatter.Format(node, workspace);
+                            string formatted = formattedNode.ToFullString();
+                            formatted = formatted.Trim().Replace('\r', ' ').Replace('\n', ' ');
+
+                            errors.Add($"FlatSharp compilation error: {error}, Context = \"{formatted}\"");
+                        }
+
+                        throw new FlatSharpCompilationException(errors.ToArray(), formattedTextFactory());
                     }
                 }
 
