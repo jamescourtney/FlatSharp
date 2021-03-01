@@ -722,7 +722,7 @@ namespace FlatSharpTests
         {
             var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, TaggedEnum>>)));
-            Assert.AreEqual("Unions may not store 'EnumTypeModel'.", ex.Message);
+            Assert.AreEqual("Unions may not store 'FlatSharpTests.TypeModelTests.TaggedEnum'.", ex.Message);
         }
 
         [TestMethod]
@@ -730,7 +730,7 @@ namespace FlatSharpTests
         {
             var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, TaggedEnum?>>)));
-            Assert.AreEqual("Unions may not store 'NullableTypeModel'.", ex.Message);
+            Assert.AreEqual("Unions may not store 'System.Nullable<FlatSharpTests.TypeModelTests.TaggedEnum>'.", ex.Message);
         }
 
         [TestMethod]
