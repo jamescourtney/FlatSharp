@@ -109,21 +109,27 @@ namespace FlatSharp.TypeModel
             }
 
             var tableAttribute = type.GetCustomAttribute<FlatBufferTableAttribute>();
-            if (tableAttribute != null)
+            var structAttribute = type.GetCustomAttribute<FlatBufferStructAttribute>();
+
+            if (tableAttribute is not null && structAttribute is not null)
+            {
+                throw new InvalidFlatBufferDefinitionException($"Type '{CSharpHelpers.GetCompilableTypeName(type)}' is declared as both [FlatBufferTable] and [FlatBufferStruct].");
+            }
+            else if (tableAttribute != null)
             {
                 typeModel = new TableTypeModel(type, container);
                 return true;
             }
-
-            var structAttribute = type.GetCustomAttribute<FlatBufferStructAttribute>();
-            if (structAttribute != null)
+            else if (structAttribute != null)
             {
                 typeModel = new StructTypeModel(type, container);
                 return true;
             }
-
-            typeModel = null;
-            return false;
+            else
+            {
+                typeModel = null;
+                return false;
+            }
         }
     }
 }

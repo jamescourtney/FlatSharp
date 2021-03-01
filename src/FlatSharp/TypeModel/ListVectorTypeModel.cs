@@ -49,7 +49,7 @@ namespace FlatSharp.TypeModel
 
             if (!this.itemTypeModel.IsValidVectorMember)
             {
-                throw new InvalidFlatBufferDefinitionException($"Type '{this.itemTypeModel.ClrType.Name}' is not a valid vector member.");
+                throw new InvalidFlatBufferDefinitionException($"Type '{this.itemTypeModel.GetCompilableTypeName()}' is not a valid vector member.");
             }
         }
 

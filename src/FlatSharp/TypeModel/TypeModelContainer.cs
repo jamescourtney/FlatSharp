@@ -209,7 +209,7 @@ namespace FlatSharp.TypeModel
         {
             if (!this.TryCreateTypeModel(type, out var typeModel))
             {
-                throw new InvalidFlatBufferDefinitionException($"Failed to create or find type model for type '{type.FullName}'.");
+                throw new InvalidFlatBufferDefinitionException($"Failed to create or find type model for type '{CSharpHelpers.GetCompilableTypeName(type)}'.");
             }
 
             return typeModel;

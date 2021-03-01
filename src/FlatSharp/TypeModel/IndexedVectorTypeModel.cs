@@ -44,7 +44,7 @@ namespace FlatSharp.TypeModel
             if (!this.ClrType.IsGenericType ||
                 this.ClrType.GetGenericTypeDefinition() != typeof(IIndexedVector<,>))
             {
-                throw new InvalidFlatBufferDefinitionException($"Indexed vectors must be of type IIndexedVector. Type = {this.ClrType.FullName}.");
+                throw new InvalidFlatBufferDefinitionException($"Indexed vectors must be of type IIndexedVector. Type = {this.GetCompilableTypeName()}.");
             }
 
             Type keyType = this.ClrType.GetGenericArguments()[0];
@@ -56,13 +56,13 @@ namespace FlatSharp.TypeModel
             if (this.valueTypeModel.SchemaType != FlatBufferSchemaType.Table)
             {
                 throw new InvalidFlatBufferDefinitionException(
-                    $"Dictionary vector keys must be flatbuffer tables. Type = '{this.valueTypeModel.SchemaType}'");
+                    $"Indexed vector values must be flatbuffer tables. Type = '{this.valueTypeModel.GetCompilableTypeName()}'");
             }
 
             if (!this.valueTypeModel.TryGetTableKeyMember(out TableMemberModel? tempKeyMemberModel))
             {
                 throw new InvalidFlatBufferDefinitionException(
-                    $"Dictionary vector values must have a key property defined. Table = '{this.valueTypeModel.ClrType.FullName}'");
+                    $"Indexed vector values must have a property with the key attribute defined. Table = '{this.valueTypeModel.GetCompilableTypeName()}'");
             }
             else
             {
@@ -72,13 +72,13 @@ namespace FlatSharp.TypeModel
             if (!this.keyMemberModel.ItemTypeModel.TryGetSpanComparerType(out _))
             {
                 throw new InvalidFlatBufferDefinitionException(
-                    $"FlatSharp vector dictionary keys must supply a span comparer. KeyType = '{this.keyMemberModel.ItemTypeModel.ClrType}'.");
+                    $"FlatSharp indexed vector keys must supply a span comparer. KeyType = '{this.keyMemberModel.ItemTypeModel.GetCompilableTypeName()}'.");
             }
 
             if (keyMemberModel.ItemTypeModel.ClrType != this.keyTypeModel.ClrType)
             {
                 throw new InvalidFlatBufferDefinitionException(
-                    $"FlatSharp vector dictionary keys must have the same type as the key of the value. KeyType = {this.keyTypeModel.ClrType.FullName}, Value Key Type = '{this.valueTypeModel.ClrType.FullName}'.");
+                    $"FlatSharp indexed vector keys must have the same type as the key of the value. KeyType = {this.keyTypeModel.GetCompilableTypeName()}, Value Key Type = '{this.valueTypeModel.GetCompilableTypeName()}'.");
             }
         }
 

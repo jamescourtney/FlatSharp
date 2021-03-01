@@ -252,11 +252,11 @@ $@"
             {
                 if (!item.IsValidUnionMember)
                 {
-                    throw new InvalidFlatBufferDefinitionException($"Unions may not store '{item.GetType().Name}'.");
+                    throw new InvalidFlatBufferDefinitionException($"Unions may not store '{item.GetCompilableTypeName()}'.");
                 }
                 else if (!uniqueTypes.Add(item.ClrType))
                 {
-                    throw new InvalidFlatBufferDefinitionException($"Unions must consist of unique types. The type '{item.ClrType.Name}' was repeated.");
+                    throw new InvalidFlatBufferDefinitionException($"Unions must consist of unique types. The type '{item.GetCompilableTypeName()}' was repeated.");
                 }
 
                 if (item.ClrType == typeof(string) || item.ClrType == typeof(SharedString))

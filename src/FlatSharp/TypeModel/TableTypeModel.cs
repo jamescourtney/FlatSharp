@@ -156,7 +156,7 @@ namespace FlatSharp.TypeModel
 
             if (!properties.Any())
             {
-                throw new InvalidFlatBufferDefinitionException($"Can't create table type model from type {this.ClrType.Name} because it does not have any non-static, non-deprecated [FlatBufferItem] properties.");
+                throw new InvalidFlatBufferDefinitionException($"Can't create table type model from type {this.GetCompilableTypeName()} because it does not have any non-static, non-deprecated [FlatBufferItem] properties.");
             }
 
             foreach (var property in properties)
@@ -179,22 +179,22 @@ namespace FlatSharp.TypeModel
                 {
                     if (this.KeyMember != null)
                     {
-                        throw new InvalidFlatBufferDefinitionException($"Table {this.ClrType.Name} has more than one [FlatBufferItemAttribute] with Key set to true.");
+                        throw new InvalidFlatBufferDefinitionException($"Table {this.GetCompilableTypeName()} has more than one [FlatBufferItemAttribute] with Key set to true.");
                     }
 
                     if (!property.ItemTypeModel.IsValidSortedVectorKey)
                     {
-                        throw new InvalidFlatBufferDefinitionException($"Table {this.ClrType.Name} declares a key property on a type that that does not support being a key in a sorted vector.");
+                        throw new InvalidFlatBufferDefinitionException($"Table {this.GetCompilableTypeName()} declares a key property on a type that that does not support being a key in a sorted vector.");
                     }
 
                     if (!property.ItemTypeModel.TryGetSpanComparerType(out _))
                     {
-                        throw new InvalidFlatBufferDefinitionException($"Table {this.ClrType.Name} declares a key property on a type whose type model does not supply a ISpanComparer type.");
+                        throw new InvalidFlatBufferDefinitionException($"Table {this.GetCompilableTypeName()} declares a key property on a type whose type model does not supply a ISpanComparer type.");
                     }
 
                     if (model.IsDeprecated)
                     {
-                        throw new InvalidFlatBufferDefinitionException($"Table {this.ClrType.Name} declares a key property that is deprecated.");
+                        throw new InvalidFlatBufferDefinitionException($"Table {this.GetCompilableTypeName()} declares a key property that is deprecated.");
                     }
 
                     this.KeyMember = model;
@@ -206,7 +206,7 @@ namespace FlatSharp.TypeModel
                 {
                     if (!this.occupiedVtableSlots.Add(index + i))
                     {
-                        throw new InvalidFlatBufferDefinitionException($"FlatBuffer Table {this.ClrType.Name} already defines a property with index {index}. This may happen when unions are declared as these are double-wide members.");
+                        throw new InvalidFlatBufferDefinitionException($"FlatBuffer Table {this.GetCompilableTypeName()} already defines a property with index {index}. This may happen when unions are declared as these are double-wide members.");
                     }
                 }
 
@@ -230,51 +230,53 @@ namespace FlatSharp.TypeModel
 
                 if (memberTypeModel.SchemaType != FlatBufferSchemaType.Table)
                 {
-                    throw new InvalidFlatBufferDefinitionException($"Property '{model.PropertyInfo.Name}' declares a sorted vector, but the member is not a table. Type = {model.ItemTypeModel?.ClrType.FullName}.");
+                    throw new InvalidFlatBufferDefinitionException($"Property '{model.PropertyInfo.Name}' declares a sorted vector, but the member is not a table. Type = {model.ItemTypeModel.GetCompilableTypeName()}.");
                 }
 
                 if (!memberTypeModel.TryGetTableKeyMember(out TableMemberModel? member))
                 {
-                    throw new InvalidFlatBufferDefinitionException($"Property '{model.PropertyInfo.Name}' declares a sorted vector, but the member does not have a key defined. Type = {model.ItemTypeModel?.ClrType.FullName}.");
+                    throw new InvalidFlatBufferDefinitionException($"Property '{model.PropertyInfo.Name}' declares a sorted vector, but the member does not have a key defined. Type = {model.ItemTypeModel.GetCompilableTypeName()}.");
                 }
 
                 if (!member.ItemTypeModel.TryGetSpanComparerType(out _))
                 {
-                    throw new InvalidFlatBufferDefinitionException($"Property '{model.PropertyInfo.Name}' declares a sorted vector, but the key does not have an implementation of ISpanComparer. Keys must be non-nullable scalars or strings. KeyType = {member.ItemTypeModel.ClrType.FullName}");
+                    throw new InvalidFlatBufferDefinitionException($"Property '{model.PropertyInfo.Name}' declares a sorted vector, but the key does not have an implementation of ISpanComparer. Keys must be non-nullable scalars or strings. KeyType = {model.ItemTypeModel.GetCompilableTypeName()}");
                 }
 
                 if (member.ItemTypeModel.PhysicalLayout.Length != 1)
                 {
-                    throw new InvalidFlatBufferDefinitionException($"Property '{model.PropertyInfo.Name}' declares a sorted vector, but the sort key's vtable is not compatible with sorting. KeyType = {member.ItemTypeModel.ClrType.FullName}");
+                    throw new InvalidFlatBufferDefinitionException($"Property '{model.PropertyInfo.Name}' declares a sorted vector, but the sort key's vtable is not compatible with sorting. KeyType = {model.ItemTypeModel.GetCompilableTypeName()}");
                 }
             }
         }
 
         internal static void EnsureClassCanBeInheritedByOutsideAssembly(Type type, out ConstructorInfo defaultConstructor)
         {
+            string typeName = CSharpHelpers.GetCompilableTypeName(type);
+
             if (!type.IsClass)
             {
-                throw new InvalidFlatBufferDefinitionException($"Can't create type model from type {type.Name} because it is not a class.");
+                throw new InvalidFlatBufferDefinitionException($"Can't create type model from type {typeName} because it is not a class.");
             }
-
+            
             if (type.IsSealed)
             {
-                throw new InvalidFlatBufferDefinitionException($"Can't create type model from type {type.Name} because it is sealed.");
+                throw new InvalidFlatBufferDefinitionException($"Can't create type model from type {typeName} because it is sealed.");
             }
 
             if (type.IsAbstract)
             {
-                throw new InvalidFlatBufferDefinitionException($"Can't create type model from type {type.Name} because it is abstract.");
+                throw new InvalidFlatBufferDefinitionException($"Can't create type model from type {typeName} because it is abstract.");
             }
 
             if (type.BaseType != typeof(object))
             {
-                throw new InvalidFlatBufferDefinitionException($"Can't create type model from type {type.Name} its base class is not System.Object.");
+                throw new InvalidFlatBufferDefinitionException($"Can't create type model from type {typeName} its base class is not System.Object.");
             }
 
             if (!type.IsPublic && !type.IsNestedPublic)
             {
-                throw new InvalidFlatBufferDefinitionException($"Can't create type model from type {type.Name} because it is not public.");
+                throw new InvalidFlatBufferDefinitionException($"Can't create type model from type {typeName} because it is not public.");
             }
 
             var defaultCtor =
@@ -285,7 +287,7 @@ namespace FlatSharp.TypeModel
 
             if (defaultCtor is null)
             {
-                throw new InvalidFlatBufferDefinitionException($"Can't find a public/protected default default constructor for {type.Name}");
+                throw new InvalidFlatBufferDefinitionException($"Can't find a public/protected default default constructor for {typeName}");
             }
 
             defaultConstructor = defaultCtor;
