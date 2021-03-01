@@ -170,6 +170,34 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
+        public void SimpleNullableMemoryVector()
+        {
+            var root = new RootTable<Memory<byte>?>
+            {
+                Vector = new byte[] { 1, 2, 3 },
+            };
+
+            Span<byte> target = new byte[10240];
+            int offset = FlatBufferSerializer.Default.Serialize(root, target);
+            target = target.Slice(0, offset);
+
+            byte[] expectedResult =
+            {
+                4, 0, 0, 0,          // offset to table start
+                248, 255, 255, 255,  // soffset to vtable (-8)
+                12, 0, 0, 0,         // uoffset_t to vector
+                6, 0,                // vtable length
+                8, 0,                // table length
+                4, 0,                // offset of index 0 field
+                0, 0,                // padding to 4-byte alignment
+                3, 0, 0, 0,          // vector length
+                1, 2, 3,             // data
+            };
+
+            Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(target));
+        }
+
+        [TestMethod]
         public void NullString()
         {
             var root = new RootTable<string>
