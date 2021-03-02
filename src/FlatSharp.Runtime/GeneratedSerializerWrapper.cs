@@ -25,7 +25,7 @@ namespace FlatSharp
     /// <summary>
     /// An implementation of <see cref="ISerializer{T}"/> that wraps a <see cref="IGeneratedSerializer{T}"/>.
     /// </summary>
-    internal class GeneratedSerializerWrapper<T> : ISerializer<T> where T : class
+    internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where T : class
     {
         private const int FileIdentifierSize = 4;
 
@@ -51,6 +51,8 @@ namespace FlatSharp
             this.fileIdentifier = tableAttribute?.FileIdentifier;
         }
 
+        Type ISerializer.RootType => typeof(T);
+
         public string? CSharp => this.lazyCSharp.Value;
 
         public Assembly? Assembly { get; }
@@ -61,7 +63,7 @@ namespace FlatSharp
         {
             if (item is null)
             {
-                throw new InvalidDataException("The root table may not be null.");
+                throw new ArgumentNullException(nameof(item), "The root table may not be null.");
             }
 
             return sizeof(uint)                                      // uoffset to first table
@@ -69,6 +71,16 @@ namespace FlatSharp
                  + this.innerSerializer.GetMaxSize(item)             // size of item
                  + FileIdentifierSize;                               // file identifier. Not present on every table, but cheaper to add as constant
                                                                      // than to introduce an 'if'.
+        }
+
+        int ISerializer.GetMaxSize(object item)
+        {
+            return item switch
+            {
+                T t => this.GetMaxSize(t),
+                null => throw new ArgumentNullException(nameof(item)),
+                _ => throw new ArgumentException($"Argument was not of the correct type. Type = {item.GetType().FullName}, Expected Type = {typeof(T).FullName}")
+            };
         }
 
         public T Parse(IInputBuffer buffer)
@@ -87,11 +99,13 @@ namespace FlatSharp
             return buffer.InvokeParse(this.innerSerializer, 0);
         }
 
+        object ISerializer.Parse(IInputBuffer buffer) => this.Parse(buffer);
+
         public int Write(ISpanWriter writer, Span<byte> destination, T item)
         {
             if (item is null)
             {
-                throw new InvalidDataException("The root table may not be null.");
+                throw new ArgumentNullException(nameof(item), "The root table may not be null.");
             }
 
             if (destination.Length <= 8)
@@ -149,6 +163,16 @@ namespace FlatSharp
 #endif
 
             return serializationContext.Offset;
+        }
+
+        int ISerializer.Write(ISpanWriter writer, Span<byte> destination, object item)
+        {
+            return item switch
+            {
+                T t => this.Write(writer, destination, t),
+                null => throw new ArgumentNullException(nameof(item)),
+                _ => throw new ArgumentException($"Argument was not of the correct type. Type = {item.GetType().FullName}, Expected Type = {typeof(T).FullName}")
+            };
         }
 
         public ISerializer<T> WithSettings(SerializerSettings settings)

@@ -78,7 +78,7 @@ namespace FlatSharp.Compiler
 
             using (writer.IncreaseIndent())
             {
-                writer.AppendLine($"partial void OnInitialized({nameof(FlatSharpConstructorContext)}? context);");
+                writer.AppendLine($"partial void OnInitialized({nameof(FlatSharpDeserializationContext)}? context);");
 
                 // default ctor.
                 if (this.ObsoleteDefaultConstructor)
@@ -98,7 +98,7 @@ namespace FlatSharp.Compiler
                 }
 
                 writer.AppendLine("#pragma warning disable CS8618"); // NULL FORGIVING
-                writer.AppendLine($"protected {this.Name}({nameof(FlatSharpConstructorContext)} context)");
+                writer.AppendLine($"protected {this.Name}({nameof(FlatSharpDeserializationContext)} context)");
                 using (writer.WithBlock())
                 {
                     writer.AppendLine("this.OnInitialized(context);");

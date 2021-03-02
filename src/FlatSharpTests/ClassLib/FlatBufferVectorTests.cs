@@ -124,6 +124,18 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
+        public void FlatBufferVector_CopyTo_SizedArray()
+        {
+            string[] array = new string[this.stringVector.Vector.Count];
+            this.stringVector.Vector.CopyTo(array, 0);
+
+            for (int i = 0; i < ExpectedStringContents.Count; ++i)
+            {
+                Assert.AreEqual(ExpectedStringContents[i], array[i]);
+            }
+        }
+
+        [TestMethod]
         public void FlatBufferVector_IndexOf()
         {
             for (int i = 0; i < ExpectedStringContents.Count; ++i)

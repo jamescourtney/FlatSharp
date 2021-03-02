@@ -57,7 +57,7 @@ namespace FlatSharpTests
         [TestMethod]
         public void RootTableNull()
         {
-            Assert.ThrowsException<InvalidDataException>(() => FlatBufferSerializer.Default.Serialize<SimpleTable>(null, new byte[1024]));
+            Assert.ThrowsException<ArgumentNullException>(() => FlatBufferSerializer.Default.Serialize<SimpleTable>(null, new byte[1024]));
         }
 
         [TestMethod]

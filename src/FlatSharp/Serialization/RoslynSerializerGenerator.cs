@@ -198,38 +198,6 @@ $@"
             bool enableAppDomainIntercept,
             params Assembly[] additionalReferences)
         {
-
-            List<MetadataReference> references = new List<MetadataReference>(commonReferences);
-            foreach (Assembly additionalReference in additionalReferences)
-            {
-                var referenceName = additionalReference.GetName().Name;
-
-                if (referenceName is not null && AssemblyNameReferenceMapping.TryGetValue(referenceName, out var compilationRef))
-                {
-                    references.Add(MetadataReference.CreateFromImage(compilationRef.Item2));
-                }
-                else
-                {
-                    references.Add(MetadataReference.CreateFromFile(additionalReference.Location));
-                }
-            }
-
-            references.AddRange(new[]
-            {
-                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(Span<byte>).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(IList<byte>).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(SerializationContext).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(List<int>).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(System.Collections.ArrayList).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(ValueType).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(IBufferWriter<>).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(IGeneratedSerializer<byte>).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(InvalidDataException).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(ReadOnlyDictionary<,>).Assembly.Location),
-            });
-
             var rootNode = ApplySyntaxTransformations(CSharpSyntaxTree.ParseText(sourceCode, ParseOptions).GetRoot());
             SyntaxTree tree = SyntaxFactory.SyntaxTree(rootNode);
             Func<string> formattedTextFactory = GetFormattedTextFactory(tree);
@@ -249,39 +217,14 @@ $@"
             CSharpCompilation compilation = CSharpCompilation.Create(
                 name,
                 new[] { tree },
-                references,
+                GetMetadataReferences(additionalReferences),
                 options);
 
             using (var ms = new MemoryStream())
             {
                 EmitResult result = compilation.Emit(ms);
 
-                if (!result.Success || EnableStrictValidation)
-                {
-                    var failures = result.Diagnostics
-                        .Where(d => d.Id != "CS8019") // unnecessary using directive.
-                        .Where(d => d.Id != "CS1701") // DLL version mismatch
-                        .ToArray();
-
-                    if (failures.Length > 0)
-                    {
-                        using var workspace = new AdhocWorkspace();
-                        List<string> errors = new List<string>();
-
-                        foreach (var failure in failures)
-                        {
-                            string error = failure.ToString();
-                            var node = tree.GetRoot().FindNode(failure.Location.SourceSpan).Parent;
-                            var formattedNode = Formatter.Format(node, workspace);
-                            string formatted = formattedNode.ToFullString();
-                            formatted = formatted.Trim().Replace('\r', ' ').Replace('\n', ' ');
-
-                            errors.Add($"FlatSharp compilation error: {error}, Context = \"{formatted}\"");
-                        }
-
-                        throw new FlatSharpCompilationException(errors.ToArray(), formattedTextFactory());
-                    }
-                }
+                ThrowOnEmitFailure(result, tree, formattedTextFactory);
 
                 var metadataRef = compilation.ToMetadataReference();
                 ms.Position = 0;
@@ -321,6 +264,80 @@ $@"
                 AssemblyNameReferenceMapping[name] = (assembly, assemblyData);
 
                 return (assembly, formattedTextFactory, assemblyData);
+            }
+        }
+
+        private static List<MetadataReference> GetMetadataReferences(Assembly[] additionalReferences)
+        {
+            List<MetadataReference> references = new List<MetadataReference>(commonReferences);
+            foreach (Assembly additionalReference in additionalReferences)
+            {
+                var referenceName = additionalReference.GetName().Name;
+
+                if (referenceName is not null && AssemblyNameReferenceMapping.TryGetValue(referenceName, out var compilationRef))
+                {
+                    references.Add(MetadataReference.CreateFromImage(compilationRef.Item2));
+                }
+                else
+                {
+                    references.Add(MetadataReference.CreateFromFile(additionalReference.Location));
+                }
+            }
+
+            references.AddRange(new[]
+            {
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Span<byte>).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(IList<byte>).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(SerializationContext).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(List<int>).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(System.Collections.ArrayList).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(ValueType).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(IBufferWriter<>).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(IGeneratedSerializer<byte>).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(InvalidDataException).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(ReadOnlyDictionary<,>).Assembly.Location),
+            });
+
+            return references;
+        }
+
+        private static void ThrowOnEmitFailure(
+            EmitResult result, 
+            SyntaxTree syntaxTree,
+            Func<string> getFormattedCSharp)
+        {
+            if (!result.Success || EnableStrictValidation)
+            {
+                var failures = result.Diagnostics
+                    .Where(d => d.Id != "CS8019") // unnecessary using directive.
+                    .Where(d => d.Id != "CS1701") // DLL version mismatch
+                    .ToArray();
+
+                if (failures.Length > 0)
+                {
+                    using var workspace = new AdhocWorkspace();
+                    List<string> errors = new List<string>();
+
+                    foreach (var failure in failures)
+                    {
+                        string error = failure.ToString();
+                        SyntaxNode node = syntaxTree.GetRoot().FindNode(failure.Location.SourceSpan);
+                        if (node.Parent is not null)
+                        {
+                            node = node.Parent;
+                        }
+
+                        var formattedNode = Formatter.Format(node, workspace);
+                        string formatted = formattedNode.ToFullString();
+                        formatted = formatted.Trim().Replace('\r', ' ').Replace('\n', ' ');
+
+                        errors.Add($"FlatSharp compilation error: {error}, Context = \"{formatted}\"");
+                    }
+
+                    throw new FlatSharpCompilationException(errors.ToArray(), getFormattedCSharp());
+                }
             }
         }
 

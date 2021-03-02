@@ -125,44 +125,6 @@ namespace FlatSharp
             maxVTableIndex = (vtableLength / 2) - 3;
         }
 
-        /// <summary>
-        /// Traverses a vtable to find the absolute offset of a table field.
-        /// </summary>
-        public static int GetAbsoluteTableFieldLocation<TBuffer>(this TBuffer buffer, int tableOffset, int index) where TBuffer : IInputBuffer
-        {
-            checked
-            {
-                int vtableOffset = tableOffset - buffer.ReadInt(tableOffset);
-                int vtableLength = buffer.ReadUShort(vtableOffset);
-
-                // VTable structure:
-                // ushort: vtable length
-                // ushort: table length
-                // ushort: index 0 offset
-                // ushort: index 1 offset
-                // etc
-                if (vtableLength < 4)
-                {
-                    ThrowInvalidVtableException();
-                }
-
-                // the max index is ((vtableLength - 4) / 2) - 1
-                if (index >= (vtableLength - 4) / 2)
-                {
-                    // Not present, return 0. 0 is an indication that that field is not present.
-                    return 0;
-                }
-
-                ushort relativeOffset = buffer.ReadUShort(vtableOffset + 2 * (2 + index));
-                if (relativeOffset == 0)
-                {
-                    return 0;
-                }
-
-                return tableOffset + relativeOffset;
-            }
-        }
-
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static void ThrowInvalidVtableException()
         {

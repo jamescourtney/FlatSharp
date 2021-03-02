@@ -111,8 +111,10 @@ namespace FlatSharpTests.Compiler
                 item.member2 = 57;
 
                 var data = new byte[100];
-                CompilerTestHelpers.CompilerTestSerializer.ReflectionSerialize(item, data);
-                dynamic parsed = CompilerTestHelpers.CompilerTestSerializer.ReflectionParse(tableType, data);
+
+                var serializer = CompilerTestHelpers.CompilerTestSerializer.Compile((object)item);
+                serializer.Write(data, (object)item);
+                dynamic parsed = serializer.Parse(data);
 
                 Assert.AreEqual("member", parsed.member);
                 Assert.AreEqual(57, parsed.member2);
@@ -252,8 +254,10 @@ namespace FlatSharpTests.Compiler
                 }
 
                 byte[] data = new byte[100];
-                CompilerTestHelpers.CompilerTestSerializer.ReflectionSerialize(Activator.CreateInstance(tableType), data);
-                CompilerTestHelpers.CompilerTestSerializer.ReflectionParse(tableType, data);
+                var compiled = CompilerTestHelpers.CompilerTestSerializer.Compile(tableType);
+
+                compiled.Write(data, Activator.CreateInstance(tableType));
+                compiled.Parse(data);
             }
             catch (TargetInvocationException ex)
             {

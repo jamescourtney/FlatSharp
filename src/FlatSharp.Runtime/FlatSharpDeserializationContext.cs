@@ -20,12 +20,12 @@ namespace FlatSharp
     /// A context that FlatSharp-deserialized classes will pass to their parent 
     /// object on construction, if the parent object defines a constructor that accepts this object.
     /// </summary>
-    public class FlatSharpConstructorContext
+    public class FlatSharpDeserializationContext
     {
         /// <summary>
         /// Initializes a new FlatSharpConstructorContext with the given deserialization option.
         /// </summary>
-        public FlatSharpConstructorContext(
+        public FlatSharpDeserializationContext(
             FlatBufferDeserializationOption deserializationOption)
         {
             this.DeserializationOption = deserializationOption;

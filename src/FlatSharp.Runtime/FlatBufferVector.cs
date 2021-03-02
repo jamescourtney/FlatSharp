@@ -99,7 +99,7 @@ namespace FlatSharp
             var offset = this.offset;
             var itemSize = this.itemSize;
 
-            if (array.Length == count)
+            if (array.Length == count && arrayIndex == 0)
             {
                 // special case: write code where the compiler can elide the 
                 // bounds check on the array.

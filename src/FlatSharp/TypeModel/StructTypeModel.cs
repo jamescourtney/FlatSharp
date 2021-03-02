@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
- namespace FlatSharp.TypeModel
+
+namespace FlatSharp.TypeModel
 {
     using System;
     using System.Collections.Generic;
@@ -101,43 +101,23 @@
             // We have to implement two items: The table class and the overall "read" method.
             // Let's start with the read method.
             string className = "structReader_" + Guid.NewGuid().ToString("n");
+            DeserializeClassDefinition classDef = new DeserializeClassDefinition(
+                className,
+                this,
+                context.Options);
 
-            string classDefinition;
-            // Implement the class
+            // Build up a list of property overrides.
+            for (int index = 0; index < this.Members.Count; ++index)
             {
-                // Build up a list of property overrides.
-                var propertyOverrides = new List<GeneratedProperty>();
-                for (int index = 0; index < this.Members.Count; ++index)
-                {
-                    var value = this.Members[index];
-                    PropertyInfo propertyInfo = value.PropertyInfo;
-                    Type propertyType = propertyInfo.PropertyType;
-
-                    // These are always inline as they are only invoked from one place.
-                    var propContext = context.With(offset: $"({context.OffsetVariableName} + {value.Offset})", inputBuffer: "buffer");
-
-                    string readValueMethod =
-$@"
-                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {GeneratedProperty.GetReadValueMethodName(index)}({context.InputBufferTypeName} buffer, int offset)
-                    {{
-                        return {propContext.GetParseInvocation(propertyType)};
-                    }}
-";
-
-                    propertyOverrides.Add(new GeneratedProperty(this, context.Options, index, value, readValueMethod));
-                }
-
-                classDefinition = CSharpHelpers.CreateDeserializeClass(
-                    className,
-                    this,
-                    propertyOverrides,
-                    context.Options);
+                var value = this.Members[index];
+                PropertyInfo propertyInfo = value.PropertyInfo;
+                Type propertyType = propertyInfo.PropertyType;
+                classDef.AddProperty(value, context.MethodNameMap[propertyType]);
             }
 
             return new CodeGeneratedMethod($"return new {className}<{context.InputBufferTypeName}>({context.InputBufferVariableName}, {context.OffsetVariableName});")
             {
-                ClassDefinition = classDefinition
+                ClassDefinition = classDef.ToString(),
             };
         }
 
@@ -213,7 +193,7 @@ $@"
                 {
                     throw new InvalidFlatBufferDefinitionException($"FlatBuffer struct {this.GetCompilableTypeName()} does not declare an item with index {expectedIndex}. Structs must have sequenential indexes starting at 0.");
                 }
-                
+
                 if (propertyAttribute.DefaultValue is not null)
                 {
                     throw new InvalidFlatBufferDefinitionException($"FlatBuffer struct {this.GetCompilableTypeName()} declares default value on index {expectedIndex}. Structs may not have default values.");

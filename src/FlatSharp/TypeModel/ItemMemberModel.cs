@@ -22,9 +22,9 @@ namespace FlatSharp.TypeModel
     /// <summary>
     /// Describes a member of a FlatBuffer table or struct.
     /// </summary>
-    public class ItemMemberModel
+    public abstract class ItemMemberModel
     {
-        internal ItemMemberModel(
+        protected ItemMemberModel(
             ITypeModel propertyModel,
             PropertyInfo propertyInfo,
             ushort index)
@@ -145,5 +145,22 @@ namespace FlatSharp.TypeModel
         /// The property is virtual (ie, FlatSharp will override it when generating code).
         /// </summary>
         public bool IsVirtual { get; }
+
+        /// <summary>
+        /// Creates a method body to read the given property. This is contextual depending
+        /// on whether this member is table/struct/etc.
+        /// </summary>
+        /// <param name="parseItemMethodName">A method that can parse the type from a buffer and offset.</param>
+        /// <param name="bufferVariableName">The buffer variable name.</param>
+        /// <param name="offsetVariableName">The offset variable name.</param>
+        /// <param name="vtableLocationVariableName">For tables, the absolute location of the vtable.</param>
+        /// <param name="vtableMaxIndexVariableName">For tables, the maximum index in the vtable.</param>
+        /// <returns></returns>
+        public abstract string CreateReadItemBody(
+            string parseItemMethodName,
+            string bufferVariableName, 
+            string offsetVariableName, 
+            string vtableLocationVariableName, 
+            string vtableMaxIndexVariableName);
     }
 }
