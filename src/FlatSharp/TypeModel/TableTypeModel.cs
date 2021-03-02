@@ -506,7 +506,8 @@ $@"
                 className,
                 this,
                 propertyOverrides,
-                context.Options);
+                context.Options,
+                context.Options.GreedyDeserialize ? CSharpHelpers.CreateDeserializeClassContext.GreedyTableOrStruct : CSharpHelpers.CreateDeserializeClassContext.NonGreedyTable);
 
             string body = $"return new {className}<{context.InputBufferTypeName}>({context.InputBufferVariableName}, {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}));";
             return new CodeGeneratedMethod(body)
@@ -532,14 +533,14 @@ $@"
             var methodDefinition =
 $@"
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    private {typeName} {GeneratedProperty.GetReadValueMethodName(index)}({context.InputBufferTypeName} buffer, int offset)
+                    private static {typeName} {GeneratedProperty.GetReadValueMethodName(index)}({context.InputBufferTypeName} buffer, int offset, int vtableLocation, int vtableMaxIndex)
                     {{
-                        if ({index} > this.{CSharpHelpers.GeneratedClassMaxVtableIndexFieldName})
+                        if ({index} > vtableMaxIndex)
                         {{
                             return {defaultValue};
                         }}
 
-                        ushort relativeOffset = buffer.ReadUShort(this.{CSharpHelpers.GeneratedClassVTableOffsetFieldName} + {4 + (2 * index)});
+                        ushort relativeOffset = buffer.ReadUShort(vtableLocation + {4 + (2 * index)});
                         if (relativeOffset == 0)
                         {{
                             return {defaultValue};
@@ -573,7 +574,7 @@ $@"
             var methodDefinition =
 $@"
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    private static {typeName} {GeneratedProperty.GetReadValueMethodName(index)}({context.InputBufferTypeName} buffer, int offset)
+                    private static {typeName} {GeneratedProperty.GetReadValueMethodName(index)}({context.InputBufferTypeName} buffer, int offset, int notUsedA, int notUsedB)
                     {{
                         int {FirstLocationVariableName} = buffer.{nameof(InputBufferExtensions.GetAbsoluteTableFieldLocation)}(offset, {index});
                         if ({FirstLocationVariableName} == 0)

@@ -18,6 +18,7 @@ namespace FlatSharp
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Reflection;
     using FlatSharp.TypeModel;
 
@@ -122,34 +123,39 @@ namespace FlatSharp
             string className,
             ITypeModel typeModel,
             IEnumerable<GeneratedProperty> propertyOverrides,
-            FlatBufferSerializerOptions options)
+            FlatBufferSerializerOptions options,
+            CreateDeserializeClassContext context)
         {
-            string inputBufferFieldDef = $"private readonly TInputBuffer {GeneratedClassInputBufferFieldName};";
-            string offsetFieldDef = $"private readonly int {GeneratedClassOffsetFieldName};";
-            string inputBufferAccessor = $"this.{GeneratedClassInputBufferFieldName}";
+            const string BufferParameterName = "buffer";
+            const string OffsetParameterName = "offset";
 
-            string vtableOffsetDef = string.Empty;
-            string maxVTableIndexDef = string.Empty;
+            string inputBufferAccessor = "null";
 
-            List<string> ctorStatements = new List<string>
+            List<string> ctorStatements = new List<string>();
+            List<string> fieldDefinitions = new List<string>();
+
+            if (!string.IsNullOrEmpty(context.InputBufferFieldName))
             {
-                $"this.{GeneratedClassInputBufferFieldName} = buffer;",
-                $"this.{GeneratedClassOffsetFieldName} = offset;"
-            };
-
-            if (options.GreedyDeserialize)
-            {
-                inputBufferFieldDef = string.Empty;
-                offsetFieldDef = string.Empty;
-                inputBufferAccessor = "null";
-                ctorStatements.Clear();
+                ctorStatements.Add($"this.{context.InputBufferFieldName} = {BufferParameterName};");
+                fieldDefinitions.Add($"private readonly TInputBuffer {context.InputBufferFieldName};");
+                inputBufferAccessor = $"this.{context.InputBufferFieldName}";
             }
 
-            if (typeModel.SchemaType == FlatBufferSchemaType.Table)
+            if (!string.IsNullOrEmpty(context.OffsetFieldName))
             {
-                vtableOffsetDef = $"private readonly int {GeneratedClassVTableOffsetFieldName};";
-                maxVTableIndexDef = $"private readonly int {GeneratedClassMaxVtableIndexFieldName};";
-                ctorStatements.Add($"buffer.{nameof(InputBufferExtensions.InitializeVTable)}(offset, out this.{GeneratedClassVTableOffsetFieldName}, out this.{GeneratedClassMaxVtableIndexFieldName});");
+                ctorStatements.Add($"this.{context.OffsetFieldName} = {OffsetParameterName};");
+                fieldDefinitions.Add($"private readonly int {context.OffsetFieldName};");
+            }
+
+            ctorStatements.Add($"{BufferParameterName}.{nameof(InputBufferExtensions.InitializeVTable)}({OffsetParameterName}, out var __vtableLocation, out var __vtableMaxIndex);");
+
+            if (context.VTableFields is not null)
+            {
+                var (locationFieldName, maxIndexFieldName) = context.VTableFields.Value;
+                fieldDefinitions.Add($"private readonly int {locationFieldName};");
+                fieldDefinitions.Add($"private readonly int {maxIndexFieldName};");
+                ctorStatements.Add($"this.{locationFieldName} = __vtableLocation");
+                ctorStatements.Add($"this.{maxIndexFieldName} = __vtableMaxIndex");
             }
 
             foreach (var property in propertyOverrides)
@@ -159,13 +165,13 @@ namespace FlatSharp
                     if (options.GreedyDeserialize)
                     {
                         ctorStatements.Add(
-                            $"this.{property.BackingFieldName} = {property.ReadValueMethodName}(buffer, offset);");
+                            $"this.{property.BackingFieldName} = {property.ReadValueMethodName}(buffer, offset, __vtableLocation, __vtableMaxIndex);");
                     }
                 }
                 else
                 {
                     ctorStatements.Add(
-                        $"base.{property.MemberModel.PropertyInfo.Name} = {property.ReadValueMethodName}(buffer, offset);");
+                        $"base.{property.MemberModel.PropertyInfo.Name} = {property.ReadValueMethodName}(buffer, offset, __vtableLocation, __vtableMaxIndex);");
                 }
             }
 
@@ -202,11 +208,8 @@ $@"
                     private static readonly {nameof(FlatSharpDeserializationContext)} __CtorContext 
                         = new {nameof(FlatSharpDeserializationContext)}({nameof(FlatBufferDeserializationOption)}.{options.DeserializationOption});
 
-                    {inputBufferFieldDef}
-                    {offsetFieldDef}
-                    {vtableOffsetDef}
-                    {maxVTableIndexDef}
-        
+                    {string.Join("\r\n", fieldDefinitions)}
+
                     public {className}(TInputBuffer buffer, int offset) : base({baseParams})
                     {{
                         {string.Join("\r\n", ctorStatements)}
@@ -219,6 +222,30 @@ $@"
                     {string.Join("\r\n", propertyOverrides)}
                 }}
 ";
+        }
+
+        public class CreateDeserializeClassContext
+        {
+            public static CreateDeserializeClassContext GreedyTableOrStruct => new CreateDeserializeClassContext();
+
+            public static CreateDeserializeClassContext NonGreedyStruct => new CreateDeserializeClassContext
+            {
+                InputBufferFieldName = GeneratedClassInputBufferFieldName,
+                OffsetFieldName = GeneratedClassOffsetFieldName,
+            };
+
+            public static CreateDeserializeClassContext NonGreedyTable => new CreateDeserializeClassContext
+            {
+                InputBufferFieldName = GeneratedClassInputBufferFieldName,
+                OffsetFieldName = GeneratedClassOffsetFieldName,
+                VTableFields = (GeneratedClassVTableOffsetFieldName, GeneratedClassMaxVtableIndexFieldName),
+            };
+
+            public string InputBufferFieldName { get; set; }
+
+            public string OffsetFieldName { get; set; }
+
+            public (string vtableLocationFieldName, string vtableMaxIndexFieldName)? VTableFields { get; set; }
         }
     }
 }

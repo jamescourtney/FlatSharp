@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
- namespace FlatSharp.TypeModel
+
+namespace FlatSharp.TypeModel
 {
     using System;
     using System.Collections.Generic;
@@ -119,7 +119,7 @@
                     string readValueMethod =
 $@"
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {GeneratedProperty.GetReadValueMethodName(index)}({context.InputBufferTypeName} buffer, int offset)
+                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {GeneratedProperty.GetReadValueMethodName(index)}({context.InputBufferTypeName} buffer, int offset, int notUsedA, int notUsedB)
                     {{
                         return {propContext.GetParseInvocation(propertyType)};
                     }}
@@ -132,7 +132,8 @@ $@"
                     className,
                     this,
                     propertyOverrides,
-                    context.Options);
+                    context.Options,
+                    context.Options.GreedyDeserialize ? CSharpHelpers.CreateDeserializeClassContext.GreedyTableOrStruct : CSharpHelpers.CreateDeserializeClassContext.NonGreedyTable);
             }
 
             return new CodeGeneratedMethod($"return new {className}<{context.InputBufferTypeName}>({context.InputBufferVariableName}, {context.OffsetVariableName});")
@@ -213,7 +214,7 @@ $@"
                 {
                     throw new InvalidFlatBufferDefinitionException($"FlatBuffer struct {this.GetCompilableTypeName()} does not declare an item with index {expectedIndex}. Structs must have sequenential indexes starting at 0.");
                 }
-                
+
                 if (propertyAttribute.DefaultValue is not null)
                 {
                     throw new InvalidFlatBufferDefinitionException($"FlatBuffer struct {this.GetCompilableTypeName()} declares default value on index {expectedIndex}. Structs may not have default values.");
