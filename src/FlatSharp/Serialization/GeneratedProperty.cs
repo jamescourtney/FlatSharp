@@ -32,13 +32,15 @@ namespace FlatSharp
         private readonly int index;
         private readonly ITypeModel typeModel;
         private readonly ITypeModel containerModel;
+        private readonly CSharpHelpers.CreateDeserializeClassContext context;
 
         public GeneratedProperty(
             ITypeModel containerModel,
             FlatBufferSerializerOptions options, 
             int index, 
             ItemMemberModel memberModel,
-            string readValueMethodDefinition)
+            string readValueMethodDefinition,
+            CSharpHelpers.CreateDeserializeClassContext deserializeContext)
         {
             this.containerModel = containerModel;
             this.options = options;
@@ -46,6 +48,7 @@ namespace FlatSharp
             this.index = index;
             this.typeModel = memberModel.ItemTypeModel;
             this.propertyInfo = memberModel.PropertyInfo;
+            this.context = deserializeContext;
 
             this.ReadValueMethodDefinition = readValueMethodDefinition;
 
@@ -76,7 +79,7 @@ namespace FlatSharp
                 {
                     if (string.IsNullOrEmpty(this.BackingFieldName))
                     {
-                        return $"return {this.ReadValueMethodName}(this.{CSharpHelpers.GeneratedClassInputBufferFieldName}, this.{CSharpHelpers.GeneratedClassOffsetFieldName});";
+                        return $"return {this.ReadValueMethodName}(this.{this.context.InputBufferFieldName}, this.{this.context.OffsetFieldName}, this.{this.context.VTableFields.Value.vtableLocationFieldName}, this.{this.context.VTableFields.Value.vtableMaxIndexFieldName});";
                     }
                     else
                     {
@@ -89,7 +92,7 @@ namespace FlatSharp
 $@"
                             if (!this.{this.HasValueFieldName})
                             {{
-                                this.{this.BackingFieldName} = {this.ReadValueMethodName}(this.{CSharpHelpers.GeneratedClassInputBufferFieldName}, this.{CSharpHelpers.GeneratedClassOffsetFieldName});
+                                this.{this.BackingFieldName} = {this.ReadValueMethodName}(this.{this.context.InputBufferFieldName}, this.{this.context.OffsetFieldName}, this.{this.context.VTableFields.Value.vtableLocationFieldName}, this.{this.context.VTableFields.Value.vtableMaxIndexFieldName});
                                 this.{this.HasValueFieldName} = true;
                             }}
                             return this.{this.BackingFieldName};

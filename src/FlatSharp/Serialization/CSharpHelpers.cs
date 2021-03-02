@@ -147,15 +147,23 @@ namespace FlatSharp
                 fieldDefinitions.Add($"private readonly int {context.OffsetFieldName};");
             }
 
-            ctorStatements.Add($"{BufferParameterName}.{nameof(InputBufferExtensions.InitializeVTable)}({OffsetParameterName}, out var __vtableLocation, out var __vtableMaxIndex);");
+            if (typeModel.SchemaType == FlatBufferSchemaType.Table)
+            {
+                ctorStatements.Add($"{BufferParameterName}.{nameof(InputBufferExtensions.InitializeVTable)}({OffsetParameterName}, out var __vtableLocation, out var __vtableMaxIndex);");
+            }
+            else
+            {
+                ctorStatements.Add($"int __vtableLocation = 0;");
+                ctorStatements.Add($"int __vtableMaxIndex = 0;");
+            }
 
             if (context.VTableFields is not null)
             {
                 var (locationFieldName, maxIndexFieldName) = context.VTableFields.Value;
                 fieldDefinitions.Add($"private readonly int {locationFieldName};");
                 fieldDefinitions.Add($"private readonly int {maxIndexFieldName};");
-                ctorStatements.Add($"this.{locationFieldName} = __vtableLocation");
-                ctorStatements.Add($"this.{maxIndexFieldName} = __vtableMaxIndex");
+                ctorStatements.Add($"this.{locationFieldName} = __vtableLocation;");
+                ctorStatements.Add($"this.{maxIndexFieldName} = __vtableMaxIndex;");
             }
 
             foreach (var property in propertyOverrides)
@@ -241,9 +249,9 @@ $@"
                 VTableFields = (GeneratedClassVTableOffsetFieldName, GeneratedClassMaxVtableIndexFieldName),
             };
 
-            public string InputBufferFieldName { get; set; }
+            public string? InputBufferFieldName { get; set; }
 
-            public string OffsetFieldName { get; set; }
+            public string? OffsetFieldName { get; set; }
 
             public (string vtableLocationFieldName, string vtableMaxIndexFieldName)? VTableFields { get; set; }
         }

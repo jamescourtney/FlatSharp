@@ -482,6 +482,11 @@ $@"
             // Let's start with the read method.
             string className = "tableReader_" + Guid.NewGuid().ToString("n");
 
+            var deserializeContext = 
+                context.Options.GreedyDeserialize 
+                ? CSharpHelpers.CreateDeserializeClassContext.GreedyTableOrStruct 
+                : CSharpHelpers.CreateDeserializeClassContext.NonGreedyTable;
+
             // Build up a list of property overrides.
             var propertyOverrides = new List<GeneratedProperty>();
             foreach (var item in this.IndexToMemberMap.Where(x => !x.Value.IsDeprecated))
@@ -492,11 +497,11 @@ $@"
                 GeneratedProperty propertyStuff;
                 if (value.ItemTypeModel.PhysicalLayout.Length > 1)
                 {
-                    propertyStuff = CreateWideTableProperty(value, index, context);
+                    propertyStuff = CreateWideTableProperty(value, index, context, deserializeContext);
                 }
                 else
                 {
-                    propertyStuff = CreateStandardTableProperty(value, index, context);
+                    propertyStuff = CreateStandardTableProperty(value, index, context, deserializeContext);
                 }
 
                 propertyOverrides.Add(propertyStuff);
@@ -507,7 +512,7 @@ $@"
                 this,
                 propertyOverrides,
                 context.Options,
-                context.Options.GreedyDeserialize ? CSharpHelpers.CreateDeserializeClassContext.GreedyTableOrStruct : CSharpHelpers.CreateDeserializeClassContext.NonGreedyTable);
+                deserializeContext);
 
             string body = $"return new {className}<{context.InputBufferTypeName}>({context.InputBufferVariableName}, {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}));";
             return new CodeGeneratedMethod(body)
@@ -522,7 +527,8 @@ $@"
         private GeneratedProperty CreateStandardTableProperty(
             TableMemberModel memberModel,
             int index,
-            ParserCodeGenContext context)
+            ParserCodeGenContext context,
+            CSharpHelpers.CreateDeserializeClassContext deserializeContext)
         {
             Type propertyType = memberModel.ItemTypeModel.ClrType;
 
@@ -551,13 +557,14 @@ $@"
                     }}
                 ";
 
-            return new GeneratedProperty(this, context.Options, index, memberModel, methodDefinition);
+            return new GeneratedProperty(this, context.Options, index, memberModel, methodDefinition, deserializeContext);
         }
 
         private GeneratedProperty CreateWideTableProperty(
             TableMemberModel memberModel,
             int index,
-            ParserCodeGenContext context)
+            ParserCodeGenContext context,
+            CSharpHelpers.CreateDeserializeClassContext deserializeContext)
         {
             const string FirstLocationVariableName = "firstLocation";
 
@@ -587,7 +594,7 @@ $@"
                     }}
 ";
 
-            return new GeneratedProperty(this, context.Options, index, memberModel, methodDefinition);
+            return new GeneratedProperty(this, context.Options, index, memberModel, methodDefinition, deserializeContext);
         }
 
         public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)

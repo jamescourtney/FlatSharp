@@ -101,6 +101,10 @@ namespace FlatSharp.TypeModel
             // We have to implement two items: The table class and the overall "read" method.
             // Let's start with the read method.
             string className = "structReader_" + Guid.NewGuid().ToString("n");
+            var deserializeContext = 
+                context.Options.GreedyDeserialize 
+                ? CSharpHelpers.CreateDeserializeClassContext.GreedyTableOrStruct 
+                : CSharpHelpers.CreateDeserializeClassContext.NonGreedyStruct;
 
             string classDefinition;
             // Implement the class
@@ -125,7 +129,7 @@ $@"
                     }}
 ";
 
-                    propertyOverrides.Add(new GeneratedProperty(this, context.Options, index, value, readValueMethod));
+                    propertyOverrides.Add(new GeneratedProperty(this, context.Options, index, value, readValueMethod, deserializeContext));
                 }
 
                 classDefinition = CSharpHelpers.CreateDeserializeClass(
@@ -133,7 +137,7 @@ $@"
                     this,
                     propertyOverrides,
                     context.Options,
-                    context.Options.GreedyDeserialize ? CSharpHelpers.CreateDeserializeClassContext.GreedyTableOrStruct : CSharpHelpers.CreateDeserializeClassContext.NonGreedyTable);
+                    deserializeContext);
             }
 
             return new CodeGeneratedMethod($"return new {className}<{context.InputBufferTypeName}>({context.InputBufferVariableName}, {context.OffsetVariableName});")
