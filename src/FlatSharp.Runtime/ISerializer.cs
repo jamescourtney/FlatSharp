@@ -21,15 +21,15 @@ namespace FlatSharp
 
     /// <summary>
     /// An object that can read and write a FlatBuffer table from a buffer. The type
-    /// of table this ISerializer supports is indicated by the <see cref="ItemType"/> property.
+    /// of table this ISerializer supports is indicated by the <see cref="RootType"/> property.
     /// The use of other types may cause undefined behavior.
     /// </summary>
     public interface ISerializer
     {
         /// <summary>
-        /// The type of object that this serializer can read.
+        /// The type of object that this serializer can read and write.
         /// </summary>
-        Type ItemType { get; }
+        Type RootType { get; }
 
         /// <summary>
         /// Gets the C# code that FlatSharp generated to produce this serializer.

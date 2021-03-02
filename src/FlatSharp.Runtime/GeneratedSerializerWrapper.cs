@@ -51,7 +51,7 @@ namespace FlatSharp
             this.fileIdentifier = tableAttribute?.FileIdentifier;
         }
 
-        Type ISerializer.ItemType => typeof(T);
+        Type ISerializer.RootType => typeof(T);
 
         public string? CSharp => this.lazyCSharp.Value;
 

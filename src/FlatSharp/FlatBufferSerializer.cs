@@ -86,6 +86,11 @@ namespace FlatSharp
         /// </summary>
         public ISerializer Compile(object item)
         {
+            if (item is null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
             // Let's be helpful if user is referencing an object that we deserialized.
             // The type of a deserialized object won't match the type of the parent object,
             // but this interface allows us to query.

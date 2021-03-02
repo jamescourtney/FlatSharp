@@ -17,10 +17,12 @@
 namespace FlatSharp
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
 
     /// <summary>
     /// Serializer extension methods.
     /// </summary>
+    [ExcludeFromCodeCoverage] // This file is not interesting.
     public static class ISerializerExtensions
     {
         /// <summary>
