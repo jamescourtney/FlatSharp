@@ -24,7 +24,7 @@
     /// </summary>
     public class StructMemberModel : ItemMemberModel
     {
-        internal StructMemberModel(
+        public StructMemberModel(
             ITypeModel propertyModel,
             PropertyInfo propertyInfo,
             ushort index,
@@ -37,5 +37,10 @@
         /// When the item is stored in a struct, this is defines the relative offset of this field within the struct.
         /// </summary>
         public int Offset { get; }
+
+        public override string CreateReadItemBody(string parseItemMethodName, string bufferVariableName, string offsetVariableName, string vtableLocationVariableName, string vtableMaxIndexVariableName)
+        {
+            return $"return {parseItemMethodName}({bufferVariableName}, {offsetVariableName} + {this.Offset});";
+        }
     }
 }

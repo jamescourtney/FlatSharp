@@ -481,120 +481,21 @@ $@"
             // We have to implement two items: The table class and the overall "read" method.
             // Let's start with the read method.
             string className = "tableReader_" + Guid.NewGuid().ToString("n");
-
-            var deserializeContext = 
-                context.Options.GreedyDeserialize 
-                ? CSharpHelpers.CreateDeserializeClassContext.GreedyTableOrStruct 
-                : CSharpHelpers.CreateDeserializeClassContext.NonGreedyTable;
+            var classDef = new DeserializeClassDefinition(className, this, context.Options);
 
             // Build up a list of property overrides.
-            var propertyOverrides = new List<GeneratedProperty>();
             foreach (var item in this.IndexToMemberMap.Where(x => !x.Value.IsDeprecated))
             {
                 int index = item.Key;
                 var value = item.Value;
-
-                GeneratedProperty propertyStuff;
-                if (value.ItemTypeModel.PhysicalLayout.Length > 1)
-                {
-                    propertyStuff = CreateWideTableProperty(value, index, context, deserializeContext);
-                }
-                else
-                {
-                    propertyStuff = CreateStandardTableProperty(value, index, context, deserializeContext);
-                }
-
-                propertyOverrides.Add(propertyStuff);
+                classDef.AddProperty(value, context.MethodNameMap[value.ItemTypeModel.ClrType]);
             }
-
-            string classDefinition = CSharpHelpers.CreateDeserializeClass(
-                className,
-                this,
-                propertyOverrides,
-                context.Options,
-                deserializeContext);
 
             string body = $"return new {className}<{context.InputBufferTypeName}>({context.InputBufferVariableName}, {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}));";
             return new CodeGeneratedMethod(body)
             {
-                ClassDefinition = classDefinition
+                ClassDefinition = classDef.ToString(),
             };
-        }
-
-        /// <summary>
-        /// Generates a standard getter for a normal vtable entry.
-        /// </summary>
-        private GeneratedProperty CreateStandardTableProperty(
-            TableMemberModel memberModel,
-            int index,
-            ParserCodeGenContext context,
-            CSharpHelpers.CreateDeserializeClassContext deserializeContext)
-        {
-            Type propertyType = memberModel.ItemTypeModel.ClrType;
-
-            string typeName = memberModel.ItemTypeModel.GetNullableAnnotationTypeName(this.SchemaType);
-            string defaultValue = memberModel.DefaultValueLiteral;
-
-            // These are always inline as they are only invoked from one place.
-            var methodDefinition =
-$@"
-                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    private static {typeName} {GeneratedProperty.GetReadValueMethodName(index)}({context.InputBufferTypeName} buffer, int offset, int vtableLocation, int vtableMaxIndex)
-                    {{
-                        if ({index} > vtableMaxIndex)
-                        {{
-                            return {defaultValue};
-                        }}
-
-                        ushort relativeOffset = buffer.ReadUShort(vtableLocation + {4 + (2 * index)});
-                        if (relativeOffset == 0)
-                        {{
-                            return {defaultValue};
-                        }}
-
-                        int absoluteLocation = offset + relativeOffset;
-                        return {context.MethodNameMap[propertyType]}(buffer, absoluteLocation);
-                    }}
-                ";
-
-            return new GeneratedProperty(this, context.Options, index, memberModel, methodDefinition, deserializeContext);
-        }
-
-        private GeneratedProperty CreateWideTableProperty(
-            TableMemberModel memberModel,
-            int index,
-            ParserCodeGenContext context,
-            CSharpHelpers.CreateDeserializeClassContext deserializeContext)
-        {
-            const string FirstLocationVariableName = "firstLocation";
-
-            string typeName = memberModel.ItemTypeModel.GetNullableAnnotationTypeName(this.SchemaType);
-            Type propertyType = memberModel.ItemTypeModel.ClrType;
-
-            List<string> locationGetters = new List<string> { FirstLocationVariableName };
-            for (int i = 1; i < memberModel.ItemTypeModel.PhysicalLayout.Length; ++i)
-            {
-                locationGetters.Add($"buffer.{nameof(InputBufferExtensions.GetAbsoluteTableFieldLocation)}(offset, {index + i})");
-            }
-
-            // These are always inline as they are only invoked from one place.
-            var methodDefinition =
-$@"
-                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    private static {typeName} {GeneratedProperty.GetReadValueMethodName(index)}({context.InputBufferTypeName} buffer, int offset, int notUsedA, int notUsedB)
-                    {{
-                        int {FirstLocationVariableName} = buffer.{nameof(InputBufferExtensions.GetAbsoluteTableFieldLocation)}(offset, {index});
-                        if ({FirstLocationVariableName} == 0)
-                        {{
-                            return {memberModel.DefaultValueLiteral};
-                        }}
-
-                        var absoluteLocations = ({string.Join(", ", locationGetters)});
-                        return {context.MethodNameMap[propertyType]}(buffer, ref absoluteLocations);
-                    }}
-";
-
-            return new GeneratedProperty(this, context.Options, index, memberModel, methodDefinition, deserializeContext);
         }
 
         public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)

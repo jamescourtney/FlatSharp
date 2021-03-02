@@ -17,6 +17,7 @@
  namespace FlatSharp.TypeModel
 {
     using System;
+    using System.Collections.Generic;
     using System.Reflection;
 
     /// <summary>
@@ -24,7 +25,7 @@
     /// </summary>
     public class TableMemberModel : ItemMemberModel
     {
-        internal TableMemberModel(
+        public TableMemberModel(
             ITypeModel propertyModel, 
             PropertyInfo propertyInfo, 
             ushort index, 
@@ -73,5 +74,69 @@
         /// Returns a C# literal that is equal to the default value.
         /// </summary>
         public string DefaultValueLiteral => this.ItemTypeModel.FormatDefaultValueAsLiteral(this.DefaultValue);
+
+        public override string CreateReadItemBody(string parseItemMethodName, string bufferVariableName, string offsetVariableName, string vtableLocationVariableName, string vtableMaxIndexVariableName)
+        {
+            if (this.ItemTypeModel.PhysicalLayout.Length == 1)
+            {
+                return this.CreateSingleWidthReadItemBody(parseItemMethodName, bufferVariableName, offsetVariableName, vtableLocationVariableName, vtableMaxIndexVariableName);
+            }
+            else
+            {
+                return this.CreateWideReadItemBody(parseItemMethodName, bufferVariableName, offsetVariableName, vtableLocationVariableName, vtableMaxIndexVariableName);
+            }
+        }
+
+        private string CreateSingleWidthReadItemBody(string parseItemMethodName, string bufferVariableName, string offsetVariableName, string vtableLocationVariableName, string vtableMaxIndexVariableName)
+        {
+            return $@"
+                if ({this.Index} > {vtableMaxIndexVariableName})
+                {{
+                    return {this.DefaultValueLiteral};
+                }}
+
+                ushort relativeOffset = buffer.ReadUShort({vtableLocationVariableName} + {4 + (2 * this.Index)});
+                if (relativeOffset == 0)
+                {{
+                    return {this.DefaultValueLiteral};
+                }}
+
+                int absoluteLocation = {offsetVariableName} + relativeOffset;
+                return {parseItemMethodName}({bufferVariableName}, absoluteLocation);";
+        }
+
+        private string CreateWideReadItemBody(string parseItemMethodName, string bufferVariableName, string offsetVariableName, string vtableLocationVariableName, string vtableMaxIndexVariableName)
+        {
+            int items = this.ItemTypeModel.PhysicalLayout.Length;
+
+            List<string> relativeOffsets = new();
+            List<string> absoluteLocations = new();
+
+            for (int i = 0; i < items; ++i)
+            {
+                int idx = this.Index + i;
+
+                relativeOffsets.Add($@"
+                ushort relativeOffset{i} = buffer.ReadUShort({vtableLocationVariableName} + {4 + (2 * idx)});
+                if (relativeOffset{i} == 0)
+                {{
+                    return {this.DefaultValueLiteral};
+                }}
+                ");
+
+                absoluteLocations.Add($"relativeOffset{i} + {offsetVariableName}");
+            }
+
+            return $@"
+                if ({this.Index + items - 1} > {vtableMaxIndexVariableName})
+                {{
+                    return {this.DefaultValueLiteral};
+                }}
+
+                {string.Join("\r\n", relativeOffsets)}
+
+                var absoluteLocations = ({string.Join(", ", absoluteLocations)});
+                return {parseItemMethodName}({bufferVariableName}, ref absoluteLocations);";
+        }
     }
 }

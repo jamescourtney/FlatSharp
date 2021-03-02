@@ -101,48 +101,23 @@ namespace FlatSharp.TypeModel
             // We have to implement two items: The table class and the overall "read" method.
             // Let's start with the read method.
             string className = "structReader_" + Guid.NewGuid().ToString("n");
-            var deserializeContext = 
-                context.Options.GreedyDeserialize 
-                ? CSharpHelpers.CreateDeserializeClassContext.GreedyTableOrStruct 
-                : CSharpHelpers.CreateDeserializeClassContext.NonGreedyStruct;
+            DeserializeClassDefinition classDef = new DeserializeClassDefinition(
+                className,
+                this,
+                context.Options);
 
-            string classDefinition;
-            // Implement the class
+            // Build up a list of property overrides.
+            for (int index = 0; index < this.Members.Count; ++index)
             {
-                // Build up a list of property overrides.
-                var propertyOverrides = new List<GeneratedProperty>();
-                for (int index = 0; index < this.Members.Count; ++index)
-                {
-                    var value = this.Members[index];
-                    PropertyInfo propertyInfo = value.PropertyInfo;
-                    Type propertyType = propertyInfo.PropertyType;
-
-                    // These are always inline as they are only invoked from one place.
-                    var propContext = context.With(offset: $"({context.OffsetVariableName} + {value.Offset})", inputBuffer: "buffer");
-
-                    string readValueMethod =
-$@"
-                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {GeneratedProperty.GetReadValueMethodName(index)}({context.InputBufferTypeName} buffer, int offset, int notUsedA, int notUsedB)
-                    {{
-                        return {propContext.GetParseInvocation(propertyType)};
-                    }}
-";
-
-                    propertyOverrides.Add(new GeneratedProperty(this, context.Options, index, value, readValueMethod, deserializeContext));
-                }
-
-                classDefinition = CSharpHelpers.CreateDeserializeClass(
-                    className,
-                    this,
-                    propertyOverrides,
-                    context.Options,
-                    deserializeContext);
+                var value = this.Members[index];
+                PropertyInfo propertyInfo = value.PropertyInfo;
+                Type propertyType = propertyInfo.PropertyType;
+                classDef.AddProperty(value, context.MethodNameMap[propertyType]);
             }
 
             return new CodeGeneratedMethod($"return new {className}<{context.InputBufferTypeName}>({context.InputBufferVariableName}, {context.OffsetVariableName});")
             {
-                ClassDefinition = classDefinition
+                ClassDefinition = classDef.ToString(),
             };
         }
 
