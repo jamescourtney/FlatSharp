@@ -113,12 +113,11 @@ namespace FlatSharpTests.Compiler
                 foo.V[i] = bar;
             }
 
-            byte[] data = new byte[1024];
-            var serializer = new FlatBufferSerializer(
-                new FlatBufferSerializerOptions(FlatBufferDeserializationOption.Lazy) { EnableAppDomainInterceptOnAssemblyLoad = true });
-
-            serializer.ReflectionSerialize((object)table, data);
-            dynamic parsed = serializer.ReflectionParse(tableType, data);
+            byte[] data = new byte[1024]; 
+            
+            var serializer = CompilerTestHelpers.CompilerTestSerializer.Compile((object)table);
+            serializer.Write(data, (object)table);
+            dynamic parsed = serializer.Parse(data);
             dynamic copy = Activator.CreateInstance(tableType, (object)parsed);
 
             Assert.AreEqual(length, parsed.foo.V.Count);
@@ -187,12 +186,15 @@ namespace FlatSharpTests.Compiler
                 foo.V[i] = GetRandom<T>();
             }
 
-            byte[] data = new byte[1024];
-            var serializer = new FlatBufferSerializer(
-                new FlatBufferSerializerOptions(option) { EnableAppDomainInterceptOnAssemblyLoad = true });
+            byte[] data = new byte[1024]; 
+            
+            var fbs = new FlatBufferSerializer(
+                 new FlatBufferSerializerOptions(option) { EnableAppDomainInterceptOnAssemblyLoad = true });
 
-            serializer.ReflectionSerialize((object)table, data);
-            dynamic parsed = serializer.ReflectionParse(tableType, data);
+            var serializer = fbs.Compile((object)table);
+            serializer.Write(data, (object)table);
+            dynamic parsed = serializer.Parse(data);
+
             dynamic copy = Activator.CreateInstance(tableType, (object)parsed);
 
             Assert.AreEqual(length, parsed.foo.V.Count);

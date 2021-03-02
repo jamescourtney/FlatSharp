@@ -81,12 +81,12 @@ namespace FlatSharp
         }
 
         /// <summary>
-        /// Gets or creates a serializr that will satisfy the item that
+        /// Gets or creates a serializer that will satisfy the item that
         /// is a FlatBuffer table.
         /// </summary>
         public ISerializer Compile(object item)
         {
-            // Let's be helpful if they are referencing an object that we deserialized.
+            // Let's be helpful if user is referencing an object that we deserialized.
             // The type of a deserialized object won't match the type of the parent object,
             // but this interface allows us to query.
             Type actualType;
@@ -177,40 +177,6 @@ namespace FlatSharp
         public int GetMaxSize<T>(T item) where T : class
         {
             return this.GetOrCreateUntypedSerializer(typeof(T)).GetMaxSize(item);
-        }
-
-        internal int ReflectionSerialize(object item, byte[] destination)
-        {
-            // unit test helper
-            var method = this.GetType()
-                .GetMethods(BindingFlags.NonPublic | BindingFlags.Instance)
-                .Where(m => m.Name == nameof(this.SerializeInternal))
-                .Single();
-
-            var genericMethod = method.MakeGenericMethod(item.GetType());
-            return (int)genericMethod.Invoke(this, new[] { item, destination })!;
-        }
-
-        internal object ReflectionParse(Type type, byte[] data)
-        {
-            // unit test helper
-            var method = this.GetType()
-                .GetMethods(BindingFlags.NonPublic | BindingFlags.Instance)
-                .Where(m => m.Name == nameof(this.ParseInternal))
-                .Single();
-
-            var genericMethod = method.MakeGenericMethod(type);
-            return genericMethod.Invoke(this, new[] { data })!;
-        }
-
-        private T ParseInternal<T>(byte[] buffer) where T : class
-        {
-            return this.Parse<T>(buffer);
-        }
-
-        private int SerializeInternal<T>(T item, byte[] destination) where T : class
-        {
-            return this.Serialize(item, destination);
         }
 
         private ISerializer<TRoot> GetOrCreateTypedSerializer<TRoot>() where TRoot : class

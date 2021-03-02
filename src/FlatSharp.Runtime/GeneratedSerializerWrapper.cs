@@ -63,7 +63,7 @@ namespace FlatSharp
         {
             if (item is null)
             {
-                throw new InvalidDataException("The root table may not be null.");
+                throw new ArgumentNullException(nameof(item), "The root table may not be null.");
             }
 
             return sizeof(uint)                                      // uoffset to first table
@@ -73,7 +73,15 @@ namespace FlatSharp
                                                                      // than to introduce an 'if'.
         }
 
-        int ISerializer.GetMaxSize(object item) => this.GetMaxSize((T)item);
+        int ISerializer.GetMaxSize(object item)
+        {
+            return item switch
+            {
+                T t => this.GetMaxSize(t),
+                null => throw new ArgumentNullException(nameof(item)),
+                _ => throw new ArgumentException($"Argument was not of the correct type. Type = {item.GetType().FullName}, Expected Type = {typeof(T).FullName}")
+            };
+        }
 
         public T Parse(IInputBuffer buffer)
         {
@@ -97,7 +105,7 @@ namespace FlatSharp
         {
             if (item is null)
             {
-                throw new InvalidDataException("The root table may not be null.");
+                throw new ArgumentNullException(nameof(item), "The root table may not be null.");
             }
 
             if (destination.Length <= 8)
@@ -157,8 +165,15 @@ namespace FlatSharp
             return serializationContext.Offset;
         }
 
-        int ISerializer.Write(ISpanWriter writer, Span<byte> destination, object item) =>
-            this.Write(writer, destination, (T)item);
+        int ISerializer.Write(ISpanWriter writer, Span<byte> destination, object item)
+        {
+            return item switch
+            {
+                T t => this.Write(writer, destination, t),
+                null => throw new ArgumentNullException(nameof(item)),
+                _ => throw new ArgumentException($"Argument was not of the correct type. Type = {item.GetType().FullName}, Expected Type = {typeof(T).FullName}")
+            };
+        }
 
         public ISerializer<T> WithSettings(SerializerSettings settings)
         {

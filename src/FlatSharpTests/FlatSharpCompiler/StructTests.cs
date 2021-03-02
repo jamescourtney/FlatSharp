@@ -70,8 +70,9 @@ namespace FlatSharpTests.Compiler
 
             byte[] destination = new byte[1024];
 
-            int bytesWritten = CompilerTestHelpers.CompilerTestSerializer.ReflectionSerialize(table, destination);
-            object parsed = CompilerTestHelpers.CompilerTestSerializer.ReflectionParse(tableType, destination);
+            var serializer = CompilerTestHelpers.CompilerTestSerializer.Compile(table);
+            int bytesWritten = serializer.Write(destination, table);
+            object parsed = serializer.Parse(destination);
 
             Assert.IsTrue(tableType.IsAssignableFrom(parsed.GetType()));
 

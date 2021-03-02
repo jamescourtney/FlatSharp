@@ -92,8 +92,9 @@ root_type Monster;";
 
             byte[] data = new byte[1024];
 
-            CompilerTestHelpers.CompilerTestSerializer.ReflectionSerialize(monster, data);
-            var parsedMonster = serializer.Parse(new ArrayInputBuffer(data));
+            var compiled = CompilerTestHelpers.CompilerTestSerializer.Compile(monster);
+            compiled.Write(data, monster);
+            dynamic parsedMonster = compiled.Parse(data);
 
             Assert.AreEqual("Blue", parsedMonster.color.ToString());
         }
