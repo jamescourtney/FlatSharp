@@ -348,22 +348,80 @@ $@"
                 Span<byte> vtable = stackalloc byte[{4 + 2 * (maxIndex + 1)}];
 ";
 
-            List<string> body = new List<string>();
-            List<string> writers = new List<string>();
+            List<string> getters = new();
+            List<string> prepareBlocks = new();
+            List<string> writeBlocks = new();
 
-            // Pack from biggest to smallest.
-            // Not optimal for double-wide items. Todo: Consider not storing double-wide items adjacently.
-            var ordering = this.IndexToMemberMap
-                .Where(x => !x.Value.IsDeprecated)
-                .OrderBy(x => x.Value.ItemTypeModel.PhysicalLayout.Length) // ensure single-width properties come first
-                .ThenByDescending(x => x.Value.ItemTypeModel.PhysicalLayout[0].Alignment);
+            List<(
+                int vtableIndex, 
+                int modelIndex, 
+                string valueVariableName,
+                PhysicalLayoutElement layout, 
+                TableMemberModel model)> items = new();
 
-            foreach (var kvp in ordering)
+            foreach (var item in this.IndexToMemberMap)
             {
-                var (prepare, write) = GetStandardSerializeBlocks(kvp.Key, kvp.Value, context);
-                body.Add(prepare);
-                writers.Add(write);
+                var index = item.Key;
+                var memberModel = item.Value;
+
+                if (memberModel.IsDeprecated)
+                {
+                    continue;
+                }
+
+                string valueName = $"index{index}Value";
+                getters.Add($"var {valueName} = {context.ValueVariableName}.{memberModel.PropertyInfo.Name};");
+                
+                for (int i = 0; i < memberModel.ItemTypeModel.PhysicalLayout.Length; ++i)
+                {
+                    getters.Add($"var {OffsetVariableName(index, i)} = tableStart;");
+                    items.Add((index, i, valueName, memberModel.ItemTypeModel.PhysicalLayout[i], memberModel));
+                }
             }
+
+            // Pack according to the following:
+            // Rule 1: Bigger alignments come first. 
+            //   The biggest (practical) alignment is 8 bytes. It 
+            //   is beneficial to put these first because tables are 
+            //   guaranteed to be 4-byte aligned, so we have a 50% 
+            //   chance of 0 padding and a 50% chance of 4 bytes of 
+            //   padding, which isn't bad.
+            // Rule 2: Within an alignment group, prefer smaller sized items.
+            //   We are attempting to minimize padding within an alignment group.
+            //   8-byte aligned structs will often not truncate on an 8 bye boundary,
+            //   so the next item will need padding to align. By moving these to
+            //   the end, we can hopefully minimize internal padding within an
+            //   alignment group.
+            items = items
+                .OrderByDescending(x => x.layout.Alignment)
+                .ThenBy(x => x.layout.InlineSize)
+                .ToList();
+
+            foreach (var t in items)
+            {
+                prepareBlocks.Add(this.GetPrepareSerializeBlock(
+                    t.vtableIndex, 
+                    t.modelIndex, 
+                    t.valueVariableName, 
+                    t.layout, 
+                    t.model, 
+                    context));
+
+                if (t.modelIndex == 0 && !t.model.ItemTypeModel.SerializesInline)
+                {
+                    writeBlocks.Add($@"
+                    if ({OffsetVariableName(t.vtableIndex, 0)} != tableStart)
+                    {{
+                        {this.GetSerializeCoreBlock(t.vtableIndex, t.modelIndex, t.valueVariableName, t.layout, t.model, context)}
+                    }}
+                    ");
+                }
+            }
+
+            List<string> body = new();
+            body.Add(methodStart);
+            body.AddRange(getters);
+            body.AddRange(prepareBlocks);
 
             // We probably over-allocated. Figure out by how much and back up the cursor.
             // Then we can write the vtable.
@@ -374,38 +432,58 @@ $@"
             body.Add($"int vtablePosition = {context.SerializationContextVariableName}.{nameof(SerializationContext.FinishVTable)}({context.SpanWriterVariableName}, tableLength, {context.SpanVariableName}, vtable);");
             body.Add($"{context.SpanWriterVariableName}.{nameof(SpanWriter.WriteInt)}({context.SpanVariableName}, tableStart - vtablePosition, tableStart, {context.SerializationContextVariableName});");
 
-            body.AddRange(writers);
+            body.AddRange(writeBlocks);
 
             // These methods are often enormous, and inlining can have a detrimental effect on perf.
-            return new CodeGeneratedMethod($"{methodStart} \r\n {string.Join("\r\n", body)}");
+            return new CodeGeneratedMethod(string.Join("\r\n", body));
         }
 
-        private (string prepareBlock, string serializeBlock) GetStandardSerializeBlocks(
+        private static string OffsetVariableName(int index, int i) => $"index{index + i}Offset";
+
+        private string GetPrepareSerializeBlock(
             int index,
+            int i,
+            string valueVariableName,
+            PhysicalLayoutElement layout,
             TableMemberModel memberModel,
             SerializationCodeGenContext context)
         {
-            string OffsetVariableName(int i) => $"index{index + i}Offset";
-
-            string valueVariableName = $"index{index}Value";
             string condition = $"if ({memberModel.ItemTypeModel.GetNotEqualToDefaultValueLiteralExpression(valueVariableName, memberModel.DefaultValueLiteral)})";
 
-            List<string> prepareBlockComponents = new List<string>();
-            List<string> postPrepareBlockComponents = new List<string>();
+            string prepareBlock = $@"
+                currentOffset += {nameof(SerializationHelpers)}.{nameof(SerializationHelpers.GetAlignmentError)}(currentOffset, {layout.Alignment});
+                {OffsetVariableName(index, i)} = currentOffset;
+                currentOffset += {layout.InlineSize};
+            ";
 
-            int vtableEntries = memberModel.ItemTypeModel.PhysicalLayout.Length;
-            for (int i = 0; i < vtableEntries; ++i)
+            string postPrepare = $"{context.SpanWriterVariableName}.{nameof(ISpanWriter.WriteUShort)}(vtable, (ushort)({OffsetVariableName(index, i)} - tableStart), {4 + 2 * (index + i)}, {context.SerializationContextVariableName});";
+
+            string inlineSerialize = string.Empty;
+            if (memberModel.ItemTypeModel.SerializesInline)
             {
-                var layout = memberModel.ItemTypeModel.PhysicalLayout[i];
-
-                prepareBlockComponents.Add($@"
-                            currentOffset += {nameof(SerializationHelpers)}.{nameof(SerializationHelpers.GetAlignmentError)}(currentOffset, {layout.Alignment});
-                            {OffsetVariableName(i)} = currentOffset;
-                            currentOffset += {layout.InlineSize};
-                ");
-
-                postPrepareBlockComponents.Add($"{context.SpanWriterVariableName}.{nameof(ISpanWriter.WriteUShort)}(vtable, (ushort)({OffsetVariableName(i)} - tableStart), {4 + 2 * (index + i)}, {context.SerializationContextVariableName});");
+                inlineSerialize = this.GetSerializeCoreBlock(
+                    index, i, valueVariableName, layout, memberModel, context);
             }
+
+            return $@"
+                {condition} 
+                {{
+                    {prepareBlock}
+                    {inlineSerialize}
+                }}
+                {postPrepare}
+                ";
+        }
+
+        private string GetSerializeCoreBlock(
+            int index,
+            int i,
+            string valueVariableName,
+            PhysicalLayoutElement layout,
+            TableMemberModel memberModel,
+            SerializationCodeGenContext context)
+        {
+            int vtableEntries = memberModel.ItemTypeModel.PhysicalLayout.Length;
 
             string sortInvocation = string.Empty;
             if (memberModel.IsSortedVector)
@@ -429,7 +507,7 @@ $@"
                         (tempSpan, ctx) =>
                         {nameof(SortedVectorHelpers)}.{nameof(SortedVectorHelpers.SortVector)}(
                             tempSpan, 
-                            {OffsetVariableName(0)}, 
+                            {OffsetVariableName(index, 0)}, 
                             {keyMember.Index}, 
                             {inlineSize}, 
                             new {CSharpHelpers.GetCompilableTypeName(spanComparerType)}({keyMember.DefaultValueLiteral})));";
@@ -442,22 +520,21 @@ $@"
                 nullForgiving = "!";
             }
 
-            string serializeBlockCore;
             if (vtableEntries == 1)
             {
-                serializeBlockCore = $@"
+                return $@"
                     {context.MethodNameMap[memberModel.ItemTypeModel.ClrType]}(
                         {context.SpanWriterVariableName},
                         {context.SpanVariableName},
                         {valueVariableName}{nullForgiving},
-                        {OffsetVariableName(0)},
+                        {OffsetVariableName(index, 0)},
                         {context.SerializationContextVariableName});
                     {sortInvocation}";
             }
             else
             {
-                serializeBlockCore = $@"
-                    var offsetTuple = ({string.Join(", ", Enumerable.Range(0, vtableEntries).Select(x => OffsetVariableName(x)))});
+                return $@"
+                    var offsetTuple = ({string.Join(", ", Enumerable.Range(0, vtableEntries).Select(x => OffsetVariableName(index, x)))});
                     {context.MethodNameMap[memberModel.ItemTypeModel.ClrType]}(
                         {context.SpanWriterVariableName},
                         {context.SpanVariableName},
@@ -466,33 +543,6 @@ $@"
                         {context.SerializationContextVariableName});
                     {sortInvocation}";
             }
-
-            string serializeBlock = string.Empty;
-            if (memberModel.ItemTypeModel.SerializesInline)
-            {
-                prepareBlockComponents.Add(serializeBlockCore);
-            }
-            else
-            {
-                serializeBlock = $@"
-                    if ({OffsetVariableName(0)} != tableStart)
-                    {{
-                        {serializeBlockCore}
-                    }}";
-            }
-
-            string prepareBlock = $@"
-                    var {valueVariableName} = {context.ValueVariableName}.{memberModel.PropertyInfo.Name};
-                    {string.Join("\r\n", Enumerable.Range(0, vtableEntries).Select(x => $"var {OffsetVariableName(x)} = tableStart;"))}
-                    {condition} 
-                    {{
-                        {string.Join("\r\n", prepareBlockComponents)}
-                    }}
-
-                    {string.Join("\r\n", postPrepareBlockComponents)}
-                    ";
-
-            return (prepareBlock, serializeBlock);
         }
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
