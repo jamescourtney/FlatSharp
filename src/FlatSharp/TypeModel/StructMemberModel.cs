@@ -28,15 +28,22 @@
             ITypeModel propertyModel,
             PropertyInfo propertyInfo,
             ushort index,
-            int offset) : base(propertyModel, propertyInfo, index)
+            int offset,
+            int length) : base(propertyModel, propertyInfo, index)
         {
             this.Offset = offset;
+            this.Length = length;
         }
 
         /// <summary>
         /// When the item is stored in a struct, this is defines the relative offset of this field within the struct.
         /// </summary>
         public int Offset { get; }
+
+        /// <summary>
+        /// The length of the item when stored in a struct. Does not include padding.
+        /// </summary>
+        public int Length { get; }
 
         public override string CreateReadItemBody(string parseItemMethodName, string bufferVariableName, string offsetVariableName, string vtableLocationVariableName, string vtableMaxIndexVariableName)
         {

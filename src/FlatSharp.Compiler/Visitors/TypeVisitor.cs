@@ -44,7 +44,7 @@ namespace FlatSharp.Compiler
                 definition.IsTable = context.GetChild(0).GetText() == "table";
 
                 definition.NonVirtual = metadata.ParseNullableBooleanMetadata(MetadataKeys.NonVirtualProperty, MetadataKeys.NonVirtualPropertyLegacy);
-                definition.ObsoleteDefaultConstructor = metadata.ParseBooleanMetadata(MetadataKeys.ObsoleteDefaultConstructor, MetadataKeys.ObsoleteDefaultConstructorLegacy);
+                definition.NoDefaultConstructor = metadata.ParseBooleanMetadata(MetadataKeys.NoDefaultConstructor);
 
                 definition.RequestedSerializer = metadata.ParseMetadata<FlatBufferDeserializationOption?>(
                     new[] { MetadataKeys.SerializerKind, MetadataKeys.PrecompiledSerializerLegacy },

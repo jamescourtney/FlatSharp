@@ -24,34 +24,34 @@ namespace FlatSharpTests.Compiler
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class ObsoleteCtorTests
+    public class DefaultCtorTests
     {
         [TestMethod]
-        public void ObsoleteConstructorImplicit()
+        public void NoDefaultCtorImplicit()
         {
-            string schema = "namespace Foo; table BaseTable (obsoleteDefaultConstructor) { Int:int; }";
+            string schema = $"namespace Foo; table BaseTable ({MetadataKeys.NoDefaultConstructor}) {{ Int:int; }}";
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
             Type baseTableType = asm.GetTypes().Single(x => x.Name == "BaseTable");
 
             var constructor = baseTableType.GetConstructor(new Type[0]);
-            Assert.IsNotNull(constructor.GetCustomAttribute<ObsoleteAttribute>());
+            Assert.IsNull(constructor);
         }
 
         [TestMethod]
-        public void ObsoleteConstructorExplicitObsolete()
+        public void NoDefaultCtorExplicit_True()
         {
-            string schema = "namespace Foo; table BaseTable (obsoleteDefaultConstructor:\"true\") { Int:int; }";
+            string schema = $"namespace Foo; table BaseTable ({MetadataKeys.NoDefaultConstructor}:\"true\") {{ Int:int; }}";
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
             Type baseTableType = asm.GetTypes().Single(x => x.Name == "BaseTable");
 
             var constructor = baseTableType.GetConstructor(new Type[0]);
-            Assert.IsNotNull(constructor.GetCustomAttribute<ObsoleteAttribute>());
+            Assert.IsNull(constructor);
         }
 
         [TestMethod]
-        public void ObsoleteConstructorNone()
+        public void NoDefaultCtor_None()
         {
             string schema = "namespace Foo; table BaseTable { Int:int; }";
 
@@ -59,19 +59,21 @@ namespace FlatSharpTests.Compiler
             Type baseTableType = asm.GetTypes().Single(x => x.Name == "BaseTable");
 
             var constructor = baseTableType.GetConstructor(new Type[0]);
-            Assert.IsNull(constructor.GetCustomAttribute<ObsoleteAttribute>());
+            Assert.IsNotNull(constructor);
+            Assert.IsTrue(constructor.IsPublic);
         }
 
         [TestMethod]
-        public void ObsoleteConstructorExplicitFalse()
+        public void NoDefaultCtorExplicit_False()
         {
-            string schema = "namespace Foo; table BaseTable (obsoleteDefaultConstructor:\"false\") { Int:int; }";
+            string schema = $"namespace Foo; table BaseTable ({MetadataKeys.NoDefaultConstructor}:\"false\") {{ Int:int; }}";
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
             Type baseTableType = asm.GetTypes().Single(x => x.Name == "BaseTable");
 
             var constructor = baseTableType.GetConstructor(new Type[0]);
-            Assert.IsNull(constructor.GetCustomAttribute<ObsoleteAttribute>());
+            Assert.IsNotNull(constructor);
+            Assert.IsTrue(constructor.IsPublic);
         }
     }
 }

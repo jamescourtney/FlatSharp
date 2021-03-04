@@ -240,8 +240,14 @@ namespace FlatSharp
 
         public override string ToString()
         {
+            ConstructorInfo? ctor = this.typeModel.PreferredSubclassConstructor;
+            if (ctor is null)
+            {
+                throw new InvalidFlatBufferDefinitionException($"Unable to find a usable subclass constructor for '{this.typeModel.GetCompilableTypeName()}'.");
+            }
+
             string baseParams = string.Empty;
-            if (this.HasSpecialCtor())
+            if (ctor.GetParameters().Length != 0)
             {
                 baseParams = "__CtorContext";
             }
@@ -279,32 +285,6 @@ namespace FlatSharp
         private static string GetHasValueFieldName(ItemMemberModel itemModel) => $"__hasIndex{itemModel.Index}Value";
 
         private static string GetReadIndexMethodName(ItemMemberModel itemModel) => $"ReadIndex{itemModel.Index}Value";
-
-        private bool HasSpecialCtor()
-        {
-            ConstructorInfo? specialCtor = null;
-            foreach (var ctor in this.typeModel.ClrType.GetConstructors(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.CreateInstance | BindingFlags.Instance))
-            {
-                var @params = ctor.GetParameters();
-                if (@params.Length == 1 &&
-                    @params[0].ParameterType == typeof(FlatSharpDeserializationContext))
-                {
-                    specialCtor = ctor;
-                    break;
-                }
-            }
-
-            if (specialCtor is not null &&
-                !specialCtor.IsPublic &&
-                !specialCtor.IsFamily &&
-                !specialCtor.IsFamilyOrAssembly)
-            {
-                throw new InvalidFlatBufferDefinitionException(
-                    $"Class '{typeModel.GetCompilableTypeName()}' defines a constructor accepting {nameof(FlatSharpDeserializationContext)}, but the constructor is not visible to derived classes.");
-            }
-
-            return specialCtor is not null;
-        }
 
         private string GetBufferReference()
         {
