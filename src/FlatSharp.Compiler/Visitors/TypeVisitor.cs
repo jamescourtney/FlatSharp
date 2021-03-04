@@ -44,17 +44,27 @@ namespace FlatSharp.Compiler
                 definition.IsTable = context.GetChild(0).GetText() == "table";
 
                 definition.NonVirtual = metadata.ParseNullableBooleanMetadata(MetadataKeys.NonVirtualProperty, MetadataKeys.NonVirtualPropertyLegacy);
-                definition.ObsoleteDefaultConstructor = metadata.ParseBooleanMetadata(MetadataKeys.ObsoleteDefaultConstructor, MetadataKeys.ObsoleteDefaultConstructorLegacy);
+
+                definition.DefaultConstructorKind = metadata.ParseMetadata<DefaultConstructorKind?>(
+                    new[] { MetadataKeys.DefaultConstructorKind },
+                    ParseDefaultConstructorKind,
+                    DefaultConstructorKind.Public,
+                    DefaultConstructorKind.Public);
 
                 definition.RequestedSerializer = metadata.ParseMetadata<FlatBufferDeserializationOption?>(
                     new[] { MetadataKeys.SerializerKind, MetadataKeys.PrecompiledSerializerLegacy },
-                    ParseSerailizerFlags,
+                    ParseSerializerKind,
                     FlatBufferDeserializationOption.Default,
                     null);
 
                 if (!definition.IsTable && definition.RequestedSerializer != null)
                 {
                     ErrorContext.Current.RegisterError("Structs may not have serializers.");
+                }
+
+                if (metadata.ContainsKey(MetadataKeys.ObsoleteDefaultConstructorLegacy))
+                {
+                    ErrorContext.Current.RegisterError($"The '{MetadataKeys.ObsoleteDefaultConstructorLegacy}' metadata attribute has been deprecated. Please use the '{MetadataKeys.DefaultConstructorKind}' attribute instead.");
                 }
 
                 if (metadata.TryGetValue(MetadataKeys.FileIdentifier, out var fileId))
@@ -80,9 +90,16 @@ namespace FlatSharp.Compiler
             return definition;
         }
 
-        private static bool ParseSerailizerFlags(string value, out FlatBufferDeserializationOption? result)
+        private static bool ParseSerializerKind(string value, out FlatBufferDeserializationOption? result)
         {
             var success = Enum.TryParse<FlatBufferDeserializationOption>(value, true, out var tempResult);
+            result = tempResult;
+            return success;
+        }
+
+        private static bool ParseDefaultConstructorKind(string value, out DefaultConstructorKind? result)
+        {
+            var success = Enum.TryParse<DefaultConstructorKind>(value, true, out var tempResult);
             result = tempResult;
             return success;
         }

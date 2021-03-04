@@ -120,7 +120,7 @@ namespace FlatSharpTests
 
         public interface IContextItem
         {
-            FlatSharpDeserializationContext Context { get; }
+            FlatBufferDeserializationContext Context { get; }
         }
 
         public interface IContextTable<TStruct>
@@ -133,11 +133,11 @@ namespace FlatSharpTests
         public class PublicContextConstructorTable<TStruct> : IContextItem, IContextTable<TStruct>
             where TStruct : IContextItem, new()
         {
-            public FlatSharpDeserializationContext Context { get; }
+            public FlatBufferDeserializationContext Context { get; }
 
             public PublicContextConstructorTable() { }
 
-            public PublicContextConstructorTable(FlatSharpDeserializationContext context)
+            public PublicContextConstructorTable(FlatBufferDeserializationContext context)
             {
                 this.Context = context;
             }
@@ -152,11 +152,11 @@ namespace FlatSharpTests
         [FlatBufferStruct]
         public class PublicContextConstructorStruct : IContextItem
         {
-            public FlatSharpDeserializationContext Context { get; }
+            public FlatBufferDeserializationContext Context { get; }
 
             public PublicContextConstructorStruct() { }
 
-            public PublicContextConstructorStruct(FlatSharpDeserializationContext context)
+            public PublicContextConstructorStruct(FlatBufferDeserializationContext context)
             {
                 this.Context = context;
             }
@@ -170,11 +170,11 @@ namespace FlatSharpTests
         public class ProtectedContextConstructorTable<TStruct> : IContextItem, IContextTable<TStruct>
             where TStruct : IContextItem, new()
         {
-            public FlatSharpDeserializationContext Context { get; }
+            public FlatBufferDeserializationContext Context { get; }
 
             public ProtectedContextConstructorTable() { }
 
-            protected ProtectedContextConstructorTable(FlatSharpDeserializationContext context)
+            protected ProtectedContextConstructorTable(FlatBufferDeserializationContext context)
             {
                 this.Context = context;
             }
@@ -189,11 +189,11 @@ namespace FlatSharpTests
         [FlatBufferStruct]
         public class ProtectedContextConstructorStruct : IContextItem
         {
-            public FlatSharpDeserializationContext Context { get; }
+            public FlatBufferDeserializationContext Context { get; }
 
             public ProtectedContextConstructorStruct() { }
 
-            protected ProtectedContextConstructorStruct(FlatSharpDeserializationContext context)
+            protected ProtectedContextConstructorStruct(FlatBufferDeserializationContext context)
             {
                 this.Context = context;
             }
@@ -206,11 +206,11 @@ namespace FlatSharpTests
         public class ProtectedInternalContextConstructorTable<TStruct> : IContextItem, IContextTable<TStruct>
             where TStruct : IContextItem, new()
         {
-            public FlatSharpDeserializationContext Context { get; }
+            public FlatBufferDeserializationContext Context { get; }
 
             public ProtectedInternalContextConstructorTable() { }
 
-            protected internal ProtectedInternalContextConstructorTable(FlatSharpDeserializationContext context)
+            protected internal ProtectedInternalContextConstructorTable(FlatBufferDeserializationContext context)
             {
                 this.Context = context;
             }
@@ -225,11 +225,11 @@ namespace FlatSharpTests
         [FlatBufferStruct]
         public class ProtectedInternalContextConstructorStruct : IContextItem
         {
-            public FlatSharpDeserializationContext Context { get; }
+            public FlatBufferDeserializationContext Context { get; }
 
             public ProtectedInternalContextConstructorStruct() { }
 
-            protected internal ProtectedInternalContextConstructorStruct(FlatSharpDeserializationContext context)
+            protected internal ProtectedInternalContextConstructorStruct(FlatBufferDeserializationContext context)
             {
                 this.Context = context;
             }
@@ -243,11 +243,11 @@ namespace FlatSharpTests
         public class PrivateContextConstructorTable<TStruct> : IContextItem, IContextTable<TStruct>
             where TStruct : IContextItem, new()
         {
-            public FlatSharpDeserializationContext Context { get; }
+            public FlatBufferDeserializationContext Context { get; }
 
             public PrivateContextConstructorTable() { }
 
-            private PrivateContextConstructorTable(FlatSharpDeserializationContext context)
+            private PrivateContextConstructorTable(FlatBufferDeserializationContext context)
             {
                 this.Context = context;
             }
@@ -262,11 +262,11 @@ namespace FlatSharpTests
         [FlatBufferStruct]
         public class PrivateContextConstructorStruct : IContextItem
         {
-            public FlatSharpDeserializationContext Context { get; }
+            public FlatBufferDeserializationContext Context { get; }
 
             public PrivateContextConstructorStruct() { }
 
-            private PrivateContextConstructorStruct(FlatSharpDeserializationContext context)
+            private PrivateContextConstructorStruct(FlatBufferDeserializationContext context)
             {
                 this.Context = context;
             }

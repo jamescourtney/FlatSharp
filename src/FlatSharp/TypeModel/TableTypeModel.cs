@@ -43,10 +43,10 @@ namespace FlatSharp.TypeModel
         /// Contains the vtable indices that have already been occupied.
         /// </summary>
         private readonly HashSet<int> occupiedVtableSlots = new HashSet<int>();
+        private ConstructorInfo? preferredConstructor;
 
         internal TableTypeModel(Type clrType, TypeModelContainer typeModelProvider) : base(clrType, typeModelProvider)
         {
-            this.DefaultConstructor = null!;
         }
 
         /// <summary>
@@ -105,11 +105,6 @@ namespace FlatSharp.TypeModel
         public IReadOnlyDictionary<int, TableMemberModel> IndexToMemberMap => this.memberTypes;
 
         /// <summary>
-        /// The default .ctor used for subclassing.
-        /// </summary>
-        public ConstructorInfo DefaultConstructor { get; private set; }
-
-        /// <summary>
         /// The property type used as a key.
         /// </summary>
         public TableMemberModel? KeyMember { get; private set; }
@@ -124,6 +119,8 @@ namespace FlatSharp.TypeModel
             get => this.IndexToMemberMap.Values.Sum(x => x.ItemTypeModel.MaxInlineSize) + sizeof(int);
         }
 
+        public override ConstructorInfo? PreferredSubclassConstructor => this.preferredConstructor;
+
         public override void Initialize()
         {
             var tableAttribute = this.ClrType.GetCustomAttribute<FlatBufferTableAttribute>();
@@ -134,8 +131,7 @@ namespace FlatSharp.TypeModel
 
             ValidateFileIdentifier(tableAttribute.FileIdentifier);
 
-            EnsureClassCanBeInheritedByOutsideAssembly(this.ClrType, out var ctor);
-            this.DefaultConstructor = ctor;
+            EnsureClassCanBeInheritedByOutsideAssembly(this.ClrType, out this.preferredConstructor);
 
             var properties = this.ClrType.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
                 .Select(x => new
@@ -281,16 +277,39 @@ namespace FlatSharp.TypeModel
 
             var defaultCtor =
                 type.GetConstructors(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                .Where(c => c.IsPublic || c.IsFamily || c.IsFamilyOrAssembly)
                 .Where(c => c.GetParameters().Length == 0)
                 .SingleOrDefault();
 
-            if (defaultCtor is null)
-            {
-                throw new InvalidFlatBufferDefinitionException($"Can't find a public/protected default default constructor for {typeName}");
-            }
+            var specialCtor = 
+                type.GetConstructors(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                .Where(c => c.GetParameters().Length == 1)
+                .Where(c => c.GetParameters()[0].ParameterType == typeof(FlatBufferDeserializationContext))
+                .SingleOrDefault();
 
-            defaultConstructor = defaultCtor;
+            static bool IsVisible(ConstructorInfo c) => c.IsPublic || c.IsFamily || c.IsFamilyOrAssembly;
+
+            if (specialCtor is not null)
+            {
+                if (!IsVisible(specialCtor))
+                {
+                    throw new InvalidFlatBufferDefinitionException($"Constructor for '{typeName}' accepting {nameof(FlatBufferDeserializationContext)} is not visible to subclasses outside the assembly.");
+                }
+
+                defaultConstructor = specialCtor;
+            }
+            else if (defaultCtor is not null)
+            {
+                if (!IsVisible(defaultCtor))
+                {
+                    throw new InvalidFlatBufferDefinitionException($"Default constructor for '{typeName}' is not visible to subclasses outside the assembly.");
+                }
+
+                defaultConstructor = defaultCtor;
+            }
+            else
+            {
+                throw new InvalidFlatBufferDefinitionException($"Unable to find a usable constructor for '{typeName}'. The type must supply a default constructor or single parameter constructor accepting '{nameof(FlatBufferDeserializationContext)}' that is visible to subclasses outside the assembly.");
+            }
         }
 
         private static void ValidateFileIdentifier(string? fileIdentifier)

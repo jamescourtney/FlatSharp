@@ -20,6 +20,7 @@ namespace FlatSharp.TypeModel
     using System.Collections.Generic;
     using System.Collections.Immutable;
     using System.Diagnostics.CodeAnalysis;
+    using System.Reflection;
 
     /// <summary>
     /// A type model. Declares both properties of a type and how to serialize/parse that type.
@@ -82,6 +83,12 @@ namespace FlatSharp.TypeModel
         /// This is the equivalent of a FlatBuffer "value" type.
         /// </summary>
         bool SerializesInline { get; }
+
+        /// <summary>
+        /// Indicates the constructor that subclasses should use. This constructor must have either 0 parameters or 1 parameter
+        /// that accepts an instance of <see cref="FlatSharpDeserializationContext"/>.
+        /// </summary>
+        ConstructorInfo? PreferredSubclassConstructor { get; }
 
         /// <summary>
         /// Validates a default value.

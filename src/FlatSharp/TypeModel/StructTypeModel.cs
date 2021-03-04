@@ -32,6 +32,7 @@ namespace FlatSharp.TypeModel
         private readonly List<StructMemberModel> memberTypes = new List<StructMemberModel>();
         private int inlineSize;
         private int maxAlignment = 1;
+        private ConstructorInfo? preferredConstructor;
 
         internal StructTypeModel(Type clrType, TypeModelContainer container) : base(clrType, container)
         {
@@ -83,6 +84,8 @@ namespace FlatSharp.TypeModel
         /// </summary>
         public override bool SerializesInline => true;
 
+        public override ConstructorInfo? PreferredSubclassConstructor => this.preferredConstructor;
+
         /// <summary>
         /// Gets the members of this struct.
         /// </summary>
@@ -129,17 +132,33 @@ namespace FlatSharp.TypeModel
                 var memberInfo = this.Members[i];
 
                 string propertyAccessor = $"{context.ValueVariableName}.{memberInfo.PropertyInfo.Name}";
-                if (!memberInfo.ItemTypeModel.ClrType.IsValueType)
-                {
-                    // Force members of structs to be non-null.
-                    propertyAccessor += $" ?? new {CSharpHelpers.GetCompilableTypeName(memberInfo.ItemTypeModel.ClrType)}()";
-                }
 
                 var propContext = context.With(
                     offsetVariableName: $"({memberInfo.Offset} + {context.OffsetVariableName})",
                     valueVariableName: $"({propertyAccessor})");
 
-                body.Add(propContext.GetSerializeInvocation(memberInfo.ItemTypeModel.ClrType) + ";");
+                string invocation = propContext.GetSerializeInvocation(memberInfo.ItemTypeModel.ClrType) + ";";
+
+                if (!memberInfo.ItemTypeModel.ClrType.IsValueType)
+                {
+                    // Force members of structs to be non-null.
+                    int start = memberInfo.Offset;
+                    int length = memberInfo.Length;
+
+                    invocation = $@"
+                    var index{i}Value = {propertyAccessor};
+                    if (index{i}Value is null)
+                    {{
+                        {context.SpanVariableName}.Slice({start} + {context.OffsetVariableName}, {length}).Clear();
+                    }}
+                    else
+                    {{
+                        {invocation}
+                    }}
+                    ";
+                }
+
+                body.Add(invocation);
             }
 
             return new CodeGeneratedMethod(string.Join("\r\n", body));
@@ -163,7 +182,7 @@ namespace FlatSharp.TypeModel
                 throw new InvalidFlatBufferDefinitionException($"Can't create struct type model from type {this.ClrType.Name} because it does not have a [FlatBufferStruct] attribute.");
             }
 
-            TableTypeModel.EnsureClassCanBeInheritedByOutsideAssembly(this.ClrType, out var ctor);
+            TableTypeModel.EnsureClassCanBeInheritedByOutsideAssembly(this.ClrType, out this.preferredConstructor);
 
             var properties = this.ClrType
                 .GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
@@ -213,15 +232,17 @@ namespace FlatSharp.TypeModel
 
                 // Pad for alignment.
                 this.inlineSize += SerializationHelpers.GetAlignmentError(this.inlineSize, propertyAlignment);
+                int length = propertyModel.PhysicalLayout[0].InlineSize;
 
                 StructMemberModel model = new StructMemberModel(
                     propertyModel,
                     property,
                     index,
-                    this.inlineSize);
+                    this.inlineSize,
+                    length);
 
                 this.memberTypes.Add(model);
-                this.inlineSize += propertyModel.PhysicalLayout[0].InlineSize;
+                this.inlineSize += length;
             }
         }
 

@@ -29,7 +29,7 @@ namespace FlatSharp.Compiler
         internal const string SerializerPropertyName = "Serializer";
 
         public TableOrStructDefinition(
-            string name, 
+            string name,
             BaseSchemaMember parent) : base(name, parent)
         {
         }
@@ -37,7 +37,7 @@ namespace FlatSharp.Compiler
         public List<FieldDefinition> Fields { get; set; } = new List<FieldDefinition>();
 
         public List<StructVectorDefinition> StructVectors { get; set; } = new List<StructVectorDefinition>();
-        
+
         public bool IsTable { get; set; }
 
         public FlatBufferSchemaType SchemaType =>
@@ -45,7 +45,7 @@ namespace FlatSharp.Compiler
 
         public bool? NonVirtual { get; set; }
 
-        public bool ObsoleteDefaultConstructor { get; set; }
+        public DefaultConstructorKind? DefaultConstructorKind { get; set; }
 
         public string? FileIdentifier { get; set; }
 
@@ -78,33 +78,42 @@ namespace FlatSharp.Compiler
 
             using (writer.IncreaseIndent())
             {
-                writer.AppendLine($"partial void OnInitialized({nameof(FlatSharpDeserializationContext)}? context);");
+                writer.AppendLine($"partial void OnInitialized({nameof(FlatBufferDeserializationContext)}? context);");
 
-                // default ctor.
-                if (this.ObsoleteDefaultConstructor)
+                // Default ctor.
+                var defaultCtorKind = this.DefaultConstructorKind ?? Compiler.DefaultConstructorKind.Public;
+                if (defaultCtorKind != Compiler.DefaultConstructorKind.None)
                 {
-                    writer.AppendLine("[Obsolete]");
-                }
-
-                writer.AppendLine($"public {this.Name}()");
-                using (writer.WithBlock())
-                {
-                    foreach (var field in this.Fields)
+                    if (defaultCtorKind == Compiler.DefaultConstructorKind.PublicObsolete)
                     {
-                        field.WriteDefaultConstructorLine(writer, context);
+                        writer.AppendLine("[Obsolete]");
                     }
 
-                    writer.AppendLine("this.OnInitialized(null);");
+                    writer.AppendLine($"public {this.Name}()");
+                    using (writer.WithBlock())
+                    {
+                        foreach (var field in this.Fields)
+                        {
+                            field.WriteDefaultConstructorLine(writer, context);
+                        }
+
+                        writer.AppendLine("this.OnInitialized(null);");
+                    }
+                }
+                else if (!this.IsTable)
+                {
+                    ErrorContext.Current.RegisterError("Structs must have default constructors.");
                 }
 
                 writer.AppendLine("#pragma warning disable CS8618"); // NULL FORGIVING
-                writer.AppendLine($"protected {this.Name}({nameof(FlatSharpDeserializationContext)} context)");
+                writer.AppendLine($"protected {this.Name}({nameof(FlatBufferDeserializationContext)} context)");
                 using (writer.WithBlock())
                 {
                     writer.AppendLine("this.OnInitialized(context);");
                 }
                 writer.AppendLine("#pragma warning restore CS8618"); // NULL FORGIVING
 
+                // Copy constructor.
                 writer.AppendLine($"public {this.Name}({this.Name} source)");
                 using (writer.WithBlock())
                 {

@@ -74,7 +74,7 @@ namespace FlatSharpTests
         {
             RuntimeTypeModel.CreateFrom(typeof(InterfaceTableVirtual));
         }
-        
+
         [TestMethod]
         public void TypeModel_Table_NoGetter()
         {
@@ -115,6 +115,34 @@ namespace FlatSharpTests
             ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(Table_FileIdentifierTooFancy)));
             Assert.AreEqual("File identifier '😍😚😙😵‍' is invalid. FileIdentifiers must be exactly 4 ASCII characters.", ex.Message);
+        }
+
+        [TestMethod]
+        public void TypeModel_Table_InternalConstructor()
+        {
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(InternalConstructorTable<byte>)));
+            Assert.AreEqual("Default constructor for 'FlatSharpTests.TypeModelTests.InternalConstructorTable<System.Byte>' is not visible to subclasses outside the assembly.", ex.Message);
+        }
+
+        [TestMethod]
+        public void TypeModel_Table_PrivateConstructor()
+        {
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(PrivateConstructorTable<byte>)));
+            Assert.AreEqual("Default constructor for 'FlatSharpTests.TypeModelTests.PrivateConstructorTable<System.Byte>' is not visible to subclasses outside the assembly.", ex.Message);
+        }
+
+        [TestMethod]
+        public void TypeModel_Table_ProtectedConstructor()
+        {
+            RuntimeTypeModel.CreateFrom(typeof(ProtectedConstructorTable<byte>));
+        }
+
+        [TestMethod]
+        public void TypeModel_Table_SpecialConstructor()
+        {
+            RuntimeTypeModel.CreateFrom(typeof(SpecialConstructorTable<byte>));
         }
 
         [TestMethod]
@@ -186,7 +214,19 @@ namespace FlatSharpTests
         {
             var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(InaccessibleConstructorStruct<byte>)));
-            Assert.AreEqual("Can't find a public/protected default default constructor for FlatSharpTests.TypeModelTests.InaccessibleConstructorStruct<System.Byte>", ex.Message);
+            Assert.AreEqual("Default constructor for 'FlatSharpTests.TypeModelTests.InaccessibleConstructorStruct<System.Byte>' is not visible to subclasses outside the assembly.", ex.Message);
+        }
+
+        [TestMethod]
+        public void TypeModel_Struct_ProtectedConstructor()
+        {
+            RuntimeTypeModel.CreateFrom(typeof(ProtectedConstructorStruct<byte>));
+        }
+
+        [TestMethod]
+        public void TypeModel_Struct_SpecialConstructor()
+        {
+            RuntimeTypeModel.CreateFrom(typeof(SpecialConstructorStruct<byte>));
         }
 
         [TestMethod]
@@ -890,6 +930,60 @@ namespace FlatSharpTests
         public class InaccessibleConstructorStruct<T>
         {
             internal InaccessibleConstructorStruct() { }
+
+            [FlatBufferItem(0)]
+            public virtual T Value { get; set; }
+        }
+
+        [FlatBufferStruct]
+        public class ProtectedConstructorStruct<T>
+        {
+            protected ProtectedConstructorStruct() { }
+
+            [FlatBufferItem(0)]
+            public virtual T Value { get; set; }
+        }
+
+        [FlatBufferStruct]
+        public class SpecialConstructorStruct<T>
+        {
+            protected SpecialConstructorStruct(FlatBufferDeserializationContext context) { }
+
+            [FlatBufferItem(0)]
+            public virtual T Value { get; set; }
+        }
+
+        [FlatBufferTable]
+        public class PrivateConstructorTable<T>
+        {
+            internal PrivateConstructorTable() { }
+
+            [FlatBufferItem(0)]
+            public virtual T Value { get; set; }
+        }
+
+        [FlatBufferTable]
+        public class InternalConstructorTable<T>
+        {
+            internal InternalConstructorTable() { }
+
+            [FlatBufferItem(0)]
+            public virtual T Value { get; set; }
+        }
+
+        [FlatBufferTable]
+        public class ProtectedConstructorTable<T>
+        {
+            protected ProtectedConstructorTable() { }
+
+            [FlatBufferItem(0)]
+            public virtual T Value { get; set; }
+        }
+
+        [FlatBufferTable]
+        public class SpecialConstructorTable<T>
+        {
+            protected SpecialConstructorTable(FlatBufferDeserializationContext context) { }
 
             [FlatBufferItem(0)]
             public virtual T Value { get; set; }

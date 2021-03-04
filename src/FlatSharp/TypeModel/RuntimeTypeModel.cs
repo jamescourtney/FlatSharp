@@ -21,6 +21,7 @@ namespace FlatSharp.TypeModel
     using System.Collections.Immutable;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
+    using System.Reflection;
 
     /// <summary>
     /// Defines a type model for an object that can be parsed and serialized to/from a FlatBuffer. While generally most useful to the 
@@ -95,6 +96,11 @@ namespace FlatSharp.TypeModel
         /// Gets the maximum inline size of this item when padded for alignment, when stored in a table or vector.
         /// </summary>
         public virtual int MaxInlineSize => this.PhysicalLayout.Sum(x => x.InlineSize + SerializationHelpers.GetMaxPadding(x.Alignment));
+
+        /// <summary>
+        /// Most things don't have an explicit constructor.
+        /// </summary>
+        public virtual ConstructorInfo? PreferredSubclassConstructor => null;
 
         /// <summary>
         /// Validates a default value.

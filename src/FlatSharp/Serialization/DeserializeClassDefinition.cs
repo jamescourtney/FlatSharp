@@ -240,8 +240,14 @@ namespace FlatSharp
 
         public override string ToString()
         {
+            ConstructorInfo? ctor = this.typeModel.PreferredSubclassConstructor;
+            if (ctor is null)
+            {
+                throw new InvalidFlatBufferDefinitionException($"Unable to find a usable subclass constructor for '{this.typeModel.GetCompilableTypeName()}'.");
+            }
+
             string baseParams = string.Empty;
-            if (this.HasSpecialCtor())
+            if (ctor.GetParameters().Length != 0)
             {
                 baseParams = "__CtorContext";
             }
@@ -253,8 +259,8 @@ namespace FlatSharp
                     , {nameof(IFlatBufferDeserializedObject)}
                     where TInputBuffer : IInputBuffer
                 {{
-                    private static readonly {nameof(FlatSharpDeserializationContext)} __CtorContext 
-                        = new {nameof(FlatSharpDeserializationContext)}({nameof(FlatBufferDeserializationOption)}.{options.DeserializationOption});
+                    private static readonly {nameof(FlatBufferDeserializationContext)} __CtorContext 
+                        = new {nameof(FlatBufferDeserializationContext)}({nameof(FlatBufferDeserializationOption)}.{options.DeserializationOption});
 
                     {string.Join("\r\n", this.fieldDefinitions)}
 
@@ -264,7 +270,7 @@ namespace FlatSharp
                     }}
 
                     Type {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.TableOrStructType)} => typeof({typeModel.GetCompilableTypeName()});
-                    {nameof(FlatSharpDeserializationContext)} {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.DeserializationContext)} => __CtorContext;
+                    {nameof(FlatBufferDeserializationContext)} {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.DeserializationContext)} => __CtorContext;
                     {nameof(IInputBuffer)}? {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.InputBuffer)} => {this.GetBufferReference()};
 
                     {string.Join("\r\n", this.propertyOverrides)}
@@ -279,32 +285,6 @@ namespace FlatSharp
         private static string GetHasValueFieldName(ItemMemberModel itemModel) => $"__hasIndex{itemModel.Index}Value";
 
         private static string GetReadIndexMethodName(ItemMemberModel itemModel) => $"ReadIndex{itemModel.Index}Value";
-
-        private bool HasSpecialCtor()
-        {
-            ConstructorInfo? specialCtor = null;
-            foreach (var ctor in this.typeModel.ClrType.GetConstructors(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.CreateInstance | BindingFlags.Instance))
-            {
-                var @params = ctor.GetParameters();
-                if (@params.Length == 1 &&
-                    @params[0].ParameterType == typeof(FlatSharpDeserializationContext))
-                {
-                    specialCtor = ctor;
-                    break;
-                }
-            }
-
-            if (specialCtor is not null &&
-                !specialCtor.IsPublic &&
-                !specialCtor.IsFamily &&
-                !specialCtor.IsFamilyOrAssembly)
-            {
-                throw new InvalidFlatBufferDefinitionException(
-                    $"Class '{typeModel.GetCompilableTypeName()}' defines a constructor accepting {nameof(FlatSharpDeserializationContext)}, but the constructor is not visible to derived classes.");
-            }
-
-            return specialCtor is not null;
-        }
 
         private string GetBufferReference()
         {

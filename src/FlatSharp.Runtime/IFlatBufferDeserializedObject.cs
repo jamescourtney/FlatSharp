@@ -32,7 +32,7 @@ namespace FlatSharp
         /// <summary>
         /// The context of the deserialized object.
         /// </summary>
-        FlatSharpDeserializationContext DeserializationContext { get; }
+        FlatBufferDeserializationContext DeserializationContext { get; }
 
         /// <summary>
         /// Gets the input buffer instance used to lazily read this object.

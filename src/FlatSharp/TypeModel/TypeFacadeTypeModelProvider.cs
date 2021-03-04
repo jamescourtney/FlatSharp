@@ -21,6 +21,7 @@ namespace FlatSharp.TypeModel
     using System.Collections.Generic;
     using System.Collections.Immutable;
     using System.Diagnostics.CodeAnalysis;
+    using System.Reflection;
 
     /// <summary>
     /// A type model provider for a Type Facade.
@@ -85,6 +86,8 @@ namespace FlatSharp.TypeModel
             public int MaxInlineSize => this.underlyingModel.MaxInlineSize;
 
             public bool SerializesInline => this.underlyingModel.SerializesInline;
+
+            public ConstructorInfo? PreferredSubclassConstructor => this.underlyingModel.PreferredSubclassConstructor;
 
             public TableMemberModel AdjustTableMember(TableMemberModel source) => this.underlyingModel.AdjustTableMember(source);
 
