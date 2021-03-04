@@ -70,11 +70,26 @@ namespace FlatSharpTests
             byte[] data = new byte[1024];
             data.AsSpan().Fill(123);
 
-            FlatBufferSerializer.Default.Serialize(outer, data);
+            int length = FlatBufferSerializer.Default.Serialize(outer, data);
             var parsed = FlatBufferSerializer.Default.Parse<OuterTable>(data);
 
             // Null overwrites buffer to 0 on serialize.
             Assert.AreEqual(0, parsed.Struct.InnerB.Item);
+
+            Span<byte> expected = new byte[]
+            {
+                4, 0, 0, 0,
+                220, 255, 255, 255,
+                1, 0, 0, 0,
+                123, 123, 123, 123,   // padding bytes are not overwritten.
+                1, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0,           // null InnerB struct is overwritten with 0.
+                0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                6, 0, 36, 0, 4, 0,
+            };
+
+            Assert.IsTrue(expected.SequenceEqual(data.AsSpan().Slice(0, length)));
         }
 
         [TestMethod]
@@ -137,6 +152,7 @@ namespace FlatSharpTests
             public InnerStructA(int value)
             {
                 this.Item = value;
+                this.Item2 = value;
             }
 
             protected InnerStructA()
@@ -147,6 +163,9 @@ namespace FlatSharpTests
 
             [FlatBufferItem(0)]
             public virtual int Item { get; set; }
+
+            [FlatBufferItem(1)]
+            public virtual long Item2 { get; set; }
         }
 
         [FlatBufferStruct]
@@ -155,6 +174,7 @@ namespace FlatSharpTests
             public InnerStructB(int value)
             {
                 this.Item = value;
+                this.Item2 = value;
             }
 
             protected InnerStructB(FlatSharpDeserializationContext context)
@@ -166,6 +186,9 @@ namespace FlatSharpTests
 
             [FlatBufferItem(0)]
             public virtual int Item { get; set; }
+
+            [FlatBufferItem(1)]
+            public virtual long Item2 { get; set; }
         }
     }
 }
