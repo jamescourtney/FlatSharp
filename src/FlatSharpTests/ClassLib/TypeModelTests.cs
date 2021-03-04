@@ -947,7 +947,7 @@ namespace FlatSharpTests
         [FlatBufferStruct]
         public class SpecialConstructorStruct<T>
         {
-            protected SpecialConstructorStruct(FlatSharpDeserializationContext context) { }
+            protected SpecialConstructorStruct(FlatBufferDeserializationContext context) { }
 
             [FlatBufferItem(0)]
             public virtual T Value { get; set; }
@@ -983,7 +983,7 @@ namespace FlatSharpTests
         [FlatBufferTable]
         public class SpecialConstructorTable<T>
         {
-            protected SpecialConstructorTable(FlatSharpDeserializationContext context) { }
+            protected SpecialConstructorTable(FlatBufferDeserializationContext context) { }
 
             [FlatBufferItem(0)]
             public virtual T Value { get; set; }

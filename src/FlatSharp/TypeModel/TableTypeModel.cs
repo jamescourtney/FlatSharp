@@ -283,7 +283,7 @@ namespace FlatSharp.TypeModel
             var specialCtor = 
                 type.GetConstructors(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
                 .Where(c => c.GetParameters().Length == 1)
-                .Where(c => c.GetParameters()[0].ParameterType == typeof(FlatSharpDeserializationContext))
+                .Where(c => c.GetParameters()[0].ParameterType == typeof(FlatBufferDeserializationContext))
                 .SingleOrDefault();
 
             static bool IsVisible(ConstructorInfo c) => c.IsPublic || c.IsFamily || c.IsFamilyOrAssembly;
@@ -292,7 +292,7 @@ namespace FlatSharp.TypeModel
             {
                 if (!IsVisible(specialCtor))
                 {
-                    throw new InvalidFlatBufferDefinitionException($"Constructor for '{typeName}' accepting {nameof(FlatSharpDeserializationContext)} is not visible to subclasses outside the assembly.");
+                    throw new InvalidFlatBufferDefinitionException($"Constructor for '{typeName}' accepting {nameof(FlatBufferDeserializationContext)} is not visible to subclasses outside the assembly.");
                 }
 
                 defaultConstructor = specialCtor;
@@ -308,7 +308,7 @@ namespace FlatSharp.TypeModel
             }
             else
             {
-                throw new InvalidFlatBufferDefinitionException($"Unable to find a usable constructor for '{typeName}'. The type must supply a default constructor or single parameter constructor accepting '{nameof(FlatSharpDeserializationContext)}' that is visible to subclasses outside the assembly.");
+                throw new InvalidFlatBufferDefinitionException($"Unable to find a usable constructor for '{typeName}'. The type must supply a default constructor or single parameter constructor accepting '{nameof(FlatBufferDeserializationContext)}' that is visible to subclasses outside the assembly.");
             }
         }
 

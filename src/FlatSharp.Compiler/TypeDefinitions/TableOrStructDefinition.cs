@@ -78,7 +78,7 @@ namespace FlatSharp.Compiler
 
             using (writer.IncreaseIndent())
             {
-                writer.AppendLine($"partial void OnInitialized({nameof(FlatSharpDeserializationContext)}? context);");
+                writer.AppendLine($"partial void OnInitialized({nameof(FlatBufferDeserializationContext)}? context);");
 
                 // Default ctor.
                 var defaultCtorKind = this.DefaultConstructorKind ?? Compiler.DefaultConstructorKind.Public;
@@ -106,7 +106,7 @@ namespace FlatSharp.Compiler
                 }
 
                 writer.AppendLine("#pragma warning disable CS8618"); // NULL FORGIVING
-                writer.AppendLine($"protected {this.Name}({nameof(FlatSharpDeserializationContext)} context)");
+                writer.AppendLine($"protected {this.Name}({nameof(FlatBufferDeserializationContext)} context)");
                 using (writer.WithBlock())
                 {
                     writer.AppendLine("this.OnInitialized(context);");

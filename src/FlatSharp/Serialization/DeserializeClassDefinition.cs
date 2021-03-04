@@ -259,8 +259,8 @@ namespace FlatSharp
                     , {nameof(IFlatBufferDeserializedObject)}
                     where TInputBuffer : IInputBuffer
                 {{
-                    private static readonly {nameof(FlatSharpDeserializationContext)} __CtorContext 
-                        = new {nameof(FlatSharpDeserializationContext)}({nameof(FlatBufferDeserializationOption)}.{options.DeserializationOption});
+                    private static readonly {nameof(FlatBufferDeserializationContext)} __CtorContext 
+                        = new {nameof(FlatBufferDeserializationContext)}({nameof(FlatBufferDeserializationOption)}.{options.DeserializationOption});
 
                     {string.Join("\r\n", this.fieldDefinitions)}
 
@@ -270,7 +270,7 @@ namespace FlatSharp
                     }}
 
                     Type {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.TableOrStructType)} => typeof({typeModel.GetCompilableTypeName()});
-                    {nameof(FlatSharpDeserializationContext)} {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.DeserializationContext)} => __CtorContext;
+                    {nameof(FlatBufferDeserializationContext)} {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.DeserializationContext)} => __CtorContext;
                     {nameof(IInputBuffer)}? {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.InputBuffer)} => {this.GetBufferReference()};
 
                     {string.Join("\r\n", this.propertyOverrides)}

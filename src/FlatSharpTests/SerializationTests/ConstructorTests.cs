@@ -119,12 +119,12 @@ namespace FlatSharpTests
             {
             }
 
-            protected OuterTable(FlatSharpDeserializationContext context)
+            protected OuterTable(FlatBufferDeserializationContext context)
             {
                 this.Context = context;
             }
 
-            public FlatSharpDeserializationContext Context { get; }
+            public FlatBufferDeserializationContext Context { get; }
 
             [FlatBufferItem(0)]
             public virtual OuterStruct? Struct { get; set; }
@@ -159,7 +159,7 @@ namespace FlatSharpTests
             {
             }
 
-            public FlatSharpDeserializationContext Context { get; }
+            public FlatBufferDeserializationContext Context { get; }
 
             [FlatBufferItem(0)]
             public virtual int Item { get; set; }
@@ -177,12 +177,12 @@ namespace FlatSharpTests
                 this.Item2 = value;
             }
 
-            protected InnerStructB(FlatSharpDeserializationContext context)
+            protected InnerStructB(FlatBufferDeserializationContext context)
             {
                 this.Context = context;
             }
 
-            public FlatSharpDeserializationContext Context { get; }
+            public FlatBufferDeserializationContext Context { get; }
 
             [FlatBufferItem(0)]
             public virtual int Item { get; set; }
