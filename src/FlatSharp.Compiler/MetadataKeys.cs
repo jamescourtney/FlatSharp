@@ -58,9 +58,10 @@ namespace FlatSharp.Compiler
         public const string SharedStringLegacy = "sharedstring";
 
         /// <summary>
-        /// Controls whether FlatSharp should generate a default constructor for the given table or struct.
+        /// Controls how FlatSharp should generate a default constructor for the given type.
         /// </summary>
-        public const string NoDefaultConstructor = "fs_noDefaultCtor";
+        public const string DefaultConstructorKind = "fs_defaultCtor";
+        public const string ObsoleteDefaultConstructorLegacy = "ObsoleteDefaultConstructor";
 
         /// <summary>
         /// Controls the type of vector FlatSharp will generate. Valid values can be found in <see cref="VectorType"/>.

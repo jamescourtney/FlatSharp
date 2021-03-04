@@ -27,33 +27,9 @@ namespace FlatSharpTests.Compiler
     public class DefaultCtorTests
     {
         [TestMethod]
-        public void NoDefaultCtorImplicit()
+        public void DefaultCtorKind_NotSpecified_Table()
         {
-            string schema = $"namespace Foo; table BaseTable ({MetadataKeys.NoDefaultConstructor}) {{ Int:int; }}";
-
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
-            Type baseTableType = asm.GetTypes().Single(x => x.Name == "BaseTable");
-
-            var constructor = baseTableType.GetConstructor(new Type[0]);
-            Assert.IsNull(constructor);
-        }
-
-        [TestMethod]
-        public void NoDefaultCtorExplicit_True()
-        {
-            string schema = $"namespace Foo; table BaseTable ({MetadataKeys.NoDefaultConstructor}:\"true\") {{ Int:int; }}";
-
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
-            Type baseTableType = asm.GetTypes().Single(x => x.Name == "BaseTable");
-
-            var constructor = baseTableType.GetConstructor(new Type[0]);
-            Assert.IsNull(constructor);
-        }
-
-        [TestMethod]
-        public void NoDefaultCtor_None()
-        {
-            string schema = "namespace Foo; table BaseTable { Int:int; }";
+            string schema = $"namespace Foo; table BaseTable {{ Int:int; }}";
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
             Type baseTableType = asm.GetTypes().Single(x => x.Name == "BaseTable");
@@ -61,12 +37,13 @@ namespace FlatSharpTests.Compiler
             var constructor = baseTableType.GetConstructor(new Type[0]);
             Assert.IsNotNull(constructor);
             Assert.IsTrue(constructor.IsPublic);
+            Assert.IsNull(constructor.GetCustomAttribute<ObsoleteAttribute>());
         }
 
         [TestMethod]
-        public void NoDefaultCtorExplicit_False()
+        public void DefaultCtorKind_NotSpecified_Struct()
         {
-            string schema = $"namespace Foo; table BaseTable ({MetadataKeys.NoDefaultConstructor}:\"false\") {{ Int:int; }}";
+            string schema = $"namespace Foo; struct BaseTable {{ Int:int; }}";
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
             Type baseTableType = asm.GetTypes().Single(x => x.Name == "BaseTable");
@@ -74,6 +51,135 @@ namespace FlatSharpTests.Compiler
             var constructor = baseTableType.GetConstructor(new Type[0]);
             Assert.IsNotNull(constructor);
             Assert.IsTrue(constructor.IsPublic);
+            Assert.IsNull(constructor.GetCustomAttribute<ObsoleteAttribute>());
+        }
+
+        [TestMethod]
+        public void DefaultCtorKind_NoValue_Table()
+        {
+            string schema = $"namespace Foo; table BaseTable ({MetadataKeys.DefaultConstructorKind}) {{ Int:int; }}";
+
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
+            Type baseTableType = asm.GetTypes().Single(x => x.Name == "BaseTable");
+
+            var constructor = baseTableType.GetConstructor(new Type[0]);
+            Assert.IsNotNull(constructor);
+            Assert.IsTrue(constructor.IsPublic);
+            Assert.IsNull(constructor.GetCustomAttribute<ObsoleteAttribute>());
+        }
+
+        [TestMethod]
+        public void DefaultCtorKind_NoValue_Struct()
+        {
+            string schema = $"namespace Foo; struct BaseTable ({MetadataKeys.DefaultConstructorKind}) {{ Int:int; }}";
+
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
+            Type baseTableType = asm.GetTypes().Single(x => x.Name == "BaseTable");
+
+            var constructor = baseTableType.GetConstructor(new Type[0]);
+            Assert.IsNotNull(constructor);
+            Assert.IsTrue(constructor.IsPublic);
+            Assert.IsNull(constructor.GetCustomAttribute<ObsoleteAttribute>());
+        }
+
+        [TestMethod]
+        public void DefaultCtorKind_None_Struct()
+        {
+            string schema = $@"
+            namespace Foo; 
+            struct InnerStruct ({MetadataKeys.DefaultConstructorKind}:""{DefaultConstructorKind.None}"") {{ Int:int; }}";
+
+            var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+            Assert.AreEqual("Message='Structs must have default constructors.', Scope=$..Foo.InnerStruct", ex.Errors[0]);
+        }
+
+        [TestMethod]
+        public void DefaultCtorKind_None_Table()
+        {
+            string schema = $@"
+            namespace Foo; 
+            table Table ({MetadataKeys.DefaultConstructorKind}:""{DefaultConstructorKind.None}"") {{ Int:int; }}";
+
+            var asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
+            Type baseTableType = asm.GetTypes().Single(x => x.Name == "Table");
+
+            var constructor = baseTableType.GetConstructor(new Type[0]);
+            Assert.IsNull(constructor);
+        }
+
+        [TestMethod]
+        public void DefaultCtorKind_Public_Struct()
+        {
+            string schema = $@"
+            namespace Foo; 
+            struct InnerStruct ({MetadataKeys.DefaultConstructorKind}:""{DefaultConstructorKind.Public}"") {{ Int:int; }}";
+
+            var asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
+            Type baseTableType = asm.GetTypes().Single(x => x.Name == "InnerStruct");
+
+            var constructor = baseTableType.GetConstructor(new Type[0]);
+            Assert.IsNotNull(constructor);
+            Assert.IsTrue(constructor.IsPublic);
+            Assert.IsNull(constructor.GetCustomAttribute<ObsoleteAttribute>());
+        }
+
+        [TestMethod]
+        public void DefaultCtorKind_Public_Table()
+        {
+            string schema = $@"
+            namespace Foo; 
+            table Table ({MetadataKeys.DefaultConstructorKind}:""{DefaultConstructorKind.Public}"") {{ Int:int; }}";
+
+            var asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
+            Type baseTableType = asm.GetTypes().Single(x => x.Name == "Table");
+
+            var constructor = baseTableType.GetConstructor(new Type[0]);
+            Assert.IsNotNull(constructor);
+            Assert.IsTrue(constructor.IsPublic);
+            Assert.IsNull(constructor.GetCustomAttribute<ObsoleteAttribute>());
+        }
+
+        [TestMethod]
+        public void DefaultCtorKind_PublicObsolete_Struct()
+        {
+            string schema = $@"
+            namespace Foo; 
+            struct InnerStruct ({MetadataKeys.DefaultConstructorKind}:""{DefaultConstructorKind.PublicObsolete}"") {{ Int:int; }}";
+
+            var asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
+            Type baseTableType = asm.GetTypes().Single(x => x.Name == "InnerStruct");
+
+            var constructor = baseTableType.GetConstructor(new Type[0]);
+            Assert.IsNotNull(constructor);
+            Assert.IsTrue(constructor.IsPublic);
+            Assert.IsNotNull(constructor.GetCustomAttribute<ObsoleteAttribute>());
+        }
+
+        [TestMethod]
+        public void DefaultCtorKind_PublicObsolete_Table()
+        {
+            string schema = $@"
+            namespace Foo; 
+            table Table ({MetadataKeys.DefaultConstructorKind}:""{DefaultConstructorKind.PublicObsolete}"") {{ Int:int; }}";
+
+            var asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
+            Type baseTableType = asm.GetTypes().Single(x => x.Name == "Table");
+
+            var constructor = baseTableType.GetConstructor(new Type[0]);
+            Assert.IsNotNull(constructor);
+            Assert.IsTrue(constructor.IsPublic);
+            Assert.IsNotNull(constructor.GetCustomAttribute<ObsoleteAttribute>());
+        }
+
+        [TestMethod]
+        public void LegacyObsoleteDefaultConstructor()
+        {
+            string schema = $@"
+            namespace Foo; 
+            table Table ({MetadataKeys.ObsoleteDefaultConstructorLegacy}) {{ Int:int; }}";
+
+            var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+            Assert.IsTrue(ex.Errors[0].StartsWith("Message='The 'ObsoleteDefaultConstructor' metadata attribute has been deprecated. Please use the 'fs_defaultCtor' attribute instead.'"));
         }
     }
 }

@@ -45,7 +45,7 @@ namespace FlatSharp.Compiler
 
         public bool? NonVirtual { get; set; }
 
-        public bool NoDefaultConstructor { get; set; }
+        public DefaultConstructorKind? DefaultConstructorKind { get; set; }
 
         public string? FileIdentifier { get; set; }
 
@@ -81,8 +81,14 @@ namespace FlatSharp.Compiler
                 writer.AppendLine($"partial void OnInitialized({nameof(FlatSharpDeserializationContext)}? context);");
 
                 // Default ctor.
-                if (!this.NoDefaultConstructor)
+                var defaultCtorKind = this.DefaultConstructorKind ?? Compiler.DefaultConstructorKind.Public;
+                if (defaultCtorKind != Compiler.DefaultConstructorKind.None)
                 {
+                    if (defaultCtorKind == Compiler.DefaultConstructorKind.PublicObsolete)
+                    {
+                        writer.AppendLine("[Obsolete]");
+                    }
+
                     writer.AppendLine($"public {this.Name}()");
                     using (writer.WithBlock())
                     {
@@ -93,6 +99,10 @@ namespace FlatSharp.Compiler
 
                         writer.AppendLine("this.OnInitialized(null);");
                     }
+                }
+                else if (!this.IsTable)
+                {
+                    ErrorContext.Current.RegisterError("Structs must have default constructors.");
                 }
 
                 writer.AppendLine("#pragma warning disable CS8618"); // NULL FORGIVING
