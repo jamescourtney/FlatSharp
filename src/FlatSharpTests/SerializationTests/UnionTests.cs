@@ -52,14 +52,15 @@ namespace FlatSharpTests
             byte[] expectedData =
             {
                 4, 0, 0, 0,         // offset to table
-                244, 255, 255, 255, // soffset to vtable
-                2,                  // discriminator (1 byte)
-                0, 0, 0,            // padding
-                12, 0, 0, 0,        // uoffset_t to struct data
+                246, 255, 255, 255, // soffset to vtable
+                16, 0, 0, 0,        // uoffset_t to struct data
+                2, 0,               // discriminator (1 byte), padding
                 8, 0,               // vtable length
-                12, 0,              // table length
-                4, 0,               // discriminator offset
-                8, 0,               // value offset
+                9, 0,               // table length
+                8, 0,               // discriminator offset
+                4, 0,               // value offset
+
+                0, 0,               // padding
 
                 // struct data
                 123, 0, 0, 0, 0, 0, 0, 0  
@@ -82,14 +83,14 @@ namespace FlatSharpTests
             byte[] expectedData =
             {
                 4, 0, 0, 0,         // offset to table
-                244, 255, 255, 255, // soffset to vtable
-                1,                  // discriminator (1 byte)
-                0, 0, 0,            // padding
-                12, 0, 0, 0,        // uoffset_t to table data
+                246, 255, 255, 255, // soffset to vtable
+                16, 0, 0, 0,        // uoffset_t to table data
+                1, 0,               // discriminator (1 byte), padding
                 8, 0,               // vtable length
-                12, 0,              // table length
-                4, 0,               // discriminator offset
-                8, 0,               // value offset
+                9, 0,               // table length
+                8, 0,               // discriminator offset
+                4, 0,               // value offset
+                0, 0,               // padding
 
                 // table data
                 248, 255, 255, 255, // soffset to vtable

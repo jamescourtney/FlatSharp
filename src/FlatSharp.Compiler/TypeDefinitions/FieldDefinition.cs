@@ -52,6 +52,8 @@ namespace FlatSharp.Compiler
 
         public bool? NonVirtual { get; set; }
 
+        public bool? ForceWrite { get; set; }
+
         public string? DefaultValue { get; set; }
 
         public bool IsOptionalScalar { get; set; }
@@ -248,6 +250,7 @@ namespace FlatSharp.Compiler
             string sortedVector = string.Empty;
             string defaultValue = string.Empty;
             string isDeprecated = string.Empty;
+            string forceWrite = string.Empty;
 
             if (this.IsKey)
             {
@@ -269,7 +272,24 @@ namespace FlatSharp.Compiler
                 defaultValue = $", {nameof(FlatBufferItemAttribute.DefaultValue)} = {literal}";
             }
 
-            return $"[{nameof(FlatBufferItemAttribute)}({this.Index}{defaultValue}{isDeprecated}{sortedVector}{isKey})]";
+            if (thisTypeModel is not null)
+            {
+                bool? fw = this.ForceWrite;
+
+                if (fw is null)
+                {
+                    // Only apply force-write where it is legal when setting from the parent context.
+                    fw = this.Parent.ForceWrite == true &&
+                         thisTypeModel.ClassifyContextually(this.Parent.SchemaType).IsRequiredValue();
+                }
+
+                if (fw == true)
+                {
+                    forceWrite = $", {nameof(FlatBufferItemAttribute.ForceWrite)} = true";
+                }
+            }
+
+            return $"[{nameof(FlatBufferItemAttribute)}({this.Index}{defaultValue}{isDeprecated}{sortedVector}{isKey}{forceWrite})]";
         }
 
         /// <summary>

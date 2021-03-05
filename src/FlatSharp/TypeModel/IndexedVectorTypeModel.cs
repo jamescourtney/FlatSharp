@@ -92,7 +92,8 @@ namespace FlatSharp.TypeModel
                 source.DefaultValue,
                 isSortedVector: true,
                 source.IsKey,
-                source.IsDeprecated);
+                source.IsDeprecated,
+                source.ForceWrite);
         }
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)

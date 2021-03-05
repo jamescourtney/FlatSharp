@@ -134,6 +134,48 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
+        public void TypeModel_Table_ForceWrite()
+        {
+            RuntimeTypeModel.CreateFrom(typeof(Table_ForceWrite<bool>));
+            RuntimeTypeModel.CreateFrom(typeof(Table_ForceWrite<byte>));
+            RuntimeTypeModel.CreateFrom(typeof(Table_ForceWrite<sbyte>));
+            RuntimeTypeModel.CreateFrom(typeof(Table_ForceWrite<ushort>));
+            RuntimeTypeModel.CreateFrom(typeof(Table_ForceWrite<short>));
+            RuntimeTypeModel.CreateFrom(typeof(Table_ForceWrite<uint>));
+            RuntimeTypeModel.CreateFrom(typeof(Table_ForceWrite<int>));
+            RuntimeTypeModel.CreateFrom(typeof(Table_ForceWrite<ulong>));
+            RuntimeTypeModel.CreateFrom(typeof(Table_ForceWrite<long>));
+            RuntimeTypeModel.CreateFrom(typeof(Table_ForceWrite<float>));
+            RuntimeTypeModel.CreateFrom(typeof(Table_ForceWrite<double>));
+            RuntimeTypeModel.CreateFrom(typeof(Table_ForceWrite<TaggedEnum>));
+
+            // This is a special case and is allowed since memory is a struct
+            // and is therefore non-null. It will be written as a 0 byte vector.
+            RuntimeTypeModel.CreateFrom(typeof(Table_ForceWrite<Memory<byte>>));
+
+            static void ValidateError<T>()
+            {
+                var type = typeof(Table_ForceWrite<T>);
+                var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                    RuntimeTypeModel.CreateFrom(type));
+
+                Assert.AreEqual(
+                    $"Property 'Item' on table '{CSharpHelpers.GetCompilableTypeName(type)}' declares the ForceWrite option, but the type is not supported for force write.",
+                    ex.Message);
+            }
+
+            ValidateError<bool?>();
+            ValidateError<int?>();
+            ValidateError<TaggedEnum?>();
+            ValidateError<double?>();
+            ValidateError<GenericStruct<int>>();
+            ValidateError<int[]>();
+            ValidateError<FlatBufferUnion<string>>();
+            ValidateError<Table_ForceWrite<int>>();
+            ValidateError<Memory<byte>?>();
+        }
+
+        [TestMethod]
         public void TypeModel_Table_ProtectedConstructor()
         {
             RuntimeTypeModel.CreateFrom(typeof(ProtectedConstructorTable<byte>));
@@ -317,6 +359,35 @@ namespace FlatSharpTests
             var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(GenericStruct<TaggedEnum?>)));
             Assert.AreEqual("Struct 'FlatSharpTests.TypeModelTests.GenericStruct<System.Nullable<FlatSharpTests.TypeModelTests.TaggedEnum>>' property Value (Index 0) with type System.Nullable<FlatSharpTests.TypeModelTests.TaggedEnum> cannot be part of a flatbuffer struct.", ex.Message);
+        }
+
+        [TestMethod]
+        public void TypeModel_Struct_ForceWrite_NotAllowed()
+        {
+            static void Validate<T>()
+            {
+                var type = typeof(Struct_ForceWrite<T>);
+                var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                    RuntimeTypeModel.CreateFrom(type));
+
+                Assert.AreEqual(
+                    $"FlatBuffer struct {CSharpHelpers.GetCompilableTypeName(type)} may not have properties with the ForceWrite option set to true.",
+                    ex.Message);
+            }
+
+            Validate<bool>();
+            Validate<byte>();
+            Validate<sbyte>();
+            Validate<ushort>();
+            Validate<short>();
+            Validate<uint>();
+            Validate<int>();
+            Validate<ulong>();
+            Validate<long>();
+            Validate<float>();
+            Validate<double>();
+            Validate<TaggedEnum>();
+            Validate<GenericStruct<int>>();
         }
 
         [TestMethod]
@@ -1166,6 +1237,20 @@ namespace FlatSharpTests
         {
             [FlatBufferItem(0)]
             public int Prop { get; }
+        }
+
+        [FlatBufferTable]
+        public class Table_ForceWrite<T>
+        {
+            [FlatBufferItem(0, ForceWrite = true)]
+            public virtual T Item { get; set; }
+        }
+
+        [FlatBufferStruct]
+        public class Struct_ForceWrite<T>
+        {
+            [FlatBufferItem(0, ForceWrite = true)]
+            public virtual T Item { get; set; }
         }
 
         [FlatBufferStruct]

@@ -44,6 +44,7 @@ namespace FlatSharp.Compiler
                 definition.IsTable = context.GetChild(0).GetText() == "table";
 
                 definition.NonVirtual = metadata.ParseNullableBooleanMetadata(MetadataKeys.NonVirtualProperty, MetadataKeys.NonVirtualPropertyLegacy);
+                definition.ForceWrite = metadata.ParseNullableBooleanMetadata(MetadataKeys.ForceWrite);
 
                 definition.DefaultConstructorKind = metadata.ParseMetadata<DefaultConstructorKind?>(
                     new[] { MetadataKeys.DefaultConstructorKind },
@@ -57,9 +58,14 @@ namespace FlatSharp.Compiler
                     FlatBufferDeserializationOption.Default,
                     null);
 
-                if (!definition.IsTable && definition.RequestedSerializer != null)
+                if (!definition.IsTable && definition.RequestedSerializer is not null)
                 {
                     ErrorContext.Current.RegisterError("Structs may not have serializers.");
+                }
+
+                if (!definition.IsTable && definition.ForceWrite is not null)
+                {
+                    ErrorContext.Current.RegisterError($"Structs may not use the '{MetadataKeys.ForceWrite}' attribute.");
                 }
 
                 if (metadata.ContainsKey(MetadataKeys.ObsoleteDefaultConstructorLegacy))

@@ -207,6 +207,11 @@ namespace FlatSharp.TypeModel
                     throw new InvalidFlatBufferDefinitionException($"FlatBuffer struct {this.GetCompilableTypeName()} may not have deprecated properties");
                 }
 
+                if (propertyAttribute.ForceWrite)
+                {
+                    throw new InvalidFlatBufferDefinitionException($"FlatBuffer struct {this.GetCompilableTypeName()} may not have properties with the ForceWrite option set to true.");
+                }
+
                 ushort index = propertyAttribute.Index;
                 if (index != expectedIndex)
                 {

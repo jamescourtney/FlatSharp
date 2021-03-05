@@ -45,6 +45,8 @@ namespace FlatSharp.Compiler
 
         public bool? NonVirtual { get; set; }
 
+        public bool? ForceWrite { get; set; }
+
         public DefaultConstructorKind? DefaultConstructorKind { get; set; }
 
         public string? FileIdentifier { get; set; }

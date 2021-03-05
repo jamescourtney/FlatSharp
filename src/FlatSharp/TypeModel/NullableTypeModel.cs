@@ -38,7 +38,7 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// Gets the schema type.
         /// </summary>
-        public override FlatBufferSchemaType SchemaType => FlatBufferSchemaType.Scalar;
+        public override FlatBufferSchemaType SchemaType => this.underlyingTypeModel.SchemaType;
 
         /// <summary>
         /// Layout when in a vtable.

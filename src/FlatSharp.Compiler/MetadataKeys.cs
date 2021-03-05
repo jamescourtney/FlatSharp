@@ -86,6 +86,13 @@ namespace FlatSharp.Compiler
         public const string FileIdentifier = "fs_fileId";
 
         /// <summary>
+        /// Indicates that a single table field should be force-written, or when declared on a table
+        /// that all fields should be force written. Force Write refers to writing a value even if it
+        /// matches the default.
+        /// </summary>
+        public const string ForceWrite = "fs_forceWrite";
+
+        /// <summary>
         /// Marks a table field as deprecated. Deprecated fields do not have their values serialized or parsed.
         /// Valid On:
         /// - Table field
