@@ -68,11 +68,6 @@ namespace FlatSharp.TypeModel
             {
                 // can handle this as memory.
                 string method = nameof(InputBufferExtensions.ReadByteMemoryBlock);
-                if (this.ClrType == typeof(ReadOnlyMemory<byte>))
-                {
-                    method = nameof(InputBufferExtensions.ReadByteReadOnlyMemoryBlock);
-                }
-
                 string memoryVectorRead = $"{context.InputBufferVariableName}.{method}({context.OffsetVariableName})";
                 body = $"return {memoryVectorRead}.ToArray();";
             }
