@@ -58,5 +58,12 @@ namespace FlatSharp.Attributes
         /// type of the property.
         /// </summary>
         public object? DefaultValue { get; set; }
+
+        /// <summary>
+        /// When set, indicates that this item should always be written to tables,
+        /// even if it matches the default value. An exception is raised if this
+        /// is set in a context where Force-Writing is not allowed.
+        /// </summary>
+        public bool ForceWrite { get; set; }
     }
 }

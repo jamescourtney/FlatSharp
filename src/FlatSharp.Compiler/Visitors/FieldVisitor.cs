@@ -62,6 +62,7 @@ namespace FlatSharp.Compiler
                 definition.SortedVector = metadata.ParseBooleanMetadata(MetadataKeys.SortedVector, MetadataKeys.SortedVectorLegacy);
                 definition.SharedString = metadata.ParseBooleanMetadata(MetadataKeys.SharedString, MetadataKeys.SharedStringLegacy);
                 definition.NonVirtual = metadata.ParseNullableBooleanMetadata(MetadataKeys.NonVirtualProperty, MetadataKeys.NonVirtualPropertyLegacy);
+                definition.ForceWrite = metadata.ParseNullableBooleanMetadata(MetadataKeys.ForceWrite);
 
                 this.ParseIdMetadata(definition, metadata);
 

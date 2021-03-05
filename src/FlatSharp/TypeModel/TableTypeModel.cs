@@ -167,7 +167,8 @@ namespace FlatSharp.TypeModel
                     property.Attribute.DefaultValue,
                     property.Attribute.SortedVector,
                     property.Attribute.Key,
-                    property.Attribute.Deprecated);
+                    property.Attribute.Deprecated,
+                    property.Attribute.ForceWrite);
 
                 model = property.ItemTypeModel.AdjustTableMember(model);
 
@@ -197,6 +198,7 @@ namespace FlatSharp.TypeModel
                 }
 
                 ValidateSortedVector(model);
+                this.ValidateForceWrite(model);
 
                 for (int i = 0; i < model.ItemTypeModel.PhysicalLayout.Length; ++i)
                 {
@@ -207,6 +209,17 @@ namespace FlatSharp.TypeModel
                 }
 
                 this.memberTypes[index] = model;
+            }
+        }
+
+        private void ValidateForceWrite(TableMemberModel model)
+        {
+            if (model.ForceWrite)
+            {
+                if (!model.ItemTypeModel.ClassifyContextually(this.SchemaType).IsRequiredValue())
+                {
+                    throw new InvalidFlatBufferDefinitionException($"Property '{model.PropertyInfo.Name}' on table '{this.GetCompilableTypeName()}' declares the {nameof(FlatBufferItemAttribute.ForceWrite)} option, but the type is not supported for force write.");
+                }
             }
         }
 
@@ -449,6 +462,11 @@ $@"
             SerializationCodeGenContext context)
         {
             string condition = $"if ({memberModel.ItemTypeModel.GetNotEqualToDefaultValueLiteralExpression(valueVariableName, memberModel.DefaultValueLiteral)})";
+
+            if (memberModel.ForceWrite)
+            {
+                condition = string.Empty;
+            }
 
             string prepareBlock = $@"
                 currentOffset += {nameof(SerializationHelpers)}.{nameof(SerializationHelpers.GetAlignmentError)}(currentOffset, {layout.Alignment});
