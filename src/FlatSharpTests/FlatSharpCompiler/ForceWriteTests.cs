@@ -118,7 +118,6 @@ namespace FlatSharpTests.Compiler
         [TestMethod]
         public void ForceWrite_TableOptionEnabledExplicit() => this.RunTest($"{MetadataKeys.ForceWrite}:\"true\"", true);
 
-        [TestMethod]
         private void RunTest(string tableMetadata, bool defaultEnabled)
         {
             if (!string.IsNullOrEmpty(tableMetadata))
