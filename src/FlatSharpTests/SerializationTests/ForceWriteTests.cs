@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 James Courtney
+ * Copyright 2021 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,9 @@
 namespace FlatSharpTests
 {
     using System;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.IO;
     using System.Linq;
-    using System.Runtime.InteropServices;
     using FlatSharp;
     using FlatSharp.Attributes;
-    using FlatSharp.TypeModel;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     /// <summary>
