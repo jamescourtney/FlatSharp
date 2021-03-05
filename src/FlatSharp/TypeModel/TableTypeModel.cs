@@ -139,11 +139,11 @@ namespace FlatSharp.TypeModel
                     Property = x,
                     Attribute = x.GetCustomAttribute<FlatBufferItemAttribute>(),
                 })
-                .Where(x => x.Attribute != null)
+                .Where(x => x.Attribute is not null)
                 .Select(x => new
                 {
                     x.Property,
-                    x.Attribute,
+                    Attribute = x.Attribute!, // not null by virtue of filter above.
                     ItemTypeModel = this.typeModelContainer.CreateTypeModel(x.Property.PropertyType),
                 })
                 .ToList();
