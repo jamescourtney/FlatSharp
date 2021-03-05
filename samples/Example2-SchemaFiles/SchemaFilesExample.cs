@@ -49,9 +49,7 @@ namespace Samples.SchemaFilesExample
                             ratio = 3.14f,
                             size = ushort.MaxValue,
                             time = int.MinValue,
-
-                            // Null structs are replaced with a new instance.
-                            parent = null,
+                            parent = new Foo(), // structs are nullable types, but are not meant to be null.
                         }
                     }
                 },

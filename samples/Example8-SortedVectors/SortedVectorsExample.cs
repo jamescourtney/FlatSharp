@@ -45,6 +45,8 @@ namespace Samples.SortedVectors
             int bytesWritten = FlatBufferSerializer.Default.Serialize(userList, data);
             UserList parsedList = FlatBufferSerializer.Default.Parse<UserList>(data);
 
+            Debug.Assert(parsedList.Users is not null);
+
             foreach (var u in parsedList.Users)
             {
                 Console.WriteLine($"{u.FirstName} {u.LastName} {u.SSN}");
@@ -53,7 +55,8 @@ namespace Samples.SortedVectors
             // Similarly, we can use binary search. You're encouraged to use the FlatSharp binary search method
             // since FlatBuffers uses a different string sorting algorithm than .NET does by default. If you must use
             // your own binary search, use FlatBufferStringComparer.
-            User user = parsedList.Users.BinarySearchByFlatBufferKey("234-56-7890");
+            User? user = parsedList.Users.BinarySearchByFlatBufferKey("234-56-7890");
+            Debug.Assert(user is not null);
             Debug.Assert(user.LastName == "Bourne");
         }
 
@@ -61,20 +64,20 @@ namespace Samples.SortedVectors
         public class UserList
         {
             [FlatBufferItem(0, SortedVector = true)]
-            public virtual IList<User> Users { get; set; }
+            public virtual IList<User>? Users { get; set; }
         }
 
         [FlatBufferTable]
         public class User
         {
             [FlatBufferItem(0)]
-            public virtual string FirstName { get; set; }
+            public virtual string? FirstName { get; set; }
 
             [FlatBufferItem(1)]
-            public virtual string LastName { get; set; }
+            public virtual string? LastName { get; set; }
 
             [FlatBufferItem(2, Key = true)]
-            public virtual string SSN { get; set; }
+            public virtual string? SSN { get; set; }
         }
     }
 }

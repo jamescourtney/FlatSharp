@@ -20,8 +20,8 @@ table IndexedVectorTableFbs {
 	Users:[UserFbs] (VectorType:"IIndexedVector");
 }
 
-table UserFbs (obsoleteDefaultConstructor, nonVirtual) {
-	Id:string (Key, setter:"protected");
+table UserFbs (fs_defaultCtor:"None") {
+	Id:string (Key, fs_setter:"PublicInit");
 	FirstName:string;
 	LastName:string;
 }

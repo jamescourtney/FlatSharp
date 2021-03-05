@@ -40,7 +40,7 @@ table FooBar {
 }
 
 table FooBarContainer {
-  list:[FooBar] (VectorType:IReadOnlyList);  // Can also be IList,Array,Memory,ReadOnlyMemory
+  list:[FooBar] (fs_vector:IReadOnlyList);  // Can also be IList,Array,Memory,ReadOnlyMemory
   initialized:bool;
   fruit:Fruit;
   location:string;

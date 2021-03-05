@@ -111,7 +111,7 @@ namespace Samples.GrpcExample
             {
                 return Task.FromResult(new AverageResponse
                 {
-                    Average = request.Items.Average()
+                    Average = request.Items is not null ? request.Items.Average() : 0,
                 });
             }
 

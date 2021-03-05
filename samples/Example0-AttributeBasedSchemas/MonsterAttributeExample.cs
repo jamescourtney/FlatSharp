@@ -119,7 +119,7 @@ namespace Samples.MonsterAttributeExample
     public class Monster : object
     {
         [FlatBufferItem(0)]
-        public virtual Vec3 Pos { get; set; }
+        public virtual Vec3? Pos { get; set; }
 
         /// <summary>
         /// Be sure to make sure the default value has the right type as the property. Here we cast to short.
@@ -131,7 +131,7 @@ namespace Samples.MonsterAttributeExample
         public virtual short HP { get; set; } = 100;
 
         [FlatBufferItem(3)]
-        public virtual string Name { get; set; }
+        public virtual string? Name { get; set; }
 
         /// <summary>
         /// Deprecated properties are not serialized and are skipped when deserializing.
@@ -152,7 +152,7 @@ namespace Samples.MonsterAttributeExample
         /// For tables and struts, you can create vectors of IList, IReadOnlyList, and Array.
         /// </summary>
         [FlatBufferItem(7)]
-        public virtual IList<Weapon> Weapons { get; set; }
+        public virtual IList<Weapon>? Weapons { get; set; }
 
         /// <summary>
         /// Unions (discriminated unions) are double-wide types that occupy 2 indexes. So this one occupies slots 8 and 9.
@@ -160,13 +160,13 @@ namespace Samples.MonsterAttributeExample
         /// Unions can contain other tables, but not scalars or vectors.
         /// </summary>
         [FlatBufferItem(8)]
-        public virtual FlatBufferUnion<Weapon, string> Equipped { get; set; }
+        public virtual FlatBufferUnion<Weapon, string>? Equipped { get; set; }
 
         /// <summary>
         /// Vectors can also be modeled as arrays.
         /// </summary>
         [FlatBufferItem(10)]
-        public virtual Vec3[] Path { get; set; }
+        public virtual Vec3[]? Path { get; set; }
 
         /// <summary>
         /// Optional (nullable) scalars are supported, but may not have a default value besides null.
@@ -185,7 +185,7 @@ namespace Samples.MonsterAttributeExample
     public class Weapon : object
     {
         [FlatBufferItem(0)]
-        public virtual string Name { get; set; }
+        public virtual string? Name { get; set; }
 
         [FlatBufferItem(1)]
         public virtual short Damage { get; set; }

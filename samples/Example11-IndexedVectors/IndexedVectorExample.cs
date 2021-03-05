@@ -69,6 +69,8 @@ namespace Samples.IndexedVectors
 
             IndexedVectorTable parsedTable = FlatBufferSerializer.Default.Parse<IndexedVectorTable>(data);
 
+            Debug.Assert(parsedTable.Users is not null);
+
             // Performs binary search
             Debug.Assert(parsedTable.Users.TryGetValue("2", out var dennis));
             Debug.Assert(parsedTable.Users.TryGetValue("3", out var mac));
@@ -85,20 +87,24 @@ namespace Samples.IndexedVectors
             /// the "key" in the value.
             /// </summary>
             [FlatBufferItem(0)]
-            public virtual IIndexedVector<string, User> Users { get; set; }
+            public virtual IIndexedVector<string, User>? Users { get; set; }
         }
 
         [FlatBufferTable]
         public class User
         {
-            [Obsolete("Marked as obsolete to prevent accidental usage. Please use a different constructor instead.")]
-            public User()
-            {
-            }
-
             public User (string id)
             {
                 this.UserId = id;
+            }
+
+            /// <summary>
+            /// This constructor is used by Flatsharp when it is defined.
+            /// The context parameter gives a little information about the deserialization,
+            /// but it is not required to do anything with it.
+            /// </summary>
+            protected User(FlatBufferDeserializationContext context)
+            {
             }
 
             /// <summary>
@@ -106,13 +112,13 @@ namespace Samples.IndexedVectors
             /// It is recommended to keep key properties immutable when using Indexed Vectors.
             /// </summary>
             [FlatBufferItem(0, Key = true)]
-            public virtual string UserId { get; protected set; }
+            public virtual string? UserId { get; init; }
 
             [FlatBufferItem(1)]
-            public virtual string FirstName { get; set; }
+            public virtual string? FirstName { get; set; }
 
             [FlatBufferItem(2)]
-            public virtual string LastName { get; set; }
+            public virtual string? LastName { get; set; }
         }
     }
 }

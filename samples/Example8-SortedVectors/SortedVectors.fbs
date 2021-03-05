@@ -16,12 +16,12 @@
 
 namespace Samples.SortedVectors.Fbs;
 
-table UserList (PrecompiledSerializer) {
-    Users:[User] (SortedVector); // Declare the vector to be sorted.
+table UserList (fs_serializer) {
+    Users:[User] (fs_sortedVector); // Declare the vector to be sorted.
 }
 
 table User {
     FirstName:string;
     LastName:string;
-    SSN:string (key); // allow quick lookups based on user's SSN.
+    SSN:string (key); // Use the SSN field as the key to sort the user table by.
 }

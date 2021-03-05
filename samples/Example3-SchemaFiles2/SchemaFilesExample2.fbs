@@ -24,22 +24,22 @@ enum Fruit : byte { Apples, Pears, Bananas }
 // Runtime vs build-time generated serializers perform equally well.
 table FooBarContainer 
     // Valid values are: "greedy", "greedymutable", "vectorcache", "vectorcachemutable", "propertycache", and "lazy"
-    (PrecompiledSerializer:greedymutable) 
+    (fs_serializer:greedymutable) 
 {
-  list:[FooBar] (VectorType:IList);  // Can also be IReadOnlyList,Array,Memory,ReadOnlyMemory
+  list:[FooBar] (fs_vector:IList);  // Can also be IReadOnlyList,Array,Memory,ReadOnlyMemory
   initialized:bool;
   fruit:Fruit;
   location:string;
 }
 
-table FooBar (PrecompiledSerializer) { // default options used when none are specified.
+table FooBar (fs_serializer) { // default options used when none are specified.
   sibling:Bar;
   name:string;
   rating:double;
   postfix:ubyte; 
 }
 
-table OtherTable (PrecompiledSerializer:lazy) {
+table OtherTable (fs_serializer:lazy) {
   name:string;
 }
 

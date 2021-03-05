@@ -4,6 +4,7 @@
     <TargetFramework>net5.0</TargetFramework>
     <OutputType>exe</OutputType>
     <LangVersion>9.0</LangVersion>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,14 +23,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FlatSharp" Version="4.2.2" />
-    <PackageReference Include="FlatSharp.Compiler" Version="4.2.2">
+    <PackageReference Include="FlatSharp" Version="5.0.0" />
+    <PackageReference Include="FlatSharp.Compiler" Version="5.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="FlatSharp.Runtime" Version="4.2.2" />
-    <PackageReference Include="FlatSharp.Unsafe" Version="4.2.2" />
-    <PackageReference Include="Grpc" Version="2.35.0" />
+    <PackageReference Include="FlatSharp.Runtime" Version="5.0.0" />
+    <PackageReference Include="FlatSharp.Unsafe" Version="5.0.0" />
+    <PackageReference Include="Grpc" Version="2.36.1" />
   </ItemGroup>
 
 </Project>

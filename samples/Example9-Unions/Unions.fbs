@@ -26,9 +26,6 @@ enum FishKind : byte { Coelacanth, Dorado, Piranha }
 // refer to "Doggo". For fish and Cat, the names are left as-is.
 union Pet { Doggo:Dog, Cat, Fish }
 
-// Don't generate a custom type for this union.
-union BasicPet (NoCustomType) { Dog, Cat, Fish }
-
 table Dog { Breed:DogBreed; Name:string; }
 table Cat { Breed:CatBreed; Name:string; }
 table Fish { Kind:FishKind; Weight:float64; Name:string; }
@@ -37,6 +34,4 @@ table Person
 { 
 	// A person can have one pet. Either a dog, cat, or fish.
 	Pet:Pet;
-
-	BasicPet:BasicPet;
 }

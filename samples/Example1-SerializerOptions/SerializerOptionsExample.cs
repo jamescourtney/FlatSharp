@@ -102,13 +102,13 @@ namespace Samples.SerializerOptions
             var parsed = serializer.Parse<DemoTable>(buffer);
 
             // Lazy deserialization reads objects from vectors each time you ask for them.
-            InnerTable index0_1 = parsed.ListVector[0];
+            InnerTable index0_1 = parsed.ListVector![0];
             InnerTable index0_2 = parsed.ListVector[0];
             Debug.Assert(!object.ReferenceEquals(index0_1, index0_2), "A different instance is returned each time from lazy vectors");
 
             // Properties from tables and structs are cached after they are read.
-            string name = parsed.Name;
-            string name2 = parsed.Name;
+            string? name = parsed.Name;
+            string? name2 = parsed.Name;
 
             Debug.Assert(
                 !object.ReferenceEquals(name, name2),
@@ -142,15 +142,15 @@ namespace Samples.SerializerOptions
             var parsed = serializer.Parse<DemoTable>(buffer);
 
             // Properties from tables and structs are cached after they are read.
-            string name = parsed.Name;
-            string name2 = parsed.Name;
+            string? name = parsed.Name;
+            string? name2 = parsed.Name;
 
             Debug.Assert(
                 object.ReferenceEquals(name, name2),
                 "When reading table/struct properties, PropertyCache mode returns the same instance.");
 
             // PropertyCache deserialization doesn't cache the results of vector lookups.
-            InnerTable index0_1 = parsed.ListVector[0];
+            InnerTable index0_1 = parsed.ListVector![0];
             InnerTable index0_2 = parsed.ListVector[0];
 
             Debug.Assert(!object.ReferenceEquals(index0_1, index0_2), "A different instance is returned each time from vectors in PropertyCache mode.");
@@ -185,15 +185,15 @@ namespace Samples.SerializerOptions
             var parsed = serializer.Parse<DemoTable>(buffer);
 
             // Properties from tables and structs are cached after they are read.
-            string name = parsed.Name;
-            string name2 = parsed.Name;
+            string? name = parsed.Name;
+            string? name2 = parsed.Name;
 
             Debug.Assert(
                 object.ReferenceEquals(name, name2),
                 "When reading table/struct properties, PropertyCache mode returns the same instance.");
 
             // VectorCache deserialization guarantees only one object per index.
-            InnerTable index0_1 = parsed.ListVector[0];
+            InnerTable index0_1 = parsed.ListVector![0];
             InnerTable index0_2 = parsed.ListVector[0];
 
             Debug.Assert(object.ReferenceEquals(index0_1, index0_2), "The same instance is returned each time from vectors in VectorCache mode.");
@@ -221,12 +221,12 @@ namespace Samples.SerializerOptions
             // Fill array with 0. Source data is gone now, but we can still read the buffer because we were greedy!
             Array.Fill(buffer, (byte)0);
 
-            InnerTable index0_1 = parsed.ListVector[0];
+            InnerTable index0_1 = parsed.ListVector![0];
             InnerTable index0_2 = parsed.ListVector[0];
             Debug.Assert(object.ReferenceEquals(index0_1, index0_2), "Greedy deserialization returns you the same instance each time");
 
             // We cleared the data, but can still read the name. Greedy deserialization is easy!
-            string name = parsed.Name;
+            string? name = parsed.Name;
 
             // By default, Flatsharp will not allow mutations to properties. You can learn more about this in the mutable example below.
             try
@@ -264,7 +264,7 @@ namespace Samples.SerializerOptions
             var parsed = serializer.Parse<DemoTable>(buffer);
 
             parsed.Name = "James Adams";
-            parsed.ListVector.Clear();
+            parsed.ListVector!.Clear();
             parsed.ListVector.Add(new InnerTable());
 
             long newSum = buffer.Sum(x => (long)x);
@@ -278,16 +278,16 @@ namespace Samples.SerializerOptions
     public class DemoTable : object
     {
         [FlatBufferItem(0)]
-        public virtual string Name { get; set; }
+        public virtual string? Name { get; set; }
 
         [FlatBufferItem(1)]
-        public virtual IList<InnerTable> ListVector { get; set; }
+        public virtual IList<InnerTable>? ListVector { get; set; }
     }
 
     [FlatBufferTable]
     public class InnerTable
     {
         [FlatBufferItem(0)]
-        public virtual string Fruit { get; set; }
+        public virtual string? Fruit { get; set; }
     }
 }

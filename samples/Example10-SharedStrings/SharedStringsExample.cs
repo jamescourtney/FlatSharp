@@ -83,11 +83,13 @@ namespace Samples.SharedStrings
 
             Matrix nonSharedMatrix = defaultSerializer.Parse(defaultBuffer);
 
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
             Debug.Assert(
                 nonSharedMatrix.Rows[0].Values[0].ColumnName == nonSharedMatrix.Rows[1].Values[0].ColumnName,
                 "Without string sharing, the contents of the strings in the same column in different rows are the same.");
             Debug.Assert(
                 !object.ReferenceEquals(nonSharedMatrix.Rows[0].Values[0].ColumnName, nonSharedMatrix.Rows[1].Values[0].ColumnName),
+
                 "...but the object references are different, showing these are two different strings.");
 
             Matrix sharedMatrix = sharedStringSerializer.Parse(sharedBuffer);
@@ -108,6 +110,7 @@ namespace Samples.SharedStrings
             Debug.Assert(
                 object.ReferenceEquals(customSharedMatrix.Rows[0].Values[0].ColumnName, customSharedMatrix.Rows[1].Values[0].ColumnName),
                 "...and the object references are also the same, showing that we have only parsed the string once.");
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
         }
 
         /// <summary>
@@ -139,7 +142,7 @@ namespace Samples.SharedStrings
 
         public SharedString ReadSharedString<TInputBuffer>(TInputBuffer buffer, int offset) where TInputBuffer : IInputBuffer
         {
-            if (this.offsetStringMap.TryGetValue(offset, out SharedString str))
+            if (this.offsetStringMap.TryGetValue(offset, out SharedString? str))
             {
                 return str;
             }
@@ -197,7 +200,7 @@ namespace Samples.SharedStrings
         public void WriteSharedString<TSpanWriter>(TSpanWriter spanWriter, Span<byte> data, int offset, SharedString value, SerializationContext context)
             where TSpanWriter : ISpanWriter
         {
-            if (!this.stringOffsetMap.TryGetValue(value, out List<int> offsets))
+            if (!this.stringOffsetMap.TryGetValue(value, out List<int>? offsets))
             {
                 offsets = new List<int>();
                 this.stringOffsetMap[value] = offsets;
