@@ -27,7 +27,7 @@
     <ProjectReference Include="..\FlatSharp\FlatSharp.csproj" />
   </ItemGroup>
 
-  <Target Name="FBS" BeforeTargets="BeforeBuild">
+  <Target Name="FBS" BeforeTargets="BeforeBuild" Condition=" '$(AppVeyorBuild)' != 'true' ">
     <Exec Command="..\FlatSharp.Compiler\bin\Release\net5.0\FlatSharp.Compiler.exe -i Benchmark.fbs -o ." />
   </Target>
 </Project>
