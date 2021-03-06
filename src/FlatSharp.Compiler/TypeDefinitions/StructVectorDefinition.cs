@@ -52,7 +52,7 @@ namespace FlatSharp.Compiler
         {
             string typeName = parent.ResolveTypeName(this.FbsTypeName, context, out ITypeModel? typeModel);
 
-            writer.AppendLine($"public {this.ClassName} {this.Name} {{ get; private set; }}");
+            writer.AppendLine($"public {this.ClassName} {this.Name} {{ get; }}");
             writer.AppendLine();
 
             // class is next.
