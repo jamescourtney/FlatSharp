@@ -82,18 +82,10 @@ namespace FlatSharp.TypeModel
             }
         }
 
-        public override TableMemberModel AdjustTableMember(TableMemberModel source)
+        public override void AdjustTableMember(TableMemberModel source)
         {
             // Force the vector to be sorted.
-            return new TableMemberModel(
-                source.ItemTypeModel,
-                source.PropertyInfo,
-                source.Index,
-                source.DefaultValue,
-                isSortedVector: true,
-                source.IsKey,
-                source.IsDeprecated,
-                source.ForceWrite);
+            source.IsSortedVector = true;
         }
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)

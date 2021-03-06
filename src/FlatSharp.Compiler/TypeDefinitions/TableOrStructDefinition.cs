@@ -155,9 +155,9 @@ namespace FlatSharp.Compiler
             writer.AppendLine($"}}");
         }
 
-        public string ResolveTypeName(string fbsFieldType, CompileContext context)
+        public string ResolveTypeName(string fbsFieldType, CompileContext context, out ITypeModel? resolvedTypeModel)
         {
-            if (context.TypeModelContainer.TryResolveFbsAlias(fbsFieldType, out ITypeModel? resolvedTypeModel))
+            if (context.TypeModelContainer.TryResolveFbsAlias(fbsFieldType, out resolvedTypeModel))
             {
                 fbsFieldType = resolvedTypeModel.ClrType.FullName ?? throw new InvalidOperationException("Full name was null");
             }

@@ -17,6 +17,7 @@
 namespace FlatSharp.Attributes
 {
     using System;
+    using System.ComponentModel;
 
     /// <summary>
     /// Defines a member of a FlatBuffer struct or table.
@@ -65,5 +66,12 @@ namespace FlatSharp.Attributes
         /// is set in a context where Force-Writing is not allowed.
         /// </summary>
         public bool ForceWrite { get; set; }
+
+        /// <summary>
+        /// A C# expression that gets the value of the current property from the enclosing object.
+        /// This is a very advanced feature and is only intended to be used by the FlatSharp compiler.
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public string CustomGetter { get; set; }
     }
 }

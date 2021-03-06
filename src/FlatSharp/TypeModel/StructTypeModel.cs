@@ -132,6 +132,10 @@ namespace FlatSharp.TypeModel
                 var memberInfo = this.Members[i];
 
                 string propertyAccessor = $"{context.ValueVariableName}.{memberInfo.PropertyInfo.Name}";
+                if (memberInfo.CustomGetter is not null)
+                {
+                    propertyAccessor = $"{context.ValueVariableName}.{memberInfo.CustomGetter}";
+                }
 
                 var propContext = context.With(
                     offsetVariableName: $"({memberInfo.Offset} + {context.OffsetVariableName})",
@@ -242,7 +246,7 @@ namespace FlatSharp.TypeModel
                 StructMemberModel model = new StructMemberModel(
                     propertyModel,
                     property,
-                    index,
+                    item.Attribute,
                     this.inlineSize,
                     length);
 

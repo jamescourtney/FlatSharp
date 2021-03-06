@@ -16,6 +16,7 @@
  
  namespace FlatSharp.TypeModel
 {
+    using FlatSharp.Attributes;
     using System;
     using System.Reflection;
 
@@ -27,9 +28,9 @@
         public StructMemberModel(
             ITypeModel propertyModel,
             PropertyInfo propertyInfo,
-            ushort index,
+            FlatBufferItemAttribute attribute,
             int offset,
-            int length) : base(propertyModel, propertyInfo, index)
+            int length) : base(propertyModel, propertyInfo, attribute)
         {
             this.Offset = offset;
             this.Length = length;

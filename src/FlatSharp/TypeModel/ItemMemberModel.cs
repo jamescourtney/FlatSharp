@@ -16,6 +16,7 @@
 
 namespace FlatSharp.TypeModel
 {
+    using FlatSharp.Attributes;
     using System;
     using System.Reflection;
 
@@ -27,14 +28,15 @@ namespace FlatSharp.TypeModel
         protected ItemMemberModel(
             ITypeModel propertyModel,
             PropertyInfo propertyInfo,
-            ushort index)
+            FlatBufferItemAttribute attribute)
         {
             var getMethod = propertyInfo.GetMethod;
             var setMethod = propertyInfo.SetMethod;
 
             this.ItemTypeModel = propertyModel;
             this.PropertyInfo = propertyInfo;
-            this.Index = index;
+            this.Index = attribute.Index;
+            this.CustomGetter = attribute.CustomGetter;
 
             string declaringType = "";
             if (propertyInfo.DeclaringType is not null)
@@ -42,14 +44,14 @@ namespace FlatSharp.TypeModel
                 declaringType = CSharpHelpers.GetCompilableTypeName(propertyInfo.DeclaringType);
             }
 
-            declaringType = $"{declaringType}.{propertyInfo.Name} (Index {index})";
+            declaringType = $"{declaringType}.{propertyInfo.Name} (Index {attribute.Index})";
 
             if (getMethod == null)
             {
                 throw new InvalidFlatBufferDefinitionException($"Property {declaringType} on did not declare a getter.");
             }
 
-            if (!getMethod.IsPublic)
+            if (!getMethod.IsPublic && string.IsNullOrEmpty(this.CustomGetter))
             {
                 throw new InvalidFlatBufferDefinitionException($"Property {declaringType} must declare a public getter.");
             }
@@ -145,6 +147,11 @@ namespace FlatSharp.TypeModel
         /// The property is virtual (ie, FlatSharp will override it when generating code).
         /// </summary>
         public bool IsVirtual { get; }
+
+        /// <summary>
+        /// A custom getter for this item.
+        /// </summary>
+        public string CustomGetter { get; set; }
 
         /// <summary>
         /// Creates a method body to read the given property. This is contextual depending
