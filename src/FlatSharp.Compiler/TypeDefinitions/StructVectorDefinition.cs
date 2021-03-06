@@ -131,7 +131,7 @@ namespace FlatSharp.Compiler
 
                 foreach (var collectionType in new[] { arrayOrSpanType, $"IReadOnlyList<{typeName}>"})
                 {
-                    writer.AppendMethodSummaryComment($"Loads the first {this.PropertyNames.Count} from the source into this struct vector.");
+                    writer.AppendMethodSummaryComment($"Deep copies the first {this.PropertyNames.Count} items from the source into this struct vector.");
                     writer.AppendLine($"public void CopyFrom({collectionType} source)");
                     using (writer.WithBlock())
                     {

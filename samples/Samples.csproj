@@ -8,18 +8,19 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <FlatSharpSchema Include="Example2-SchemaFiles\SchemaFilesExample.fbs" />
-    <FlatSharpSchema Include="Example3-SchemaFiles2\SchemaFilesExample2.fbs" />
-    <FlatSharpSchema Include="Example4-IOOptions\IOOptionsExample.fbs" />
-    <FlatSharpSchema Include="Example5-gRPC\GrpcExample.fbs" />
-    <FlatSharpSchema Include="Example6-CopyConstructors\CopyConstructorsExample.fbs" />
-    <FlatSharpSchema Include="Example7-Includes\A.fbs" />
-    <FlatSharpSchema Include="Example7-Includes\Subdirectory\B.fbs" />
-    <FlatSharpSchema Include="Example7-Includes\IncludesExample.fbs" />
-    <FlatSharpSchema Include="Example8-SortedVectors\SortedVectors.fbs" />
-    <FlatSharpSchema Include="Example9-Unions\Unions.fbs" />
+    <FlatSharpSchema Include="Example02-SchemaFiles\SchemaFilesExample.fbs" />
+    <FlatSharpSchema Include="Example03-SchemaFiles2\SchemaFilesExample2.fbs" />
+    <FlatSharpSchema Include="Example04-IOOptions\IOOptionsExample.fbs" />
+    <FlatSharpSchema Include="Example05-gRPC\GrpcExample.fbs" />
+    <FlatSharpSchema Include="Example06-CopyConstructors\CopyConstructorsExample.fbs" />
+    <FlatSharpSchema Include="Example07-Includes\A.fbs" />
+    <FlatSharpSchema Include="Example07-Includes\Subdirectory\B.fbs" />
+    <FlatSharpSchema Include="Example07-Includes\IncludesExample.fbs" />
+    <FlatSharpSchema Include="Example08-SortedVectors\SortedVectors.fbs" />
+    <FlatSharpSchema Include="Example09-Unions\Unions.fbs" />
     <FlatSharpSchema Include="Example10-SharedStrings\SharedStrings.fbs" />
     <FlatSharpSchema Include="Example11-IndexedVectors\IndexedVectors.fbs" />
+    <FlatSharpSchema Include="Example13-StructVectors\StructVectors.fbs" />
   </ItemGroup>
 
   <ItemGroup>
