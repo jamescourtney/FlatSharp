@@ -89,7 +89,7 @@ namespace FlatSharp.TypeModel
 
             public ConstructorInfo? PreferredSubclassConstructor => this.underlyingModel.PreferredSubclassConstructor;
 
-            public TableMemberModel AdjustTableMember(TableMemberModel source) => this.underlyingModel.AdjustTableMember(source);
+            public void AdjustTableMember(TableMemberModel source) => this.underlyingModel.AdjustTableMember(source);
 
             public CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
             {

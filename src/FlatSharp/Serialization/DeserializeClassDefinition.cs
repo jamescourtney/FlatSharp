@@ -207,14 +207,14 @@ namespace FlatSharp
                     setterBody = $"this.{GetFieldName(itemModel)} = value; this.{GetHasValueFieldName(itemModel)} = true;";
                 }
 
-                setter = $"{accessModifiers.setModifier} {verb} {{ {setterBody} }}";
+                setter = $"{accessModifiers.setModifier.ToCSharpString()} {verb} {{ {setterBody} }}";
             }
 
             string typeName = itemModel.ItemTypeModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType);
             this.propertyOverrides.Add($@"
-                {accessModifiers.propertyModifier} override {typeName} {itemModel.PropertyInfo.Name}
+                {accessModifiers.propertyModifier.ToCSharpString()} override {typeName} {itemModel.PropertyInfo.Name}
                 {{ 
-                    {accessModifiers.getModifer} get
+                    {accessModifiers.getModifer.ToCSharpString()} get
                     {{
                         {getterBody}
                     }}

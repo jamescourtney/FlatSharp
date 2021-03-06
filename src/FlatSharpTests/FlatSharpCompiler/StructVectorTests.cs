@@ -17,6 +17,7 @@
 namespace FlatSharpTests.Compiler
 {
     using System;
+    using System.Collections.Generic;
     using System.ComponentModel;
     using System.Linq;
     using System.Reflection;
@@ -93,8 +94,9 @@ namespace FlatSharpTests.Compiler
             Type tableType = asm.GetType("StructVectorTests.Table");
             Type fooType = asm.GetType("StructVectorTests.Foo");
 
-            Assert.IsFalse(fooType.GetProperty("__flatsharp__V_0").GetMethod.IsVirtual);
-            Assert.IsFalse(fooType.GetProperty("__flatsharp__V_0").SetMethod.IsVirtual);
+            var property = fooType.GetProperty("__flatsharp__V_0", BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.IsFalse(property.GetMethod.IsVirtual);
+            Assert.IsFalse(property.SetMethod.IsVirtual);
 
             Type barType = asm.GetType("StructVectorTests.Bar");
 
@@ -103,6 +105,25 @@ namespace FlatSharpTests.Compiler
             table.foo = foo;
 
             Assert.AreEqual(length, foo.V.Count);
+
+            dynamic dList = Activator.CreateInstance(typeof(List<>).MakeGenericType(barType));
+            for (int i = 0; i < length; ++i)
+            {
+                dynamic bar = Activator.CreateInstance(barType);
+                bar.A = (byte)i;
+                bar.B = (ulong)i;
+
+                dList.Add(bar);
+            }
+
+            // Verify deep copy.
+            foo.V.CopyFrom(dList);
+            for (int i = 0; i < length; ++i)
+            {
+                Assert.AreNotSame(dList[i], foo.V[i]);
+                Assert.AreEqual<byte>(dList[i].A, foo.V[i].A);
+                Assert.AreEqual<ulong>(dList[i].B, foo.V[i].B);
+            }
 
             for (int i = 0; i < length; ++i)
             {
@@ -153,24 +174,20 @@ namespace FlatSharpTests.Compiler
 
             for (int i = 0; i < length; ++i)
             {
-                PropertyInfo p = fooType.GetProperty($"__flatsharp__V_{i}");
-                Assert.IsTrue(p.GetMethod.IsPublic);
-                Assert.IsTrue(p.SetMethod.IsPublic);
+                PropertyInfo p = fooType.GetProperty($"__flatsharp__V_{i}", BindingFlags.Instance | BindingFlags.NonPublic);
+                Assert.IsTrue(p.GetMethod.IsFamily);
+                Assert.IsTrue(p.SetMethod.IsFamily);
                 Assert.IsTrue(p.GetMethod.IsVirtual);
                 Assert.IsTrue(p.SetMethod.IsVirtual);
 
                 var attr = p.GetCustomAttribute<FlatBufferItemAttribute>();
                 Assert.IsNotNull(attr);
                 Assert.AreEqual(i, attr.Index);
-
-                var browsableAttr = p.GetCustomAttribute<EditorBrowsableAttribute>();
-                Assert.IsNotNull(browsableAttr);
-                Assert.AreEqual(EditorBrowsableState.Advanced, browsableAttr.State);
+                Assert.AreEqual($"V[{attr.Index}]", attr.CustomGetter);
             }
 
             var vectorProperty = fooType.GetProperty("V");
             Assert.IsNull(vectorProperty.GetCustomAttribute<FlatBufferItemAttribute>()); // pseudo-item, not actual.
-            Assert.IsNull(vectorProperty.GetCustomAttribute<EditorBrowsableAttribute>());
             Assert.IsTrue(vectorProperty.GetMethod.IsPublic);
             Assert.IsFalse(vectorProperty.GetMethod.IsVirtual);
             Assert.IsNull(vectorProperty.SetMethod);
@@ -180,6 +197,19 @@ namespace FlatSharpTests.Compiler
             table.foo = foo;
 
             Assert.AreEqual(length, foo.V.Count);
+
+            // Test copyFrom with full array.
+            List<T> items = new List<T>();
+            for (int i = 0; i < length; ++i)
+            {
+                items.Add(GetRandom<T>());
+            }
+
+            table.foo.V.CopyFrom((IReadOnlyList<T>)items);
+            for (int i = 0; i < length; ++i)
+            {
+                CheckRandom<T>(items[i], table.foo.V[i]);
+            }
 
             for (int i = 0; i < length; ++i)
             {

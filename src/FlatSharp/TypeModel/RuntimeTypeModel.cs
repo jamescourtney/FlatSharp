@@ -154,9 +154,8 @@ namespace FlatSharp.TypeModel
             return false;
         }
 
-        public virtual TableMemberModel AdjustTableMember(TableMemberModel source)
+        public virtual void AdjustTableMember(TableMemberModel source)
         {
-            return source;
         }
 
         public IEnumerable<Type> GetReferencedTypes()

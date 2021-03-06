@@ -157,7 +157,7 @@ namespace FlatSharp.TypeModel
         /// the declared configuration in the table. This method will not be invoked
         /// when the type is serialized in other contexts, such as vectors and structs.
         /// </summary>
-        TableMemberModel AdjustTableMember(TableMemberModel source);
+        void AdjustTableMember(TableMemberModel source);
 
         /// <summary>
         /// Initializes and validates the type model.

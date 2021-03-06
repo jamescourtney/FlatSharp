@@ -34,7 +34,7 @@ namespace FlatSharp
         internal const string GeneratedClassMaxVtableIndexFieldName = "__maxVTableIndex";
         internal const string GeneratedClassVTableOffsetFieldName = "__vtableOffset";
 
-        internal static string GetCompilableTypeName(Type t)
+        internal static string GetCompilableTypeName(this Type t)
         {
             if (string.IsNullOrEmpty(t.FullName))
             {
@@ -65,7 +65,39 @@ namespace FlatSharp
             return name;
         }
 
-        internal static (string propertyModifier, string getModifer, string setModifier) GetPropertyAccessModifiers(
+        internal static (AccessModifier propertyModifier, AccessModifier? getModifer, AccessModifier? setModifier) GetPropertyAccessModifiers(
+            AccessModifier? getModifier,
+            AccessModifier? setModifier)
+        {
+            if (getModifier is null || setModifier is null)
+            {
+                if (getModifier is null && setModifier is null)
+                {
+                    return (AccessModifier.Public, null, null);
+                }
+                else if (getModifier is null)
+                {
+                    return (setModifier!.Value, null, null);
+                }
+                else
+                {
+                    return (getModifier.Value, null, null);
+                }
+            }
+
+            if (getModifier.Value < setModifier.Value)
+            {
+                return (getModifier.Value, null, setModifier.Value);
+            }
+            else if (setModifier.Value < getModifier.Value)
+            {
+                return (setModifier.Value, getModifier.Value, null);
+            }
+
+            return (getModifier.Value, null, null);
+        }
+
+        internal static (AccessModifier propertyModifier, AccessModifier? getModifer, AccessModifier? setModifier) GetPropertyAccessModifiers(
             PropertyInfo property)
         {
             if (property.GetMethod is null)
@@ -73,50 +105,62 @@ namespace FlatSharp
                 throw new InvalidOperationException($"FlatSharp internal error: Property {property.DeclaringType?.Name}.{property.Name} has null get method.");
             }
 
-            var getTuple = GetAccessModifier(property.GetMethod);
+            var getModifier = GetAccessModifier(property.GetMethod);
 
             if (property.SetMethod is null)
             {
-                return (getTuple.modifier, string.Empty, string.Empty);
+                return (getModifier, null, null);
             }
 
-            var setTuple = GetAccessModifier(property.SetMethod);
+            var setModifier = GetAccessModifier(property.SetMethod);
 
-            if (getTuple.precedence < setTuple.precedence)
-            {
-                return (getTuple.modifier, string.Empty, setTuple.modifier);
-            }
-            else if (setTuple.precedence < getTuple.precedence)
-            {
-                return (setTuple.modifier, getTuple.modifier, string.Empty);
-            }
-
-            return (getTuple.modifier, string.Empty, string.Empty);
+            return GetPropertyAccessModifiers(getModifier, setModifier);
         }
 
-        internal static (int precedence, string modifier) GetAccessModifier(MethodInfo method)
+        internal static string ToCSharpString(this AccessModifier? modifier)
+        {
+            return modifier switch
+            {
+                null => string.Empty,
+                _ => modifier.Value.ToCSharpString(),
+            };
+        }
+
+        internal static string ToCSharpString(this AccessModifier modifier)
+        {
+            return modifier switch
+            {
+                AccessModifier.Public => "public",
+                AccessModifier.Protected => "protected",
+                AccessModifier.ProtectedInternal => "protected internal",
+                _ => throw new InvalidOperationException($"Unexpected access modifier: '{modifier}'.")
+            };
+        }
+
+        internal static AccessModifier GetAccessModifier(this MethodInfo method)
         {
             if (method.IsPublic)
             {
-                return (0, "public");
+                return AccessModifier.Public;
             }
 
             if (method.IsFamilyOrAssembly)
             {
                 if (ConvertProtectedInternalToProtected)
                 {
-                    return (2, "protected");
+                    return AccessModifier.Protected;
                 }
 
-                return (1, "protected internal");
+                return AccessModifier.ProtectedInternal;
             }
 
             if (method.IsFamily)
             {
-                return (2, "protected");
+                return AccessModifier.Protected;
             }
 
             throw new InvalidOperationException("Unexpected method visibility: " + method.Name);
         }
+
     }
 }
