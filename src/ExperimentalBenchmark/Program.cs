@@ -52,17 +52,29 @@ namespace BenchmarkCore
         public void CopyFrom() => this.table.Hash.Value.CopyFrom(this.data.AsSpan());
 
         [Benchmark]
-        public int Serialize() => ((GeneratedSerializerWrapper<Table>)Table.Serializer).Write(SpanWriter.Instance, this.buffer, this.table);
+        public int Serialize() => Table.Serializer.Write(this.buffer, this.table);
 
         [Benchmark]
-        public Table Parse() => ((GeneratedSerializerWrapper<Table>)Table.Serializer).Parse(new ArrayInputBuffer(this.buffer));
+        public Table Parse() => Table.Serializer.Parse(this.buffer);
     }
 
     public class Program
     {
         public static void Main(string[] args)
         {
-            var summary = BenchmarkRunner.Run<StructVectorClone>();
+            //var summary = BenchmarkRunner.Run<StructVectorClone>();
+            StructVectorClone cloner = new StructVectorClone();
+            cloner.Setup();
+
+            for (int i = 0; i < 10_000_000; ++i)
+            {
+                cloner.Parse();
+            }
+
+            for (int i = 0; i < 10_000_000; ++i)
+            {
+                cloner.Serialize();
+            }
         }
     }
 }

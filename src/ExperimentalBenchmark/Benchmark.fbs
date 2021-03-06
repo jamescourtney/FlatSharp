@@ -8,4 +8,5 @@ table Table (fs_serializer) {
 struct Sha256
 {
 	Value:[ubyte:32] (fs_nonVirtual);
-} 
+}
+

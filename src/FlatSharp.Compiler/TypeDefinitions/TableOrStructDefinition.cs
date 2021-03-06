@@ -80,8 +80,6 @@ namespace FlatSharp.Compiler
 
             using (writer.IncreaseIndent())
             {
-                writer.AppendLine($"partial void OnInitialized({nameof(FlatBufferDeserializationContext)}? context);");
-
                 // Default ctor.
                 var defaultCtorKind = this.DefaultConstructorKind ?? Compiler.DefaultConstructorKind.Public;
                 if (defaultCtorKind != Compiler.DefaultConstructorKind.None)
@@ -99,7 +97,7 @@ namespace FlatSharp.Compiler
                             field.WriteDefaultConstructorLine(writer, context);
                         }
 
-                        writer.AppendLine("this.OnInitialized(null);");
+                        writer.AppendLine("this.__CommonInit(null);");
                     }
                 }
                 else if (!this.IsTable)
@@ -111,7 +109,7 @@ namespace FlatSharp.Compiler
                 writer.AppendLine($"protected {this.Name}({nameof(FlatBufferDeserializationContext)} context)");
                 using (writer.WithBlock())
                 {
-                    writer.AppendLine("this.OnInitialized(context);");
+                    writer.AppendLine("this.__CommonInit(context);");
                 }
                 writer.AppendLine("#pragma warning restore CS8618"); // NULL FORGIVING
 
@@ -124,8 +122,21 @@ namespace FlatSharp.Compiler
                         field.WriteCopyConstructorLine(writer, "source", context);
                     }
 
-                    writer.AppendLine("this.OnInitialized(null);");
+                    writer.AppendLine("this.__CommonInit(null);");
                 }
+
+                writer.AppendLine($"private void __CommonInit({nameof(FlatBufferDeserializationContext)}? context)");
+                using (writer.WithBlock())
+                {
+                    foreach (var sv in this.StructVectors)
+                    {
+                        sv.EmitStructVectorInitializer(writer);
+                    }
+
+                    writer.AppendLine("this.OnInitialized(context);");
+                }
+
+                writer.AppendLine($"partial void OnInitialized({nameof(FlatBufferDeserializationContext)}? context);");
 
                 foreach (var field in this.Fields)
                 {

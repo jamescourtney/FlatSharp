@@ -3,9 +3,10 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net5.0</TargetFrameworks>
     <LangVersion>9.0</LangVersion>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <DebugType>pdbonly</DebugType>
     <DebugSymbols>true</DebugSymbols>
     <AssemblyOriginatorKeyFile>..\..\misc\strongname.snk</AssemblyOriginatorKeyFile>
