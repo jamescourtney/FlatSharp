@@ -46,7 +46,7 @@ namespace FlatSharp.Compiler
 
         public bool SortedVector { get; set; }
 
-        public bool IsHidden { get; set; }
+        public string CustomGetter { get; set; }
 
         public bool IsKey { get; set; }
 
@@ -61,6 +61,8 @@ namespace FlatSharp.Compiler
         public VectorType VectorType { get; set; }
 
         public SetterKind SetterKind { get; set; } = SetterKind.Public;
+
+        public AccessModifier GetterModifier { get; set; } = AccessModifier.Public;
 
         public bool SharedString { get; set; }
 
@@ -138,11 +140,6 @@ namespace FlatSharp.Compiler
 
                 clrType = this.GetClrVectorTypeName(this.VectorType, clrType, vectorKeyType);
 
-                if (this.IsHidden)
-                {
-                    writer.AppendLine($"[System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]");
-                }
-
                 writer.AppendLine(this.FormatAttribute(model));
                 writer.AppendLine(this.FormatPropertyDeclaration(model, clrType));
                 writer.AppendLine();
@@ -153,8 +150,9 @@ namespace FlatSharp.Compiler
             CompileContext context,
             [NotNullWhen(true)] out ITypeModel? typeModel)
         {
-            typeModel = null; 
-            Type? propertyType = context.PreviousAssembly?.GetType(this.Parent.FullName)?.GetProperty(this.Name)?.PropertyType;
+            typeModel = null;
+            var flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+            Type? propertyType = context.PreviousAssembly?.GetType(this.Parent.FullName)?.GetProperty(this.Name, flags)?.PropertyType;
 
             if (propertyType is null)
             {
@@ -224,24 +222,36 @@ namespace FlatSharp.Compiler
                 @virtual = string.Empty;
             }
 
-            string setter = this.SetterKind switch
+            AccessModifier? setterModifier = this.SetterKind switch
             {
-                SetterKind.Public => "set;", // setter has same access as getter.
-                SetterKind.PublicInit => "init;",
-                SetterKind.Protected => "protected set;",
-                SetterKind.ProtectedInit => "protected init;",
-                SetterKind.ProtectedInternal => "protected internal set;",
-                SetterKind.ProtectedInternalInit => "protected internal init;",
-                SetterKind.None => string.Empty,
-                _ => string.Empty,
+                SetterKind.Public or SetterKind.PublicInit => AccessModifier.Public,
+                SetterKind.Protected or SetterKind.ProtectedInit => AccessModifier.Protected,
+                SetterKind.ProtectedInternal or SetterKind.ProtectedInternalInit => AccessModifier.ProtectedInternal,
+                SetterKind.None => null,
+                _ => throw new InvalidOperationException($"Unexpected Setter Access Modifier '{this.SetterKind}'")
             };
+
+            var modifiers = CSharpHelpers.GetPropertyAccessModifiers(this.GetterModifier, setterModifier);
+
+            string setter = string.Empty;
+            if (this.SetterKind != SetterKind.None)
+            {
+                if (this.SetterKind is SetterKind.PublicInit or SetterKind.ProtectedInit or SetterKind.ProtectedInternalInit)
+                {
+                    setter = $"{modifiers.setModifier.ToCSharpString()} init;";
+                }
+                else
+                {
+                    setter = $"{modifiers.setModifier.ToCSharpString()} set;";
+                }
+            }
 
             if (thisTypeModel?.ClassifyContextually(this.Parent.SchemaType).IsOptionalReference() == true)
             {
                 clrTypeName += "?";
             }
 
-            return $"public {@virtual} {clrTypeName} {this.Name} {{ get; {setter} }}";
+            return $"{modifiers.propertyModifier.ToCSharpString()} {@virtual} {clrTypeName} {this.Name} {{ {modifiers.getModifer.ToCSharpString()} get; {setter} }}";
         }
 
         private string FormatAttribute(ITypeModel? thisTypeModel)
@@ -251,6 +261,7 @@ namespace FlatSharp.Compiler
             string defaultValue = string.Empty;
             string isDeprecated = string.Empty;
             string forceWrite = string.Empty;
+            string customGetter = string.Empty;
 
             if (this.IsKey)
             {
@@ -265,6 +276,11 @@ namespace FlatSharp.Compiler
             if (this.Deprecated)
             {
                 isDeprecated = $", {nameof(FlatBufferItemAttribute.Deprecated)} = true";
+            }
+
+            if (!string.IsNullOrEmpty(this.CustomGetter))
+            {
+                customGetter = $", {nameof(FlatBufferItemAttribute.CustomGetter)} = \"{this.CustomGetter}\"";
             }
 
             if (this.TryGetDefaultValueLiteral(thisTypeModel, out var literal))
@@ -289,7 +305,7 @@ namespace FlatSharp.Compiler
                 }
             }
 
-            return $"[{nameof(FlatBufferItemAttribute)}({this.Index}{defaultValue}{isDeprecated}{sortedVector}{isKey}{forceWrite})]";
+            return $"[{nameof(FlatBufferItemAttribute)}({this.Index}{defaultValue}{isDeprecated}{sortedVector}{isKey}{forceWrite}{customGetter})]";
         }
 
         /// <summary>
@@ -302,7 +318,7 @@ namespace FlatSharp.Compiler
                 return typeof(SharedString).FullName ?? throw new InvalidOperationException("Full name was null");
             }
 
-            string clrType = this.Parent.ResolveTypeName(this.FbsFieldType, context);
+            string clrType = this.Parent.ResolveTypeName(this.FbsFieldType, context, out _);
 
             if (this.IsOptionalScalar)
             {

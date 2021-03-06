@@ -87,7 +87,14 @@ namespace FlatSharp.Compiler
                     for (int i = 0; i < structVectorLength.Value; ++i)
                     {
                         string name = $"__flatsharp__{definition.Name}_{i}";
-                        this.parent.Fields.Add(definition with { Name = name, SetterKind = SetterKind.Public, IsHidden = true });
+                        this.parent.Fields.Add(definition with
+                        {
+                            Name = name,
+                            SetterKind = SetterKind.Protected,
+                            GetterModifier = AccessModifier.Protected,
+                            CustomGetter = $"{definition.Name}[{i}]"
+                        });
+
                         groupNames.Add(name);
                     }
 

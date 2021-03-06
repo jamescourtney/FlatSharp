@@ -19,6 +19,7 @@
     using System;
     using System.Collections.Generic;
     using System.Reflection;
+    using FlatSharp.Attributes;
 
     /// <summary>
     /// Describes a member of a FlatBuffer table.
@@ -28,18 +29,13 @@
         public TableMemberModel(
             ITypeModel propertyModel, 
             PropertyInfo propertyInfo, 
-            ushort index, 
-            object? defaultValue,
-            bool isSortedVector,
-            bool isKey,
-            bool isDeprecated,
-            bool forceWrite) : base(propertyModel, propertyInfo, index)
+            FlatBufferItemAttribute attribute) : base(propertyModel, propertyInfo, attribute)
         {
-            this.DefaultValue = defaultValue;
-            this.IsSortedVector = isSortedVector;
-            this.IsKey = isKey;
-            this.IsDeprecated = isDeprecated;
-            this.ForceWrite = forceWrite;
+            this.DefaultValue = attribute.DefaultValue;
+            this.IsSortedVector = attribute.SortedVector;
+            this.IsKey = attribute.Key;
+            this.IsDeprecated = attribute.Deprecated;
+            this.ForceWrite = attribute.ForceWrite;
 
             if (!propertyModel.IsValidTableMember)
             {
@@ -48,35 +44,35 @@
 
             if (this.DefaultValue is not null && !propertyModel.ValidateDefaultValue(this.DefaultValue))
             {
-                throw new InvalidFlatBufferDefinitionException($"Table property {propertyInfo.Name} declared default value of type {propertyModel.ClrType.Name}, but the value was of type {defaultValue?.GetType()?.Name}. Please ensure that the property is allowed to have a default value and that the types match.");
+                throw new InvalidFlatBufferDefinitionException($"Table property {propertyInfo.Name} declared default value of type {propertyModel.ClrType.Name}, but the value was of type {this.DefaultValue.GetType().GetCompilableTypeName()}. Please ensure that the property is allowed to have a default value and that the types match.");
             }
         }
         
         /// <summary>
         /// The default value of the table member.
         /// </summary>
-        public object? DefaultValue { get; }
+        public object? DefaultValue { get; set; }
 
         /// <summary>
         /// Indicates if the member vector should be sorted before serializing.
         /// </summary>
-        public bool IsSortedVector { get; }
+        public bool IsSortedVector { get; set; }
 
         /// <summary>
         /// Indicates that this property is the key for the table.
         /// </summary>
-        public bool IsKey { get; }
+        public bool IsKey { get; set; }
 
         /// <summary>
         /// Indicates that this property is deprecated and serializers need not be generated for it.
         /// </summary>
-        public bool IsDeprecated { get; }
+        public bool IsDeprecated { get; set; }
 
         /// <summary>
         /// Indicates that this field should always be written to a table, even
         /// if the default value matches.
         /// </summary>
-        public bool ForceWrite { get; }
+        public bool ForceWrite { get; set; }
 
         /// <summary>
         /// Returns a C# literal that is equal to the default value.

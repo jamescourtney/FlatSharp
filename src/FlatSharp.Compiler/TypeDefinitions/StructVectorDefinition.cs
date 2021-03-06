@@ -16,6 +16,7 @@
 
 namespace FlatSharp.Compiler
 {
+    using FlatSharp.TypeModel;
     using System.Collections.Generic;
 
     internal class StructVectorDefinition
@@ -42,7 +43,7 @@ namespace FlatSharp.Compiler
 
         public void EmitStructVector(TableOrStructDefinition parent, CodeWriter writer, CompileContext context)
         {
-            string typeName = parent.ResolveTypeName(this.FbsTypeName, context);
+            string typeName = parent.ResolveTypeName(this.FbsTypeName, context, out ITypeModel? typeModel);
 
             string className = $"{this.Name}Vector";
 
@@ -118,6 +119,29 @@ namespace FlatSharp.Compiler
                     if (this.PropertyNames.Count == 0)
                     {
                         writer.AppendLine("yield break;");
+                    }
+                }
+
+                string arrayOrSpanType = $"{typeName}[]";
+                if (typeModel is not null && 
+                    typeModel.ClassifyContextually(FlatBufferSchemaType.Struct).IsRequiredValue())
+                {
+                    arrayOrSpanType = $"ReadOnlySpan<{typeName}>";
+                }
+
+                foreach (var collectionType in new[] { arrayOrSpanType, $"IReadOnlyList<{typeName}>"})
+                {
+                    writer.AppendMethodSummaryComment($"Loads the first {this.PropertyNames.Count} from the source into this struct vector.");
+                    writer.AppendLine($"public void CopyFrom({collectionType} source)");
+                    using (writer.WithBlock())
+                    {
+                        writer.AppendLine("var thisItem = this.item;");
+
+                        // Load in reverse so that the JIT can just do a bounds check on the very first item.
+                        for (int i = this.PropertyNames.Count - 1; i >= 0; --i)
+                        {
+                            writer.AppendLine($"thisItem.{this.PropertyNames[i]} = {context.FullyQualifiedCloneMethodName}(source[{i}]);");
+                        }
                     }
                 }
             }

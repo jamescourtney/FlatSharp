@@ -163,14 +163,9 @@ namespace FlatSharp.TypeModel
                 TableMemberModel model = new TableMemberModel(
                     property.ItemTypeModel,
                     property.Property,
-                    index,
-                    property.Attribute.DefaultValue,
-                    property.Attribute.SortedVector,
-                    property.Attribute.Key,
-                    property.Attribute.Deprecated,
-                    property.Attribute.ForceWrite);
+                    property.Attribute);
 
-                model = property.ItemTypeModel.AdjustTableMember(model);
+                property.ItemTypeModel.AdjustTableMember(model);
 
                 if (property.Attribute.Key)
                 {
@@ -383,7 +378,13 @@ $@"
                 }
 
                 string valueName = $"index{index}Value";
-                getters.Add($"var {valueName} = {context.ValueVariableName}.{memberModel.PropertyInfo.Name};");
+                string getter = memberModel.PropertyInfo.Name;
+                if (!string.IsNullOrEmpty(memberModel.CustomGetter))
+                {
+                    getter = memberModel.CustomGetter;
+                }
+
+                getters.Add($"var {valueName} = {context.ValueVariableName}.{getter};");
                 
                 for (int i = 0; i < memberModel.ItemTypeModel.PhysicalLayout.Length; ++i)
                 {
