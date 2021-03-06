@@ -190,7 +190,7 @@ namespace FlatSharpTests.Compiler
             Assert.IsNull(vectorProperty.GetCustomAttribute<FlatBufferItemAttribute>()); // pseudo-item, not actual.
             Assert.IsTrue(vectorProperty.GetMethod.IsPublic);
             Assert.IsFalse(vectorProperty.GetMethod.IsVirtual);
-            Assert.IsNull(vectorProperty.SetMethod);
+            Assert.IsTrue(vectorProperty.SetMethod.IsPrivate);
 
             dynamic table = Activator.CreateInstance(tableType);
             dynamic foo = Activator.CreateInstance(fooType);
