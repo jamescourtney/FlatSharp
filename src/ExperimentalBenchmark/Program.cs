@@ -14,24 +14,55 @@
  * limitations under the License.
  */
 
+using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Running;
+using FlatSharp;
+using System;
+
 namespace BenchmarkCore
 {
-    using Benchmark.FBBench;
+    [DisassemblyDiagnoser(maxDepth: 30, printSource: true, exportHtml: true, printInstructionAddresses: true)]
+    [ShortRunJob(BenchmarkDotNet.Jobs.RuntimeMoniker.NetCoreApp50, BenchmarkDotNet.Environments.Jit.RyuJit, BenchmarkDotNet.Environments.Platform.AnyCpu)]
+    public class StructVectorClone
+    {
+        private byte[] data;
+        private byte[] buffer;
+        private Table table;
+
+        [GlobalSetup]
+        public void Setup()
+        {
+            this.data = new byte[32];
+            this.buffer = new byte[1024];
+
+            new Random().NextBytes(this.data);
+            this.table = new Table
+            {
+                Hash = new Sha256()
+            };
+
+            this.table.Hash.Value.CopyFrom(this.data.AsSpan());
+            this.Serialize();
+        }
+
+        //[Benchmark]
+        public Table Clone() => new Table(this.table);
+
+        //[Benchmark]
+        public void CopyFrom() => this.table.Hash.Value.CopyFrom(this.data.AsSpan());
+
+        [Benchmark]
+        public int Serialize() => ((GeneratedSerializerWrapper<Table>)Table.Serializer).Write(SpanWriter.Instance, this.buffer, this.table);
+
+        [Benchmark]
+        public Table Parse() => ((GeneratedSerializerWrapper<Table>)Table.Serializer).Parse(new ArrayInputBuffer(this.buffer));
+    }
 
     public class Program
     {
         public static void Main(string[] args)
         {
-            FBDeserializeBench bench = new FBDeserializeBench();
-            bench.VectorLength = 30;
-            bench.DeserializeOption = FlatSharp.FlatBufferDeserializationOption.Lazy;
-            bench.TraversalCount = 5;
-            bench.GlobalSetup();
-
-            while (true)
-            {
-                bench.FlatSharp_ParseAndTraverse();
-            }
+            var summary = BenchmarkRunner.Run<StructVectorClone>();
         }
     }
 }

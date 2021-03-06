@@ -4,10 +4,10 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFrameworks>net5.0</TargetFrameworks>
-    <LangVersion>7.3</LangVersion>
+    <LangVersion>9.0</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DelaySign>false</DelaySign>
-    <SignAssembly>false</SignAssembly>
+    <DebugType>pdbonly</DebugType>
+    <DebugSymbols>true</DebugSymbols>
     <AssemblyOriginatorKeyFile>..\..\misc\strongname.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
@@ -20,9 +20,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Benchmark\Benchmark.csproj" />
+    <ProjectReference Include="..\FlatSharp.Compiler\FlatSharp.Compiler.csproj" />
     <ProjectReference Include="..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
     <ProjectReference Include="..\FlatSharp.Unsafe\FlatSharp.Unsafe.csproj" />
     <ProjectReference Include="..\FlatSharp\FlatSharp.csproj" />
   </ItemGroup>
+
+  <Target Name="FBS" BeforeTargets="BeforeBuild">
+    <Exec Command="..\FlatSharp.Compiler\bin\Release\net5.0\FlatSharp.Compiler.exe -i Benchmark.fbs -o ." />
+  </Target>
 </Project>

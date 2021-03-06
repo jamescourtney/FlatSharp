@@ -72,6 +72,6 @@ namespace FlatSharp.Attributes
         /// This is a very advanced feature and is only intended to be used by the FlatSharp compiler.
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public string CustomGetter { get; set; }
+        public string? CustomGetter { get; set; }
     }
 }

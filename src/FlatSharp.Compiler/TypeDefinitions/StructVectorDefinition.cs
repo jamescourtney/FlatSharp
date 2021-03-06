@@ -138,9 +138,11 @@ namespace FlatSharp.Compiler
                         writer.AppendLine("var thisItem = this.item;");
 
                         // Load in reverse so that the JIT can just do a bounds check on the very first item.
+                        // This also requries the parameter being a local variable instead of a param.
+                        writer.AppendLine("var s = source;");
                         for (int i = this.PropertyNames.Count - 1; i >= 0; --i)
                         {
-                            writer.AppendLine($"thisItem.{this.PropertyNames[i]} = {context.FullyQualifiedCloneMethodName}(source[{i}]);");
+                            writer.AppendLine($"thisItem.{this.PropertyNames[i]} = {context.FullyQualifiedCloneMethodName}(s[{i}]);");
                         }
                     }
                 }

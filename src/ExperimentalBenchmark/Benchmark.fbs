@@ -1,0 +1,11 @@
+﻿
+namespace BenchmarkCore;
+
+table Table (fs_serializer) {
+	Hash:Sha256;
+}
+
+struct Sha256
+{
+	Value:[ubyte:32] (fs_nonVirtual);
+} 
