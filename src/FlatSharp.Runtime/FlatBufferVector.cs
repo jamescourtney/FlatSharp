@@ -99,31 +99,27 @@ namespace FlatSharp
             var offset = this.offset;
             var itemSize = this.itemSize;
 
-            if (array.Length == count && arrayIndex == 0)
+            for (int i = 0; i < count; ++i)
             {
-                // special case: write code where the compiler can elide the 
-                // bounds check on the array.
-                for (int i = 0; i < array.Length; ++i)
-                {
-                    array[i] = this.ParseItem(memory, offset);
-                    offset = checked(offset + itemSize);
-                }
-            }
-            else
-            {
-                for (int i = 0; i < count; ++i)
-                {
-                    array[arrayIndex + i] = this.ParseItem(memory, offset);
-                    offset = checked(offset + itemSize);
-                }
+                array[arrayIndex + i] = this.ParseItem(memory, offset);
+                offset = checked(offset + itemSize);
             }
         }
 
         public T[] ToArray()
         {
-            int count = this.count;
-            T[] array = new T[count];
-            this.CopyTo(array, 0);
+            T[] array = new T[this.count];
+
+            var offset = this.offset;
+            var itemSize = this.itemSize;
+            var memory = this.memory;
+
+            for (int i = 0; i < array.Length; ++i)
+            {
+                array[i] = this.ParseItem(memory, offset);
+                offset = checked(offset + itemSize);
+            }
+
             return array;
         }
 
