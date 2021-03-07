@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-namespace Samples.SortedVectors.Fbs;
+namespace Samples.StructVectors;
 
-table UserList (PrecompiledSerializer) {
-    Users:[User] (SortedVector); // Declare the vector to be sorted.
+table Transaction (fs_serializer) {
+   Amount:double;
+   Sender:string;
+   Receiver:string;
+   Hash:Sha256;
 }
 
-table User {
-    FirstName:string;
-    LastName:string;
-    SSN:string (key); // allow quick lookups based on user's SSN.
+struct Sha256 {
+   Value:[ubyte:32] (fs_nonVirtual);
 }

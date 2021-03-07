@@ -38,14 +38,10 @@ namespace Samples.Unions
             {
                 // The difference between Person.Pet and Person.BasicPet is that Person.Pet is
                 // a custom convenience class that derives from FlatBufferUnion. In 
-                Pet = new Pet(brick),
-                BasicPet = new FlatBufferUnion<Dog, Cat, Fish>(brick),
+                Pet = new Pet(brick)
             };
 
             UsePet(person.Pet);
-            UseUnion(person.BasicPet);
-
-            UseUnion(person.Pet); // Custom unions derive from FlatBufferUnion.
         }
 
         // These two methods do the same thing. They are coded separately to
@@ -58,7 +54,7 @@ namespace Samples.Unions
             if (pet.Kind == Pet.ItemKind.Doggo)
             {
                 Dog dog = pet.Doggo;
-                dog.Name.ToLowerInvariant();
+                string? lowerName = dog.Name?.ToLowerInvariant();
             }
 
             string breed = pet.Switch(
@@ -66,21 +62,6 @@ namespace Samples.Unions
                 caseDoggo: d => d.Breed.ToString(),
                 caseCat: c => c.Breed.ToString(),
                 caseFish: f => f.Kind.ToString());
-        }
-
-        public static void UseUnion(FlatBufferUnion<Dog, Cat, Fish> basicUnion)
-        {
-            if (basicUnion.Discriminator == 1)
-            {
-                Dog dog = basicUnion.Item1;
-                dog.Name.ToLowerInvariant();
-            }
-
-            string breed = basicUnion.Switch(
-                defaultCase: () => "unknown",
-                case1: d => d.Breed.ToString(),
-                case2: c => c.Breed.ToString(),
-                case3: f => f.Kind.ToString());
         }
     }
 }

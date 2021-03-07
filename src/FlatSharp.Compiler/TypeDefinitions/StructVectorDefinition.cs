@@ -41,26 +41,29 @@ namespace FlatSharp.Compiler
 
         public string Name { get; set; }
 
+        private string ClassName => $"{this.Name}Vector";
+
+        public void EmitStructVectorInitializer(CodeWriter writer)
+        {
+            writer.AppendLine($"this.{this.Name} = new {this.ClassName}(this);");
+        }
+
         public void EmitStructVector(TableOrStructDefinition parent, CodeWriter writer, CompileContext context)
         {
             string typeName = parent.ResolveTypeName(this.FbsTypeName, context, out ITypeModel? typeModel);
 
-            string className = $"{this.Name}Vector";
-
-            // two parts: property definition and class definition.
-            writer.AppendLine($"private {className}? _{this.Name};");
-            writer.AppendLine($"public {className} {this.Name} => (this._{this.Name} ??= new {className}(this));");
+            writer.AppendLine($"public {this.ClassName} {this.Name} {{ get; }}");
             writer.AppendLine();
 
             // class is next.
-            writer.AppendLine($"public sealed partial class {className} : System.Collections.Generic.IEnumerable<{typeName}>");
+            writer.AppendLine($"public sealed partial class {this.ClassName} : System.Collections.Generic.IEnumerable<{typeName}>");
             using (writer.WithBlock())
             {
                 writer.AppendLine($"private readonly {parent.Name} item;");
 
                 // ctor
                 writer.AppendLine();
-                writer.AppendLine($"public {className}({parent.Name} item)");
+                writer.AppendLine($"public {this.ClassName}({parent.Name} item)");
                 using (writer.WithBlock())
                 {
                     writer.AppendLine($"this.item = item;");
@@ -76,12 +79,13 @@ namespace FlatSharp.Compiler
                     writer.AppendLine("get");
                     using (writer.WithBlock())
                     {
+                        writer.AppendLine("var thisItem = this.item;");
                         writer.AppendLine("switch (index)");
                         using (writer.WithBlock())
                         {
                             for (int i = 0; i < this.PropertyNames.Count; ++i)
                             {
-                                writer.AppendLine($"case {i}: return this.item.{this.PropertyNames[i]};");
+                                writer.AppendLine($"case {i}: return thisItem.{this.PropertyNames[i]};");
                             }
 
                             writer.AppendLine($"default: throw new IndexOutOfRangeException();");
@@ -93,12 +97,13 @@ namespace FlatSharp.Compiler
                     writer.AppendLine("set");
                     using (writer.WithBlock())
                     {
+                        writer.AppendLine("var thisItem = this.item;");
                         writer.AppendLine("switch (index)");
                         using (writer.WithBlock())
                         {
                             for (int i = 0; i < this.PropertyNames.Count; ++i)
                             {
-                                writer.AppendLine($"case {i}: this.item.{this.PropertyNames[i]} = value; break;");
+                                writer.AppendLine($"case {i}: thisItem.{this.PropertyNames[i]} = value; break;");
                             }
 
                             writer.AppendLine($"default: throw new IndexOutOfRangeException();");
@@ -111,9 +116,10 @@ namespace FlatSharp.Compiler
                 writer.AppendLine($"public System.Collections.Generic.IEnumerator<{typeName}> GetEnumerator()");
                 using (writer.WithBlock())
                 {
+                    writer.AppendLine("var thisItem = this.item;");
                     for (int i = 0; i < this.PropertyNames.Count; ++i)
                     {
-                        writer.AppendLine($"yield return this.item.{this.PropertyNames[i]};");
+                        writer.AppendLine($"yield return thisItem.{this.PropertyNames[i]};");
                     }
 
                     if (this.PropertyNames.Count == 0)
@@ -131,16 +137,18 @@ namespace FlatSharp.Compiler
 
                 foreach (var collectionType in new[] { arrayOrSpanType, $"IReadOnlyList<{typeName}>"})
                 {
-                    writer.AppendMethodSummaryComment($"Loads the first {this.PropertyNames.Count} from the source into this struct vector.");
+                    writer.AppendMethodSummaryComment($"Deep copies the first {this.PropertyNames.Count} items from the source into this struct vector.");
                     writer.AppendLine($"public void CopyFrom({collectionType} source)");
                     using (writer.WithBlock())
                     {
                         writer.AppendLine("var thisItem = this.item;");
 
                         // Load in reverse so that the JIT can just do a bounds check on the very first item.
+                        // This also requries the parameter being a local variable instead of a param.
+                        writer.AppendLine("var s = source;");
                         for (int i = this.PropertyNames.Count - 1; i >= 0; --i)
                         {
-                            writer.AppendLine($"thisItem.{this.PropertyNames[i]} = {context.FullyQualifiedCloneMethodName}(source[{i}]);");
+                            writer.AppendLine($"thisItem.{this.PropertyNames[i]} = {context.FullyQualifiedCloneMethodName}(s[{i}]);");
                         }
                     }
                 }

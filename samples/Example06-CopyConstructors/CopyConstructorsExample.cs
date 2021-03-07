@@ -46,8 +46,11 @@ namespace Samples.CopyConstructorsExample
                             size = ushort.MaxValue,
                             time = int.MinValue,
 
-                            // Null structs are replaced with a new instance.
-                            parent = null,
+                            // Nested structs are not intended to have null values,
+                            // but it is possible due to FlatSharp modeling
+                            // them as reference types. However, null structs
+                            // do not cause a problem when serializing or parsing.
+                            parent = null!,
                         }
                     }
                 },
@@ -59,6 +62,8 @@ namespace Samples.CopyConstructorsExample
             for (int i = 0; i < container.list.Count; ++i)
             {
                 var originalItem = container.list[i];
+
+                Debug.Assert(copy.list is not null);
                 var copyItem = copy.list[i];
                 Debug.Assert(!object.ReferenceEquals(copyItem, originalItem));
             }

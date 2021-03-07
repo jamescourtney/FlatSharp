@@ -37,7 +37,7 @@ table AnimalVitals {
 	Name:string;
 }
 
-table Person (PrecompiledSerializer) {
+table Person (fs_serializer) {
 	Name:string;
 	Age:int;
 
@@ -45,5 +45,5 @@ table Person (PrecompiledSerializer) {
 	Cats:[Cat];
 	Dogs:[Dog];
 
-	Signature:[ubyte] (VectorType:ReadOnlyMemory);
+	Signature:[ubyte] (fs_vector:ReadOnlyMemory);
 }

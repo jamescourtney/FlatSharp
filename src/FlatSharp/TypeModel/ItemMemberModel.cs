@@ -151,7 +151,7 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// A custom getter for this item.
         /// </summary>
-        public string CustomGetter { get; set; }
+        public string? CustomGetter { get; set; }
 
         /// <summary>
         /// Creates a method body to read the given property. This is contextual depending

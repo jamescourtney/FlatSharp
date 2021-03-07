@@ -14,34 +14,16 @@
  * limitations under the License.
  */
 
-namespace Samples.CopyConstructorsExample;
+include "A.fbs";
 
-enum Fruit : byte { Apples, Pears, Bananas }
+namespace Samples.IncludesExample;
 
-struct Foo {
-  id:ulong;
-  count:short; 
-  prefix:byte;
-  length:uint;
+table Request (fs_serializer) {
+   Table:TableFromA;
 }
 
-struct Bar {
-  parent:Foo;
-  time:int;
-  ratio:float;
-  size:ushort;
-}
-
-table FooBar {
-  sibling:Bar;
-  name:string;
-  rating:double;
-  postfix:ubyte; 
-}
-
-table FooBarContainer {
-  list:[FooBar] (VectorType:IReadOnlyList);  // Can also be IList,Array,Memory,ReadOnlyMemory
-  initialized:bool;
-  fruit:Fruit;
-  location:string;
+rpc_service Service
+{
+	// Single input, single output.
+	SingleOperation(Request):Request;
 }

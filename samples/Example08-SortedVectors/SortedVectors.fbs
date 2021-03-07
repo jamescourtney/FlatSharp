@@ -14,21 +14,14 @@
  * limitations under the License.
  */
 
-namespace Samples.SharedStrings;
+namespace Samples.SortedVectors.Fbs;
 
-table Matrix (fs_serializer) {
-	Rows:[Row];
+table UserList (fs_serializer) {
+    Users:[User] (fs_sortedVector); // Declare the vector to be sorted.
 }
 
-table Row {
-	Values:[Cell];
-}
-
-table Cell {
-	// the shared string metadata is necessary to enable shared strings. Specifying it in the schema
-	// allows you to choose which strings should be shared and which should not, rather than a global
-	// setting one way or the other. This metadata also works with vectors of strings, shown below.
-	ColumnName:string (fs_sharedString); 
-	Value:string;
-	Vector:[string] (fs_sharedString);
+table User {
+    FirstName:string;
+    LastName:string;
+    SSN:string (key); // Use the SSN field as the key to sort the user table by.
 }

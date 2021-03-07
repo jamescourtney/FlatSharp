@@ -80,8 +80,6 @@ namespace FlatSharp.Compiler
 
             using (writer.IncreaseIndent())
             {
-                writer.AppendLine($"partial void OnInitialized({nameof(FlatBufferDeserializationContext)}? context);");
-
                 // Default ctor.
                 var defaultCtorKind = this.DefaultConstructorKind ?? Compiler.DefaultConstructorKind.Public;
                 if (defaultCtorKind != Compiler.DefaultConstructorKind.None)
@@ -99,6 +97,7 @@ namespace FlatSharp.Compiler
                             field.WriteDefaultConstructorLine(writer, context);
                         }
 
+                        this.EmitStructVectorInitializations(writer);
                         writer.AppendLine("this.OnInitialized(null);");
                     }
                 }
@@ -111,6 +110,7 @@ namespace FlatSharp.Compiler
                 writer.AppendLine($"protected {this.Name}({nameof(FlatBufferDeserializationContext)} context)");
                 using (writer.WithBlock())
                 {
+                    this.EmitStructVectorInitializations(writer);
                     writer.AppendLine("this.OnInitialized(context);");
                 }
                 writer.AppendLine("#pragma warning restore CS8618"); // NULL FORGIVING
@@ -124,8 +124,11 @@ namespace FlatSharp.Compiler
                         field.WriteCopyConstructorLine(writer, "source", context);
                     }
 
+                    this.EmitStructVectorInitializations(writer);
                     writer.AppendLine("this.OnInitialized(null);");
                 }
+
+                writer.AppendLine($"partial void OnInitialized({nameof(FlatBufferDeserializationContext)}? context);");
 
                 foreach (var field in this.Fields)
                 {
@@ -153,6 +156,14 @@ namespace FlatSharp.Compiler
             }
 
             writer.AppendLine($"}}");
+        }
+
+        private void EmitStructVectorInitializations(CodeWriter writer)
+        {
+            foreach (var sv in this.StructVectors)
+            {
+                sv.EmitStructVectorInitializer(writer);
+            }
         }
 
         public string ResolveTypeName(string fbsFieldType, CompileContext context, out ITypeModel? resolvedTypeModel)

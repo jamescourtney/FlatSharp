@@ -1,7 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Project>
   <Target Name="FlatSharpFbsCompile" BeforeTargets="ResolveAssemblyReferences">
-
+    <PropertyGroup Condition=" '$(FlatSharpNullable)' == '' ">
+      <FlatSharpNullable>false</FlatSharpNullable>
+      <FlatSharpNullable Condition=" '$(Nullable)' == 'enable' ">true</FlatSharpNullable>
+    </PropertyGroup>
+    
     <!-- Try legacy .net framework-->
     <PropertyGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
       <CompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\tools\net47\FlatSharp.Compiler.exe'))</CompilerPath>
@@ -20,9 +24,9 @@
       <CompilerInvocation>dotnet $(CompilerPath)</CompilerInvocation>
     </PropertyGroup>
 
-    <Message Text="$(TargetFramework) $(TargetFrameworkIdentifier): $(CompilerInvocation) --input &quot;%(FlatSharpSchema.fullpath)&quot; --output $(IntermediateOutputPath)" Importance="high" />
+    <Message Text="$(TargetFramework) $(TargetFrameworkIdentifier): $(CompilerInvocation) --nullable-annotations $(FlatSharpNullable) --input &quot;%(FlatSharpSchema.fullpath)&quot; --output $(IntermediateOutputPath)" Importance="high" />
     <Exec 
-        Command="$(CompilerInvocation) --input &quot;%(FlatSharpSchema.fullpath)&quot; --output $(IntermediateOutputPath) "
+        Command="$(CompilerInvocation) --nullable-warnings $(FlatSharpNullable) --input &quot;%(FlatSharpSchema.fullpath)&quot; --output $(IntermediateOutputPath) "
         CustomErrorRegularExpression=".*" 
         Condition=" '%(FlatSharpSchema.fullpath)' != '' " />
     

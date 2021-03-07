@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-namespace Samples.SchemaFilesExample;
+namespace Samples.CopyConstructorsExample;
 
 enum Fruit : byte { Apples, Pears, Bananas }
 
@@ -40,10 +40,8 @@ table FooBar {
 }
 
 table FooBarContainer {
-  list:[FooBar] (VectorType:IReadOnlyList);  // Can also be IList,Array,Memory,ReadOnlyMemory
+  list:[FooBar];
   initialized:bool;
   fruit:Fruit;
   location:string;
 }
-
-root_type FooBarContainer;

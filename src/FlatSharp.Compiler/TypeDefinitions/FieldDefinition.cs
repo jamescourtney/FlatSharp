@@ -46,7 +46,7 @@ namespace FlatSharp.Compiler
 
         public bool SortedVector { get; set; }
 
-        public string CustomGetter { get; set; }
+        public string? CustomGetter { get; set; }
 
         public bool IsKey { get; set; }
 

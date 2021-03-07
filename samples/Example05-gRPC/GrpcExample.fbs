@@ -18,17 +18,17 @@ namespace Samples.GrpcExample;
 
 enum MathOperation : ubyte { None, Add, Subtract, Multiply, Divide }
 
-table BulkNumbers (PrecompiledSerializer:lazy)
+table BulkNumbers (fs_serializer:lazy)
 {
 	Items:[double];
 }
 
-table SingleNumber (PrecompiledSerializer:lazy)
+table SingleNumber (fs_serializer:lazy)
 {
 	Item:double;
 }
 
-table AverageResponse (PrecompiledSerializer:lazy)
+table AverageResponse (fs_serializer:lazy)
 {
 	Average:double;
 }
