@@ -54,7 +54,7 @@ namespace MyNamespace;
 
 enum Color : ubyte { Red = 1, Green, Blue }
 
-table Person (PrecompiledSerializer) {
+table Person (fs_serializer) {
     Id:int;
     Name:string;
     Parent:Person (deprecated);
@@ -120,22 +120,54 @@ Serializers are a common vector for security issues. FlatSharp takes the followi
 At its core, FlatSharp is a tool to convert a FlatBuffer schema into a pile of safe C# code that depends only upon standard .NET libraries. There is no "secret sauce". Buffer overflows are intended to be impossible by design, due to the features of .NET and the CLR. A malicious input may lead to corrupt data or an Exception being thrown, but the process will not be compromised. As always, a best practice is to encrypt data at rest, in transit, and decorate it with some checksums.
 
 ### Performance & Benchmarks
-FlatSharp is really fast. This is primarily thanks to new changes in C# with Memory and Span, as well as FlatBuffers itself exposing a very simple type system that makes optimization simple. The FlatSharp benchmarks were run on .NET Core 3.1, using a C# approximation of [Google's FlatBuffer benchmark](https://github.com/google/flatbuffers/tree/benchmarks/benchmarks/cpp/FB), which can be found [here](src/Benchmark). The FlatSharp benchmarks use this schema, but with the following parameters:
+FlatSharp is really, really fast. The FlatSharp benchmarks were run on .NET 5.0, using a C# approximation of [Google's FlatBuffer benchmark](https://github.com/google/flatbuffers/tree/benchmarks/benchmarks/cpp/FB), which can be found [here](src/Benchmark). The FlatSharp benchmarks use this schema, but with the following parameters:
 - Vector length = 3 or 30
 - Traversal count = 1 or 5
-- Runtime: .NET 4.7, .NET Core 2.1, .NET Core 3.1, .NET Core 5.0 - RC
+- Runtime: .NET Core 5.0
+- Host: A Cloud-Hosted VM, to normalize the environment.
 
-The full results for each version of FlatSharp can be viewed in the [benchmarks folder](benchmarks). Additionally, the benchmark data contains performance data for many different configurations of FlatSharp and other features, such as sorted vectors.
+The full results for each version of FlatSharp can be viewed in the [benchmarks folder](benchmarks). Additionally, the benchmark data contains performance data for many different configurations of FlatSharp and other features, such as sorted vectors and shared strings.
 
-The benchmarks test 3 different serialization frameworks:
+The benchmarks test 4 different serialization frameworks, all using default settings:
 - FlatSharp
 - Protobuf.NET
 - Google's C# Flatbuffers implementation (both standard and Object API flavors)
+- Message Pack C#
 
-The graphs below are generated using the default settings from each library on .NET Core 3.1:
+#### Word of Warning
+Serialization benchmarks are not reflective of "real-world" performance, because processes rarely do serialization-only workflows. In reality, your serializer is going to be competing for L1 cache along with everything else in your program. So while these benchmarks show that FlatSharp is faster by a wide margin, these benefits may not translate to any pratical effect in your environment, depending completely on your own workflows. Your choice of serialization format should be informed by your needs (do you need random access? Do you care about compact message size?) and not by the results of a benchmark that shows best-case results for all serializers by virtue of that being the only thing running on the machine.
 
-![image](doc/serialize.png)
-![image](doc/parse.png)
+#### Serialization
+This data shows how longer it takes to serialize a typical "message" with different vector lengths.
+Library | Vector Length | Time | Relative Performance | Data Size (bytes)
+--------|---------------|------|----------------------|-------------------
+FlatSharp | 3 | 469 ns | 100% | 387
+Message Pack C# | 3 | 721 ns | 154% | 281
+Protobuf.NET | 3 | 1400 ns | 299% | 297 
+Google FlatBuffers | 3 | 1532 ns | 327% | 396
+Google FlatBuffers (Object API) | 3 | 1588 ns | 339% | 396
+||||
+FlatSharp | 30 | 2,685 ns | 100% | 3083
+Message Pack C# | 30 | 5,659 ns | 211% | 2497
+Protobuf.NET | 30 | 9,510 ns | 354% | 2646
+Google FlatBuffers | 30 | 12,596 ns | 469% | 3312
+Google FlatBuffers (Object API) | 30 | 13,518 ns | 503% | 3312
+
+#### Deserialization
+These benchmarks measure the amount of time needed to deserialize and then fully traverse a message one time.
+Library | Vector Length | Time | Relative Performance
+--------|---------------|------|-----------------------
+FlatSharp | 3 | 652 ns | 100%
+Message Pack C# | 3 | 1254 ns | 192%
+Protobuf.NET | 3 | 2980 ns | 457% 
+Google FlatBuffers | 3 | 1242 ns | 190%
+Google FlatBuffers (Object API) | 3 | 1954 ns | 300%
+|||
+FlatSharp | 30 | 4,330 ns | 100%
+Message Pack C# | 30 | 9,821 ns | 227%
+Protobuf.NET | 30 | 21,104 ns | 487%
+Google FlatBuffers | 30 | 10,431 ns | 241%
+Google FlatBuffers (Object API) | 30 | 16,625 ns | 384%
 
 ### So What Packages Do I Need?
 There are two main ways to use FlatSharp: Precompilation with .fbs files and runtime compilation using attributes on C# classes. Both of these produce and load the same code, so the performance will be identical. There are some good reasons to use precompilation over runtime compilation:
