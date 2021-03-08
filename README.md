@@ -135,7 +135,7 @@ The benchmarks test 4 different serialization frameworks, all using default sett
 - Message Pack C#
 
 #### Word of Warning
-Serialization benchmarks are not reflective of "real-world" performance, because processes rarely do serialization-only workflows. In reality, your serializer is going to be competing for L1 cache along with everything else in your program. So while these benchmarks show that FlatSharp is faster by a wide margin, these benefits may not translate to any pratical effect in your environment, depending completely on your own workflows. Your choice of serialization format should be informed by your needs (do you need random access? Do you care about compact message size?) and not by the results of a benchmark that shows best-case results for all serializers by virtue of that being the only thing running on the machine.
+Serialization benchmarks are not reflective of "real-world" performance, because processes rarely do serialization-only workflows. In reality, your serializer is going to be competing for L1 cache along with everything else in your program. So while these benchmarks show that FlatSharp is faster by a wide margin, these benefits may not translate to any practical effect in your environment, depending completely upon your own workflows. Your choice of serialization format should be informed by your needs (Do you need lazy access? Do you care about compact message size?) and not by the results of a benchmark that shows best-case results for all serializers by virtue of that being the only thing running on the machine.
 
 #### Serialization
 This data shows how longer it takes to serialize a typical "message" with different vector lengths.
