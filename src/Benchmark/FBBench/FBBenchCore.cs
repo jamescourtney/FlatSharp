@@ -31,6 +31,9 @@ namespace Benchmark.FBBench
     using JobKind = BenchmarkDotNet.Attributes.MediumRunJobAttribute;
 
     [JobKind(BenchmarkDotNet.Jobs.RuntimeMoniker.NetCoreApp50)]
+    [WarmupCount(5)]
+    [IterationCount(5)]
+    [ProcessCount(4)]
     [CsvExporter(BenchmarkDotNet.Exporters.Csv.CsvSeparator.Comma)]
     public abstract class FBBenchCore
     {
