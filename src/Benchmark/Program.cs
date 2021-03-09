@@ -32,14 +32,13 @@ namespace Benchmark
         {
             List<Summary> summaries = new List<Summary>();
 
-            Job job = new Job()
+            Job job = Job.ShortRun
                 .WithAnalyzeLaunchVariance(true)
-                .WithLaunchCount(3)
-                .WithWarmupCount(5)
+                .WithLaunchCount(5)
                 .WithRuntime(CoreRuntime.Core50);
 
             var config = DefaultConfig.Instance
-                 .AddColumn(new[] { StatisticColumn.P25, StatisticColumn.P50, StatisticColumn.P95 })
+                 .AddColumn(new[] { StatisticColumn.P25, StatisticColumn.P50, StatisticColumn.P80 })
                  .AddJob(job);
 
             summaries.Add(BenchmarkRunner.Run(typeof(FBBench.FBSerializeBench), config));
