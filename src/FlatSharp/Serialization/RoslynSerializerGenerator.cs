@@ -494,60 +494,7 @@ $@"
                     return b.WithBody(SyntaxFactory.Block(SyntaxFactory.CheckedStatement(SyntaxKind.CheckedStatement, b.Body)));
                 });
 
-            return ApplyAggressiveOptimization(rootNode);
-        }
-
-        private static SyntaxNode ApplyAggressiveOptimization(SyntaxNode rootNode)
-        {
-            rootNode = rootNode.ReplaceNodes(
-                rootNode.DescendantNodes().OfType<BaseMethodDeclarationSyntax>().ToList(),
-                (a, b) =>
-                {
-                    return ModifyMethod(a);
-                });
-
             return rootNode;
-        }
-
-        private static SyntaxNode ModifyMethod(BaseMethodDeclarationSyntax method)
-        {
-            Func<AttributeListSyntax> inliningAndOptimization = () =>
-                CSharpSyntaxTree.ParseText(
-                       $"[System.Runtime.CompilerServices.MethodImplAttribute({256 | 512})]",
-                       ParseOptions).GetRoot().DescendantNodes().OfType<AttributeListSyntax>().Single();
-
-            Func<AttributeListSyntax> optimizationOnly = () =>
-                CSharpSyntaxTree.ParseText(
-                       $"[System.Runtime.CompilerServices.MethodImplAttribute({512})]",
-                       ParseOptions).GetRoot().DescendantNodes().OfType<AttributeListSyntax>().Single();
-
-            SyntaxList<AttributeListSyntax> attrLists = new SyntaxList<AttributeListSyntax>();
-            bool found = false;
-            foreach (var attributeList in method.AttributeLists)
-            {
-                SeparatedSyntaxList<AttributeSyntax> attributes = new SeparatedSyntaxList<AttributeSyntax>();
-                foreach (var attribute in attributeList.Attributes)
-                {
-                    if (attribute.Name.ToString().Contains("MethodImpl"))
-                    {
-                        found = true;
-                    }
-                    else
-                    {
-                        attributes = attributes.Add(attribute);
-                    }
-                }
-
-                if (attributes.Any())
-                {
-                    attrLists = attrLists.Add(SyntaxFactory.AttributeList(attributes));
-                }
-            }
-
-            var attr = found ? inliningAndOptimization : optimizationOnly;
-
-            attrLists = attrLists.Add(attr());
-            return method.WithAttributeLists(attrLists);
         }
 
         /// <summary>
