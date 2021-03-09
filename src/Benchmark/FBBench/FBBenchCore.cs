@@ -28,13 +28,6 @@ namespace Benchmark.FBBench
     using FlatSharp.Attributes;
     using ProtoBuf;
 
-    using JobKind = BenchmarkDotNet.Attributes.MediumRunJobAttribute;
-
-    [JobKind(BenchmarkDotNet.Jobs.RuntimeMoniker.NetCoreApp50)]
-    [WarmupCount(5)]
-    [IterationCount(5)]
-    [ProcessCount(4)]
-    [CsvExporter(BenchmarkDotNet.Exporters.Csv.CsvSeparator.Comma)]
     public abstract class FBBenchCore
     {
         protected FlatBufferBuilder google_flatBufferBuilder = new FlatBufferBuilder(64 * 1024);

@@ -16,7 +16,9 @@
 
 namespace Benchmark
 {
+    using BenchmarkDotNet.Columns;
     using BenchmarkDotNet.Configs;
+    using BenchmarkDotNet.Environments;
     using BenchmarkDotNet.Exporters;
     using BenchmarkDotNet.Jobs;
     using BenchmarkDotNet.Loggers;
@@ -30,15 +32,25 @@ namespace Benchmark
         {
             List<Summary> summaries = new List<Summary>();
 
-            summaries.Add(BenchmarkRunner.Run<FBBench.FBSerializeBench>());
-            summaries.Add(BenchmarkRunner.Run<FBBench.FBDeserializeBench>());
-            summaries.Add(BenchmarkRunner.Run<FBBench.OthersDeserializeBench>());
+            Job job = new Job()
+                .WithAnalyzeLaunchVariance(true)
+                .WithLaunchCount(3)
+                .WithWarmupCount(5)
+                .WithRuntime(CoreRuntime.Core50);
+
+            var config = DefaultConfig.Instance
+                 .AddColumn(new[] { StatisticColumn.P25, StatisticColumn.P50, StatisticColumn.P95 })
+                 .AddJob(job);
+
+            summaries.Add(BenchmarkRunner.Run(typeof(FBBench.FBSerializeBench), config));
+            summaries.Add(BenchmarkRunner.Run(typeof(FBBench.FBDeserializeBench), config));
+            summaries.Add(BenchmarkRunner.Run(typeof(FBBench.OthersDeserializeBench), config));
 
 #if !NO_SHARED_STRINGS
-            summaries.Add(BenchmarkRunner.Run<FBBench.FBSharedStringBench>());
+            summaries.Add(BenchmarkRunner.Run(typeof(FBBench.FBSharedStringBench), config));
 #endif
 #if CURRENT_VERSION_ONLY
-            summaries.Add(BenchmarkRunner.Run<SerializationContextBenchmark>());
+            summaries.Add(BenchmarkRunner.Run(typeof(SerializationContextBenchmark), config));
 #endif
 
             foreach (var item in summaries)
