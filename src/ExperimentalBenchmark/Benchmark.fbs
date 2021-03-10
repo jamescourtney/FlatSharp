@@ -1,12 +1,10 @@
 ﻿
 namespace BenchmarkCore;
 
-table Table (fs_serializer) {
-	Hash:Sha256;
+table SortedVectorTable (fs_serializer, PrecompiledSerializer) {
+    Vector:[SortedVectorTableItem] (SortedVector);
 }
 
-struct Sha256
-{
-	Value:[ubyte:32] (fs_nonVirtual);
+table SortedVectorTableItem {
+    Key:int (key);
 }
-
