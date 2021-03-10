@@ -134,7 +134,7 @@ The full results for each version of FlatSharp can be viewed in the [benchmarks 
 Serialization benchmarks are not reflective of "real-world" performance, because processes rarely do serialization-only workflows. In reality, your serializer is going to be competing for L1 cache and other resources along with everything else in your program (and everything else on the machine). So while these benchmarks show that FlatSharp is faster by a wide margin, these benefits may not translate to any practical effect in your environment, depending completely upon your own workflows and data structures. Your choice of serialization format and library should be informed by your needs (Do you need lazy access? Do you care about compact message size?) and not by the results of a benchmark that shows best-case results for all serializers by virtue of that being the only thing running on the machine at that point in time.
 
 #### Serialization
-This data shows how longer it takes to serialize a typical message containing a 30-item vector.
+This data shows the mean time it takes to serialize a typical message containing a 30-item vector.
 Library | Time | Relative Performance | Data Size (bytes)
 --------|------|----------------------|-------------------
 FlatSharp | 2,493 ns | 100% | 3085
