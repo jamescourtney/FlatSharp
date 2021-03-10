@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>Benchmark.FBBench.FBSharedStringBench-20210310-074012</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet=v0.12.1, OS=Windows 10.0.17763.1757 (1809/October2018Update/Redstone5)
+AMD EPYC 7452, 1 CPU, 4 logical and 2 physical cores
+.NET Core SDK=5.0.103
+  [Host]   : .NET Core 5.0.3 (CoreCLR 5.0.321.7212, CoreFX 5.0.321.7212), X64 RyuJIT
+  ShortRun : .NET Core 5.0.3 (CoreCLR 5.0.321.7212, CoreFX 5.0.321.7212), X64 RyuJIT
+</code></pre>
+<pre><code>Job=ShortRun  AnalyzeLaunchVariance=True  Runtime=.NET Core 5.0  
+IterationCount=7  LaunchCount=7  WarmupCount=5  
+</code></pre>
+
+<table>
+<thead><tr><th>                                                     Method</th><th>CacheSize</th><th>VectorLength</th><th>Mean</th><th>Error</th><th>StdDev</th><th>Median</th><th>P25</th><th>P50</th><th>P67</th><th>P80</th><th>P90</th><th>P95</th>
+</tr>
+</thead><tbody><tr><td>Serialize_RandomStringVector_WithRegularString</td><td>100</td><td>1000</td><td>30.13 &mu;s</td><td>0.476 &mu;s</td><td>0.939 &mu;s</td><td>29.75 &mu;s</td><td>29.66 &mu;s</td><td>29.75 &mu;s</td><td>29.87 &mu;s</td><td>29.98 &mu;s</td><td>32.23 &mu;s</td><td>32.42 &mu;s</td>
+</tr><tr><td>Serialize_RandomStringVector_WithSharing</td><td>100</td><td>1000</td><td>56.87 &mu;s</td><td>0.386 &mu;s</td><td>0.734 &mu;s</td><td>56.69 &mu;s</td><td>56.42 &mu;s</td><td>56.69 &mu;s</td><td>56.94 &mu;s</td><td>57.29 &mu;s</td><td>57.83 &mu;s</td><td>58.53 &mu;s</td>
+</tr><tr><td>Serialize_NonRandomStringVector_WithSharing</td><td>100</td><td>1000</td><td>56.67 &mu;s</td><td>0.311 &mu;s</td><td>0.614 &mu;s</td><td>56.47 &mu;s</td><td>56.27 &mu;s</td><td>56.47 &mu;s</td><td>56.64 &mu;s</td><td>56.98 &mu;s</td><td>57.76 &mu;s</td><td>58.03 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithRegularString</td><td>100</td><td>1000</td><td>60.04 &mu;s</td><td>1.188 &mu;s</td><td>2.288 &mu;s</td><td>59.81 &mu;s</td><td>58.08 &mu;s</td><td>59.81 &mu;s</td><td>60.42 &mu;s</td><td>61.51 &mu;s</td><td>63.41 &mu;s</td><td>64.48 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithSharedStrings</td><td>100</td><td>1000</td><td>81.63 &mu;s</td><td>1.311 &mu;s</td><td>2.462 &mu;s</td><td>82.17 &mu;s</td><td>79.16 &mu;s</td><td>82.17 &mu;s</td><td>83.07 &mu;s</td><td>83.43 &mu;s</td><td>84.90 &mu;s</td><td>85.17 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_NonThreadSafe</td><td>100</td><td>1000</td><td>78.50 &mu;s</td><td>1.496 &mu;s</td><td>2.918 &mu;s</td><td>77.73 &mu;s</td><td>76.30 &mu;s</td><td>77.73 &mu;s</td><td>78.55 &mu;s</td><td>80.84 &mu;s</td><td>82.62 &mu;s</td><td>84.57 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_ThreadSafe</td><td>100</td><td>1000</td><td>84.38 &mu;s</td><td>0.951 &mu;s</td><td>1.854 &mu;s</td><td>84.14 &mu;s</td><td>82.92 &mu;s</td><td>84.14 &mu;s</td><td>85.03 &mu;s</td><td>86.20 &mu;s</td><td>87.06 &mu;s</td><td>87.37 &mu;s</td>
+</tr><tr><td>Serialize_RandomStringVector_WithRegularString</td><td>200</td><td>1000</td><td>29.73 &mu;s</td><td>0.097 &mu;s</td><td>0.188 &mu;s</td><td>29.68 &mu;s</td><td>29.60 &mu;s</td><td>29.68 &mu;s</td><td>29.73 &mu;s</td><td>29.82 &mu;s</td><td>29.98 &mu;s</td><td>30.10 &mu;s</td>
+</tr><tr><td>Serialize_RandomStringVector_WithSharing</td><td>200</td><td>1000</td><td>59.50 &mu;s</td><td>0.270 &mu;s</td><td>0.533 &mu;s</td><td>59.58 &mu;s</td><td>59.03 &mu;s</td><td>59.58 &mu;s</td><td>59.74 &mu;s</td><td>60.03 &mu;s</td><td>60.17 &mu;s</td><td>60.25 &mu;s</td>
+</tr><tr><td>Serialize_NonRandomStringVector_WithSharing</td><td>200</td><td>1000</td><td>58.37 &mu;s</td><td>0.286 &mu;s</td><td>0.557 &mu;s</td><td>58.23 &mu;s</td><td>58.00 &mu;s</td><td>58.23 &mu;s</td><td>58.41 &mu;s</td><td>58.89 &mu;s</td><td>59.34 &mu;s</td><td>59.40 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithRegularString</td><td>200</td><td>1000</td><td>58.51 &mu;s</td><td>0.615 &mu;s</td><td>1.200 &mu;s</td><td>58.21 &mu;s</td><td>57.76 &mu;s</td><td>58.21 &mu;s</td><td>58.73 &mu;s</td><td>59.02 &mu;s</td><td>60.18 &mu;s</td><td>61.35 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithSharedStrings</td><td>200</td><td>1000</td><td>81.33 &mu;s</td><td>0.997 &mu;s</td><td>1.897 &mu;s</td><td>81.03 &mu;s</td><td>79.44 &mu;s</td><td>81.03 &mu;s</td><td>82.45 &mu;s</td><td>83.16 &mu;s</td><td>83.52 &mu;s</td><td>84.29 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_NonThreadSafe</td><td>200</td><td>1000</td><td>77.22 &mu;s</td><td>0.971 &mu;s</td><td>1.893 &mu;s</td><td>77.15 &mu;s</td><td>75.73 &mu;s</td><td>77.15 &mu;s</td><td>78.07 &mu;s</td><td>78.72 &mu;s</td><td>79.63 &mu;s</td><td>79.91 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_ThreadSafe</td><td>200</td><td>1000</td><td>83.77 &mu;s</td><td>1.343 &mu;s</td><td>2.652 &mu;s</td><td>82.70 &mu;s</td><td>81.68 &mu;s</td><td>82.70 &mu;s</td><td>85.02 &mu;s</td><td>85.70 &mu;s</td><td>86.70 &mu;s</td><td>87.21 &mu;s</td>
+</tr><tr><td>Serialize_RandomStringVector_WithRegularString</td><td>400</td><td>1000</td><td>29.89 &mu;s</td><td>0.188 &mu;s</td><td>0.363 &mu;s</td><td>29.90 &mu;s</td><td>29.51 &mu;s</td><td>29.90 &mu;s</td><td>30.00 &mu;s</td><td>30.15 &mu;s</td><td>30.43 &mu;s</td><td>30.53 &mu;s</td>
+</tr><tr><td>Serialize_RandomStringVector_WithSharing</td><td>400</td><td>1000</td><td>61.53 &mu;s</td><td>0.480 &mu;s</td><td>0.937 &mu;s</td><td>61.35 &mu;s</td><td>60.63 &mu;s</td><td>61.35 &mu;s</td><td>62.12 &mu;s</td><td>62.52 &mu;s</td><td>62.72 &mu;s</td><td>62.92 &mu;s</td>
+</tr><tr><td>Serialize_NonRandomStringVector_WithSharing</td><td>400</td><td>1000</td><td>59.57 &mu;s</td><td>0.378 &mu;s</td><td>0.745 &mu;s</td><td>59.69 &mu;s</td><td>59.04 &mu;s</td><td>59.69 &mu;s</td><td>59.95 &mu;s</td><td>60.26 &mu;s</td><td>60.52 &mu;s</td><td>60.61 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithRegularString</td><td>400</td><td>1000</td><td>58.43 &mu;s</td><td>0.511 &mu;s</td><td>1.008 &mu;s</td><td>58.41 &mu;s</td><td>57.50 &mu;s</td><td>58.41 &mu;s</td><td>58.82 &mu;s</td><td>59.22 &mu;s</td><td>59.68 &mu;s</td><td>59.91 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithSharedStrings</td><td>400</td><td>1000</td><td>81.31 &mu;s</td><td>0.808 &mu;s</td><td>1.594 &mu;s</td><td>81.30 &mu;s</td><td>80.21 &mu;s</td><td>81.30 &mu;s</td><td>81.89 &mu;s</td><td>82.27 &mu;s</td><td>83.30 &mu;s</td><td>83.63 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_NonThreadSafe</td><td>400</td><td>1000</td><td>72.40 &mu;s</td><td>0.673 &mu;s</td><td>1.344 &mu;s</td><td>72.12 &mu;s</td><td>71.53 &mu;s</td><td>72.12 &mu;s</td><td>72.98 &mu;s</td><td>73.38 &mu;s</td><td>74.50 &mu;s</td><td>74.68 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_ThreadSafe</td><td>400</td><td>1000</td><td>78.60 &mu;s</td><td>0.781 &mu;s</td><td>1.542 &mu;s</td><td>78.72 &mu;s</td><td>77.73 &mu;s</td><td>78.72 &mu;s</td><td>79.37 &mu;s</td><td>80.14 &mu;s</td><td>80.41 &mu;s</td><td>80.68 &mu;s</td>
+</tr><tr><td>Serialize_RandomStringVector_WithRegularString</td><td>800</td><td>1000</td><td>29.82 &mu;s</td><td>0.322 &mu;s</td><td>0.606 &mu;s</td><td>29.60 &mu;s</td><td>29.51 &mu;s</td><td>29.60 &mu;s</td><td>29.75 &mu;s</td><td>29.87 &mu;s</td><td>30.54 &mu;s</td><td>31.00 &mu;s</td>
+</tr><tr><td>Serialize_RandomStringVector_WithSharing</td><td>800</td><td>1000</td><td>62.42 &mu;s</td><td>0.256 &mu;s</td><td>0.505 &mu;s</td><td>62.49 &mu;s</td><td>62.04 &mu;s</td><td>62.49 &mu;s</td><td>62.63 &mu;s</td><td>62.77 &mu;s</td><td>63.01 &mu;s</td><td>63.28 &mu;s</td>
+</tr><tr><td>Serialize_NonRandomStringVector_WithSharing</td><td>800</td><td>1000</td><td>58.25 &mu;s</td><td>0.724 &mu;s</td><td>1.429 &mu;s</td><td>57.97 &mu;s</td><td>57.27 &mu;s</td><td>57.97 &mu;s</td><td>59.35 &mu;s</td><td>59.78 &mu;s</td><td>59.93 &mu;s</td><td>60.01 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithRegularString</td><td>800</td><td>1000</td><td>59.65 &mu;s</td><td>1.295 &mu;s</td><td>2.587 &mu;s</td><td>58.95 &mu;s</td><td>58.29 &mu;s</td><td>58.95 &mu;s</td><td>59.34 &mu;s</td><td>60.02 &mu;s</td><td>63.93 &mu;s</td><td>65.78 &mu;s</td>
+</tr><tr><td>Parse_RepeatedStringVector_WithSharedStrings</td><td>800</td><td>1000</td><td>82.11 &mu;s</td><td>1.093 &mu;s</td><td>2.106 &mu;s</td><td>82.03 &mu;s</td><td>80.41 &mu;s</td><td>82.03 &mu;s</td><td>82.62 &mu;s</td><td>83.77 &mu;s</td><td>84.75 &mu;s</td><td>86.09 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_NonThreadSafe</td><td>800</td><td>1000</td><td>66.66 &mu;s</td><td>0.904 &mu;s</td><td>1.741 &mu;s</td><td>67.02 &mu;s</td><td>65.48 &mu;s</td><td>67.02 &mu;s</td><td>67.80 &mu;s</td><td>68.52 &mu;s</td><td>68.71 &mu;s</td><td>68.76 &mu;s</td>
+</tr><tr><td>Parse_NonRandomSharedStringVector_WithSharedStrings_ThreadSafe</td><td>800</td><td>1000</td><td>72.47 &mu;s</td><td>0.813 &mu;s</td><td>1.547 &mu;s</td><td>72.19 &mu;s</td><td>71.20 &mu;s</td><td>72.19 &mu;s</td><td>72.96 &mu;s</td><td>73.28 &mu;s</td><td>75.10 &mu;s</td><td>75.39 &mu;s</td>
+</tr></tbody></table>
+</body>
+</html>
