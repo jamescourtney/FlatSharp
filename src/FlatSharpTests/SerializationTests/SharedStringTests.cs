@@ -100,8 +100,8 @@ namespace FlatSharpTests
                 32, 0, 0 ,0,        // uoffset to string 2
                 40, 0, 0, 0,        // uoffset to string 3 
                 10, 0, 16, 0,       // vtable length, table length
-                4, 0, 8, 0,         // vtable(0), vtable(1)
-                12, 0, 0, 0,        // vtable(2), padding
+                12, 0, 8, 0,        // vtable(2), vtable(1)
+                4, 0, 0, 0,         // vtable(1), padding
                 6, 0, 0, 0,         // string length
                 (byte)'s', (byte)'t', (byte)'r', (byte)'i', 
                 (byte)'n', (byte)'g', 0, 0, // null terminator.
@@ -185,8 +185,8 @@ namespace FlatSharpTests
                 20, 0, 0 ,0,        // uoffset to string 2
                 16, 0, 0, 0,        // uoffset to string 3 
                 10, 0, 16, 0,       // vtable length, table length
-                4, 0, 8, 0,         // vtable(0), vtable(1)
-                12, 0, 0, 0,        // vtable(2), padding
+                12, 0, 8, 0,        // vtable(0), vtable(1)
+                4, 0, 0, 0,         // vtable(2), padding
                 6, 0, 0, 0,         // string length
                 (byte)'s', (byte)'t', (byte)'r', (byte)'i', (byte)'n', (byte)'g',
                 0 // null terminator.
@@ -260,8 +260,8 @@ namespace FlatSharpTests
                 32, 0, 0 ,0,        // uoffset to string 2
                 36, 0, 0, 0,        // uoffset to string 3 
                 10, 0, 16, 0,       // vtable length, table length
-                4, 0, 8, 0,         // vtable(0), vtable(1)
-                12, 0, 0, 0,        // vtable(2), padding
+                12, 0, 8, 0,        // vtable(0), vtable(1)
+                4, 0, 0, 0,         // vtable(2), padding
                 6, 0, 0, 0,         // string0 length
                 (byte)'s', (byte)'t', (byte)'r', (byte)'i', 
                 (byte)'n', (byte)'g', 0, 0, // null terminator + 1 byte padding
