@@ -75,13 +75,6 @@ namespace Benchmark
         }
 
         [Benchmark]
-        public int FinishVTable_Zero()
-        {
-            context.Reset(ScratchLength);
-            return context.FinishVTable(default(SpanWriter), 30, Scratch, ZeroByteVTable);
-        }
-
-        [Benchmark]
         public void FinishVTables_Random()
         {
             context.Reset(ScratchLength);
@@ -89,7 +82,7 @@ namespace Benchmark
             var random = this.RandomVTables;
             for (int i = 0; i < random.Length; ++i)
             {
-                context.FinishVTable(default(SpanWriter), 30, Scratch, random[i]);
+                context.FinishVTable(Scratch, random[i]);
             }
         }
 
@@ -101,7 +94,7 @@ namespace Benchmark
             var random = this.GuassianVTables;
             for (int i = 0; i < random.Length; ++i)
             {
-                context.FinishVTable(default(SpanWriter), 30, Scratch, random[i]);
+                context.FinishVTable(Scratch, random[i]);
             }
         }
     }

@@ -17,6 +17,7 @@
 namespace FlatSharp
 {
     using System;
+    using System.Buffers.Binary;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Runtime.CompilerServices;
@@ -155,23 +156,15 @@ namespace FlatSharp
             }
         }
 
-        public int FinishVTable<TSpanWriter>(
-            TSpanWriter writer,
-            int tableLength,
+        public int FinishVTable(
             Span<byte> buffer,
-            Span<byte> vtable) where TSpanWriter : ISpanWriter
+            Span<byte> vtable)
         {
             checked
             {
-                // write table length.
-                writer.WriteUShort(vtable, (ushort)tableLength, sizeof(ushort), this);
-
-                int index = FindLastNonZeroValueIndex(vtable.Slice(2 * sizeof(ushort)));
-                vtable = vtable.Slice(0, 4 + index);
-                writer.WriteUShort(vtable, (ushort)vtable.Length, 0, this);
-
                 var offsets = this.vtableOffsets;
                 int count = offsets.Count;
+
                 for (int i = 0; i < count; ++i)
                 {
                     int offset = offsets[i];
@@ -179,12 +172,12 @@ namespace FlatSharp
                     ReadOnlySpan<byte> existingVTable = buffer.Slice(offset);
                     existingVTable = existingVTable.Slice(0, ScalarSpanReader.ReadUShort(existingVTable));
 
-                    if (CompareEquality(existingVTable, vtable))
+                    if (existingVTable.Length == vtable.Length && existingVTable.SequenceEqual(vtable))
+                    //if (CompareEquality(existingVTable, vtable))
                     {
                         // Slowly bubble used things towards the front of the list.
                         // This is not exact, but should keep frequently used
-                        // items towards the front. We have 64 separate buckets, which
-                        // means that items should experience low contention.
+                        // items towards the front.
                         if (i != 0)
                         {
                             Promote(i, offsets);
@@ -207,35 +200,6 @@ namespace FlatSharp
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int FindLastNonZeroValueIndex(ReadOnlySpan<byte> values)
-        {
-            Debug.Assert(values.Length % 2 == 0);
-
-            int length = values.Length;
-            int tmp;
-
-            while (length >= sizeof(ulong) &&
-                   ScalarSpanReader.ReadULong(values.Slice(tmp = length - sizeof(ulong))) == 0)
-            {
-                length = tmp;
-            }
-
-            if (length >= sizeof(uint) &&
-                ScalarSpanReader.ReadUInt(values.Slice(tmp = length - sizeof(uint))) == 0)
-            {
-                length = tmp;
-            }
-
-            if (length >= sizeof(ushort) &&
-                ScalarSpanReader.ReadUShort(values.Slice(tmp = length - sizeof(ushort))) == 0)
-            {
-                length = tmp;
-            }
-
-            return length;
-        }
-
         /// <summary>
         /// Promote frequently-used items to be closer to the front of the list.
         /// This is done with a swap to avoid shuffling the whole list by inserting
@@ -249,56 +213,6 @@ namespace FlatSharp
             int temp = offsets[i];
             offsets[i] = offsets[swapIndex];
             offsets[swapIndex] = temp;
-        }
-
-        /// <summary>
-        /// Possible to use SIMD intrinsics here, but they often end up hurting performance.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool CompareEquality(ReadOnlySpan<byte> left, ReadOnlySpan<byte> right)
-        {
-            int length = left.Length;
-            int offset = 0;
-
-            if (length != right.Length)
-            {
-                return false;
-            }
-
-            while (length >= sizeof(ulong))
-            {
-                if (ScalarSpanReader.ReadULong(left.Slice(offset)) != ScalarSpanReader.ReadULong(right.Slice(offset)))
-                {
-                    return false;
-                }
-
-                offset += sizeof(ulong);
-                length -= sizeof(ulong);
-            }
-
-            if (length >= sizeof(uint))
-            {
-                if (ScalarSpanReader.ReadUInt(left.Slice(offset)) != ScalarSpanReader.ReadUInt(right.Slice(offset)))
-                {
-                    return false;
-                }
-
-                offset += sizeof(uint);
-                length -= sizeof(uint);
-            }
-
-            if (length >= sizeof(ushort))
-            {
-                if (ScalarSpanReader.ReadUShort(left.Slice(offset)) != ScalarSpanReader.ReadUShort(right.Slice(offset)))
-                {
-                    return left[offset] == right[offset];
-                }
-
-                offset += sizeof(ushort);
-                length -= sizeof(ushort);
-            }
-
-            return length == 0 || left[offset] == right[offset];
         }
     }
 }

@@ -353,6 +353,7 @@ $@"
                 {context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteUOffset)}({context.SpanVariableName}, {context.OffsetVariableName}, tableStart, {context.SerializationContextVariableName});
                 int currentOffset = tableStart + sizeof(int); // skip past vtable soffset_t.
 
+                int vtableLength = 4;
                 Span<byte> vtable = stackalloc byte[{4 + 2 * (maxIndex + 1)}];
 ";
 
@@ -388,7 +389,6 @@ $@"
                 
                 for (int i = 0; i < memberModel.ItemTypeModel.PhysicalLayout.Length; ++i)
                 {
-                    getters.Add($"var {OffsetVariableName(index, i)} = tableStart;");
                     items.Add((index, i, valueName, memberModel.ItemTypeModel.PhysicalLayout[i], memberModel));
                 }
             }
@@ -409,6 +409,7 @@ $@"
             items = items
                 .OrderByDescending(x => x.layout.Alignment)
                 .ThenBy(x => x.layout.InlineSize)
+                .ThenByDescending(x => x.vtableIndex)
                 .ToList();
 
             foreach (var t in items)
@@ -443,7 +444,10 @@ $@"
             body.Add($"{context.SerializationContextVariableName}.{nameof(SerializationContext.Offset)} -= {maxInlineSize} - tableLength;");
 
             // Finish vtable.
-            body.Add($"int vtablePosition = {context.SerializationContextVariableName}.{nameof(SerializationContext.FinishVTable)}({context.SpanWriterVariableName}, tableLength, {context.SpanVariableName}, vtable);");
+            body.Add($"{context.SpanWriterVariableName}.{nameof(ISpanWriter.WriteUShort)}(vtable, (ushort)vtableLength, 0, {context.SerializationContextVariableName});");
+            body.Add($"{context.SpanWriterVariableName}.{nameof(ISpanWriter.WriteUShort)}(vtable, (ushort)tableLength, sizeof(ushort), {context.SerializationContextVariableName});");
+
+            body.Add($"int vtablePosition = {context.SerializationContextVariableName}.{nameof(SerializationContext.FinishVTable)}({context.SpanVariableName}, vtable.Slice(0, vtableLength));");
             body.Add($"{context.SpanWriterVariableName}.{nameof(SpanWriter.WriteInt)}({context.SpanVariableName}, tableStart - vtablePosition, tableStart, {context.SerializationContextVariableName});");
 
             body.AddRange(writeBlocks);
@@ -469,13 +473,26 @@ $@"
                 condition = string.Empty;
             }
 
+            int vTableIndex = sizeof(ushort) * (2 + (index + i));
+            int vTableLength = vTableIndex + sizeof(ushort);
+
             string prepareBlock = $@"
                 currentOffset += {nameof(SerializationHelpers)}.{nameof(SerializationHelpers.GetAlignmentError)}(currentOffset, {layout.Alignment});
                 {OffsetVariableName(index, i)} = currentOffset;
-                currentOffset += {layout.InlineSize};
-            ";
+                currentOffset += {layout.InlineSize};";
 
-            string postPrepare = $"{context.SpanWriterVariableName}.{nameof(ISpanWriter.WriteUShort)}(vtable, (ushort)({OffsetVariableName(index, i)} - tableStart), {4 + 2 * (index + i)}, {context.SerializationContextVariableName});";
+            string setVtableBlock = string.Empty;
+            if (i == memberModel.ItemTypeModel.PhysicalLayout.Length - 1)
+            {
+                setVtableBlock = $@"
+                    if ({vTableLength} > vtableLength)
+                    {{
+                        vtableLength = {vTableLength};
+                    }}";
+            }
+
+            string writeVTableBlock = 
+                $"{context.SpanWriterVariableName}.{nameof(ISpanWriter.WriteUShort)}(vtable, (ushort)({OffsetVariableName(index, i)} - tableStart), {vTableIndex}, {context.SerializationContextVariableName});";
 
             string inlineSerialize = string.Empty;
             if (memberModel.ItemTypeModel.SerializesInline)
@@ -485,13 +502,14 @@ $@"
             }
 
             return $@"
+                var {OffsetVariableName(index, i)} = tableStart;
                 {condition} 
                 {{
                     {prepareBlock}
                     {inlineSerialize}
+                    {setVtableBlock}
                 }}
-                {postPrepare}
-                ";
+                {writeVTableBlock}";
         }
 
         private string GetSerializeCoreBlock(

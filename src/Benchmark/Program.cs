@@ -35,6 +35,8 @@ namespace Benchmark
             Job job = Job.ShortRun
                 .WithAnalyzeLaunchVariance(true)
                 .WithLaunchCount(7)
+                .WithWarmupCount(5)
+                .WithIterationCount(7)
                 .WithRuntime(CoreRuntime.Core50);
 
             var config = DefaultConfig.Instance
