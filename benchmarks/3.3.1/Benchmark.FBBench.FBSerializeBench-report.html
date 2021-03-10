@@ -2,7 +2,7 @@
 <html lang='en'>
 <head>
 <meta charset='utf-8' />
-<title>Benchmark.FBBench.FBSerializeBench-20201006-020032</title>
+<title>Benchmark.FBBench.FBSerializeBench-20210310-082418</title>
 
 <style type="text/css">
 	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
@@ -13,124 +13,27 @@
 </head>
 <body>
 <pre><code>
-BenchmarkDotNet=v0.12.1, OS=Windows 10.0.14393.3930 (1607/AnniversaryUpdate/Redstone1), VM=Hyper-V
-Intel Xeon CPU E5-2667 v3 3.20GHz, 1 CPU, 8 logical and 8 physical cores
-  [Host]                  : .NET Framework 4.8 (4.8.4240.0), X64 RyuJIT
-  MediumRun-.NET 4.7      : .NET Framework 4.8 (4.8.4240.0), X64 RyuJIT
-  MediumRun-.NET Core 2.1 : .NET Core 2.1.22 (CoreCLR 4.6.29220.03, CoreFX 4.6.29220.01), X64 RyuJIT
-  MediumRun-.NET Core 3.1 : .NET Core 3.1.8 (CoreCLR 4.700.20.41105, CoreFX 4.700.20.41903), X64 RyuJIT
-  MediumRun-.NET Core 5.0 : .NET Core 5.0.0 (CoreCLR 5.0.20.45114, CoreFX 5.0.20.45114), X64 RyuJIT
+BenchmarkDotNet=v0.12.1, OS=Windows 10.0.17763.1757 (1809/October2018Update/Redstone5)
+AMD EPYC 7452, 1 CPU, 4 logical and 2 physical cores
+.NET Core SDK=5.0.103
+  [Host]   : .NET Core 5.0.3 (CoreCLR 5.0.321.7212, CoreFX 5.0.321.7212), X64 RyuJIT
+  ShortRun : .NET Core 5.0.3 (CoreCLR 5.0.321.7212, CoreFX 5.0.321.7212), X64 RyuJIT
 </code></pre>
-<pre><code>IterationCount=15  LaunchCount=2  WarmupCount=10  
+<pre><code>Job=ShortRun  AnalyzeLaunchVariance=True  Runtime=.NET Core 5.0  
+IterationCount=7  LaunchCount=7  WarmupCount=5  
 </code></pre>
 
 <table>
-<thead><tr><th>                             Method</th><th>              Job</th><th>Runtime</th><th>VectorLength</th><th>  Mean</th><th>Error</th><th>StdDev</th><th>Median</th>
+<thead><tr><th>                             Method</th><th>VectorLength</th><th>Mean</th><th>Error</th><th>StdDev</th><th> P25</th><th> P50</th><th> P67</th><th> P80</th><th> P90</th><th> P95</th>
 </tr>
-</thead><tbody><tr><td>Google_FlatBuffers_Serialize</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>3</td><td>1,751.77 ns</td><td>17.998 ns</td><td>26.938 ns</td><td>1,746.74 ns</td>
-</tr><tr><td>Google_FlatBuffers_Serialize_ObjectApi</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>3</td><td>1,809.75 ns</td><td>8.182 ns</td><td>12.246 ns</td><td>1,809.46 ns</td>
-</tr><tr><td>Google_Flatbuffers_StringVector_Sorted</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>3</td><td>1,727.42 ns</td><td>10.418 ns</td><td>15.270 ns</td><td>1,724.84 ns</td>
-</tr><tr><td>Google_Flatbuffers_StringVector_Unsorted</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>3</td><td>980.30 ns</td><td>7.571 ns</td><td>11.331 ns</td><td>980.73 ns</td>
-</tr><tr><td>Google_Flatbuffers_IntVector_Sorted</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>3</td><td>998.72 ns</td><td>9.656 ns</td><td>13.848 ns</td><td>996.75 ns</td>
-</tr><tr><td>Google_Flatbuffers_IntVector_Unsorted</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>3</td><td>533.37 ns</td><td>2.353 ns</td><td>3.375 ns</td><td>532.16 ns</td>
-</tr><tr><td>FlatSharp_GetMaxSize</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>3</td><td>74.01 ns</td><td>0.500 ns</td><td>0.718 ns</td><td>73.94 ns</td>
-</tr><tr><td>FlatSharp_Serialize</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>3</td><td>1,843.11 ns</td><td>7.561 ns</td><td>10.844 ns</td><td>1,839.33 ns</td>
-</tr><tr><td>PBDN_Serialize</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>3</td><td>1,774.54 ns</td><td>11.229 ns</td><td>16.459 ns</td><td>1,771.33 ns</td>
-</tr><tr><td>FlatSharp_Serialize_StringVector_Sorted</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>3</td><td>1,450.59 ns</td><td>7.219 ns</td><td>10.581 ns</td><td>1,450.41 ns</td>
-</tr><tr><td>FlatSharp_Serialize_StringVector_Unsorted</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>3</td><td>1,158.38 ns</td><td>8.752 ns</td><td>12.829 ns</td><td>1,160.38 ns</td>
-</tr><tr><td>FlatSharp_Serialize_IntVector_Sorted</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>3</td><td>969.78 ns</td><td>7.843 ns</td><td>11.739 ns</td><td>972.02 ns</td>
-</tr><tr><td>FlatSharp_Serialize_IntVector_Unsorted</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>3</td><td>681.24 ns</td><td>4.783 ns</td><td>7.011 ns</td><td>680.51 ns</td>
-</tr><tr><td>Google_FlatBuffers_Serialize</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>3</td><td>1,665.92 ns</td><td>4.939 ns</td><td>6.923 ns</td><td>1,664.50 ns</td>
-</tr><tr><td>Google_FlatBuffers_Serialize_ObjectApi</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>3</td><td>1,761.28 ns</td><td>6.179 ns</td><td>8.862 ns</td><td>1,760.87 ns</td>
-</tr><tr><td>Google_Flatbuffers_StringVector_Sorted</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>3</td><td>1,234.64 ns</td><td>5.916 ns</td><td>8.855 ns</td><td>1,233.19 ns</td>
-</tr><tr><td>Google_Flatbuffers_StringVector_Unsorted</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>3</td><td>942.88 ns</td><td>5.076 ns</td><td>7.280 ns</td><td>941.60 ns</td>
-</tr><tr><td>Google_Flatbuffers_IntVector_Sorted</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>3</td><td>764.17 ns</td><td>3.837 ns</td><td>5.743 ns</td><td>763.10 ns</td>
-</tr><tr><td>Google_Flatbuffers_IntVector_Unsorted</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>3</td><td>548.29 ns</td><td>3.512 ns</td><td>5.037 ns</td><td>548.33 ns</td>
-</tr><tr><td>FlatSharp_GetMaxSize</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>3</td><td>74.84 ns</td><td>0.528 ns</td><td>0.773 ns</td><td>74.71 ns</td>
-</tr><tr><td>FlatSharp_Serialize</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>3</td><td>838.24 ns</td><td>11.903 ns</td><td>17.071 ns</td><td>836.46 ns</td>
-</tr><tr><td>PBDN_Serialize</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>3</td><td>1,730.18 ns</td><td>12.849 ns</td><td>19.232 ns</td><td>1,724.15 ns</td>
-</tr><tr><td>FlatSharp_Serialize_StringVector_Sorted</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>3</td><td>711.46 ns</td><td>8.997 ns</td><td>13.187 ns</td><td>711.15 ns</td>
-</tr><tr><td>FlatSharp_Serialize_StringVector_Unsorted</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>3</td><td>533.17 ns</td><td>7.729 ns</td><td>11.329 ns</td><td>529.83 ns</td>
-</tr><tr><td>FlatSharp_Serialize_IntVector_Sorted</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>3</td><td>496.69 ns</td><td>3.592 ns</td><td>5.152 ns</td><td>495.76 ns</td>
-</tr><tr><td>FlatSharp_Serialize_IntVector_Unsorted</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>3</td><td>354.91 ns</td><td>5.765 ns</td><td>8.268 ns</td><td>355.21 ns</td>
-</tr><tr><td>Google_FlatBuffers_Serialize</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>3</td><td>1,600.00 ns</td><td>14.527 ns</td><td>21.293 ns</td><td>1,599.66 ns</td>
-</tr><tr><td>Google_FlatBuffers_Serialize_ObjectApi</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>3</td><td>1,646.07 ns</td><td>8.846 ns</td><td>13.241 ns</td><td>1,648.12 ns</td>
-</tr><tr><td>Google_Flatbuffers_StringVector_Sorted</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>3</td><td>1,166.91 ns</td><td>5.233 ns</td><td>7.833 ns</td><td>1,165.82 ns</td>
-</tr><tr><td>Google_Flatbuffers_StringVector_Unsorted</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>3</td><td>867.89 ns</td><td>3.089 ns</td><td>4.430 ns</td><td>867.17 ns</td>
-</tr><tr><td>Google_Flatbuffers_IntVector_Sorted</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>3</td><td>763.50 ns</td><td>9.903 ns</td><td>14.515 ns</td><td>767.47 ns</td>
-</tr><tr><td>Google_Flatbuffers_IntVector_Unsorted</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>3</td><td>557.20 ns</td><td>5.738 ns</td><td>8.589 ns</td><td>557.16 ns</td>
-</tr><tr><td>FlatSharp_GetMaxSize</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>3</td><td>71.91 ns</td><td>1.419 ns</td><td>2.124 ns</td><td>71.71 ns</td>
-</tr><tr><td>FlatSharp_Serialize</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>3</td><td>680.69 ns</td><td>6.253 ns</td><td>9.165 ns</td><td>680.67 ns</td>
-</tr><tr><td>PBDN_Serialize</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>3</td><td>1,631.04 ns</td><td>9.066 ns</td><td>13.288 ns</td><td>1,630.04 ns</td>
-</tr><tr><td>FlatSharp_Serialize_StringVector_Sorted</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>3</td><td>578.45 ns</td><td>3.217 ns</td><td>4.815 ns</td><td>579.47 ns</td>
-</tr><tr><td>FlatSharp_Serialize_StringVector_Unsorted</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>3</td><td>417.84 ns</td><td>2.564 ns</td><td>3.838 ns</td><td>418.62 ns</td>
-</tr><tr><td>FlatSharp_Serialize_IntVector_Sorted</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>3</td><td>440.65 ns</td><td>3.938 ns</td><td>5.647 ns</td><td>439.87 ns</td>
-</tr><tr><td>FlatSharp_Serialize_IntVector_Unsorted</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>3</td><td>288.66 ns</td><td>3.836 ns</td><td>5.501 ns</td><td>291.17 ns</td>
-</tr><tr><td>Google_FlatBuffers_Serialize</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>3</td><td>1,612.75 ns</td><td>11.534 ns</td><td>16.907 ns</td><td>1,615.54 ns</td>
-</tr><tr><td>Google_FlatBuffers_Serialize_ObjectApi</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>3</td><td>1,647.42 ns</td><td>6.762 ns</td><td>10.122 ns</td><td>1,648.02 ns</td>
-</tr><tr><td>Google_Flatbuffers_StringVector_Sorted</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>3</td><td>1,130.31 ns</td><td>7.287 ns</td><td>10.451 ns</td><td>1,133.24 ns</td>
-</tr><tr><td>Google_Flatbuffers_StringVector_Unsorted</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>3</td><td>844.70 ns</td><td>2.339 ns</td><td>3.355 ns</td><td>844.32 ns</td>
-</tr><tr><td>Google_Flatbuffers_IntVector_Sorted</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>3</td><td>772.09 ns</td><td>8.125 ns</td><td>11.910 ns</td><td>769.30 ns</td>
-</tr><tr><td>Google_Flatbuffers_IntVector_Unsorted</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>3</td><td>554.44 ns</td><td>8.245 ns</td><td>12.086 ns</td><td>560.36 ns</td>
-</tr><tr><td>FlatSharp_GetMaxSize</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>3</td><td>82.14 ns</td><td>8.601 ns</td><td>12.058 ns</td><td>92.97 ns</td>
-</tr><tr><td>FlatSharp_Serialize</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>3</td><td>652.70 ns</td><td>3.430 ns</td><td>4.808 ns</td><td>651.63 ns</td>
-</tr><tr><td>PBDN_Serialize</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>3</td><td>1,554.25 ns</td><td>12.552 ns</td><td>18.002 ns</td><td>1,549.49 ns</td>
-</tr><tr><td>FlatSharp_Serialize_StringVector_Sorted</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>3</td><td>506.99 ns</td><td>5.928 ns</td><td>8.502 ns</td><td>507.65 ns</td>
-</tr><tr><td>FlatSharp_Serialize_StringVector_Unsorted</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>3</td><td>380.88 ns</td><td>2.658 ns</td><td>3.979 ns</td><td>381.04 ns</td>
-</tr><tr><td>FlatSharp_Serialize_IntVector_Sorted</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>3</td><td>385.77 ns</td><td>2.149 ns</td><td>3.151 ns</td><td>385.32 ns</td>
-</tr><tr><td>FlatSharp_Serialize_IntVector_Unsorted</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>3</td><td>271.66 ns</td><td>1.079 ns</td><td>1.547 ns</td><td>271.22 ns</td>
-</tr><tr><td>Google_FlatBuffers_Serialize</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>30</td><td>15,117.19 ns</td><td>74.997 ns</td><td>109.929 ns</td><td>15,092.88 ns</td>
-</tr><tr><td>Google_FlatBuffers_Serialize_ObjectApi</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>30</td><td>15,811.55 ns</td><td>87.621 ns</td><td>125.663 ns</td><td>15,814.51 ns</td>
-</tr><tr><td>Google_Flatbuffers_StringVector_Sorted</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>30</td><td>28,992.99 ns</td><td>257.547 ns</td><td>385.484 ns</td><td>28,927.89 ns</td>
-</tr><tr><td>Google_Flatbuffers_StringVector_Unsorted</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>30</td><td>8,301.21 ns</td><td>50.248 ns</td><td>73.653 ns</td><td>8,296.14 ns</td>
-</tr><tr><td>Google_Flatbuffers_IntVector_Sorted</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>30</td><td>16,673.50 ns</td><td>401.284 ns</td><td>575.509 ns</td><td>17,028.07 ns</td>
-</tr><tr><td>Google_Flatbuffers_IntVector_Unsorted</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>30</td><td>4,007.69 ns</td><td>13.499 ns</td><td>20.204 ns</td><td>4,002.09 ns</td>
-</tr><tr><td>FlatSharp_GetMaxSize</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>30</td><td>350.04 ns</td><td>9.637 ns</td><td>14.424 ns</td><td>348.86 ns</td>
-</tr><tr><td>FlatSharp_Serialize</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>30</td><td>13,679.80 ns</td><td>75.960 ns</td><td>113.694 ns</td><td>13,664.54 ns</td>
-</tr><tr><td>PBDN_Serialize</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>30</td><td>11,579.37 ns</td><td>84.229 ns</td><td>123.461 ns</td><td>11,578.18 ns</td>
-</tr><tr><td>FlatSharp_Serialize_StringVector_Sorted</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>30</td><td>12,207.74 ns</td><td>68.315 ns</td><td>100.135 ns</td><td>12,168.98 ns</td>
-</tr><tr><td>FlatSharp_Serialize_StringVector_Unsorted</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>30</td><td>8,884.07 ns</td><td>57.563 ns</td><td>86.158 ns</td><td>8,875.66 ns</td>
-</tr><tr><td>FlatSharp_Serialize_IntVector_Sorted</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>30</td><td>8,411.64 ns</td><td>170.391 ns</td><td>255.033 ns</td><td>8,420.46 ns</td>
-</tr><tr><td>FlatSharp_Serialize_IntVector_Unsorted</td><td>MediumRun-.NET 4.7</td><td>.NET 4.7</td><td>30</td><td>4,145.51 ns</td><td>13.388 ns</td><td>19.200 ns</td><td>4,145.23 ns</td>
-</tr><tr><td>Google_FlatBuffers_Serialize</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>30</td><td>14,360.91 ns</td><td>74.199 ns</td><td>111.057 ns</td><td>14,342.37 ns</td>
-</tr><tr><td>Google_FlatBuffers_Serialize_ObjectApi</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>30</td><td>14,820.31 ns</td><td>57.450 ns</td><td>85.988 ns</td><td>14,830.68 ns</td>
-</tr><tr><td>Google_Flatbuffers_StringVector_Sorted</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>30</td><td>20,303.46 ns</td><td>70.319 ns</td><td>103.072 ns</td><td>20,320.14 ns</td>
-</tr><tr><td>Google_Flatbuffers_StringVector_Unsorted</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>30</td><td>8,056.26 ns</td><td>47.189 ns</td><td>69.170 ns</td><td>8,037.35 ns</td>
-</tr><tr><td>Google_Flatbuffers_IntVector_Sorted</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>30</td><td>13,287.40 ns</td><td>70.665 ns</td><td>103.580 ns</td><td>13,266.12 ns</td>
-</tr><tr><td>Google_Flatbuffers_IntVector_Unsorted</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>30</td><td>3,909.06 ns</td><td>22.430 ns</td><td>32.877 ns</td><td>3,898.89 ns</td>
-</tr><tr><td>FlatSharp_GetMaxSize</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>30</td><td>341.43 ns</td><td>1.470 ns</td><td>2.155 ns</td><td>341.93 ns</td>
-</tr><tr><td>FlatSharp_Serialize</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>30</td><td>5,845.61 ns</td><td>68.630 ns</td><td>96.209 ns</td><td>5,870.01 ns</td>
-</tr><tr><td>PBDN_Serialize</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>30</td><td>11,398.20 ns</td><td>56.994 ns</td><td>81.739 ns</td><td>11,382.22 ns</td>
-</tr><tr><td>FlatSharp_Serialize_StringVector_Sorted</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>30</td><td>5,778.35 ns</td><td>85.381 ns</td><td>125.151 ns</td><td>5,843.03 ns</td>
-</tr><tr><td>FlatSharp_Serialize_StringVector_Unsorted</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>30</td><td>3,903.84 ns</td><td>112.764 ns</td><td>165.288 ns</td><td>4,004.21 ns</td>
-</tr><tr><td>FlatSharp_Serialize_IntVector_Sorted</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>30</td><td>3,582.27 ns</td><td>24.266 ns</td><td>35.569 ns</td><td>3,580.41 ns</td>
-</tr><tr><td>FlatSharp_Serialize_IntVector_Unsorted</td><td>MediumRun-.NET Core 2.1</td><td>.NET Core 2.1</td><td>30</td><td>1,897.02 ns</td><td>7.713 ns</td><td>11.062 ns</td><td>1,897.41 ns</td>
-</tr><tr><td>Google_FlatBuffers_Serialize</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>30</td><td>13,490.13 ns</td><td>51.737 ns</td><td>77.437 ns</td><td>13,475.24 ns</td>
-</tr><tr><td>Google_FlatBuffers_Serialize_ObjectApi</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>30</td><td>14,242.40 ns</td><td>49.730 ns</td><td>71.321 ns</td><td>14,241.35 ns</td>
-</tr><tr><td>Google_Flatbuffers_StringVector_Sorted</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>30</td><td>18,945.15 ns</td><td>504.831 ns</td><td>755.607 ns</td><td>19,006.08 ns</td>
-</tr><tr><td>Google_Flatbuffers_StringVector_Unsorted</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>30</td><td>7,580.54 ns</td><td>48.980 ns</td><td>71.794 ns</td><td>7,588.77 ns</td>
-</tr><tr><td>Google_Flatbuffers_IntVector_Sorted</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>30</td><td>11,184.22 ns</td><td>119.510 ns</td><td>178.876 ns</td><td>11,204.27 ns</td>
-</tr><tr><td>Google_Flatbuffers_IntVector_Unsorted</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>30</td><td>3,998.73 ns</td><td>20.766 ns</td><td>29.782 ns</td><td>4,008.81 ns</td>
-</tr><tr><td>FlatSharp_GetMaxSize</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>30</td><td>371.54 ns</td><td>1.617 ns</td><td>2.370 ns</td><td>371.77 ns</td>
-</tr><tr><td>FlatSharp_Serialize</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>30</td><td>4,918.79 ns</td><td>41.440 ns</td><td>62.026 ns</td><td>4,927.21 ns</td>
-</tr><tr><td>PBDN_Serialize</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>30</td><td>11,345.56 ns</td><td>52.101 ns</td><td>76.369 ns</td><td>11,344.46 ns</td>
-</tr><tr><td>FlatSharp_Serialize_StringVector_Sorted</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>30</td><td>4,785.73 ns</td><td>20.569 ns</td><td>29.499 ns</td><td>4,790.89 ns</td>
-</tr><tr><td>FlatSharp_Serialize_StringVector_Unsorted</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>30</td><td>2,782.01 ns</td><td>8.321 ns</td><td>11.934 ns</td><td>2,781.94 ns</td>
-</tr><tr><td>FlatSharp_Serialize_IntVector_Sorted</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>30</td><td>3,311.96 ns</td><td>16.361 ns</td><td>23.982 ns</td><td>3,315.47 ns</td>
-</tr><tr><td>FlatSharp_Serialize_IntVector_Unsorted</td><td>MediumRun-.NET Core 3.1</td><td>.NET Core 3.1</td><td>30</td><td>1,456.46 ns</td><td>6.242 ns</td><td>9.343 ns</td><td>1,455.09 ns</td>
-</tr><tr><td>Google_FlatBuffers_Serialize</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>30</td><td>13,854.05 ns</td><td>163.311 ns</td><td>234.216 ns</td><td>13,845.17 ns</td>
-</tr><tr><td>Google_FlatBuffers_Serialize_ObjectApi</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>30</td><td>14,748.99 ns</td><td>53.995 ns</td><td>79.146 ns</td><td>14,749.08 ns</td>
-</tr><tr><td>Google_Flatbuffers_StringVector_Sorted</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>30</td><td>18,564.23 ns</td><td>126.452 ns</td><td>177.268 ns</td><td>18,640.26 ns</td>
-</tr><tr><td>Google_Flatbuffers_StringVector_Unsorted</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>30</td><td>7,356.53 ns</td><td>25.010 ns</td><td>35.869 ns</td><td>7,351.62 ns</td>
-</tr><tr><td>Google_Flatbuffers_IntVector_Sorted</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>30</td><td>12,013.81 ns</td><td>234.292 ns</td><td>336.014 ns</td><td>12,025.69 ns</td>
-</tr><tr><td>Google_Flatbuffers_IntVector_Unsorted</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>30</td><td>3,782.96 ns</td><td>13.382 ns</td><td>18.759 ns</td><td>3,783.31 ns</td>
-</tr><tr><td>FlatSharp_GetMaxSize</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>30</td><td>376.18 ns</td><td>1.781 ns</td><td>2.611 ns</td><td>376.83 ns</td>
-</tr><tr><td>FlatSharp_Serialize</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>30</td><td>4,707.09 ns</td><td>29.797 ns</td><td>43.676 ns</td><td>4,721.84 ns</td>
-</tr><tr><td>PBDN_Serialize</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>30</td><td>11,039.77 ns</td><td>148.219 ns</td><td>217.257 ns</td><td>11,049.71 ns</td>
-</tr><tr><td>FlatSharp_Serialize_StringVector_Sorted</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>30</td><td>4,498.46 ns</td><td>113.241 ns</td><td>165.988 ns</td><td>4,582.65 ns</td>
-</tr><tr><td>FlatSharp_Serialize_StringVector_Unsorted</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>30</td><td>2,529.10 ns</td><td>15.627 ns</td><td>23.389 ns</td><td>2,523.18 ns</td>
-</tr><tr><td>FlatSharp_Serialize_IntVector_Sorted</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>30</td><td>3,033.60 ns</td><td>13.635 ns</td><td>19.985 ns</td><td>3,030.64 ns</td>
-</tr><tr><td>FlatSharp_Serialize_IntVector_Unsorted</td><td>MediumRun-.NET Core 5.0</td><td>.NET Core 5.0</td><td>30</td><td>1,382.79 ns</td><td>21.024 ns</td><td>30.816 ns</td><td>1,368.37 ns</td>
+</thead><tbody><tr><td>FlatSharp_GetMaxSize</td><td>30</td><td>391.0 ns</td><td>3.37 ns</td><td>6.50 ns</td><td>391.4 ns</td><td>393.0 ns</td><td>394.2 ns</td><td>394.7 ns</td><td>395.4 ns</td><td>395.6 ns</td>
+</tr><tr><td>FlatSharp_Serialize</td><td>30</td><td>4,768.4 ns</td><td>112.21 ns</td><td>218.85 ns</td><td>4,680.9 ns</td><td>4,804.5 ns</td><td>4,933.3 ns</td><td>4,943.0 ns</td><td>4,954.4 ns</td><td>4,958.9 ns</td>
+</tr><tr><td>FlatSharp_Serialize_NonVirtual</td><td>30</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td>
+</tr><tr><td>FlatSharp_Serialize_StringVector_Sorted</td><td>30</td><td>4,005.0 ns</td><td>109.02 ns</td><td>212.64 ns</td><td>3,815.6 ns</td><td>3,941.2 ns</td><td>4,050.4 ns</td><td>4,303.3 ns</td><td>4,319.9 ns</td><td>4,326.4 ns</td>
+</tr><tr><td>FlatSharp_Serialize_StringVector_Unsorted</td><td>30</td><td>2,537.4 ns</td><td>89.48 ns</td><td>178.70 ns</td><td>2,347.7 ns</td><td>2,583.4 ns</td><td>2,660.9 ns</td><td>2,739.8 ns</td><td>2,754.0 ns</td><td>2,761.9 ns</td>
+</tr><tr><td>FlatSharp_Serialize_IntVector_Sorted</td><td>30</td><td>2,794.9 ns</td><td>53.88 ns</td><td>107.60 ns</td><td>2,708.4 ns</td><td>2,804.3 ns</td><td>2,833.5 ns</td><td>2,887.6 ns</td><td>2,956.4 ns</td><td>2,967.3 ns</td>
+</tr><tr><td>FlatSharp_Serialize_IntVector_Unsorted</td><td>30</td><td>1,357.2 ns</td><td>62.11 ns</td><td>121.14 ns</td><td>1,289.5 ns</td><td>1,316.1 ns</td><td>1,340.6 ns</td><td>1,371.8 ns</td><td>1,436.7 ns</td><td>1,669.3 ns</td>
+</tr><tr><td>FlatSharp_Serialize_ValueTableVector</td><td>30</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td><td>NA</td>
 </tr></tbody></table>
 </body>
 </html>

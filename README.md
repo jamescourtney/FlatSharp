@@ -54,7 +54,7 @@ namespace MyNamespace;
 
 enum Color : ubyte { Red = 1, Green, Blue }
 
-table Person (PrecompiledSerializer) {
+table Person (fs_serializer) {
     Id:int;
     Name:string;
     Parent:Person (deprecated);
@@ -92,18 +92,20 @@ Deserializing is easier!
 Person p = FlatBufferSerializer.Default.Parse<Person>(data);
 ```
 
-#### Samples & Advanced Topics
-FlatSharp supports some interesting features not covered here. Please visit the [samples solution](samples/) to see examples of:
-- [Build-time serializer code generation](samples/Example3-SchemaFiles2/)
-- [Deserialization options (Lazy, Greedy, and everything in between)](samples/Example1-SerializerOptions/SerializerOptionsExample.cs)
-- [IO Options](samples/Example4-IOOptions/)
-- [gRPC](samples/Example5-gRPC/)
-- [Copy Constructors](samples/Example6-CopyConstructors/)
-- [FBS Includes](samples/Example7-Includes/)
-- [Sorted Vectors](samples/Example8-SortedVectors/)
-- [Unions](samples/Example9-Unions/)
+#### Samples & Documentation
+FlatSharp supports some interesting features not covered here. Detailed documentation is in the [wiki](https://github.com/jamescourtney/FlatSharp/wiki). The [samples solution](samples/) has full examples of:
+- [Build-time serializer code generation](samples/Example03-SchemaFiles2/)
+- [Deserialization options (Lazy, Greedy, and everything in between)](samples/Example01-SerializerOptions/SerializerOptionsExample.cs)
+- [IO Options](samples/Example04-IOOptions/)
+- [gRPC](samples/Example05-gRPC/)
+- [Copy Constructors](samples/Example06-CopyConstructors/)
+- [FBS Includes](samples/Example07-Includes/)
+- [Sorted Vectors](samples/Example08-SortedVectors/)
+- [Unions](samples/Example09-Unions/)
 - [String deduplication](samples/Example10-SharedStrings/)
 - [Indexed Vectors (Dictionary-like functionality)](samples/Example11-IndexedVectors/)
+- [Type Facades](samples/Example12-TypeFacades/)
+- [Fixed-Length Vectors](samples/Example13-StructVectors/)
 
 ### Internals
 FlatSharp works by generating subclasses of your data contracts based on the schema that you define. That is, when you attempt to deserialize a ```MonsterTable``` object, you actually get back a subclass of ```MonsterTable```, which has properties defined in such a way as to index into the buffer, according to the deserialization mode specified (greedy, lazy, etc).
@@ -118,22 +120,40 @@ Serializers are a common vector for security issues. FlatSharp takes the followi
 At its core, FlatSharp is a tool to convert a FlatBuffer schema into a pile of safe C# code that depends only upon standard .NET libraries. There is no "secret sauce". Buffer overflows are intended to be impossible by design, due to the features of .NET and the CLR. A malicious input may lead to corrupt data or an Exception being thrown, but the process will not be compromised. As always, a best practice is to encrypt data at rest, in transit, and decorate it with some checksums.
 
 ### Performance & Benchmarks
-FlatSharp is really fast. This is primarily thanks to new changes in C# with Memory and Span, as well as FlatBuffers itself exposing a very simple type system that makes optimization simple. The FlatSharp benchmarks were run on .NET Core 3.1, using a C# approximation of [Google's FlatBuffer benchmark](https://github.com/google/flatbuffers/tree/benchmarks/benchmarks/cpp/FB), which can be found [here](src/Benchmark). The FlatSharp benchmarks use this schema, but with the following parameters:
-- Vector length = 3 or 30
-- Traversal count = 1 or 5
-- Runtime: .NET 4.7, .NET Core 2.1, .NET Core 3.1, .NET Core 5.0 - RC
+FlatSharp is really, really fast. The FlatSharp benchmarks were run on .NET 5.0, using a C# approximation of [Google's FlatBuffer benchmark](https://github.com/google/flatbuffers/tree/benchmarks/benchmarks/cpp/FB), which can be found [here](src/Benchmark). The tests were run on a cloud-hosted VM to normalize the execution environment.
 
-The full results for each version of FlatSharp can be viewed in the [benchmarks folder](benchmarks). Additionally, the benchmark data contains performance data for many different configurations of FlatSharp and other features, such as sorted vectors.
-
-The benchmarks test 3 different serialization frameworks:
+The benchmarks test 4 different serialization frameworks, all using default settings:
 - FlatSharp
 - Protobuf.NET
 - Google's C# Flatbuffers implementation (both standard and Object API flavors)
+- Message Pack C#
 
-The graphs below are generated using the default settings from each library on .NET Core 3.1:
+The full results for each version of FlatSharp can be viewed in the [benchmarks folder](benchmarks). Additionally, the benchmark data contains performance data for many different configurations of FlatSharp and other features, such as sorted vectors and shared strings.
 
-![image](doc/serialize.png)
-![image](doc/parse.png)
+#### Word of Warning
+Serialization benchmarks are not reflective of "real-world" performance, because processes rarely do serialization-only workflows. In reality, your serializer is going to be competing for L1 cache and other resources along with everything else in your program (and everything else on the machine). So while these benchmarks show that FlatSharp is faster by a wide margin, these benefits may not translate to any practical effect in your environment, depending completely upon your own workflows and data structures. Your choice of serialization format and library should be informed by your needs (Do you need lazy access? Do you care about compact message size?) and not by the results of a benchmark that shows best-case results for all serializers by virtue of that being the only thing running on the machine at that point in time.
+
+#### Serialization
+This data shows the mean time it takes to serialize a typical message containing a 30-item vector.
+Library | Time | Relative Performance | Data Size (bytes)
+--------|------|----------------------|-------------------
+FlatSharp | 2,493 ns | 100% | 3085
+FlatSharp (Virtual Properties) | 2,907 ns | 117% | 3085
+Message Pack C# | 6,174 ns | 247% | 2497
+Protobuf.NET | 10,550 ns | 423% | 2646
+Google FlatBuffers | 13,960 ns | 560% | 3312
+Google FlatBuffers (Object API) | 14,106 ns | 566% | 3312
+
+#### Deserialization
+How much time does it take to parse and then fully enumerate the message from the serialization benchmark?
+Library | Time | Relative Performance
+--------|------|-----------------------
+FlatSharp | 4,394 ns | 100%
+FlatSharp (Virtual Properties) | 4,836 ns | 110%
+Message Pack C# | 11,255 ns | 256%
+Protobuf.NET | 25,702 ns | 585%
+Google FlatBuffers | 10,633 ns | 242%
+Google FlatBuffers (Object API) | 16,978 ns | 386%
 
 ### So What Packages Do I Need?
 There are two main ways to use FlatSharp: Precompilation with .fbs files and runtime compilation using attributes on C# classes. Both of these produce and load the same code, so the performance will be identical. There are some good reasons to use precompilation over runtime compilation:

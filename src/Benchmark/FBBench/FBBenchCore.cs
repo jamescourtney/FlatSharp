@@ -28,10 +28,6 @@ namespace Benchmark.FBBench
     using FlatSharp.Attributes;
     using ProtoBuf;
 
-    using JobKind = BenchmarkDotNet.Attributes.MediumRunJobAttribute;
-
-    [JobKind(BenchmarkDotNet.Jobs.RuntimeMoniker.NetCoreApp50)]
-    [CsvExporter(BenchmarkDotNet.Exporters.Csv.CsvSeparator.Comma)]
     public abstract class FBBenchCore
     {
         protected FlatBufferBuilder google_flatBufferBuilder = new FlatBufferBuilder(64 * 1024);
@@ -57,7 +53,7 @@ namespace Benchmark.FBBench
         protected readonly byte[] fs_writeMemory = new byte[64 * 1024];
         public ArrayInputBuffer inputBuffer;
 
-        [Params(3, 30)]
+        [Params(30)]
         public virtual int VectorLength { get; set; }
 
         public virtual int TraversalCount { get; set; }

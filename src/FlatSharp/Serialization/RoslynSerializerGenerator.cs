@@ -23,6 +23,7 @@ namespace FlatSharp
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using System.Runtime.CompilerServices;
     using FlatSharp.Attributes;
     using FlatSharp.TypeModel;
     using Microsoft.CodeAnalysis;
@@ -124,9 +125,9 @@ $@"
 
             var externalRefs = this.TraverseAssemblyReferenceGraph<TRoot>();
 
-            (Assembly assembly, Func<string> formattedTextFactory, byte[] assemblyData) = 
+            (Assembly assembly, Func<string> formattedTextFactory, byte[] assemblyData) =
                 CompileAssembly(
-                    template, 
+                    template,
                     this.options.EnableAppDomainInterceptOnAssemblyLoad,
                     externalRefs.ToArray());
 
@@ -304,7 +305,7 @@ $@"
         }
 
         private static void ThrowOnEmitFailure(
-            EmitResult result, 
+            EmitResult result,
             SyntaxTree syntaxTree,
             Func<string> getFormattedCSharp)
         {
@@ -459,6 +460,7 @@ $@"
         /// </summary>
         private static SyntaxNode ApplySyntaxTransformations(SyntaxNode rootNode)
         {
+            // Add checked{} to methods.
             rootNode = rootNode.ReplaceNodes(
                rootNode.DescendantNodes().OfType<MethodDeclarationSyntax>(),
                (a, b) =>
@@ -471,6 +473,7 @@ $@"
                    return a;
                });
 
+            // Add checked{} to constructors.
             rootNode = rootNode.ReplaceNodes(
                 rootNode.DescendantNodes().OfType<ConstructorDeclarationSyntax>(),
                 (a, b) =>
@@ -478,6 +481,7 @@ $@"
                     return b.WithBody(SyntaxFactory.Block(SyntaxFactory.CheckedStatement(SyntaxKind.CheckedStatement, a.Body)));
                 });
 
+            // Add checked{} to property accessors.
             rootNode = rootNode.ReplaceNodes(
                 rootNode.DescendantNodes().OfType<AccessorDeclarationSyntax>(),
                 (a, b) =>
@@ -508,7 +512,7 @@ $@"
 
             var node = CSharpSyntaxTree.ParseText(declaration, ParseOptions);
             this.methodDeclarations.Add(node.GetRoot());
-            
+
             if (!string.IsNullOrEmpty(method.ClassDefinition))
             {
                 node = CSharpSyntaxTree.ParseText(method.ClassDefinition, ParseOptions);

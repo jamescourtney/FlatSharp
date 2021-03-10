@@ -25,56 +25,47 @@ namespace BenchmarkCore
     [ShortRunJob(BenchmarkDotNet.Jobs.RuntimeMoniker.NetCoreApp50, BenchmarkDotNet.Environments.Jit.RyuJit, BenchmarkDotNet.Environments.Platform.AnyCpu)]
     public class StructVectorClone
     {
-        private byte[] data;
-        private byte[] buffer;
-        private Table table;
+        public int Offset;
+
+        [Params(1, 2, 4, 8)]
+        public int Alignment;
 
         [GlobalSetup]
         public void Setup()
         {
-            this.data = new byte[32];
-            this.buffer = new byte[1024];
-
-            new Random().NextBytes(this.data);
-            this.table = new Table
-            {
-                Hash = new Sha256()
-            };
-
-            this.table.Hash.Value.CopyFrom(this.data.AsSpan());
-            this.Serialize();
+            this.Offset = new Random().Next(0, 256);
         }
 
-        //[Benchmark]
-        public Table Clone() => new Table(this.table);
-
-        //[Benchmark]
-        public void CopyFrom() => this.table.Hash.Value.CopyFrom(this.data.AsSpan());
+        [Benchmark]
+        public int NegPlusOne()
+        {
+            return ((~this.Offset) + 1) & (this.Alignment - 1);
+        }
 
         [Benchmark]
-        public int Serialize() => Table.Serializer.Write(this.buffer, this.table);
-
-        [Benchmark]
-        public Table Parse() => Table.Serializer.Parse(this.buffer);
+        public int NotAnd()
+        {
+            return (-this.Offset) & (this.Alignment - 1);
+        }
     }
 
     public class Program
     {
         public static void Main(string[] args)
         {
-            //var summary = BenchmarkRunner.Run<StructVectorClone>();
-            StructVectorClone cloner = new StructVectorClone();
-            cloner.Setup();
+            var summary = BenchmarkRunner.Run<StructVectorClone>();
+            //StructVectorClone cloner = new StructVectorClone();
+            //cloner.Setup();
 
-            for (int i = 0; i < 10_000_000; ++i)
-            {
-                cloner.Parse();
-            }
+            //for (int i = 0; i < 10_000_000; ++i)
+            //{
+            //    cloner.Parse();
+            //}
 
-            for (int i = 0; i < 10_000_000; ++i)
-            {
-                cloner.Serialize();
-            }
+            //for (int i = 0; i < 10_000_000; ++i)
+            //{
+            //    cloner.Serialize();
+            //}
         }
     }
 }
