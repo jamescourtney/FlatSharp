@@ -59,7 +59,30 @@ public struct SortedVectorInt32Table : IFlatbufferObject
     }
     return null;
   }
+  public SortedVectorInt32TableT UnPack() {
+    var _o = new SortedVectorInt32TableT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(SortedVectorInt32TableT _o) {
+    _o.Value = this.Value;
+  }
+  public static Offset<FlatSharpTests.Oracle.SortedVectorInt32Table> Pack(FlatBufferBuilder builder, SortedVectorInt32TableT _o) {
+    if (_o == null) return default(Offset<FlatSharpTests.Oracle.SortedVectorInt32Table>);
+    return CreateSortedVectorInt32Table(
+      builder,
+      _o.Value);
+  }
 };
+
+public class SortedVectorInt32TableT
+{
+  public int Value { get; set; }
+
+  public SortedVectorInt32TableT() {
+    this.Value = 5;
+  }
+}
 
 
 }

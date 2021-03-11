@@ -53,7 +53,60 @@ public struct VectorOfUnionTable : IFlatbufferObject
     int o = builder.EndTable();
     return new Offset<FlatSharpTests.Oracle.VectorOfUnionTable>(o);
   }
+  public VectorOfUnionTableT UnPack() {
+    var _o = new VectorOfUnionTableT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(VectorOfUnionTableT _o) {
+    _o.Value = new List<FlatSharpTests.Oracle.UnionUnion>();
+    for (var _j = 0; _j < this.ValueLength; ++_j) {
+      var _o_Value = new FlatSharpTests.Oracle.UnionUnion();
+      _o_Value.Type = this.ValueType(_j);
+      switch (this.ValueType(_j)) {
+        default: break;
+        case FlatSharpTests.Oracle.Union.BasicTypes:
+          _o_Value.Value = this.Value<FlatSharpTests.Oracle.BasicTypes>(_j).HasValue ? this.Value<FlatSharpTests.Oracle.BasicTypes>(_j).Value.UnPack() : null;
+          break;
+        case FlatSharpTests.Oracle.Union.Location:
+          _o_Value.Value = this.Value<FlatSharpTests.Oracle.Location>(_j).HasValue ? this.Value<FlatSharpTests.Oracle.Location>(_j).Value.UnPack() : null;
+          break;
+        case FlatSharpTests.Oracle.Union.stringValue:
+          _o_Value.Value = this.ValueAsString(_j);
+          break;
+      }
+      _o.Value.Add(_o_Value);
+    }
+  }
+  public static Offset<FlatSharpTests.Oracle.VectorOfUnionTable> Pack(FlatBufferBuilder builder, VectorOfUnionTableT _o) {
+    if (_o == null) return default(Offset<FlatSharpTests.Oracle.VectorOfUnionTable>);
+    var _Value_type = default(VectorOffset);
+    if (_o.Value != null) {
+      var __Value_type = new FlatSharpTests.Oracle.Union[_o.Value.Count];
+      for (var _j = 0; _j < __Value_type.Length; ++_j) { __Value_type[_j] = _o.Value[_j].Type; }
+      _Value_type = CreateValueTypeVector(builder, __Value_type);
+    }
+    var _Value = default(VectorOffset);
+    if (_o.Value != null) {
+      var __Value = new int[_o.Value.Count];
+      for (var _j = 0; _j < __Value.Length; ++_j) { __Value[_j] = FlatSharpTests.Oracle.UnionUnion.Pack(builder,  _o.Value[_j]); }
+      _Value = CreateValueVector(builder, __Value);
+    }
+    return CreateVectorOfUnionTable(
+      builder,
+      _Value_type,
+      _Value);
+  }
 };
+
+public class VectorOfUnionTableT
+{
+  public List<FlatSharpTests.Oracle.UnionUnion> Value { get; set; }
+
+  public VectorOfUnionTableT() {
+    this.Value = null;
+  }
+}
 
 
 }

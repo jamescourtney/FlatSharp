@@ -39,7 +39,46 @@ public struct UnionTable : IFlatbufferObject
     int o = builder.EndTable();
     return new Offset<FlatSharpTests.Oracle.UnionTable>(o);
   }
+  public UnionTableT UnPack() {
+    var _o = new UnionTableT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(UnionTableT _o) {
+    _o.Value = new FlatSharpTests.Oracle.UnionUnion();
+    _o.Value.Type = this.ValueType;
+    switch (this.ValueType) {
+      default: break;
+      case FlatSharpTests.Oracle.Union.BasicTypes:
+        _o.Value.Value = this.Value<FlatSharpTests.Oracle.BasicTypes>().HasValue ? this.Value<FlatSharpTests.Oracle.BasicTypes>().Value.UnPack() : null;
+        break;
+      case FlatSharpTests.Oracle.Union.Location:
+        _o.Value.Value = this.Value<FlatSharpTests.Oracle.Location>().HasValue ? this.Value<FlatSharpTests.Oracle.Location>().Value.UnPack() : null;
+        break;
+      case FlatSharpTests.Oracle.Union.stringValue:
+        _o.Value.Value = this.ValueAsString();
+        break;
+    }
+  }
+  public static Offset<FlatSharpTests.Oracle.UnionTable> Pack(FlatBufferBuilder builder, UnionTableT _o) {
+    if (_o == null) return default(Offset<FlatSharpTests.Oracle.UnionTable>);
+    var _Value_type = _o.Value == null ? FlatSharpTests.Oracle.Union.NONE : _o.Value.Type;
+    var _Value = _o.Value == null ? 0 : FlatSharpTests.Oracle.UnionUnion.Pack(builder, _o.Value);
+    return CreateUnionTable(
+      builder,
+      _Value_type,
+      _Value);
+  }
 };
+
+public class UnionTableT
+{
+  public FlatSharpTests.Oracle.UnionUnion Value { get; set; }
+
+  public UnionTableT() {
+    this.Value = null;
+  }
+}
 
 
 }

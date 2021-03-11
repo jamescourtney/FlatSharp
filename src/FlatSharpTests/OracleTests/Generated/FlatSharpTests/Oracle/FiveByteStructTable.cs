@@ -36,7 +36,37 @@ public struct FiveByteStructTable : IFlatbufferObject
     int o = builder.EndTable();
     return new Offset<FlatSharpTests.Oracle.FiveByteStructTable>(o);
   }
+  public FiveByteStructTableT UnPack() {
+    var _o = new FiveByteStructTableT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(FiveByteStructTableT _o) {
+    _o.Vector = new List<FlatSharpTests.Oracle.FiveByteStructT>();
+    for (var _j = 0; _j < this.VectorLength; ++_j) {_o.Vector.Add(this.Vector(_j).HasValue ? this.Vector(_j).Value.UnPack() : null);}
+  }
+  public static Offset<FlatSharpTests.Oracle.FiveByteStructTable> Pack(FlatBufferBuilder builder, FiveByteStructTableT _o) {
+    if (_o == null) return default(Offset<FlatSharpTests.Oracle.FiveByteStructTable>);
+    var _Vector = default(VectorOffset);
+    if (_o.Vector != null) {
+      StartVectorVector(builder, _o.Vector.Count);
+      for (var _j = _o.Vector.Count - 1; _j >= 0; --_j) { FlatSharpTests.Oracle.FiveByteStruct.Pack(builder, _o.Vector[_j]); }
+      _Vector = builder.EndVector();
+    }
+    return CreateFiveByteStructTable(
+      builder,
+      _Vector);
+  }
 };
+
+public class FiveByteStructTableT
+{
+  public List<FlatSharpTests.Oracle.FiveByteStructT> Vector { get; set; }
+
+  public FiveByteStructTableT() {
+    this.Vector = null;
+  }
+}
 
 
 }

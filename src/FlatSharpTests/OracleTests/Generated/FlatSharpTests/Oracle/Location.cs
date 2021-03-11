@@ -27,7 +27,38 @@ public struct Location : IFlatbufferObject
     builder.PutFloat(X);
     return new Offset<FlatSharpTests.Oracle.Location>(builder.Offset);
   }
+  public LocationT UnPack() {
+    var _o = new LocationT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(LocationT _o) {
+    _o.X = this.X;
+    _o.Y = this.Y;
+    _o.Z = this.Z;
+  }
+  public static Offset<FlatSharpTests.Oracle.Location> Pack(FlatBufferBuilder builder, LocationT _o) {
+    if (_o == null) return default(Offset<FlatSharpTests.Oracle.Location>);
+    return CreateLocation(
+      builder,
+      _o.X,
+      _o.Y,
+      _o.Z);
+  }
 };
+
+public class LocationT
+{
+  public float X { get; set; }
+  public float Y { get; set; }
+  public float Z { get; set; }
+
+  public LocationT() {
+    this.X = 0.0f;
+    this.Y = 0.0f;
+    this.Z = 0.0f;
+  }
+}
 
 
 }

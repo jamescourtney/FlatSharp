@@ -84,7 +84,75 @@ public struct BasicTypes : IFlatbufferObject
     int o = builder.EndTable();
     return new Offset<FlatSharpTests.Oracle.BasicTypes>(o);
   }
+  public BasicTypesT UnPack() {
+    var _o = new BasicTypesT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(BasicTypesT _o) {
+    _o.Byte = this.Byte;
+    _o.UShort = this.UShort;
+    _o.Short = this.Short;
+    _o.Bool = this.Bool;
+    _o.UInt = this.UInt;
+    _o.Int = this.Int;
+    _o.SByte = this.SByte;
+    _o.ULong = this.ULong;
+    _o.Long = this.Long;
+    _o.Float = this.Float;
+    _o.Double = this.Double;
+    _o.String = this.String;
+  }
+  public static Offset<FlatSharpTests.Oracle.BasicTypes> Pack(FlatBufferBuilder builder, BasicTypesT _o) {
+    if (_o == null) return default(Offset<FlatSharpTests.Oracle.BasicTypes>);
+    var _String = _o.String == null ? default(StringOffset) : builder.CreateString(_o.String);
+    return CreateBasicTypes(
+      builder,
+      _o.Byte,
+      _o.UShort,
+      _o.Short,
+      _o.Bool,
+      _o.UInt,
+      _o.Int,
+      _o.SByte,
+      _o.ULong,
+      _o.Long,
+      _o.Float,
+      _o.Double,
+      _String);
+  }
 };
+
+public class BasicTypesT
+{
+  public byte Byte { get; set; }
+  public ushort UShort { get; set; }
+  public short Short { get; set; }
+  public bool Bool { get; set; }
+  public uint UInt { get; set; }
+  public int Int { get; set; }
+  public sbyte SByte { get; set; }
+  public ulong ULong { get; set; }
+  public long Long { get; set; }
+  public float Float { get; set; }
+  public double Double { get; set; }
+  public string String { get; set; }
+
+  public BasicTypesT() {
+    this.Byte = 0;
+    this.UShort = 0;
+    this.Short = 0;
+    this.Bool = false;
+    this.UInt = 0;
+    this.Int = 0;
+    this.SByte = 0;
+    this.ULong = 0;
+    this.Long = 0;
+    this.Float = 0.0f;
+    this.Double = 0.0;
+    this.String = null;
+  }
+}
 
 
 }

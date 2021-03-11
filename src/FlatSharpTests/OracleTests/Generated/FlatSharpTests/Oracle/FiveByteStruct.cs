@@ -26,7 +26,34 @@ public struct FiveByteStruct : IFlatbufferObject
     builder.PutInt(Int);
     return new Offset<FlatSharpTests.Oracle.FiveByteStruct>(builder.Offset);
   }
+  public FiveByteStructT UnPack() {
+    var _o = new FiveByteStructT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(FiveByteStructT _o) {
+    _o.Int = this.Int;
+    _o.Byte = this.Byte;
+  }
+  public static Offset<FlatSharpTests.Oracle.FiveByteStruct> Pack(FlatBufferBuilder builder, FiveByteStructT _o) {
+    if (_o == null) return default(Offset<FlatSharpTests.Oracle.FiveByteStruct>);
+    return CreateFiveByteStruct(
+      builder,
+      _o.Int,
+      _o.Byte);
+  }
 };
+
+public class FiveByteStructT
+{
+  public int Int { get; set; }
+  public byte Byte { get; set; }
+
+  public FiveByteStructT() {
+    this.Int = 0;
+    this.Byte = 0;
+  }
+}
 
 
 }

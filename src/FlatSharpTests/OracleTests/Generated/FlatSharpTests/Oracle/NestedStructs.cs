@@ -27,7 +27,30 @@ public struct NestedStructs : IFlatbufferObject
     int o = builder.EndTable();
     return new Offset<FlatSharpTests.Oracle.NestedStructs>(o);
   }
+  public NestedStructsT UnPack() {
+    var _o = new NestedStructsT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(NestedStructsT _o) {
+    _o.Outer = this.Outer.HasValue ? this.Outer.Value.UnPack() : null;
+  }
+  public static Offset<FlatSharpTests.Oracle.NestedStructs> Pack(FlatBufferBuilder builder, NestedStructsT _o) {
+    if (_o == null) return default(Offset<FlatSharpTests.Oracle.NestedStructs>);
+    StartNestedStructs(builder);
+    AddOuter(builder, FlatSharpTests.Oracle.OuterStruct.Pack(builder, _o.Outer));
+    return EndNestedStructs(builder);
+  }
 };
+
+public class NestedStructsT
+{
+  public FlatSharpTests.Oracle.OuterStructT Outer { get; set; }
+
+  public NestedStructsT() {
+    this.Outer = new FlatSharpTests.Oracle.OuterStructT();
+  }
+}
 
 
 }

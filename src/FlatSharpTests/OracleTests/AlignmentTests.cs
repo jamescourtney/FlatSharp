@@ -100,6 +100,121 @@ namespace FlatSharpTests
             Assert.AreEqual(9, inner.C);
         }
 
+        [TestMethod]
+        public void StructVectorDeserialize()
+        {
+            Oracle.StructVectorsTableT table = new Oracle.StructVectorsTableT
+            {
+                Vec = new Oracle.StructVectorsT
+                {
+                    HashVec = new ulong[] { 1, 2, 3, 4 },
+                    AlignmentVec = new Oracle.FiveByteStructT[]
+                    {
+                        new() { Int = 5, Byte = 6, },
+                        new() { Int = 7, Byte = 8, },
+                        new() { Int = 9, Byte = 10, },
+                    }
+                }
+            };
+
+            var builder = new FlatBuffers.FlatBufferBuilder(1024);
+            var offset = Oracle.StructVectorsTable.Pack(builder, table);
+            builder.Finish(offset.Value);
+
+            byte[] serialized = builder.SizedByteArray();
+
+            var parsed = FlatBufferSerializer.Default.Parse<StructVectorsTable>(serialized);
+
+            Assert.AreEqual<ulong>(1, parsed.Vectors.Hash_0);
+            Assert.AreEqual<ulong>(2, parsed.Vectors.Hash_1);
+            Assert.AreEqual<ulong>(3, parsed.Vectors.Hash_2);
+            Assert.AreEqual<ulong>(4, parsed.Vectors.Hash_3);
+
+            Assert.AreEqual(5, parsed.Vectors.AlignmentVec_0.Int);
+            Assert.AreEqual(6, parsed.Vectors.AlignmentVec_0.Byte);
+
+            Assert.AreEqual(7, parsed.Vectors.AlignmentVec_1.Int);
+            Assert.AreEqual(8, parsed.Vectors.AlignmentVec_1.Byte);
+
+            Assert.AreEqual(9, parsed.Vectors.AlignmentVec_2.Int);
+            Assert.AreEqual(10, parsed.Vectors.AlignmentVec_2.Byte);
+        }
+
+        [TestMethod]
+        public void StructVectorSerialize()
+        {
+            StructVectorsTable table = new StructVectorsTable
+            {
+                Vectors = new StructVectors
+                {
+                    Hash_0 = 1,
+                    Hash_1 = 2,
+                    Hash_2 = 3,
+                    Hash_3 = 4,
+                    AlignmentVec_0 = new() { Int = 5, Byte = 6 },
+                    AlignmentVec_1 = new() { Int = 7, Byte = 8 },
+                    AlignmentVec_2 = new() { Int = 9, Byte = 10 },
+                }
+            };
+
+            byte[] data = new byte[1024];
+            FlatBufferSerializer.Default.Serialize(table, data);
+
+            var parsed = Oracle.StructVectorsTable.GetRootAsStructVectorsTable(new FlatBuffers.ByteBuffer(data)).UnPack();
+
+            Assert.AreEqual<ulong>(1, parsed.Vec.HashVec[0]);
+            Assert.AreEqual<ulong>(2, parsed.Vec.HashVec[1]);
+            Assert.AreEqual<ulong>(3, parsed.Vec.HashVec[2]);
+            Assert.AreEqual<ulong>(4, parsed.Vec.HashVec[3]);
+
+            Assert.AreEqual(5, parsed.Vec.AlignmentVec[0].Int);
+            Assert.AreEqual(6, parsed.Vec.AlignmentVec[0].Byte);
+
+            Assert.AreEqual(7, parsed.Vec.AlignmentVec[1].Int);
+            Assert.AreEqual(8, parsed.Vec.AlignmentVec[1].Byte);
+
+            Assert.AreEqual(9, parsed.Vec.AlignmentVec[2].Int);
+            Assert.AreEqual(10, parsed.Vec.AlignmentVec[2].Byte);
+        }
+
+        [FlatBufferTable]
+        public class StructVectorsTable
+        {
+            [FlatBufferItem(0)]
+            public StructVectors? Vectors { get; set; }
+        }
+
+        /*
+         * struct StructVectors {
+         *    AlignmentVec:[FiveByteStruct:3];
+         *    HashVec:[ulong:4];
+         *  } 
+         */
+        [FlatBufferStruct]
+        public class StructVectors
+        {
+            [FlatBufferItem(0)]
+            public FiveByteStruct AlignmentVec_0 { get; set; }
+
+            [FlatBufferItem(1)]
+            public FiveByteStruct AlignmentVec_1 { get; set; }
+
+            [FlatBufferItem(2)]
+            public FiveByteStruct AlignmentVec_2 { get; set; }
+
+            [FlatBufferItem(3)]
+            public ulong Hash_0 { get; set; }
+
+            [FlatBufferItem(4)]
+            public ulong Hash_1 { get; set; }
+
+            [FlatBufferItem(5)]
+            public ulong Hash_2 { get; set; }
+
+            [FlatBufferItem(6)]
+            public ulong Hash_3 { get; set; }
+        }
+
         [FlatBufferTable]
         public class AlignmentTestDataHolder
         {
