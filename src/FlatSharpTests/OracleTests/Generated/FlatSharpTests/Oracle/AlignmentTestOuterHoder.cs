@@ -27,7 +27,30 @@ public struct AlignmentTestOuterHoder : IFlatbufferObject
     int o = builder.EndTable();
     return new Offset<FlatSharpTests.Oracle.AlignmentTestOuterHoder>(o);
   }
+  public AlignmentTestOuterHoderT UnPack() {
+    var _o = new AlignmentTestOuterHoderT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(AlignmentTestOuterHoderT _o) {
+    _o.Value = this.Value.HasValue ? this.Value.Value.UnPack() : null;
+  }
+  public static Offset<FlatSharpTests.Oracle.AlignmentTestOuterHoder> Pack(FlatBufferBuilder builder, AlignmentTestOuterHoderT _o) {
+    if (_o == null) return default(Offset<FlatSharpTests.Oracle.AlignmentTestOuterHoder>);
+    StartAlignmentTestOuterHoder(builder);
+    AddValue(builder, FlatSharpTests.Oracle.AlignmentTestOuter.Pack(builder, _o.Value));
+    return EndAlignmentTestOuterHoder(builder);
+  }
 };
+
+public class AlignmentTestOuterHoderT
+{
+  public FlatSharpTests.Oracle.AlignmentTestOuterT Value { get; set; }
+
+  public AlignmentTestOuterHoderT() {
+    this.Value = new FlatSharpTests.Oracle.AlignmentTestOuterT();
+  }
+}
 
 
 }

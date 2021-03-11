@@ -26,7 +26,34 @@ public struct OuterStruct : IFlatbufferObject
     builder.PutInt(Inner_A);
     return new Offset<FlatSharpTests.Oracle.OuterStruct>(builder.Offset);
   }
+  public OuterStructT UnPack() {
+    var _o = new OuterStructT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(OuterStructT _o) {
+    _o.Inner = this.Inner.UnPack();
+    _o.A = this.A;
+  }
+  public static Offset<FlatSharpTests.Oracle.OuterStruct> Pack(FlatBufferBuilder builder, OuterStructT _o) {
+    if (_o == null) return default(Offset<FlatSharpTests.Oracle.OuterStruct>);
+    return CreateOuterStruct(
+      builder,
+      _o.Inner.A,
+      _o.A);
+  }
 };
+
+public class OuterStructT
+{
+  public FlatSharpTests.Oracle.InnerStructT Inner { get; set; }
+  public int A { get; set; }
+
+  public OuterStructT() {
+    this.Inner = new FlatSharpTests.Oracle.InnerStructT();
+    this.A = 0;
+  }
+}
 
 
 }

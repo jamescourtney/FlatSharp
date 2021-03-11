@@ -57,7 +57,59 @@ public struct SortedVectorTest : IFlatbufferObject
     int o = builder.EndTable();
     return new Offset<FlatSharpTests.Oracle.SortedVectorTest>(o);
   }
+  public SortedVectorTestT UnPack() {
+    var _o = new SortedVectorTestT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(SortedVectorTestT _o) {
+    _o.Int32 = new List<FlatSharpTests.Oracle.SortedVectorInt32TableT>();
+    for (var _j = 0; _j < this.Int32Length; ++_j) {_o.Int32.Add(this.Int32(_j).HasValue ? this.Int32(_j).Value.UnPack() : null);}
+    _o.String = new List<FlatSharpTests.Oracle.SortedVectorStringTableT>();
+    for (var _j = 0; _j < this.StringLength; ++_j) {_o.String.Add(this.String(_j).HasValue ? this.String(_j).Value.UnPack() : null);}
+    _o.Double = new List<FlatSharpTests.Oracle.SortedVectorDoubleTableT>();
+    for (var _j = 0; _j < this.DoubleLength; ++_j) {_o.Double.Add(this.Double(_j).HasValue ? this.Double(_j).Value.UnPack() : null);}
+  }
+  public static Offset<FlatSharpTests.Oracle.SortedVectorTest> Pack(FlatBufferBuilder builder, SortedVectorTestT _o) {
+    if (_o == null) return default(Offset<FlatSharpTests.Oracle.SortedVectorTest>);
+    var _Int32 = default(VectorOffset);
+    if (_o.Int32 != null) {
+      var __Int32 = new Offset<FlatSharpTests.Oracle.SortedVectorInt32Table>[_o.Int32.Count];
+      for (var _j = 0; _j < __Int32.Length; ++_j) { __Int32[_j] = FlatSharpTests.Oracle.SortedVectorInt32Table.Pack(builder, _o.Int32[_j]); }
+      _Int32 = CreateInt32Vector(builder, __Int32);
+    }
+    var _String = default(VectorOffset);
+    if (_o.String != null) {
+      var __String = new Offset<FlatSharpTests.Oracle.SortedVectorStringTable>[_o.String.Count];
+      for (var _j = 0; _j < __String.Length; ++_j) { __String[_j] = FlatSharpTests.Oracle.SortedVectorStringTable.Pack(builder, _o.String[_j]); }
+      _String = CreateStringVector(builder, __String);
+    }
+    var _Double = default(VectorOffset);
+    if (_o.Double != null) {
+      var __Double = new Offset<FlatSharpTests.Oracle.SortedVectorDoubleTable>[_o.Double.Count];
+      for (var _j = 0; _j < __Double.Length; ++_j) { __Double[_j] = FlatSharpTests.Oracle.SortedVectorDoubleTable.Pack(builder, _o.Double[_j]); }
+      _Double = CreateDoubleVector(builder, __Double);
+    }
+    return CreateSortedVectorTest(
+      builder,
+      _Int32,
+      _String,
+      _Double);
+  }
 };
+
+public class SortedVectorTestT
+{
+  public List<FlatSharpTests.Oracle.SortedVectorInt32TableT> Int32 { get; set; }
+  public List<FlatSharpTests.Oracle.SortedVectorStringTableT> String { get; set; }
+  public List<FlatSharpTests.Oracle.SortedVectorDoubleTableT> Double { get; set; }
+
+  public SortedVectorTestT() {
+    this.Int32 = null;
+    this.String = null;
+    this.Double = null;
+  }
+}
 
 
 }

@@ -114,6 +114,15 @@ struct OuterStruct {
 	A:int;
 }
 
+table StructVectorsTable {
+   Vec:StructVectors;
+}
+
+struct StructVectors {
+   AlignmentVec:[FiveByteStruct:3];
+   HashVec:[ulong:4];
+}
+
 table SortedVectorTest {
 	Int32:[SortedVectorInt32Table];
 	String:[SortedVectorStringTable];
@@ -121,7 +130,7 @@ table SortedVectorTest {
 }
 
 table SortedVectorInt32Table {
-	Value:int32 (key);
+	Value:int32 = 5 (key);
 }
 
 table SortedVectorDoubleTable {

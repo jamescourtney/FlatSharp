@@ -29,7 +29,38 @@ public struct AlignmentTestInner : IFlatbufferObject
     builder.PutByte(A);
     return new Offset<FlatSharpTests.Oracle.AlignmentTestInner>(builder.Offset);
   }
+  public AlignmentTestInnerT UnPack() {
+    var _o = new AlignmentTestInnerT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(AlignmentTestInnerT _o) {
+    _o.A = this.A;
+    _o.B = this.B;
+    _o.C = this.C;
+  }
+  public static Offset<FlatSharpTests.Oracle.AlignmentTestInner> Pack(FlatBufferBuilder builder, AlignmentTestInnerT _o) {
+    if (_o == null) return default(Offset<FlatSharpTests.Oracle.AlignmentTestInner>);
+    return CreateAlignmentTestInner(
+      builder,
+      _o.A,
+      _o.B,
+      _o.C);
+  }
 };
+
+public class AlignmentTestInnerT
+{
+  public byte A { get; set; }
+  public int B { get; set; }
+  public sbyte C { get; set; }
+
+  public AlignmentTestInnerT() {
+    this.A = 0;
+    this.B = 0;
+    this.C = 0;
+  }
+}
 
 
 }

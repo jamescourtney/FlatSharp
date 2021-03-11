@@ -86,7 +86,66 @@ public struct Vectors : IFlatbufferObject
     int o = builder.EndTable();
     return new Offset<FlatSharpTests.Oracle.Vectors>(o);
   }
+  public VectorsT UnPack() {
+    var _o = new VectorsT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(VectorsT _o) {
+    _o.IntVector = new List<int>();
+    for (var _j = 0; _j < this.IntVectorLength; ++_j) {_o.IntVector.Add(this.IntVector(_j));}
+    _o.LongVector = new List<long>();
+    for (var _j = 0; _j < this.LongVectorLength; ++_j) {_o.LongVector.Add(this.LongVector(_j));}
+    _o.ByteVector1 = new List<byte>();
+    for (var _j = 0; _j < this.ByteVector1Length; ++_j) {_o.ByteVector1.Add(this.ByteVector1(_j));}
+    _o.ByteVector2 = new List<byte>();
+    for (var _j = 0; _j < this.ByteVector2Length; ++_j) {_o.ByteVector2.Add(this.ByteVector2(_j));}
+  }
+  public static Offset<FlatSharpTests.Oracle.Vectors> Pack(FlatBufferBuilder builder, VectorsT _o) {
+    if (_o == null) return default(Offset<FlatSharpTests.Oracle.Vectors>);
+    var _IntVector = default(VectorOffset);
+    if (_o.IntVector != null) {
+      var __IntVector = _o.IntVector.ToArray();
+      _IntVector = CreateIntVectorVector(builder, __IntVector);
+    }
+    var _LongVector = default(VectorOffset);
+    if (_o.LongVector != null) {
+      var __LongVector = _o.LongVector.ToArray();
+      _LongVector = CreateLongVectorVector(builder, __LongVector);
+    }
+    var _ByteVector1 = default(VectorOffset);
+    if (_o.ByteVector1 != null) {
+      var __ByteVector1 = _o.ByteVector1.ToArray();
+      _ByteVector1 = CreateByteVector1Vector(builder, __ByteVector1);
+    }
+    var _ByteVector2 = default(VectorOffset);
+    if (_o.ByteVector2 != null) {
+      var __ByteVector2 = _o.ByteVector2.ToArray();
+      _ByteVector2 = CreateByteVector2Vector(builder, __ByteVector2);
+    }
+    return CreateVectors(
+      builder,
+      _IntVector,
+      _LongVector,
+      _ByteVector1,
+      _ByteVector2);
+  }
 };
+
+public class VectorsT
+{
+  public List<int> IntVector { get; set; }
+  public List<long> LongVector { get; set; }
+  public List<byte> ByteVector1 { get; set; }
+  public List<byte> ByteVector2 { get; set; }
+
+  public VectorsT() {
+    this.IntVector = null;
+    this.LongVector = null;
+    this.ByteVector1 = null;
+    this.ByteVector2 = null;
+  }
+}
 
 
 }

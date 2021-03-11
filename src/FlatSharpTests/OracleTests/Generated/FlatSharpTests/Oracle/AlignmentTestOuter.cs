@@ -44,7 +44,56 @@ public struct AlignmentTestOuter : IFlatbufferObject
     builder.PutByte(A);
     return new Offset<FlatSharpTests.Oracle.AlignmentTestOuter>(builder.Offset);
   }
+  public AlignmentTestOuterT UnPack() {
+    var _o = new AlignmentTestOuterT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(AlignmentTestOuterT _o) {
+    _o.A = this.A;
+    _o.B = this.B;
+    _o.C = this.C;
+    _o.D = this.D;
+    _o.E = this.E;
+    _o.F = this.F;
+    _o.G = this.G.UnPack();
+  }
+  public static Offset<FlatSharpTests.Oracle.AlignmentTestOuter> Pack(FlatBufferBuilder builder, AlignmentTestOuterT _o) {
+    if (_o == null) return default(Offset<FlatSharpTests.Oracle.AlignmentTestOuter>);
+    return CreateAlignmentTestOuter(
+      builder,
+      _o.A,
+      _o.B,
+      _o.C,
+      _o.D,
+      _o.E,
+      _o.F,
+      _o.G.A,
+      _o.G.B,
+      _o.G.C);
+  }
 };
+
+public class AlignmentTestOuterT
+{
+  public byte A { get; set; }
+  public ushort B { get; set; }
+  public byte C { get; set; }
+  public uint D { get; set; }
+  public byte E { get; set; }
+  public ulong F { get; set; }
+  public FlatSharpTests.Oracle.AlignmentTestInnerT G { get; set; }
+
+  public AlignmentTestOuterT() {
+    this.A = 0;
+    this.B = 0;
+    this.C = 0;
+    this.D = 0;
+    this.E = 0;
+    this.F = 0;
+    this.G = new FlatSharpTests.Oracle.AlignmentTestInnerT();
+  }
+}
 
 
 }

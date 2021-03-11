@@ -44,7 +44,36 @@ public struct LinkedListNode : IFlatbufferObject
     int o = builder.EndTable();
     return new Offset<FlatSharpTests.Oracle.LinkedListNode>(o);
   }
+  public LinkedListNodeT UnPack() {
+    var _o = new LinkedListNodeT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(LinkedListNodeT _o) {
+    _o.Value = this.Value;
+    _o.Next = this.Next.HasValue ? this.Next.Value.UnPack() : null;
+  }
+  public static Offset<FlatSharpTests.Oracle.LinkedListNode> Pack(FlatBufferBuilder builder, LinkedListNodeT _o) {
+    if (_o == null) return default(Offset<FlatSharpTests.Oracle.LinkedListNode>);
+    var _Value = _o.Value == null ? default(StringOffset) : builder.CreateString(_o.Value);
+    var _Next = _o.Next == null ? default(Offset<FlatSharpTests.Oracle.LinkedListNode>) : FlatSharpTests.Oracle.LinkedListNode.Pack(builder, _o.Next);
+    return CreateLinkedListNode(
+      builder,
+      _Value,
+      _Next);
+  }
 };
+
+public class LinkedListNodeT
+{
+  public string Value { get; set; }
+  public FlatSharpTests.Oracle.LinkedListNodeT Next { get; set; }
+
+  public LinkedListNodeT() {
+    this.Value = null;
+    this.Next = null;
+  }
+}
 
 
 }

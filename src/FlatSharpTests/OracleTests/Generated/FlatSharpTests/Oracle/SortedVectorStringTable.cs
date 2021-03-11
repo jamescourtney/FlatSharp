@@ -67,7 +67,31 @@ public struct SortedVectorStringTable : IFlatbufferObject
     }
     return null;
   }
+  public SortedVectorStringTableT UnPack() {
+    var _o = new SortedVectorStringTableT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(SortedVectorStringTableT _o) {
+    _o.Value = this.Value;
+  }
+  public static Offset<FlatSharpTests.Oracle.SortedVectorStringTable> Pack(FlatBufferBuilder builder, SortedVectorStringTableT _o) {
+    if (_o == null) return default(Offset<FlatSharpTests.Oracle.SortedVectorStringTable>);
+    var _Value = _o.Value == null ? default(StringOffset) : builder.CreateString(_o.Value);
+    return CreateSortedVectorStringTable(
+      builder,
+      _Value);
+  }
 };
+
+public class SortedVectorStringTableT
+{
+  public string Value { get; set; }
+
+  public SortedVectorStringTableT() {
+    this.Value = null;
+  }
+}
 
 
 }

@@ -59,7 +59,30 @@ public struct SortedVectorDoubleTable : IFlatbufferObject
     }
     return null;
   }
+  public SortedVectorDoubleTableT UnPack() {
+    var _o = new SortedVectorDoubleTableT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(SortedVectorDoubleTableT _o) {
+    _o.Value = this.Value;
+  }
+  public static Offset<FlatSharpTests.Oracle.SortedVectorDoubleTable> Pack(FlatBufferBuilder builder, SortedVectorDoubleTableT _o) {
+    if (_o == null) return default(Offset<FlatSharpTests.Oracle.SortedVectorDoubleTable>);
+    return CreateSortedVectorDoubleTable(
+      builder,
+      _o.Value);
+  }
 };
+
+public class SortedVectorDoubleTableT
+{
+  public double Value { get; set; }
+
+  public SortedVectorDoubleTableT() {
+    this.Value = 0.0;
+  }
+}
 
 
 }
