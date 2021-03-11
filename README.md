@@ -18,7 +18,7 @@ As of version 3.3.1, FlatSharp is in production use at Microsoft.
 If you're completely new to FlatBuffers, take a minute to look over [the FlatBuffer overview](https://google.github.io/flatbuffers/index.html#flatbuffers_overview). Additionally, it's worth the time to understand the different elements of [FlatBuffer schemas](https://google.github.io/flatbuffers/flatbuffers_guide_writing_schema.html).
 
 #### 1. Define a schema
-There are two ways to define a FlatBuffer schema with FlatSharp. The first is to use [C# attributes to annotate classes](samples/Example0-AttributeBasedSchemas/MonsterAttributeExample.cs), like you would with other serializers:
+There are two ways to define a FlatBuffer schema with FlatSharp. The first is to use [C# attributes to annotate classes](samples/Example00-AttributeBasedSchemas/MonsterAttributeExample.cs), like you would with other serializers:
 ```c#
 // FlatSharp supports enums, but makes you promise not to change the underlying type.
 [FlatBufferEnum(typeof(byte))]
@@ -48,7 +48,7 @@ public class Location : object
 }
 ```
 
-The second way to define a schema is to use an [FBS schema file](samples/Example2-SchemaFiles/SchemaFilesExample.fbs) and run the FlatSharp compiler at build-time with your project. This enables fancy options like precompiling your serializers, interop with FlatBuffers in other languages, and GRPC definitions.
+The second way to define a schema is to use an [FBS schema file](samples/Example02-SchemaFiles/SchemaFilesExample.fbs) and run the FlatSharp compiler at build-time with your project. This enables fancy options like precompiling your serializers, interop with FlatBuffers in other languages, and GRPC definitions.
 ``` fbs
 namespace MyNamespace;
 
