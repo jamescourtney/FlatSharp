@@ -495,14 +495,21 @@ $@"
                 currentOffset += {layout.InlineSize};";
 
             string setVtableBlock = string.Empty;
-            if (vTableLength > minVTableLength &&
-                i == memberModel.ItemTypeModel.PhysicalLayout.Length - 1)
+            if (i == memberModel.ItemTypeModel.PhysicalLayout.Length - 1)
             {
-                setVtableBlock = $@"
+                if (vTableLength == 4 + (2 * (this.MaxIndex + 1)))
+                {
+                    // if this is the last element, then we don't need the 'if'.
+                    setVtableBlock = $"vtableLength = {vTableLength};";
+                }
+                else if (vTableLength > minVTableLength)
+                {
+                    setVtableBlock = $@"
                     if ({vTableLength} > vtableLength)
                     {{
                         vtableLength = {vTableLength};
                     }}";
+                }
             }
 
             string writeVTableBlock = 
