@@ -20,37 +20,37 @@ namespace Benchmark.FBBench
 
     public class FBSerializeBench : FBBenchCore
     {
-#if RUN_COMPARISON_BENCHMARKS
-        [Benchmark]
-        public override void Google_FlatBuffers_Serialize() => base.Google_FlatBuffers_Serialize();
+//#if RUN_COMPARISON_BENCHMARKS
+//        [Benchmark]
+//        public override void Google_FlatBuffers_Serialize() => base.Google_FlatBuffers_Serialize();
 
-        [Benchmark]
-        public override int Google_FlatBuffers_Serialize_ObjectApi() => base.Google_FlatBuffers_Serialize_ObjectApi();
+//        [Benchmark]
+//        public override int Google_FlatBuffers_Serialize_ObjectApi() => base.Google_FlatBuffers_Serialize_ObjectApi();
 
-        [Benchmark]
-        public override void Google_Flatbuffers_StringVector_Sorted() => base.Google_Flatbuffers_StringVector_Sorted();
+//        [Benchmark]
+//        public override void Google_Flatbuffers_StringVector_Sorted() => base.Google_Flatbuffers_StringVector_Sorted();
 
-        [Benchmark]
-        public override void Google_Flatbuffers_StringVector_Unsorted() => base.Google_Flatbuffers_StringVector_Unsorted();
+//        [Benchmark]
+//        public override void Google_Flatbuffers_StringVector_Unsorted() => base.Google_Flatbuffers_StringVector_Unsorted();
 
-        [Benchmark]
-        public override void Google_Flatbuffers_IntVector_Sorted() => base.Google_Flatbuffers_IntVector_Sorted();
+//        [Benchmark]
+//        public override void Google_Flatbuffers_IntVector_Sorted() => base.Google_Flatbuffers_IntVector_Sorted();
 
-        [Benchmark]
-        public override void Google_Flatbuffers_IntVector_Unsorted() => base.Google_Flatbuffers_IntVector_Unsorted();
+//        [Benchmark]
+//        public override void Google_Flatbuffers_IntVector_Unsorted() => base.Google_Flatbuffers_IntVector_Unsorted();
 
-        [Benchmark]
-        public override void PBDN_Serialize() => base.PBDN_Serialize();
+//        [Benchmark]
+//        public override void PBDN_Serialize() => base.PBDN_Serialize();
 
-        [Benchmark]
-        public override void PBDN_Serialize_NonVirtual() => base.PBDN_Serialize_NonVirtual();
+//        [Benchmark]
+//        public override void PBDN_Serialize_NonVirtual() => base.PBDN_Serialize_NonVirtual();
 
-        [Benchmark]
-        public override void MsgPack_Serialize_NonVirtual() => base.MsgPack_Serialize_NonVirtual();
-#endif
+//        [Benchmark]
+//        public override void MsgPack_Serialize_NonVirtual() => base.MsgPack_Serialize_NonVirtual();
+//#endif
 
-        [Benchmark]
-        public override void FlatSharp_GetMaxSize() => base.FlatSharp_GetMaxSize();
+//        [Benchmark]
+//        public override void FlatSharp_GetMaxSize() => base.FlatSharp_GetMaxSize();
 
         [Benchmark]
         public override void FlatSharp_Serialize() => base.FlatSharp_Serialize();
@@ -58,19 +58,19 @@ namespace Benchmark.FBBench
         [Benchmark]
         public override void FlatSharp_Serialize_NonVirtual() => base.FlatSharp_Serialize_NonVirtual();
 
-        [Benchmark]
-        public override void FlatSharp_Serialize_StringVector_Sorted() => base.FlatSharp_Serialize_StringVector_Sorted();
+        //[Benchmark]
+        //public override void FlatSharp_Serialize_StringVector_Sorted() => base.FlatSharp_Serialize_StringVector_Sorted();
 
-        [Benchmark]
-        public override void FlatSharp_Serialize_StringVector_Unsorted() => base.FlatSharp_Serialize_StringVector_Unsorted();
+        //[Benchmark]
+        //public override void FlatSharp_Serialize_StringVector_Unsorted() => base.FlatSharp_Serialize_StringVector_Unsorted();
 
-        [Benchmark]
-        public override void FlatSharp_Serialize_IntVector_Sorted() => base.FlatSharp_Serialize_IntVector_Sorted();
+        //[Benchmark]
+        //public override void FlatSharp_Serialize_IntVector_Sorted() => base.FlatSharp_Serialize_IntVector_Sorted();
 
-        [Benchmark]
-        public override void FlatSharp_Serialize_IntVector_Unsorted() => base.FlatSharp_Serialize_IntVector_Unsorted();
+        //[Benchmark]
+        //public override void FlatSharp_Serialize_IntVector_Unsorted() => base.FlatSharp_Serialize_IntVector_Unsorted();
 
-        [Benchmark]
-        public override void FlatSharp_Serialize_ValueTableVector() => base.FlatSharp_Serialize_ValueTableVector();
+        //[Benchmark]
+        //public override void FlatSharp_Serialize_ValueTableVector() => base.FlatSharp_Serialize_ValueTableVector();
     }
 }

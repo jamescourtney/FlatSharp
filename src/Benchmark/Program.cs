@@ -34,7 +34,7 @@ namespace Benchmark
 
             Job job = Job.ShortRun
                 .WithAnalyzeLaunchVariance(true)
-                .WithLaunchCount(7)
+                .WithLaunchCount(3)
                 .WithWarmupCount(5)
                 .WithIterationCount(7)
                 .WithRuntime(CoreRuntime.Core50);
@@ -44,14 +44,14 @@ namespace Benchmark
                  .AddJob(job);
 
             summaries.Add(BenchmarkRunner.Run(typeof(FBBench.FBSerializeBench), config));
-            summaries.Add(BenchmarkRunner.Run(typeof(FBBench.FBDeserializeBench), config));
-            summaries.Add(BenchmarkRunner.Run(typeof(FBBench.OthersDeserializeBench), config));
+            //summaries.Add(BenchmarkRunner.Run(typeof(FBBench.FBDeserializeBench), config));
+            //summaries.Add(BenchmarkRunner.Run(typeof(FBBench.OthersDeserializeBench), config));
 
 #if !NO_SHARED_STRINGS
-            summaries.Add(BenchmarkRunner.Run(typeof(FBBench.FBSharedStringBench), config));
+            //summaries.Add(BenchmarkRunner.Run(typeof(FBBench.FBSharedStringBench), config));
 #endif
 #if CURRENT_VERSION_ONLY
-            summaries.Add(BenchmarkRunner.Run(typeof(SerializationContextBenchmark), config));
+            //summaries.Add(BenchmarkRunner.Run(typeof(SerializationContextBenchmark), config));
 #endif
 
             foreach (var item in summaries)
