@@ -168,7 +168,7 @@ Runtime compilation is not planned to be deprecated (in fact the FlatSharp tests
 
 Framework | FlatSharp.Runtime | FlatSharp | FlatSharp.Unsafe | FlatSharp.Compiler
 ------------ | ------------- | --------  | ---------------- | -----------------
-Unity / Blazor / Xamarin | ✔️ |❌ | ❌| ✔️
+Unity / Blazor / Xamarin / Mono | ✔️ |❌ | ❌| ✔️
 .NET Core (Precompiled) | ✔️ | ❌ | ❌ | ✔️
 .NET Core (Runtime-compiled) | ✔️ | ✔️ | ❌ | ❌
 .NET Framework (Precompiled) | ✔️ | ❌ | ❔ | ✔️
