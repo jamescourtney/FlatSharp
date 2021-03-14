@@ -13,7 +13,7 @@ branches:
 
 environment:
   AppVeyorBuild: true
-  VersionMajor: '5.0.0'
+  VersionMajor: '5.0.1'
   
 version: '$(VersionMajor).{build}'
 
