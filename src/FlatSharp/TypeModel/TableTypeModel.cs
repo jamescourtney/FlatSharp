@@ -401,13 +401,13 @@ namespace FlatSharp.TypeModel
                 .ThenByDescending(x => x.vtableIndex)
                 .ToList();
 
-            int minVtableLength = 4;
+            int minVtableLength = this.GetVTableLength(-1);
             foreach (var t in items)
             {
                 if (t.model.ForceWrite)
                 {
                     minVtableLength = Math.Max(
-                        4 + 2 * (t.vtableIndex + 1), 
+                        this.GetVTableLength(t.vtableIndex), 
                         minVtableLength);
                 }
             }
@@ -486,8 +486,8 @@ $@"
                 condition = string.Empty;
             }
 
-            int vTableIndex = sizeof(ushort) * (2 + (index + i));
-            int vTableLength = vTableIndex + sizeof(ushort);
+            int vTableIndex = this.GetVTablePosition(index + i);
+            int vTableLength = this.GetVTableLength(index + i);
 
             string prepareBlock = $@"
                 currentOffset += {nameof(SerializationHelpers)}.{nameof(SerializationHelpers.GetAlignmentError)}(currentOffset, {layout.Alignment});
@@ -497,7 +497,7 @@ $@"
             string setVtableBlock = string.Empty;
             if (i == memberModel.ItemTypeModel.PhysicalLayout.Length - 1)
             {
-                if (vTableLength == 4 + (2 * (this.MaxIndex + 1)))
+                if (vTableLength == this.GetVTableLength(this.MaxIndex))
                 {
                     // if this is the last element, then we don't need the 'if'.
                     setVtableBlock = $"vtableLength = {vTableLength};";
@@ -695,5 +695,9 @@ $@"
                 }
             }
         }
+
+        private int GetVTableLength(int index) => 4 + (2 * (index + 1));
+
+        private int GetVTablePosition(int index) => 4 + (2 * index);
     }
 }
