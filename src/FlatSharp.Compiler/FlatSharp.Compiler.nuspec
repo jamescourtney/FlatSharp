@@ -29,14 +29,8 @@
     
     <file src="FlatSharp.Compiler.targets" target="tools/" />
     
-    <file src="$OutDir$\net47\*.dll" target="tools/net47" />
-    <file src="$OutDir$\net47\*.exe" target="tools/net47" />
-    
-    <file src="$OutDir$\netcoreapp2.1\**.dll" target="tools/netcoreapp2.1" />
-    <file src="$OutDir$\netcoreapp2.1\*.json" target="tools/netcoreapp2.1" />
-
-    <file src="$OutDir$\net5.0\**.dll" target="tools/net5.0" />
-    <file src="$OutDir$\net5.0\**.exe" target="tools/net5.0" />
-    <file src="$OutDir$\net5.0\*.json" target="tools/net5.0" />
+    <file src="$OutDir$\net47\**.*" target="tools/net47" />
+    <file src="$OutDir$\netcoreapp2.1\**.*" target="tools/netcoreapp2.1" />
+    <file src="$OutDir$\net5.0\**.*" target="tools/net5.0" />
   </files>
 </package>
