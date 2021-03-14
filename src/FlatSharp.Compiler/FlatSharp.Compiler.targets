@@ -1,5 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Project>
+  
+  <!-- Tell Visual Studio that fbs files can result in build changes. 
+       https://github.com/dotnet/project-system/blob/cd275918ef9f181f6efab96715a91db7aabec832/docs/up-to-date-check.md -->
+  <ItemGroup>
+    <UpToDateCheckInput Include="@(FlatSharpSchema)" />
+  </ItemGroup>
+
   <Target Name="FlatSharpFbsCompile" BeforeTargets="ResolveAssemblyReferences">
     <PropertyGroup Condition=" '$(FlatSharpNullable)' == '' ">
       <FlatSharpNullable>false</FlatSharpNullable>
