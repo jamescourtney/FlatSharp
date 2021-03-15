@@ -25,27 +25,36 @@ namespace BenchmarkCore
     [ShortRunJob(BenchmarkDotNet.Jobs.RuntimeMoniker.NetCoreApp50, BenchmarkDotNet.Environments.Jit.RyuJit, BenchmarkDotNet.Environments.Platform.AnyCpu)]
     public class StructVectorClone
     {
-        public int Offset;
-
-        [Params(1, 2, 4, 8)]
-        public int Alignment;
+        public byte[] Buffer;
+        public ScalarTable table;
 
         [GlobalSetup]
         public void Setup()
         {
-            this.Offset = new Random().Next(0, 256);
+            this.Buffer = new byte[1024];
+            this.table = new ScalarTable
+            {
+                A = 1,
+                B = 2,
+                C = 3,
+                Struct = new Struct
+                {
+                }
+            };
+
+            this.Serialize();
         }
 
         [Benchmark]
-        public int NegPlusOne()
+        public int Serialize()
         {
-            return ((~this.Offset) + 1) & (this.Alignment - 1);
+            return ScalarTable.Serializer.Write(this.Buffer, this.table);
         }
 
         [Benchmark]
-        public int NotAnd()
+        public void Parse()
         {
-            return (-this.Offset) & (this.Alignment - 1);
+            ScalarTable.Serializer.Parse(new ArrayInputBuffer(this.Buffer));
         }
     }
 
@@ -53,14 +62,14 @@ namespace BenchmarkCore
     {
         public static void Main(string[] args)
         {
-            var summary = BenchmarkRunner.Run<StructVectorClone>();
-            //StructVectorClone cloner = new StructVectorClone();
-            //cloner.Setup();
+            //var summary = BenchmarkRunner.Run<StructVectorClone>();
+            StructVectorClone cloner = new StructVectorClone();
+            cloner.Setup();
 
-            //for (int i = 0; i < 10_000_000; ++i)
-            //{
-            //    cloner.Parse();
-            //}
+            for (int i = 0; i < 10_000_000; ++i)
+            {
+                cloner.Parse();
+            }
 
             //for (int i = 0; i < 10_000_000; ++i)
             //{

@@ -1,10 +1,27 @@
 ﻿
 namespace BenchmarkCore;
 
-table SortedVectorTable (fs_serializer, PrecompiledSerializer) {
-    Vector:[SortedVectorTableItem] (SortedVector);
+table ScalarTable (fs_serializer)
+{
+   Struct:Struct;
+   A:int;
+   B:int;
+   C:int (fs_forceWrite:true);
+   /*D:int;
+   E:int;
+   F:int;
+   G:int;
+   H:int;
+   I:int;
+   J:int;
+   K:int (fs_forceWrite:false);*/
 }
 
-table SortedVectorTableItem {
-    Key:int (key);
+struct Struct {
+   Int:[int:16] (fs_nonVirtual);
+}
+
+struct InnerStruct {
+   Byte:ubyte;
+   ULong:ulong;
 }
