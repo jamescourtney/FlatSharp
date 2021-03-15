@@ -73,9 +73,20 @@ namespace FlatSharp.Compiler
                 }
             }
 
-            writer.AppendLine(attribute);
+            bool hasSerializer = context.CompilePass >= CodeWritingPass.SerializerGeneration && this.RequestedSerializer is not null;
+
+                writer.AppendLine(attribute);
             writer.AppendLine("[System.Runtime.CompilerServices.CompilerGenerated]");
-            writer.AppendLine($"public partial class {this.Name} : object");
+            writer.AppendLine($"public partial class {this.Name}");
+            using (writer.IncreaseIndent())
+            {
+                writer.AppendLine(": object");
+                if (hasSerializer)
+                {
+                    writer.AppendLine($", {nameof(IFlatBufferSerializable)}<{this.Name}>");
+                }
+            }
+                
             writer.AppendLine($"{{");
 
             using (writer.IncreaseIndent())
@@ -140,7 +151,7 @@ namespace FlatSharp.Compiler
                     structVector.EmitStructVector(this, writer, context);
                 }
 
-                if (context.CompilePass >= CodeWritingPass.SerializerGeneration && this.RequestedSerializer is not null)
+                if (hasSerializer)
                 {
                     // generate the serializer.
                     string serializer = this.GenerateSerializerForType(
@@ -148,7 +159,13 @@ namespace FlatSharp.Compiler
                         this.RequestedSerializer.Value);
 
                     writer.AppendLine($"public static ISerializer<{this.FullName}> {SerializerPropertyName} {{ get; }} = new {RoslynSerializerGenerator.GeneratedSerializerClassName}().AsISerializer();");
-                    writer.AppendLine(string.Empty);
+
+                    writer.AppendLine();
+
+                    writer.AppendLine($"ISerializer {nameof(IFlatBufferSerializable)}.{nameof(IFlatBufferSerializable.Serializer)} => {SerializerPropertyName};");
+                    writer.AppendLine($"ISerializer<{this.FullName}> {nameof(IFlatBufferSerializable)}<{this.FullName}>.{nameof(IFlatBufferSerializable.Serializer)} => {SerializerPropertyName};");
+
+                    writer.AppendLine();
                     writer.AppendLine($"#region Serializer for {this.FullName}");
                     writer.AppendLine(serializer);
                     writer.AppendLine($"#endregion");
