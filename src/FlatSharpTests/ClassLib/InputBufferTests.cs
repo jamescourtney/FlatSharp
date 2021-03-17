@@ -97,6 +97,22 @@ namespace FlatSharpTests
             this.TestReadByteArray(b => new UnsafeArrayInputBuffer(b));
         }
 
+        [TestMethod]
+        public void UnsafeMemoryInputBuffer()
+        {
+            using (var buffer = new UnsafeMemoryInputBuffer(new Memory<byte>(Input)))
+            {
+                this.InputBufferTest(buffer);
+            }
+
+            using (var buffer = new UnsafeMemoryInputBuffer(new Memory<byte>(StringInput)))
+            {
+                this.StringInputBufferTest(buffer);
+            }
+
+            this.TestDeserializeBoth(b => new UnsafeMemoryInputBuffer(b));
+        }
+
         private void InputBufferTest(IInputBuffer ib)
         {
             var mem = new Memory<byte>(Input);
