@@ -165,7 +165,25 @@ $@"
             string code = $@"
                 [{nameof(FlatSharpGeneratedSerializerAttribute)}({nameof(FlatBufferDeserializationOption)}.{this.options.DeserializationOption})]
                 {visibility} sealed class {GeneratedSerializerClassName} : {nameof(IGeneratedSerializer<byte>)}<{CSharpHelpers.GetCompilableTypeName(typeof(TRoot))}>
-                {{
+                {{    
+                    // Method generated to help AOT compilers make good decisions about generics.
+                    public void __AotHelper()
+                    {{
+                        this.Write<SpanWriter>(default!, new byte[10], default!, default!, default!);
+                        this.Write<ISpanWriter>(default!, new byte[10], default!, default!, default!);
+                        this.Parse<MemoryInputBuffer>(default!, 0);
+                        this.Parse<ReadOnlyMemoryInputBuffer>(default!, 0);
+                        this.Parse<ArrayInputBuffer>(default!, 0);
+                        this.Parse<IInputBuffer>(default!, 0);
+                        
+                #if FLATSHARP_UNSAFE
+                        this.Parse<FlatSharp.Unsafe.UnsafeArrayInputBuffer>(default!, 0);
+                        this.Write<FlatSharp.Unsafe.UnsafeSpanWriter>(default!, new byte[10], default!, default!, default!);
+                #endif
+
+                        throw new InvalidOperationException(""__AotHelper is not intended to be invoked"");
+                    }}
+
                     {string.Join("\r\n", this.methodDeclarations.Select(x => x.ToFullString()))}
                 }}
 ";
