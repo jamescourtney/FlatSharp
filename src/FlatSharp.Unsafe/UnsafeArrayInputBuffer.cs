@@ -21,7 +21,7 @@ namespace FlatSharp.Unsafe
     using System.Runtime.CompilerServices;
     using System.Text;
 
-    public sealed unsafe class UnsafeArrayInputBuffer : IInputBuffer
+    public unsafe struct UnsafeArrayInputBuffer : IInputBuffer
     {
         private readonly byte[] array;
         private readonly int offset;
@@ -37,6 +37,7 @@ namespace FlatSharp.Unsafe
             this.length = memory.Count;
             this.offset = memory.Offset;
             this.array = memory.Array;
+            this.SharedStringReader = null;
 
             if (!BitConverter.IsLittleEndian)
             {
@@ -229,72 +230,6 @@ namespace FlatSharp.Unsafe
                     throw new IndexOutOfRangeException();
                 }
             }
-        }
-
-        public TItem InvokeParse<TItem>(IGeneratedSerializer<TItem> serializer, int offset)
-        {
-            return serializer.Parse(new Wrapper(this), offset);
-        }
-        
-        private readonly struct Wrapper : IInputBuffer
-        {
-            private readonly UnsafeArrayInputBuffer buffer;
-
-            public Wrapper(UnsafeArrayInputBuffer buffer) => this.buffer = buffer;
-
-            public ISharedStringReader? SharedStringReader 
-            { 
-                get => this.buffer.SharedStringReader; 
-                set => this.buffer.SharedStringReader = value; 
-            }
-
-            public int Length
-            {
-                [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                get => this.buffer.Length;
-            }
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public Memory<byte> GetByteMemory(int start, int length) => this.buffer.GetByteMemory(start, length);
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length) => this.buffer.GetReadOnlyByteMemory(start, length);
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public TItem InvokeParse<TItem>(IGeneratedSerializer<TItem> serializer, int offset) => throw new NotImplementedException();
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public byte ReadByte(int offset) => this.buffer.ReadByte(offset);
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public double ReadDouble(int offset) => this.buffer.ReadDouble(offset);
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public float ReadFloat(int offset) => this.buffer.ReadFloat(offset);
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public int ReadInt(int offset) => this.buffer.ReadInt(offset);
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public long ReadLong(int offset) => this.buffer.ReadLong(offset);
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public sbyte ReadSByte(int offset) => this.buffer.ReadSByte(offset);
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public short ReadShort(int offset) => this.buffer.ReadShort(offset);
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public string ReadString(int offset, int byteLength, Encoding encoding) => this.buffer.ReadString(offset, byteLength, encoding);
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public uint ReadUInt(int offset) => this.buffer.ReadUInt(offset);
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public ulong ReadULong(int offset) => this.buffer.ReadULong(offset);
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public ushort ReadUShort(int offset) => this.buffer.ReadUShort(offset);
         }
     }
 }

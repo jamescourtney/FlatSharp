@@ -55,10 +55,9 @@
             var oracle = Oracle.BasicTypes.GetRootAsBasicTypes(new FlatBuffers.ByteBuffer(realBuffer));
             
             var simple = FlatBufferSerializer.Default.Parse<BasicTypes>(realBuffer);
-            var simpleUnsafe = FlatBufferSerializer.Default.Parse<BasicTypes>(new UnsafeMemoryInputBuffer(realBuffer));
             var simpleUnsafeArray = FlatBufferSerializer.Default.Parse<BasicTypes>(new UnsafeArrayInputBuffer(realBuffer));
 
-            foreach (var parsed in new[] { simple, simpleUnsafe, simpleUnsafeArray })
+            foreach (var parsed in new[] { simple, simpleUnsafeArray })
             {
                 Assert.IsTrue(parsed.Bool);
                 Assert.AreEqual(oracle.Byte, parsed.Byte);

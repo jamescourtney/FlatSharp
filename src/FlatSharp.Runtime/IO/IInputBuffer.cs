@@ -98,11 +98,5 @@ namespace FlatSharp
         /// Reads the read only byte memory at the given offset with the given length.
         /// </summary>
         ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length);
-
-        /// <summary>
-        /// Invokes the parse method on the <see cref="IGeneratedSerializer{T}"/> parameter. Allows passing
-        /// generic parameters.
-        /// </summary>
-        TItem InvokeParse<TItem>(IGeneratedSerializer<TItem> serializer, int offset);
     }
 }

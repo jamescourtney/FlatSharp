@@ -83,7 +83,7 @@ namespace FlatSharp
             };
         }
 
-        public T Parse(IInputBuffer buffer)
+        public T Parse<TInputBuffer>(TInputBuffer buffer) where TInputBuffer : IInputBuffer
         {
             if (buffer.Length >= int.MaxValue / 2)
             {
@@ -96,12 +96,12 @@ namespace FlatSharp
             }
 
             buffer.SharedStringReader = this.settings?.SharedStringReaderFactory?.Invoke();
-            return buffer.InvokeParse(this.innerSerializer, 0);
+            return this.innerSerializer.Parse(buffer, 0);
         }
 
-        object ISerializer.Parse(IInputBuffer buffer) => this.Parse(buffer);
+        object ISerializer.Parse<TInputBuffer>(TInputBuffer buffer) => this.Parse(buffer);
 
-        public int Write(ISpanWriter writer, Span<byte> destination, T item)
+        public int Write<TSpanWriter>(TSpanWriter writer, Span<byte> destination, T item) where TSpanWriter : ISpanWriter
         {
             if (item is null)
             {
@@ -142,11 +142,11 @@ namespace FlatSharp
             try
             {
                 sharedStringWriter?.PrepareWrite();
-                writer.InvokeWrite(this.innerSerializer, destination, item, 0, serializationContext);
+                this.innerSerializer.Write(writer, destination, item, 0, serializationContext);
 
                 if (sharedStringWriter != null)
                 {
-                    writer.FlushSharedStrings(sharedStringWriter, destination, serializationContext);
+                    sharedStringWriter.FlushWrites(writer, destination, serializationContext);
                 }
 
                 serializationContext.InvokePostSerializeActions(destination);
@@ -165,7 +165,7 @@ namespace FlatSharp
             return serializationContext.Offset;
         }
 
-        int ISerializer.Write(ISpanWriter writer, Span<byte> destination, object item)
+        int ISerializer.Write<TSpanWriter>(TSpanWriter writer, Span<byte> destination, object item)
         {
             return item switch
             {
