@@ -17,12 +17,13 @@
 namespace FlatSharp.Unsafe
 {
     using System;
+    using System.ComponentModel;
     using System.Runtime.CompilerServices;
     using System.Text;
 
-    public unsafe struct UnsafeSpanWriter : ISpanWriter
+    public sealed unsafe class UnsafeSpanWriter : ISpanWriter
     {
-        static UnsafeSpanWriter()
+        public UnsafeSpanWriter()
         {
             if (!BitConverter.IsLittleEndian)
             {
@@ -176,6 +177,101 @@ namespace FlatSharp.Unsafe
                 {
                     return encoding.GetBytes(pChar, value.Length, pByte, destination.Length);
                 }
+            }
+        }
+
+        public void InvokeWrite<TItemType>(IGeneratedSerializer<TItemType> serializer, Span<byte> destination, TItemType item, int offset, SerializationContext context)
+        {
+            serializer.Write(
+                new Wrapper(this),
+                destination,
+                item,
+                offset,
+                context);
+        }
+
+        public void FlushSharedStrings(ISharedStringWriter writer, Span<byte> destination, SerializationContext context)
+        {
+            writer.FlushWrites(new Wrapper(this), destination, context);
+        }
+
+        /// <summary>
+        /// Wraps the unsafespanwriter class inside a struct. This allows the CLR to generate methods specific for this type,
+        /// which sidesteps vtable indirection.
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public readonly struct Wrapper : ISpanWriter
+        {
+            private readonly UnsafeSpanWriter unsafeSpanWriter;
+
+            internal Wrapper(UnsafeSpanWriter writer)
+            {
+                this.unsafeSpanWriter = writer;
+            }
+
+            public int GetStringBytes(Span<byte> destination, string value, Encoding encoding)
+            {
+                return this.unsafeSpanWriter.GetStringBytes(destination, value, encoding);
+            }
+
+            public void InvokeWrite<TItemType>(IGeneratedSerializer<TItemType> serializer, Span<byte> destination, TItemType item, int offset, SerializationContext context)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void FlushSharedStrings(ISharedStringWriter writer, Span<byte> destination, SerializationContext context)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void WriteByte(Span<byte> span, byte value, int offset, SerializationContext context)
+            {
+                this.unsafeSpanWriter.WriteByte(span, value, offset, context);
+            }
+
+            public void WriteDouble(Span<byte> span, double value, int offset, SerializationContext context)
+            {
+                this.unsafeSpanWriter.WriteDouble(span, value, offset, context);
+            }
+
+            public void WriteFloat(Span<byte> span, float value, int offset, SerializationContext context)
+            {
+                this.unsafeSpanWriter.WriteFloat(span, value, offset, context);
+            }
+
+            public void WriteInt(Span<byte> span, int value, int offset, SerializationContext context)
+            {
+                this.unsafeSpanWriter.WriteInt(span, value, offset, context);
+            }
+
+            public void WriteLong(Span<byte> span, long value, int offset, SerializationContext context)
+            {
+                this.unsafeSpanWriter.WriteLong(span, value, offset, context);
+            }
+
+            public void WriteSByte(Span<byte> span, sbyte value, int offset, SerializationContext context)
+            {
+                this.unsafeSpanWriter.WriteSByte(span, value, offset, context);
+            }
+
+            public void WriteShort(Span<byte> span, short value, int offset, SerializationContext context)
+            {
+                this.unsafeSpanWriter.WriteShort(span, value, offset, context);
+            }
+
+            public void WriteUInt(Span<byte> span, uint value, int offset, SerializationContext context)
+            {
+                this.unsafeSpanWriter.WriteUInt(span, value, offset, context);
+            }
+
+            public void WriteULong(Span<byte> span, ulong value, int offset, SerializationContext context)
+            {
+                this.unsafeSpanWriter.WriteULong(span, value, offset, context);
+            }
+
+            public void WriteUShort(Span<byte> span, ushort value, int offset, SerializationContext context)
+            {
+                this.unsafeSpanWriter.WriteUShort(span, value, offset, context);
             }
         }
     }

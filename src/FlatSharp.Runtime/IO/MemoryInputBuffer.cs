@@ -17,119 +17,23 @@
 namespace FlatSharp
 {
     using System;
-    using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices;
-    using System.Text;
 
     /// <summary>
     /// An implementation of InputBuffer for writable memory segments.
     /// </summary>
-    public struct MemoryInputBuffer : IInputBuffer
+    public sealed class MemoryInputBuffer : ReadOnlyMemoryInputBuffer
     {
-        private readonly Memory<byte> memory;
-
-        public MemoryInputBuffer(Memory<byte> memory)
+        public MemoryInputBuffer(Memory<byte> memory) : base(memory)
         {
-            this.memory = memory;
-            this.SharedStringReader = null;
         }
 
-        public int Length
+        public override Memory<byte> GetByteMemory(int start, int length)
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => this.memory.Length;
-        }
-
-        public ISharedStringReader? SharedStringReader
-        {
-            get;
-            set;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public byte ReadByte(int offset)
-        {
-            return ScalarSpanReader.ReadByte(this.memory.Span.Slice(offset));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public sbyte ReadSByte(int offset)
-        {
-            return ScalarSpanReader.ReadSByte(this.memory.Span.Slice(offset));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ushort ReadUShort(int offset)
-        {
-            this.CheckAlignment(offset, sizeof(ushort));
-            return ScalarSpanReader.ReadUShort(this.memory.Span.Slice(offset));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public short ReadShort(int offset)
-        {
-            this.CheckAlignment(offset, sizeof(short));
-            return ScalarSpanReader.ReadShort(this.memory.Span.Slice(offset));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public uint ReadUInt(int offset)
-        {
-            this.CheckAlignment(offset, sizeof(uint));
-            return ScalarSpanReader.ReadUInt(this.memory.Span.Slice(offset));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int ReadInt(int offset)
-        {
-            this.CheckAlignment(offset, sizeof(int));
-            return ScalarSpanReader.ReadInt(this.memory.Span.Slice(offset));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ulong ReadULong(int offset)
-        {
-            this.CheckAlignment(offset, sizeof(ulong));
-            return ScalarSpanReader.ReadULong(this.memory.Span.Slice(offset));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public long ReadLong(int offset)
-        {
-            this.CheckAlignment(offset, sizeof(long));
-            return ScalarSpanReader.ReadLong(this.memory.Span.Slice(offset));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float ReadFloat(int offset)
-        {
-            this.CheckAlignment(offset, sizeof(float));
-            return ScalarSpanReader.ReadFloat(this.memory.Span.Slice(offset));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public double ReadDouble(int offset)
-        {
-            this.CheckAlignment(offset, sizeof(double));
-            return ScalarSpanReader.ReadDouble(this.memory.Span.Slice(offset));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public string ReadString(int offset, int byteLength, Encoding encoding)
-        {
-            return ScalarSpanReader.ReadString(this.memory.Span.Slice(offset, byteLength), encoding);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Memory<byte> GetByteMemory(int start, int length)
-        {
-            return this.memory.Slice(start, length);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length)
-        {
-            return this.memory.Slice(start, length);
+            // We play a trick with memory marshal to convert the readonly memory into
+            // a writable memory. Why is this safe? Because this class takes a writable memory object
+            // in the constructor, so we're just functionally casting memory -> readonlymemory -> memory.
+            return MemoryMarshal.AsMemory(this.GetReadOnlyByteMemory(start, length));
         }
     }
 }

@@ -18,7 +18,7 @@ using FlatSharp.Attributes;
 #nullable enable annotations
 namespace FlatSharp.Compiler.Generated
 {
-    internal static class CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320
+    internal static class CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c
     {
         [System.Runtime.CompilerServices.MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static BenchmarkCore.SomeTable? Clone(BenchmarkCore.SomeTable? item)
@@ -98,9 +98,9 @@ namespace BenchmarkCore
         {
             checked
             {
-                this.String = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(source.String);
-                this.Int = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(source.Int);
-                this.Struct = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(source.Struct);
+                this.String = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(source.String);
+                this.Int = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(source.Int);
+                this.Struct = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(source.Struct);
                 this.OnInitialized(null);
             }
         }
@@ -130,16 +130,24 @@ namespace BenchmarkCore
             {
                 checked
                 {
-                    this.Write<SpanWriter>(default!, new byte[10], default!, default!, default!);
                     this.Write<ISpanWriter>(default!, new byte[10], default!, default!, default!);
-                    this.Parse<MemoryInputBuffer>(default!, 0);
-                    this.Parse<ReadOnlyMemoryInputBuffer>(default!, 0);
-                    this.Parse<ArrayInputBuffer>(default!, 0);
+                    this.Write<SpanWriter>(default!, new byte[10], default!, default!, default!);
+
                     this.Parse<IInputBuffer>(default!, 0);
+                    this.Parse<MemoryInputBuffer.Wrapper>(default!, 0);
+                    this.Parse<MemoryInputBuffer>(default!, 0);
+                    this.Parse<ReadOnlyMemoryInputBuffer.Wrapper>(default!, 0);
+                    this.Parse<ReadOnlyMemoryInputBuffer>(default!, 0);
+                    this.Parse<ArrayInputBuffer.Wrapper>(default!, 0);
+                    this.Parse<ArrayInputBuffer>(default!, 0);
 
 #if FLATSHARP_UNSAFE
-                        this.Parse<FlatSharp.Unsafe.UnsafeArrayInputBuffer>(default!, 0);
-                        this.Write<FlatSharp.Unsafe.UnsafeSpanWriter>(default!, new byte[10], default!, default!, default!);
+                    this.Parse<FlatSharp.Unsafe.UnsafeArrayInputBuffer>(default!, 0);
+                    this.Parse<FlatSharp.Unsafe.UnsafeArrayInputBuffer.Wrapper>(default!, 0);
+                    this.Parse<FlatSharp.Unsafe.UnsafeMemoryInputBuffer>(default!, 0);
+                    this.Parse<FlatSharp.Unsafe.UnsafeMemoryInputBuffer.Wrapper>(default!, 0);
+                    this.Write<FlatSharp.Unsafe.UnsafeSpanWriter>(default!, new byte[10], default!, default!, default!);
+                    this.Write<FlatSharp.Unsafe.UnsafeSpanWriter.Wrapper>(default!, new byte[10], default!, default!, default!);
 #endif
 
                     throw new InvalidOperationException("__AotHelper is not intended to be invoked");
@@ -151,7 +159,7 @@ namespace BenchmarkCore
             {
                 checked
                 {
-                    WriteInlineValueOf_a060aa2a72c14160879bbfae820a4f10(writer, target, root, offset, context);
+                    WriteInlineValueOf_239073379d1440aa947bffce415cb9bb(writer, target, root, offset, context);
                 }
             }
 
@@ -159,7 +167,7 @@ namespace BenchmarkCore
             {
                 checked
                 {
-                    return GetMaxSizeOf_a060aa2a72c14160879bbfae820a4f10(root);
+                    return GetMaxSizeOf_239073379d1440aa947bffce415cb9bb(root);
                 }
             }
 
@@ -168,11 +176,11 @@ namespace BenchmarkCore
             {
                 checked
                 {
-                    return Read_a060aa2a72c14160879bbfae820a4f10(buffer, offset);
+                    return Read_239073379d1440aa947bffce415cb9bb(buffer, offset);
                 }
             }
 
-            private static int GetMaxSizeOf_a060aa2a72c14160879bbfae820a4f10(BenchmarkCore.SomeTable value)
+            private static int GetMaxSizeOf_239073379d1440aa947bffce415cb9bb(BenchmarkCore.SomeTable value)
             {
                 checked
                 {
@@ -182,24 +190,24 @@ namespace BenchmarkCore
 
                     if (!(index0Value is null))
                     {
-                        runningSum += GetMaxSizeOf_f2af82d572fb462cbac10f10e3d40c3e(index0Value);
+                        runningSum += GetMaxSizeOf_174be77c681b41dda4f6aefad00f2aa0(index0Value);
                     };
                     return runningSum;
 
                 }
             }
 
-            private static BenchmarkCore.SomeTable Read_a060aa2a72c14160879bbfae820a4f10<TInputBuffer>(
+            private static BenchmarkCore.SomeTable Read_239073379d1440aa947bffce415cb9bb<TInputBuffer>(
                 TInputBuffer buffer,
                 int offset) where TInputBuffer : IInputBuffer
             {
                 checked
                 {
-                    return new tableReader_a3a52d6c722146b193c782ab6e1b35e9<TInputBuffer>(buffer, offset + buffer.ReadUOffset(offset));
+                    return new tableReader_de930085115b429d8081d48aa91894ef<TInputBuffer>(buffer, offset + buffer.ReadUOffset(offset));
                 }
             }
 
-            private sealed class tableReader_a3a52d6c722146b193c782ab6e1b35e9<TInputBuffer>
+            private sealed class tableReader_de930085115b429d8081d48aa91894ef<TInputBuffer>
                 : BenchmarkCore.SomeTable
                 , IFlatBufferDeserializedObject
                 where TInputBuffer : IInputBuffer
@@ -211,7 +219,7 @@ namespace BenchmarkCore
                 private System.Int32 __index1Value;
                 private BenchmarkCore.SomeStruct? __index2Value;
 
-                public tableReader_a3a52d6c722146b193c782ab6e1b35e9(TInputBuffer buffer, int offset) : base(__CtorContext)
+                public tableReader_de930085115b429d8081d48aa91894ef(TInputBuffer buffer, int offset) : base(__CtorContext)
                 {
                     checked
                     {
@@ -301,7 +309,7 @@ namespace BenchmarkCore
                         }
 
                         int absoluteLocation = offset + relativeOffset;
-                        return Read_f2af82d572fb462cbac10f10e3d40c3e(buffer, absoluteLocation); ;
+                        return Read_174be77c681b41dda4f6aefad00f2aa0(buffer, absoluteLocation); ;
                     }
                 }
 
@@ -327,7 +335,7 @@ namespace BenchmarkCore
                         }
 
                         int absoluteLocation = offset + relativeOffset;
-                        return Read_5d20b8d8f3d54d1eb6b513cc5dd040a1(buffer, absoluteLocation); ;
+                        return Read_638d4a62b7e1473fb241b74b4d86c882(buffer, absoluteLocation); ;
                     }
                 }
 
@@ -353,14 +361,14 @@ namespace BenchmarkCore
                         }
 
                         int absoluteLocation = offset + relativeOffset;
-                        return Read_34746d01c6cf4a148d3f79203fc0022d(buffer, absoluteLocation); ;
+                        return Read_6bbd7e1bf95f41a78b0fdbc3fef05bc5(buffer, absoluteLocation); ;
                     }
                 }
             }
 
 
 
-            private static void WriteInlineValueOf_a060aa2a72c14160879bbfae820a4f10<TSpanWriter>(
+            private static void WriteInlineValueOf_239073379d1440aa947bffce415cb9bb<TSpanWriter>(
                 TSpanWriter spanWriter,
                 Span<byte> span,
                 BenchmarkCore.SomeTable value,
@@ -389,7 +397,7 @@ namespace BenchmarkCore
                         index1Offset = currentOffset;
                         currentOffset += 4;
 
-                        WriteInlineValueOf_5d20b8d8f3d54d1eb6b513cc5dd040a1(
+                        WriteInlineValueOf_638d4a62b7e1473fb241b74b4d86c882(
                             spanWriter,
                             span,
                             index1Value,
@@ -428,7 +436,7 @@ namespace BenchmarkCore
                         index2Offset = currentOffset;
                         currentOffset += 32;
 
-                        WriteInlineValueOf_34746d01c6cf4a148d3f79203fc0022d(
+                        WriteInlineValueOf_6bbd7e1bf95f41a78b0fdbc3fef05bc5(
                             spanWriter,
                             span,
                             index2Value!,
@@ -452,7 +460,7 @@ namespace BenchmarkCore
                     if (index0Offset != tableStart)
                     {
 
-                        WriteInlineValueOf_f2af82d572fb462cbac10f10e3d40c3e(
+                        WriteInlineValueOf_174be77c681b41dda4f6aefad00f2aa0(
                             spanWriter,
                             span,
                             index0Value!,
@@ -464,7 +472,7 @@ namespace BenchmarkCore
                 }
             }
 
-            private static int GetMaxSizeOf_f2af82d572fb462cbac10f10e3d40c3e(System.String value)
+            private static int GetMaxSizeOf_174be77c681b41dda4f6aefad00f2aa0(System.String value)
             {
                 checked
                 {
@@ -472,7 +480,7 @@ namespace BenchmarkCore
                 }
             }
 
-            private static System.String Read_f2af82d572fb462cbac10f10e3d40c3e<TInputBuffer>(
+            private static System.String Read_174be77c681b41dda4f6aefad00f2aa0<TInputBuffer>(
                 TInputBuffer buffer,
                 int offset) where TInputBuffer : IInputBuffer
             {
@@ -482,7 +490,7 @@ namespace BenchmarkCore
                 }
             }
 
-            private static void WriteInlineValueOf_f2af82d572fb462cbac10f10e3d40c3e<TSpanWriter>(
+            private static void WriteInlineValueOf_174be77c681b41dda4f6aefad00f2aa0<TSpanWriter>(
                 TSpanWriter spanWriter,
                 Span<byte> span,
                 System.String value,
@@ -496,7 +504,7 @@ namespace BenchmarkCore
             }
 
             [System.Runtime.CompilerServices.MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-            private static int GetMaxSizeOf_5d20b8d8f3d54d1eb6b513cc5dd040a1(System.Int32 value)
+            private static int GetMaxSizeOf_638d4a62b7e1473fb241b74b4d86c882(System.Int32 value)
             {
                 checked
                 {
@@ -505,7 +513,7 @@ namespace BenchmarkCore
             }
 
             [System.Runtime.CompilerServices.MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-            private static System.Int32 Read_5d20b8d8f3d54d1eb6b513cc5dd040a1<TInputBuffer>(
+            private static System.Int32 Read_638d4a62b7e1473fb241b74b4d86c882<TInputBuffer>(
                 TInputBuffer buffer,
                 int offset) where TInputBuffer : IInputBuffer
             {
@@ -516,7 +524,7 @@ namespace BenchmarkCore
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static void WriteInlineValueOf_5d20b8d8f3d54d1eb6b513cc5dd040a1<TSpanWriter>(
+            private static void WriteInlineValueOf_638d4a62b7e1473fb241b74b4d86c882<TSpanWriter>(
                 TSpanWriter spanWriter,
                 Span<byte> span,
                 System.Int32 value,
@@ -530,7 +538,7 @@ namespace BenchmarkCore
             }
 
             [System.Runtime.CompilerServices.MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-            private static int GetMaxSizeOf_34746d01c6cf4a148d3f79203fc0022d(BenchmarkCore.SomeStruct value)
+            private static int GetMaxSizeOf_6bbd7e1bf95f41a78b0fdbc3fef05bc5(BenchmarkCore.SomeStruct value)
             {
                 checked
                 {
@@ -538,17 +546,17 @@ namespace BenchmarkCore
                 }
             }
 
-            private static BenchmarkCore.SomeStruct Read_34746d01c6cf4a148d3f79203fc0022d<TInputBuffer>(
+            private static BenchmarkCore.SomeStruct Read_6bbd7e1bf95f41a78b0fdbc3fef05bc5<TInputBuffer>(
                 TInputBuffer buffer,
                 int offset) where TInputBuffer : IInputBuffer
             {
                 checked
                 {
-                    return new structReader_b368fa95d60a413980d76e9060857b3b<TInputBuffer>(buffer, offset);
+                    return new structReader_62e347525c1743beb72aaecbcfc2d180<TInputBuffer>(buffer, offset);
                 }
             }
 
-            private sealed class structReader_b368fa95d60a413980d76e9060857b3b<TInputBuffer>
+            private sealed class structReader_62e347525c1743beb72aaecbcfc2d180<TInputBuffer>
                 : BenchmarkCore.SomeStruct
                 , IFlatBufferDeserializedObject
                 where TInputBuffer : IInputBuffer
@@ -589,7 +597,7 @@ namespace BenchmarkCore
                 private System.Byte __index30Value;
                 private System.Byte __index31Value;
 
-                public structReader_b368fa95d60a413980d76e9060857b3b(TInputBuffer buffer, int offset) : base(__CtorContext)
+                public structReader_62e347525c1743beb72aaecbcfc2d180(TInputBuffer buffer, int offset) : base(__CtorContext)
                 {
                     checked
                     {
@@ -1187,7 +1195,7 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_44b5a1b9f92a4766bc5a66635f1de926(buffer, offset + 0); ;
+                        return Read_b2526afd5d6740a2845c05d7abcb3045(buffer, offset + 0); ;
                     }
                 }
 
@@ -1200,7 +1208,7 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_44b5a1b9f92a4766bc5a66635f1de926(buffer, offset + 1); ;
+                        return Read_b2526afd5d6740a2845c05d7abcb3045(buffer, offset + 1); ;
                     }
                 }
 
@@ -1213,7 +1221,7 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_44b5a1b9f92a4766bc5a66635f1de926(buffer, offset + 2); ;
+                        return Read_b2526afd5d6740a2845c05d7abcb3045(buffer, offset + 2); ;
                     }
                 }
 
@@ -1226,7 +1234,7 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_44b5a1b9f92a4766bc5a66635f1de926(buffer, offset + 3); ;
+                        return Read_b2526afd5d6740a2845c05d7abcb3045(buffer, offset + 3); ;
                     }
                 }
 
@@ -1239,7 +1247,7 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_44b5a1b9f92a4766bc5a66635f1de926(buffer, offset + 4); ;
+                        return Read_b2526afd5d6740a2845c05d7abcb3045(buffer, offset + 4); ;
                     }
                 }
 
@@ -1252,7 +1260,7 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_44b5a1b9f92a4766bc5a66635f1de926(buffer, offset + 5); ;
+                        return Read_b2526afd5d6740a2845c05d7abcb3045(buffer, offset + 5); ;
                     }
                 }
 
@@ -1265,7 +1273,7 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_44b5a1b9f92a4766bc5a66635f1de926(buffer, offset + 6); ;
+                        return Read_b2526afd5d6740a2845c05d7abcb3045(buffer, offset + 6); ;
                     }
                 }
 
@@ -1278,7 +1286,7 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_44b5a1b9f92a4766bc5a66635f1de926(buffer, offset + 7); ;
+                        return Read_b2526afd5d6740a2845c05d7abcb3045(buffer, offset + 7); ;
                     }
                 }
 
@@ -1291,7 +1299,7 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_44b5a1b9f92a4766bc5a66635f1de926(buffer, offset + 8); ;
+                        return Read_b2526afd5d6740a2845c05d7abcb3045(buffer, offset + 8); ;
                     }
                 }
 
@@ -1304,7 +1312,7 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_44b5a1b9f92a4766bc5a66635f1de926(buffer, offset + 9); ;
+                        return Read_b2526afd5d6740a2845c05d7abcb3045(buffer, offset + 9); ;
                     }
                 }
 
@@ -1317,7 +1325,7 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_44b5a1b9f92a4766bc5a66635f1de926(buffer, offset + 10); ;
+                        return Read_b2526afd5d6740a2845c05d7abcb3045(buffer, offset + 10); ;
                     }
                 }
 
@@ -1330,7 +1338,7 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_44b5a1b9f92a4766bc5a66635f1de926(buffer, offset + 11); ;
+                        return Read_b2526afd5d6740a2845c05d7abcb3045(buffer, offset + 11); ;
                     }
                 }
 
@@ -1343,7 +1351,7 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_44b5a1b9f92a4766bc5a66635f1de926(buffer, offset + 12); ;
+                        return Read_b2526afd5d6740a2845c05d7abcb3045(buffer, offset + 12); ;
                     }
                 }
 
@@ -1356,7 +1364,7 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_44b5a1b9f92a4766bc5a66635f1de926(buffer, offset + 13); ;
+                        return Read_b2526afd5d6740a2845c05d7abcb3045(buffer, offset + 13); ;
                     }
                 }
 
@@ -1369,7 +1377,7 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_44b5a1b9f92a4766bc5a66635f1de926(buffer, offset + 14); ;
+                        return Read_b2526afd5d6740a2845c05d7abcb3045(buffer, offset + 14); ;
                     }
                 }
 
@@ -1382,7 +1390,7 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_44b5a1b9f92a4766bc5a66635f1de926(buffer, offset + 15); ;
+                        return Read_b2526afd5d6740a2845c05d7abcb3045(buffer, offset + 15); ;
                     }
                 }
 
@@ -1395,7 +1403,7 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_44b5a1b9f92a4766bc5a66635f1de926(buffer, offset + 16); ;
+                        return Read_b2526afd5d6740a2845c05d7abcb3045(buffer, offset + 16); ;
                     }
                 }
 
@@ -1408,7 +1416,7 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_44b5a1b9f92a4766bc5a66635f1de926(buffer, offset + 17); ;
+                        return Read_b2526afd5d6740a2845c05d7abcb3045(buffer, offset + 17); ;
                     }
                 }
 
@@ -1421,7 +1429,7 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_44b5a1b9f92a4766bc5a66635f1de926(buffer, offset + 18); ;
+                        return Read_b2526afd5d6740a2845c05d7abcb3045(buffer, offset + 18); ;
                     }
                 }
 
@@ -1434,7 +1442,7 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_44b5a1b9f92a4766bc5a66635f1de926(buffer, offset + 19); ;
+                        return Read_b2526afd5d6740a2845c05d7abcb3045(buffer, offset + 19); ;
                     }
                 }
 
@@ -1447,7 +1455,7 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_44b5a1b9f92a4766bc5a66635f1de926(buffer, offset + 20); ;
+                        return Read_b2526afd5d6740a2845c05d7abcb3045(buffer, offset + 20); ;
                     }
                 }
 
@@ -1460,7 +1468,7 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_44b5a1b9f92a4766bc5a66635f1de926(buffer, offset + 21); ;
+                        return Read_b2526afd5d6740a2845c05d7abcb3045(buffer, offset + 21); ;
                     }
                 }
 
@@ -1473,7 +1481,7 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_44b5a1b9f92a4766bc5a66635f1de926(buffer, offset + 22); ;
+                        return Read_b2526afd5d6740a2845c05d7abcb3045(buffer, offset + 22); ;
                     }
                 }
 
@@ -1486,7 +1494,7 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_44b5a1b9f92a4766bc5a66635f1de926(buffer, offset + 23); ;
+                        return Read_b2526afd5d6740a2845c05d7abcb3045(buffer, offset + 23); ;
                     }
                 }
 
@@ -1499,7 +1507,7 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_44b5a1b9f92a4766bc5a66635f1de926(buffer, offset + 24); ;
+                        return Read_b2526afd5d6740a2845c05d7abcb3045(buffer, offset + 24); ;
                     }
                 }
 
@@ -1512,7 +1520,7 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_44b5a1b9f92a4766bc5a66635f1de926(buffer, offset + 25); ;
+                        return Read_b2526afd5d6740a2845c05d7abcb3045(buffer, offset + 25); ;
                     }
                 }
 
@@ -1525,7 +1533,7 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_44b5a1b9f92a4766bc5a66635f1de926(buffer, offset + 26); ;
+                        return Read_b2526afd5d6740a2845c05d7abcb3045(buffer, offset + 26); ;
                     }
                 }
 
@@ -1538,7 +1546,7 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_44b5a1b9f92a4766bc5a66635f1de926(buffer, offset + 27); ;
+                        return Read_b2526afd5d6740a2845c05d7abcb3045(buffer, offset + 27); ;
                     }
                 }
 
@@ -1551,7 +1559,7 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_44b5a1b9f92a4766bc5a66635f1de926(buffer, offset + 28); ;
+                        return Read_b2526afd5d6740a2845c05d7abcb3045(buffer, offset + 28); ;
                     }
                 }
 
@@ -1564,7 +1572,7 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_44b5a1b9f92a4766bc5a66635f1de926(buffer, offset + 29); ;
+                        return Read_b2526afd5d6740a2845c05d7abcb3045(buffer, offset + 29); ;
                     }
                 }
 
@@ -1577,7 +1585,7 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_44b5a1b9f92a4766bc5a66635f1de926(buffer, offset + 30); ;
+                        return Read_b2526afd5d6740a2845c05d7abcb3045(buffer, offset + 30); ;
                     }
                 }
 
@@ -1590,14 +1598,14 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_44b5a1b9f92a4766bc5a66635f1de926(buffer, offset + 31); ;
+                        return Read_b2526afd5d6740a2845c05d7abcb3045(buffer, offset + 31); ;
                     }
                 }
             }
 
 
 
-            private static void WriteInlineValueOf_34746d01c6cf4a148d3f79203fc0022d<TSpanWriter>(
+            private static void WriteInlineValueOf_6bbd7e1bf95f41a78b0fdbc3fef05bc5<TSpanWriter>(
                 TSpanWriter spanWriter,
                 Span<byte> span,
                 BenchmarkCore.SomeStruct value,
@@ -1606,43 +1614,43 @@ namespace BenchmarkCore
             {
                 checked
                 {
-                    WriteInlineValueOf_44b5a1b9f92a4766bc5a66635f1de926(spanWriter, span, (value.Hash[0]), (0 + offset), context);
-                    WriteInlineValueOf_44b5a1b9f92a4766bc5a66635f1de926(spanWriter, span, (value.Hash[1]), (1 + offset), context);
-                    WriteInlineValueOf_44b5a1b9f92a4766bc5a66635f1de926(spanWriter, span, (value.Hash[2]), (2 + offset), context);
-                    WriteInlineValueOf_44b5a1b9f92a4766bc5a66635f1de926(spanWriter, span, (value.Hash[3]), (3 + offset), context);
-                    WriteInlineValueOf_44b5a1b9f92a4766bc5a66635f1de926(spanWriter, span, (value.Hash[4]), (4 + offset), context);
-                    WriteInlineValueOf_44b5a1b9f92a4766bc5a66635f1de926(spanWriter, span, (value.Hash[5]), (5 + offset), context);
-                    WriteInlineValueOf_44b5a1b9f92a4766bc5a66635f1de926(spanWriter, span, (value.Hash[6]), (6 + offset), context);
-                    WriteInlineValueOf_44b5a1b9f92a4766bc5a66635f1de926(spanWriter, span, (value.Hash[7]), (7 + offset), context);
-                    WriteInlineValueOf_44b5a1b9f92a4766bc5a66635f1de926(spanWriter, span, (value.Hash[8]), (8 + offset), context);
-                    WriteInlineValueOf_44b5a1b9f92a4766bc5a66635f1de926(spanWriter, span, (value.Hash[9]), (9 + offset), context);
-                    WriteInlineValueOf_44b5a1b9f92a4766bc5a66635f1de926(spanWriter, span, (value.Hash[10]), (10 + offset), context);
-                    WriteInlineValueOf_44b5a1b9f92a4766bc5a66635f1de926(spanWriter, span, (value.Hash[11]), (11 + offset), context);
-                    WriteInlineValueOf_44b5a1b9f92a4766bc5a66635f1de926(spanWriter, span, (value.Hash[12]), (12 + offset), context);
-                    WriteInlineValueOf_44b5a1b9f92a4766bc5a66635f1de926(spanWriter, span, (value.Hash[13]), (13 + offset), context);
-                    WriteInlineValueOf_44b5a1b9f92a4766bc5a66635f1de926(spanWriter, span, (value.Hash[14]), (14 + offset), context);
-                    WriteInlineValueOf_44b5a1b9f92a4766bc5a66635f1de926(spanWriter, span, (value.Hash[15]), (15 + offset), context);
-                    WriteInlineValueOf_44b5a1b9f92a4766bc5a66635f1de926(spanWriter, span, (value.Hash[16]), (16 + offset), context);
-                    WriteInlineValueOf_44b5a1b9f92a4766bc5a66635f1de926(spanWriter, span, (value.Hash[17]), (17 + offset), context);
-                    WriteInlineValueOf_44b5a1b9f92a4766bc5a66635f1de926(spanWriter, span, (value.Hash[18]), (18 + offset), context);
-                    WriteInlineValueOf_44b5a1b9f92a4766bc5a66635f1de926(spanWriter, span, (value.Hash[19]), (19 + offset), context);
-                    WriteInlineValueOf_44b5a1b9f92a4766bc5a66635f1de926(spanWriter, span, (value.Hash[20]), (20 + offset), context);
-                    WriteInlineValueOf_44b5a1b9f92a4766bc5a66635f1de926(spanWriter, span, (value.Hash[21]), (21 + offset), context);
-                    WriteInlineValueOf_44b5a1b9f92a4766bc5a66635f1de926(spanWriter, span, (value.Hash[22]), (22 + offset), context);
-                    WriteInlineValueOf_44b5a1b9f92a4766bc5a66635f1de926(spanWriter, span, (value.Hash[23]), (23 + offset), context);
-                    WriteInlineValueOf_44b5a1b9f92a4766bc5a66635f1de926(spanWriter, span, (value.Hash[24]), (24 + offset), context);
-                    WriteInlineValueOf_44b5a1b9f92a4766bc5a66635f1de926(spanWriter, span, (value.Hash[25]), (25 + offset), context);
-                    WriteInlineValueOf_44b5a1b9f92a4766bc5a66635f1de926(spanWriter, span, (value.Hash[26]), (26 + offset), context);
-                    WriteInlineValueOf_44b5a1b9f92a4766bc5a66635f1de926(spanWriter, span, (value.Hash[27]), (27 + offset), context);
-                    WriteInlineValueOf_44b5a1b9f92a4766bc5a66635f1de926(spanWriter, span, (value.Hash[28]), (28 + offset), context);
-                    WriteInlineValueOf_44b5a1b9f92a4766bc5a66635f1de926(spanWriter, span, (value.Hash[29]), (29 + offset), context);
-                    WriteInlineValueOf_44b5a1b9f92a4766bc5a66635f1de926(spanWriter, span, (value.Hash[30]), (30 + offset), context);
-                    WriteInlineValueOf_44b5a1b9f92a4766bc5a66635f1de926(spanWriter, span, (value.Hash[31]), (31 + offset), context);
+                    WriteInlineValueOf_b2526afd5d6740a2845c05d7abcb3045(spanWriter, span, (value.Hash[0]), (0 + offset), context);
+                    WriteInlineValueOf_b2526afd5d6740a2845c05d7abcb3045(spanWriter, span, (value.Hash[1]), (1 + offset), context);
+                    WriteInlineValueOf_b2526afd5d6740a2845c05d7abcb3045(spanWriter, span, (value.Hash[2]), (2 + offset), context);
+                    WriteInlineValueOf_b2526afd5d6740a2845c05d7abcb3045(spanWriter, span, (value.Hash[3]), (3 + offset), context);
+                    WriteInlineValueOf_b2526afd5d6740a2845c05d7abcb3045(spanWriter, span, (value.Hash[4]), (4 + offset), context);
+                    WriteInlineValueOf_b2526afd5d6740a2845c05d7abcb3045(spanWriter, span, (value.Hash[5]), (5 + offset), context);
+                    WriteInlineValueOf_b2526afd5d6740a2845c05d7abcb3045(spanWriter, span, (value.Hash[6]), (6 + offset), context);
+                    WriteInlineValueOf_b2526afd5d6740a2845c05d7abcb3045(spanWriter, span, (value.Hash[7]), (7 + offset), context);
+                    WriteInlineValueOf_b2526afd5d6740a2845c05d7abcb3045(spanWriter, span, (value.Hash[8]), (8 + offset), context);
+                    WriteInlineValueOf_b2526afd5d6740a2845c05d7abcb3045(spanWriter, span, (value.Hash[9]), (9 + offset), context);
+                    WriteInlineValueOf_b2526afd5d6740a2845c05d7abcb3045(spanWriter, span, (value.Hash[10]), (10 + offset), context);
+                    WriteInlineValueOf_b2526afd5d6740a2845c05d7abcb3045(spanWriter, span, (value.Hash[11]), (11 + offset), context);
+                    WriteInlineValueOf_b2526afd5d6740a2845c05d7abcb3045(spanWriter, span, (value.Hash[12]), (12 + offset), context);
+                    WriteInlineValueOf_b2526afd5d6740a2845c05d7abcb3045(spanWriter, span, (value.Hash[13]), (13 + offset), context);
+                    WriteInlineValueOf_b2526afd5d6740a2845c05d7abcb3045(spanWriter, span, (value.Hash[14]), (14 + offset), context);
+                    WriteInlineValueOf_b2526afd5d6740a2845c05d7abcb3045(spanWriter, span, (value.Hash[15]), (15 + offset), context);
+                    WriteInlineValueOf_b2526afd5d6740a2845c05d7abcb3045(spanWriter, span, (value.Hash[16]), (16 + offset), context);
+                    WriteInlineValueOf_b2526afd5d6740a2845c05d7abcb3045(spanWriter, span, (value.Hash[17]), (17 + offset), context);
+                    WriteInlineValueOf_b2526afd5d6740a2845c05d7abcb3045(spanWriter, span, (value.Hash[18]), (18 + offset), context);
+                    WriteInlineValueOf_b2526afd5d6740a2845c05d7abcb3045(spanWriter, span, (value.Hash[19]), (19 + offset), context);
+                    WriteInlineValueOf_b2526afd5d6740a2845c05d7abcb3045(spanWriter, span, (value.Hash[20]), (20 + offset), context);
+                    WriteInlineValueOf_b2526afd5d6740a2845c05d7abcb3045(spanWriter, span, (value.Hash[21]), (21 + offset), context);
+                    WriteInlineValueOf_b2526afd5d6740a2845c05d7abcb3045(spanWriter, span, (value.Hash[22]), (22 + offset), context);
+                    WriteInlineValueOf_b2526afd5d6740a2845c05d7abcb3045(spanWriter, span, (value.Hash[23]), (23 + offset), context);
+                    WriteInlineValueOf_b2526afd5d6740a2845c05d7abcb3045(spanWriter, span, (value.Hash[24]), (24 + offset), context);
+                    WriteInlineValueOf_b2526afd5d6740a2845c05d7abcb3045(spanWriter, span, (value.Hash[25]), (25 + offset), context);
+                    WriteInlineValueOf_b2526afd5d6740a2845c05d7abcb3045(spanWriter, span, (value.Hash[26]), (26 + offset), context);
+                    WriteInlineValueOf_b2526afd5d6740a2845c05d7abcb3045(spanWriter, span, (value.Hash[27]), (27 + offset), context);
+                    WriteInlineValueOf_b2526afd5d6740a2845c05d7abcb3045(spanWriter, span, (value.Hash[28]), (28 + offset), context);
+                    WriteInlineValueOf_b2526afd5d6740a2845c05d7abcb3045(spanWriter, span, (value.Hash[29]), (29 + offset), context);
+                    WriteInlineValueOf_b2526afd5d6740a2845c05d7abcb3045(spanWriter, span, (value.Hash[30]), (30 + offset), context);
+                    WriteInlineValueOf_b2526afd5d6740a2845c05d7abcb3045(spanWriter, span, (value.Hash[31]), (31 + offset), context);
                 }
             }
 
             [System.Runtime.CompilerServices.MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-            private static int GetMaxSizeOf_44b5a1b9f92a4766bc5a66635f1de926(System.Byte value)
+            private static int GetMaxSizeOf_b2526afd5d6740a2845c05d7abcb3045(System.Byte value)
             {
                 checked
                 {
@@ -1651,7 +1659,7 @@ namespace BenchmarkCore
             }
 
             [System.Runtime.CompilerServices.MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-            private static System.Byte Read_44b5a1b9f92a4766bc5a66635f1de926<TInputBuffer>(
+            private static System.Byte Read_b2526afd5d6740a2845c05d7abcb3045<TInputBuffer>(
                 TInputBuffer buffer,
                 int offset) where TInputBuffer : IInputBuffer
             {
@@ -1662,7 +1670,7 @@ namespace BenchmarkCore
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static void WriteInlineValueOf_44b5a1b9f92a4766bc5a66635f1de926<TSpanWriter>(
+            private static void WriteInlineValueOf_b2526afd5d6740a2845c05d7abcb3045<TSpanWriter>(
                 TSpanWriter spanWriter,
                 Span<byte> span,
                 System.Byte value,
@@ -1707,38 +1715,38 @@ namespace BenchmarkCore
         {
             checked
             {
-                this.__flatsharp__Hash_0 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(source.__flatsharp__Hash_0);
-                this.__flatsharp__Hash_1 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(source.__flatsharp__Hash_1);
-                this.__flatsharp__Hash_2 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(source.__flatsharp__Hash_2);
-                this.__flatsharp__Hash_3 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(source.__flatsharp__Hash_3);
-                this.__flatsharp__Hash_4 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(source.__flatsharp__Hash_4);
-                this.__flatsharp__Hash_5 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(source.__flatsharp__Hash_5);
-                this.__flatsharp__Hash_6 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(source.__flatsharp__Hash_6);
-                this.__flatsharp__Hash_7 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(source.__flatsharp__Hash_7);
-                this.__flatsharp__Hash_8 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(source.__flatsharp__Hash_8);
-                this.__flatsharp__Hash_9 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(source.__flatsharp__Hash_9);
-                this.__flatsharp__Hash_10 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(source.__flatsharp__Hash_10);
-                this.__flatsharp__Hash_11 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(source.__flatsharp__Hash_11);
-                this.__flatsharp__Hash_12 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(source.__flatsharp__Hash_12);
-                this.__flatsharp__Hash_13 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(source.__flatsharp__Hash_13);
-                this.__flatsharp__Hash_14 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(source.__flatsharp__Hash_14);
-                this.__flatsharp__Hash_15 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(source.__flatsharp__Hash_15);
-                this.__flatsharp__Hash_16 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(source.__flatsharp__Hash_16);
-                this.__flatsharp__Hash_17 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(source.__flatsharp__Hash_17);
-                this.__flatsharp__Hash_18 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(source.__flatsharp__Hash_18);
-                this.__flatsharp__Hash_19 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(source.__flatsharp__Hash_19);
-                this.__flatsharp__Hash_20 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(source.__flatsharp__Hash_20);
-                this.__flatsharp__Hash_21 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(source.__flatsharp__Hash_21);
-                this.__flatsharp__Hash_22 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(source.__flatsharp__Hash_22);
-                this.__flatsharp__Hash_23 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(source.__flatsharp__Hash_23);
-                this.__flatsharp__Hash_24 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(source.__flatsharp__Hash_24);
-                this.__flatsharp__Hash_25 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(source.__flatsharp__Hash_25);
-                this.__flatsharp__Hash_26 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(source.__flatsharp__Hash_26);
-                this.__flatsharp__Hash_27 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(source.__flatsharp__Hash_27);
-                this.__flatsharp__Hash_28 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(source.__flatsharp__Hash_28);
-                this.__flatsharp__Hash_29 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(source.__flatsharp__Hash_29);
-                this.__flatsharp__Hash_30 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(source.__flatsharp__Hash_30);
-                this.__flatsharp__Hash_31 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(source.__flatsharp__Hash_31);
+                this.__flatsharp__Hash_0 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(source.__flatsharp__Hash_0);
+                this.__flatsharp__Hash_1 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(source.__flatsharp__Hash_1);
+                this.__flatsharp__Hash_2 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(source.__flatsharp__Hash_2);
+                this.__flatsharp__Hash_3 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(source.__flatsharp__Hash_3);
+                this.__flatsharp__Hash_4 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(source.__flatsharp__Hash_4);
+                this.__flatsharp__Hash_5 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(source.__flatsharp__Hash_5);
+                this.__flatsharp__Hash_6 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(source.__flatsharp__Hash_6);
+                this.__flatsharp__Hash_7 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(source.__flatsharp__Hash_7);
+                this.__flatsharp__Hash_8 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(source.__flatsharp__Hash_8);
+                this.__flatsharp__Hash_9 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(source.__flatsharp__Hash_9);
+                this.__flatsharp__Hash_10 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(source.__flatsharp__Hash_10);
+                this.__flatsharp__Hash_11 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(source.__flatsharp__Hash_11);
+                this.__flatsharp__Hash_12 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(source.__flatsharp__Hash_12);
+                this.__flatsharp__Hash_13 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(source.__flatsharp__Hash_13);
+                this.__flatsharp__Hash_14 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(source.__flatsharp__Hash_14);
+                this.__flatsharp__Hash_15 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(source.__flatsharp__Hash_15);
+                this.__flatsharp__Hash_16 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(source.__flatsharp__Hash_16);
+                this.__flatsharp__Hash_17 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(source.__flatsharp__Hash_17);
+                this.__flatsharp__Hash_18 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(source.__flatsharp__Hash_18);
+                this.__flatsharp__Hash_19 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(source.__flatsharp__Hash_19);
+                this.__flatsharp__Hash_20 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(source.__flatsharp__Hash_20);
+                this.__flatsharp__Hash_21 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(source.__flatsharp__Hash_21);
+                this.__flatsharp__Hash_22 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(source.__flatsharp__Hash_22);
+                this.__flatsharp__Hash_23 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(source.__flatsharp__Hash_23);
+                this.__flatsharp__Hash_24 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(source.__flatsharp__Hash_24);
+                this.__flatsharp__Hash_25 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(source.__flatsharp__Hash_25);
+                this.__flatsharp__Hash_26 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(source.__flatsharp__Hash_26);
+                this.__flatsharp__Hash_27 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(source.__flatsharp__Hash_27);
+                this.__flatsharp__Hash_28 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(source.__flatsharp__Hash_28);
+                this.__flatsharp__Hash_29 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(source.__flatsharp__Hash_29);
+                this.__flatsharp__Hash_30 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(source.__flatsharp__Hash_30);
+                this.__flatsharp__Hash_31 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(source.__flatsharp__Hash_31);
                 this.Hash = new HashVector(this);
                 this.OnInitialized(null);
             }
@@ -2001,38 +2009,38 @@ namespace BenchmarkCore
                 {
                     var thisItem = this.item;
                     var s = source;
-                    thisItem.__flatsharp__Hash_31 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[31]);
-                    thisItem.__flatsharp__Hash_30 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[30]);
-                    thisItem.__flatsharp__Hash_29 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[29]);
-                    thisItem.__flatsharp__Hash_28 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[28]);
-                    thisItem.__flatsharp__Hash_27 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[27]);
-                    thisItem.__flatsharp__Hash_26 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[26]);
-                    thisItem.__flatsharp__Hash_25 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[25]);
-                    thisItem.__flatsharp__Hash_24 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[24]);
-                    thisItem.__flatsharp__Hash_23 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[23]);
-                    thisItem.__flatsharp__Hash_22 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[22]);
-                    thisItem.__flatsharp__Hash_21 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[21]);
-                    thisItem.__flatsharp__Hash_20 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[20]);
-                    thisItem.__flatsharp__Hash_19 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[19]);
-                    thisItem.__flatsharp__Hash_18 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[18]);
-                    thisItem.__flatsharp__Hash_17 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[17]);
-                    thisItem.__flatsharp__Hash_16 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[16]);
-                    thisItem.__flatsharp__Hash_15 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[15]);
-                    thisItem.__flatsharp__Hash_14 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[14]);
-                    thisItem.__flatsharp__Hash_13 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[13]);
-                    thisItem.__flatsharp__Hash_12 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[12]);
-                    thisItem.__flatsharp__Hash_11 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[11]);
-                    thisItem.__flatsharp__Hash_10 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[10]);
-                    thisItem.__flatsharp__Hash_9 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[9]);
-                    thisItem.__flatsharp__Hash_8 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[8]);
-                    thisItem.__flatsharp__Hash_7 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[7]);
-                    thisItem.__flatsharp__Hash_6 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[6]);
-                    thisItem.__flatsharp__Hash_5 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[5]);
-                    thisItem.__flatsharp__Hash_4 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[4]);
-                    thisItem.__flatsharp__Hash_3 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[3]);
-                    thisItem.__flatsharp__Hash_2 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[2]);
-                    thisItem.__flatsharp__Hash_1 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[1]);
-                    thisItem.__flatsharp__Hash_0 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[0]);
+                    thisItem.__flatsharp__Hash_31 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[31]);
+                    thisItem.__flatsharp__Hash_30 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[30]);
+                    thisItem.__flatsharp__Hash_29 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[29]);
+                    thisItem.__flatsharp__Hash_28 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[28]);
+                    thisItem.__flatsharp__Hash_27 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[27]);
+                    thisItem.__flatsharp__Hash_26 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[26]);
+                    thisItem.__flatsharp__Hash_25 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[25]);
+                    thisItem.__flatsharp__Hash_24 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[24]);
+                    thisItem.__flatsharp__Hash_23 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[23]);
+                    thisItem.__flatsharp__Hash_22 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[22]);
+                    thisItem.__flatsharp__Hash_21 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[21]);
+                    thisItem.__flatsharp__Hash_20 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[20]);
+                    thisItem.__flatsharp__Hash_19 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[19]);
+                    thisItem.__flatsharp__Hash_18 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[18]);
+                    thisItem.__flatsharp__Hash_17 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[17]);
+                    thisItem.__flatsharp__Hash_16 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[16]);
+                    thisItem.__flatsharp__Hash_15 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[15]);
+                    thisItem.__flatsharp__Hash_14 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[14]);
+                    thisItem.__flatsharp__Hash_13 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[13]);
+                    thisItem.__flatsharp__Hash_12 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[12]);
+                    thisItem.__flatsharp__Hash_11 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[11]);
+                    thisItem.__flatsharp__Hash_10 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[10]);
+                    thisItem.__flatsharp__Hash_9 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[9]);
+                    thisItem.__flatsharp__Hash_8 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[8]);
+                    thisItem.__flatsharp__Hash_7 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[7]);
+                    thisItem.__flatsharp__Hash_6 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[6]);
+                    thisItem.__flatsharp__Hash_5 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[5]);
+                    thisItem.__flatsharp__Hash_4 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[4]);
+                    thisItem.__flatsharp__Hash_3 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[3]);
+                    thisItem.__flatsharp__Hash_2 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[2]);
+                    thisItem.__flatsharp__Hash_1 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[1]);
+                    thisItem.__flatsharp__Hash_0 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[0]);
                 }
             }
 
@@ -2045,38 +2053,38 @@ namespace BenchmarkCore
                 {
                     var thisItem = this.item;
                     var s = source;
-                    thisItem.__flatsharp__Hash_31 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[31]);
-                    thisItem.__flatsharp__Hash_30 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[30]);
-                    thisItem.__flatsharp__Hash_29 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[29]);
-                    thisItem.__flatsharp__Hash_28 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[28]);
-                    thisItem.__flatsharp__Hash_27 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[27]);
-                    thisItem.__flatsharp__Hash_26 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[26]);
-                    thisItem.__flatsharp__Hash_25 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[25]);
-                    thisItem.__flatsharp__Hash_24 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[24]);
-                    thisItem.__flatsharp__Hash_23 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[23]);
-                    thisItem.__flatsharp__Hash_22 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[22]);
-                    thisItem.__flatsharp__Hash_21 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[21]);
-                    thisItem.__flatsharp__Hash_20 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[20]);
-                    thisItem.__flatsharp__Hash_19 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[19]);
-                    thisItem.__flatsharp__Hash_18 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[18]);
-                    thisItem.__flatsharp__Hash_17 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[17]);
-                    thisItem.__flatsharp__Hash_16 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[16]);
-                    thisItem.__flatsharp__Hash_15 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[15]);
-                    thisItem.__flatsharp__Hash_14 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[14]);
-                    thisItem.__flatsharp__Hash_13 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[13]);
-                    thisItem.__flatsharp__Hash_12 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[12]);
-                    thisItem.__flatsharp__Hash_11 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[11]);
-                    thisItem.__flatsharp__Hash_10 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[10]);
-                    thisItem.__flatsharp__Hash_9 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[9]);
-                    thisItem.__flatsharp__Hash_8 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[8]);
-                    thisItem.__flatsharp__Hash_7 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[7]);
-                    thisItem.__flatsharp__Hash_6 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[6]);
-                    thisItem.__flatsharp__Hash_5 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[5]);
-                    thisItem.__flatsharp__Hash_4 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[4]);
-                    thisItem.__flatsharp__Hash_3 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[3]);
-                    thisItem.__flatsharp__Hash_2 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[2]);
-                    thisItem.__flatsharp__Hash_1 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[1]);
-                    thisItem.__flatsharp__Hash_0 = FlatSharp.Compiler.Generated.CloneHelpers_a9ae8f6fc28046e1ab126d07fda1e320.Clone(s[0]);
+                    thisItem.__flatsharp__Hash_31 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[31]);
+                    thisItem.__flatsharp__Hash_30 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[30]);
+                    thisItem.__flatsharp__Hash_29 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[29]);
+                    thisItem.__flatsharp__Hash_28 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[28]);
+                    thisItem.__flatsharp__Hash_27 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[27]);
+                    thisItem.__flatsharp__Hash_26 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[26]);
+                    thisItem.__flatsharp__Hash_25 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[25]);
+                    thisItem.__flatsharp__Hash_24 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[24]);
+                    thisItem.__flatsharp__Hash_23 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[23]);
+                    thisItem.__flatsharp__Hash_22 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[22]);
+                    thisItem.__flatsharp__Hash_21 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[21]);
+                    thisItem.__flatsharp__Hash_20 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[20]);
+                    thisItem.__flatsharp__Hash_19 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[19]);
+                    thisItem.__flatsharp__Hash_18 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[18]);
+                    thisItem.__flatsharp__Hash_17 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[17]);
+                    thisItem.__flatsharp__Hash_16 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[16]);
+                    thisItem.__flatsharp__Hash_15 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[15]);
+                    thisItem.__flatsharp__Hash_14 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[14]);
+                    thisItem.__flatsharp__Hash_13 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[13]);
+                    thisItem.__flatsharp__Hash_12 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[12]);
+                    thisItem.__flatsharp__Hash_11 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[11]);
+                    thisItem.__flatsharp__Hash_10 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[10]);
+                    thisItem.__flatsharp__Hash_9 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[9]);
+                    thisItem.__flatsharp__Hash_8 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[8]);
+                    thisItem.__flatsharp__Hash_7 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[7]);
+                    thisItem.__flatsharp__Hash_6 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[6]);
+                    thisItem.__flatsharp__Hash_5 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[5]);
+                    thisItem.__flatsharp__Hash_4 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[4]);
+                    thisItem.__flatsharp__Hash_3 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[3]);
+                    thisItem.__flatsharp__Hash_2 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[2]);
+                    thisItem.__flatsharp__Hash_1 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[1]);
+                    thisItem.__flatsharp__Hash_0 = FlatSharp.Compiler.Generated.CloneHelpers_6c037465d24f4cf987ccbbf84ec8af4c.Clone(s[0]);
                 }
             }
         }

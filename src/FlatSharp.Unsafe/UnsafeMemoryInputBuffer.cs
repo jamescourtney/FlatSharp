@@ -22,33 +22,61 @@ namespace FlatSharp.Unsafe
     using System.Runtime.CompilerServices;
     using System.Text;
 
-    public sealed unsafe class UnsafeArrayInputBuffer : IInputBuffer
+    /// <summary>
+    /// An unsafe memory input buffer. The underlying memory is pinned for the
+    /// lifetime of the <see cref="UnsafeMemoryInputBuffer"/>, so it is not appropriate
+    /// to keep these for long periods of time.
+    /// </summary>
+    public sealed unsafe class UnsafeMemoryInputBuffer : IInputBuffer, IDisposable
     {
-        private readonly byte[] array;
-        private readonly int offset;
+        private readonly Memory<byte> memory;
+        private readonly MemoryHandle pinnedHandle;
+        private readonly byte* pointer;
         private readonly int length;
 
-        public UnsafeArrayInputBuffer(ArraySegment<byte> memory)
-        {
-            if (memory.Array is null)
-            {
-                throw new ArgumentException("ArraySegment had null array", nameof(memory));
-            }
+        private bool disposed;
 
-            this.length = memory.Count;
-            this.offset = memory.Offset;
-            this.array = memory.Array;
+        /// <summary>
+        /// Initializes a new <see cref="UnsafeMemoryInputBuffer"/> from the given <see cref="System.Memory{byte}"/> instance. The memory
+        /// is pinned in place for the lifetime of this object.
+        /// </summary>
+        /// <param name="memory"></param>
+        public UnsafeMemoryInputBuffer(Memory<byte> memory)
+        {
+            this.length = memory.Length;
+            this.memory = memory;
+            this.pinnedHandle = this.memory.Pin();
+            this.pointer = (byte*)this.pinnedHandle.Pointer;
 
             if (!BitConverter.IsLittleEndian)
             {
-                throw new InvalidOperationException("UnsafeArrayInputBuffer only works on little-endian architectures presently. On big-endian systems, ArrayInputBuffer and MemoryInputBuffer will both work.");
+                throw new InvalidOperationException("UnsafeMemoryInputBuffer only works on little-endian architectures presently. On big-endian systems, ArrayInputBuffer and MemoryInputBuffer will both work.");
             }
+
+            GC.KeepAlive(this); // force GC to care about us until the end of the ctor (once everything has been assigned).
         }
 
-        public UnsafeArrayInputBuffer(byte[] memory) : this(new ArraySegment<byte>(memory))
+        // don't let memory be pinned indefinitely.
+        ~UnsafeMemoryInputBuffer()
         {
+            this.Dispose();
         }
 
+        /// <summary>
+        /// Disposes the current object and unpins the underlying memory. Once this method is called,
+        /// the <see cref="UnsafeMemoryInputBuffer"/> instance is no longer trustworthy. Future attempts
+        /// to access this object will throw an <see cref="ObjectDisposedException"/>.
+        /// </summary>
+        public void Dispose()
+        {
+            this.disposed = true;
+            this.pinnedHandle.Dispose();
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Gets the length of the buffer.
+        /// </summary>
         public int Length => this.length;
 
         public ISharedStringReader? SharedStringReader { get; set; }
@@ -59,10 +87,7 @@ namespace FlatSharp.Unsafe
             checked
             {
                 this.EnsureInBounds(offset, sizeof(byte));
-                fixed (byte* pByte = &this.array[this.offset + offset])
-                {
-                    return *pByte;
-                }
+                return *(this.pointer + offset);
             }
         }
 
@@ -73,10 +98,7 @@ namespace FlatSharp.Unsafe
             checked
             {
                 this.EnsureInBounds(offset, sizeof(double));
-                fixed (byte* pByte = &this.array[this.offset + offset])
-                {
-                    return *(double*)pByte;
-                }
+                return *(double*)(this.pointer + offset);
             }
         }
 
@@ -87,10 +109,7 @@ namespace FlatSharp.Unsafe
             checked
             {
                 this.EnsureInBounds(offset, sizeof(float));
-                fixed (byte* pByte = &this.array[this.offset + offset])
-                {
-                    return *(float*)pByte;
-                }
+                return *(float*)(this.pointer + offset);
             }
         }
 
@@ -101,10 +120,7 @@ namespace FlatSharp.Unsafe
             checked
             {
                 this.EnsureInBounds(offset, sizeof(int));
-                fixed (byte* pByte = &this.array[this.offset + offset])
-                {
-                    return *(int*)pByte;
-                }
+                return *(int*)(this.pointer + offset);
             }
         }
 
@@ -115,10 +131,7 @@ namespace FlatSharp.Unsafe
             checked
             {
                 this.EnsureInBounds(offset, sizeof(long));
-                fixed (byte* pByte = &this.array[this.offset + offset])
-                {
-                    return *(long*)pByte;
-                }
+                return *(long*)(this.pointer + offset);
             }
         }
 
@@ -128,10 +141,7 @@ namespace FlatSharp.Unsafe
             checked
             {
                 this.EnsureInBounds(offset, sizeof(sbyte));
-                fixed (byte* pByte = &this.array[this.offset + offset])
-                {
-                    return *(sbyte*)pByte;
-                }
+                return *(sbyte*)(this.pointer + offset);
             }
         }
 
@@ -142,10 +152,7 @@ namespace FlatSharp.Unsafe
             checked
             {
                 this.EnsureInBounds(offset, sizeof(short));
-                fixed (byte* pByte = &this.array[this.offset + offset])
-                {
-                    return *(short*)pByte;
-                }
+                return *(short*)(this.pointer + offset);
             }
         }
 
@@ -156,10 +163,7 @@ namespace FlatSharp.Unsafe
             checked
             {
                 this.EnsureInBounds(offset, sizeof(uint));
-                fixed (byte* pByte = &this.array[this.offset + offset])
-                {
-                    return *(uint*)pByte;
-                }
+                return *(uint*)(this.pointer + offset);
             }
         }
 
@@ -170,10 +174,7 @@ namespace FlatSharp.Unsafe
             checked
             {
                 this.EnsureInBounds(offset, sizeof(ulong));
-                fixed (byte* pByte = &this.array[this.offset + offset])
-                {
-                    return *(ulong*)pByte;
-                }
+                return *(ulong*)(this.pointer + offset);
             }
         }
 
@@ -184,10 +185,7 @@ namespace FlatSharp.Unsafe
             checked
             {
                 this.EnsureInBounds(offset, sizeof(ushort));
-                fixed (byte* pByte = &this.array[this.offset + offset])
-                {
-                    return *(ushort*)pByte;
-                }
+                return *(ushort*)(this.pointer + offset);
             }
         }
 
@@ -197,7 +195,7 @@ namespace FlatSharp.Unsafe
             checked
             {
                 EnsureInBounds(start, length);
-                return new ArraySegment<byte>(this.array, this.offset + start, length);
+                return this.memory.Slice(start, length);
             }
         }
 
@@ -213,16 +211,18 @@ namespace FlatSharp.Unsafe
             checked
             {
                 this.EnsureInBounds(offset, byteLength);
-                fixed (byte* pByte = &this.array[this.offset + offset])
-                {
-                    return encoding.GetString(pByte, byteLength);
-                }
+                return encoding.GetString(this.pointer + offset, byteLength);
             }
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void EnsureInBounds(int offset, int size)
         {
+            if (this.disposed)
+            {
+                throw new ObjectDisposedException(nameof(UnsafeMemoryInputBuffer));
+            }
+
             checked
             {
                 if (offset + size > this.length || offset < 0 || size < 0)
@@ -240,9 +240,9 @@ namespace FlatSharp.Unsafe
         [EditorBrowsable(EditorBrowsableState.Never)]
         public readonly struct Wrapper : IInputBuffer
         {
-            private readonly UnsafeArrayInputBuffer buffer;
+            private readonly UnsafeMemoryInputBuffer buffer;
 
-            internal Wrapper(UnsafeArrayInputBuffer buffer) => this.buffer = buffer;
+            internal Wrapper(UnsafeMemoryInputBuffer buffer) => this.buffer = buffer;
 
             public ISharedStringReader? SharedStringReader 
             { 
