@@ -8,5 +8,11 @@ table SomeTable (fs_serializer) {
 }
 
 struct SomeStruct {
+   NestedStruct:NestedStruct;
    Hash:[ubyte:32];
+}
+
+struct NestedStruct {
+   Byte:ubyte;
+   Int:int;
 }

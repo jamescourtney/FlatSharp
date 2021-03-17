@@ -127,6 +127,8 @@ namespace FlatSharp.TypeModel
         public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
         {
             List<string> body = new List<string>();
+            body.Add($"Span<byte> scopedSpan = {context.SpanVariableName}.Slice({context.OffsetVariableName}, {this.PhysicalLayout[0].InlineSize});");
+
             for (int i = 0; i < this.Members.Count; ++i)
             {
                 var memberInfo = this.Members[i];
@@ -138,8 +140,9 @@ namespace FlatSharp.TypeModel
                 }
 
                 var propContext = context.With(
-                    offsetVariableName: $"({memberInfo.Offset} + {context.OffsetVariableName})",
-                    valueVariableName: $"({propertyAccessor})");
+                    spanVariableName: "scopedSpan",
+                    offsetVariableName: $"{memberInfo.Offset}",
+                    valueVariableName: $"{propertyAccessor}");
 
                 string invocation = propContext.GetSerializeInvocation(memberInfo.ItemTypeModel.ClrType) + ";";
 
@@ -153,7 +156,7 @@ namespace FlatSharp.TypeModel
                     var index{i}Value = {propertyAccessor};
                     if (index{i}Value is null)
                     {{
-                        {context.SpanVariableName}.Slice({start} + {context.OffsetVariableName}, {length}).Clear();
+                        scopedSpan.Slice({start}, {length}).Clear();
                     }}
                     else
                     {{
