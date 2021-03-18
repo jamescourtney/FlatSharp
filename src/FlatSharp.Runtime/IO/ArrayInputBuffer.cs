@@ -17,6 +17,7 @@
 namespace FlatSharp
 {
     using System;
+    using System.ComponentModel;
     using System.Runtime.CompilerServices;
     using System.Text;
 
@@ -131,11 +132,12 @@ namespace FlatSharp
             return serializer.Parse(new Wrapper(this), offset);
         }
 
-        private readonly struct Wrapper : IInputBuffer
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public readonly struct Wrapper : IInputBuffer
         {
             private readonly ArrayInputBuffer buffer;
 
-            public Wrapper(ArrayInputBuffer buffer) => this.buffer = buffer;
+            internal Wrapper(ArrayInputBuffer buffer) => this.buffer = buffer;
 
             public ISharedStringReader? SharedStringReader 
             { 

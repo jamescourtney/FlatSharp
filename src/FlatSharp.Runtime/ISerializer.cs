@@ -69,23 +69,9 @@ namespace FlatSharp
     /// <summary>
     /// An object that can read and write <typeparamref name="T"/> from a buffer.
     /// </summary>
-    public interface ISerializer<T> where T : class
+    public interface ISerializer<T> : ISerializer
+        where T : class
     {
-        /// <summary>
-        /// Gets the C# code that FlatSharp generated to produce this serializer.
-        /// </summary>
-        string? CSharp { get; }
-
-        /// <summary>
-        /// Gets the Assembly FlatSharp generated to produce this serializer.
-        /// </summary>
-        Assembly? Assembly { get; }
-
-        /// <summary>
-        /// Gets the raw data of the <see cref="Assembly"/> property. Can be saved to disk and decompiled, referenced, etc.
-        /// </summary>
-        byte[]? AssemblyBytes { get; }
-
         /// <summary>
         /// Writes the given item to the buffer using the given spanwriter.
         /// </summary>
@@ -103,7 +89,7 @@ namespace FlatSharp
         /// <summary>
         /// Parses the given buffer as an instance of <typeparamref name="T"/>.
         /// </summary>
-        T Parse(IInputBuffer buffer);
+        new T Parse(IInputBuffer buffer);
 
         /// <summary>
         /// Returns a new <see cref="ISerializer{T}"/> instance based on the current one with the given settings.

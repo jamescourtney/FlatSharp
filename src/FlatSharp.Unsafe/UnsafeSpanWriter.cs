@@ -17,6 +17,7 @@
 namespace FlatSharp.Unsafe
 {
     using System;
+    using System.ComponentModel;
     using System.Runtime.CompilerServices;
     using System.Text;
 
@@ -182,7 +183,7 @@ namespace FlatSharp.Unsafe
         public void InvokeWrite<TItemType>(IGeneratedSerializer<TItemType> serializer, Span<byte> destination, TItemType item, int offset, SerializationContext context)
         {
             serializer.Write(
-                new UnsafeSpanWriterWrapper(this),
+                new Wrapper(this),
                 destination,
                 item,
                 offset,
@@ -191,18 +192,19 @@ namespace FlatSharp.Unsafe
 
         public void FlushSharedStrings(ISharedStringWriter writer, Span<byte> destination, SerializationContext context)
         {
-            writer.FlushWrites(new UnsafeSpanWriterWrapper(this), destination, context);
+            writer.FlushWrites(new Wrapper(this), destination, context);
         }
 
         /// <summary>
         /// Wraps the unsafespanwriter class inside a struct. This allows the CLR to generate methods specific for this type,
         /// which sidesteps vtable indirection.
         /// </summary>
-        private readonly struct UnsafeSpanWriterWrapper : ISpanWriter
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public readonly struct Wrapper : ISpanWriter
         {
             private readonly UnsafeSpanWriter unsafeSpanWriter;
 
-            public UnsafeSpanWriterWrapper(UnsafeSpanWriter writer)
+            internal Wrapper(UnsafeSpanWriter writer)
             {
                 this.unsafeSpanWriter = writer;
             }

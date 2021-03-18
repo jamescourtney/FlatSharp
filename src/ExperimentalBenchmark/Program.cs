@@ -18,6 +18,7 @@ using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
 using FlatSharp;
 using System;
+using System.Diagnostics;
 
 namespace BenchmarkCore
 {
@@ -25,27 +26,37 @@ namespace BenchmarkCore
     [ShortRunJob(BenchmarkDotNet.Jobs.RuntimeMoniker.NetCoreApp50, BenchmarkDotNet.Environments.Jit.RyuJit, BenchmarkDotNet.Environments.Platform.AnyCpu)]
     public class StructVectorClone
     {
-        public int Offset;
-
-        [Params(1, 2, 4, 8)]
-        public int Alignment;
+        private readonly byte[] data = new byte[10240];
+        private SomeTable? table;
 
         [GlobalSetup]
         public void Setup()
         {
-            this.Offset = new Random().Next(0, 256);
+            this.table = new SomeTable
+            {
+                Int = 1,
+                String = "foobar",
+                Struct = new SomeStruct()
+            };
+
+            for (int i = 0; i < this.table.Struct.Hash.Count; ++i)
+            {
+                this.table.Struct.Hash[i] = (byte)i;
+            }
+
+            this.Serialize();
         }
 
         [Benchmark]
-        public int NegPlusOne()
+        public void Serialize()
         {
-            return ((~this.Offset) + 1) & (this.Alignment - 1);
+            SomeTable.Serializer.Write(this.data, this.table!);
         }
 
         [Benchmark]
-        public int NotAnd()
+        public void Parse()
         {
-            return (-this.Offset) & (this.Alignment - 1);
+            SomeTable.Serializer.Parse<SomeTable>(this.data);
         }
     }
 
@@ -53,19 +64,28 @@ namespace BenchmarkCore
     {
         public static void Main(string[] args)
         {
-            var summary = BenchmarkRunner.Run<StructVectorClone>();
-            //StructVectorClone cloner = new StructVectorClone();
-            //cloner.Setup();
+            //var summary = BenchmarkRunner.Run<StructVectorClone>();
+            StructVectorClone cloner = new StructVectorClone();
+            cloner.Setup();
 
-            //for (int i = 0; i < 10_000_000; ++i)
-            //{
-            //    cloner.Parse();
-            //}
+            const int Count = 3_000_000;
 
-            //for (int i = 0; i < 10_000_000; ++i)
-            //{
-            //    cloner.Serialize();
-            //}
+            Stopwatch sw = Stopwatch.StartNew();
+            for (int i = 0; i < Count; ++i)
+            {
+                cloner.Parse();
+            }
+            sw.Stop();
+            Console.WriteLine($"Parse: {Count / sw.ElapsedMilliseconds} items per ms");
+
+            sw.Restart();
+            for (int i = 0; i < Count; ++i)
+            {
+                cloner.Serialize();
+            }
+
+            sw.Stop();
+            Console.WriteLine($"Serialize: {Count / sw.ElapsedMilliseconds} items per ms");
         }
     }
 }

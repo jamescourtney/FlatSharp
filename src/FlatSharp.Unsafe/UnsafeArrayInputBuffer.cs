@@ -18,6 +18,7 @@ namespace FlatSharp.Unsafe
 {
     using System;
     using System.Buffers;
+    using System.ComponentModel;
     using System.Runtime.CompilerServices;
     using System.Text;
 
@@ -235,12 +236,13 @@ namespace FlatSharp.Unsafe
         {
             return serializer.Parse(new Wrapper(this), offset);
         }
-        
-        private readonly struct Wrapper : IInputBuffer
+
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public readonly struct Wrapper : IInputBuffer
         {
             private readonly UnsafeArrayInputBuffer buffer;
 
-            public Wrapper(UnsafeArrayInputBuffer buffer) => this.buffer = buffer;
+            internal Wrapper(UnsafeArrayInputBuffer buffer) => this.buffer = buffer;
 
             public ISharedStringReader? SharedStringReader 
             { 
