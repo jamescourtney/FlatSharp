@@ -109,7 +109,7 @@ namespace FlatSharp.TypeModel
             return true;
         }
 
-        public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
+        public sealed override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
         {
             string lengthProperty = $"{context.ValueVariableName}.{this.LengthPropertyName}";
 
@@ -118,48 +118,15 @@ namespace FlatSharp.TypeModel
             {
                 // Constant size items. We can reduce these reasonably well.
                 body = $"return {VectorMinSize} + {SerializationHelpers.GetMaxPadding(this.ItemTypeModel.PhysicalLayout[0].Alignment)} + ({this.PaddedMemberInlineSize} * {lengthProperty});";
+                return new CodeGeneratedMethod(body);
             }
             else
             {
-                var itemContext = context.With(valueVariableName: "itemTemp");
-
-                body =
-                $@"
-                    int length = {lengthProperty};
-                    int runningSum = {VectorMinSize} + {this.MaxInlineSize};
-                    for (int i = 0; i < length; ++i)
-                    {{
-                        var itemTemp = {context.ValueVariableName}[i];
-                        {this.GetThrowIfNullStatement("itemTemp")}
-                        runningSum += {itemContext.GetMaxSizeInvocation(this.ItemTypeModel.ClrType)};
-                    }}
-                    return runningSum;";
+                return this.CreateGetMaxSizeBodyWithLoop(context);
             }
-
-            return new CodeGeneratedMethod(body);
         }
 
-        public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
-        {
-            var type = this.ClrType;
-            var itemTypeModel = this.ItemTypeModel;
-
-            string body = $@"
-                int count = {context.ValueVariableName}.{this.LengthPropertyName};
-                int vectorOffset = {context.SerializationContextVariableName}.{nameof(SerializationContext.AllocateVector)}({itemTypeModel.PhysicalLayout[0].Alignment}, count, {this.PaddedMemberInlineSize});
-                {context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteUOffset)}({context.SpanVariableName}, {context.OffsetVariableName}, vectorOffset, {context.SerializationContextVariableName});
-                {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteInt)}({context.SpanVariableName}, count, vectorOffset, {context.SerializationContextVariableName});
-                vectorOffset += sizeof(int);
-                for (int i = 0; i < count; ++i)
-                {{
-                      var current = {context.ValueVariableName}[i];
-                      {this.GetThrowIfNullStatement("current")}
-                      {context.MethodNameMap[itemTypeModel.ClrType]}({context.SpanWriterVariableName}, {context.SpanVariableName}, current, vectorOffset, {context.SerializationContextVariableName});
-                      vectorOffset += {this.PaddedMemberInlineSize};
-                }}";
-
-            return new CodeGeneratedMethod(body);
-        }
+        protected abstract CodeGeneratedMethod CreateGetMaxSizeBodyWithLoop(GetMaxSizeCodeGenContext context);
 
         public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
         {
@@ -202,7 +169,7 @@ namespace FlatSharp.TypeModel
             }
         }
 
-        private string GetThrowIfNullStatement(string variableName)
+        protected string GetThrowIfNullStatement(string variableName)
         {
             if (this.ItemTypeModel.IsNonNullableClrValueType())
             {

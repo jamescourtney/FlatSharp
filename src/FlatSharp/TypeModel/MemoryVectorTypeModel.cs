@@ -46,6 +46,11 @@ namespace FlatSharp.TypeModel
             this.itemTypeModel = new ByteTypeModel(this.typeModelContainer);
         }
 
+        protected override CodeGeneratedMethod CreateGetMaxSizeBodyWithLoop(GetMaxSizeCodeGenContext context)
+        {
+            throw new InvalidOperationException("Flatsharp.Internal: Not expecting to do loop get max size for memory vector");
+        }
+
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
             string method = nameof(InputBufferExtensions.ReadByteMemoryBlock);

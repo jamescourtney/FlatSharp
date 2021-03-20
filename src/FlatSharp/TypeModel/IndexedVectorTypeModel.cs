@@ -37,7 +37,7 @@ namespace FlatSharp.TypeModel
 
         public override ITypeModel ItemTypeModel => this.valueTypeModel;
 
-        public override string LengthPropertyName => throw new InvalidOperationException();
+        public override string LengthPropertyName => nameof(IIndexedVector<string, string>.Count);
 
         public override void OnInitialize()
         {
@@ -120,7 +120,7 @@ namespace FlatSharp.TypeModel
             return new CodeGeneratedMethod(body) { IsMethodInline = true, ClassDefinition = vectorClassDef };
         }
 
-        public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
+        protected override CodeGeneratedMethod CreateGetMaxSizeBodyWithLoop(GetMaxSizeCodeGenContext context)
         {
             string body = $@"
                 int runningSum = {this.MaxInlineSize + VectorMinSize};

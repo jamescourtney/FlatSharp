@@ -17,6 +17,7 @@
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
 using FlatSharp;
+using FlatSharp.Unsafe;
 using System;
 using System.Diagnostics;
 
@@ -29,19 +30,25 @@ namespace BenchmarkCore
         private readonly byte[] data = new byte[10240];
         private SomeTable? table;
 
+        private ArrayInputBuffer inputBuffer;
+        //private UnsafeSpanWriter2 spanWriter;
+
         [GlobalSetup]
         public void Setup()
         {
+            this.inputBuffer = new ArrayInputBuffer(this.data);
+            //this.spanWriter = UnsafeSpanWriter2.Instance;
+
             this.table = new SomeTable
             {
-                Int = 1,
-                String = "foobar",
-                Struct = new SomeStruct()
+                Int = new int[100]
+                //String = "foobar",
+                //Struct = new SomeStruct[100]
             };
 
-            for (int i = 0; i < this.table.Struct.Hash.Count; ++i)
+            for (int i = 0; i < this.table.Int.Count; ++i)
             {
-                this.table.Struct.Hash[i] = (byte)i;
+                table.Int[i] = i;
             }
 
             this.Serialize();
@@ -50,13 +57,13 @@ namespace BenchmarkCore
         [Benchmark]
         public void Serialize()
         {
-            SomeTable.Serializer.Write(this.data, this.table!);
+            SomeTable.Serializer.Write(SpanWriter.Instance, this.data, this.table!);
         }
 
         [Benchmark]
         public void Parse()
         {
-            SomeTable.Serializer.Parse<SomeTable>(this.data);
+            SomeTable.Serializer.Parse(this.inputBuffer);
         }
     }
 
@@ -70,22 +77,25 @@ namespace BenchmarkCore
 
             const int Count = 3_000_000;
 
-            Stopwatch sw = Stopwatch.StartNew();
-            for (int i = 0; i < Count; ++i)
+            for (int iter = 0; iter < 3; ++iter)
             {
-                cloner.Parse();
-            }
-            sw.Stop();
-            Console.WriteLine($"Parse: {Count / sw.ElapsedMilliseconds} items per ms");
+                Stopwatch sw = Stopwatch.StartNew();
+                for (int i = 0; i < Count; ++i)
+                {
+                    cloner.Parse();
+                }
+                sw.Stop();
+                Console.WriteLine($"Parse: {Count / sw.ElapsedMilliseconds} items per ms");
 
-            sw.Restart();
-            for (int i = 0; i < Count; ++i)
-            {
-                cloner.Serialize();
-            }
+                sw.Restart();
+                for (int i = 0; i < Count; ++i)
+                {
+                    cloner.Serialize();
+                }
 
-            sw.Stop();
-            Console.WriteLine($"Serialize: {Count / sw.ElapsedMilliseconds} items per ms");
+                sw.Stop();
+                Console.WriteLine($"Serialize: {Count / sw.ElapsedMilliseconds} items per ms");
+            }
         }
     }
 }
