@@ -53,74 +53,18 @@ namespace FlatSharp.TypeModel
             }
         }
 
-        protected override CodeGeneratedMethod CreateGetMaxSizeBodyWithLoop(GetMaxSizeCodeGenContext context)
+        protected override string CreateLoop(
+            string vectorVariableName,
+            string numberofItemsVariableName,
+            string expectedVariableName,
+            string body)
         {
-            var itemContext = context.With(valueVariableName: "itemTemp");
-
-            string TypedLoop(string var, string? count = null) => $@"
-                    { (count == null ? $"int count = {context.ValueVariableName}.{LengthPropertyName};" : "") }
-                    for (int i = 0; i < {count ?? "count"}; ++i)
+            return $@"
+                    for (int i = 0; i < {numberofItemsVariableName}; ++i)
                     {{
-                        var itemTemp = {context.ValueVariableName}[i];
-                        {this.GetThrowIfNullStatement("itemTemp")}
-                        runningSum += {itemContext.GetMaxSizeInvocation(this.ItemTypeModel.ClrType)};
+                        var {expectedVariableName} = {vectorVariableName}[i];
+                        {body}
                     }}";
-
-            string body = $@"
-                int runningSum = {VectorMinSize + this.MaxInlineSize};
-                if ({context.ValueVariableName} is {itemTypeModel.GetCompilableTypeName()}[] array)
-                {{
-                    {TypedLoop("array", "array.Length")}
-                }}
-                else if ({context.ValueVariableName} is List<{itemTypeModel.GetCompilableTypeName()}> list)
-                {{
-                    {TypedLoop("list")}
-                }}
-                else
-                {{
-                    {TypedLoop(context.ValueVariableName)}
-                }}
-
-                return runningSum;";
-
-            return new CodeGeneratedMethod(body);
-        }
-
-        public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
-        {
-            var type = this.ClrType;
-            var itemTypeModel = this.ItemTypeModel;
-
-            string TypedLoop(string var, string? count = null) => $@"
-                    for (int i = 0; i < {count ?? "count"}; ++i)
-                    {{
-                        var current = {var}[i];
-                        {this.GetThrowIfNullStatement("current")}
-                        {context.MethodNameMap[itemTypeModel.ClrType]}({context.SpanWriterVariableName}, {context.SpanVariableName}, current, vectorOffset, {context.SerializationContextVariableName});
-                        vectorOffset += {this.PaddedMemberInlineSize};
-                    }}";
-
-            string body = $@"
-                int count = {context.ValueVariableName}.{this.LengthPropertyName};
-                int vectorOffset = {context.SerializationContextVariableName}.{nameof(SerializationContext.AllocateVector)}({itemTypeModel.PhysicalLayout[0].Alignment}, count, {this.PaddedMemberInlineSize});
-                {context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteUOffset)}({context.SpanVariableName}, {context.OffsetVariableName}, vectorOffset, {context.SerializationContextVariableName});
-                {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteInt)}({context.SpanVariableName}, count, vectorOffset, {context.SerializationContextVariableName});
-                vectorOffset += sizeof(int);
-                
-                if ({context.ValueVariableName} is {itemTypeModel.GetCompilableTypeName()}[] array)
-                {{
-                    {TypedLoop("array", "array.Length")}
-                }}
-                else if ({context.ValueVariableName} is List<{itemTypeModel.GetCompilableTypeName()}> list)
-                {{
-                    {TypedLoop("list")}
-                }}
-                else
-                {{
-                    {TypedLoop(context.ValueVariableName)}
-                }}";
-
-            return new CodeGeneratedMethod(body);
         }
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)

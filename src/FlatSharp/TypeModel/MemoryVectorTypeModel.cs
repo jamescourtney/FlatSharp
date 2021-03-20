@@ -46,7 +46,7 @@ namespace FlatSharp.TypeModel
             this.itemTypeModel = new ByteTypeModel(this.typeModelContainer);
         }
 
-        protected override CodeGeneratedMethod CreateGetMaxSizeBodyWithLoop(GetMaxSizeCodeGenContext context)
+        protected override string CreateLoop(string vectorVariableName, string numberOfItemsVariableName, string expectedVariableName, string body)
         {
             throw new InvalidOperationException("Flatsharp.Internal: Not expecting to do loop get max size for memory vector");
         }

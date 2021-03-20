@@ -120,46 +120,18 @@ namespace FlatSharp.TypeModel
             return new CodeGeneratedMethod(body) { IsMethodInline = true, ClassDefinition = vectorClassDef };
         }
 
-        protected override CodeGeneratedMethod CreateGetMaxSizeBodyWithLoop(GetMaxSizeCodeGenContext context)
+        protected override string CreateLoop(
+            string vectorVariableName,
+            string numberofItemsVariableName,
+            string expectedVariableName,
+            string body)
         {
-            string body = $@"
-                int runningSum = {this.MaxInlineSize + VectorMinSize};
-                foreach (var pair in {context.ValueVariableName})
+            return $@"
+                foreach (var kvp in {vectorVariableName})
                 {{
-                    var current = pair.Value;
-                    var key = pair.Key;
-                    runningSum += {context.MethodNameMap[this.valueTypeModel.ClrType]}(current);
-                }}
-
-                return runningSum;";
-
-            return new CodeGeneratedMethod(body)
-            {
-                IsMethodInline = false,
-            };
-        }
-
-        public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
-        {
-            var type = this.ClrType;
-            var itemTypeModel = this.ItemTypeModel;
-
-            string body = $@"
-                int count = {context.ValueVariableName}.{nameof(IIndexedVector<string, string>.Count)};
-                int vectorOffset = {context.SerializationContextVariableName}.{nameof(SerializationContext.AllocateVector)}({itemTypeModel.PhysicalLayout[0].Alignment}, count, {this.PaddedMemberInlineSize});
-                {context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteUOffset)}({context.SpanVariableName}, {context.OffsetVariableName}, vectorOffset, {context.SerializationContextVariableName});
-                {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteInt)}({context.SpanVariableName}, count, vectorOffset, {context.SerializationContextVariableName});
-                vectorOffset += sizeof(int);
-                foreach (var pair in {context.ValueVariableName})
-                {{
-                      var key = pair.Key;
-                      var current = pair.Value;
-
-                      {context.MethodNameMap[itemTypeModel.ClrType]}({context.SpanWriterVariableName}, {context.SpanVariableName}, current, vectorOffset, {context.SerializationContextVariableName});
-                      vectorOffset += {this.PaddedMemberInlineSize};
+                    var {expectedVariableName} = kvp.Value;
+                    {body}
                 }}";
-
-            return new CodeGeneratedMethod(body) { IsMethodInline = false };
         }
 
         public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)

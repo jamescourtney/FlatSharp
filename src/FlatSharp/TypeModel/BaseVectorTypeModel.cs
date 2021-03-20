@@ -117,16 +117,55 @@ namespace FlatSharp.TypeModel
             if (this.ItemTypeModel.IsFixedSize)
             {
                 // Constant size items. We can reduce these reasonably well.
-                body = $"return {VectorMinSize} + {SerializationHelpers.GetMaxPadding(this.ItemTypeModel.PhysicalLayout[0].Alignment)} + ({this.PaddedMemberInlineSize} * {lengthProperty});";
-                return new CodeGeneratedMethod(body);
+                body = $"return {VectorMinSize + SerializationHelpers.GetMaxPadding(this.ItemTypeModel.PhysicalLayout[0].Alignment)} + ({this.PaddedMemberInlineSize} * {lengthProperty});";
             }
             else
             {
-                return this.CreateGetMaxSizeBodyWithLoop(context);
+                string loopBody = $@"
+                    {this.GetThrowIfNullStatement("current")}
+                    runningSum += {context.MethodNameMap[this.ItemTypeModel.ClrType]}(current);";
+
+                body = $@"
+                int count = {lengthProperty};
+                int runningSum = {this.MaxInlineSize + VectorMinSize};
+                {this.CreateLoop(context.ValueVariableName, "count", "current", loopBody)}
+
+                return runningSum;";
             }
+
+            return new CodeGeneratedMethod(body);
         }
 
-        protected abstract CodeGeneratedMethod CreateGetMaxSizeBodyWithLoop(GetMaxSizeCodeGenContext context);
+        public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
+        {
+            var type = this.ClrType;
+            var itemTypeModel = this.ItemTypeModel;
+
+            string loopBody = $@"
+                {this.GetThrowIfNullStatement("current")}
+                {context.MethodNameMap[itemTypeModel.ClrType]}({context.SpanWriterVariableName}, {context.SpanVariableName}, current, vectorOffset, {context.SerializationContextVariableName});
+                vectorOffset += {this.PaddedMemberInlineSize};";
+
+            string body = $@"
+                int count = {context.ValueVariableName}.{this.LengthPropertyName};
+                int vectorOffset = {context.SerializationContextVariableName}.{nameof(SerializationContext.AllocateVector)}({itemTypeModel.PhysicalLayout[0].Alignment}, count, {this.PaddedMemberInlineSize});
+                {context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteUOffset)}({context.SpanVariableName}, {context.OffsetVariableName}, vectorOffset, {context.SerializationContextVariableName});
+                {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteInt)}({context.SpanVariableName}, count, vectorOffset, {context.SerializationContextVariableName});
+                vectorOffset += sizeof(int);
+
+                {this.CreateLoop(context.ValueVariableName, "count", "current", loopBody)}";
+
+            return new CodeGeneratedMethod(body);
+        }
+
+        /// <summary>
+        /// Creates a loop that executes the given body.
+        /// </summary>
+        protected abstract string CreateLoop(
+            string vectorVariableName, 
+            string numberofItemsVariableName,
+            string expectedVariableName, 
+            string body);
 
         public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
         {
