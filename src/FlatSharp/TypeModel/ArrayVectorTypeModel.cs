@@ -17,6 +17,7 @@
 namespace FlatSharp.TypeModel
 {
     using System;
+    using System.Text;
 
     /// <summary>
     /// Defines a vector type model for an array vector.
@@ -59,11 +60,29 @@ namespace FlatSharp.TypeModel
             string expectedVariableName, 
             string body)
         {
+            const int VectorSize = 8;
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < VectorSize; ++i)
+            {
+                sb.Append($@"
+                    {{
+                        var {expectedVariableName} = {vectorVariableName}[unchecked(i + {i})];
+                        {body}
+                    }}");
+            }
+
             return $@"
-                for (int i = 0; i < {vectorVariableName}.Length; ++i)
                 {{
-                    var {expectedVariableName} = {vectorVariableName}[i];
-                    {body}
+                    int i;
+                    for (i = 0; i < {vectorVariableName}.Length - {VectorSize}; i += {VectorSize})
+                    {{
+                        {sb}
+                    }}
+                    for (; i < {vectorVariableName}.Length; ++i)
+                    {{
+                        var {expectedVariableName} = {vectorVariableName}[i];
+                        {body}
+                    }}
                 }}";
         }
 
