@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 namespace FlatSharp.TypeModel
 {
     using System;
     using System.Collections.Generic;
+    using System.Text;
 
     /// <summary>
     /// Defines a vector type model for a list vector.
@@ -54,17 +55,78 @@ namespace FlatSharp.TypeModel
         }
 
         protected override string CreateLoop(
+            FlatBufferSerializerOptions options,
+            string vectorVariableName,
+            string numberofItemsVariableName,
+            string expectedVariableName,
+            string body) => CreateLoopStatic(
+                this.ItemTypeModel,
+                options,
+                vectorVariableName,
+                numberofItemsVariableName,
+                expectedVariableName,
+                body);
+
+        internal static string CreateLoopStatic(
+            ITypeModel typeModel,
+            FlatBufferSerializerOptions options,
             string vectorVariableName,
             string numberofItemsVariableName,
             string expectedVariableName,
             string body)
         {
-            return $@"
-                    for (int i = 0; i < {numberofItemsVariableName}; ++i)
+            string ListBody(string variable)
+            {
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < options.LoopUnrollFactor; ++i)
+                {
+                    sb.Append($@"
                     {{
-                        var {expectedVariableName} = {vectorVariableName}[i];
+                        var {expectedVariableName} = {variable}[unchecked(i + {i})];
                         {body}
-                    }}";
+                    }}");
+                }
+
+                string lastLoop = string.Empty;
+                if (options.LoopUnrollFactor > 1)
+                {
+                    lastLoop = $@"
+                        for (; i < {numberofItemsVariableName}; i = unchecked(i + 1))
+                        {{
+                            var {expectedVariableName} = {variable}[i];
+                            {body}
+                        }}";
+                }
+
+                return $@"
+                    int i;
+                    for (i = 0; i < unchecked({numberofItemsVariableName} - {options.LoopUnrollFactor - 1}); i = unchecked(i + {options.LoopUnrollFactor}))
+                    {{
+                        {sb}
+                    }}
+                    {lastLoop}";
+            }
+
+            if (options.Devirtualize)
+            {
+                return $@"
+                if ({vectorVariableName} is {typeModel.GetCompilableTypeName()}[] array)
+                {{
+                    {ArrayVectorTypeModel.CreateLoopStatic(options, "array", "current", body)}
+                }}
+                else if ({vectorVariableName} is List<{typeModel.GetCompilableTypeName()}> realList)
+                {{
+                    {ListBody("realList")}
+                }}
+                else
+                {{
+                    {ListBody(vectorVariableName)}
+                }}";
+            }
+            else
+            {
+                return ListBody(vectorVariableName);
+            }
         }
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)

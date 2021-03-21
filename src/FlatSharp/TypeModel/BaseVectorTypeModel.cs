@@ -128,7 +128,7 @@ namespace FlatSharp.TypeModel
                 body = $@"
                 int count = {lengthProperty};
                 int runningSum = {this.MaxInlineSize + VectorMinSize};
-                {this.CreateLoop(context.ValueVariableName, "count", "current", loopBody)}
+                {this.CreateLoop(context.Options, context.ValueVariableName, "count", "current", loopBody)}
 
                 return runningSum;";
             }
@@ -153,7 +153,7 @@ namespace FlatSharp.TypeModel
                 {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteInt)}({context.SpanVariableName}, count, vectorOffset, {context.SerializationContextVariableName});
                 vectorOffset += sizeof(int);
 
-                {this.CreateLoop(context.ValueVariableName, "count", "current", loopBody)}";
+                {this.CreateLoop(context.Options, context.ValueVariableName, "count", "current", loopBody)}";
 
             return new CodeGeneratedMethod(body);
         }
@@ -162,6 +162,7 @@ namespace FlatSharp.TypeModel
         /// Creates a loop that executes the given body.
         /// </summary>
         protected abstract string CreateLoop(
+            FlatBufferSerializerOptions options,
             string vectorVariableName, 
             string numberofItemsVariableName,
             string expectedVariableName, 

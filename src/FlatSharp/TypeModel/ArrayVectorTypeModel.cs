@@ -55,14 +55,20 @@ namespace FlatSharp.TypeModel
         }
 
         protected override string CreateLoop(
-            string vectorVariableName, 
-            string numberofItemsVariableName, 
-            string expectedVariableName, 
+            FlatBufferSerializerOptions options,
+            string vectorVariableName,
+            string numberofItemsVariableName,
+            string expectedVariableName,
+            string body) => CreateLoopStatic(options, vectorVariableName, expectedVariableName, body);
+
+        internal static string CreateLoopStatic(
+            FlatBufferSerializerOptions options,
+            string vectorVariableName,
+            string expectedVariableName,
             string body)
         {
-            const int VectorSize = 8;
             StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < VectorSize; ++i)
+            for (int i = 0; i < options.LoopUnrollFactor; ++i)
             {
                 sb.Append($@"
                     {{
@@ -71,18 +77,25 @@ namespace FlatSharp.TypeModel
                     }}");
             }
 
-            return $@"
-                {{
-                    int i;
-                    for (i = 0; i < {vectorVariableName}.Length - {VectorSize}; i += {VectorSize})
-                    {{
-                        {sb}
-                    }}
-                    for (; i < {vectorVariableName}.Length; ++i)
+            string lastLoop = string.Empty;
+            if (options.LoopUnrollFactor > 1)
+            {
+                lastLoop = $@"
+                    for (; i < {vectorVariableName}.Length; i = unchecked(i + 1))
                     {{
                         var {expectedVariableName} = {vectorVariableName}[i];
                         {body}
+                    }}";
+            }
+
+            return $@"
+                {{
+                    int i;
+                    for (i = 0; i < unchecked({vectorVariableName}.Length - {options.LoopUnrollFactor - 1}); i = unchecked(i + {options.LoopUnrollFactor}))
+                    {{
+                        {sb}
                     }}
+                    {lastLoop}
                 }}";
         }
 

@@ -121,6 +121,7 @@ namespace FlatSharp.TypeModel
         }
 
         protected override string CreateLoop(
+            FlatBufferSerializerOptions options,
             string vectorVariableName,
             string numberofItemsVariableName,
             string expectedVariableName,
