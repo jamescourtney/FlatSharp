@@ -77,34 +77,13 @@ namespace FlatSharp.TypeModel
         {
             string ListBody(string variable)
             {
-                StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < options.LoopUnrollFactor; ++i)
-                {
-                    sb.Append($@"
-                    {{
-                        var {expectedVariableName} = {variable}[unchecked(i + {i})];
-                        {body}
-                    }}");
-                }
-
-                string lastLoop = string.Empty;
-                if (options.LoopUnrollFactor > 1)
-                {
-                    lastLoop = $@"
-                        for (; i < {numberofItemsVariableName}; i = unchecked(i + 1))
-                        {{
-                            var {expectedVariableName} = {variable}[i];
-                            {body}
-                        }}";
-                }
-
                 return $@"
                     int i;
-                    for (i = 0; i < unchecked({numberofItemsVariableName} - {options.LoopUnrollFactor - 1}); i = unchecked(i + {options.LoopUnrollFactor}))
+                    for (i = 0; i < {numberofItemsVariableName}; i = unchecked(i + 1))
                     {{
-                        {sb}
-                    }}
-                    {lastLoop}";
+                        var {expectedVariableName} = {variable}[i];
+                        {body}
+                    }}";
             }
 
             if (options.Devirtualize)

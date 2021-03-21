@@ -29,7 +29,6 @@ namespace FlatSharp
         /// <param name="option">The deserialization mode.</param>
         public FlatBufferSerializerOptions(
             FlatBufferDeserializationOption option = FlatBufferDeserializationOption.Default,
-            int loopUnrollFactor = 8,
             bool devirtualize = true)
         {
             if (!Enum.IsDefined(typeof(FlatBufferDeserializationOption), option))
@@ -37,21 +36,9 @@ namespace FlatSharp
                 throw new ArgumentException(nameof(option), $"The value '{option}' is not defined in '{nameof(FlatBufferDeserializationOption)}'.");
             }
 
-            if (loopUnrollFactor <= 0)
-            {
-                throw new ArgumentException(nameof(loopUnrollFactor), $"Loop unroll factor must be a positive integer.");
-            }
-
-            this.LoopUnrollFactor = loopUnrollFactor;
             this.Devirtualize = devirtualize;
             this.DeserializationOption = option;
         }
-
-        /// <summary>
-        /// Indicates how many loop elements should be unrolled per iteration. Higher values lead
-        /// to larger code but fewer comparisons. Recommended values are 4 or 8.
-        /// </summary>
-        public int LoopUnrollFactor { get; }
 
         /// <summary>
         /// Indicates that FlatSharp should try to devirtualize <see cref="System.Collections.Generic.IList{T}" /> vectors.

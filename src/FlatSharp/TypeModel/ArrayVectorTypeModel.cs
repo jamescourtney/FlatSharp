@@ -67,35 +67,11 @@ namespace FlatSharp.TypeModel
             string expectedVariableName,
             string body)
         {
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < options.LoopUnrollFactor; ++i)
-            {
-                sb.Append($@"
-                    {{
-                        var {expectedVariableName} = {vectorVariableName}[unchecked(i + {i})];
-                        {body}
-                    }}");
-            }
-
-            string lastLoop = string.Empty;
-            if (options.LoopUnrollFactor > 1)
-            {
-                lastLoop = $@"
-                    for (; i < {vectorVariableName}.Length; i = unchecked(i + 1))
-                    {{
-                        var {expectedVariableName} = {vectorVariableName}[i];
-                        {body}
-                    }}";
-            }
-
             return $@"
+                for (int i = 0; i < {vectorVariableName}.Length; i = unchecked(i + 1))
                 {{
-                    int i;
-                    for (i = 0; i < unchecked({vectorVariableName}.Length - {options.LoopUnrollFactor - 1}); i = unchecked(i + {options.LoopUnrollFactor}))
-                    {{
-                        {sb}
-                    }}
-                    {lastLoop}
+                    var {expectedVariableName} = {vectorVariableName}[i];
+                    {body}
                 }}";
         }
 
