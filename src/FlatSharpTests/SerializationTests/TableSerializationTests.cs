@@ -120,6 +120,28 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
+        public void EmptyTableSerialize()
+        {
+            EmptyTable table = new EmptyTable();
+
+            byte[] buffer = new byte[1024];
+
+            byte[] expectedData =
+            {
+                4, 0, 0, 0,
+                252, 255, 255, 255,
+                4, 0,
+                4, 0,
+            };
+
+            int bytesWritten = FlatBufferSerializer.Default.Serialize(table, buffer);
+            Assert.IsTrue(expectedData.AsSpan().SequenceEqual(buffer.AsSpan().Slice(0, bytesWritten)));
+
+            int maxSize = FlatBufferSerializer.Default.GetMaxSize(table);
+            Assert.AreEqual(23, maxSize);
+        }
+
+        [TestMethod]
         public void TableWithStructAndStringNonVirtual()
         {
             SimpleTableNonVirtual table = new SimpleTableNonVirtual
@@ -302,6 +324,11 @@ namespace FlatSharpTests
 
             [FlatBufferItem(2)]
             public uint Uint { get; set; }
+        }
+
+        [FlatBufferTable]
+        public class EmptyTable
+        {
         }
     }
 }

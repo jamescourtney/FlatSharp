@@ -97,7 +97,7 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// Gets the maximum used index in this vtable.
         /// </summary>
-        public int MaxIndex => this.occupiedVtableSlots.Max();
+        public int MaxIndex => this.occupiedVtableSlots.Any() ? this.occupiedVtableSlots.Max() : -1;
 
         /// <summary>
         /// Maps the table index to the details about that member.
@@ -149,12 +149,6 @@ namespace FlatSharp.TypeModel
                 .ToList();
 
             ushort maxIndex = 0;
-
-            if (!properties.Any())
-            {
-                throw new InvalidFlatBufferDefinitionException($"Can't create table type model from type {this.GetCompilableTypeName()} because it does not have any non-static, non-deprecated [FlatBufferItem] properties.");
-            }
-
             foreach (var property in properties)
             {
                 ushort index = property.Attribute.Index;
