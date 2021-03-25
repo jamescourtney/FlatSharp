@@ -84,6 +84,12 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
+        public void TypeModel_Table_Empty()
+        {
+            RuntimeTypeModel.CreateFrom(typeof(Table_Empty));
+        }
+
+        [TestMethod]
         public void TypeModel_Table_NonPublicGetter()
         {
             var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
@@ -257,6 +263,14 @@ namespace FlatSharpTests
             var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(InaccessibleConstructorStruct<byte>)));
             Assert.AreEqual("Default constructor for 'FlatSharpTests.TypeModelTests.InaccessibleConstructorStruct<System.Byte>' is not visible to subclasses outside the assembly.", ex.Message);
+        }
+
+        [TestMethod]
+        public void TypeModel_Struct_Empty()
+        {
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(Struct_Empty)));
+            Assert.AreEqual("Can't create struct type model from type FlatSharpTests.TypeModelTests.Struct_Empty because it does not have any non-static [FlatBufferItem] properties. Structs cannot be empty.", ex.Message);
         }
 
         [TestMethod]
@@ -1286,6 +1300,16 @@ namespace FlatSharpTests
         {
             [FlatBufferItem(0)]
             public int Prop { get; set; }
+        }
+
+        [FlatBufferTable]
+        public class Table_Empty
+        {
+        }
+
+        [FlatBufferStruct]
+        public class Struct_Empty
+        {
         }
     }
 }

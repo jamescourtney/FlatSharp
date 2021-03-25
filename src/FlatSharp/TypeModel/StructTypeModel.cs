@@ -201,6 +201,11 @@ namespace FlatSharp.TypeModel
                 .Where(x => x.Attribute is not null)
                 .OrderBy(x => x.Attribute.Index);
 
+            if (!properties.Any())
+            {
+                throw new InvalidFlatBufferDefinitionException($"Can't create struct type model from type {this.GetCompilableTypeName()} because it does not have any non-static [FlatBufferItem] properties. Structs cannot be empty.");
+            }
+
             ushort expectedIndex = 0;
             this.inlineSize = 0;
 
