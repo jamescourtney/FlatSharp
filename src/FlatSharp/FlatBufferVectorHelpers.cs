@@ -54,7 +54,7 @@ namespace FlatSharp.TypeModel
             string inputBufferTypeName,
             string parseFunctionName)
         {
-            string className = $"FlatBufferVector_{Guid.NewGuid():n}";
+            string className = $"FlatBufferUnionVector_{Guid.NewGuid():n}";
 
             string classDef = $@"
                 public sealed class {className}<{inputBufferTypeName}> : FlatBufferVectorOfUnion<{CSharpHelpers.GetCompilableTypeName(itemType)}, {inputBufferTypeName}>
@@ -67,9 +67,10 @@ namespace FlatSharp.TypeModel
                     {{
                     }}
 
-                    protected override {CSharpHelpers.GetCompilableTypeName(itemType)} ParseItem({inputBufferTypeName} memory, ref (int offset0, int offset1) offset)
+                    protected override {CSharpHelpers.GetCompilableTypeName(itemType)} ParseItem({inputBufferTypeName} memory, int discriminatorOffset, int offsetOffset)
                     {{
-                        return {parseFunctionName}(memory, ref offset);
+                        var temp = (discriminatorOffset, offsetOffset);
+                        return {parseFunctionName}(memory, ref temp);
                     }}
                 }}
             ";

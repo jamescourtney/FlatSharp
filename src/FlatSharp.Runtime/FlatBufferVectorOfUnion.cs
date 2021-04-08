@@ -188,15 +188,13 @@ namespace FlatSharp
 
             checked
             {
-                var offsets = (
+                return this.ParseItem(
+                    buffer, 
                     this.discriminatorVectorOffset + index, 
-                    this.offsetVectorOffset + (index * sizeof(int))
-                );
-
-                return this.ParseItem(buffer, ref offsets);
+                    this.offsetVectorOffset + (index * sizeof(int)));
             }
         }
 
-        protected abstract T ParseItem(TInputBuffer buffer, ref (int offset0, int offset1) offset);
+        protected abstract T ParseItem(TInputBuffer buffer, int discriminatorOffset, int offsetOffset);
     }
 }
