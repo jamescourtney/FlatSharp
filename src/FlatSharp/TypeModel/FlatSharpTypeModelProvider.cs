@@ -80,7 +80,15 @@ namespace FlatSharp.TypeModel
                 var genericDef = type.GetGenericTypeDefinition();
                 if (genericDef == typeof(IList<>) || genericDef == typeof(IReadOnlyList<>))
                 {
-                    typeModel = new ListVectorTypeModel(type, container);
+                    if (typeof(IFlatBufferUnion).IsAssignableFrom(type.GetGenericArguments()[0]))
+                    {
+                        typeModel = new ListVectorOfUnionTypeModel(type, container);
+                    }
+                    else
+                    {
+                        typeModel = new ListVectorTypeModel(type, container);
+                    }
+
                     return true;
                 }
 

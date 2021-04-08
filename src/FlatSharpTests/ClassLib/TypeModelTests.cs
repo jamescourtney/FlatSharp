@@ -421,11 +421,19 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
-        public void TypeModel_Vector_UnionNotAllowed()
+        public void TypeModel_IndexedVector_UnionNotAllowed()
         {
             var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
-                RuntimeTypeModel.CreateFrom(typeof(GenericTable<IList<FlatBufferUnion<string, GenericTable<string>>>>)));
-            Assert.AreEqual("Type 'FlatSharp.FlatBufferUnion<System.String, FlatSharpTests.TypeModelTests.GenericTable<System.String>>' is not a valid vector member.", ex.Message);
+                RuntimeTypeModel.CreateFrom(typeof(GenericTable<IIndexedVector<string, FlatBufferUnion<string, GenericTable<string>>>>)));
+            Assert.AreEqual("Indexed vector values must be flatbuffer tables. Type = 'FlatSharp.FlatBufferUnion<System.String, FlatSharpTests.TypeModelTests.GenericTable<System.String>>'", ex.Message);
+        }
+
+        [TestMethod]
+        public void TypeModel_MemoryVector_UnionNotAllowed()
+        {
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(GenericTable<Memory<FlatBufferUnion<string, GenericTable<string>>>>)));
+            Assert.AreEqual("Memory vectors may only be ReadOnlyMemory<byte> or Memory<byte>.", ex.Message);
         }
 
         [TestMethod]
