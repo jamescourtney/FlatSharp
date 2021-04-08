@@ -18,8 +18,6 @@ namespace FlatSharp.TypeModel
 {
     using System;
     using System.Collections.Generic;
-    using System.Collections.Immutable;
-    using System.Diagnostics.CodeAnalysis;
 
     /// <summary>
     /// Defines a vector of union type model.
@@ -27,7 +25,6 @@ namespace FlatSharp.TypeModel
     public class ListVectorOfUnionTypeModel : BaseVectorOfUnionTypeModel
     {
         private ITypeModel itemTypeModel;
-        private bool readOnly;
 
         public ListVectorOfUnionTypeModel(Type clrType, TypeModelContainer container)
             : base(clrType, container)
@@ -79,15 +76,7 @@ namespace FlatSharp.TypeModel
         public override void OnInitialize()
         {
             var genericDef = this.ClrType.GetGenericTypeDefinition();
-            if (genericDef == typeof(IList<>))
-            {
-                this.readOnly = false;
-            }
-            else if (genericDef == typeof(IReadOnlyList<>))
-            {
-                this.readOnly = true;
-            }
-            else
+            if (genericDef != typeof(IList<>) && genericDef != typeof(IReadOnlyList<>))
             {
                 throw new InvalidFlatBufferDefinitionException($"List vector of union must be IList or IReadOnlyList.");
             }
