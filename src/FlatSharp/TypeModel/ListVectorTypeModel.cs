@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 namespace FlatSharp.TypeModel
 {
     using System;
     using System.Collections.Generic;
+    using System.Text;
 
     /// <summary>
     /// Defines a vector type model for a list vector.
@@ -50,6 +51,60 @@ namespace FlatSharp.TypeModel
             if (!this.itemTypeModel.IsValidVectorMember)
             {
                 throw new InvalidFlatBufferDefinitionException($"Type '{this.itemTypeModel.GetCompilableTypeName()}' is not a valid vector member.");
+            }
+        }
+
+        protected override string CreateLoop(
+            FlatBufferSerializerOptions options,
+            string vectorVariableName,
+            string numberofItemsVariableName,
+            string expectedVariableName,
+            string body) => CreateLoopStatic(
+                this.ItemTypeModel,
+                options,
+                vectorVariableName,
+                numberofItemsVariableName,
+                expectedVariableName,
+                body);
+
+        internal static string CreateLoopStatic(
+            ITypeModel typeModel,
+            FlatBufferSerializerOptions options,
+            string vectorVariableName,
+            string numberofItemsVariableName,
+            string expectedVariableName,
+            string body)
+        {
+            string ListBody(string variable)
+            {
+                return $@"
+                    int i;
+                    for (i = 0; i < {numberofItemsVariableName}; i = unchecked(i + 1))
+                    {{
+                        var {expectedVariableName} = {variable}[i];
+                        {body}
+                    }}";
+            }
+
+            if (options.Devirtualize)
+            {
+                return $@"
+                if ({vectorVariableName} is {typeModel.GetCompilableTypeName()}[] array)
+                {{
+                    {ArrayVectorTypeModel.CreateLoopStatic(options, "array", "current", body)}
+                }}
+                else if ({vectorVariableName} is List<{typeModel.GetCompilableTypeName()}> realList)
+                {{
+                    {ListBody("realList")}
+                }}
+                else
+                {{
+                    {ListBody(vectorVariableName)}
+                }}";
+            }
+            else
+            {
+                return ListBody(vectorVariableName);
             }
         }
 

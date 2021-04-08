@@ -2,9 +2,9 @@
 namespace BenchmarkCore;
 
 table SomeTable (fs_serializer) {
-   String:string;
-   Int:int;
-   Struct:SomeStruct;
+   //String:string;
+   Int:[int] (fs_vector:"IList");
+   //Struct:[SomeStruct] (fs_vector:"Array");
 }
 
 struct SomeStruct {

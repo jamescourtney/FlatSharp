@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 namespace FlatSharp.TypeModel
 {
     using System;
+    using System.Text;
 
     /// <summary>
     /// Defines a vector type model for an array vector.
@@ -51,6 +52,27 @@ namespace FlatSharp.TypeModel
             {
                 throw new InvalidFlatBufferDefinitionException($"Type '{this.itemTypeModel.GetCompilableTypeName()}' is not a valid vector member.");
             }
+        }
+
+        protected override string CreateLoop(
+            FlatBufferSerializerOptions options,
+            string vectorVariableName,
+            string numberofItemsVariableName,
+            string expectedVariableName,
+            string body) => CreateLoopStatic(options, vectorVariableName, expectedVariableName, body);
+
+        internal static string CreateLoopStatic(
+            FlatBufferSerializerOptions options,
+            string vectorVariableName,
+            string expectedVariableName,
+            string body)
+        {
+            return $@"
+                for (int i = 0; i < {vectorVariableName}.Length; i = unchecked(i + 1))
+                {{
+                    var {expectedVariableName} = {vectorVariableName}[i];
+                    {body}
+                }}";
         }
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)

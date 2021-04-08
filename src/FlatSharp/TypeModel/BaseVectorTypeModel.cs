@@ -109,7 +109,7 @@ namespace FlatSharp.TypeModel
             return true;
         }
 
-        public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
+        public sealed override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
         {
             string lengthProperty = $"{context.ValueVariableName}.{this.LengthPropertyName}";
 
@@ -117,23 +117,20 @@ namespace FlatSharp.TypeModel
             if (this.ItemTypeModel.IsFixedSize)
             {
                 // Constant size items. We can reduce these reasonably well.
-                body = $"return {VectorMinSize} + {SerializationHelpers.GetMaxPadding(this.ItemTypeModel.PhysicalLayout[0].Alignment)} + ({this.PaddedMemberInlineSize} * {lengthProperty});";
+                body = $"return {VectorMinSize + SerializationHelpers.GetMaxPadding(this.ItemTypeModel.PhysicalLayout[0].Alignment)} + ({this.PaddedMemberInlineSize} * {lengthProperty});";
             }
             else
             {
-                var itemContext = context.With(valueVariableName: "itemTemp");
+                string loopBody = $@"
+                    {this.GetThrowIfNullStatement("current")}
+                    runningSum += {context.MethodNameMap[this.ItemTypeModel.ClrType]}(current);";
 
-                body =
-                $@"
-                    int length = {lengthProperty};
-                    int runningSum = {VectorMinSize} + {this.MaxInlineSize};
-                    for (int i = 0; i < length; ++i)
-                    {{
-                        var itemTemp = {context.ValueVariableName}[i];
-                        {this.GetThrowIfNullStatement("itemTemp")}
-                        runningSum += {itemContext.GetMaxSizeInvocation(this.ItemTypeModel.ClrType)};
-                    }}
-                    return runningSum;";
+                body = $@"
+                int count = {lengthProperty};
+                int runningSum = {this.MaxInlineSize + VectorMinSize};
+                {this.CreateLoop(context.Options, context.ValueVariableName, "count", "current", loopBody)}
+
+                return runningSum;";
             }
 
             return new CodeGeneratedMethod(body);
@@ -144,22 +141,32 @@ namespace FlatSharp.TypeModel
             var type = this.ClrType;
             var itemTypeModel = this.ItemTypeModel;
 
+            string loopBody = $@"
+                {this.GetThrowIfNullStatement("current")}
+                {context.MethodNameMap[itemTypeModel.ClrType]}({context.SpanWriterVariableName}, {context.SpanVariableName}, current, vectorOffset, {context.SerializationContextVariableName});
+                vectorOffset += {this.PaddedMemberInlineSize};";
+
             string body = $@"
                 int count = {context.ValueVariableName}.{this.LengthPropertyName};
                 int vectorOffset = {context.SerializationContextVariableName}.{nameof(SerializationContext.AllocateVector)}({itemTypeModel.PhysicalLayout[0].Alignment}, count, {this.PaddedMemberInlineSize});
                 {context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteUOffset)}({context.SpanVariableName}, {context.OffsetVariableName}, vectorOffset, {context.SerializationContextVariableName});
                 {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteInt)}({context.SpanVariableName}, count, vectorOffset, {context.SerializationContextVariableName});
                 vectorOffset += sizeof(int);
-                for (int i = 0; i < count; ++i)
-                {{
-                      var current = {context.ValueVariableName}[i];
-                      {this.GetThrowIfNullStatement("current")}
-                      {context.MethodNameMap[itemTypeModel.ClrType]}({context.SpanWriterVariableName}, {context.SpanVariableName}, current, vectorOffset, {context.SerializationContextVariableName});
-                      vectorOffset += {this.PaddedMemberInlineSize};
-                }}";
+
+                {this.CreateLoop(context.Options, context.ValueVariableName, "count", "current", loopBody)}";
 
             return new CodeGeneratedMethod(body);
         }
+
+        /// <summary>
+        /// Creates a loop that executes the given body.
+        /// </summary>
+        protected abstract string CreateLoop(
+            FlatBufferSerializerOptions options,
+            string vectorVariableName, 
+            string numberofItemsVariableName,
+            string expectedVariableName, 
+            string body);
 
         public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
         {
@@ -202,7 +209,7 @@ namespace FlatSharp.TypeModel
             }
         }
 
-        private string GetThrowIfNullStatement(string variableName)
+        protected string GetThrowIfNullStatement(string variableName)
         {
             if (this.ItemTypeModel.IsNonNullableClrValueType())
             {
