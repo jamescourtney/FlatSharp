@@ -349,6 +349,45 @@
             Assert.AreEqual(100, parsed.OuterStruct.A);
         }
 
+
+        [TestMethod]
+        public void VectorOfUnion()
+        {
+            Oracle.VectorOfUnionTableT table = new Oracle.VectorOfUnionTableT
+            {
+                Value = new List<Oracle.UnionUnion>
+                {
+                    new Oracle.UnionUnion { Value = new Oracle.BasicTypesT { Int = 7 }, Type = Oracle.Union.BasicTypes },
+                    new Oracle.UnionUnion { Value = new Oracle.LocationT { X = 1, Y = 2, Z = 3 }, Type = Oracle.Union.Location },
+                    new Oracle.UnionUnion { Value = "foobar", Type = Oracle.Union.stringValue },
+                }
+            };
+
+            var builder = new FlatBuffers.FlatBufferBuilder(1024);
+            var offset = Oracle.VectorOfUnionTable.Pack(builder, table);
+            builder.Finish(offset.Value);
+            byte[] data = builder.SizedByteArray();
+
+            var parsed = FlatBufferSerializer.Default.Parse<ArrayVectorOfUnionTable>(data);
+
+            Assert.AreEqual(3, parsed.Union.Length);
+
+            Assert.AreEqual(1, parsed.Union[0].Discriminator);
+            Assert.AreEqual(2, parsed.Union[1].Discriminator);
+            Assert.AreEqual(3, parsed.Union[2].Discriminator);
+
+            Assert.IsTrue(parsed.Union[0].TryGet(out BasicTypes basicTypes));
+            Assert.AreEqual(7, basicTypes.Int);
+
+            Assert.IsTrue(parsed.Union[1].TryGet(out Location location));
+            Assert.AreEqual(1, location.X);
+            Assert.AreEqual(2, location.Y);
+            Assert.AreEqual(3, location.Z);
+
+            Assert.IsTrue(parsed.Union[2].TryGet(out string str));
+            Assert.AreEqual("foobar", str);
+        }
+
         [TestMethod]
         public void SortedVectors()
         {

@@ -29,4 +29,16 @@ namespace FlatSharpTests
             set;
         }
     }
+
+
+    [FlatBufferTable]
+    public class ArrayVectorOfUnionTable
+    {
+        [FlatBufferItem(0)]
+        public virtual FlatBufferUnion<BasicTypes, Location, string>[]? Union
+        {
+            get;
+            set;
+        }
+    }
 }

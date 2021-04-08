@@ -390,6 +390,43 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
+        public void VectorOfUnion()
+        {
+            ArrayVectorOfUnionTable table = new ArrayVectorOfUnionTable
+            {
+                Union = new[]
+                {
+                    new FlatBufferUnion<BasicTypes, Location, string>(new BasicTypes { Int = 7 }),
+                    new FlatBufferUnion<BasicTypes, Location, string>(new Location { X = 1, Y = 2, Z = 3 }),
+                    new FlatBufferUnion<BasicTypes, Location, string>("foobar"),
+                }
+            };
+
+            Span<byte> memory = new byte[10240];
+            int size = FlatBufferSerializer.Default.Serialize(table, memory);
+
+            var oracle = Oracle.UnionVectorTable.GetRootAsUnionVectorTable(
+                new FlatBuffers.ByteBuffer(memory.Slice(0, size).ToArray()));
+
+            Assert.AreEqual(3, oracle.ValueLength);
+
+            Assert.AreEqual(Oracle.Union.BasicTypes, oracle.ValueType(0));
+            Assert.AreEqual(Oracle.Union.Location, oracle.ValueType(1));
+            Assert.AreEqual(Oracle.Union.stringValue, oracle.ValueType(2));
+
+            var basicTypes = oracle.Value<Oracle.BasicTypes>(0).Value;
+            Assert.AreEqual(7, basicTypes.Int);
+
+            var location = oracle.Value<Oracle.Location>(1).Value;
+            Assert.AreEqual(1, location.X);
+            Assert.AreEqual(2, location.Y);
+            Assert.AreEqual(3, location.Z);
+
+            string stringValue = oracle.ValueAsString(2);
+            Assert.AreEqual("foobar", stringValue);
+        }
+
+        [TestMethod]
         public void SortedVectors()
         {
             var test = new SortedVectorTest<SortedVectorItem<int>>

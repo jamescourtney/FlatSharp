@@ -156,7 +156,7 @@ namespace FlatSharp.Compiler
                     // generate the serializer.
                     string serializer = this.GenerateSerializerForType(
                         context,
-                        this.RequestedSerializer.Value);
+                        this.RequestedSerializer!.Value); // not null by assertion above.
 
                     writer.AppendLine($"public static ISerializer<{this.FullName}> {SerializerPropertyName} {{ get; }} = new {RoslynSerializerGenerator.GeneratedSerializerClassName}().AsISerializer();");
 
