@@ -361,11 +361,88 @@ namespace FlatSharpTests
             Assert.AreEqual((byte)2, parsed2.Vector.Span[0]);
         }
 
+        [TestMethod]
+        public void VectorOfUnion_List() => this.VectorOfUnionTest<RootTable<IList<FlatBufferUnion<string, Struct, TableWithKey<int>>>>>(
+            v => v.Vector.ToArray());
+
+        [TestMethod]
+        public void VectorOfUnion_ReadOnlyList() => this.VectorOfUnionTest<RootTable<IReadOnlyList<FlatBufferUnion<string, Struct, TableWithKey<int>>>>>(
+            v => v.Vector.ToArray());
+
+        [TestMethod]
+        public void VectorOfUnion_Array() => this.VectorOfUnionTest<RootTable<FlatBufferUnion<string, Struct, TableWithKey<int>>[]>>(
+            v => v.Vector);
+
+        private void VectorOfUnionTest<V>(Func<V, FlatBufferUnion<string, Struct, TableWithKey<int>>[]> getItems)
+            where V : class, new()
+        {
+            byte[] data =
+            {
+                4, 0, 0, 0,
+                244, 255, 255, 255,
+                16, 0, 0, 0, // uoffset to discriminator vector
+                20, 0, 0, 0, // uoffset to offset vector
+                8, 0,        // vtable
+                12, 0,
+                4, 0,
+                8, 0,
+                3, 0, 0, 0, // discriminator vector length
+                1, 2, 3, 0, // values + 1 byte padding
+                3, 0, 0, 0, // offset vector length
+                12, 0, 0, 0, // value 0
+                16, 0, 0, 0, // value 1
+                16, 0, 0, 0, // value 2
+                3, 0, 0, 0,  // string length
+                102, 111, 111, 0, // foo + null terminator
+                3, 0, 0, 0,       // struct value ('3')
+                248, 255, 255, 255, // table vtable offset
+                1, 0, 0, 0,         // value of 'key'
+                8, 0,               // table vtable start
+                8, 0,
+                0, 0,
+                4, 0,
+            };
+
+            foreach (FlatBufferDeserializationOption item in Enum.GetValues(typeof(FlatBufferDeserializationOption)))
+            {
+                var serializer = new FlatBufferSerializer(item);
+                V parsed = serializer.Parse<V>(data);
+                var items = getItems(parsed);
+
+                Assert.IsTrue(items[0].TryGet(out string str));
+                Assert.AreEqual("foo", str);
+
+                Assert.IsTrue(items[1].TryGet(out Struct @struct));
+                Assert.AreEqual(3, @struct.Integer);
+
+                Assert.IsTrue(items[2].TryGet(out TableWithKey<int> table));
+                Assert.AreEqual(1, table.Key);
+                Assert.IsNull(table.Value);
+            }
+        }
+
         [FlatBufferTable]
         public class RootTable<TVector>
         {
             [FlatBufferItem(0)]
             public virtual TVector? Vector { get; set; }
+        }
+
+        [FlatBufferStruct]
+        public class Struct
+        {
+            [FlatBufferItem(0)]
+            public virtual int Integer { get; set; }
+        }
+
+        [FlatBufferTable]
+        public class TableWithKey<TKey>
+        {
+            [FlatBufferItem(0)]
+            public virtual string? Value { get; set; }
+
+            [FlatBufferItem(1, Key = true)]
+            public virtual TKey? Key { get; set; }
         }
     }
 }

@@ -97,6 +97,10 @@ table UnionTable {
 	Value:Union;
 }
 
+table UnionVectorTable {
+    Value:[Union];
+}
+
 table VectorOfUnionTable {
 	Value:[Union];
 }

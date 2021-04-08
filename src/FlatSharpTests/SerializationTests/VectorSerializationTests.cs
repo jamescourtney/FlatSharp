@@ -921,6 +921,65 @@ namespace FlatSharpTests
             }
         }
 
+        [TestMethod]
+        public void VectorOfUnion_List() => this.VectorOfUnionTest<RootTable<IList<FlatBufferUnion<string, Struct, TableWithKey<int>>>>>(
+            (l, v) => v.Vector = l.ToList());
+
+        [TestMethod]
+        public void VectorOfUnion_ReadOnlyList() => this.VectorOfUnionTest<RootTable<IReadOnlyList<FlatBufferUnion<string, Struct, TableWithKey<int>>>>>(
+            (l, v) => v.Vector = l.ToList());
+
+        [TestMethod]
+        public void VectorOfUnion_Array() => this.VectorOfUnionTest<RootTable<FlatBufferUnion<string, Struct, TableWithKey<int>>[]>>(
+            (l, v) => v.Vector = l);
+
+        private void VectorOfUnionTest<V>(Action<FlatBufferUnion<string, Struct, TableWithKey<int>>[], V> setValue)
+            where V : class, new()
+        {
+            var items = new[]
+            {
+                new FlatBufferUnion<string, Struct, TableWithKey<int>>("foo"),
+                new FlatBufferUnion<string, Struct, TableWithKey<int>>(new Struct { Integer = 3 }),
+                new FlatBufferUnion<string, Struct, TableWithKey<int>>(new TableWithKey<int> { Key = 1 }),
+            };
+
+            V value = new V();
+            setValue(items, value);
+
+            byte[] expectedData =
+            {
+                4, 0, 0, 0,
+                244, 255, 255, 255,
+                16, 0, 0, 0, // uoffset to discriminator vector
+                20, 0, 0, 0, // uoffset to offset vector
+                8, 0,        // vtable
+                12, 0,
+                4, 0,
+                8, 0,
+                3, 0, 0, 0, // discriminator vector length
+                1, 2, 3, 0, // values + 1 byte padding
+                3, 0, 0, 0, // offset vector length
+                12, 0, 0, 0, // value 0
+                16, 0, 0, 0, // value 1
+                16, 0, 0, 0, // value 2
+                3, 0, 0, 0,  // string length
+                102, 111, 111, 0, // foo + null terminator
+                3, 0, 0, 0,       // struct value ('3')
+                248, 255, 255, 255, // table vtable offset
+                1, 0, 0, 0,         // value of 'key'
+                8, 0,               // table vtable start
+                8, 0,
+                0, 0,
+                4, 0,
+            };
+
+            byte[] data = new byte[1024];
+            int written = FlatBufferSerializer.Default.Serialize(value, data);
+            data = data.AsSpan().Slice(0, written).ToArray();
+
+            Assert.IsTrue(data.SequenceEqual(expectedData));
+        }
+
         [FlatBufferTable]
         public class RootTable<TVector>
         {

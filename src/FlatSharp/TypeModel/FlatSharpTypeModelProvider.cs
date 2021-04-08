@@ -63,7 +63,15 @@ namespace FlatSharp.TypeModel
 
             if (type.IsArray)
             {
-                typeModel = new ArrayVectorTypeModel(type, container);
+                if (typeof(IFlatBufferUnion).IsAssignableFrom(type.GetElementType()))
+                {
+                    typeModel = new ArrayVectorOfUnionTypeModel(type, container);
+                }
+                else
+                {
+                    typeModel = new ArrayVectorTypeModel(type, container);
+                }
+
                 return true;
             }
 
@@ -72,7 +80,15 @@ namespace FlatSharp.TypeModel
                 var genericDef = type.GetGenericTypeDefinition();
                 if (genericDef == typeof(IList<>) || genericDef == typeof(IReadOnlyList<>))
                 {
-                    typeModel = new ListVectorTypeModel(type, container);
+                    if (typeof(IFlatBufferUnion).IsAssignableFrom(type.GetGenericArguments()[0]))
+                    {
+                        typeModel = new ListVectorOfUnionTypeModel(type, container);
+                    }
+                    else
+                    {
+                        typeModel = new ListVectorTypeModel(type, container);
+                    }
+
                     return true;
                 }
 
@@ -89,7 +105,7 @@ namespace FlatSharp.TypeModel
                 }
             }
 
-            if (typeof(IUnion).IsAssignableFrom(type))
+            if (typeof(IFlatBufferUnion).IsAssignableFrom(type))
             {
                 typeModel = new UnionTypeModel(type, container);
                 return true;

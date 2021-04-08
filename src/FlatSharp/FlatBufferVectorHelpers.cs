@@ -47,5 +47,35 @@ namespace FlatSharp.TypeModel
 
             return (classDef, className);
         }
+
+        public static (string classDef, string className) CreateFlatBufferVectorOfUnionSubclass(
+            Type itemType,
+            ITypeModel typeModel,
+            string inputBufferTypeName,
+            string parseFunctionName)
+        {
+            string className = $"FlatBufferUnionVector_{Guid.NewGuid():n}";
+
+            string classDef = $@"
+                public sealed class {className}<{inputBufferTypeName}> : FlatBufferVectorOfUnion<{CSharpHelpers.GetCompilableTypeName(itemType)}, {inputBufferTypeName}>
+                    where {inputBufferTypeName} : {nameof(IInputBuffer)}
+                {{
+                    public {className}(
+                        {inputBufferTypeName} memory,
+                        int discriminatorOffset,
+                        int offsetVectorOffset) : base(memory, discriminatorOffset, offsetVectorOffset)
+                    {{
+                    }}
+
+                    protected override {CSharpHelpers.GetCompilableTypeName(itemType)} ParseItem({inputBufferTypeName} memory, int discriminatorOffset, int offsetOffset)
+                    {{
+                        var temp = (discriminatorOffset, offsetOffset);
+                        return {parseFunctionName}(memory, ref temp);
+                    }}
+                }}
+            ";
+
+            return (classDef, className);
+        }
     }
 }
