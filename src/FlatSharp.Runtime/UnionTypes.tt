@@ -177,7 +177,7 @@ namespace FlatSharp
 					}
 				}
 
-				public override bool Equals(object other)
+				public override bool Equals(object? other)
 				{
 					if (other is FlatBufferUnion<<#= string.Join(", ", range.Select(x => "T" + x)) #>> otherUnion)
 					{

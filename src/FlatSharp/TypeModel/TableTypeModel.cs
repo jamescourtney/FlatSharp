@@ -30,6 +30,7 @@ namespace FlatSharp.TypeModel
     /// </summary>
     public class TableTypeModel : RuntimeTypeModel
     {
+        internal const string OnDeserializedMethodName = "OnFlatSharpDeserialized";
         private const int FileIdentifierSize = 4;
 
         private readonly string ParseClassName = "tableReader_" + Guid.NewGuid().ToString("n");
@@ -44,6 +45,7 @@ namespace FlatSharp.TypeModel
         /// </summary>
         private readonly HashSet<int> occupiedVtableSlots = new HashSet<int>();
         private ConstructorInfo? preferredConstructor;
+        private MethodInfo? onDeserializeMethod;
 
         internal TableTypeModel(Type clrType, TypeModelContainer typeModelProvider) : base(clrType, typeModelProvider)
         {
@@ -132,6 +134,7 @@ namespace FlatSharp.TypeModel
             ValidateFileIdentifier(tableAttribute.FileIdentifier);
 
             EnsureClassCanBeInheritedByOutsideAssembly(this.ClrType, out this.preferredConstructor);
+            this.onDeserializeMethod = ValidateOnDeserializedMethod(this);
 
             var properties = this.ClrType.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
                 .Select(x => new
@@ -246,6 +249,44 @@ namespace FlatSharp.TypeModel
                     throw new InvalidFlatBufferDefinitionException($"Property '{model.PropertyInfo.Name}' declares a sorted vector, but the sort key's vtable is not compatible with sorting. KeyType = {model.ItemTypeModel.GetCompilableTypeName()}");
                 }
             }
+        }
+
+        internal static MethodInfo? ValidateOnDeserializedMethod(ITypeModel typeModel)
+        {
+            Type type = typeModel.ClrType;
+            var methods = type
+                .GetMethods(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance)
+                .Where(m => m.Name == OnDeserializedMethodName);
+
+            if (methods.Count() > 1)
+            {
+                throw new InvalidFlatBufferDefinitionException($"Type '{typeModel.GetCompilableTypeName()}' provides more than one '{OnDeserializedMethodName}' method.");
+            }
+
+            var method = methods.SingleOrDefault();
+            if (method is null)
+            {
+                return null;
+            }
+
+            string message = $"Type '{typeModel.GetCompilableTypeName()}' provides an unusable '{OnDeserializedMethodName}' method. '{OnDeserializedMethodName}' must be protected, have a return type of void, and accept a single parameter of type '{nameof(FlatBufferDeserializationContext)}'.";
+            if (!method.IsFamily || 
+                method.ReturnType != typeof(void) || 
+                method.GetParameters().Length != 1)
+            {
+                throw new InvalidFlatBufferDefinitionException(message);
+            }
+
+            var firstParameter = method.GetParameters()[0];
+            if (firstParameter.IsOut ||
+                firstParameter.IsOptional ||
+                firstParameter.IsIn ||
+                firstParameter.ParameterType != typeof(FlatBufferDeserializationContext))
+            {
+                throw new InvalidFlatBufferDefinitionException(message);
+            }
+
+            return method;
         }
 
         internal static void EnsureClassCanBeInheritedByOutsideAssembly(Type type, out ConstructorInfo defaultConstructor)
@@ -602,7 +643,7 @@ $@"
             // We have to implement two items: The table class and the overall "read" method.
             // Let's start with the read method.
             string className = "tableReader_" + Guid.NewGuid().ToString("n");
-            var classDef = new DeserializeClassDefinition(className, this, context.Options);
+            var classDef = new DeserializeClassDefinition(className, this.onDeserializeMethod, this, context.Options);
 
             // Build up a list of property overrides.
             foreach (var item in this.IndexToMemberMap.Where(x => !x.Value.IsDeprecated))

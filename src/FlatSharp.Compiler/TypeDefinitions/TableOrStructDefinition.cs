@@ -122,7 +122,6 @@ namespace FlatSharp.Compiler
                 using (writer.WithBlock())
                 {
                     this.EmitStructVectorInitializations(writer);
-                    writer.AppendLine("this.OnInitialized(context);");
                 }
                 writer.AppendLine("#pragma warning restore CS8618"); // NULL FORGIVING
 
@@ -140,6 +139,10 @@ namespace FlatSharp.Compiler
                 }
 
                 writer.AppendLine($"partial void OnInitialized({nameof(FlatBufferDeserializationContext)}? context);");
+                writer.AppendLine();
+
+                writer.AppendLine($"protected void {TableTypeModel.OnDeserializedMethodName}({nameof(FlatBufferDeserializationContext)}? context) => this.OnInitialized(context);");
+                writer.AppendLine();
 
                 foreach (var field in this.Fields)
                 {
