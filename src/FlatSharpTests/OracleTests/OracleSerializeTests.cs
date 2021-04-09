@@ -31,20 +31,63 @@ namespace FlatSharpTests
     public partial class OracleSerializeTests
     {
         [TestMethod]
-        public void SimpleTypes_SafeSpanWriter()
+        public void SimpleTypes_SafeSpanWriter() =>
+            this.SimpleTypesTest<SpanWriter, BasicTypes>(new SpanWriter());
+
+        [TestMethod]
+        public void SimpleTypes_ForceWrite()
         {
-            this.SimpleTypesTest(new SpanWriter());
+            this.SimpleTypesTest<SpanWriter, BasicTypes>(new SpanWriter());
         }
 
         [TestMethod]
-        public void SimpleTypes_UnsafeSpanWriter()
+        public void SimpleTypesForceWrite_SizeCompare()
         {
-            this.SimpleTypesTest(new UnsafeSpanWriter());
+            int withForceWriteSize = this.SimpleTypesDefaultValues_Test<BasicTypesForceWrite>();
+            int defaultSize = this.SimpleTypesDefaultValues_Test<BasicTypes>();
+
+            Assert.IsTrue(withForceWriteSize > defaultSize);
         }
 
-        private void SimpleTypesTest<TSpanWriter>(TSpanWriter writer) where TSpanWriter : ISpanWriter
+        [TestMethod]
+        public void SimpleTypes_UnsafeSpanWriter() =>
+            this.SimpleTypesTest<UnsafeSpanWriter, BasicTypes>(new UnsafeSpanWriter());
+
+        private int SimpleTypesDefaultValues_Test<TBasicTypes>()
+            where TBasicTypes : class, IBasicTypes, new()
         {
-            var simple = new BasicTypes
+            var simple = new TBasicTypes();
+
+            Span<byte> memory = new byte[10240];
+            int size = FlatBufferSerializer.Default.Serialize(simple, memory);
+
+            var oracle = Oracle.BasicTypes.GetRootAsBasicTypes(
+                new FlatBuffers.ByteBuffer(memory.Slice(0, size).ToArray()));
+
+            Assert.AreEqual(oracle.Byte, simple.Byte);
+            Assert.AreEqual(oracle.SByte, simple.SByte);
+
+            Assert.AreEqual(oracle.UShort, simple.UShort);
+            Assert.AreEqual(oracle.Short, simple.Short);
+
+            Assert.AreEqual(oracle.UInt, simple.UInt);
+            Assert.AreEqual(oracle.Int, simple.Int);
+
+            Assert.AreEqual(oracle.ULong, simple.ULong);
+            Assert.AreEqual(oracle.Long, simple.Long);
+
+            Assert.AreEqual(oracle.Float, simple.Float);
+            Assert.AreEqual(oracle.Double, simple.Double);
+            Assert.AreEqual(oracle.String, simple.String);
+
+            return size;
+        }
+
+        private void SimpleTypesTest<TSpanWriter, TBasicTypes>(TSpanWriter writer) 
+            where TSpanWriter : ISpanWriter
+            where TBasicTypes : class, IBasicTypes, new()
+        {
+            var simple = new TBasicTypes
             {
                 Bool = true,
                 Byte = GetRandom<byte>(),

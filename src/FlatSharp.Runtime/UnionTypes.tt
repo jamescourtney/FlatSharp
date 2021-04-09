@@ -176,6 +176,44 @@ namespace FlatSharp
 							return defaultCase(state);
 					}
 				}
+
+				public override bool Equals(object other)
+				{
+					if (other is FlatBufferUnion<<#= string.Join(", ", range.Select(x => "T" + x)) #>> otherUnion)
+					{
+						if (this.discriminator != otherUnion.Discriminator)
+						{
+							return false;
+						}
+
+						switch (this.discriminator)
+						{
+						<# foreach (var genericType in range) { #>
+							case <#= genericType #>:
+								return this.Item<#= genericType #>.Equals(otherUnion.Item<#= genericType #>);
+						<# } #>
+							default:
+								throw new System.InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+						}
+					}
+					else
+					{
+						return false;
+					}
+				}
+
+				public override int GetHashCode()
+				{
+					switch (this.discriminator)
+					{
+					<# foreach (var genericType in range) { #>
+						case <#= genericType #>:
+							return this.Item<#= genericType #>.GetHashCode() ^ <#= genericType #>;
+					<# } #>
+						default:
+							throw new System.InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+					}
+				}
 			}
 	<#
 		}
