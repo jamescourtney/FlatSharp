@@ -194,6 +194,50 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
+        public void TypeModel_Table_OnDeserialized()
+        {
+            string CreateError<T>() => $"Type '{CSharpHelpers.GetCompilableTypeName(typeof(T))}' provides an unusable 'OnFlatSharpDeserialized' method. 'OnFlatSharpDeserialized' must be protected, have a return type of void, and accept a single parameter of type 'FlatBufferDeserializationContext'.";
+
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => RuntimeTypeModel.CreateFrom(typeof(TableOnDeserialized_WrongParameter)));
+            Assert.AreEqual(CreateError<TableOnDeserialized_WrongParameter>(), ex.Message);
+
+            ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => RuntimeTypeModel.CreateFrom(typeof(TableOnDeserialized_NoParameter)));
+            Assert.AreEqual(CreateError<TableOnDeserialized_NoParameter>(), ex.Message);
+
+            ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => RuntimeTypeModel.CreateFrom(typeof(TableOnDeserialized_OutParameter)));
+            Assert.AreEqual(CreateError<TableOnDeserialized_OutParameter>(), ex.Message);
+
+            ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => RuntimeTypeModel.CreateFrom(typeof(TableOnDeserialized_InParameter)));
+            Assert.AreEqual(CreateError<TableOnDeserialized_InParameter>(), ex.Message);
+
+            ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => RuntimeTypeModel.CreateFrom(typeof(TableOnDeserialized_RefParameter)));
+            Assert.AreEqual(CreateError<TableOnDeserialized_RefParameter>(), ex.Message);
+
+            ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => RuntimeTypeModel.CreateFrom(typeof(TableOnDeserialized_OptionalParameter)));
+            Assert.AreEqual(CreateError<TableOnDeserialized_OptionalParameter>(), ex.Message);
+
+            ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => RuntimeTypeModel.CreateFrom(typeof(TableOnDeserialized_NotProtected)));
+            Assert.AreEqual(CreateError<TableOnDeserialized_NotProtected>(), ex.Message);
+
+            ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => RuntimeTypeModel.CreateFrom(typeof(TableOnDeserialized_ReturnsNonVoid)));
+            Assert.AreEqual(CreateError<TableOnDeserialized_ReturnsNonVoid>(), ex.Message);
+
+            ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => RuntimeTypeModel.CreateFrom(typeof(TableOnDeserialized_Multiple)));
+            Assert.AreEqual("Type 'FlatSharpTests.TypeModelTests.TableOnDeserialized_Multiple' provides more than one 'OnFlatSharpDeserialized' method.", ex.Message);
+
+            RuntimeTypeModel.CreateFrom(typeof(TableOnDeserialized_OK));
+        }
+
+        [TestMethod]
         public void TypeModel_Struct_NonVirtual_NoSetter()
         {
             var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
@@ -1318,6 +1362,92 @@ namespace FlatSharpTests
         [FlatBufferStruct]
         public class Struct_Empty
         {
+        }
+
+        [FlatBufferTable]
+        public class TableOnDeserialized_OK
+        {
+            protected void OnFlatSharpDeserialized(FlatBufferDeserializationContext context)
+            {
+            }
+        }
+
+        [FlatBufferTable]
+        public class TableOnDeserialized_NotProtected
+        {
+            public void OnFlatSharpDeserialized(FlatBufferDeserializationContext context)
+            {
+            }
+        }
+
+        [FlatBufferTable]
+        public class TableOnDeserialized_WrongParameter
+        {
+            protected void OnFlatSharpDeserialized(string s)
+            {
+            }
+        }
+
+        [FlatBufferTable]
+        public class TableOnDeserialized_NoParameter
+        {
+            protected void OnFlatSharpDeserialized()
+            {
+            }
+        }
+
+        [FlatBufferTable]
+        public class TableOnDeserialized_OutParameter
+        {
+            protected void OnFlatSharpDeserialized(out FlatBufferDeserializationContext context)
+            {
+                context = null;
+            }
+        }
+
+        [FlatBufferTable]
+        public class TableOnDeserialized_InParameter
+        {
+            protected void OnFlatSharpDeserialized(in FlatBufferDeserializationContext context)
+            {
+            }
+        }
+
+        [FlatBufferTable]
+        public class TableOnDeserialized_RefParameter
+        {
+            protected void OnFlatSharpDeserialized(ref FlatBufferDeserializationContext context)
+            {
+            }
+        }
+
+        [FlatBufferTable]
+        public class TableOnDeserialized_OptionalParameter
+        {
+            protected void OnFlatSharpDeserialized(FlatBufferDeserializationContext context = null)
+            {
+            }
+        }
+
+        [FlatBufferTable]
+        public class TableOnDeserialized_Multiple
+        {
+            protected void OnFlatSharpDeserialized(FlatBufferDeserializationContext context)
+            {
+            }
+
+            protected void OnFlatSharpDeserialized(string s)
+            {
+            }
+        }
+
+        [FlatBufferTable]
+        public class TableOnDeserialized_ReturnsNonVoid
+        {
+            protected string OnFlatSharpDeserialized(FlatBufferDeserializationContext context)
+            {
+                return "foo";
+            }
         }
     }
 }

@@ -40,14 +40,18 @@ namespace FlatSharp
         private readonly string vtableOffsetAccessor;
         private readonly string vtableMaxIndexAccessor;
 
+        private readonly MethodInfo? onDeserializeMethod;
+
         public DeserializeClassDefinition(
             string className,
+            MethodInfo? onDeserializeMethod,
             ITypeModel typeModel,
             FlatBufferSerializerOptions options)
         {
             this.ClassName = className;
             this.typeModel = typeModel;
             this.options = options;
+            this.onDeserializeMethod = onDeserializeMethod;
 
             if (!this.options.GreedyDeserialize)
             {
@@ -246,6 +250,12 @@ namespace FlatSharp
                 throw new InvalidFlatBufferDefinitionException($"Unable to find a usable subclass constructor for '{this.typeModel.GetCompilableTypeName()}'.");
             }
 
+            string onDeserializedStatement = string.Empty;
+            if (this.onDeserializeMethod is not null)
+            {
+                onDeserializedStatement = $"base.{this.onDeserializeMethod.Name}(__CtorContext);";
+            }
+
             string baseParams = string.Empty;
             if (ctor.GetParameters().Length != 0)
             {
@@ -267,6 +277,7 @@ namespace FlatSharp
                     public {this.ClassName}(TInputBuffer buffer, int offset) : base({baseParams})
                     {{
                         {string.Join("\r\n", this.ctorStatements)}
+                        {onDeserializedStatement}
                     }}
 
                     Type {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.TableOrStructType)} => typeof({typeModel.GetCompilableTypeName()});

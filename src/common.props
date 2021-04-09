@@ -8,7 +8,7 @@
   
   <PropertyGroup>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>5.1.0</Version>
+    <Version>5.2.0</Version>
     <Version Condition=" '$(VersionMajor)' != '' ">$(VersionMajor)</Version>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <Authors>James Courtney</Authors>
@@ -16,7 +16,7 @@
     <Copyright>2021</Copyright>
     <RepositoryUrl>https://github.com/jamescourtney/FlatSharp/</RepositoryUrl>
     <PackageTags>flatbuffers serialization flatbuffer flatsharp</PackageTags>
-    <PackageReleaseNotes>Lots of new features!</PackageReleaseNotes>
+    <PackageReleaseNotes>Vectors of unions, serialization enhancements, Union equality and hash code, bug fixes</PackageReleaseNotes>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>    
     <NuspecProperties>version=$(Version);releaseNotes=$(PackageReleaseNotes)</NuspecProperties>

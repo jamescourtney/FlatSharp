@@ -33,6 +33,7 @@ namespace FlatSharp.TypeModel
         private int inlineSize;
         private int maxAlignment = 1;
         private ConstructorInfo? preferredConstructor;
+        private MethodInfo? onDeserializeMethod;
 
         internal StructTypeModel(Type clrType, TypeModelContainer container) : base(clrType, container)
         {
@@ -106,6 +107,7 @@ namespace FlatSharp.TypeModel
             string className = "structReader_" + Guid.NewGuid().ToString("n");
             DeserializeClassDefinition classDef = new DeserializeClassDefinition(
                 className,
+                this.onDeserializeMethod,
                 this,
                 context.Options);
 
@@ -190,6 +192,7 @@ namespace FlatSharp.TypeModel
             }
 
             TableTypeModel.EnsureClassCanBeInheritedByOutsideAssembly(this.ClrType, out this.preferredConstructor);
+            this.onDeserializeMethod = TableTypeModel.ValidateOnDeserializedMethod(this);
 
             var properties = this.ClrType
                 .GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
