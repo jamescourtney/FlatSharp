@@ -89,6 +89,8 @@ namespace FlatSharpTests
         public void FlatBufferVector_Contains()
         {
             Assert.IsFalse(this.vector.Vector.Contains(null));
+            Assert.IsTrue(this.vector.Vector.Contains(new Union("foobar")));
+            Assert.IsFalse(this.vector.Vector.Contains(new Union("blah")));
         }
 
         [TestMethod]
@@ -130,6 +132,8 @@ namespace FlatSharpTests
         public void FlatBufferVector_IndexOf()
         {
             Assert.AreEqual(-1, this.vector.Vector.IndexOf(null));
+            Assert.AreEqual(0, this.vector.Vector.IndexOf(new Union("foobar")));
+            Assert.AreEqual(-1, this.vector.Vector.IndexOf(new Union("monster")));
         }
 
         [FlatBufferTable]
