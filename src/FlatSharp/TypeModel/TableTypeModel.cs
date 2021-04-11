@@ -532,18 +532,21 @@ $@"
             string setVtableBlock = string.Empty;
             if (i == memberModel.ItemTypeModel.PhysicalLayout.Length - 1)
             {
-                if (vTableLength == this.GetVTableLength(this.MaxIndex))
+                if (vTableLength > minVTableLength)
                 {
-                    // if this is the last element, then we don't need the 'if'.
-                    setVtableBlock = $"vtableLength = {vTableLength};";
-                }
-                else if (vTableLength > minVTableLength)
-                {
-                    setVtableBlock = $@"
-                    if ({vTableLength} > vtableLength)
-                    {{
-                        vtableLength = {vTableLength};
-                    }}";
+                    if (vTableLength == this.GetVTableLength(this.MaxIndex))
+                    {
+                        // if this is the last element, then we don't need the 'if'.
+                        setVtableBlock = $"vtableLength = {vTableLength};";
+                    }
+                    else
+                    {
+                        setVtableBlock = $@"
+                        if ({vTableLength} > vtableLength)
+                        {{
+                            vtableLength = {vTableLength};
+                        }}";
+                    }
                 }
             }
 
