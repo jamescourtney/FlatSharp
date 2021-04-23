@@ -392,6 +392,8 @@ namespace FlatSharp.TypeModel
                 PhysicalLayoutElement layout,
                 TableMemberModel model)> items = new();
 
+            List<int> deprecatedIndexes = new List<int>();
+
             foreach (var item in this.IndexToMemberMap)
             {
                 var index = item.Key;
@@ -399,6 +401,7 @@ namespace FlatSharp.TypeModel
 
                 if (memberModel.IsDeprecated)
                 {
+                    deprecatedIndexes.AddRange(Enumerable.Range(index, memberModel.ItemTypeModel.PhysicalLayout.Length));
                     continue;
                 }
 
@@ -482,6 +485,15 @@ $@"
 
             List<string> body = new();
             body.Add(methodStart);
+
+            // C# spec does not guarantee that stackalloc memory is 0-initialized. Given
+            // that we target unity, etc, it makes sense to manually zero out deprecated fields.
+            // Unfortunately, this isn't readily testable since dotnet *does* zero out stackalloc memory.
+            foreach (var deprecatedIndex in deprecatedIndexes)
+            {
+                body.Add($"{context.SpanWriterVariableName}.{nameof(ISpanWriter.WriteUShort)}(vtable, 0, {GetVTablePosition(deprecatedIndex)}, {context.SerializationContextVariableName});");
+            }
+
             body.AddRange(getters);
             body.AddRange(prepareBlocks);
 
