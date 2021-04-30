@@ -28,13 +28,13 @@ jobs:
         dotnet-version: 2.1.x
     - name: Restore dependencies
       working-directory: src
-      run: dotnet restore
+      run: dotnet restore -c Release
     - name: Build
       working-directory: src
-      run: dotnet build --no-restore
+      run: dotnet build -c Release --no-restore
     - name: Test
       working-directory: src
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test -c Release --no-build --verbosity normal
     - name: Upload Packages
       uses: actions/upload-artifact@v2
       with:
