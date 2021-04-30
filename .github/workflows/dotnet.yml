@@ -14,10 +14,18 @@ jobs:
       AppVeyorBuild: true
     steps:
     - uses: actions/checkout@v2
-    - name: Setup .NET
+    - name: Setup .NET 5
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 5.0.x
+    - name: Setup .NET 3
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.x
+    - name: Setup .NET 2
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 2.1.x
     - name: Restore dependencies
       working-directory: src
       run: dotnet restore
