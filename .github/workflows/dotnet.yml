@@ -10,6 +10,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      AppVeyorBuild: true
     steps:
     - uses: actions/checkout@v2
     - name: Setup .NET
