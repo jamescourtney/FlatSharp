@@ -5,12 +5,11 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+  workflow_dispatch:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
     - name: Setup .NET
@@ -18,8 +17,11 @@ jobs:
       with:
         dotnet-version: 5.0.x
     - name: Restore dependencies
+      working-directory: src
       run: dotnet restore
     - name: Build
+      working-directory: src
       run: dotnet build --no-restore
     - name: Test
+      working-directory: src
       run: dotnet test --no-build --verbosity normal
