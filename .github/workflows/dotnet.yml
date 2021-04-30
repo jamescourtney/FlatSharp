@@ -35,3 +35,8 @@ jobs:
     - name: Test
       working-directory: src
       run: dotnet test --no-build --verbosity normal
+    - name: Upload Packages
+      uses: actions/upload-artifact@v2
+      with:
+        name: Packages
+        path: ./**/*.nupkg
