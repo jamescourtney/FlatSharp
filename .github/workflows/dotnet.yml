@@ -5,21 +5,38 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+  workflow_dispatch:
 
 jobs:
   build:
-
-    runs-on: ubuntu-latest
-
+    runs-on: windows-2019
+    env:
+      AppVeyorBuild: true
     steps:
     - uses: actions/checkout@v2
-    - name: Setup .NET
+    - name: Setup .NET 5
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 5.0.x
+    - name: Setup .NET 3
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.x
+    - name: Setup .NET 2
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 2.1.x
     - name: Restore dependencies
+      working-directory: src
       run: dotnet restore
     - name: Build
-      run: dotnet build --no-restore
+      working-directory: src
+      run: dotnet build -c Release --no-restore
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      working-directory: src
+      run: dotnet test -c Release --no-build --verbosity normal
+    - name: Upload Packages
+      uses: actions/upload-artifact@v2
+      with:
+        name: Packages
+        path: ./**/*.nupkg
