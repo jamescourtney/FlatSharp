@@ -46,9 +46,14 @@
         /// </summary>
         public int Length { get; }
 
-        public override string CreateReadItemBody(string parseItemMethodName, string bufferVariableName, string offsetVariableName, string vtableLocationVariableName, string vtableMaxIndexVariableName)
+        public override string CreateReadItemBody(string parseItemMethodName, string bufferVariableName, string getOffsetMethodName)
         {
-            return $"return {parseItemMethodName}({bufferVariableName}, {offsetVariableName} + {this.Offset});";
+            return $"return {parseItemMethodName}({bufferVariableName}, {getOffsetMethodName}());";
+        }
+
+        public override string CreateGetOffsetMethodBody(string bufferVariableName, string offsetVariableName, string vtableLocationVariableName, string vtableMaxIndexVariableName)
+        {
+            return $"return {offsetVariableName} + {this.Offset};";
         }
     }
 }

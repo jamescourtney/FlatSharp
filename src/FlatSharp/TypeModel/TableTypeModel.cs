@@ -665,7 +665,7 @@ $@"
             {
                 int index = item.Key;
                 var value = item.Value;
-                classDef.AddProperty(value, context.MethodNameMap[value.ItemTypeModel.ClrType]);
+                classDef.AddProperty(value, context.MethodNameMap[value.ItemTypeModel.ClrType], context.SerializeMethodNameMap[value.ItemTypeModel.ClrType]);
             }
 
             string body = $"return new {className}<{context.InputBufferTypeName}>({context.InputBufferVariableName}, {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}));";

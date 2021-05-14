@@ -29,12 +29,14 @@ namespace FlatSharp
             string offsetVariableName,
             string inputBufferTypeName,
             IReadOnlyDictionary<Type, string> methodNameMap,
+            IReadOnlyDictionary<Type, string> serializeMethodNameMap,
             FlatBufferSerializerOptions options)
         {
             this.InputBufferVariableName = inputBufferVariableName;
             this.OffsetVariableName = offsetVariableName;
             this.InputBufferTypeName = inputBufferTypeName;
             this.MethodNameMap = methodNameMap;
+            this.SerializeMethodNameMap = serializeMethodNameMap;
             this.Options = options;
         }
 
@@ -44,6 +46,7 @@ namespace FlatSharp
             this.OffsetVariableName = other.OffsetVariableName;
             this.InputBufferTypeName = other.InputBufferTypeName;
             this.MethodNameMap = other.MethodNameMap;
+            this.SerializeMethodNameMap = other.SerializeMethodNameMap;
             this.Options = other.Options;
         }
 
@@ -74,6 +77,11 @@ namespace FlatSharp
         /// A mapping of type to serialize method name for that type.
         /// </summary>
         public IReadOnlyDictionary<Type, string> MethodNameMap { get; private set; }
+
+        /// <summary>
+        /// A mapping of type to serialize method name for that type.
+        /// </summary>
+        public IReadOnlyDictionary<Type, string> SerializeMethodNameMap { get; private set; }
 
         /// <summary>
         /// Serialization options.

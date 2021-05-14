@@ -37,6 +37,7 @@ namespace FlatSharp.TypeModel
             this.PropertyInfo = propertyInfo;
             this.Index = attribute.Index;
             this.CustomGetter = attribute.CustomGetter;
+            this.WriteThrough = attribute.WriteThrough;
 
             string declaringType = "";
             if (propertyInfo.DeclaringType is not null)
@@ -82,6 +83,7 @@ namespace FlatSharp.TypeModel
                 }
             }
         }
+
         private static bool CanBeOverridden(MethodInfo method)
         {
             // Note: !IsFinal is different than IsVirtual.
@@ -154,20 +156,35 @@ namespace FlatSharp.TypeModel
         public string? CustomGetter { get; set; }
 
         /// <summary>
+        /// Set operations write through to the underlying buffer.
+        /// </summary>
+        public bool WriteThrough { get; set; }
+
+        /// <summary>
         /// Creates a method body to read the given property. This is contextual depending
         /// on whether this member is table/struct/etc.
         /// </summary>
         /// <param name="parseItemMethodName">A method that can parse the type from a buffer and offset.</param>
         /// <param name="bufferVariableName">The buffer variable name.</param>
-        /// <param name="offsetVariableName">The offset variable name.</param>
-        /// <param name="vtableLocationVariableName">For tables, the absolute location of the vtable.</param>
-        /// <param name="vtableMaxIndexVariableName">For tables, the maximum index in the vtable.</param>
+        /// <param name="getOffsetMethodName">A method to call to get the absolute offset of the field.</param>
         /// <returns></returns>
         public abstract string CreateReadItemBody(
             string parseItemMethodName,
-            string bufferVariableName, 
-            string offsetVariableName, 
-            string vtableLocationVariableName, 
+            string bufferVariableName,
+            string getOffsetMethodName);
+
+        /// <summary>
+        /// Creates a method body to read the given property. This is contextual depending
+        /// on whether this member is table/struct/etc.
+        /// </summary>
+        /// <param name="bufferVariableName">The buffer variable name.</param>
+        /// <param name="offsetVariableName">The offset variable name.</param>
+        /// <param name="vtableLocationVariableName">For tables, the absolute location of the vtable.</param>
+        /// <param name="vtableMaxIndexVariableName">For tables, the maximum index in the vtable.</param>
+        public abstract string CreateGetOffsetMethodBody(
+            string bufferVariableName,
+            string offsetVariableName,
+            string vtableLocationVariableName,
             string vtableMaxIndexVariableName);
     }
 }

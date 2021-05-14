@@ -79,6 +79,11 @@
         /// </summary>
         public string DefaultValueLiteral => this.ItemTypeModel.FormatDefaultValueAsLiteral(this.DefaultValue);
 
+        public override string CreateGetOffsetMethodBody(string bufferVariableName, string offsetVariableName, string vtableLocationVariableName, string vtableMaxIndexVariableName)
+        {
+            throw new NotImplementedException();
+        }
+
         public override string CreateReadItemBody(string parseItemMethodName, string bufferVariableName, string offsetVariableName, string vtableLocationVariableName, string vtableMaxIndexVariableName)
         {
             if (this.ItemTypeModel.PhysicalLayout.Length == 1)

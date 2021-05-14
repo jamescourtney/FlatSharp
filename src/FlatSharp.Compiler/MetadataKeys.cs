@@ -93,6 +93,11 @@ namespace FlatSharp.Compiler
         public const string ForceWrite = "fs_forceWrite";
 
         /// <summary>
+        /// Indicates that a single field should be enabled for write-through to the underlying buffer.
+        /// </summary>
+        public const string WriteThrough = "fs_writeThrough";
+
+        /// <summary>
         /// Marks a table field as deprecated. Deprecated fields do not have their values serialized or parsed.
         /// Valid On:
         /// - Table field

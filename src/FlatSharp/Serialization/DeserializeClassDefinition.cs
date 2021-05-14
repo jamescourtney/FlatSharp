@@ -96,10 +96,24 @@ namespace FlatSharp
 
         public string ClassName { get; }
 
-        public void AddProperty(ItemMemberModel itemModel, string readValueMethodName)
+        public void AddProperty(ItemMemberModel itemModel, string readValueMethodName, string writeValueMethodName)
         {
+            if (itemModel.WriteThrough)
+            {
+                if (this.options.DeserializationOption != FlatBufferDeserializationOption.VectorCacheMutable)
+                {
+                    throw new InvalidFlatBufferDefinitionException(
+                        $"Property '{itemModel.PropertyInfo.Name}' of {this.typeModel.SchemaType} '{this.typeModel.ClrType.Name}' specifies the WriteThrough option. However, WriteThrough is only supported when using option 'VectorCacheMutable'.");
+                }
+                else if (itemModel.PropertyInfo.SetMethod is null)
+                {
+                    throw new InvalidFlatBufferDefinitionException(
+                        $"Property '{itemModel.PropertyInfo.Name}' of {this.typeModel.SchemaType} '{this.typeModel.ClrType.Name}' specifies the WriteThrough option. However, it does not have a set method.");
+                }
+            }
+
             this.AddFieldDefinitions(itemModel);
-            this.AddPropertyDefinitions(itemModel);
+            this.AddPropertyDefinitions(itemModel, writeValueMethodName);
             this.AddCtorStatements(itemModel);
             this.AddReadMethod(itemModel, readValueMethodName);
         }
@@ -146,7 +160,7 @@ namespace FlatSharp
                 }}");
         }
 
-        private void AddPropertyDefinitions(ItemMemberModel itemModel)
+        private void AddPropertyDefinitions(ItemMemberModel itemModel, string writeValueMethodName)
         {
             if (!itemModel.IsVirtual)
             {
@@ -209,6 +223,10 @@ namespace FlatSharp
                 else
                 {
                     setterBody = $"this.{GetFieldName(itemModel)} = value; this.{GetHasValueFieldName(itemModel)} = true;";
+                    if (itemModel.WriteThrough)
+                    {
+                        //setterBody += $"{writeValueMethodName}(default(SpanWriter), );";
+                    }
                 }
 
                 setter = $"{accessModifiers.setModifier.ToCSharpString()} {verb} {{ {setterBody} }}";
@@ -294,6 +312,8 @@ namespace FlatSharp
         private static string GetFieldName(ItemMemberModel itemModel) => $"__index{itemModel.Index}Value";
 
         private static string GetHasValueFieldName(ItemMemberModel itemModel) => $"__hasIndex{itemModel.Index}Value";
+
+        private static string GetGetOffsetMethodName(ItemMemberModel itemModel) => $"GetIndex{itemModel.Index}Offset";
 
         private static string GetReadIndexMethodName(ItemMemberModel itemModel) => $"ReadIndex{itemModel.Index}Value";
 
