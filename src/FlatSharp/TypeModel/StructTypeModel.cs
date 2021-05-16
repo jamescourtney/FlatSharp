@@ -131,6 +131,18 @@ namespace FlatSharp.TypeModel
             List<string> body = new List<string>();
             body.Add($"Span<byte> scopedSpan = {context.SpanVariableName}.Slice({context.OffsetVariableName}, {this.PhysicalLayout[0].InlineSize});");
 
+            if (!this.ClrType.IsValueType)
+            {
+                body.Add($@"
+                    if ({context.ValueVariableName} is null)
+                    {{
+                        scopedSpan.Clear();
+                        return;
+                    }}
+                ");
+            }
+
+
             for (int i = 0; i < this.Members.Count; ++i)
             {
                 var memberInfo = this.Members[i];
@@ -147,26 +159,6 @@ namespace FlatSharp.TypeModel
                     valueVariableName: $"{propertyAccessor}");
 
                 string invocation = propContext.GetSerializeInvocation(memberInfo.ItemTypeModel.ClrType) + ";";
-
-                if (!memberInfo.ItemTypeModel.ClrType.IsValueType)
-                {
-                    // Force members of structs to be non-null.
-                    int start = memberInfo.Offset;
-                    int length = memberInfo.Length;
-
-                    invocation = $@"
-                    var index{i}Value = {propertyAccessor};
-                    if (index{i}Value is null)
-                    {{
-                        scopedSpan.Slice({start}, {length}).Clear();
-                    }}
-                    else
-                    {{
-                        {invocation}
-                    }}
-                    ";
-                }
-
                 body.Add(invocation);
             }
 

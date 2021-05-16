@@ -98,7 +98,7 @@ namespace FlatSharp
 
         public void AddProperty(ItemMemberModel itemModel, string readValueMethodName, string writeValueMethodName)
         {
-            if (itemModel.WriteThrough)
+            if (itemModel is StructMemberModel structModel && structModel.WriteThrough)
             {
                 if (this.options.DeserializationOption != FlatBufferDeserializationOption.VectorCacheMutable)
                 {
@@ -115,7 +115,7 @@ namespace FlatSharp
             this.AddFieldDefinitions(itemModel);
             this.AddPropertyDefinitions(itemModel, writeValueMethodName);
             this.AddCtorStatements(itemModel);
-            this.AddReadMethod(itemModel, readValueMethodName);
+            this.AddReadMethod(itemModel, readValueMethodName, writeValueMethodName);
         }
 
         private void AddFieldDefinitions(ItemMemberModel itemModel)
@@ -134,7 +134,7 @@ namespace FlatSharp
             }
         }
 
-        private void AddReadMethod(ItemMemberModel itemModel, string readValueMethodName)
+        private void AddReadMethod(ItemMemberModel itemModel, string readValueMethodName, string writeValueMethodName)
         {
             string inlining = "System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining";
             string attribute = $"[{typeof(System.Runtime.CompilerServices.MethodImplAttribute).FullName}({inlining})]";
@@ -158,6 +158,20 @@ namespace FlatSharp
                 {{
                     {body};
                 }}");
+
+            if (itemModel is StructMemberModel structModel && structModel.WriteThrough)
+            {
+                this.readMethods.Add(
+                    $@"
+                    {attribute}
+                    private static void {GetWriteMethodName(itemModel)}(
+                        TInputBuffer buffer,
+                        int offset,
+                        {itemModel.ItemTypeModel.GetCompilableTypeName()} value)
+                    {{
+                        {structModel.CreateWriteThroughBody(writeValueMethodName, "buffer", "offset", "value")}
+                    }}");
+            }
         }
 
         private void AddPropertyDefinitions(ItemMemberModel itemModel, string writeValueMethodName)
@@ -223,9 +237,9 @@ namespace FlatSharp
                 else
                 {
                     setterBody = $"this.{GetFieldName(itemModel)} = value; this.{GetHasValueFieldName(itemModel)} = true;";
-                    if (itemModel.WriteThrough)
+                    if (itemModel is StructMemberModel structModel && structModel.WriteThrough)
                     {
-                        //setterBody += $"{writeValueMethodName}(default(SpanWriter), );";
+                        setterBody += $"{GetWriteMethodName(itemModel)}({this.GetBufferReference()}, {OffsetVariableName}, value);";
                     }
                 }
 
@@ -313,7 +327,7 @@ namespace FlatSharp
 
         private static string GetHasValueFieldName(ItemMemberModel itemModel) => $"__hasIndex{itemModel.Index}Value";
 
-        private static string GetGetOffsetMethodName(ItemMemberModel itemModel) => $"GetIndex{itemModel.Index}Offset";
+        private static string GetWriteMethodName(ItemMemberModel itemModel) => $"WriteIndex{itemModel.Index}Value";
 
         private static string GetReadIndexMethodName(ItemMemberModel itemModel) => $"ReadIndex{itemModel.Index}Value";
 

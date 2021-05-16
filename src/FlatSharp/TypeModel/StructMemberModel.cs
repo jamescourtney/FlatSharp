@@ -34,6 +34,7 @@
         {
             this.Offset = offset;
             this.Length = length;
+            this.WriteThrough = attribute.WriteThrough;
         }
 
         /// <summary>
@@ -46,14 +47,34 @@
         /// </summary>
         public int Length { get; }
 
-        public override string CreateReadItemBody(string parseItemMethodName, string bufferVariableName, string getOffsetMethodName)
+        /// <summary>
+        /// Indicates that changes to this member model must be written through to the underlying buffer.
+        /// </summary>
+        public bool WriteThrough { get; }
+
+        public override string CreateReadItemBody(
+            string parseItemMethodName, 
+            string bufferVariableName, 
+            string offsetVariableName, 
+            string vtableLocationVariableName, 
+            string vtableMaxIndexVariableName)
         {
-            return $"return {parseItemMethodName}({bufferVariableName}, {getOffsetMethodName}());";
+            return $"return {parseItemMethodName}({bufferVariableName}, {offsetVariableName} + {this.Offset});";
         }
 
-        public override string CreateGetOffsetMethodBody(string bufferVariableName, string offsetVariableName, string vtableLocationVariableName, string vtableMaxIndexVariableName)
+        public string CreateWriteThroughBody(
+            string writeValueMethodName,
+            string bufferVariableName,
+            string offsetVariableName,
+            string valueVariableName)
         {
-            return $"return {offsetVariableName} + {this.Offset};";
+            return $@"
+                {writeValueMethodName}(
+                    default(SpanWriter), 
+                    {bufferVariableName}.{nameof(IInputBuffer.GetByteMemory)}(0, {bufferVariableName}.{nameof(IInputBuffer.Length)}).Span, 
+                    {valueVariableName}, 
+                    {offsetVariableName} + {this.Offset}, 
+                    null);";
         }
     }
 }

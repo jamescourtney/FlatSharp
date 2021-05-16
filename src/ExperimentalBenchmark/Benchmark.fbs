@@ -2,11 +2,15 @@
 namespace BenchmarkCore;
 
 table SomeTable (fs_serializer:VectorCacheMutable) {
-	Vector : [int];
-	Int : int (fs_writeThrough);
 	Struct : Struct;
 }
 
 struct Struct {
-   Int : int;
+   Other : OtherStruct (fs_writeThrough);
+   Int : int (fs_writeThrough);
+   Hash : [ubyte:32] (fs_writeThrough);
+}
+
+struct OtherStruct {
+   Long : long (fs_writeThrough);
 }
