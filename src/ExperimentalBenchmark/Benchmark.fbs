@@ -8,7 +8,6 @@ table SomeTable (fs_serializer:VectorCacheMutable) {
 struct Struct {
    Other : OtherStruct (fs_writeThrough);
    Int : int (fs_writeThrough);
-   Hash : [ubyte:32] (fs_writeThrough);
 }
 
 struct OtherStruct {

@@ -34,7 +34,6 @@
         {
             this.Offset = offset;
             this.Length = length;
-            this.WriteThrough = attribute.WriteThrough;
         }
 
         /// <summary>
@@ -47,11 +46,6 @@
         /// </summary>
         public int Length { get; }
 
-        /// <summary>
-        /// Indicates that changes to this member model must be written through to the underlying buffer.
-        /// </summary>
-        public bool WriteThrough { get; }
-
         public override string CreateReadItemBody(
             string parseItemMethodName, 
             string bufferVariableName, 
@@ -62,7 +56,7 @@
             return $"return {parseItemMethodName}({bufferVariableName}, {offsetVariableName} + {this.Offset});";
         }
 
-        public string CreateWriteThroughBody(
+        public override string CreateWriteThroughBody(
             string writeValueMethodName,
             string bufferVariableName,
             string offsetVariableName,

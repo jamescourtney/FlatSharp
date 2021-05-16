@@ -98,24 +98,21 @@ namespace FlatSharp
 
         public void AddProperty(ItemMemberModel itemModel, string readValueMethodName, string writeValueMethodName)
         {
-            if (itemModel is StructMemberModel structModel && structModel.WriteThrough)
+            this.AddFieldDefinitions(itemModel);
+            this.AddPropertyDefinitions(itemModel, writeValueMethodName);
+            this.AddCtorStatements(itemModel);
+            this.AddReadMethod(itemModel, readValueMethodName);
+
+            if (itemModel.IsWriteThrough)
             {
                 if (this.options.DeserializationOption != FlatBufferDeserializationOption.VectorCacheMutable)
                 {
                     throw new InvalidFlatBufferDefinitionException(
-                        $"Property '{itemModel.PropertyInfo.Name}' of {this.typeModel.SchemaType} '{this.typeModel.ClrType.Name}' specifies the WriteThrough option. However, WriteThrough is only supported when using option 'VectorCacheMutable'.");
+                        $"Property '{itemModel.PropertyInfo.Name}' of {this.typeModel.SchemaType} '{this.typeModel.ClrType.Name}' specifies the WriteThrough option. However, WriteThrough is only supported when using deserialization option 'VectorCacheMutable'.");
                 }
-                else if (itemModel.PropertyInfo.SetMethod is null)
-                {
-                    throw new InvalidFlatBufferDefinitionException(
-                        $"Property '{itemModel.PropertyInfo.Name}' of {this.typeModel.SchemaType} '{this.typeModel.ClrType.Name}' specifies the WriteThrough option. However, it does not have a set method.");
-                }
-            }
 
-            this.AddFieldDefinitions(itemModel);
-            this.AddPropertyDefinitions(itemModel, writeValueMethodName);
-            this.AddCtorStatements(itemModel);
-            this.AddReadMethod(itemModel, readValueMethodName, writeValueMethodName);
+                this.AddWriteThroughMethod(itemModel, writeValueMethodName);
+            }
         }
 
         private void AddFieldDefinitions(ItemMemberModel itemModel)
@@ -134,11 +131,8 @@ namespace FlatSharp
             }
         }
 
-        private void AddReadMethod(ItemMemberModel itemModel, string readValueMethodName, string writeValueMethodName)
+        private void AddReadMethod(ItemMemberModel itemModel, string readValueMethodName)
         {
-            string inlining = "System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining";
-            string attribute = $"[{typeof(System.Runtime.CompilerServices.MethodImplAttribute).FullName}({inlining})]";
-
             string body = itemModel.CreateReadItemBody(
                 readValueMethodName,
                 "buffer",
@@ -149,7 +143,7 @@ namespace FlatSharp
             string typeName = itemModel.ItemTypeModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType);
             this.readMethods.Add(
                 $@"
-                {attribute}
+                {GetAggressiveInliningAttribute()}
                 private static {typeName} {GetReadIndexMethodName(itemModel)}(
                     TInputBuffer buffer, 
                     int offset, 
@@ -158,20 +152,20 @@ namespace FlatSharp
                 {{
                     {body};
                 }}");
+        }
 
-            if (itemModel is StructMemberModel structModel && structModel.WriteThrough)
-            {
-                this.readMethods.Add(
-                    $@"
-                    {attribute}
+        private void AddWriteThroughMethod(ItemMemberModel itemModel, string writeValueMethodName)
+        {
+            this.readMethods.Add(
+                $@"
+                    {GetAggressiveInliningAttribute()}
                     private static void {GetWriteMethodName(itemModel)}(
                         TInputBuffer buffer,
                         int offset,
                         {itemModel.ItemTypeModel.GetCompilableTypeName()} value)
                     {{
-                        {structModel.CreateWriteThroughBody(writeValueMethodName, "buffer", "offset", "value")}
+                        {itemModel.CreateWriteThroughBody(writeValueMethodName, "buffer", "offset", "value")}
                     }}");
-            }
         }
 
         private void AddPropertyDefinitions(ItemMemberModel itemModel, string writeValueMethodName)
@@ -237,7 +231,7 @@ namespace FlatSharp
                 else
                 {
                     setterBody = $"this.{GetFieldName(itemModel)} = value; this.{GetHasValueFieldName(itemModel)} = true;";
-                    if (itemModel is StructMemberModel structModel && structModel.WriteThrough)
+                    if (itemModel.IsWriteThrough)
                     {
                         setterBody += $"{GetWriteMethodName(itemModel)}({this.GetBufferReference()}, {OffsetVariableName}, value);";
                     }
@@ -330,6 +324,13 @@ namespace FlatSharp
         private static string GetWriteMethodName(ItemMemberModel itemModel) => $"WriteIndex{itemModel.Index}Value";
 
         private static string GetReadIndexMethodName(ItemMemberModel itemModel) => $"ReadIndex{itemModel.Index}Value";
+
+        private static string GetAggressiveInliningAttribute()
+        {
+            string inlining = "System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining";
+            string attribute = $"[{typeof(System.Runtime.CompilerServices.MethodImplAttribute).FullName}({inlining})]";
+            return attribute;
+        }
 
         private string GetBufferReference()
         {

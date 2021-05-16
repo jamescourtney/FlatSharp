@@ -77,10 +77,10 @@ namespace BenchmarkCore
             {
                 Struct = new Struct
                 {
-                    Int = 5,
+                    Int = 23,
                     Other = new OtherStruct
                     {
-                        Long = 4,
+                        Long = 45,
                     },
                 }
             };
@@ -90,11 +90,19 @@ namespace BenchmarkCore
 
             var parsed = SomeTable.Serializer.Parse(buffer);
             Console.WriteLine(parsed.Struct.Int);
+            Console.WriteLine(parsed.Struct.Other.Long);
             parsed.Struct.Int--;
             parsed.Struct.Other = new OtherStruct { Long = 10 };
 
             var parsed2 = SomeTable.Serializer.Parse(buffer);
-            Console.WriteLine(parsed.Struct.Int);
+            Console.WriteLine(parsed2.Struct.Int);
+            Console.WriteLine(parsed2.Struct.Other.Long);
+
+            parsed2.Struct.Other = null!;
+
+            var parsed3 = SomeTable.Serializer.Parse(buffer);
+            Console.WriteLine(parsed3.Struct.Int);
+            Console.WriteLine(parsed3.Struct.Other.Long);
         }
     }
 }
