@@ -108,7 +108,7 @@ namespace FlatSharp
                 if (this.options.DeserializationOption != FlatBufferDeserializationOption.VectorCacheMutable)
                 {
                     throw new InvalidFlatBufferDefinitionException(
-                        $"Property '{itemModel.PropertyInfo.Name}' of {this.typeModel.SchemaType} '{this.typeModel.ClrType.Name}' specifies the WriteThrough option. However, WriteThrough is only supported when using deserialization option 'VectorCacheMutable'.");
+                        $"Property '{itemModel.PropertyInfo.Name}' of {this.typeModel.SchemaType} '{this.typeModel.GetCompilableTypeName()}' specifies the WriteThrough option. However, WriteThrough is only supported when using deserialization option 'VectorCacheMutable'.");
                 }
 
                 this.AddWriteThroughMethod(itemModel, writeValueMethodName);
@@ -254,18 +254,26 @@ namespace FlatSharp
 
         private void AddCtorStatements(ItemMemberModel itemModel)
         {
-            if (!this.options.GreedyDeserialize && itemModel.IsVirtual)
-            {
-                return;
-            }
-
             string assignment = $"base.{itemModel.PropertyInfo.Name}";
             if (itemModel.IsVirtual)
             {
                 assignment = $"this.{GetFieldName(itemModel)}";
             }
 
-            this.ctorStatements.Add($"{assignment} = {GetReadIndexMethodName(itemModel)}(buffer, offset, {this.vtableOffsetAccessor}, {this.vtableMaxIndexAccessor});");
+            if (!this.options.GreedyDeserialize && itemModel.IsVirtual)
+            {
+                if (itemModel.ItemTypeModel.ClassifyContextually(this.typeModel.SchemaType) == (ContextualTypeModelClassification.ReferenceType | ContextualTypeModelClassification.Required))
+                {
+                    this.ctorStatements.Add($"{assignment} = null!;");
+                }
+
+                return;
+            }
+            else 
+            {
+
+                this.ctorStatements.Add($"{assignment} = {GetReadIndexMethodName(itemModel)}(buffer, offset, {this.vtableOffsetAccessor}, {this.vtableMaxIndexAccessor});");
+            }
         }
 
         public override string ToString()

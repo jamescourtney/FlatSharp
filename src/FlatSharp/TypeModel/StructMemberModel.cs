@@ -34,6 +34,11 @@
         {
             this.Offset = offset;
             this.Length = length;
+
+            if (!this.IsVirtual && this.IsWriteThrough)
+            {
+                throw new InvalidFlatBufferDefinitionException($"Struct member '{propertyInfo.DeclaringType.GetCompilableTypeName()}.{propertyInfo.Name}' declared the WriteThrough attribute, but WriteThrough is only supported on virtual fields.");
+            }
         }
 
         /// <summary>
@@ -68,7 +73,7 @@
                     {bufferVariableName}.{nameof(IInputBuffer.GetByteMemory)}(0, {bufferVariableName}.{nameof(IInputBuffer.Length)}).Span, 
                     {valueVariableName}, 
                     {offsetVariableName} + {this.Offset}, 
-                    null);";
+                    null!);";
         }
     }
 }

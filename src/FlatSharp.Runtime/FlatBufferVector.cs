@@ -165,14 +165,6 @@ namespace FlatSharp
             return list;
         }
 
-        public IList<T> FlatBufferVectorToWriteThroughVector(
-            FlatBufferWriteThroughVectorCtor<T, TInputBuffer> constructor)
-        {
-            var list = new List<T>(this.count);
-            list.AddRange(this);
-            return constructor(this.memory, this.offset, this.itemSize, list);
-        }
-
         public void Insert(int index, T item)
         {
             throw new NotMutableException("FlatBufferVector does not support inserting.");
