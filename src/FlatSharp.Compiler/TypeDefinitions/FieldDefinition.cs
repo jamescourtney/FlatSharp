@@ -54,6 +54,8 @@ namespace FlatSharp.Compiler
 
         public bool? ForceWrite { get; set; }
 
+        public bool? WriteThrough { get; set; }
+
         public string? DefaultValue { get; set; }
 
         public bool IsOptionalScalar { get; set; }
@@ -262,6 +264,7 @@ namespace FlatSharp.Compiler
             string isDeprecated = string.Empty;
             string forceWrite = string.Empty;
             string customGetter = string.Empty;
+            string writeThrough = string.Empty;
 
             if (this.IsKey)
             {
@@ -305,7 +308,12 @@ namespace FlatSharp.Compiler
                 }
             }
 
-            return $"[{nameof(FlatBufferItemAttribute)}({this.Index}{defaultValue}{isDeprecated}{sortedVector}{isKey}{forceWrite}{customGetter})]";
+            if (this.WriteThrough ?? this.Parent.WriteThrough == true)
+            {
+                writeThrough = $", {nameof(FlatBufferItemAttribute.WriteThrough)} = true";
+            }
+
+            return $"[{nameof(FlatBufferItemAttribute)}({this.Index}{defaultValue}{isDeprecated}{sortedVector}{isKey}{forceWrite}{customGetter}{writeThrough})]";
         }
 
         /// <summary>

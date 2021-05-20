@@ -96,12 +96,23 @@ namespace FlatSharp
 
         public string ClassName { get; }
 
-        public void AddProperty(ItemMemberModel itemModel, string readValueMethodName)
+        public void AddProperty(ItemMemberModel itemModel, string readValueMethodName, string writeValueMethodName)
         {
             this.AddFieldDefinitions(itemModel);
-            this.AddPropertyDefinitions(itemModel);
+            this.AddPropertyDefinitions(itemModel, writeValueMethodName);
             this.AddCtorStatements(itemModel);
             this.AddReadMethod(itemModel, readValueMethodName);
+
+            if (itemModel.IsWriteThrough)
+            {
+                if (this.options.DeserializationOption != FlatBufferDeserializationOption.VectorCacheMutable)
+                {
+                    throw new InvalidFlatBufferDefinitionException(
+                        $"Property '{itemModel.PropertyInfo.Name}' of {this.typeModel.SchemaType} '{this.typeModel.GetCompilableTypeName()}' specifies the WriteThrough option. However, WriteThrough is only supported when using deserialization option 'VectorCacheMutable'.");
+                }
+
+                this.AddWriteThroughMethod(itemModel, writeValueMethodName);
+            }
         }
 
         private void AddFieldDefinitions(ItemMemberModel itemModel)
@@ -122,9 +133,6 @@ namespace FlatSharp
 
         private void AddReadMethod(ItemMemberModel itemModel, string readValueMethodName)
         {
-            string inlining = "System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining";
-            string attribute = $"[{typeof(System.Runtime.CompilerServices.MethodImplAttribute).FullName}({inlining})]";
-
             string body = itemModel.CreateReadItemBody(
                 readValueMethodName,
                 "buffer",
@@ -135,7 +143,7 @@ namespace FlatSharp
             string typeName = itemModel.ItemTypeModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType);
             this.readMethods.Add(
                 $@"
-                {attribute}
+                {GetAggressiveInliningAttribute()}
                 private static {typeName} {GetReadIndexMethodName(itemModel)}(
                     TInputBuffer buffer, 
                     int offset, 
@@ -146,7 +154,21 @@ namespace FlatSharp
                 }}");
         }
 
-        private void AddPropertyDefinitions(ItemMemberModel itemModel)
+        private void AddWriteThroughMethod(ItemMemberModel itemModel, string writeValueMethodName)
+        {
+            this.readMethods.Add(
+                $@"
+                    {GetAggressiveInliningAttribute()}
+                    private static void {GetWriteMethodName(itemModel)}(
+                        TInputBuffer buffer,
+                        int offset,
+                        {itemModel.ItemTypeModel.GetCompilableTypeName()} value)
+                    {{
+                        {itemModel.CreateWriteThroughBody(writeValueMethodName, "buffer", "offset", "value")}
+                    }}");
+        }
+
+        private void AddPropertyDefinitions(ItemMemberModel itemModel, string writeValueMethodName)
         {
             if (!itemModel.IsVirtual)
             {
@@ -209,6 +231,10 @@ namespace FlatSharp
                 else
                 {
                     setterBody = $"this.{GetFieldName(itemModel)} = value; this.{GetHasValueFieldName(itemModel)} = true;";
+                    if (itemModel.IsWriteThrough)
+                    {
+                        setterBody += $"{GetWriteMethodName(itemModel)}({this.GetBufferReference()}, {OffsetVariableName}, value);";
+                    }
                 }
 
                 setter = $"{accessModifiers.setModifier.ToCSharpString()} {verb} {{ {setterBody} }}";
@@ -228,18 +254,26 @@ namespace FlatSharp
 
         private void AddCtorStatements(ItemMemberModel itemModel)
         {
-            if (!this.options.GreedyDeserialize && itemModel.IsVirtual)
-            {
-                return;
-            }
-
             string assignment = $"base.{itemModel.PropertyInfo.Name}";
             if (itemModel.IsVirtual)
             {
                 assignment = $"this.{GetFieldName(itemModel)}";
             }
 
-            this.ctorStatements.Add($"{assignment} = {GetReadIndexMethodName(itemModel)}(buffer, offset, {this.vtableOffsetAccessor}, {this.vtableMaxIndexAccessor});");
+            if (!this.options.GreedyDeserialize && itemModel.IsVirtual)
+            {
+                if (itemModel.ItemTypeModel.ClassifyContextually(this.typeModel.SchemaType) == (ContextualTypeModelClassification.ReferenceType | ContextualTypeModelClassification.Required))
+                {
+                    this.ctorStatements.Add($"{assignment} = null!;");
+                }
+
+                return;
+            }
+            else 
+            {
+
+                this.ctorStatements.Add($"{assignment} = {GetReadIndexMethodName(itemModel)}(buffer, offset, {this.vtableOffsetAccessor}, {this.vtableMaxIndexAccessor});");
+            }
         }
 
         public override string ToString()
@@ -295,7 +329,16 @@ namespace FlatSharp
 
         private static string GetHasValueFieldName(ItemMemberModel itemModel) => $"__hasIndex{itemModel.Index}Value";
 
+        private static string GetWriteMethodName(ItemMemberModel itemModel) => $"WriteIndex{itemModel.Index}Value";
+
         private static string GetReadIndexMethodName(ItemMemberModel itemModel) => $"ReadIndex{itemModel.Index}Value";
+
+        private static string GetAggressiveInliningAttribute()
+        {
+            string inlining = "System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining";
+            string attribute = $"[{typeof(System.Runtime.CompilerServices.MethodImplAttribute).FullName}({inlining})]";
+            return attribute;
+        }
 
         private string GetBufferReference()
         {

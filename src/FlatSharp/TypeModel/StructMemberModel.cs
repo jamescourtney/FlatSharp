@@ -34,6 +34,11 @@
         {
             this.Offset = offset;
             this.Length = length;
+
+            if (!this.IsVirtual && this.IsWriteThrough)
+            {
+                throw new InvalidFlatBufferDefinitionException($"Struct member '{propertyInfo.DeclaringType.GetCompilableTypeName()}.{propertyInfo.Name}' declared the WriteThrough attribute, but WriteThrough is only supported on virtual fields.");
+            }
         }
 
         /// <summary>
@@ -46,9 +51,29 @@
         /// </summary>
         public int Length { get; }
 
-        public override string CreateReadItemBody(string parseItemMethodName, string bufferVariableName, string offsetVariableName, string vtableLocationVariableName, string vtableMaxIndexVariableName)
+        public override string CreateReadItemBody(
+            string parseItemMethodName, 
+            string bufferVariableName, 
+            string offsetVariableName, 
+            string vtableLocationVariableName, 
+            string vtableMaxIndexVariableName)
         {
             return $"return {parseItemMethodName}({bufferVariableName}, {offsetVariableName} + {this.Offset});";
+        }
+
+        public override string CreateWriteThroughBody(
+            string writeValueMethodName,
+            string bufferVariableName,
+            string offsetVariableName,
+            string valueVariableName)
+        {
+            return $@"
+                {writeValueMethodName}(
+                    default(SpanWriter), 
+                    {bufferVariableName}.{nameof(IInputBuffer.GetByteMemory)}(0, {bufferVariableName}.{nameof(IInputBuffer.Length)}).Span, 
+                    {valueVariableName}, 
+                    {offsetVariableName} + {this.Offset}, 
+                    null!);";
         }
     }
 }

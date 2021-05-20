@@ -165,12 +165,12 @@ namespace FlatSharp
             return list;
         }
 
-        public void Insert(int index, T? item)
+        public void Insert(int index, T item)
         {
             throw new NotMutableException("FlatBufferVector does not support inserting.");
         }
 
-        public bool Remove(T? item)
+        public bool Remove(T item)
         {
             throw new NotMutableException("FlatBufferVector does not support removing.");
         }

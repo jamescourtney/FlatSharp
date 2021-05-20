@@ -41,15 +41,17 @@ namespace BenchmarkCore
 
             this.table = new SomeTable
             {
-                Int = new int[100]
-                //String = "foobar",
-                //Struct = new SomeStruct[100]
+                Struct = new Struct
+                {
+                    Int = 5,
+                    Other = new OtherStruct
+                    {
+                        Long = 4,
+                    }
+                }
             };
 
-            for (int i = 0; i < this.table.Int.Count; ++i)
-            {
-                table.Int[i] = i;
-            }
+
 
             this.Serialize();
         }
@@ -71,31 +73,36 @@ namespace BenchmarkCore
     {
         public static void Main(string[] args)
         {
-            //var summary = BenchmarkRunner.Run<StructVectorClone>();
-            StructVectorClone cloner = new StructVectorClone();
-            cloner.Setup();
-
-            const int Count = 3_000_000;
-
-            for (int iter = 0; iter < 3; ++iter)
+            var table = new SomeTable
             {
-                Stopwatch sw = Stopwatch.StartNew();
-                for (int i = 0; i < Count; ++i)
+                Struct = new Struct
                 {
-                    cloner.Parse();
+                    Int = 23,
+                    Other = new OtherStruct
+                    {
+                        Long = 45,
+                    },
                 }
-                sw.Stop();
-                Console.WriteLine($"Parse: {Count / sw.ElapsedMilliseconds} items per ms");
+            };
 
-                sw.Restart();
-                for (int i = 0; i < Count; ++i)
-                {
-                    cloner.Serialize();
-                }
+            byte[] buffer = new byte[1024];
+            SomeTable.Serializer.Write(buffer, table);
 
-                sw.Stop();
-                Console.WriteLine($"Serialize: {Count / sw.ElapsedMilliseconds} items per ms");
-            }
+            var parsed = SomeTable.Serializer.Parse(buffer);
+            Console.WriteLine(parsed.Struct.Int);
+            Console.WriteLine(parsed.Struct.Other.Long);
+            parsed.Struct.Int--;
+            parsed.Struct.Other = new OtherStruct { Long = 10 };
+
+            var parsed2 = SomeTable.Serializer.Parse(buffer);
+            Console.WriteLine(parsed2.Struct.Int);
+            Console.WriteLine(parsed2.Struct.Other.Long);
+
+            parsed2.Struct.Other = null!;
+
+            var parsed3 = SomeTable.Serializer.Parse(buffer);
+            Console.WriteLine(parsed3.Struct.Int);
+            Console.WriteLine(parsed3.Struct.Other.Long);
         }
     }
 }

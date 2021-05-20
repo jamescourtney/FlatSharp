@@ -37,6 +37,7 @@ namespace FlatSharp.TypeModel
             this.PropertyInfo = propertyInfo;
             this.Index = attribute.Index;
             this.CustomGetter = attribute.CustomGetter;
+            this.IsWriteThrough = attribute.WriteThrough;
 
             string declaringType = "";
             if (propertyInfo.DeclaringType is not null)
@@ -82,6 +83,7 @@ namespace FlatSharp.TypeModel
                 }
             }
         }
+
         private static bool CanBeOverridden(MethodInfo method)
         {
             // Note: !IsFinal is different than IsVirtual.
@@ -149,6 +151,11 @@ namespace FlatSharp.TypeModel
         public bool IsVirtual { get; }
 
         /// <summary>
+        /// Indicates if this member writes through to the underlying buffer.
+        /// </summary>
+        public bool IsWriteThrough { get; }
+
+        /// <summary>
         /// A custom getter for this item.
         /// </summary>
         public string? CustomGetter { get; set; }
@@ -159,15 +166,28 @@ namespace FlatSharp.TypeModel
         /// </summary>
         /// <param name="parseItemMethodName">A method that can parse the type from a buffer and offset.</param>
         /// <param name="bufferVariableName">The buffer variable name.</param>
-        /// <param name="offsetVariableName">The offset variable name.</param>
-        /// <param name="vtableLocationVariableName">For tables, the absolute location of the vtable.</param>
-        /// <param name="vtableMaxIndexVariableName">For tables, the maximum index in the vtable.</param>
-        /// <returns></returns>
+        /// <param name="offsetVariableName">The offset at which the container (table/struct) starts.</param>
+        /// <param name="vtableLocationVariableName">For tables, the offset of the vtable.</param>
+        /// <param name="vtableMaxIndexVariableName">For tables, the max index of the vtable.</param>
         public abstract string CreateReadItemBody(
             string parseItemMethodName,
-            string bufferVariableName, 
-            string offsetVariableName, 
-            string vtableLocationVariableName, 
+            string bufferVariableName,
+            string offsetVariableName,
+            string vtableLocationVariableName,
             string vtableMaxIndexVariableName);
+
+        /// <summary>
+        /// Creates a method body to write the given property back to the buffer. This is contextual depending
+        /// on whether this member is table/struct/etc.
+        /// </summary>
+        /// <param name="writeValueMethodName">The name of the method that does the write operation.</param>
+        /// <param name="bufferVariableName">The input buffer.</param>
+        /// <param name="offsetVariableName">The offset of the container.</param>
+        /// <param name="valueVariableName">The variable name containing the value.</param>
+        public abstract string CreateWriteThroughBody(
+            string writeValueMethodName,
+            string bufferVariableName,
+            string offsetVariableName,
+            string valueVariableName);
     }
 }

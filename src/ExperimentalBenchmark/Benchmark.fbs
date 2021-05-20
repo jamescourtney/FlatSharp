@@ -1,25 +1,15 @@
 ﻿
 namespace BenchmarkCore;
 
-table SomeTable (fs_serializer) {
-   //String:string;
-   Int:[int] (fs_vector:"IList", id:0);
-   UV:[StructUnion] (id:1);
-   U:StructUnion (id:3);
-   NextToLast:ubyte (fs_forceWrite, id:5);
-   Last:ubyte (id:6);
-   ReallyLast:ubyte (id:7);
-   //Struct:[SomeStruct] (fs_vector:"Array");
+table SomeTable (fs_serializer:VectorCacheMutable) {
+	Struct : Struct;
 }
 
-union StructUnion { SomeStruct, NestedStruct }
-
-struct SomeStruct {
-   NestedStruct:NestedStruct;
-   Hash:[ubyte:32];
+struct Struct {
+   Other : OtherStruct (fs_writeThrough);
+   Int : int (fs_writeThrough);
 }
 
-struct NestedStruct {
-   Byte:ubyte;
-   Int:int;
+struct OtherStruct {
+   Long : long (fs_writeThrough);
 }

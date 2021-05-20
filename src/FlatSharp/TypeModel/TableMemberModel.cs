@@ -46,6 +46,11 @@
             {
                 throw new InvalidFlatBufferDefinitionException($"Table property {propertyInfo.Name} declared default value of type {propertyModel.ClrType.Name}, but the value was of type {this.DefaultValue.GetType().GetCompilableTypeName()}. Please ensure that the property is allowed to have a default value and that the types match.");
             }
+
+            if (this.IsWriteThrough)
+            {
+                throw new InvalidFlatBufferDefinitionException($"Table property '{propertyInfo.DeclaringType.GetCompilableTypeName()}.{propertyInfo.Name} declared the WriteThrough attribute. WriteThrough is only supported on struct fields.");
+            }
         }
         
         /// <summary>
@@ -141,6 +146,11 @@
 
                 var absoluteLocations = ({string.Join(", ", absoluteLocations)});
                 return {parseItemMethodName}({bufferVariableName}, ref absoluteLocations);";
+        }
+
+        public override string CreateWriteThroughBody(string writeValueMethodName, string bufferVariableName, string offsetVariableName, string valueVariableName)
+        {
+            throw new NotImplementedException();
         }
     }
 }

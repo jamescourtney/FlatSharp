@@ -238,6 +238,17 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
+        public void TypeModel_Table_WriteThrough_NotAllowed()
+        {
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => RuntimeTypeModel.CreateFrom(typeof(TableWriteThrough_NotSupported)));
+
+            Assert.AreEqual(
+                "Table property 'FlatSharpTests.TypeModelTests.TableWriteThrough_NotSupported.Property declared the WriteThrough attribute. WriteThrough is only supported on struct fields.",
+                ex.Message);
+        }
+
+        [TestMethod]
         public void TypeModel_Struct_NonVirtual_NoSetter()
         {
             var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
@@ -446,6 +457,23 @@ namespace FlatSharpTests
             Validate<double>();
             Validate<TaggedEnum>();
             Validate<GenericStruct<int>>();
+        }
+
+        [TestMethod]
+        public void TypeModel_Struct_WriteThrough_NonVirtual_NotAllowed()
+        {
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(StructWriteThroughNonVirtual)));
+
+            Assert.AreEqual(
+                "Struct member 'FlatSharpTests.TypeModelTests.StructWriteThroughNonVirtual.Property' declared the WriteThrough attribute, but WriteThrough is only supported on virtual fields.",
+                ex.Message);
+        }
+
+        [TestMethod]
+        public void TypeModel_Struct_WriteThrough_Virtual()
+        {
+            RuntimeTypeModel.CreateFrom(typeof(StructWriteThrough));
         }
 
         [TestMethod]
@@ -1448,6 +1476,30 @@ namespace FlatSharpTests
             {
                 return "foo";
             }
+        }
+
+        [FlatBufferTable]
+        public class TableWriteThrough_NotSupported
+        {
+            [FlatBufferItem(0, WriteThrough = true)]
+            public virtual int Property { get; set; }
+        }
+
+        [FlatBufferStruct]
+        public class StructWriteThroughNonVirtual
+        {
+            [FlatBufferItem(0, WriteThrough = true)]
+            public int Property { get; set; }
+        }
+
+        [FlatBufferStruct]
+        public class StructWriteThrough
+        {
+            [FlatBufferItem(0, WriteThrough = true)]
+            public virtual int Property { get; set; }
+
+            [FlatBufferItem(1, WriteThrough = false)]
+            public int Property2 { get; set; }
         }
     }
 }

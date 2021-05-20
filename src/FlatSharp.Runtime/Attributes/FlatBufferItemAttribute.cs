@@ -68,6 +68,12 @@ namespace FlatSharp.Attributes
         public bool ForceWrite { get; set; }
 
         /// <summary>
+        /// When set, indicates that this property is write-through to the underlying vector.
+        /// Only supported on scalars, structs, and enums in addition to vectors of those types.
+        /// </summary>
+        public bool WriteThrough { get; set; }
+
+        /// <summary>
         /// A C# expression that gets the value of the current property from the enclosing object.
         /// This is a very advanced feature and is only intended to be used by the FlatSharp compiler.
         /// </summary>

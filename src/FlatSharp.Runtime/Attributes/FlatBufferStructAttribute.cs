@@ -17,6 +17,7 @@
 namespace FlatSharp.Attributes
 {
     using System;
+    using System.ComponentModel;
 
     /// <summary>
     /// Marks a class as being a FlatBuffer struct.
@@ -24,5 +25,11 @@ namespace FlatSharp.Attributes
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
     public class FlatBufferStructAttribute : Attribute
     {
+        /// <summary>
+        /// Specifies the write-through interface for derived classes to implement. Reserved for use by the FlatSharp compiler
+        /// and may change in future versions.
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public string? WriteThroughInterfaceName { get; set; }
     }
 }
