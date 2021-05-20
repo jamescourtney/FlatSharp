@@ -47,6 +47,8 @@ namespace FlatSharp.Compiler
 
         public bool? ForceWrite { get; set; }
 
+        public bool? WriteThrough { get; set; }
+
         public DefaultConstructorKind? DefaultConstructorKind { get; set; }
 
         public string? FileIdentifier { get; set; }

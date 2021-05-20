@@ -308,7 +308,7 @@ namespace FlatSharp.Compiler
                 }
             }
 
-            if (this.WriteThrough == true)
+            if (this.WriteThrough ?? this.Parent.WriteThrough == true)
             {
                 writeThrough = $", {nameof(FlatBufferItemAttribute.WriteThrough)} = true";
             }

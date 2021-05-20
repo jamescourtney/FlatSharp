@@ -33,10 +33,29 @@ namespace FlatSharpTests.Compiler
             string schema = $@"
             namespace ForceWriteTests;
             table Table ({MetadataKeys.SerializerKind}:{FlatBufferDeserializationOption.VectorCacheMutable}) {{ Struct:Struct; }}
-            struct Struct {{ foo:int ({MetadataKeys.WriteThrough}); }} 
+            struct Struct ({MetadataKeys.WriteThrough}) {{ foo:int; bar:int ({MetadataKeys.WriteThrough}:""false""); }} 
             ";
             
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
+            Type tableType = asm.GetType("ForceWriteTests.Table");
+            Type structType = asm.GetType("ForceWriteTests.Struct");
+
+            ISerializer serializer = (ISerializer)tableType.GetProperty("Serializer", BindingFlags.Public | BindingFlags.Static).GetValue(null);
+            dynamic table = Activator.CreateInstance(tableType);
+            table.Struct = (dynamic)Activator.CreateInstance(structType);
+            table.Struct.foo = 42;
+            table.Struct.bar = 65;
+
+            byte[] data = new byte[100];
+            serializer.Write(data, (object)table);
+
+            dynamic parsed = serializer.Parse(data);
+            parsed.Struct.foo = 100;
+            parsed.Struct.bar = 22;
+
+            dynamic parsed2 = serializer.Parse(data);
+            Assert.AreEqual(100, (int)parsed2.Struct.foo);
+            Assert.AreEqual(65, (int)parsed2.Struct.bar);
         }
     }
 }
