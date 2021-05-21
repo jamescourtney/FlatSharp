@@ -123,16 +123,20 @@ namespace FlatSharp.TypeModel
             var type = this.ClrType;
             var itemTypeModel = this.ItemTypeModel;
 
+            string innerInvocation = context.With(
+                valueVariableName: "current",
+                offsetVariableName: "ref tuple").GetSerializeInvocation(itemTypeModel.ClrType);
+
             string body = $@"
                 int count = {context.ValueVariableName}.{this.LengthPropertyName};
                 int discriminatorVectorOffset = {context.SerializationContextVariableName}.{nameof(SerializationContext.AllocateVector)}(sizeof(byte), count, sizeof(byte));
-                {context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteUOffset)}({context.SpanVariableName}, {context.OffsetVariableName}.offset0, discriminatorVectorOffset, {context.SerializationContextVariableName});
-                {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteInt)}({context.SpanVariableName}, count, discriminatorVectorOffset, {context.SerializationContextVariableName});
+                {context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteUOffset)}({context.SpanVariableName}, {context.OffsetVariableName}.offset0, discriminatorVectorOffset);
+                {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteInt)}({context.SpanVariableName}, count, discriminatorVectorOffset);
                 discriminatorVectorOffset += sizeof(int);
 
                 int offsetVectorOffset = {context.SerializationContextVariableName}.{nameof(SerializationContext.AllocateVector)}(sizeof(int), count, sizeof(int));
-                {context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteUOffset)}({context.SpanVariableName}, {context.OffsetVariableName}.offset1, offsetVectorOffset, {context.SerializationContextVariableName});
-                {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteInt)}({context.SpanVariableName}, count, offsetVectorOffset, {context.SerializationContextVariableName});
+                {context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteUOffset)}({context.SpanVariableName}, {context.OffsetVariableName}.offset1, offsetVectorOffset);
+                {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteInt)}({context.SpanVariableName}, count, offsetVectorOffset);
                 offsetVectorOffset += sizeof(int);
 
                 for (int i = 0; i < count; ++i)
@@ -141,7 +145,7 @@ namespace FlatSharp.TypeModel
                       {this.GetThrowIfNullStatement("current")}
 
                       var tuple = (discriminatorVectorOffset, offsetVectorOffset);
-                      {context.MethodNameMap[itemTypeModel.ClrType]}({context.SpanWriterVariableName}, {context.SpanVariableName}, current, ref tuple, {context.SerializationContextVariableName});
+                      {innerInvocation};
 
                       discriminatorVectorOffset++;
                       offsetVectorOffset += sizeof(int);

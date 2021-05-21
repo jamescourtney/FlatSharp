@@ -89,6 +89,8 @@ namespace FlatSharp.TypeModel
 
             public ConstructorInfo? PreferredSubclassConstructor => this.underlyingModel.PreferredSubclassConstructor;
 
+            public bool SerializeMethodRequiresContext => underlyingModel.SerializeMethodRequiresContext;
+
             public void AdjustTableMember(TableMemberModel source) => this.underlyingModel.AdjustTableMember(source);
 
             public CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)

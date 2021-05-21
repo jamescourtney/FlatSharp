@@ -141,16 +141,20 @@ namespace FlatSharp.TypeModel
             var type = this.ClrType;
             var itemTypeModel = this.ItemTypeModel;
 
+            string loopInnerInvocation = context.With(
+                valueVariableName: "current",
+                offsetVariableName: "vectorOffset").GetSerializeInvocation(itemTypeModel.ClrType);
+
             string loopBody = $@"
                 {this.GetThrowIfNullStatement("current")}
-                {context.MethodNameMap[itemTypeModel.ClrType]}({context.SpanWriterVariableName}, {context.SpanVariableName}, current, vectorOffset, {context.SerializationContextVariableName});
+                {loopInnerInvocation};
                 vectorOffset += {this.PaddedMemberInlineSize};";
 
             string body = $@"
                 int count = {context.ValueVariableName}.{this.LengthPropertyName};
                 int vectorOffset = {context.SerializationContextVariableName}.{nameof(SerializationContext.AllocateVector)}({itemTypeModel.PhysicalLayout[0].Alignment}, count, {this.PaddedMemberInlineSize});
-                {context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteUOffset)}({context.SpanVariableName}, {context.OffsetVariableName}, vectorOffset, {context.SerializationContextVariableName});
-                {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteInt)}({context.SpanVariableName}, count, vectorOffset, {context.SerializationContextVariableName});
+                {context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteUOffset)}({context.SpanVariableName}, {context.OffsetVariableName}, vectorOffset);
+                {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteInt)}({context.SpanVariableName}, count, vectorOffset);
                 vectorOffset += sizeof(int);
 
                 {this.CreateLoop(context.Options, context.ValueVariableName, "count", "current", loopBody)}";

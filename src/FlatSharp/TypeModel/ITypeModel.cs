@@ -85,6 +85,12 @@ namespace FlatSharp.TypeModel
         bool SerializesInline { get; }
 
         /// <summary>
+        /// Indicates if the method returned by <see cref="CreateSerializeMethodBody(SerializationCodeGenContext)"/> requires
+        /// a <see cref="SerializationContext"/> parameter.
+        /// </summary>
+        bool SerializeMethodRequiresContext { get; }
+
+        /// <summary>
         /// Indicates the constructor that subclasses should use. This constructor must have either 0 parameters or 1 parameter
         /// that accepts an instance of <see cref="FlatSharpDeserializationContext"/>.
         /// </summary>

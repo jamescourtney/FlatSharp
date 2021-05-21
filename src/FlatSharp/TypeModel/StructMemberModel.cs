@@ -21,7 +21,7 @@
     using System.Reflection;
 
     /// <summary>
-    /// Describes a member of a FlatBuffer table or struct.
+    /// Describes a member of a FlatBuffer struct.
     /// </summary>
     public class StructMemberModel : ItemMemberModel
     {
@@ -38,6 +38,11 @@
             if (!this.IsVirtual && this.IsWriteThrough)
             {
                 throw new InvalidFlatBufferDefinitionException($"Struct member '{propertyInfo.DeclaringType.GetCompilableTypeName()}.{propertyInfo.Name}' declared the WriteThrough attribute, but WriteThrough is only supported on virtual fields.");
+            }
+
+            if (propertyModel.SerializeMethodRequiresContext)
+            {
+                throw new InvalidFlatBufferDefinitionException($"Struct member '{propertyInfo.DeclaringType.GetCompilableTypeName()}.{propertyInfo.Name}' declared the WriteThrough attribute and the TypeModel requires a Serialization Context. These are not compatible.");
             }
         }
 
@@ -72,8 +77,7 @@
                     default(SpanWriter), 
                     {bufferVariableName}.{nameof(IInputBuffer.GetByteMemory)}(0, {bufferVariableName}.{nameof(IInputBuffer.Length)}).Span, 
                     {valueVariableName}, 
-                    {offsetVariableName} + {this.Offset}, 
-                    null!);";
+                    {offsetVariableName} + {this.Offset});";
         }
     }
 }

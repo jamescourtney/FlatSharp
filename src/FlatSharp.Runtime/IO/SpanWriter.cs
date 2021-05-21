@@ -32,74 +32,74 @@ namespace FlatSharp
         public static SpanWriter Instance => default;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteByte(Span<byte> span, byte value, int offset, SerializationContext context)
+        public void WriteByte(Span<byte> span, byte value, int offset)
         {
             span[offset] = value;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteSByte(Span<byte> span, sbyte value, int offset, SerializationContext context)
+        public void WriteSByte(Span<byte> span, sbyte value, int offset)
         {
             span[offset] = (byte)value;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteUShort(Span<byte> span, ushort value, int offset, SerializationContext context)
+        public void WriteUShort(Span<byte> span, ushort value, int offset)
         {
             this.CheckAlignment(offset, sizeof(ushort));
             BinaryPrimitives.WriteUInt16LittleEndian(span.Slice(offset), value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteShort(Span<byte> span, short value, int offset, SerializationContext context)
+        public void WriteShort(Span<byte> span, short value, int offset)
         {
             this.CheckAlignment(offset, sizeof(short));
             BinaryPrimitives.WriteInt16LittleEndian(span.Slice(offset), value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteUInt(Span<byte> span, uint value, int offset, SerializationContext context)
+        public void WriteUInt(Span<byte> span, uint value, int offset)
         {
             this.CheckAlignment(offset, sizeof(uint));
             BinaryPrimitives.WriteUInt32LittleEndian(span.Slice(offset), value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteInt(Span<byte> span, int value, int offset, SerializationContext context)
+        public void WriteInt(Span<byte> span, int value, int offset)
         {
             this.CheckAlignment(offset, sizeof(int));
             BinaryPrimitives.WriteInt32LittleEndian(span.Slice(offset), value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteULong(Span<byte> span, ulong value, int offset, SerializationContext context)
+        public void WriteULong(Span<byte> span, ulong value, int offset)
         {
             this.CheckAlignment(offset, sizeof(ulong));
             BinaryPrimitives.WriteUInt64LittleEndian(span.Slice(offset), value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteLong(Span<byte> span, long value, int offset, SerializationContext context)
+        public void WriteLong(Span<byte> span, long value, int offset)
         {
             this.CheckAlignment(offset, sizeof(long));
             BinaryPrimitives.WriteInt64LittleEndian(span.Slice(offset), value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteFloat(Span<byte> span, float value, int offset, SerializationContext context)
+        public void WriteFloat(Span<byte> span, float value, int offset)
         {
             ScalarSpanReader.FloatLayout floatLayout = new ScalarSpanReader.FloatLayout
             {
                 value = value
             };
 
-            this.WriteUInt(span, floatLayout.bytes, offset, context);
+            this.WriteUInt(span, floatLayout.bytes, offset);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteDouble(Span<byte> span, double value, int offset, SerializationContext context)
+        public void WriteDouble(Span<byte> span, double value, int offset)
         {
-            this.WriteLong(span, BitConverter.DoubleToInt64Bits(value), offset, context);
+            this.WriteLong(span, BitConverter.DoubleToInt64Bits(value), offset);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

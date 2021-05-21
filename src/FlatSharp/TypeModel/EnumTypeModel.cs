@@ -74,6 +74,8 @@
 
         public override bool SerializesInline => true;
 
+        public override bool SerializeMethodRequiresContext => this.underlyingTypeModel.SerializeMethodRequiresContext;
+
         public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
         {
             Type underlyingType = this.underlyingTypeModel.ClrType;

@@ -32,19 +32,19 @@ namespace FlatSharp.Unsafe
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteByte(Span<byte> span, byte value, int offset, SerializationContext context)
+        public void WriteByte(Span<byte> span, byte value, int offset)
         {
             span[offset] = value;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteSByte(Span<byte> span, sbyte value, int offset, SerializationContext context)
+        public void WriteSByte(Span<byte> span, sbyte value, int offset)
         {
             span[offset] = (byte)value;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteDouble(Span<byte> span, double value, int offset, SerializationContext context)
+        public void WriteDouble(Span<byte> span, double value, int offset)
         {
             this.CheckAlignment(offset, sizeof(double));
             checked
@@ -58,7 +58,7 @@ namespace FlatSharp.Unsafe
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteFloat(Span<byte> span, float value, int offset, SerializationContext context)
+        public void WriteFloat(Span<byte> span, float value, int offset)
         {
             this.CheckAlignment(offset, sizeof(float));
             checked
@@ -72,7 +72,7 @@ namespace FlatSharp.Unsafe
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteInt(Span<byte> span, int value, int offset, SerializationContext context)
+        public void WriteInt(Span<byte> span, int value, int offset)
         {
             this.CheckAlignment(offset, sizeof(int));
             checked
@@ -86,7 +86,7 @@ namespace FlatSharp.Unsafe
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteLong(Span<byte> span, long value, int offset, SerializationContext context)
+        public void WriteLong(Span<byte> span, long value, int offset)
         {
             this.CheckAlignment(offset, sizeof(long));
             checked
@@ -100,7 +100,7 @@ namespace FlatSharp.Unsafe
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteShort(Span<byte> span, short value, int offset, SerializationContext context)
+        public void WriteShort(Span<byte> span, short value, int offset)
         {
             this.CheckAlignment(offset, sizeof(short));
             checked
@@ -114,7 +114,7 @@ namespace FlatSharp.Unsafe
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteUInt(Span<byte> span, uint value, int offset, SerializationContext context)
+        public void WriteUInt(Span<byte> span, uint value, int offset)
         {
             this.CheckAlignment(offset, sizeof(uint));
             checked
@@ -128,7 +128,7 @@ namespace FlatSharp.Unsafe
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteULong(Span<byte> span, ulong value, int offset, SerializationContext context)
+        public void WriteULong(Span<byte> span, ulong value, int offset)
         {
             this.CheckAlignment(offset, sizeof(ulong));
             checked
@@ -142,7 +142,7 @@ namespace FlatSharp.Unsafe
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteUShort(Span<byte> span, ushort value, int offset, SerializationContext context)
+        public void WriteUShort(Span<byte> span, ushort value, int offset)
         {
             this.CheckAlignment(offset, sizeof(ushort));
             checked
@@ -224,54 +224,54 @@ namespace FlatSharp.Unsafe
                 throw new NotImplementedException();
             }
 
-            public void WriteByte(Span<byte> span, byte value, int offset, SerializationContext context)
+            public void WriteByte(Span<byte> span, byte value, int offset)
             {
-                this.unsafeSpanWriter.WriteByte(span, value, offset, context);
+                this.unsafeSpanWriter.WriteByte(span, value, offset);
             }
 
-            public void WriteDouble(Span<byte> span, double value, int offset, SerializationContext context)
+            public void WriteDouble(Span<byte> span, double value, int offset)
             {
-                this.unsafeSpanWriter.WriteDouble(span, value, offset, context);
+                this.unsafeSpanWriter.WriteDouble(span, value, offset);
             }
 
-            public void WriteFloat(Span<byte> span, float value, int offset, SerializationContext context)
+            public void WriteFloat(Span<byte> span, float value, int offset)
             {
-                this.unsafeSpanWriter.WriteFloat(span, value, offset, context);
+                this.unsafeSpanWriter.WriteFloat(span, value, offset);
             }
 
-            public void WriteInt(Span<byte> span, int value, int offset, SerializationContext context)
+            public void WriteInt(Span<byte> span, int value, int offset)
             {
-                this.unsafeSpanWriter.WriteInt(span, value, offset, context);
+                this.unsafeSpanWriter.WriteInt(span, value, offset);
             }
 
-            public void WriteLong(Span<byte> span, long value, int offset, SerializationContext context)
+            public void WriteLong(Span<byte> span, long value, int offset)
             {
-                this.unsafeSpanWriter.WriteLong(span, value, offset, context);
+                this.unsafeSpanWriter.WriteLong(span, value, offset);
             }
 
-            public void WriteSByte(Span<byte> span, sbyte value, int offset, SerializationContext context)
+            public void WriteSByte(Span<byte> span, sbyte value, int offset)
             {
-                this.unsafeSpanWriter.WriteSByte(span, value, offset, context);
+                this.unsafeSpanWriter.WriteSByte(span, value, offset);
             }
 
-            public void WriteShort(Span<byte> span, short value, int offset, SerializationContext context)
+            public void WriteShort(Span<byte> span, short value, int offset)
             {
-                this.unsafeSpanWriter.WriteShort(span, value, offset, context);
+                this.unsafeSpanWriter.WriteShort(span, value, offset);
             }
 
-            public void WriteUInt(Span<byte> span, uint value, int offset, SerializationContext context)
+            public void WriteUInt(Span<byte> span, uint value, int offset)
             {
-                this.unsafeSpanWriter.WriteUInt(span, value, offset, context);
+                this.unsafeSpanWriter.WriteUInt(span, value, offset);
             }
 
-            public void WriteULong(Span<byte> span, ulong value, int offset, SerializationContext context)
+            public void WriteULong(Span<byte> span, ulong value, int offset)
             {
-                this.unsafeSpanWriter.WriteULong(span, value, offset, context);
+                this.unsafeSpanWriter.WriteULong(span, value, offset);
             }
 
-            public void WriteUShort(Span<byte> span, ushort value, int offset, SerializationContext context)
+            public void WriteUShort(Span<byte> span, ushort value, int offset)
             {
-                this.unsafeSpanWriter.WriteUShort(span, value, offset, context);
+                this.unsafeSpanWriter.WriteUShort(span, value, offset);
             }
         }
     }

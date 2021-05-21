@@ -469,7 +469,7 @@ $@"
                 ITypeModel typeModel = this.typeModelContainer.CreateTypeModel(type);
                 var maxSizeContext = new GetMaxSizeCodeGenContext("value", this.maxSizeMethods, this.options);
                 var parseContext = new ParserCodeGenContext("buffer", "offset", "TInputBuffer", this.readMethods, this.writeMethods, this.options);
-                var serializeContext = new SerializationCodeGenContext("context", "span", "spanWriter", "value", "offset", this.writeMethods, this.options);
+                var serializeContext = new SerializationCodeGenContext("context", "span", "spanWriter", "value", "offset", this.writeMethods, this.typeModelContainer, this.options);
 
                 var maxSizeMethod = typeModel.CreateGetMaxSizeMethodBody(maxSizeContext);
                 var parseMethod = typeModel.CreateParseMethodBody(parseContext);
@@ -578,6 +578,12 @@ $@"
                 inlineDeclaration = string.Empty;
             }
 
+            string contextParameter = string.Empty;
+            if (typeModel.SerializeMethodRequiresContext)
+            {
+                contextParameter = $", {nameof(SerializationContext)} {context.SerializationContextVariableName}";
+            }
+
             string declaration =
 $@"
             {inlineDeclaration}
@@ -585,8 +591,8 @@ $@"
                 TSpanWriter {context.SpanWriterVariableName}, 
                 Span<byte> {context.SpanVariableName}, 
                 {CSharpHelpers.GetCompilableTypeName(typeModel.ClrType)} {context.ValueVariableName}, 
-                {GetVTableOffsetVariableType(typeModel.PhysicalLayout.Length)} {context.OffsetVariableName}, 
-                {nameof(SerializationContext)} {context.SerializationContextVariableName}) where TSpanWriter : ISpanWriter
+                {GetVTableOffsetVariableType(typeModel.PhysicalLayout.Length)} {context.OffsetVariableName} 
+                {contextParameter}) where TSpanWriter : ISpanWriter
             {{
                 {method.MethodBody}
             }}";

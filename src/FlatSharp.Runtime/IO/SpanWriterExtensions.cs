@@ -36,8 +36,8 @@ namespace FlatSharp
             int numberOfItems = memory.Length;
             int vectorStartOffset = ctx.AllocateVector(itemAlignment: sizeof(byte), numberOfItems, sizePerItem: sizeof(byte));
 
-            spanWriter.WriteUOffset(span, offset, vectorStartOffset, ctx);
-            spanWriter.WriteInt(span, numberOfItems, vectorStartOffset, ctx);
+            spanWriter.WriteUOffset(span, offset, vectorStartOffset);
+            spanWriter.WriteInt(span, numberOfItems, vectorStartOffset);
 
             memory.Span.CopyTo(span.Slice(vectorStartOffset + sizeof(uint)));
         }
@@ -53,7 +53,7 @@ namespace FlatSharp
             SerializationContext context) where TSpanWriter : ISpanWriter
         {
             int stringOffset = spanWriter.WriteAndProvisionString(span, value, context);
-            spanWriter.WriteUOffset(span, offset, stringOffset, context);
+            spanWriter.WriteUOffset(span, offset, stringOffset);
         }
 
         /// <summary>
@@ -97,7 +97,7 @@ namespace FlatSharp
                 span[stringStartOffset + bytesWritten + sizeof(uint)] = 0;
 
                 // write length
-                spanWriter.WriteInt(span, bytesWritten, stringStartOffset, context);
+                spanWriter.WriteInt(span, bytesWritten, stringStartOffset);
 
                 // give back unused space. Account for null terminator.
                 context.Offset -= maxItems - (bytesWritten + 1);
@@ -107,21 +107,21 @@ namespace FlatSharp
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void WriteUOffset<TSpanWriter>(this TSpanWriter spanWriter, Span<byte> span, int offset, int secondOffset, SerializationContext context)
+        public static void WriteUOffset<TSpanWriter>(this TSpanWriter spanWriter, Span<byte> span, int offset, int secondOffset)
             where TSpanWriter : ISpanWriter
         {
             checked
             {
                 uint uoffset = (uint)(secondOffset - offset);
-                spanWriter.WriteUInt(span, uoffset, offset, context);
+                spanWriter.WriteUInt(span, uoffset, offset);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void WriteBool<TSpanWriter>(this TSpanWriter spanWriter, Span<byte> span, bool b, int offset, SerializationContext context) 
+        public static void WriteBool<TSpanWriter>(this TSpanWriter spanWriter, Span<byte> span, bool b, int offset) 
             where TSpanWriter : ISpanWriter
         {
-            spanWriter.WriteByte(span, b ? SerializationHelpers.True : SerializationHelpers.False, offset, context);
+            spanWriter.WriteByte(span, b ? SerializationHelpers.True : SerializationHelpers.False, offset);
         }
 
         [ExcludeFromCodeCoverage]

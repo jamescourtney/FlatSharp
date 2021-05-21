@@ -125,7 +125,7 @@ namespace FlatSharp
             int count = offsets.Count;
             for (int i = 0; i < count; ++i)
             {
-                spanWriter.WriteUOffset(span, offsets[i], stringOffset, context);
+                spanWriter.WriteUOffset(span, offsets[i], stringOffset);
             }
 
             offsets.Clear();
