@@ -36,6 +36,7 @@ namespace FlatSharp
         private readonly List<string> propertyOverrides = new();
         private readonly List<string> ctorStatements = new();
         private readonly List<string> readMethods = new();
+        private readonly HashSet<string> maskDefinitions = new();
 
         private readonly string vtableOffsetAccessor;
         private readonly string vtableMaxIndexAccessor;
@@ -122,13 +123,13 @@ namespace FlatSharp
                 return;
             }
 
-            string typeName = itemModel.ItemTypeModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType);
-            this.fieldDefinitions.Add($"private {typeName} {GetFieldName(itemModel)};");
-
             if (!this.options.GreedyDeserialize)
             {
-                this.fieldDefinitions.Add($"private bool {GetHasValueFieldName(itemModel)};");
+                this.maskDefinitions.Add($"private byte {GetHasValueFieldName(itemModel)};");
             }
+
+            string typeName = itemModel.ItemTypeModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType);
+            this.fieldDefinitions.Add($"private {typeName} {GetFieldName(itemModel)};");
         }
 
         private void AddReadMethod(ItemMemberModel itemModel, string readValueMethodName)
@@ -192,10 +193,10 @@ namespace FlatSharp
                 else
                 {
                     getterBody = $@"
-                            if (!this.{GetHasValueFieldName(itemModel)})
+                            if ((this.{GetHasValueFieldName(itemModel)} & {GetHasValueFieldMask(itemModel)}) == 0)
                             {{
                                 this.{GetFieldName(itemModel)} = {readUnderlyingInvocation};
-                                this.{GetHasValueFieldName(itemModel)} = true;
+                                this.{GetHasValueFieldName(itemModel)} |= {GetHasValueFieldMask(itemModel)};
                             }}
                             return this.{GetFieldName(itemModel)};
                         ";
@@ -230,7 +231,7 @@ namespace FlatSharp
                 }
                 else
                 {
-                    setterBody = $"this.{GetFieldName(itemModel)} = value; this.{GetHasValueFieldName(itemModel)} = true;";
+                    setterBody = $"this.{GetFieldName(itemModel)} = value; this.{GetHasValueFieldName(itemModel)} |= {GetHasValueFieldMask(itemModel)};";
                     if (itemModel.IsWriteThrough)
                     {
                         setterBody += $"{GetWriteMethodName(itemModel)}({this.GetBufferReference()}, {OffsetVariableName}, value);";
@@ -307,6 +308,7 @@ namespace FlatSharp
                         = new {nameof(FlatBufferDeserializationContext)}({nameof(FlatBufferDeserializationOption)}.{options.DeserializationOption});
 
                     {string.Join("\r\n", this.fieldDefinitions)}
+                    {string.Join("\r\n", this.maskDefinitions)}
 
                     public {this.ClassName}(TInputBuffer buffer, int offset) : base({baseParams})
                     {{
@@ -327,7 +329,11 @@ namespace FlatSharp
 
         private static string GetFieldName(ItemMemberModel itemModel) => $"__index{itemModel.Index}Value";
 
-        private static string GetHasValueFieldName(ItemMemberModel itemModel) => $"__hasIndex{itemModel.Index}Value";
+        private static string GetHasValueFieldName(int index) => $"__mask{index}";
+
+        private static string GetHasValueFieldName(ItemMemberModel itemModel) => GetHasValueFieldName(itemModel.Index / 8);
+
+        private static string GetHasValueFieldMask(ItemMemberModel itemModel) => $"(byte){1 << (itemModel.Index % 8)}";
 
         private static string GetWriteMethodName(ItemMemberModel itemModel) => $"WriteIndex{itemModel.Index}Value";
 
