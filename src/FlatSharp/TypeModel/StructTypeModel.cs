@@ -81,6 +81,11 @@ namespace FlatSharp.TypeModel
         public override bool IsValidSortedVectorKey => false;
 
         /// <summary>
+        /// We only need context if one of our children needs it.
+        /// </summary>
+        public override bool SerializeMethodRequiresContext => this.Members.Any(x => x.ItemTypeModel.SerializeMethodRequiresContext);
+
+        /// <summary>
         /// Structs are written inline.
         /// </summary>
         public override bool SerializesInline => true;

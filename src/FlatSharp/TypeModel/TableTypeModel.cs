@@ -476,7 +476,7 @@ namespace FlatSharp.TypeModel
             string methodStart =
 $@"
                 int tableStart = {context.SerializationContextVariableName}.{nameof(SerializationContext.AllocateSpace)}({maxInlineSize}, sizeof(int));
-                {context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteUOffset)}({context.SpanVariableName}, {context.OffsetVariableName}, tableStart, {context.SerializationContextVariableName});
+                {context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteUOffset)}({context.SpanVariableName}, {context.OffsetVariableName}, tableStart);
                 int currentOffset = tableStart + sizeof(int); // skip past vtable soffset_t.
 
                 int vtableLength = {minVtableLength};
@@ -491,7 +491,7 @@ $@"
             // Unfortunately, this isn't readily testable since dotnet *does* zero out stackalloc memory.
             foreach (var deprecatedIndex in deprecatedIndexes)
             {
-                body.Add($"{context.SpanWriterVariableName}.{nameof(ISpanWriter.WriteUShort)}(vtable, 0, {GetVTablePosition(deprecatedIndex)}, {context.SerializationContextVariableName});");
+                body.Add($"{context.SpanWriterVariableName}.{nameof(ISpanWriter.WriteUShort)}(vtable, 0, {GetVTablePosition(deprecatedIndex)});");
             }
 
             body.AddRange(getters);
@@ -503,11 +503,11 @@ $@"
             body.Add($"{context.SerializationContextVariableName}.{nameof(SerializationContext.Offset)} -= {maxInlineSize} - tableLength;");
 
             // Finish vtable.
-            body.Add($"{context.SpanWriterVariableName}.{nameof(ISpanWriter.WriteUShort)}(vtable, (ushort)vtableLength, 0, {context.SerializationContextVariableName});");
-            body.Add($"{context.SpanWriterVariableName}.{nameof(ISpanWriter.WriteUShort)}(vtable, (ushort)tableLength, sizeof(ushort), {context.SerializationContextVariableName});");
+            body.Add($"{context.SpanWriterVariableName}.{nameof(ISpanWriter.WriteUShort)}(vtable, (ushort)vtableLength, 0);");
+            body.Add($"{context.SpanWriterVariableName}.{nameof(ISpanWriter.WriteUShort)}(vtable, (ushort)tableLength, sizeof(ushort));");
 
             body.Add($"int vtablePosition = {context.SerializationContextVariableName}.{nameof(SerializationContext.FinishVTable)}({context.SpanVariableName}, vtable.Slice(0, vtableLength));");
-            body.Add($"{context.SpanWriterVariableName}.{nameof(SpanWriter.WriteInt)}({context.SpanVariableName}, tableStart - vtablePosition, tableStart, {context.SerializationContextVariableName});");
+            body.Add($"{context.SpanWriterVariableName}.{nameof(SpanWriter.WriteInt)}({context.SpanVariableName}, tableStart - vtablePosition, tableStart);");
 
             body.AddRange(writeBlocks);
 
@@ -563,7 +563,7 @@ $@"
             }
 
             string writeVTableBlock =
-                $"{context.SpanWriterVariableName}.{nameof(ISpanWriter.WriteUShort)}(vtable, (ushort)({OffsetVariableName(index, i)} - tableStart), {vTableIndex}, {context.SerializationContextVariableName});";
+                $"{context.SpanWriterVariableName}.{nameof(ISpanWriter.WriteUShort)}(vtable, (ushort)({OffsetVariableName(index, i)} - tableStart), {vTableIndex});";
 
             string inlineSerialize = string.Empty;
             if (memberModel.ItemTypeModel.SerializesInline)
@@ -628,29 +628,27 @@ $@"
                 nullForgiving = "!";
             }
 
+            string serializeInvocation;
+            string offsetTuple = string.Empty;
             if (vtableEntries == 1)
             {
-                return $@"
-                    {context.MethodNameMap[memberModel.ItemTypeModel.ClrType]}(
-                        {context.SpanWriterVariableName},
-                        {context.SpanVariableName},
-                        {valueVariableName}{nullForgiving},
-                        {OffsetVariableName(index, 0)},
-                        {context.SerializationContextVariableName});
-                    {sortInvocation}";
+                serializeInvocation = context.With(
+                    valueVariableName: $"{valueVariableName}{nullForgiving}",
+                    offsetVariableName: $"{OffsetVariableName(index, 0)}").GetSerializeInvocation(memberModel.ItemTypeModel.ClrType);
             }
             else
             {
-                return $@"
-                    var offsetTuple = ({string.Join(", ", Enumerable.Range(0, vtableEntries).Select(x => OffsetVariableName(index, x)))});
-                    {context.MethodNameMap[memberModel.ItemTypeModel.ClrType]}(
-                        {context.SpanWriterVariableName},
-                        {context.SpanVariableName},
-                        {valueVariableName}{nullForgiving},
-                        ref offsetTuple,
-                        {context.SerializationContextVariableName});
-                    {sortInvocation}";
+                serializeInvocation = context.With(
+                    valueVariableName: $"{valueVariableName}{nullForgiving}",
+                    offsetVariableName: $"ref offsetTuple").GetSerializeInvocation(memberModel.ItemTypeModel.ClrType);
+
+                offsetTuple = $"var offsetTuple = ({string.Join(", ", Enumerable.Range(0, vtableEntries).Select(x => OffsetVariableName(index, x)))});";
             }
+
+            return $@"
+                    {offsetTuple}
+                    {serializeInvocation};
+                    {sortInvocation}";
         }
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)

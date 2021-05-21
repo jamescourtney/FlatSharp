@@ -175,19 +175,24 @@ $@"
                     inlineAdjustment =
 $@"
                         var writeOffset = context.{nameof(SerializationContext.AllocateSpace)}({elementModel.PhysicalLayout.Single().InlineSize}, {elementModel.PhysicalLayout.Single().Alignment});
-                        {context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteUOffset)}(span, {context.OffsetVariableName}.offset1, writeOffset, context);";
+                        {context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteUOffset)}(span, {context.OffsetVariableName}.offset1, writeOffset);";
                 }
                 else
                 {
                     inlineAdjustment = $"var writeOffset = {context.OffsetVariableName}.offset1;";
                 }
 
+                string caseInvocation = context.With(
+                        valueVariableName: $"{context.ValueVariableName}.Item{unionIndex}",
+                        offsetVariableName: "writeOffset")
+                    .GetSerializeInvocation(elementModel.ClrType);
+
                 string @case =
 $@"
                     case {unionIndex}:
                     {{
                         {inlineAdjustment}
-                        {context.MethodNameMap[elementModel.ClrType]}({context.SpanWriterVariableName}, {context.SpanVariableName}, {context.ValueVariableName}.Item{unionIndex}, writeOffset, {context.SerializationContextVariableName});
+                        {caseInvocation};
                     }}
                         break;";
 
@@ -199,8 +204,7 @@ $@"
                 {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteByte)}(
                     {context.SpanVariableName}, 
                     discriminatorValue, 
-                    {context.OffsetVariableName}.offset0, 
-                    {context.SerializationContextVariableName});
+                    {context.OffsetVariableName}.offset0);
 
                 switch (discriminatorValue)
                 {{

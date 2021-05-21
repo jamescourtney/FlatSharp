@@ -93,6 +93,11 @@ namespace FlatSharp.TypeModel
         public abstract bool SerializesInline { get; }
 
         /// <summary>
+        /// Serialization method requires a <see cref="SerializationContext"/> argument.
+        /// </summary>
+        public virtual bool SerializeMethodRequiresContext => true;
+
+        /// <summary>
         /// Gets the maximum inline size of this item when padded for alignment, when stored in a table or vector.
         /// </summary>
         public virtual int MaxInlineSize => this.PhysicalLayout.Sum(x => x.InlineSize + SerializationHelpers.GetMaxPadding(x.Alignment));

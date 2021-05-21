@@ -16,6 +16,7 @@
 
 namespace FlatSharp
 {
+    using FlatSharp.TypeModel;
     using System;
     using System.Collections.Generic;
 
@@ -31,6 +32,7 @@ namespace FlatSharp
             string valueVariableName,
             string offsetVariableName,
             IReadOnlyDictionary<Type, string> methodNameMap,
+            TypeModelContainer typeModelContainer,
             FlatBufferSerializerOptions options)
         {
             this.SerializationContextVariableName = serializationContextVariableName;
@@ -39,6 +41,7 @@ namespace FlatSharp
             this.ValueVariableName = valueVariableName;
             this.OffsetVariableName = offsetVariableName;
             this.MethodNameMap = methodNameMap;
+            this.TypeModelContainer = typeModelContainer;
             this.Options = options;
         }
 
@@ -51,6 +54,7 @@ namespace FlatSharp
             this.OffsetVariableName = other.OffsetVariableName;
             this.MethodNameMap = other.MethodNameMap;
             this.Options = other.Options;
+            this.TypeModelContainer = other.TypeModelContainer;
         }
 
         public SerializationCodeGenContext With(
@@ -101,6 +105,11 @@ namespace FlatSharp
         public IReadOnlyDictionary<Type, string> MethodNameMap { get; private init; }
 
         /// <summary>
+        /// Resolves Type -> TypeModel.
+        /// </summary>
+        public TypeModelContainer TypeModelContainer { get; private init; }
+
+        /// <summary>
         /// Serialization options.
         /// </summary>
         public FlatBufferSerializerOptions Options { get; private init; }
@@ -110,7 +119,15 @@ namespace FlatSharp
         /// </summary>
         public string GetSerializeInvocation(Type type)
         {
-            return $"{this.MethodNameMap[type]}({this.SpanWriterVariableName}, {this.SpanVariableName}, {this.ValueVariableName}, {this.OffsetVariableName}, {this.SerializationContextVariableName})";
+            ITypeModel typeModel = this.TypeModelContainer.CreateTypeModel(type);
+            if (typeModel.SerializeMethodRequiresContext)
+            {
+                return $"{this.MethodNameMap[type]}({this.SpanWriterVariableName}, {this.SpanVariableName}, {this.ValueVariableName}, {this.OffsetVariableName}, {this.SerializationContextVariableName})";
+            }
+            else
+            {
+                return $"{this.MethodNameMap[type]}({this.SpanWriterVariableName}, {this.SpanVariableName}, {this.ValueVariableName}, {this.OffsetVariableName})";
+            }
         }
     }
 }

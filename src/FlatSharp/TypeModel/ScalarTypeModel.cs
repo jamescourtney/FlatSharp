@@ -82,6 +82,11 @@
         public override bool SerializesInline => true;
 
         /// <summary>
+        /// We don't care about serialization context.
+        /// </summary>
+        public override bool SerializeMethodRequiresContext => false;
+
+        /// <summary>
         /// The name of the read method for an input buffer.
         /// </summary>
         protected abstract string InputBufferReadMethodName { get; }
@@ -123,7 +128,7 @@
         public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
         {
             string variableName = context.ValueVariableName;
-            return new CodeGeneratedMethod($"{context.SpanWriterVariableName}.{this.SpanWriterWriteMethodName}({context.SpanVariableName}, {variableName}, {context.OffsetVariableName}, {context.SerializationContextVariableName});")
+            return new CodeGeneratedMethod($"{context.SpanWriterVariableName}.{this.SpanWriterWriteMethodName}({context.SpanVariableName}, {variableName}, {context.OffsetVariableName});")
             {
                 IsMethodInline = true,
             };
