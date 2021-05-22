@@ -37,6 +37,8 @@ namespace FlatSharp.Compiler
 
         public string FbsUnderlyingType { get; }
 
+        public bool IsFlags { get; set; }
+
         public List<(string name, string? value)> NameValuePairs { get; } = new List<(string, string?)>();
 
         protected override void OnWriteCode(CodeWriter writer, CompileContext context)
@@ -49,18 +51,68 @@ namespace FlatSharp.Compiler
 
             writer.AppendLine($"[FlatBufferEnum(typeof({typeModel.ClrType.FullName}))]");
             writer.AppendLine("[System.Runtime.CompilerServices.CompilerGenerated]");
+
+            if (this.IsFlags)
+            {
+                writer.AppendLine("[System.Flags]");
+            }
+
             writer.AppendLine($"public enum {this.Name} : {typeModel.ClrType.FullName}");
             writer.AppendLine($"{{");
             using (writer.IncreaseIndent())
             {
-                var standardizedPairs = GetFormattedNameValuePairs(typeModel);
+                Dictionary<string, string> standardizedPairs = this.IsFlags 
+                    ? this.GetFormattedNameValueBitFlagsPairs(typeModel) 
+                    : this.GetFormattedNameValuePairs(typeModel);
+
                 foreach (var item in standardizedPairs)
                 {
                     writer.AppendLine($"{item.Key} = {item.Value},");
                 }
             }
+
             writer.AppendLine($"}}");
             writer.AppendLine(string.Empty);
+        }
+
+        private Dictionary<string, string> GetFormattedNameValueBitFlagsPairs(ITypeModel model)
+        {
+            Dictionary<string, string> results = new Dictionary<string, string>();
+            BigInteger nextValue = 1;
+            BigInteger allFlags = 0;
+
+            foreach (var kvp in this.NameValuePairs)
+            {
+                if (!string.IsNullOrEmpty(kvp.value))
+                {
+                    ErrorContext.Current?.RegisterError($"Enum '{this.Name}' declares the '{MetadataKeys.BitFlags}' attribute. FlatSharp does not support specifying explicit values when used in conjunction with bit flags.");
+                    continue;
+                }
+
+                if (!model.TryFormatStringAsLiteral(nextValue.ToString(), out string? literal))
+                {
+                    ErrorContext.Current?.RegisterError($"Could not format value for enum '{this.Name}'. Value = {nextValue}.");
+                    continue;
+                }
+
+                allFlags |= nextValue;
+                nextValue *= 2;
+
+                results[kvp.name] = literal;
+            }
+
+            if (model.TryFormatStringAsLiteral("0", out string? zero) &&
+                model.TryFormatStringAsLiteral(allFlags.ToString(), out string? all))
+            {
+                results["None"] = zero;
+                results["All"] = all;
+            }
+            else
+            {
+                ErrorContext.Current?.RegisterError($"Could not format value for enum '{this.Name}'. Value = {nextValue}.");
+            }
+
+            return results;
         }
 
         private Dictionary<string, string> GetFormattedNameValuePairs(ITypeModel model)

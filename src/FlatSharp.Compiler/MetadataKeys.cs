@@ -118,9 +118,14 @@ namespace FlatSharp.Compiler
         /// </summary>
         public const string Id = "id";
 
+        /// <summary>
+        /// Added to enums to define them as a bit mask.
+        /// </summary>
+        public const string BitFlags = "bit_flags";
+
         public static IEnumerable<string> UnsupportedStandardAttributes => new[]
         {
-            "required", "force_align", "bit_flags", "flexbuffer", "hash", "original_order"
+            "required", "force_align", "flexbuffer", "hash", "original_order"
         };
     }
 }
