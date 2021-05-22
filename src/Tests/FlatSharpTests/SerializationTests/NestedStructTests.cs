@@ -57,8 +57,6 @@ namespace FlatSharpTests
                 }
             };
 
-            OuterStruct s = new OuterStruct();
-
             FlatBufferSerializer serializer = new FlatBufferSerializer(option);
             byte[] data = new byte[1024];
             serializer.Serialize(table, data);
