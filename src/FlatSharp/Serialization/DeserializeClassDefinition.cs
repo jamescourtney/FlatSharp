@@ -261,16 +261,13 @@ namespace FlatSharp
                 assignment = $"this.{GetFieldName(itemModel)}";
             }
 
-            if (this.options.Lazy)
-            {
-                // intentionally left empty.
-            }
-            else if (this.options.GreedyDeserialize || !itemModel.IsVirtual)
+            if (this.options.GreedyDeserialize || !itemModel.IsVirtual)
             {
                 this.ctorStatements.Add($"{assignment} = {GetReadIndexMethodName(itemModel)}(buffer, offset, {this.vtableOffsetAccessor}, {this.vtableMaxIndexAccessor});");
-
             }
-            else if (itemModel.ItemTypeModel.ClassifyContextually(this.typeModel.SchemaType) == (ContextualTypeModelClassification.ReferenceType | ContextualTypeModelClassification.Required))
+            else if (
+                !this.options.Lazy &&
+                itemModel.ItemTypeModel.ClassifyContextually(this.typeModel.SchemaType).IsRequiredReference())
             {
                 this.ctorStatements.Add($"{assignment} = null!;");
             }
