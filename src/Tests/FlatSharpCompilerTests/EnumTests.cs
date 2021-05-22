@@ -130,7 +130,7 @@ namespace FlatSharpTests.Compiler
         [TestMethod]
         public void InvalidEnumTest_WrongUnderlyingType_Bool()
         {
-            Assert.ThrowsException<FlatSharpCompilationException>(() => this.EnumTest<bool>("bool"));
+            Assert.ThrowsException<InvalidFbsFileException>(() => this.EnumTest<bool>("bool"));
         }
 
         [TestMethod]
@@ -163,7 +163,7 @@ namespace FlatSharpTests.Compiler
         public void InvalidEnumTest_ValueOutOfRangeOfUnderlyingType()
         {
             string fbs = $"namespace Foo.Bar; enum MyEnum : ubyte {{ Red = 0x0, Blue = 255, Yellow = 256 }}";
-            Assert.ThrowsException<FlatSharpCompilationException>(() => FlatSharpCompiler.CompileAndLoadAssembly(fbs, new()));
+            Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(fbs, new()));
         }
 
         [TestMethod]

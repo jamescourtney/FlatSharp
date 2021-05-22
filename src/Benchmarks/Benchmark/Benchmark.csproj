@@ -21,7 +21,6 @@
     <ProjectReference Include="..\..\FlatSharp.Unsafe\FlatSharp.Unsafe.csproj" />
     <ProjectReference Include="..\..\FlatSharp\FlatSharp.csproj" />
     <ProjectReference Include="..\..\Google.FlatBuffers\Google.FlatBuffers.csproj" />
-    <ProjectReference Include="..\Benchmark.3.3.0\Benchmark.3.3.0.csproj" />
   </ItemGroup>
 
 </Project>
