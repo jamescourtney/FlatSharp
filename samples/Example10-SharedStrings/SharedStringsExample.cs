@@ -180,7 +180,7 @@ namespace Samples.SharedStrings
                 // Update all the pointers that need to point to that string.
                 foreach (var offset in offsets)
                 {
-                    writer.WriteUOffset(data, offset, stringOffset, context);
+                    writer.WriteUOffset(data, offset, stringOffset);
                 }
             }
         }

@@ -21,16 +21,17 @@
     <FlatSharpSchema Include="Example10-SharedStrings\SharedStrings.fbs" />
     <FlatSharpSchema Include="Example11-IndexedVectors\IndexedVectors.fbs" />
     <FlatSharpSchema Include="Example13-StructVectors\StructVectors.fbs" />
+    <FlatSharpSchema Include="Example14-WriteThrough\WriteThrough.fbs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FlatSharp" Version="5.0.0" />
-    <PackageReference Include="FlatSharp.Compiler" Version="5.0.0">
+    <PackageReference Include="FlatSharp" Version="5.3.0" />
+    <PackageReference Include="FlatSharp.Compiler" Version="5.3.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="FlatSharp.Runtime" Version="5.0.0" />
-    <PackageReference Include="FlatSharp.Unsafe" Version="5.0.0" />
+    <PackageReference Include="FlatSharp.Runtime" Version="5.3.0" />
+    <PackageReference Include="FlatSharp.Unsafe" Version="5.3.0" />
     <PackageReference Include="Grpc" Version="2.36.1" />
   </ItemGroup>
 
