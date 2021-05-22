@@ -93,8 +93,6 @@ namespace FlatSharp
 
         public bool HasEmbeddedBufferReference => !this.options.GreedyDeserialize;
 
-        public bool HasEmbeddedVTableInfo => !this.options.GreedyDeserialize && this.typeModel.SchemaType == FlatBufferSchemaType.Table;
-
         public string ClassName { get; }
 
         public void AddProperty(ItemMemberModel itemModel, string readValueMethodName, string writeValueMethodName)
