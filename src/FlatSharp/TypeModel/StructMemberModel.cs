@@ -37,12 +37,12 @@
 
             if (!this.IsVirtual && this.IsWriteThrough)
             {
-                throw new InvalidFlatBufferDefinitionException($"Struct member '{propertyInfo.DeclaringType.GetCompilableTypeName()}.{propertyInfo.Name}' declared the WriteThrough attribute, but WriteThrough is only supported on virtual fields.");
+                throw new InvalidFlatBufferDefinitionException($"Struct member '{propertyInfo.DeclaringType!.GetCompilableTypeName()}.{propertyInfo.Name}' declared the WriteThrough attribute, but WriteThrough is only supported on virtual fields.");
             }
 
             if (propertyModel.SerializeMethodRequiresContext)
             {
-                throw new InvalidFlatBufferDefinitionException($"Struct member '{propertyInfo.DeclaringType.GetCompilableTypeName()}.{propertyInfo.Name}' declared the WriteThrough attribute and the TypeModel requires a Serialization Context. These are not compatible.");
+                throw new InvalidFlatBufferDefinitionException($"Struct member '{propertyInfo.DeclaringType!.GetCompilableTypeName()}.{propertyInfo.Name}' declared the WriteThrough attribute and the TypeModel requires a Serialization Context. These are not compatible.");
             }
         }
 

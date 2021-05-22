@@ -8,12 +8,8 @@
 **/*.csproj.user
 **/*.fbs.generated.cs
 **/*.DotSettings*
-/src/FlatSharpTests/coverage.netstandard2.0.xml
-/src/FlatSharpTests/coverage.netcoreapp2.1.xml
-/src/FlatSharpTests/coverage.net47.xml
-/src/FlatSharpTests/coverage
-/src/FlatSharpTests/.coverage
+**/.coverage/**
 /src/Grpc/NativeGrpc/Debug
 /src/Debug
 /src/Grpc/NativeGrpc/NativeGrpc.vcxproj.user
-/src/FlatSharpTests/coverage.net5.0.xml
+**/coverage.net5.0.xml
