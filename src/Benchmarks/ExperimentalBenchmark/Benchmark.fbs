@@ -1,6 +1,9 @@
 ﻿
 namespace BenchmarkCore;
 
+enum Normal : ubyte { A, B, C, D }
+enum Flags : ubyte (bit_flags) { A, B , C, D}
+
 table SomeTable (fs_serializer:VectorCacheMutable) {
 	Struct : Struct;
 }

@@ -1,12 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\common.props" />
+  <Import Project="..\..\common.props" />
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFrameworks>net5.0</TargetFrameworks>
     <DelaySign>false</DelaySign>
     <SignAssembly>false</SignAssembly>
-    <AssemblyOriginatorKeyFile>..\..\misc\strongname.snk</AssemblyOriginatorKeyFile>
     <DefineConstants>$(DefineContants);RUN_COMPARISON_BENCHMARKS;CURRENT_VERSION_ONLY</DefineConstants>
   </PropertyGroup>
 
@@ -19,9 +18,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FlatSharp.Unsafe\FlatSharp.Unsafe.csproj" />
-    <ProjectReference Include="..\FlatSharp\FlatSharp.csproj" />
-    <ProjectReference Include="..\Google.FlatBuffers\Google.FlatBuffers.csproj" />
+    <ProjectReference Include="..\..\FlatSharp.Unsafe\FlatSharp.Unsafe.csproj" />
+    <ProjectReference Include="..\..\FlatSharp\FlatSharp.csproj" />
+    <ProjectReference Include="..\..\Google.FlatBuffers\Google.FlatBuffers.csproj" />
   </ItemGroup>
 
 </Project>

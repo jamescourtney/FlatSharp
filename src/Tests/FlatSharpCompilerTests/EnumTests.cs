@@ -81,9 +81,56 @@ namespace FlatSharpTests.Compiler
         }
 
         [TestMethod]
+        public void FlagsTest_OK()
+        {
+            string fbs = $"namespace Foo.Bar; enum MyEnum : ubyte (bit_flags) {{ Red, Blue, Green, Yellow }}";
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(fbs, new());
+
+            Type t = asm.GetTypes().Single(x => x.FullName == "Foo.Bar.MyEnum");
+
+            Assert.IsNotNull(t.GetCustomAttribute(typeof(FlagsAttribute)));
+            Assert.IsTrue(t.IsEnum);
+            Assert.AreEqual(typeof(byte), Enum.GetUnderlyingType(t));
+            Assert.IsTrue(t.GetCustomAttribute<FlatSharp.Attributes.FlatBufferEnumAttribute>() != null);
+
+            string[] names = Enum.GetNames(t);
+            Assert.AreEqual(6, names.Length);
+            Assert.AreEqual("None", names[0]);
+            Assert.AreEqual("Red", names[1]);
+            Assert.AreEqual("Blue", names[2]);
+            Assert.AreEqual("Green", names[3]);
+            Assert.AreEqual("Yellow", names[4]);
+            Assert.AreEqual("All", names[5]);
+
+            Array values = Enum.GetValues(t);
+            Assert.AreEqual(0, (byte)values.GetValue(0));  // none
+            Assert.AreEqual(1, (byte)values.GetValue(1));
+            Assert.AreEqual(2, (byte)values.GetValue(2));
+            Assert.AreEqual(4, (byte)values.GetValue(3));
+            Assert.AreEqual(8, (byte)values.GetValue(4));
+            Assert.AreEqual(15, (byte)values.GetValue(5)); // all
+        }
+
+        [TestMethod]
+        public void FlagsTest_TooMany()
+        {
+            string fbs = $"namespace Foo.Bar; enum MyEnum : ubyte (bit_flags) {{ A, B, C, D, E, F, G, H, I }}";
+            var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(fbs, new()));
+            Assert.IsTrue(ex.Message.Contains("Could not format value for enum 'MyEnum'. Value = 256. Make sure that the enum type has enough space for this many flags."));
+        }
+
+        [TestMethod]
+        public void FlagsTest_ExplicitValuesDisallowed()
+        {
+            string fbs = $"namespace Foo.Bar; enum MyEnum : ubyte (bit_flags) {{ A = 3, B, C }}";
+            var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(fbs, new()));
+            Assert.IsTrue(ex.Message.Contains("Enum 'MyEnum' declares the 'bit_flags' attribute. FlatSharp does not support specifying explicit values when used in conjunction with bit flags."));
+        }
+
+        [TestMethod]
         public void InvalidEnumTest_WrongUnderlyingType_Bool()
         {
-            Assert.ThrowsException<FlatSharpCompilationException>(() => this.EnumTest<bool>("bool"));
+            Assert.ThrowsException<InvalidFbsFileException>(() => this.EnumTest<bool>("bool"));
         }
 
         [TestMethod]
@@ -116,7 +163,7 @@ namespace FlatSharpTests.Compiler
         public void InvalidEnumTest_ValueOutOfRangeOfUnderlyingType()
         {
             string fbs = $"namespace Foo.Bar; enum MyEnum : ubyte {{ Red = 0x0, Blue = 255, Yellow = 256 }}";
-            Assert.ThrowsException<FlatSharpCompilationException>(() => FlatSharpCompiler.CompileAndLoadAssembly(fbs, new()));
+            Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(fbs, new()));
         }
 
         [TestMethod]
@@ -163,6 +210,7 @@ namespace FlatSharpTests.Compiler
 
             Type t = asm.GetTypes().Single(x => x.FullName == "Foo.Bar.MyEnum");
 
+            Assert.IsNull(t.GetCustomAttribute(typeof(FlagsAttribute)));
             Assert.IsTrue(t.IsEnum);
             Assert.AreEqual(typeof(T), Enum.GetUnderlyingType(t));
             Assert.IsTrue(t.GetCustomAttribute<FlatSharp.Attributes.FlatBufferEnumAttribute>() != null);

@@ -1,5 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\common.props" />
+  <Import Project="..\..\common.props" />
 
   <PropertyGroup>
     <TargetFrameworks Condition=" '$(AppVeyorBuild)' != 'true' ">netcoreapp2.1;net47;netcoreapp3.1;net472;net5.0</TargetFrameworks>
@@ -9,7 +9,6 @@
     <RootNamespace>FlatSharpTests</RootNamespace>
     <DelaySign>false</DelaySign>
     <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>..\..\misc\strongname.snk</AssemblyOriginatorKeyFile>
     <Nullable>annotations</Nullable>
   </PropertyGroup>
 
@@ -25,10 +24,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FlatSharp.Compiler\FlatSharp.Compiler.csproj" />
-    <ProjectReference Include="..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
-    <ProjectReference Include="..\FlatSharp.Unsafe\FlatSharp.Unsafe.csproj" />
-    <ProjectReference Include="..\FlatSharp\FlatSharp.csproj" />
-    <ProjectReference Include="..\Google.FlatBuffers\Google.FlatBuffers.csproj" />
+    <ProjectReference Include="..\..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
+    <ProjectReference Include="..\..\FlatSharp.Unsafe\FlatSharp.Unsafe.csproj" />
+    <ProjectReference Include="..\..\FlatSharp\FlatSharp.csproj" />
+    <ProjectReference Include="..\..\Google.FlatBuffers\Google.FlatBuffers.csproj" />
   </ItemGroup>
 </Project>

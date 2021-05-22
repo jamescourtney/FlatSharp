@@ -43,6 +43,11 @@ namespace FlatSharp.Compiler
 
             ErrorContext.Current.WithScope(this.enumDef.Name, () =>
             {
+                var metadataVisitor = new MetadataVisitor();
+                var metadata = metadataVisitor.VisitMetadata(context.metadata());
+
+                this.enumDef.IsFlags = metadata?.ParseBooleanMetadata(MetadataKeys.BitFlags) ?? false;
+
                 base.VisitEnum_decl(context);
             });
 

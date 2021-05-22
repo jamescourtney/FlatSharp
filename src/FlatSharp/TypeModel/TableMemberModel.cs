@@ -49,7 +49,7 @@
 
             if (this.IsWriteThrough)
             {
-                throw new InvalidFlatBufferDefinitionException($"Table property '{propertyInfo.DeclaringType.GetCompilableTypeName()}.{propertyInfo.Name} declared the WriteThrough attribute. WriteThrough is only supported on struct fields.");
+                throw new InvalidFlatBufferDefinitionException($"Table property '{propertyInfo.DeclaringType!.GetCompilableTypeName()}.{propertyInfo.Name} declared the WriteThrough attribute. WriteThrough is only supported on struct fields.");
             }
         }
         

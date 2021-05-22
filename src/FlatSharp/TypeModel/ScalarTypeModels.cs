@@ -33,8 +33,14 @@ namespace FlatSharp.TypeModel
         {
         }
 		
-        public override bool TryFormatStringAsLiteral(string value, out string literal)
+        public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
 		{
+			if (!bool.TryParse(value, out _))
+			{
+			     literal = null;
+				 return false;
+			}
+
 			literal = $"(bool)({value})";
 			return true;
 		}
@@ -61,8 +67,14 @@ namespace FlatSharp.TypeModel
         {
         }
 		
-        public override bool TryFormatStringAsLiteral(string value, out string literal)
+        public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
 		{
+			if (!byte.TryParse(value, out _))
+			{
+			     literal = null;
+				 return false;
+			}
+
 			literal = $"(byte)({value})";
 			return true;
 		}
@@ -89,8 +101,14 @@ namespace FlatSharp.TypeModel
         {
         }
 		
-        public override bool TryFormatStringAsLiteral(string value, out string literal)
+        public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
 		{
+			if (!sbyte.TryParse(value, out _))
+			{
+			     literal = null;
+				 return false;
+			}
+
 			literal = $"(sbyte)({value})";
 			return true;
 		}
@@ -117,8 +135,14 @@ namespace FlatSharp.TypeModel
         {
         }
 		
-        public override bool TryFormatStringAsLiteral(string value, out string literal)
+        public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
 		{
+			if (!ushort.TryParse(value, out _))
+			{
+			     literal = null;
+				 return false;
+			}
+
 			literal = $"(ushort)({value})";
 			return true;
 		}
@@ -145,8 +169,14 @@ namespace FlatSharp.TypeModel
         {
         }
 		
-        public override bool TryFormatStringAsLiteral(string value, out string literal)
+        public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
 		{
+			if (!short.TryParse(value, out _))
+			{
+			     literal = null;
+				 return false;
+			}
+
 			literal = $"(short)({value})";
 			return true;
 		}
@@ -173,8 +203,14 @@ namespace FlatSharp.TypeModel
         {
         }
 		
-        public override bool TryFormatStringAsLiteral(string value, out string literal)
+        public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
 		{
+			if (!int.TryParse(value, out _))
+			{
+			     literal = null;
+				 return false;
+			}
+
 			literal = $"(int)({value})";
 			return true;
 		}
@@ -201,8 +237,14 @@ namespace FlatSharp.TypeModel
         {
         }
 		
-        public override bool TryFormatStringAsLiteral(string value, out string literal)
+        public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
 		{
+			if (!uint.TryParse(value, out _))
+			{
+			     literal = null;
+				 return false;
+			}
+
 			literal = $"(uint)({value}u)";
 			return true;
 		}
@@ -229,8 +271,14 @@ namespace FlatSharp.TypeModel
         {
         }
 		
-        public override bool TryFormatStringAsLiteral(string value, out string literal)
+        public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
 		{
+			if (!long.TryParse(value, out _))
+			{
+			     literal = null;
+				 return false;
+			}
+
 			literal = $"(long)({value}L)";
 			return true;
 		}
@@ -257,8 +305,14 @@ namespace FlatSharp.TypeModel
         {
         }
 		
-        public override bool TryFormatStringAsLiteral(string value, out string literal)
+        public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
 		{
+			if (!ulong.TryParse(value, out _))
+			{
+			     literal = null;
+				 return false;
+			}
+
 			literal = $"(ulong)({value}ul)";
 			return true;
 		}
@@ -285,8 +339,14 @@ namespace FlatSharp.TypeModel
         {
         }
 		
-        public override bool TryFormatStringAsLiteral(string value, out string literal)
+        public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
 		{
+			if (!float.TryParse(value, out _))
+			{
+			     literal = null;
+				 return false;
+			}
+
 			literal = $"(float)({value}f)";
 			return true;
 		}
@@ -313,8 +373,14 @@ namespace FlatSharp.TypeModel
         {
         }
 		
-        public override bool TryFormatStringAsLiteral(string value, out string literal)
+        public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
 		{
+			if (!double.TryParse(value, out _))
+			{
+			     literal = null;
+				 return false;
+			}
+
 			literal = $"(double)({value}d)";
 			return true;
 		}
