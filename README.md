@@ -106,6 +106,7 @@ FlatSharp supports some interesting features not covered here. Detailed document
 - [Indexed Vectors (Dictionary-like functionality)](samples/Example11-IndexedVectors/)
 - [Type Facades](samples/Example12-TypeFacades/)
 - [Fixed-Length Vectors](samples/Example13-StructVectors/)
+- [Write-Through -- update buffers in place](samples/Example14-WriteThrough/)
 
 ### Internals
 FlatSharp works by generating subclasses of your data contracts based on the schema that you define. That is, when you attempt to deserialize a ```MonsterTable``` object, you actually get back a subclass of ```MonsterTable```, which has properties defined in such a way as to index into the buffer, according to the deserialization mode specified (greedy, lazy, etc).
