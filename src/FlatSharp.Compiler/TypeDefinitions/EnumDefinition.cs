@@ -91,7 +91,7 @@ namespace FlatSharp.Compiler
 
                 if (!model.TryFormatStringAsLiteral(nextValue.ToString(), out string? literal))
                 {
-                    ErrorContext.Current?.RegisterError($"Could not format value for enum '{this.Name}'. Value = {nextValue}.");
+                    ErrorContext.Current?.RegisterError($"Could not format value for enum '{this.Name}'. Value = {nextValue}. Make sure that the enum type has enough space for this many flags.");
                     continue;
                 }
 
@@ -109,7 +109,7 @@ namespace FlatSharp.Compiler
             }
             else
             {
-                ErrorContext.Current?.RegisterError($"Could not format value for enum '{this.Name}'. Value = {nextValue}.");
+                ErrorContext.Current?.RegisterError($"Failed to generate all/none flags.");
             }
 
             return results;

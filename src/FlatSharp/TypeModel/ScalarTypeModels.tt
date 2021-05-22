@@ -63,8 +63,14 @@ namespace FlatSharp.TypeModel
         {
         }
 		
-        public override bool TryFormatStringAsLiteral(string value, out string literal)
+        public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
 		{
+			if (!<#= pair.typeName #>.TryParse(value, out _))
+			{
+			     literal = null;
+				 return false;
+			}
+
 			literal = $"(<#= pair.typeName #>)({value}<#= pair.literalSpecifier #>)";
 			return true;
 		}
