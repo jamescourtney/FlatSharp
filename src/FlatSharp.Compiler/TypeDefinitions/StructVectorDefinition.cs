@@ -121,11 +121,6 @@ namespace FlatSharp.Compiler
                     {
                         writer.AppendLine($"yield return thisItem.{this.PropertyNames[i]};");
                     }
-
-                    if (this.PropertyNames.Count == 0)
-                    {
-                        writer.AppendLine("yield break;");
-                    }
                 }
 
                 string arrayOrSpanType = $"{typeName}[]";

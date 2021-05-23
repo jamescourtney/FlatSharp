@@ -201,22 +201,19 @@ namespace FlatSharp
                 }
             }
 
-            if (itemModel.PropertyInfo.SetMethod is not null)
+            MethodInfo? setMethod = itemModel.PropertyInfo.SetMethod;
+            if (setMethod is not null)
             {
                 string verb = "set";
                 string setterBody;
 
-                MethodInfo? methodInfo = itemModel.PropertyInfo.SetMethod;
-                if (methodInfo is not null)
+                // see if set is init-only.
+                bool isInitOnly = setMethod.ReturnParameter.GetRequiredCustomModifiers().Any(
+                    x => x.FullName == "System.Runtime.CompilerServices.IsExternalInit");
+
+                if (isInitOnly)
                 {
-                    // see if set is init-only.
-                    bool isInitOnly = methodInfo.ReturnParameter.GetRequiredCustomModifiers().Any(
-                        x => x.FullName == "System.Runtime.CompilerServices.IsExternalInit");
-                    
-                    if (isInitOnly)
-                    {
-                        verb = "init";
-                    }
+                    verb = "init";
                 }
 
                 if (!this.options.GenerateMutableObjects)

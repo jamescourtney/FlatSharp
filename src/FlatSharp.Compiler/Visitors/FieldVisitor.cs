@@ -81,6 +81,10 @@ namespace FlatSharp.Compiler
                 {
                     ErrorContext.Current.RegisterError("Only structs may contain fixed-length vectors");
                 }
+                else if (structVectorLength.Value <= 0)
+                {
+                    ErrorContext.Current.RegisterError("Struct vector lengths must be non-negative.");
+                }
                 else
                 {
                     List<string> groupNames = new List<string>();

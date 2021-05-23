@@ -36,6 +36,10 @@ namespace FlatSharpTests.Compiler
             => Assert.ThrowsException<InvalidFbsFileException>(() => this.RunTest<byte>("ubyte", -3, FlatBufferDeserializationOption.Greedy));
 
         [TestMethod]
+        public void StructVector_Byte_ZeroLength()
+            => Assert.ThrowsException<InvalidFbsFileException>(() => this.RunTest<byte>("ubyte", 0, FlatBufferDeserializationOption.Greedy));
+
+        [TestMethod]
         public void StructVector_Byte() => this.RunTest<byte>("ubyte", 1, FlatBufferDeserializationOption.Greedy);
 
         [TestMethod]
