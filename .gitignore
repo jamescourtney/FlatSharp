@@ -13,3 +13,4 @@
 /src/Debug
 /src/Grpc/NativeGrpc/NativeGrpc.vcxproj.user
 **/coverage.net5.0.xml
+/src/Tests/Coverage/coverage.xml

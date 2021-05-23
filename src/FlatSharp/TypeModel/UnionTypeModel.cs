@@ -99,7 +99,7 @@ namespace FlatSharp.TypeModel
                 string @case =
 $@"
                     case {unionIndex}:
-                        return {context.MethodNameMap[unionMember.ClrType]}({context.ValueVariableName}.Item{unionIndex});";
+                        return {sizeof(uint) + SerializationHelpers.GetMaxPadding(sizeof(uint))} + {context.MethodNameMap[unionMember.ClrType]}({context.ValueVariableName}.Item{unionIndex});";
 
                 switchCases.Add(@case);
             }

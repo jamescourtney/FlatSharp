@@ -13,14 +13,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AltCover" Version="6.7.750" />
     <PackageReference Include="Grpc.Core" Version="2.27.0" />
     <PackageReference Include="Grpc.Core.Api" Version="2.35.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
     <PackageReference Include="MSTest.TestAdapter" Version="2.1.2" />
     <PackageReference Include="MSTest.TestFramework" Version="2.1.2" />
-    <PackageReference Include="ReportGenerator" Version="4.1.2" />
   </ItemGroup>
 
   <ItemGroup>

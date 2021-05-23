@@ -93,8 +93,6 @@ namespace FlatSharp
 
         public bool HasEmbeddedBufferReference => !this.options.GreedyDeserialize;
 
-        public bool HasEmbeddedVTableInfo => !this.options.GreedyDeserialize && this.typeModel.SchemaType == FlatBufferSchemaType.Table;
-
         public string ClassName { get; }
 
         public void AddProperty(ItemMemberModel itemModel, string readValueMethodName, string writeValueMethodName)
@@ -203,22 +201,19 @@ namespace FlatSharp
                 }
             }
 
-            if (itemModel.PropertyInfo.SetMethod is not null)
+            MethodInfo? setMethod = itemModel.PropertyInfo.SetMethod;
+            if (setMethod is not null)
             {
                 string verb = "set";
                 string setterBody;
 
-                MethodInfo? methodInfo = itemModel.PropertyInfo.SetMethod;
-                if (methodInfo is not null)
+                // see if set is init-only.
+                bool isInitOnly = setMethod.ReturnParameter.GetRequiredCustomModifiers().Any(
+                    x => x.FullName == "System.Runtime.CompilerServices.IsExternalInit");
+
+                if (isInitOnly)
                 {
-                    // see if set is init-only.
-                    bool isInitOnly = methodInfo.ReturnParameter.GetRequiredCustomModifiers().Any(
-                        x => x.FullName == "System.Runtime.CompilerServices.IsExternalInit");
-                    
-                    if (isInitOnly)
-                    {
-                        verb = "init";
-                    }
+                    verb = "init";
                 }
 
                 if (!this.options.GenerateMutableObjects)
@@ -261,19 +256,15 @@ namespace FlatSharp
                 assignment = $"this.{GetFieldName(itemModel)}";
             }
 
-            if (!this.options.GreedyDeserialize && itemModel.IsVirtual)
+            if (this.options.GreedyDeserialize || !itemModel.IsVirtual)
             {
-                if (itemModel.ItemTypeModel.ClassifyContextually(this.typeModel.SchemaType) == (ContextualTypeModelClassification.ReferenceType | ContextualTypeModelClassification.Required))
-                {
-                    this.ctorStatements.Add($"{assignment} = null!;");
-                }
-
-                return;
-            }
-            else 
-            {
-
                 this.ctorStatements.Add($"{assignment} = {GetReadIndexMethodName(itemModel)}(buffer, offset, {this.vtableOffsetAccessor}, {this.vtableMaxIndexAccessor});");
+            }
+            else if (
+                !this.options.Lazy &&
+                itemModel.ItemTypeModel.ClassifyContextually(this.typeModel.SchemaType).IsRequiredReference())
+            {
+                this.ctorStatements.Add($"{assignment} = null!;");
             }
         }
 
