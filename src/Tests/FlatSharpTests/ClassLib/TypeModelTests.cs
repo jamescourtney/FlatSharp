@@ -121,6 +121,10 @@ namespace FlatSharpTests
             ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(Table_FileIdentifierTooFancy)));
             Assert.AreEqual("File identifier '😍😚😙😵‍' is invalid. FileIdentifiers must be exactly 4 ASCII characters.", ex.Message);
+
+            ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(Table_FileIdentifierOutOfRange)));
+            Assert.AreEqual("File identifier 'abcµ' contains non-ASCII characters. Character 'µ' is invalid.", ex.Message);
         }
 
         [TestMethod]
@@ -191,6 +195,17 @@ namespace FlatSharpTests
         public void TypeModel_Table_SpecialConstructor()
         {
             RuntimeTypeModel.CreateFrom(typeof(SpecialConstructorTable<byte>));
+        }
+
+        [TestMethod]
+        public void TypeModel_Table_NoValidCtor()
+        {
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => RuntimeTypeModel.CreateFrom(typeof(Table_NoCtor)));
+
+            Assert.AreEqual(
+                "Unable to find a usable constructor for 'FlatSharpTests.TypeModelTests.Table_NoCtor'. The type must supply a default constructor or single parameter constructor accepting 'FlatBufferDeserializationContext' that is visible to subclasses outside the assembly.",
+                ex.Message);
         }
 
         [TestMethod]
@@ -310,6 +325,16 @@ namespace FlatSharpTests
             var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(MisnumberedStruct<byte>)));
             Assert.AreEqual("FlatBuffer struct FlatSharpTests.TypeModelTests.MisnumberedStruct<System.Byte> does not declare an item with index 1. Structs must have sequenential indexes starting at 0.", ex.Message);
+        }
+
+        [TestMethod]
+        public void TypeModel_Struct_DeprecatedNotAllowed()
+        {
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+                RuntimeTypeModel.CreateFrom(typeof(StructDeprecatedField)));
+            Assert.AreEqual(
+                "FlatBuffer struct FlatSharpTests.TypeModelTests.StructDeprecatedField may not have deprecated properties", 
+                ex.Message);
         }
 
         [TestMethod]
@@ -752,6 +777,16 @@ namespace FlatSharpTests
             RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<long>[]>));
             RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<float>[]>));
             RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<double>[]>));
+        }
+
+        [TestMethod]
+        public void TypeModel_SortedVector_DeprecatedKey_NotAllowed()
+        {
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorDeprecatedKeyTable<string>[]>)));
+            Assert.AreEqual(
+                "Table FlatSharpTests.TypeModelTests.SortedVectorDeprecatedKeyTable<System.String> declares a key property that is deprecated.",
+                ex.Message);
         }
 
         [TestMethod]
@@ -1278,6 +1313,13 @@ namespace FlatSharpTests
         }
 
         [FlatBufferTable]
+        public class SortedVectorDeprecatedKeyTable<T>
+        {
+            [FlatBufferItem(0, Key = true, Deprecated = true)]
+            public virtual T Key { get; set; }
+        }
+
+        [FlatBufferTable]
         public class SortedVectorMultiKeyTable<T>
         {
             [FlatBufferItem(0, Key = true)]
@@ -1377,6 +1419,13 @@ namespace FlatSharpTests
 
         [FlatBufferTable(FileIdentifier = "😍😚😙😵‍")]
         public class Table_FileIdentifierTooFancy
+        {
+            [FlatBufferItem(0)]
+            public int Prop { get; set; }
+        }
+
+        [FlatBufferTable(FileIdentifier = "abcµ")]
+        public class Table_FileIdentifierOutOfRange
         {
             [FlatBufferItem(0)]
             public int Prop { get; set; }
@@ -1501,5 +1550,27 @@ namespace FlatSharpTests
             [FlatBufferItem(1, WriteThrough = false)]
             public int Property2 { get; set; }
         }
+
+        [FlatBufferTable]
+        public class Table_NoCtor
+        {
+            public Table_NoCtor(string foo)
+            {
+            }
+
+            [FlatBufferItem(0)] public virtual int Value { get; set; }
+        }
+
+        [FlatBufferStruct]
+        public class StructDeprecatedField
+        {
+            [FlatBufferItem(0)]
+            public virtual int A { get; set; }
+
+            [FlatBufferItem(1, Deprecated = true)]
+            public virtual int B { get; set; }
+        }
+
+
     }
 }

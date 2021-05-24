@@ -215,7 +215,7 @@ namespace FlatSharp.TypeModel
             }
         }
 
-        private static void ValidateSortedVector(TableMemberModel model)
+        private static (ITypeModel itemModel, TableMemberModel keyMember, Type spanComparerType)? ValidateSortedVector(TableMemberModel model)
         {
             if (model.IsSortedVector)
             {
@@ -239,7 +239,7 @@ namespace FlatSharp.TypeModel
                     throw new InvalidFlatBufferDefinitionException($"Property '{model.PropertyInfo.Name}' declares a sorted vector, but the member does not have a key defined. Type = {model.ItemTypeModel.GetCompilableTypeName()}.");
                 }
 
-                if (!member.ItemTypeModel.TryGetSpanComparerType(out _))
+                if (!member.ItemTypeModel.TryGetSpanComparerType(out var spanComparer))
                 {
                     throw new InvalidFlatBufferDefinitionException($"Property '{model.PropertyInfo.Name}' declares a sorted vector, but the key does not have an implementation of ISpanComparer. Keys must be non-nullable scalars or strings. KeyType = {model.ItemTypeModel.GetCompilableTypeName()}");
                 }
@@ -248,7 +248,11 @@ namespace FlatSharp.TypeModel
                 {
                     throw new InvalidFlatBufferDefinitionException($"Property '{model.PropertyInfo.Name}' declares a sorted vector, but the sort key's vtable is not compatible with sorting. KeyType = {model.ItemTypeModel.GetCompilableTypeName()}");
                 }
+
+                return (memberTypeModel, member, spanComparer);
             }
+
+            return null;
         }
 
         internal static MethodInfo? ValidateOnDeserializedMethod(ITypeModel typeModel)
@@ -596,17 +600,7 @@ $@"
             string sortInvocation = string.Empty;
             if (memberModel.IsSortedVector)
             {
-                if (!memberModel.ItemTypeModel.TryGetUnderlyingVectorType(out ITypeModel? tableModel) ||
-                    !tableModel.TryGetTableKeyMember(out TableMemberModel? keyMember) ||
-                    !keyMember.ItemTypeModel.TryGetSpanComparerType(out Type? spanComparerType) ||
-                    keyMember.ItemTypeModel.PhysicalLayout.Length != 1)
-                {
-                    string? vtm = memberModel.ItemTypeModel.ClrType.FullName;
-                    string? ttm = tableModel?.GetType().FullName;
-                    string? ttn = tableModel?.ClrType.FullName;
-
-                    throw new InvalidOperationException($"Internal error: Validation failed when writing sorted vector. VTM={vtm}, TTM={ttm}, TTN={ttn}");
-                }
+                var (tableModel, keyMember, spanComparerType) = ValidateSortedVector(memberModel)!.Value;
 
                 string inlineSize = keyMember.ItemTypeModel.IsFixedSize ? keyMember.ItemTypeModel.PhysicalLayout[0].InlineSize.ToString() : "null";
 
