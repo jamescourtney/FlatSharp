@@ -113,6 +113,71 @@ namespace FlatSharpTests
             this.TestDeserializeBoth(b => new UnsafeMemoryInputBuffer(b));
         }
 
+        [TestMethod]
+        public void InitializeVTable_EmptyTable()
+        {
+            byte[] buffer =
+            {
+                4, 0, // vtable length
+                4, 0, // table length
+                4, 0, 0, 0 // soffset to vtable.
+            };
+
+            new ArrayInputBuffer(buffer).InitializeVTable(4, out int vtableOffset, out int maxVtableIndex);
+            Assert.AreEqual(0, vtableOffset);
+            Assert.AreEqual(-1, maxVtableIndex);
+        }
+
+        [TestMethod]
+        public void InitializeVTable_InvalidLength()
+        {
+            byte[] buffer =
+            {
+                3, 0, // vtable length
+                4, 0, // table length
+                4, 0, 0, 0 // soffset to vtable.
+            };
+
+            var ex = Assert.ThrowsException<InvalidDataException>(() => 
+                new ArrayInputBuffer(buffer).InitializeVTable(4, out _, out _));
+
+            Assert.AreEqual(
+                "FlatBuffer was in an invalid format: VTable was not long enough to be valid.",
+                ex.Message);
+        }
+
+        [TestMethod]
+        public void InitializeVTable_NormalTable()
+        {
+            byte[] buffer =
+            {
+                8, 0, // vtable length
+                12, 0, // table length
+                4, 0, // index 0 offset
+                8, 0, // index 1 offset
+                8, 0, 0, 0, // soffset to vtable.
+                1, 0, 0, 0,
+                2, 0, 0, 0,
+            };
+
+            new ArrayInputBuffer(buffer).InitializeVTable(8, out int vtableOffset, out int maxVtableIndex);
+            Assert.AreEqual(0, vtableOffset);
+            Assert.AreEqual(1, maxVtableIndex);
+        }
+
+        [TestMethod]
+        public void ReadUOffset()
+        {
+            byte[] buffer = { 4, 0, 0, 0 };
+            Assert.AreEqual(4, new ArrayInputBuffer(buffer).ReadUOffset(0));
+
+            buffer = new byte[] { 3, 0, 0, 0 };
+            var ex = Assert.ThrowsException<InvalidDataException>(() => new ArrayInputBuffer(buffer).ReadUOffset(0));
+            Assert.AreEqual(
+                "FlatBuffer was in an invalid format: Decoded uoffset_t had value less than 4. Value = 3",
+                ex.Message);
+        }
+
         private void InputBufferTest(IInputBuffer ib)
         {
             var mem = new Memory<byte>(Input);
@@ -129,7 +194,7 @@ namespace FlatSharpTests
             this.CompareEqual<uint>(sizeof(uint), i => BinaryPrimitives.ReadUInt32LittleEndian(mem.Span.Slice(i)), i => ib.ReadUInt(i));
             this.CompareEqual<int>(sizeof(int), i => BinaryPrimitives.ReadInt32LittleEndian(mem.Span.Slice(i)), i => ib.ReadInt(i));
 
-#if NETCOREAPP || NET5_0
+#if NETCOREAPP2_1_OR_GREATER
             this.CompareEqual<float>(sizeof(float), i => BitConverter.ToSingle(mem.Span.Slice(i)), i => ib.ReadFloat(i));
 #endif
 

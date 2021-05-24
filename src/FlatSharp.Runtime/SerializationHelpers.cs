@@ -89,21 +89,7 @@ namespace FlatSharp
             }
         }
 
-        /// <summary>
-        /// Throws an InvalidDataException if the given item is null.
-        /// </summary>
-        /// <remarks>
-        /// Add generic constraint to catch errors calling this for value types.
-        /// </remarks>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void EnsureNonNull<T>(T? item) where T : struct
-        {
-            if (item is null)
-            {
-                ThrowNonNullException();
-            }
-        }
-
+        // Left as no inlining. Literal strings seem to prevent JIT inlining.
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static void ThrowNonNullException()
         {
