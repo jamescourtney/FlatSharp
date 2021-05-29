@@ -292,11 +292,11 @@ namespace FlatSharp
             $@"
                 private sealed class {this.ClassName}<TInputBuffer> 
                     : {typeModel.GetCompilableTypeName()} 
-                    , {nameof(IFlatBufferDeserializedObject)}
+                    , {typeof(IFlatBufferDeserializedObject).GetCompilableTypeName()}
                     where TInputBuffer : IInputBuffer
                 {{
-                    private static readonly {nameof(FlatBufferDeserializationContext)} __CtorContext 
-                        = new {nameof(FlatBufferDeserializationContext)}({nameof(FlatBufferDeserializationOption)}.{options.DeserializationOption});
+                    private static readonly {typeof(FlatBufferDeserializationContext).GetCompilableTypeName()} __CtorContext 
+                        = new {typeof(FlatBufferDeserializationContext).GetCompilableTypeName()}({typeof(FlatBufferDeserializationOption).GetCompilableTypeName()}.{options.DeserializationOption});
 
                     {string.Join("\r\n", this.fieldDefinitions)}
                     {string.Join("\r\n", this.maskDefinitions)}
@@ -307,9 +307,9 @@ namespace FlatSharp
                         {onDeserializedStatement}
                     }}
 
-                    Type {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.TableOrStructType)} => typeof({typeModel.GetCompilableTypeName()});
-                    {nameof(FlatBufferDeserializationContext)} {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.DeserializationContext)} => __CtorContext;
-                    {nameof(IInputBuffer)}? {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.InputBuffer)} => {this.GetBufferReference()};
+                    {typeof(Type).GetCompilableTypeName()} {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.TableOrStructType)} => typeof({typeModel.GetCompilableTypeName()});
+                    {typeof(FlatBufferDeserializationContext).GetCompilableTypeName()} {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.DeserializationContext)} => __CtorContext;
+                    {typeof(IInputBuffer).GetCompilableTypeName()}? {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.InputBuffer)} => {this.GetBufferReference()};
 
                     {string.Join("\r\n", this.propertyOverrides)}
 
