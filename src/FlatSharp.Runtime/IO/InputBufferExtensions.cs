@@ -19,6 +19,7 @@ namespace FlatSharp
     using System;
     using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
+    using System.IO;
     using System.Runtime.CompilerServices;
 
     /// <summary>
@@ -100,7 +101,7 @@ namespace FlatSharp
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static void ThrowUOffsetLessThanMinimumException(uint uoffset)
         {
-            throw new IndexOutOfRangeException($"Decoded uoffset_t had value less than {sizeof(uint)}. Value = {uoffset}");
+            throw new InvalidDataException($"FlatBuffer was in an invalid format: Decoded uoffset_t had value less than {sizeof(uint)}. Value = {uoffset}");
         }
 
         /// <summary>
@@ -113,22 +114,25 @@ namespace FlatSharp
             out int vtableOffset,
             out int maxVTableIndex) where TBuffer : IInputBuffer
         {
-            vtableOffset = tableOffset - buffer.ReadInt(tableOffset);
-            ushort vtableLength = buffer.ReadUShort(vtableOffset);
-
-            if (vtableLength < 4)
+            checked
             {
-                ThrowInvalidVtableException();
-            }
+                vtableOffset = tableOffset - buffer.ReadInt(tableOffset);
+                ushort vtableLength = buffer.ReadUShort(vtableOffset);
 
-            // Can be negative when all indexes are absent. This is by design.
-            maxVTableIndex = (vtableLength / 2) - 3;
+                if (vtableLength < 4)
+                {
+                    ThrowInvalidVtableException();
+                }
+
+                // Can be negative when all indexes are absent. This is by design.
+                maxVTableIndex = (vtableLength / 2) - 3;
+            }
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static void ThrowInvalidVtableException()
         {
-            throw new IndexOutOfRangeException("VTable was not long enough to be valid.");
+            throw new InvalidDataException("FlatBuffer was in an invalid format: VTable was not long enough to be valid.");
         }
 
         // Seems to break JIT in .NET Core 2.1. Framework 4.7 and Core 3.1 work as expected.
