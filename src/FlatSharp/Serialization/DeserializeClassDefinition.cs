@@ -126,7 +126,7 @@ namespace FlatSharp
                 this.maskDefinitions.Add($"private byte {GetHasValueFieldName(itemModel)};");
             }
 
-            string typeName = itemModel.ItemTypeModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType);
+            string typeName = itemModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType);
             this.fieldDefinitions.Add($"private {typeName} {GetFieldName(itemModel)};");
         }
 
@@ -139,7 +139,7 @@ namespace FlatSharp
                 "vtableOffset",
                 "maxVtableIndex");
 
-            string typeName = itemModel.ItemTypeModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType);
+            string typeName = itemModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType);
             this.readMethods.Add(
                 $@"
                 {GetAggressiveInliningAttribute()}
@@ -236,7 +236,7 @@ namespace FlatSharp
                 setter = $"{accessModifiers.setModifier.ToCSharpString()} {verb} {{ {setterBody} }}";
             }
 
-            string typeName = itemModel.ItemTypeModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType);
+            string typeName = itemModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType);
             this.propertyOverrides.Add($@"
                 {accessModifiers.propertyModifier.ToCSharpString()} override {typeName} {itemModel.PropertyInfo.Name}
                 {{ 

@@ -64,6 +64,7 @@ namespace FlatSharp.Compiler
                 definition.NonVirtual = metadata.ParseNullableBooleanMetadata(MetadataKeys.NonVirtualProperty, MetadataKeys.NonVirtualPropertyLegacy);
                 definition.ForceWrite = metadata.ParseNullableBooleanMetadata(MetadataKeys.ForceWrite);
                 definition.WriteThrough = metadata.ParseNullableBooleanMetadata(MetadataKeys.WriteThrough);
+                definition.IsRequired = metadata.ParseBooleanMetadata(MetadataKeys.Required);
 
                 this.ParseIdMetadata(definition, metadata);
 

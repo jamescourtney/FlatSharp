@@ -37,12 +37,17 @@
 
             if (!this.IsVirtual && this.IsWriteThrough)
             {
-                throw new InvalidFlatBufferDefinitionException($"Struct member '{propertyInfo.DeclaringType!.GetCompilableTypeName()}.{propertyInfo.Name}' declared the WriteThrough attribute, but WriteThrough is only supported on virtual fields.");
+                throw new InvalidFlatBufferDefinitionException($"Struct member '{this.FriendlyName}' declared the WriteThrough attribute, but WriteThrough is only supported on virtual fields.");
             }
 
             if (propertyModel.SerializeMethodRequiresContext)
             {
-                throw new InvalidFlatBufferDefinitionException($"Struct member '{propertyInfo.DeclaringType!.GetCompilableTypeName()}.{propertyInfo.Name}' declared the WriteThrough attribute and the TypeModel requires a Serialization Context. These are not compatible.");
+                throw new InvalidFlatBufferDefinitionException($"The type model for struct member '{this.FriendlyName}' requires a serialization context, but Structs do not have one.");
+            }
+
+            if (attribute.Required)
+            {
+                throw new InvalidFlatBufferDefinitionException($"Struct member '{this.FriendlyName}' declared the Required attribute. Required is not valid inside structs.");
             }
         }
 
