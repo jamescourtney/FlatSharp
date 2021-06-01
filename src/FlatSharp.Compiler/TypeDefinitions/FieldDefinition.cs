@@ -77,7 +77,7 @@ namespace FlatSharp.Compiler
             ErrorContext.Current.WithScope(this.Name, () =>
             {
                 if (context.CompilePass <= CodeWritingPass.PropertyModeling ||
-                !this.TryGetTypeModel(context, out var model))
+                    !this.TryGetTypeModel(context, out var model))
                 {
                     return;
                 }
@@ -91,6 +91,10 @@ namespace FlatSharp.Compiler
                 {
                     var cSharpTypeName = CSharpHelpers.GetCompilableTypeName(model.ClrType);
                     assignment = $"new {cSharpTypeName}()";
+                }
+                else if (model.ClassifyContextually(this.Parent.SchemaType).IsOptionalReference())
+                {
+                    assignment = $"null!";
                 }
 
                 if (!string.IsNullOrEmpty(assignment))

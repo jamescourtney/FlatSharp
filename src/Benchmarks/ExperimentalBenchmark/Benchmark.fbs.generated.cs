@@ -18,7 +18,7 @@ using FlatSharp.Attributes;
 #nullable enable
 namespace FlatSharp.Compiler.Generated
 {
-    internal static class CloneHelpers_653741aad65e4f7da87d46e1d500a1e8
+    internal static class CloneHelpers_6ab94cc48e69492886ed55b89ae47c46
     {
         [System.Runtime.CompilerServices.MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static BenchmarkCore.Normal Clone(BenchmarkCore.Normal item)
@@ -133,6 +133,7 @@ namespace BenchmarkCore
         {
             checked
             {
+                this.Struct = null!;
                 this.OnInitialized(null);
             }
         }
@@ -150,7 +151,7 @@ namespace BenchmarkCore
         {
             checked
             {
-                this.Struct = FlatSharp.Compiler.Generated.CloneHelpers_653741aad65e4f7da87d46e1d500a1e8.Clone(source.Struct);
+                this.Struct = FlatSharp.Compiler.Generated.CloneHelpers_6ab94cc48e69492886ed55b89ae47c46.Clone(source.Struct);
                 this.OnInitialized(null);
             }
         }
@@ -206,7 +207,7 @@ namespace BenchmarkCore
             {
                 checked
                 {
-                    WriteInlineValueOf_36afb2a2b6b7435d8a3f4d7b9d628fa3(writer, target, root, offset, context);
+                    WriteInlineValueOf_39c9846cd2704595976480420ff5fe17(writer, target, root, offset, context);
                 }
             }
 
@@ -214,7 +215,7 @@ namespace BenchmarkCore
             {
                 checked
                 {
-                    return GetMaxSizeOf_36afb2a2b6b7435d8a3f4d7b9d628fa3(root);
+                    return GetMaxSizeOf_39c9846cd2704595976480420ff5fe17(root);
                 }
             }
 
@@ -223,11 +224,11 @@ namespace BenchmarkCore
             {
                 checked
                 {
-                    return Read_36afb2a2b6b7435d8a3f4d7b9d628fa3(buffer, offset);
+                    return Read_39c9846cd2704595976480420ff5fe17(buffer, offset);
                 }
             }
 
-            private static int GetMaxSizeOf_36afb2a2b6b7435d8a3f4d7b9d628fa3(BenchmarkCore.SomeTable value)
+            private static int GetMaxSizeOf_39c9846cd2704595976480420ff5fe17(BenchmarkCore.SomeTable value)
             {
                 checked
                 {
@@ -239,17 +240,17 @@ namespace BenchmarkCore
                 }
             }
 
-            private static BenchmarkCore.SomeTable Read_36afb2a2b6b7435d8a3f4d7b9d628fa3<TInputBuffer>(
+            private static BenchmarkCore.SomeTable Read_39c9846cd2704595976480420ff5fe17<TInputBuffer>(
                 TInputBuffer buffer,
                 int offset) where TInputBuffer : IInputBuffer
             {
                 checked
                 {
-                    return new tableReader_346e009361fc46599ae2bc49be85ca73<TInputBuffer>(buffer, offset + buffer.ReadUOffset(offset));
+                    return new tableReader_6f77f0981ff040a9a2aed4f0f80f2fa5<TInputBuffer>(buffer, offset + buffer.ReadUOffset(offset));
                 }
             }
 
-            private sealed class tableReader_346e009361fc46599ae2bc49be85ca73<TInputBuffer>
+            private sealed class tableReader_6f77f0981ff040a9a2aed4f0f80f2fa5<TInputBuffer>
                 : BenchmarkCore.SomeTable
                 , FlatSharp.IFlatBufferDeserializedObject
                 where TInputBuffer : IInputBuffer
@@ -264,7 +265,7 @@ namespace BenchmarkCore
                 private BenchmarkCore.Struct __index0Value;
                 private byte __mask0;
 
-                public tableReader_346e009361fc46599ae2bc49be85ca73(TInputBuffer buffer, int offset) : base(__CtorContext)
+                public tableReader_6f77f0981ff040a9a2aed4f0f80f2fa5(TInputBuffer buffer, int offset) : base(__CtorContext)
                 {
                     checked
                     {
@@ -273,6 +274,7 @@ namespace BenchmarkCore
                         buffer.InitializeVTable(offset, out var __vtableLocation, out var __vtableMaxIndex);
                         this.__vtableOffset = __vtableLocation;
                         this.__vtableMaxIndex = __vtableMaxIndex;
+                        this.__index0Value = null!;
                         base.OnFlatSharpDeserialized(__CtorContext);
                     }
                 }
@@ -329,14 +331,14 @@ namespace BenchmarkCore
                         }
 
                         int absoluteLocation = offset + relativeOffset;
-                        return Read_534b41825fd743ec92e597b0525554f6(buffer, absoluteLocation); ;
+                        return Read_9e99ed5c0941490fa9370acc9b2cfe00(buffer, absoluteLocation); ;
                     }
                 }
             }
 
 
 
-            private static void WriteInlineValueOf_36afb2a2b6b7435d8a3f4d7b9d628fa3<TSpanWriter>(
+            private static void WriteInlineValueOf_39c9846cd2704595976480420ff5fe17<TSpanWriter>(
                 TSpanWriter spanWriter,
                 Span<byte> span,
                 BenchmarkCore.SomeTable value,
@@ -364,7 +366,7 @@ namespace BenchmarkCore
                         currentOffset += 12;
 
 
-                        WriteInlineValueOf_534b41825fd743ec92e597b0525554f6(spanWriter, span, index0Value!, index0Offset);
+                        WriteInlineValueOf_9e99ed5c0941490fa9370acc9b2cfe00(spanWriter, span, index0Value!, index0Offset);
 
 
                     }
@@ -384,7 +386,7 @@ namespace BenchmarkCore
             }
 
             [System.Runtime.CompilerServices.MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-            private static int GetMaxSizeOf_534b41825fd743ec92e597b0525554f6(BenchmarkCore.Struct value)
+            private static int GetMaxSizeOf_9e99ed5c0941490fa9370acc9b2cfe00(BenchmarkCore.Struct value)
             {
                 checked
                 {
@@ -392,17 +394,17 @@ namespace BenchmarkCore
                 }
             }
 
-            private static BenchmarkCore.Struct Read_534b41825fd743ec92e597b0525554f6<TInputBuffer>(
+            private static BenchmarkCore.Struct Read_9e99ed5c0941490fa9370acc9b2cfe00<TInputBuffer>(
                 TInputBuffer buffer,
                 int offset) where TInputBuffer : IInputBuffer
             {
                 checked
                 {
-                    return new structReader_2e39b3c085124d89961d57a462a3f381<TInputBuffer>(buffer, offset);
+                    return new structReader_bde6d72f4f7c44dcb2cd1a021831bc1d<TInputBuffer>(buffer, offset);
                 }
             }
 
-            private sealed class structReader_2e39b3c085124d89961d57a462a3f381<TInputBuffer>
+            private sealed class structReader_bde6d72f4f7c44dcb2cd1a021831bc1d<TInputBuffer>
                 : BenchmarkCore.Struct
                 , FlatSharp.IFlatBufferDeserializedObject
                 where TInputBuffer : IInputBuffer
@@ -416,7 +418,7 @@ namespace BenchmarkCore
                 private System.Int32 __index1Value;
                 private byte __mask0;
 
-                public structReader_2e39b3c085124d89961d57a462a3f381(TInputBuffer buffer, int offset) : base(__CtorContext)
+                public structReader_bde6d72f4f7c44dcb2cd1a021831bc1d(TInputBuffer buffer, int offset) : base(__CtorContext)
                 {
                     checked
                     {
@@ -490,7 +492,7 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_16456f296af143dab7b66a8ebf1c53ee(buffer, offset + 0); ;
+                        return Read_917d5b4338d9430da8488746f40cc37b(buffer, offset + 0); ;
                     }
                 }
 
@@ -503,7 +505,7 @@ namespace BenchmarkCore
                     checked
                     {
 
-                        WriteInlineValueOf_16456f296af143dab7b66a8ebf1c53ee(
+                        WriteInlineValueOf_917d5b4338d9430da8488746f40cc37b(
                             default(SpanWriter),
                             buffer.GetByteMemory(0, buffer.Length).Span,
                             value,
@@ -520,7 +522,7 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_fd2349d75ef24b858910ee93c9af51dc(buffer, offset + 8); ;
+                        return Read_163ab6c981104e12b9da70f06a440930(buffer, offset + 8); ;
                     }
                 }
 
@@ -533,7 +535,7 @@ namespace BenchmarkCore
                     checked
                     {
 
-                        WriteInlineValueOf_fd2349d75ef24b858910ee93c9af51dc(
+                        WriteInlineValueOf_163ab6c981104e12b9da70f06a440930(
                             default(SpanWriter),
                             buffer.GetByteMemory(0, buffer.Length).Span,
                             value,
@@ -544,7 +546,7 @@ namespace BenchmarkCore
 
 
 
-            private static void WriteInlineValueOf_534b41825fd743ec92e597b0525554f6<TSpanWriter>(
+            private static void WriteInlineValueOf_9e99ed5c0941490fa9370acc9b2cfe00<TSpanWriter>(
                 TSpanWriter spanWriter,
                 Span<byte> span,
                 BenchmarkCore.Struct value,
@@ -561,13 +563,13 @@ namespace BenchmarkCore
                         return;
                     }
 
-                    WriteInlineValueOf_16456f296af143dab7b66a8ebf1c53ee(spanWriter, scopedSpan, value.Other, 0);
-                    WriteInlineValueOf_fd2349d75ef24b858910ee93c9af51dc(spanWriter, scopedSpan, value.Int, 8);
+                    WriteInlineValueOf_917d5b4338d9430da8488746f40cc37b(spanWriter, scopedSpan, value.Other, 0);
+                    WriteInlineValueOf_163ab6c981104e12b9da70f06a440930(spanWriter, scopedSpan, value.Int, 8);
                 }
             }
 
             [System.Runtime.CompilerServices.MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-            private static int GetMaxSizeOf_16456f296af143dab7b66a8ebf1c53ee(BenchmarkCore.OtherStruct value)
+            private static int GetMaxSizeOf_917d5b4338d9430da8488746f40cc37b(BenchmarkCore.OtherStruct value)
             {
                 checked
                 {
@@ -575,17 +577,17 @@ namespace BenchmarkCore
                 }
             }
 
-            private static BenchmarkCore.OtherStruct Read_16456f296af143dab7b66a8ebf1c53ee<TInputBuffer>(
+            private static BenchmarkCore.OtherStruct Read_917d5b4338d9430da8488746f40cc37b<TInputBuffer>(
                 TInputBuffer buffer,
                 int offset) where TInputBuffer : IInputBuffer
             {
                 checked
                 {
-                    return new structReader_cd89522f504845ee93b1804b4350a01b<TInputBuffer>(buffer, offset);
+                    return new structReader_bf4cb85a793c469f9795c4f9c2ec7474<TInputBuffer>(buffer, offset);
                 }
             }
 
-            private sealed class structReader_cd89522f504845ee93b1804b4350a01b<TInputBuffer>
+            private sealed class structReader_bf4cb85a793c469f9795c4f9c2ec7474<TInputBuffer>
                 : BenchmarkCore.OtherStruct
                 , FlatSharp.IFlatBufferDeserializedObject
                 where TInputBuffer : IInputBuffer
@@ -598,7 +600,7 @@ namespace BenchmarkCore
                 private System.Int64 __index0Value;
                 private byte __mask0;
 
-                public structReader_cd89522f504845ee93b1804b4350a01b(TInputBuffer buffer, int offset) : base(__CtorContext)
+                public structReader_bf4cb85a793c469f9795c4f9c2ec7474(TInputBuffer buffer, int offset) : base(__CtorContext)
                 {
                     checked
                     {
@@ -647,7 +649,7 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_0f12e355bed34d65ad3aa88ad758c1b5(buffer, offset + 0); ;
+                        return Read_b8980c660c6a48ab92f1843a5c0a7dbc(buffer, offset + 0); ;
                     }
                 }
 
@@ -660,7 +662,7 @@ namespace BenchmarkCore
                     checked
                     {
 
-                        WriteInlineValueOf_0f12e355bed34d65ad3aa88ad758c1b5(
+                        WriteInlineValueOf_b8980c660c6a48ab92f1843a5c0a7dbc(
                             default(SpanWriter),
                             buffer.GetByteMemory(0, buffer.Length).Span,
                             value,
@@ -671,7 +673,7 @@ namespace BenchmarkCore
 
 
 
-            private static void WriteInlineValueOf_16456f296af143dab7b66a8ebf1c53ee<TSpanWriter>(
+            private static void WriteInlineValueOf_917d5b4338d9430da8488746f40cc37b<TSpanWriter>(
                 TSpanWriter spanWriter,
                 Span<byte> span,
                 BenchmarkCore.OtherStruct value,
@@ -688,12 +690,12 @@ namespace BenchmarkCore
                         return;
                     }
 
-                    WriteInlineValueOf_0f12e355bed34d65ad3aa88ad758c1b5(spanWriter, scopedSpan, value.Long, 0);
+                    WriteInlineValueOf_b8980c660c6a48ab92f1843a5c0a7dbc(spanWriter, scopedSpan, value.Long, 0);
                 }
             }
 
             [System.Runtime.CompilerServices.MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-            private static int GetMaxSizeOf_0f12e355bed34d65ad3aa88ad758c1b5(System.Int64 value)
+            private static int GetMaxSizeOf_b8980c660c6a48ab92f1843a5c0a7dbc(System.Int64 value)
             {
                 checked
                 {
@@ -702,7 +704,7 @@ namespace BenchmarkCore
             }
 
             [System.Runtime.CompilerServices.MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-            private static System.Int64 Read_0f12e355bed34d65ad3aa88ad758c1b5<TInputBuffer>(
+            private static System.Int64 Read_b8980c660c6a48ab92f1843a5c0a7dbc<TInputBuffer>(
                 TInputBuffer buffer,
                 int offset) where TInputBuffer : IInputBuffer
             {
@@ -713,7 +715,7 @@ namespace BenchmarkCore
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static void WriteInlineValueOf_0f12e355bed34d65ad3aa88ad758c1b5<TSpanWriter>(
+            private static void WriteInlineValueOf_b8980c660c6a48ab92f1843a5c0a7dbc<TSpanWriter>(
                 TSpanWriter spanWriter,
                 Span<byte> span,
                 System.Int64 value,
@@ -727,7 +729,7 @@ namespace BenchmarkCore
             }
 
             [System.Runtime.CompilerServices.MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-            private static int GetMaxSizeOf_fd2349d75ef24b858910ee93c9af51dc(System.Int32 value)
+            private static int GetMaxSizeOf_163ab6c981104e12b9da70f06a440930(System.Int32 value)
             {
                 checked
                 {
@@ -736,7 +738,7 @@ namespace BenchmarkCore
             }
 
             [System.Runtime.CompilerServices.MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-            private static System.Int32 Read_fd2349d75ef24b858910ee93c9af51dc<TInputBuffer>(
+            private static System.Int32 Read_163ab6c981104e12b9da70f06a440930<TInputBuffer>(
                 TInputBuffer buffer,
                 int offset) where TInputBuffer : IInputBuffer
             {
@@ -747,7 +749,7 @@ namespace BenchmarkCore
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static void WriteInlineValueOf_fd2349d75ef24b858910ee93c9af51dc<TSpanWriter>(
+            private static void WriteInlineValueOf_163ab6c981104e12b9da70f06a440930<TSpanWriter>(
                 TSpanWriter spanWriter,
                 Span<byte> span,
                 System.Int32 value,
@@ -790,8 +792,8 @@ namespace BenchmarkCore
         {
             checked
             {
-                this.Other = FlatSharp.Compiler.Generated.CloneHelpers_653741aad65e4f7da87d46e1d500a1e8.Clone(source.Other);
-                this.Int = FlatSharp.Compiler.Generated.CloneHelpers_653741aad65e4f7da87d46e1d500a1e8.Clone(source.Int);
+                this.Other = FlatSharp.Compiler.Generated.CloneHelpers_6ab94cc48e69492886ed55b89ae47c46.Clone(source.Other);
+                this.Int = FlatSharp.Compiler.Generated.CloneHelpers_6ab94cc48e69492886ed55b89ae47c46.Clone(source.Int);
                 this.OnInitialized(null);
             }
         }
@@ -833,7 +835,7 @@ namespace BenchmarkCore
         {
             checked
             {
-                this.Long = FlatSharp.Compiler.Generated.CloneHelpers_653741aad65e4f7da87d46e1d500a1e8.Clone(source.Long);
+                this.Long = FlatSharp.Compiler.Generated.CloneHelpers_6ab94cc48e69492886ed55b89ae47c46.Clone(source.Long);
                 this.OnInitialized(null);
             }
         }

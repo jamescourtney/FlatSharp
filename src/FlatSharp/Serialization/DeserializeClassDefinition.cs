@@ -250,6 +250,8 @@ namespace FlatSharp
 
         private void AddCtorStatements(ItemMemberModel itemModel)
         {
+            var classification = itemModel.ItemTypeModel.ClassifyContextually(this.typeModel.SchemaType);
+
             string assignment = $"base.{itemModel.PropertyInfo.Name}";
             if (itemModel.IsVirtual)
             {
@@ -260,11 +262,12 @@ namespace FlatSharp
             {
                 this.ctorStatements.Add($"{assignment} = {GetReadIndexMethodName(itemModel)}(buffer, offset, {this.vtableOffsetAccessor}, {this.vtableMaxIndexAccessor});");
             }
-            else if (
-                !this.options.Lazy &&
-                itemModel.ItemTypeModel.ClassifyContextually(this.typeModel.SchemaType).IsRequiredReference())
+            else if (!this.options.Lazy)
             {
-                this.ctorStatements.Add($"{assignment} = null!;");
+                if (classification.IsRequiredReference() || (classification.IsOptionalReference() && itemModel.IsRequired))
+                {
+                    this.ctorStatements.Add($"{assignment} = null!;");
+                }
             }
         }
 
