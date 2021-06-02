@@ -209,6 +209,43 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
+        public void TypeModel_Table_Required_Scalar_NotAllowed()
+        {
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => RuntimeTypeModel.CreateFrom(typeof(TableRequiredField<long>)));
+
+            Assert.AreEqual(
+                "Table property 'FlatSharpTests.TypeModelTests.TableRequiredField<System.Int64>.Value' declared the Required attribute. Required is only valid on non-scalar table fields.",
+                ex.Message);
+        }
+
+        [TestMethod]
+        public void TypeModel_Table_Required_Enum_NotAllowed()
+        {
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => RuntimeTypeModel.CreateFrom(typeof(TableRequiredField<TaggedEnum>)));
+
+            Assert.AreEqual(
+                "Table property 'FlatSharpTests.TypeModelTests.TableRequiredField<FlatSharpTests.TypeModelTests.TaggedEnum>.Value' declared the Required attribute. Required is only valid on non-scalar table fields.",
+                ex.Message);
+        }
+
+        [TestMethod]
+        public void TypeModel_Table_Required()
+        {
+            RuntimeTypeModel.CreateFrom(typeof(TableRequiredField<IList<string>>));
+            RuntimeTypeModel.CreateFrom(typeof(TableRequiredField<string[]>));
+            RuntimeTypeModel.CreateFrom(typeof(TableRequiredField<IIndexedVector<string, SortedVectorKeyTable<string>>>));
+            RuntimeTypeModel.CreateFrom(typeof(TableRequiredField<string>));
+            RuntimeTypeModel.CreateFrom(typeof(TableRequiredField<Memory<byte>>));
+            RuntimeTypeModel.CreateFrom(typeof(TableRequiredField<ReadOnlyMemory<byte>>));
+            RuntimeTypeModel.CreateFrom(typeof(TableRequiredField<IList<FlatBufferUnion<string>>>));
+            RuntimeTypeModel.CreateFrom(typeof(TableRequiredField<FlatBufferUnion<string>[]>));
+            RuntimeTypeModel.CreateFrom(typeof(TableRequiredField<GenericTable<int>>));
+            RuntimeTypeModel.CreateFrom(typeof(TableRequiredField<GenericStruct<int>>));
+        }
+
+        [TestMethod]
         public void TypeModel_Table_OnDeserialized()
         {
             string CreateError<T>() => $"Type '{CSharpHelpers.GetCompilableTypeName(typeof(T))}' provides an unusable 'OnFlatSharpDeserialized' method. 'OnFlatSharpDeserialized' must be protected, have a return type of void, and accept a single parameter of type 'FlatBufferDeserializationContext'.";
@@ -259,7 +296,7 @@ namespace FlatSharpTests
                 () => RuntimeTypeModel.CreateFrom(typeof(TableWriteThrough_NotSupported)));
 
             Assert.AreEqual(
-                "Table property 'FlatSharpTests.TypeModelTests.TableWriteThrough_NotSupported.Property declared the WriteThrough attribute. WriteThrough is only supported on struct fields.",
+                "Table property 'FlatSharpTests.TypeModelTests.TableWriteThrough_NotSupported.Property' declared the WriteThrough attribute. WriteThrough is only supported on struct fields.",
                 ex.Message);
         }
 
@@ -499,6 +536,31 @@ namespace FlatSharpTests
         public void TypeModel_Struct_WriteThrough_Virtual()
         {
             RuntimeTypeModel.CreateFrom(typeof(StructWriteThrough));
+        }
+
+        [TestMethod]
+        public void TypeModel_Struct_Required_NotAllowed()
+        {
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => RuntimeTypeModel.CreateFrom(typeof(StructRequiredField<long>)));
+
+            Assert.AreEqual(
+                "Struct member 'FlatSharpTests.TypeModelTests.StructRequiredField<System.Int64>.Value' declared the Required attribute. Required is not valid inside structs.",
+                ex.Message);
+
+            ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => RuntimeTypeModel.CreateFrom(typeof(StructRequiredField<TaggedEnum>)));
+
+            Assert.AreEqual(
+                "Struct member 'FlatSharpTests.TypeModelTests.StructRequiredField<FlatSharpTests.TypeModelTests.TaggedEnum>.Value' declared the Required attribute. Required is not valid inside structs.",
+                ex.Message);
+
+            ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => RuntimeTypeModel.CreateFrom(typeof(StructRequiredField<GenericStruct<long>>)));
+
+            Assert.AreEqual(
+                "Struct member 'FlatSharpTests.TypeModelTests.StructRequiredField<FlatSharpTests.TypeModelTests.GenericStruct<System.Int64>>.Value' declared the Required attribute. Required is not valid inside structs.",
+                ex.Message);
         }
 
         [TestMethod]
@@ -1571,6 +1633,18 @@ namespace FlatSharpTests
             public virtual int B { get; set; }
         }
 
+        [FlatBufferTable]
+        public class TableRequiredField<T>
+        {
+            [FlatBufferItem(0, Required = true)]
+            public T Value { get; set; }
+        }
 
+        [FlatBufferStruct]
+        public class StructRequiredField<T>
+        {
+            [FlatBufferItem(0, Required = true)]
+            public T Value { get; set; }
+        }
     }
 }
