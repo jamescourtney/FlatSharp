@@ -123,9 +123,14 @@ namespace FlatSharp.Compiler
         /// </summary>
         public const string BitFlags = "bit_flags";
 
+        /// <summary>
+        /// Required fields on tables.
+        /// </summary>
+        public const string Required = "required";
+
         public static IEnumerable<string> UnsupportedStandardAttributes => new[]
         {
-            "required", "force_align", "flexbuffer", "hash", "original_order"
+            "force_align", "flexbuffer", "hash", "original_order"
         };
     }
 }

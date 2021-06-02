@@ -446,7 +446,7 @@ namespace FlatSharp.TypeModel
             int minVtableLength = this.GetVTableLength(-1);
             foreach (var t in items)
             {
-                if (t.model.ForceWrite)
+                if (t.model.ForceWrite || t.model.IsRequired)
                 {
                     minVtableLength = Math.Max(
                         this.GetVTableLength(t.vtableIndex),
@@ -531,10 +531,20 @@ $@"
             SerializationCodeGenContext context)
         {
             string condition = $"if ({memberModel.ItemTypeModel.GetNotEqualToDefaultValueLiteralExpression(valueVariableName, memberModel.DefaultValueLiteral)})";
+            string elseBlock = string.Empty;
 
             if (memberModel.ForceWrite)
             {
                 condition = string.Empty;
+            }
+            else if (memberModel.IsRequired)
+            {
+                elseBlock = 
+                    $@"else
+                       {{
+                           throw new {typeof(InvalidOperationException).GetCompilableTypeName()}(""Table property '{memberModel.FriendlyName}' is marked as required, but was not set."");
+                       }}
+                    ";
             }
 
             int vTableIndex = this.GetVTablePosition(index + i);
@@ -584,6 +594,7 @@ $@"
                     {inlineSerialize}
                     {setVtableBlock}
                 }}
+                {elseBlock}
                 {writeVTableBlock}";
         }
 

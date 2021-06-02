@@ -56,6 +56,8 @@ namespace FlatSharp.Compiler
 
         public bool? WriteThrough { get; set; }
 
+        public bool IsRequired { get; set; }
+
         public string? DefaultValue { get; set; }
 
         public bool IsOptionalScalar { get; set; }
@@ -75,7 +77,7 @@ namespace FlatSharp.Compiler
             ErrorContext.Current.WithScope(this.Name, () =>
             {
                 if (context.CompilePass <= CodeWritingPass.PropertyModeling ||
-                !this.TryGetTypeModel(context, out var model))
+                    !this.TryGetTypeModel(context, out var model))
                 {
                     return;
                 }
@@ -89,6 +91,10 @@ namespace FlatSharp.Compiler
                 {
                     var cSharpTypeName = CSharpHelpers.GetCompilableTypeName(model.ClrType);
                     assignment = $"new {cSharpTypeName}()";
+                }
+                else if (model.ClassifyContextually(this.Parent.SchemaType).IsOptionalReference())
+                {
+                    assignment = $"null!";
                 }
 
                 if (!string.IsNullOrEmpty(assignment))
@@ -248,7 +254,7 @@ namespace FlatSharp.Compiler
                 }
             }
 
-            if (thisTypeModel?.ClassifyContextually(this.Parent.SchemaType).IsOptionalReference() == true)
+            if (thisTypeModel?.ClassifyContextually(this.Parent.SchemaType).IsOptionalReference() == true && !this.IsRequired)
             {
                 clrTypeName += "?";
             }
@@ -265,6 +271,7 @@ namespace FlatSharp.Compiler
             string forceWrite = string.Empty;
             string customGetter = string.Empty;
             string writeThrough = string.Empty;
+            string required = string.Empty;
 
             if (this.IsKey)
             {
@@ -291,6 +298,11 @@ namespace FlatSharp.Compiler
                 defaultValue = $", {nameof(FlatBufferItemAttribute.DefaultValue)} = {literal}";
             }
 
+            if (this.IsRequired)
+            {
+                required = $", {nameof(FlatBufferItemAttribute.Required)} = true";
+            }
+
             if (thisTypeModel is not null)
             {
                 bool? fw = this.ForceWrite;
@@ -313,7 +325,7 @@ namespace FlatSharp.Compiler
                 writeThrough = $", {nameof(FlatBufferItemAttribute.WriteThrough)} = true";
             }
 
-            return $"[{nameof(FlatBufferItemAttribute)}({this.Index}{defaultValue}{isDeprecated}{sortedVector}{isKey}{forceWrite}{customGetter}{writeThrough})]";
+            return $"[{nameof(FlatBufferItemAttribute)}({this.Index}{defaultValue}{isDeprecated}{sortedVector}{isKey}{forceWrite}{customGetter}{writeThrough}{required})]";
         }
 
         /// <summary>

@@ -39,17 +39,31 @@
 
             if (!propertyModel.IsValidTableMember)
             {
-                throw new InvalidFlatBufferDefinitionException($"Table property {propertyInfo.Name} with type {propertyInfo.PropertyType.Name} cannot be part of a flatbuffer table.");
+                throw new InvalidFlatBufferDefinitionException($"Table property '{this.FriendlyName}' cannot be part of a flatbuffer table.");
             }
 
             if (this.DefaultValue is not null && !propertyModel.ValidateDefaultValue(this.DefaultValue))
             {
-                throw new InvalidFlatBufferDefinitionException($"Table property {propertyInfo.Name} declared default value of type {propertyModel.ClrType.Name}, but the value was of type {this.DefaultValue.GetType().GetCompilableTypeName()}. Please ensure that the property is allowed to have a default value and that the types match.");
+                throw new InvalidFlatBufferDefinitionException($"Table property '{this.FriendlyName}' declared default value of type {propertyModel.ClrType.Name}, but the value was of type {this.DefaultValue.GetType().GetCompilableTypeName()}. Please ensure that the property is allowed to have a default value and that the types match.");
             }
 
             if (this.IsWriteThrough)
             {
-                throw new InvalidFlatBufferDefinitionException($"Table property '{propertyInfo.DeclaringType!.GetCompilableTypeName()}.{propertyInfo.Name} declared the WriteThrough attribute. WriteThrough is only supported on struct fields.");
+                throw new InvalidFlatBufferDefinitionException($"Table property '{this.FriendlyName}' declared the WriteThrough attribute. WriteThrough is only supported on struct fields.");
+            }
+
+            if (this.IsRequired)
+            {
+                if (propertyModel.SchemaType == FlatBufferSchemaType.Scalar)
+                {
+                    throw new InvalidFlatBufferDefinitionException($"Table property '{this.FriendlyName}' declared the Required attribute. Required is only valid on non-scalar table fields.");
+                }
+
+                // Not currently possible, but defense in depth.
+                if (this.DefaultValue is not null)
+                {
+                    throw new InvalidFlatBufferDefinitionException($"Table property '{this.FriendlyName}' declared the Required attribute and also declared a Default Value. These two items are incompatible.");
+                }
             }
         }
         
@@ -101,13 +115,13 @@
             return $@"
                 if ({this.Index} > {vtableMaxIndexVariableName})
                 {{
-                    return {this.DefaultValueLiteral};
+                    {this.GetNotPresentStatement()}
                 }}
 
                 ushort relativeOffset = buffer.ReadUShort({vtableLocationVariableName} + {4 + (2 * this.Index)});
                 if (relativeOffset == 0)
                 {{
-                    return {this.DefaultValueLiteral};
+                    {this.GetNotPresentStatement()}
                 }}
 
                 int absoluteLocation = {offsetVariableName} + relativeOffset;
@@ -129,7 +143,7 @@
                 ushort relativeOffset{i} = buffer.ReadUShort({vtableLocationVariableName} + {4 + (2 * idx)});
                 if (relativeOffset{i} == 0)
                 {{
-                    return {this.DefaultValueLiteral};
+                    {this.GetNotPresentStatement()}
                 }}
                 ");
 
@@ -139,13 +153,26 @@
             return $@"
                 if ({this.Index + items - 1} > {vtableMaxIndexVariableName})
                 {{
-                    return {this.DefaultValueLiteral};
+                    {this.GetNotPresentStatement()}
                 }}
 
                 {string.Join("\r\n", relativeOffsets)}
 
                 var absoluteLocations = ({string.Join(", ", absoluteLocations)});
                 return {parseItemMethodName}({bufferVariableName}, ref absoluteLocations);";
+        }
+
+        private string GetNotPresentStatement()
+        {
+            if (this.IsRequired)
+            {
+                string message = $"Table property '{this.FriendlyName}' is marked as required, but was missing from the buffer.";
+                return $"throw new {typeof(System.IO.InvalidDataException).GetCompilableTypeName()}(\"{message}\");";
+            }
+            else
+            {
+                return $"return {this.DefaultValueLiteral};";
+            }
         }
 
         public override string CreateWriteThroughBody(string writeValueMethodName, string bufferVariableName, string offsetVariableName, string valueVariableName)

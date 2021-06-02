@@ -126,7 +126,7 @@ namespace FlatSharp
                 this.maskDefinitions.Add($"private byte {GetHasValueFieldName(itemModel)};");
             }
 
-            string typeName = itemModel.ItemTypeModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType);
+            string typeName = itemModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType);
             this.fieldDefinitions.Add($"private {typeName} {GetFieldName(itemModel)};");
         }
 
@@ -139,7 +139,7 @@ namespace FlatSharp
                 "vtableOffset",
                 "maxVtableIndex");
 
-            string typeName = itemModel.ItemTypeModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType);
+            string typeName = itemModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType);
             this.readMethods.Add(
                 $@"
                 {GetAggressiveInliningAttribute()}
@@ -236,7 +236,7 @@ namespace FlatSharp
                 setter = $"{accessModifiers.setModifier.ToCSharpString()} {verb} {{ {setterBody} }}";
             }
 
-            string typeName = itemModel.ItemTypeModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType);
+            string typeName = itemModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType);
             this.propertyOverrides.Add($@"
                 {accessModifiers.propertyModifier.ToCSharpString()} override {typeName} {itemModel.PropertyInfo.Name}
                 {{ 
@@ -250,6 +250,8 @@ namespace FlatSharp
 
         private void AddCtorStatements(ItemMemberModel itemModel)
         {
+            var classification = itemModel.ItemTypeModel.ClassifyContextually(this.typeModel.SchemaType);
+
             string assignment = $"base.{itemModel.PropertyInfo.Name}";
             if (itemModel.IsVirtual)
             {
@@ -260,11 +262,12 @@ namespace FlatSharp
             {
                 this.ctorStatements.Add($"{assignment} = {GetReadIndexMethodName(itemModel)}(buffer, offset, {this.vtableOffsetAccessor}, {this.vtableMaxIndexAccessor});");
             }
-            else if (
-                !this.options.Lazy &&
-                itemModel.ItemTypeModel.ClassifyContextually(this.typeModel.SchemaType).IsRequiredReference())
+            else if (!this.options.Lazy)
             {
-                this.ctorStatements.Add($"{assignment} = null!;");
+                if (classification.IsRequiredReference() || (classification.IsOptionalReference() && itemModel.IsRequired))
+                {
+                    this.ctorStatements.Add($"{assignment} = null!;");
+                }
             }
         }
 

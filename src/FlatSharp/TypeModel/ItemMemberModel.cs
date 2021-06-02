@@ -25,6 +25,8 @@ namespace FlatSharp.TypeModel
     /// </summary>
     public abstract class ItemMemberModel
     {
+        public string FriendlyName => $"{this.PropertyInfo.DeclaringType!.GetCompilableTypeName()}.{this.PropertyInfo.Name}";
+
         protected ItemMemberModel(
             ITypeModel propertyModel,
             PropertyInfo propertyInfo,
@@ -38,6 +40,7 @@ namespace FlatSharp.TypeModel
             this.Index = attribute.Index;
             this.CustomGetter = attribute.CustomGetter;
             this.IsWriteThrough = attribute.WriteThrough;
+            this.IsRequired = attribute.Required;
 
             string declaringType = "";
             if (propertyInfo.DeclaringType is not null)
@@ -154,6 +157,11 @@ namespace FlatSharp.TypeModel
         /// Indicates if this member writes through to the underlying buffer.
         /// </summary>
         public bool IsWriteThrough { get; }
+
+        /// <summary>
+        /// Indicates if this member is required.
+        /// </summary>
+        public bool IsRequired { get; }
 
         /// <summary>
         /// A custom getter for this item.

@@ -110,10 +110,10 @@ namespace FlatSharp.TypeModel
         public static string GetCompilableTypeName(this ITypeModel typeModel) 
             => CSharpHelpers.GetCompilableTypeName(typeModel.ClrType);
 
-        public static string GetNullableAnnotationTypeName(this ITypeModel typeModel, FlatBufferSchemaType context)
+        public static string GetNullableAnnotationTypeName(this ItemMemberModel memberModel, FlatBufferSchemaType context)
         {
-            var typeName = typeModel.GetCompilableTypeName();
-            if (typeModel.ClassifyContextually(context).IsOptionalReference())
+            var typeName = memberModel.ItemTypeModel.GetCompilableTypeName();
+            if (memberModel.ItemTypeModel.ClassifyContextually(context).IsOptionalReference() && !memberModel.IsRequired)
             {
                 typeName += "?";
             }
