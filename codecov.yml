@@ -2,9 +2,9 @@ codecov:
   require_ci_to_pass: yes
   
 ignore:
-  - "Tests/**/*.*"
-  - "Benchmarks/**/*.*"
-  - "Google.FlatBuffers/**/*.*"
+  - "src/Tests/**/*"
+  - "src/Benchmarks/**/*"
+  - "src/Google.FlatBuffers/**/*"
 
 coverage:
   precision: 2
