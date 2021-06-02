@@ -5,6 +5,7 @@ ignore:
   - "src/Tests/**/*"
   - "src/Benchmarks/**/*"
   - "src/Google.FlatBuffers/**/*"
+  - "src/Google.FlatBuffers/*"
 
 coverage:
   precision: 2
