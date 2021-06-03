@@ -24,6 +24,7 @@ namespace FlatSharp
     internal class PoolingDeserializeClassDefinition : DeserializeClassDefinition
     {
         private const string PoolVariableName = "__Pool";
+        private const string QueuePropertyName = "__Queue";
         private const string AllocationStackVariableName = "__poolDiag_allocationStack";
         private const string ReleaseStackVariableName = "__poolDiag_releaseStack";
         private const string ReleasedVariableName = "__poolDiag_released";
@@ -44,8 +45,13 @@ namespace FlatSharp
 
             base.staticFieldDefinitions[PoolVariableName] =
                 $@"
-                    private static readonly System.Collections.Concurrent.ConcurrentBag<{this.ClassName}<TInputBuffer>> {PoolVariableName}
-                        = new System.Collections.Concurrent.ConcurrentBag<{this.ClassName}<TInputBuffer>>();
+                    [ThreadStatic]
+                    private static Queue<{this.ClassName}<TInputBuffer>> {PoolVariableName} = new Queue<{this.ClassName}<TInputBuffer>>();
+                ";
+
+            base.staticFieldDefinitions[QueuePropertyName] =
+                $@"
+                    private static Queue<{this.ClassName}<TInputBuffer>> {QueuePropertyName} => {PoolVariableName} ?? ({PoolVariableName} = new Queue<{this.ClassName}<TInputBuffer>>());
                 ";
         }
 
@@ -95,14 +101,14 @@ namespace FlatSharp
                 }}
 
                 {string.Join("\r\n", releaseStatements)}
-                {PoolVariableName}.Add(this);
+                {QueuePropertyName}.Enqueue(this);
             ";
         }
 
         protected override string GetGetOrCreateMethodBody()
         {
             return $@"                
-                if (!{PoolVariableName}.TryTake(out var item))
+                if (!{QueuePropertyName}.TryDequeue(out var item))
                 {{
                     item = new {this.ClassName}<TInputBuffer>();
                 }}

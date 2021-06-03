@@ -73,7 +73,7 @@ namespace BenchmarkCore
                 var item = points[i];
                 sum += (int)(item.X + item.Y + item.Z);
 
-                //((IFlatBufferDeserializedObject)item).Release();
+                ((IFlatBufferDeserializedObject)item).Release();
             }
 
             return sum;
