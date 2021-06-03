@@ -31,5 +31,11 @@ namespace FlatSharp.Attributes
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
         public string? WriteThroughInterfaceName { get; set; }
+
+        /// <summary>
+        /// Specifies the maximum size of the object pool for items of this type. A value of 0 indicates that the pool is disabled, -1 allows the pool to grow 
+        /// without bound.
+        /// </summary>
+        public int PoolSize { get; set; }
     }
 }

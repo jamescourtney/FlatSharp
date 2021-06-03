@@ -129,7 +129,6 @@ $@"
                 CompileAssembly(
                     template,
                     this.options.EnableAppDomainInterceptOnAssemblyLoad,
-                    this.options.EnableObjectPoolingDiagnostics,
                     externalRefs.ToArray());
 
             Type? type = assembly.GetType($"Generated.{GeneratedSerializerClassName}");
@@ -224,16 +223,9 @@ $@"
         internal static (Assembly assembly, Func<string> formattedTextFactory, byte[] assemblyData) CompileAssembly(
             string sourceCode,
             bool enableAppDomainIntercept,
-            bool enablePoolTracing,
             params Assembly[] additionalReferences)
         {
-            var parseOptions = ParseOptions;
-            if (enablePoolTracing)
-            {
-                parseOptions = parseOptions.WithPreprocessorSymbols(DeserializeClassDefinition.PoolTracingPragma);
-            }
-
-            var rootNode = ApplySyntaxTransformations(CSharpSyntaxTree.ParseText(sourceCode, parseOptions).GetRoot());
+            var rootNode = ApplySyntaxTransformations(CSharpSyntaxTree.ParseText(sourceCode, ParseOptions).GetRoot());
             SyntaxTree tree = SyntaxFactory.SyntaxTree(rootNode);
             Func<string> formattedTextFactory = GetFormattedTextFactory(tree);
 

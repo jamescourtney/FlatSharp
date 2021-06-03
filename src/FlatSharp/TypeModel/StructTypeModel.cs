@@ -34,6 +34,7 @@ namespace FlatSharp.TypeModel
         private int maxAlignment = 1;
         private ConstructorInfo? preferredConstructor;
         private MethodInfo? onDeserializeMethod;
+        private FlatBufferStructAttribute? attribute;
 
         internal StructTypeModel(Type clrType, TypeModelContainer container) : base(clrType, container)
         {
@@ -110,11 +111,12 @@ namespace FlatSharp.TypeModel
             // We have to implement two items: The table class and the overall "read" method.
             // Let's start with the read method.
             string className = "structReader_" + Guid.NewGuid().ToString("n");
-            DeserializeClassDefinition classDef = new DeserializeClassDefinition(
+            DeserializeClassDefinition classDef = DeserializeClassDefinition.Create(
                 className,
                 this.onDeserializeMethod,
                 this,
-                context.Options);
+                context.Options,
+                this.attribute!.PoolSize);
 
             // Build up a list of property overrides.
             for (int index = 0; index < this.Members.Count; ++index)
@@ -182,8 +184,8 @@ namespace FlatSharp.TypeModel
 
         public override void Initialize()
         {
-            var structAttribute = this.ClrType.GetCustomAttribute<FlatBufferStructAttribute>();
-            if (structAttribute == null)
+            this.attribute = this.ClrType.GetCustomAttribute<FlatBufferStructAttribute>();
+            if (this.attribute == null)
             {
                 throw new InvalidFlatBufferDefinitionException($"Can't create struct type model from type {this.ClrType.Name} because it does not have a [FlatBufferStruct] attribute.");
             }
@@ -257,6 +259,17 @@ namespace FlatSharp.TypeModel
                     item.Attribute,
                     this.inlineSize,
                     length);
+
+                if (!model.IsVirtual
+                    && this.attribute.PoolSize != 0
+                    && model.SetterKind == ItemMemberModel.SetMethodKind.Init)
+                {
+                    // Pooling is not possible with non-virtual init-only setters. Compiler
+                    // correctly complains that we are messing with properties outside
+                    // of a valid context when we recycle them.
+                    throw new InvalidFlatBufferDefinitionException(
+                        $"FlatBuffer table property '{this.GetCompilableTypeName()}.{model.PropertyInfo.Name}' is non-virtual and init-only in a table with object pooling enabled. This combination is not supported. Consider marking the property as virtual, settable, or disabling pooling.");
+                }
 
                 this.memberTypes.Add(model);
                 this.inlineSize += length;

@@ -18,6 +18,7 @@ namespace FlatSharp.TypeModel
 {
     using FlatSharp.Attributes;
     using System;
+    using System.Linq;
     using System.Reflection;
 
     /// <summary>
@@ -25,6 +26,12 @@ namespace FlatSharp.TypeModel
     /// </summary>
     public abstract class ItemMemberModel
     {
+        public enum SetMethodKind
+        {
+            Set = 0,
+            Init = 1,
+        }
+
         public string FriendlyName => $"{this.PropertyInfo.DeclaringType!.GetCompilableTypeName()}.{this.PropertyInfo.Name}";
 
         protected ItemMemberModel(
@@ -41,6 +48,15 @@ namespace FlatSharp.TypeModel
             this.CustomGetter = attribute.CustomGetter;
             this.IsWriteThrough = attribute.WriteThrough;
             this.IsRequired = attribute.Required;
+
+            if (setMethod is not null)
+            {
+                this.SetterKind = SetMethodKind.Set;
+                if (setMethod.ReturnParameter.GetRequiredCustomModifiers().Any(x => x.FullName == "System.Runtime.CompilerServices.IsExternalInit"))
+                {
+                    this.SetterKind = SetMethodKind.Init;
+                }
+            }
 
             string declaringType = "";
             if (propertyInfo.DeclaringType is not null)
@@ -167,6 +183,11 @@ namespace FlatSharp.TypeModel
         /// A custom getter for this item.
         /// </summary>
         public string? CustomGetter { get; set; }
+
+        /// <summary>
+        /// The semantics of the setter.
+        /// </summary>
+        public SetMethodKind? SetterKind { get; }
 
         /// <summary>
         /// Creates a method body to read the given property. This is contextual depending

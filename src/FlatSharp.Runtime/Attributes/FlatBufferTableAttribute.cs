@@ -17,7 +17,6 @@
 namespace FlatSharp.Attributes
 {
     using System;
-    using System.ComponentModel;
 
     /// <summary>
     /// Marks a class as being a FlatBuffer table.
@@ -29,12 +28,11 @@ namespace FlatSharp.Attributes
         /// Specifies the file identifier for serialized tables. Must be precisely 4 ASCII characters.
         /// </summary>
         public string? FileIdentifier { get; set; }
-
+        
         /// <summary>
-        /// Specifies the write-through interface for derived classes to implement. Reserved for use by the FlatSharp compiler
-        /// and may change in future versions.
+        /// Specifies the maximum size of the object pool for items of this type. A value of 0 indicates that the pool is disabled, -1 allows the pool to grow 
+        /// without bound.
         /// </summary>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public string? WriteThroughInterfaceName { get; set; }
+        public int PoolSize { get; set; } = 0;
     }
 }

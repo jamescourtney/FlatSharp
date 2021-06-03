@@ -46,6 +46,7 @@ namespace FlatSharp.TypeModel
         private readonly HashSet<int> occupiedVtableSlots = new HashSet<int>();
         private ConstructorInfo? preferredConstructor;
         private MethodInfo? onDeserializeMethod;
+        private FlatBufferTableAttribute? attribute;
 
         internal TableTypeModel(Type clrType, TypeModelContainer typeModelProvider) : base(clrType, typeModelProvider)
         {
@@ -125,13 +126,13 @@ namespace FlatSharp.TypeModel
 
         public override void Initialize()
         {
-            var tableAttribute = this.ClrType.GetCustomAttribute<FlatBufferTableAttribute>();
-            if (tableAttribute == null)
+            this.attribute = this.ClrType.GetCustomAttribute<FlatBufferTableAttribute>();
+            if (this.attribute == null)
             {
                 throw new InvalidFlatBufferDefinitionException($"Can't create table type model from type {this.ClrType.Name} because it does not have a [FlatBufferTable] attribute.");
             }
 
-            ValidateFileIdentifier(tableAttribute.FileIdentifier);
+            ValidateFileIdentifier(this.attribute.FileIdentifier);
 
             EnsureClassCanBeInheritedByOutsideAssembly(this.ClrType, out this.preferredConstructor);
             this.onDeserializeMethod = ValidateOnDeserializedMethod(this);
@@ -161,6 +162,17 @@ namespace FlatSharp.TypeModel
                     property.ItemTypeModel,
                     property.Property,
                     property.Attribute);
+                
+                if (!model.IsVirtual 
+                    && this.attribute.PoolSize != 0
+                    && model.SetterKind == ItemMemberModel.SetMethodKind.Init)
+                {
+                    // Pooling is not possible with non-virtual init-only setters. Compiler
+                    // correctly complains that we are messing with properties outside
+                    // of a valid context when we recycle them.
+                    throw new InvalidFlatBufferDefinitionException(
+                        $"FlatBuffer table property '{this.GetCompilableTypeName()}.{property.Property.Name}' is non-virtual and init-only in a table with object pooling enabled. This combination is not supported. Consider marking the property as virtual, settable, or disabling pooling.");
+                }
 
                 property.ItemTypeModel.AdjustTableMember(model);
 
@@ -661,7 +673,7 @@ $@"
             // We have to implement two items: The table class and the overall "read" method.
             // Let's start with the read method.
             string className = "tableReader_" + Guid.NewGuid().ToString("n");
-            var classDef = new DeserializeClassDefinition(className, this.onDeserializeMethod, this, context.Options);
+            var classDef = DeserializeClassDefinition.Create(className, this.onDeserializeMethod, this, context.Options, this.attribute!.PoolSize);
 
             // Build up a list of property overrides.
             foreach (var item in this.IndexToMemberMap.Where(x => !x.Value.IsDeprecated))

@@ -65,7 +65,8 @@ namespace BenchmarkCore
         [Benchmark]
         public void Parse()
         {
-            SomeTable.Serializer.Parse(this.inputBuffer);
+            var t = SomeTable.Serializer.Parse(this.inputBuffer);
+            //((IFlatBufferDeserializedObject)t).Release();
         }
     }
 
@@ -73,6 +74,9 @@ namespace BenchmarkCore
     {
         public static void Main(string[] args)
         {
+            //BenchmarkRunner.Run<StructVectorClone>();
+            FlatSharpGlobalSettings.CollectPooledObjectStackTraces = true;
+
             var table = new SomeTable
             {
                 Struct = new Struct

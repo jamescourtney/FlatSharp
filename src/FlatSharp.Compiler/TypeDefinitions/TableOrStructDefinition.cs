@@ -53,6 +53,8 @@ namespace FlatSharp.Compiler
 
         public string? FileIdentifier { get; set; }
 
+        public int PoolSize { get; set; }
+
         public FlatBufferDeserializationOption? RequestedSerializer { get; set; }
 
         protected override bool SupportsChildren => false;
@@ -61,23 +63,23 @@ namespace FlatSharp.Compiler
         {
             this.AssignIndexes();
 
-            string attribute = "[FlatBufferStruct]";
+            string attribute = $"[FlatBufferStruct(PoolSize = {this.PoolSize})]";
 
             if (this.IsTable)
             {
                 if (string.IsNullOrEmpty(this.FileIdentifier))
                 {
-                    attribute = "[FlatBufferTable]";
+                    attribute = $"[FlatBufferTable(PoolSize = {this.PoolSize})]";
                 }
                 else
                 {
-                    attribute = $"[FlatBufferTable({nameof(FlatBufferTableAttribute.FileIdentifier)} = \"{this.FileIdentifier}\")]";
+                    attribute = $"[FlatBufferTable(PoolSize = {this.PoolSize}, {nameof(FlatBufferTableAttribute.FileIdentifier)} = \"{this.FileIdentifier}\")]";
                 }
             }
 
             bool hasSerializer = context.CompilePass >= CodeWritingPass.SerializerGeneration && this.RequestedSerializer is not null;
 
-                writer.AppendLine(attribute);
+            writer.AppendLine(attribute);
             writer.AppendLine("[System.Runtime.CompilerServices.CompilerGenerated]");
             writer.AppendLine($"public partial class {this.Name}");
             using (writer.IncreaseIndent())
@@ -88,7 +90,7 @@ namespace FlatSharp.Compiler
                     writer.AppendLine($", {nameof(IFlatBufferSerializable)}<{this.Name}>");
                 }
             }
-                
+
             writer.AppendLine($"{{");
 
             using (writer.IncreaseIndent())
