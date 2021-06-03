@@ -286,13 +286,7 @@ namespace FlatSharp
                         {this.GetGetOrCreateMethodBody()}
                     }}
 
-                    private {this.ClassName}() : base({baseParams}) {{ }}
-
-                    private void Initialize(TInputBuffer buffer, int offset)
-                    {{
-                        {string.Join("\r\n", this.initializeStatements)}
-                        {onDeserializedStatement}
-                    }}
+                    {this.GetCtorMethodDefinition(onDeserializedStatement, baseParams)}
 
                     {typeof(Type).GetCompilableTypeName()} {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.TableOrStructType)} => typeof({typeModel.GetCompilableTypeName()});
                     {typeof(FlatBufferDeserializationContext).GetCompilableTypeName()} {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.DeserializationContext)} => __CtorContext;
@@ -360,9 +354,19 @@ namespace FlatSharp
         protected virtual string GetGetOrCreateMethodBody()
         {
             return $@"
-                var item = new {this.ClassName}<TInputBuffer>();
-                item.Initialize(buffer, offset);
+                var item = new {this.ClassName}<TInputBuffer>(buffer, offset);
                 return item;
+            ";
+        }
+
+        protected virtual string GetCtorMethodDefinition(string onDeserializedStatement, string baseCtorParams)
+        {
+            return $@"
+                private {this.ClassName}(TInputBuffer buffer, int offset) : base({baseCtorParams}) 
+                {{ 
+                    {string.Join("\r\n", this.initializeStatements)}
+                    {onDeserializedStatement}
+                }}
             ";
         }
 

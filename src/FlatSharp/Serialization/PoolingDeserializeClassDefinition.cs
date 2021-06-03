@@ -122,6 +122,21 @@ namespace FlatSharp
             ";
         }
 
+        protected override string GetCtorMethodDefinition(string onDeserializedStatement, string baseCtorParams)
+        {
+            return $@"
+                private {this.ClassName}() : base({baseCtorParams}) 
+                {{
+                }}
+
+                private void Initialize(TInputBuffer buffer, int offset)
+                {{
+                    {string.Join("\r\n", this.initializeStatements)}
+                    {onDeserializedStatement}
+                }}
+            ";
+        }
+
         private string CreatePoolErrorMessage(string message)
         {
             string type = this.typeModel.GetCompilableTypeName();
