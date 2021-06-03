@@ -4,8 +4,14 @@ namespace BenchmarkCore;
 enum Normal : ubyte { A, B, C, D }
 enum Flags : ubyte (bit_flags) { A, B , C, D}
 
-table SomeTable (fs_serializer:VectorCacheMutable, fs_pool) {
-	Struct : Struct (required:"true");
+table SomeTable (fs_serializer:Greedy) {
+	Points : [Vec3];
+}
+
+struct Vec3 (fs_nonVirtual, fs_pool) {
+    X : float;
+	Y : float;
+	Z : float;
 }
 
 struct Struct {
