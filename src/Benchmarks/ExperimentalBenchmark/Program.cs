@@ -89,6 +89,8 @@ namespace BenchmarkCore
             SomeTable.Serializer.Write(buffer, table);
 
             var parsed = SomeTable.Serializer.Parse(buffer);
+            (parsed as IFlatBufferDeserializedObject)?.Release();
+
             Console.WriteLine(parsed.Struct.Int);
             Console.WriteLine(parsed.Struct.Other.Long);
             parsed.Struct.Int--;

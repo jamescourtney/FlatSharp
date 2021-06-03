@@ -125,7 +125,7 @@ namespace FlatSharp.TypeModel
                 classDef.AddProperty(value, context.MethodNameMap[propertyType], context.SerializeMethodNameMap[propertyType]);
             }
 
-            return new CodeGeneratedMethod($"return new {className}<{context.InputBufferTypeName}>({context.InputBufferVariableName}, {context.OffsetVariableName});")
+            return new CodeGeneratedMethod($"return {className}<{context.InputBufferTypeName}>.GetOrCreate({context.InputBufferVariableName}, {context.OffsetVariableName});")
             {
                 ClassDefinition = classDef.ToString(),
             };

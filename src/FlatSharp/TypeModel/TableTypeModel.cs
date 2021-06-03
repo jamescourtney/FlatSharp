@@ -671,7 +671,7 @@ $@"
                 classDef.AddProperty(value, context.MethodNameMap[value.ItemTypeModel.ClrType], context.SerializeMethodNameMap[value.ItemTypeModel.ClrType]);
             }
 
-            string body = $"return new {className}<{context.InputBufferTypeName}>({context.InputBufferVariableName}, {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}));";
+            string body = $"return {className}<{context.InputBufferTypeName}>.GetOrCreate({context.InputBufferVariableName}, {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}));";
             return new CodeGeneratedMethod(body)
             {
                 ClassDefinition = classDef.ToString(),

@@ -175,7 +175,7 @@ namespace FlatSharp.Compiler
                     Assembly[] additionalRefs = additionalReferences?.ToArray() ?? Array.Empty<Assembly>();
                     var rootNode = ParseSyntax("root.fbs", includeLoader);
                     string cSharp = CreateCSharp(rootNode, options);
-                    var (assembly, formattedText, _) = RoslynSerializerGenerator.CompileAssembly(cSharp, true, additionalRefs);
+                    var (assembly, formattedText, _) = RoslynSerializerGenerator.CompileAssembly(cSharp, true, false, additionalRefs);
                     string debugText = formattedText();
                     return assembly;
                 }
@@ -329,7 +329,7 @@ namespace FlatSharp.Compiler
                 if (step > CodeWritingPass.Initialization)
                 {
                     string code = writer.ToString();
-                    (assembly, _, _) = RoslynSerializerGenerator.CompileAssembly(code, true);
+                    (assembly, _, _) = RoslynSerializerGenerator.CompileAssembly(code, true, false);
                 }
 
                 writer = new CodeWriter();

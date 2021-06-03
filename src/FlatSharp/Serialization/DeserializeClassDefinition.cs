@@ -24,6 +24,8 @@ namespace FlatSharp
 
     internal class DeserializeClassDefinition
     {
+        internal const string PoolTracingPragma = "FLATSHARP_POOL_DIAGNOSTICS";
+
         private const string InputBufferVariableName = "__buffer";
         private const string OffsetVariableName = "__offset";
         private const string VTableLocationVariableName = "__vtableOffset";
@@ -34,7 +36,8 @@ namespace FlatSharp
 
         private readonly List<string> fieldDefinitions = new();
         private readonly List<string> propertyOverrides = new();
-        private readonly List<string> ctorStatements = new();
+        private readonly List<string> initializeStatements = new();
+        private readonly HashSet<string> releaseStatements = new();
         private readonly List<string> readMethods = new();
         private readonly HashSet<string> maskDefinitions = new();
 
@@ -57,11 +60,14 @@ namespace FlatSharp
             if (!this.options.GreedyDeserialize)
             {
                 // maintain reference to buffer.
-                this.fieldDefinitions.Add($"private readonly TInputBuffer {InputBufferVariableName};");
-                this.fieldDefinitions.Add($"private readonly int {OffsetVariableName};");
+                this.fieldDefinitions.Add($"private TInputBuffer {InputBufferVariableName};");
+                this.fieldDefinitions.Add($"private int {OffsetVariableName};");
 
-                this.ctorStatements.Add($"this.{InputBufferVariableName} = buffer;");
-                this.ctorStatements.Add($"this.{OffsetVariableName} = offset;");
+                this.initializeStatements.Add($"this.{InputBufferVariableName} = buffer;");
+                this.initializeStatements.Add($"this.{OffsetVariableName} = offset;");
+
+                this.releaseStatements.Add($"this.{InputBufferVariableName} = default;");
+                this.releaseStatements.Add($"this.{OffsetVariableName} = default;");
             }
 
             if (this.typeModel.SchemaType == FlatBufferSchemaType.Table)
@@ -69,16 +75,19 @@ namespace FlatSharp
                 this.vtableMaxIndexAccessor = "__vtableMaxIndex";
                 this.vtableOffsetAccessor = "__vtableLocation";
 
-                this.ctorStatements.Add(
+                this.initializeStatements.Add(
                     $"buffer.{nameof(InputBufferExtensions.InitializeVTable)}(offset, out var {this.vtableOffsetAccessor}, out var {this.vtableMaxIndexAccessor});");
 
                 if (!options.GreedyDeserialize)
                 {
-                    this.fieldDefinitions.Add($"private readonly int {VTableLocationVariableName};");
-                    this.fieldDefinitions.Add($"private readonly int {VTableMaxIndexVariableName};");
+                    this.fieldDefinitions.Add($"private int {VTableLocationVariableName};");
+                    this.fieldDefinitions.Add($"private int {VTableMaxIndexVariableName};");
 
-                    this.ctorStatements.Add($"this.{VTableLocationVariableName} = {this.vtableOffsetAccessor};");
-                    this.ctorStatements.Add($"this.{VTableMaxIndexVariableName} = {this.vtableMaxIndexAccessor};");
+                    this.initializeStatements.Add($"this.{VTableLocationVariableName} = {this.vtableOffsetAccessor};");
+                    this.initializeStatements.Add($"this.{VTableMaxIndexVariableName} = {this.vtableMaxIndexAccessor};");
+
+                    this.releaseStatements.Add($"this.{VTableLocationVariableName} = default;");
+                    this.releaseStatements.Add($"this.{VTableMaxIndexVariableName} = default;");
 
                     this.vtableMaxIndexAccessor = $"this.{VTableMaxIndexVariableName}";
                     this.vtableOffsetAccessor = $"this.{VTableLocationVariableName}";
@@ -86,8 +95,8 @@ namespace FlatSharp
             }
             else
             {
-                this.vtableMaxIndexAccessor = $"default";
-                this.vtableOffsetAccessor = $"default";
+                this.vtableMaxIndexAccessor = "default";
+                this.vtableOffsetAccessor = "default";
             }
         }
 
@@ -124,10 +133,13 @@ namespace FlatSharp
             if (!this.options.GreedyDeserialize)
             {
                 this.maskDefinitions.Add($"private byte {GetHasValueFieldName(itemModel)};");
+                this.releaseStatements.Add($"this.{GetHasValueFieldName(itemModel)} = default;");
             }
 
             string typeName = itemModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType);
+
             this.fieldDefinitions.Add($"private {typeName} {GetFieldName(itemModel)};");
+            this.releaseStatements.Add($"this.{GetFieldName(itemModel)} = default;");
         }
 
         private void AddReadMethod(ItemMemberModel itemModel, string readValueMethodName)
@@ -233,7 +245,18 @@ namespace FlatSharp
                     }
                 }
 
-                setter = $"{accessModifiers.setModifier.ToCSharpString()} {verb} {{ {setterBody} }}";
+                setter = $@"
+                    {accessModifiers.setModifier.ToCSharpString()} {verb} 
+                    {{ 
+#if {PoolTracingPragma}
+                        if (this.released)
+                        {{
+                            throw new InvalidOperationException(
+                                {this.CreatePoolErrorMessage("FlatSharp pooled object used after release.")});
+                        }}
+#endif
+                        {setterBody} 
+                    }}";
             }
 
             string typeName = itemModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType);
@@ -242,6 +265,13 @@ namespace FlatSharp
                 {{ 
                     {accessModifiers.getModifer.ToCSharpString()} get
                     {{
+#if {PoolTracingPragma}
+                        if (this.released)
+                        {{
+                            throw new InvalidOperationException(
+                                {this.CreatePoolErrorMessage("FlatSharp pooled object used after release.")});
+                        }}
+#endif
                         {getterBody}
                     }}
                     {setter}
@@ -260,13 +290,13 @@ namespace FlatSharp
 
             if (this.options.GreedyDeserialize || !itemModel.IsVirtual)
             {
-                this.ctorStatements.Add($"{assignment} = {GetReadIndexMethodName(itemModel)}(buffer, offset, {this.vtableOffsetAccessor}, {this.vtableMaxIndexAccessor});");
+                this.initializeStatements.Add($"{assignment} = {GetReadIndexMethodName(itemModel)}(buffer, offset, {this.vtableOffsetAccessor}, {this.vtableMaxIndexAccessor});");
             }
             else if (!this.options.Lazy)
             {
                 if (classification.IsRequiredReference() || (classification.IsOptionalReference() && itemModel.IsRequired))
                 {
-                    this.ctorStatements.Add($"{assignment} = null!;");
+                    this.initializeStatements.Add($"{assignment} = null!;");
                 }
             }
         }
@@ -298,15 +328,42 @@ namespace FlatSharp
                     , {typeof(IFlatBufferDeserializedObject).GetCompilableTypeName()}
                     where TInputBuffer : IInputBuffer
                 {{
+                    private static readonly System.Collections.Concurrent.ConcurrentBag<{this.ClassName}<TInputBuffer>> __Pool
+                        = new System.Collections.Concurrent.ConcurrentBag<{this.ClassName}<TInputBuffer>>();
+
                     private static readonly {typeof(FlatBufferDeserializationContext).GetCompilableTypeName()} __CtorContext 
                         = new {typeof(FlatBufferDeserializationContext).GetCompilableTypeName()}({typeof(FlatBufferDeserializationOption).GetCompilableTypeName()}.{options.DeserializationOption});
 
                     {string.Join("\r\n", this.fieldDefinitions)}
                     {string.Join("\r\n", this.maskDefinitions)}
 
-                    public {this.ClassName}(TInputBuffer buffer, int offset) : base({baseParams})
+#if {PoolTracingPragma}
+                    private string allocationStack;
+                    private string releaseStack;
+                    private volatile bool released;
+#endif
+
+                    public static {this.ClassName}<TInputBuffer> GetOrCreate(TInputBuffer buffer, int offset)
                     {{
-                        {string.Join("\r\n", this.ctorStatements)}
+                        if (!__Pool.TryTake(out var item))
+                        {{
+                            item = new {this.ClassName}<TInputBuffer>();
+                        }}
+
+                        item.Initialize(buffer, offset);
+
+#if {PoolTracingPragma}
+                        item.allocationStack = Environment.StackTrace;
+#endif
+
+                        return item;
+                    }}
+
+                    private {this.ClassName}() : base({baseParams}) {{ }}
+
+                    private void Initialize(TInputBuffer buffer, int offset)
+                    {{
+                        {string.Join("\r\n", this.initializeStatements)}
                         {onDeserializedStatement}
                     }}
 
@@ -314,11 +371,35 @@ namespace FlatSharp
                     {typeof(FlatBufferDeserializationContext).GetCompilableTypeName()} {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.DeserializationContext)} => __CtorContext;
                     {typeof(IInputBuffer).GetCompilableTypeName()}? {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.InputBuffer)} => {this.GetBufferReference()};
 
+                    void {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.Release)}()
+                    {{
+                        {string.Join("\r\n", this.releaseStatements)}
+
+#if {PoolTracingPragma}
+                        if (this.released)
+                        {{
+                            throw new InvalidOperationException(
+                                {this.CreatePoolErrorMessage("FlatSharp pooled object released twice.")});
+                        }}
+
+                        this.released = true;
+                        this.releaseStack = Environment.StackTrace;
+#else
+                        __Pool.Add(this);
+#endif
+                    }}
+
                     {string.Join("\r\n", this.propertyOverrides)}
 
                     {string.Join("\r\n", this.readMethods)}
                 }}
 ";
+        }
+
+        private string CreatePoolErrorMessage(string message)
+        {
+            string type = this.typeModel.GetCompilableTypeName();
+            return $@"$""{message} Type = '{type}', \r\n\r\n AllocationStack = '{{this.allocationStack}}', \r\n\r\n ReleaseStack = '{{this.releaseStack}}'""";
         }
 
         private static string GetFieldName(ItemMemberModel itemModel) => $"__index{itemModel.Index}Value";

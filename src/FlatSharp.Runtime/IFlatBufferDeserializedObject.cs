@@ -41,5 +41,11 @@ namespace FlatSharp
         /// <see cref="FlatBufferDeserializationOption.GreedyMutable"/>.
         /// </summary>
         IInputBuffer? InputBuffer { get; }
+
+        /// <summary>
+        /// Formally releases this object and allows FlatSharp to recycle it for use in future deserialization operations. 
+        /// Continued use of this object after this method returns leads to undefined behavior.
+        /// </summary>
+        void Release();
     }
 }

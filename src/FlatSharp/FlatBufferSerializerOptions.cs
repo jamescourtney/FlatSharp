@@ -47,6 +47,9 @@ namespace FlatSharp
         /// </summary>
         public bool Devirtualize { get; }
 
+        /// <summary>
+        /// The deserialization mode.
+        /// </summary>
         public FlatBufferDeserializationOption DeserializationOption { get; }
 
         /// <summary>
@@ -84,8 +87,18 @@ namespace FlatSharp
         public bool Lazy => this.DeserializationOption == FlatBufferDeserializationOption.Lazy;
 
         /// <summary>
-        /// Indicates if FlatSharp should intercept app domain load events to look for cross-referenced generated assemblies. Mostly useful for FlatSharp unit tests.
+        /// Indicates if FlatSharp should intercept app domain load events to look for cross-referenced generated assemblies. 
+        /// Mostly useful for FlatSharp unit tests.
         /// </summary>
         public bool EnableAppDomainInterceptOnAssemblyLoad { get; set; }
+
+        /// <summary>
+        /// Indicates if FlatSharp should enable diagnostics for object-pooling. This allows runtime detection of:
+        /// - Use after free
+        /// - Free twice
+        /// When this flag is enabled, object pooling is turned off so that issues are detected more reliably. Keep in mind
+        /// that performance will be slow in this mode. It is intended for diagnostic purposes only.
+        /// </summary>
+        public bool EnableObjectPoolingDiagnostics { get; set; }
     }
 }

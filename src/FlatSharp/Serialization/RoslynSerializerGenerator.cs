@@ -129,6 +129,7 @@ $@"
                 CompileAssembly(
                     template,
                     this.options.EnableAppDomainInterceptOnAssemblyLoad,
+                    this.options.EnableObjectPoolingDiagnostics,
                     externalRefs.ToArray());
 
             Type? type = assembly.GetType($"Generated.{GeneratedSerializerClassName}");
@@ -223,9 +224,16 @@ $@"
         internal static (Assembly assembly, Func<string> formattedTextFactory, byte[] assemblyData) CompileAssembly(
             string sourceCode,
             bool enableAppDomainIntercept,
+            bool enablePoolTracing,
             params Assembly[] additionalReferences)
         {
-            var rootNode = ApplySyntaxTransformations(CSharpSyntaxTree.ParseText(sourceCode, ParseOptions).GetRoot());
+            var parseOptions = ParseOptions;
+            if (enablePoolTracing)
+            {
+                parseOptions = parseOptions.WithPreprocessorSymbols(DeserializeClassDefinition.PoolTracingPragma);
+            }
+
+            var rootNode = ApplySyntaxTransformations(CSharpSyntaxTree.ParseText(sourceCode, parseOptions).GetRoot());
             SyntaxTree tree = SyntaxFactory.SyntaxTree(rootNode);
             Func<string> formattedTextFactory = GetFormattedTextFactory(tree);
 
@@ -325,6 +333,7 @@ $@"
                 MetadataReference.CreateFromFile(typeof(IGeneratedSerializer<byte>).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(InvalidDataException).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(ReadOnlyDictionary<,>).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(System.Collections.Concurrent.ConcurrentBag<>).Assembly.Location),
             });
 
             return references;
