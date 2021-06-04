@@ -46,6 +46,7 @@ namespace FlatSharp
         private static readonly Dictionary<string, (Assembly, byte[])> AssemblyNameReferenceMapping = new Dictionary<string, (Assembly, byte[])>();
 
         private readonly Dictionary<Type, string> maxSizeMethods = new Dictionary<Type, string>();
+        private readonly Dictionary<Type, string> recycleMethods = new Dictionary<Type, string>();
         private readonly Dictionary<Type, string> writeMethods = new Dictionary<Type, string>();
         private readonly Dictionary<Type, string> readMethods = new Dictionary<Type, string>();
 
@@ -383,6 +384,7 @@ $@"
                 this.writeMethods[type] = $"WriteInlineValueOf_{nameBase}";
                 this.maxSizeMethods[type] = $"GetMaxSizeOf_{nameBase}";
                 this.readMethods[type] = $"Read_{nameBase}";
+                this.recycleMethods[type] = $"Recycle_{nameBase}";
             }
         }
 
@@ -461,6 +463,17 @@ $@"
 ";
                 this.methodDeclarations.Add(CSharpSyntaxTree.ParseText(methodText, ParseOptions).GetRoot());
             }
+
+            {
+                string methodText =
+$@"
+                public void Recycle({CSharpHelpers.GetCompilableTypeName(rootType)} root)
+                {{
+                    {this.recycleMethods[rootType]}(root);
+                }}
+";
+                this.methodDeclarations.Add(CSharpSyntaxTree.ParseText(methodText, ParseOptions).GetRoot());
+            }
         }
 
         private void ImplementMethods()
@@ -469,16 +482,24 @@ $@"
             {
                 ITypeModel typeModel = this.typeModelContainer.CreateTypeModel(type);
                 var maxSizeContext = new GetMaxSizeCodeGenContext("value", this.maxSizeMethods, this.options);
-                var parseContext = new ParserCodeGenContext("buffer", "offset", "TInputBuffer", this.readMethods, this.writeMethods, this.options);
+                var parseContext = new ParserCodeGenContext("buffer", "offset", "TInputBuffer", this.readMethods, this.writeMethods, this.recycleMethods, this.options);
                 var serializeContext = new SerializationCodeGenContext("context", "span", "spanWriter", "value", "offset", this.writeMethods, this.typeModelContainer, this.options);
+                var recycleContext = new RecycleCodeGenContext
+                {
+                    MethodNameMap = this.recycleMethods,
+                    Options = this.options,
+                    ValueVariableName = "value",
+                };
 
                 var maxSizeMethod = typeModel.CreateGetMaxSizeMethodBody(maxSizeContext);
                 var parseMethod = typeModel.CreateParseMethodBody(parseContext);
                 var writeMethod = typeModel.CreateSerializeMethodBody(serializeContext);
+                var recycleMethod = typeModel.CreateRecycleMethodBody(recycleContext);
 
                 this.GenerateGetMaxSizeMethod(type, maxSizeMethod, maxSizeContext);
                 this.GenerateParseMethod(typeModel, parseMethod, parseContext);
                 this.GenerateSerializeMethod(typeModel, writeMethod, serializeContext);
+                this.GenerateRecycleMethod(type, recycleMethod, recycleContext);
             }
         }
 
@@ -537,14 +558,20 @@ $@"
                 {method.MethodBody}
             }}";
 
-            var node = CSharpSyntaxTree.ParseText(declaration, ParseOptions);
-            this.methodDeclarations.Add(node.GetRoot());
+            this.AddMethod(method, declaration);
+        }
 
-            if (!string.IsNullOrEmpty(method.ClassDefinition))
-            {
-                node = CSharpSyntaxTree.ParseText(method.ClassDefinition, ParseOptions);
-                this.methodDeclarations.Add(node.GetRoot());
-            }
+        private void GenerateRecycleMethod(Type type, CodeGeneratedMethod method, RecycleCodeGenContext context)
+        {
+            string declaration = $@"
+                {method.GetMethodImplAttribute()}
+                private static void {this.recycleMethods[type]}({CSharpHelpers.GetCompilableTypeName(type)} {context.ValueVariableName})
+                {{
+                    {method.MethodBody}
+                }}
+            ";
+
+            this.AddMethod(method, declaration);
         }
 
         private void GenerateParseMethod(ITypeModel typeModel, CodeGeneratedMethod method, ParserCodeGenContext context)
@@ -561,24 +588,11 @@ $@"
                 {method.MethodBody}
             }}";
 
-            var node = CSharpSyntaxTree.ParseText(declaration, ParseOptions);
-            this.methodDeclarations.Add(node.GetRoot());
-
-            if (!string.IsNullOrEmpty(method.ClassDefinition))
-            {
-                node = CSharpSyntaxTree.ParseText(method.ClassDefinition, ParseOptions);
-                this.methodDeclarations.Add(node.GetRoot());
-            }
+            this.AddMethod(method, declaration);
         }
 
         private void GenerateSerializeMethod(ITypeModel typeModel, CodeGeneratedMethod method, SerializationCodeGenContext context)
         {
-            string inlineDeclaration = "[MethodImpl(MethodImplOptions.AggressiveInlining)]";
-            if (!method.IsMethodInline)
-            {
-                inlineDeclaration = string.Empty;
-            }
-
             string contextParameter = string.Empty;
             if (typeModel.SerializeMethodRequiresContext)
             {
@@ -587,7 +601,7 @@ $@"
 
             string declaration =
 $@"
-            {inlineDeclaration}
+            {method.GetMethodImplAttribute()}
             private static void {this.writeMethods[typeModel.ClrType]}<TSpanWriter>(
                 TSpanWriter {context.SpanWriterVariableName}, 
                 Span<byte> {context.SpanVariableName}, 
@@ -598,7 +612,12 @@ $@"
                 {method.MethodBody}
             }}";
 
-            var node = CSharpSyntaxTree.ParseText(declaration, ParseOptions);
+            this.AddMethod(method, declaration);
+        }
+
+        private void AddMethod(CodeGeneratedMethod method, string fullText)
+        {
+            var node = CSharpSyntaxTree.ParseText(fullText, ParseOptions);
             this.methodDeclarations.Add(node.GetRoot());
 
             if (!string.IsNullOrEmpty(method.ClassDefinition))

@@ -30,6 +30,7 @@ namespace FlatSharp
             string inputBufferTypeName,
             IReadOnlyDictionary<Type, string> methodNameMap,
             IReadOnlyDictionary<Type, string> serializeMethodNameMap,
+            IReadOnlyDictionary<Type, string> recycleMethodNameMap,
             FlatBufferSerializerOptions options)
         {
             this.InputBufferVariableName = inputBufferVariableName;
@@ -37,6 +38,7 @@ namespace FlatSharp
             this.InputBufferTypeName = inputBufferTypeName;
             this.MethodNameMap = methodNameMap;
             this.SerializeMethodNameMap = serializeMethodNameMap;
+            this.RecycleMethodNameMap = recycleMethodNameMap;
             this.Options = options;
         }
 
@@ -47,6 +49,7 @@ namespace FlatSharp
             this.InputBufferTypeName = other.InputBufferTypeName;
             this.MethodNameMap = other.MethodNameMap;
             this.SerializeMethodNameMap = other.SerializeMethodNameMap;
+            this.RecycleMethodNameMap = other.RecycleMethodNameMap;
             this.Options = other.Options;
         }
 
@@ -82,6 +85,11 @@ namespace FlatSharp
         /// A mapping of type to serialize method name for that type.
         /// </summary>
         public IReadOnlyDictionary<Type, string> SerializeMethodNameMap { get; private set; }
+
+        /// <summary>
+        /// A mapping of type to serialize method name for that type.
+        /// </summary>
+        public IReadOnlyDictionary<Type, string> RecycleMethodNameMap { get; private set; }
 
         /// <summary>
         /// Serialization options.

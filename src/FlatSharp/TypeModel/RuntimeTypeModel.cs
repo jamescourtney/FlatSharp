@@ -93,6 +93,11 @@ namespace FlatSharp.TypeModel
         public abstract bool SerializesInline { get; }
 
         /// <summary>
+        /// When true, indicates that an instance may be recyclable.
+        /// </summary>
+        public virtual bool SupportsRecycle => false;
+
+        /// <summary>
         /// Serialization method requires a <see cref="SerializationContext"/> argument.
         /// </summary>
         public virtual bool SerializeMethodRequiresContext => true;
@@ -130,6 +135,11 @@ namespace FlatSharp.TypeModel
         public abstract CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context);
 
         public abstract CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context);
+
+        public virtual CodeGeneratedMethod CreateRecycleMethodBody(RecycleCodeGenContext context)
+        {
+            return new CodeGeneratedMethod(string.Empty) { IsMethodInline = true };
+        }
 
         public abstract void TraverseObjectGraph(HashSet<Type> seenTypes);
 

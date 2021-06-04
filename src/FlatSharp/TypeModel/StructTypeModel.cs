@@ -91,6 +91,11 @@ namespace FlatSharp.TypeModel
         /// </summary>
         public override bool SerializesInline => true;
 
+        /// <summary>
+        /// Indicates if we support recycle or not.
+        /// </summary>
+        public override bool SupportsRecycle => this.attribute.PoolSize != 0 || this.memberTypes.Any(x => x.ItemTypeModel.SupportsRecycle);
+
         public override ConstructorInfo? PreferredSubclassConstructor => this.preferredConstructor;
 
         /// <summary>
@@ -124,7 +129,7 @@ namespace FlatSharp.TypeModel
                 var value = this.Members[index];
                 PropertyInfo propertyInfo = value.PropertyInfo;
                 Type propertyType = propertyInfo.PropertyType;
-                classDef.AddProperty(value, context.MethodNameMap[propertyType], context.SerializeMethodNameMap[propertyType]);
+                classDef.AddProperty(value, context.MethodNameMap[propertyType], context.SerializeMethodNameMap[propertyType], context.RecycleMethodNameMap[propertyType]);
             }
 
             return new CodeGeneratedMethod($"return {className}<{context.InputBufferTypeName}>.GetOrCreate({context.InputBufferVariableName}, {context.OffsetVariableName});")
@@ -180,6 +185,18 @@ namespace FlatSharp.TypeModel
             {
                 IsMethodInline = true,
             };
+        }
+
+        public override CodeGeneratedMethod CreateRecycleMethodBody(RecycleCodeGenContext context)
+        {
+            string body =
+$@"
+            if ({context.ValueVariableName} is {nameof(IFlatBufferDeserializedObject)} deserializedObj)
+            {{
+                deserializedObj.{nameof(IFlatBufferDeserializedObject.DangerousRelease)}();
+            }}
+";
+            return new CodeGeneratedMethod(body);
         }
 
         public override void Initialize()

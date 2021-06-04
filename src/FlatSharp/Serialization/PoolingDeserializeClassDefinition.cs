@@ -24,7 +24,6 @@ namespace FlatSharp
     internal class PoolingDeserializeClassDefinition : DeserializeClassDefinition
     {
         private const string PoolVariableName = "__Pool";
-        private const string QueuePropertyName = "__Queue";
         private const string AllocationStackVariableName = "__poolDiag_allocationStack";
         private const string ReleaseStackVariableName = "__poolDiag_releaseStack";
         private const string ReleasedVariableName = "__poolDiag_released";
@@ -45,13 +44,8 @@ namespace FlatSharp
 
             base.staticFieldDefinitions[PoolVariableName] =
                 $@"
-                    [ThreadStatic]
-                    private static Queue<{this.ClassName}<TInputBuffer>> {PoolVariableName} = new Queue<{this.ClassName}<TInputBuffer>>();
-                ";
-
-            base.staticFieldDefinitions[QueuePropertyName] =
-                $@"
-                    private static Queue<{this.ClassName}<TInputBuffer>> {QueuePropertyName} => {PoolVariableName} ?? ({PoolVariableName} = new Queue<{this.ClassName}<TInputBuffer>>());
+                    private static readonly System.Collections.Concurrent.ConcurrentQueue<{this.ClassName}<TInputBuffer>> {PoolVariableName} 
+                       = new System.Collections.Concurrent.ConcurrentQueue<{this.ClassName}<TInputBuffer>>();
                 ";
         }
 
@@ -79,7 +73,7 @@ namespace FlatSharp
             ";
         }
 
-        protected override string GetReleaseMethodBody()
+        protected override string GetDangerousReleaseMethodBody()
         {
             var releaseStatements = base.instanceFieldDefinitions.Keys
                 .Where(f => f != ReleasedVariableName) // don't reset our metadata.
@@ -101,14 +95,14 @@ namespace FlatSharp
                 }}
 
                 {string.Join("\r\n", releaseStatements)}
-                {QueuePropertyName}.Enqueue(this);
+                {PoolVariableName}.Enqueue(this);
             ";
         }
 
         protected override string GetGetOrCreateMethodBody()
         {
             return $@"                
-                if (!{QueuePropertyName}.TryDequeue(out var item))
+                if (!{PoolVariableName}.TryDequeue(out var item))
                 {{
                     item = new {this.ClassName}<TInputBuffer>();
                 }}

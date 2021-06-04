@@ -90,6 +90,11 @@ namespace FlatSharp.TypeModel
         public override bool SerializesInline => false;
 
         /// <summary>
+        /// We support recycle if our item does.
+        /// </summary>
+        public override bool SupportsRecycle => this.ItemTypeModel.SupportsRecycle;
+
+        /// <summary>
         /// Gets the size of each member of this vector, with padding for alignment.
         /// </summary>
         public int PaddedMemberInlineSize
@@ -157,6 +162,32 @@ namespace FlatSharp.TypeModel
                 {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteInt)}({context.SpanVariableName}, count, vectorOffset);
                 vectorOffset += sizeof(int);
 
+                {this.CreateLoop(context.Options, context.ValueVariableName, "count", "current", loopBody)}";
+
+            return new CodeGeneratedMethod(body);
+        }
+
+        public override CodeGeneratedMethod CreateRecycleMethodBody(RecycleCodeGenContext context)
+        {
+            if (!this.SupportsRecycle)
+            {
+                return new CodeGeneratedMethod(string.Empty) { IsMethodInline = true };
+            }
+
+            var loopContext = context with
+            {
+                ValueVariableName = "current"
+            };
+
+            string loopBody = $@"{loopContext.GetRecycleInvocation(this.ItemTypeModel.ClrType)};";
+
+            string body = $@"
+                if ({context.ValueVariableName} is null)
+                {{
+                    return;
+                }}
+
+                int count = {context.ValueVariableName}.{this.LengthPropertyName};
                 {this.CreateLoop(context.Options, context.ValueVariableName, "count", "current", loopBody)}";
 
             return new CodeGeneratedMethod(body);

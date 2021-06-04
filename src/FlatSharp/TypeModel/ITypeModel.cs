@@ -91,6 +91,11 @@ namespace FlatSharp.TypeModel
         bool SerializeMethodRequiresContext { get; }
 
         /// <summary>
+        /// Indicates if this type is potentially recyclable.
+        /// </summary>
+        bool SupportsRecycle { get; }
+
+        /// <summary>
         /// Indicates the constructor that subclasses should use. This constructor must have either 0 parameters or 1 parameter
         /// that accepts an instance of <see cref="FlatSharpDeserializationContext"/>.
         /// </summary>
@@ -116,6 +121,12 @@ namespace FlatSharp.TypeModel
         /// the maximum possible serialized size of the given item, even with alignment errors.
         /// </summary>
         CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context);
+
+        /// <summary>
+        /// Implements a TryRecycle method for the type of this type model. The method must return an int32 value representing
+        /// the maximum possible serialized size of the given item, even with alignment errors.
+        /// </summary>
+        CodeGeneratedMethod CreateRecycleMethodBody(RecycleCodeGenContext context);
 
         /// <summary>
         /// Implements a method to clone the given instance of the type model.

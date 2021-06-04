@@ -90,6 +90,11 @@ namespace FlatSharp.TypeModel
         /// </summary>
         public override bool SerializesInline => false;
 
+        /// <summary>
+        /// We support recycle if our union does.
+        /// </summary>
+        public override bool SupportsRecycle => this.ItemTypeModel.SupportsRecycle;
+
         public override bool TryGetUnderlyingVectorType([NotNullWhen(true)] out ITypeModel? typeModel)
         {
             typeModel = this.ItemTypeModel;
@@ -171,6 +176,28 @@ namespace FlatSharp.TypeModel
             {
                 IsMethodInline = true,
             };
+        }
+
+        public override CodeGeneratedMethod CreateRecycleMethodBody(RecycleCodeGenContext context)
+        {
+            var itemContext = context with { ValueVariableName = "current" };
+
+            string body =
+            $@"
+                if ({context.ValueVariableName} is null)
+                {{
+                    return;
+                }}
+
+                int count = {context.ValueVariableName}.{this.LengthPropertyName};
+                for (int i = 0; i < count; ++i)
+                {{
+                      var current = {context.ValueVariableName}[i];
+                      {itemContext.GetRecycleInvocation(this.ItemTypeModel.ClrType)};
+                }}
+            ";
+
+            return new CodeGeneratedMethod(body);
         }
 
         public sealed override void Initialize()

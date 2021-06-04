@@ -85,6 +85,11 @@ namespace FlatSharp.TypeModel
         public override bool SerializesInline => false;
 
         /// <summary>
+        /// We support recycle if any of our elements do.
+        /// </summary>
+        public override bool SupportsRecycle => this.UnionElementTypeModel.Any(x => x.SupportsRecycle);
+
+        /// <summary>
         /// Gets the type model for this union's members. Index 0 corresponds to discriminator 1.
         /// </summary>
         public ITypeModel[] UnionElementTypeModel => this.memberTypeModels;
@@ -234,6 +239,33 @@ $@"
                 return {context.ItemVariableName}.{nameof(FlatBufferUnion<string>.Discriminator)} switch {{
                     {string.Join("\r\n", switchCases)}
                 }};";
+
+            return new CodeGeneratedMethod(body);
+        }
+
+        public override CodeGeneratedMethod CreateRecycleMethodBody(RecycleCodeGenContext context)
+        {
+            List<string> switchCases = new List<string>();
+
+            for (int i = 0; i < this.memberTypeModels.Length; ++i)
+            {
+                var memberModel = this.memberTypeModels[i];
+                if (memberModel.SupportsRecycle)
+                {
+                    int discriminator = i + 1;
+                    var memberContext = context with { ValueVariableName = $"{context.ValueVariableName}.Item{discriminator}" };
+                    switchCases.Add($"case {discriminator}: {memberContext.GetRecycleInvocation(memberModel.ClrType)}; break;");
+                }
+            }
+
+            string body = $@"
+                if (!({context.ValueVariableName} is null))
+                {{
+                    switch ({context.ValueVariableName}.{nameof(FlatBufferUnion<string>.Discriminator)}) 
+                    {{
+                        {string.Join("\r\n", switchCases)}
+                    }}
+                }}";
 
             return new CodeGeneratedMethod(body);
         }

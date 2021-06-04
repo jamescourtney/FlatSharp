@@ -47,6 +47,7 @@ namespace FlatSharp.TypeModel
         private ConstructorInfo? preferredConstructor;
         private MethodInfo? onDeserializeMethod;
         private FlatBufferTableAttribute? attribute;
+        private readonly string tableReaderClassName = "tableReader_" + Guid.NewGuid().ToString("n");
 
         internal TableTypeModel(Type clrType, TypeModelContainer typeModelProvider) : base(clrType, typeModelProvider)
         {
@@ -96,6 +97,11 @@ namespace FlatSharp.TypeModel
         /// Tables are written by reference.
         /// </summary>
         public override bool SerializesInline => false;
+
+        /// <summary>
+        /// Indicates if we support recycle or not.
+        /// </summary>
+        public override bool SupportsRecycle => this.attribute.PoolSize != 0 || this.memberTypes.Values.Any(x => x.ItemTypeModel.SupportsRecycle);
 
         /// <summary>
         /// Gets the maximum used index in this vtable.
@@ -672,18 +678,17 @@ $@"
         {
             // We have to implement two items: The table class and the overall "read" method.
             // Let's start with the read method.
-            string className = "tableReader_" + Guid.NewGuid().ToString("n");
-            var classDef = DeserializeClassDefinition.Create(className, this.onDeserializeMethod, this, context.Options, this.attribute!.PoolSize);
+            var classDef = DeserializeClassDefinition.Create(this.tableReaderClassName, this.onDeserializeMethod, this, context.Options, this.attribute!.PoolSize);
 
             // Build up a list of property overrides.
             foreach (var item in this.IndexToMemberMap.Where(x => !x.Value.IsDeprecated))
             {
                 int index = item.Key;
                 var value = item.Value;
-                classDef.AddProperty(value, context.MethodNameMap[value.ItemTypeModel.ClrType], context.SerializeMethodNameMap[value.ItemTypeModel.ClrType]);
+                classDef.AddProperty(value, context.MethodNameMap[value.ItemTypeModel.ClrType], context.SerializeMethodNameMap[value.ItemTypeModel.ClrType], context.RecycleMethodNameMap[value.ItemTypeModel.ClrType]);
             }
 
-            string body = $"return {className}<{context.InputBufferTypeName}>.GetOrCreate({context.InputBufferVariableName}, {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}));";
+            string body = $"return {this.tableReaderClassName}<{context.InputBufferTypeName}>.GetOrCreate({context.InputBufferVariableName}, {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}));";
             return new CodeGeneratedMethod(body)
             {
                 ClassDefinition = classDef.ToString(),
@@ -728,7 +733,7 @@ $@"
             string body =
 $@"
             int runningSum = {maxTableSize} + {maxVtableSize};
-            {string.Join("\r\n", statements)};
+            {string.Join("\r\n", statements)}
             return runningSum;
 ";
             return new CodeGeneratedMethod(body);
@@ -741,6 +746,18 @@ $@"
             {
                 IsMethodInline = true,
             };
+        }
+
+        public override CodeGeneratedMethod CreateRecycleMethodBody(RecycleCodeGenContext context)
+        {
+            string body =
+$@"
+            if ({context.ValueVariableName} is {nameof(IFlatBufferDeserializedObject)} deserializedObj)
+            {{
+                deserializedObj.{nameof(IFlatBufferDeserializedObject.DangerousRelease)}();
+            }}
+";
+            return new CodeGeneratedMethod(body);
         }
 
         public override bool TryGetTableKeyMember([NotNullWhen(true)] out TableMemberModel? tableMember)

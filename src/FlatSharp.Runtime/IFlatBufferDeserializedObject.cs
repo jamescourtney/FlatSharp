@@ -17,6 +17,7 @@
 namespace FlatSharp
 {
     using System;
+    using System.ComponentModel;
 
     /// <summary>
     /// An interface applied to objects deserialized by FlatSharp. FlatSharp implements this
@@ -44,8 +45,11 @@ namespace FlatSharp
 
         /// <summary>
         /// Formally releases this object and allows FlatSharp to recycle it for use in future deserialization operations. 
-        /// Continued use of this object after this method returns leads to undefined behavior.
+        /// This method is intended to only be invoked from FlatSharp generated code. Incorrect use
+        /// may lead to unexpected results. FlatSharp invokes this automatically
+        /// via <see cref="ISerializer.TryRecycle(ref object)"/>.
         /// </summary>
-        void Release();
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        void DangerousRelease();
     }
 }

@@ -17,6 +17,22 @@
             IndexedVectors.IndexedVectorsExample.Run();
             TypeFacades.TypeFacadesExample.Run();
             StructVectors.StructVectorsSample.Run();
+
+            int i = 3;
+            Bar bar = new Bar();
+            if (i is IFoo foo)
+            {
+
+            }
+
+            if (bar is IFoo foo2)
+            {
+
+            }
         }
     }
+
+    public interface IFoo { }
+
+    public class Bar { }
 }

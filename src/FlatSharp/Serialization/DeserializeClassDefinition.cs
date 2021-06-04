@@ -34,6 +34,7 @@ namespace FlatSharp
         protected readonly List<string> propertyOverrides = new();
         protected readonly List<string> initializeStatements = new();
         protected readonly List<string> readMethods = new();
+        protected readonly List<string> recycleMethodInvocations = new();
 
         // Maps field name -> field initializer.
         protected readonly Dictionary<string, string> instanceFieldDefinitions = new();
@@ -113,12 +114,20 @@ namespace FlatSharp
 
         public string ClassName { get; }
 
-        public void AddProperty(ItemMemberModel itemModel, string readValueMethodName, string writeValueMethodName)
+        public void AddProperty(ItemMemberModel itemModel, string readValueMethodName, string writeValueMethodName, string? recycleMethodName)
         {
             this.AddFieldDefinitions(itemModel);
             this.AddPropertyDefinitions(itemModel, writeValueMethodName);
             this.AddCtorStatements(itemModel);
             this.AddReadMethod(itemModel, readValueMethodName);
+
+            if (!this.options.Lazy)
+            {
+                if (!string.IsNullOrEmpty(recycleMethodName) && itemModel.ItemTypeModel.SupportsRecycle)
+                {
+                    this.recycleMethodInvocations.Add($"{recycleMethodName}(this.{GetFieldName(itemModel)});");
+                }
+            }
 
             if (itemModel.IsWriteThrough)
             {
@@ -292,9 +301,10 @@ namespace FlatSharp
                     {typeof(FlatBufferDeserializationContext).GetCompilableTypeName()} {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.DeserializationContext)} => __CtorContext;
                     {typeof(IInputBuffer).GetCompilableTypeName()}? {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.InputBuffer)} => {this.GetBufferReference()};
 
-                    void {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.Release)}()
+                    void {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.DangerousRelease)}()
                     {{
-                        {this.GetReleaseMethodBody()}
+                        {string.Join("\r\n", this.recycleMethodInvocations)}
+                        {this.GetDangerousReleaseMethodBody()}
                     }}
 
                     {string.Join("\r\n", this.propertyOverrides)}
@@ -370,7 +380,7 @@ namespace FlatSharp
             ";
         }
 
-        protected virtual string GetReleaseMethodBody() => string.Empty;
+        protected virtual string GetDangerousReleaseMethodBody() => string.Empty;
 
         protected static string GetFieldName(ItemMemberModel itemModel) => $"__index{itemModel.Index}Value";
 
