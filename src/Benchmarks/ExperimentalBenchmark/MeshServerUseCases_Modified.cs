@@ -57,15 +57,22 @@ namespace BenchmarkCore.Modified
 
             SaveToDisk(region);
 
-            // Update fillSize to accomodate max. Some items may be null.
+            // Update fillSize to accomodate max of (fillSize * 3). Some items may be null.
             Mesh mesh = new Mesh
             {
                 color = new Color[fillSize * 3],
                 normals = new Vector3[fillSize * 3],
-                triangles = new ushort[fillSize * 3],
+                triangles = new MutableUShort[fillSize * 3],
                 uv = new Vector2[fillSize * 3],
-                vertices = new Vector3[fillSize * 3]
+                vertices = new Vector3[fillSize * 3],
+                filledLength = new MutableUInt32 { Value = 0 }
             };
+
+            Array.Fill(mesh.color, new());
+            Array.Fill(mesh.normals, new());
+            Array.Fill(mesh.triangles, new());
+            Array.Fill(mesh.uv, new());
+            Array.Fill(mesh.vertices, new());
 
             UpdateMeshInPlace(rnd, region, mesh);
             SaveToDisk(mesh);
@@ -74,19 +81,27 @@ namespace BenchmarkCore.Modified
         private Mesh UpdateMeshInPlace(Random rnd, VoxelRegion3D voxelRegion3D, Mesh mesh)
         {
             int filled = 0;
+
+            var vertices = mesh.vertices;
+            var normals = mesh.normals;
+            var colors = mesh.color;
+            var uvs = mesh.uv;
+            var triangles = mesh.triangles;
+
+            var voxels = voxelRegion3D.voxels;
+
+            Voxel[] adjacentVoxels = new Voxel[8];
+
             for (int i = 0; i < regionSizeCubed - (regionSizeSquared + RegionSize + 1); i++)
             {
-                var adjacentVoxels = new[]
-                {
-                    voxelRegion3D.voxels[i],
-                    voxelRegion3D.voxels[i + 1],
-                    voxelRegion3D.voxels[i + RegionSize],
-                    voxelRegion3D.voxels[i + RegionSize + 1],
-                    voxelRegion3D.voxels[regionSizeSquared + i],
-                    voxelRegion3D.voxels[regionSizeSquared + i+ 1],
-                    voxelRegion3D.voxels[regionSizeSquared + i + RegionSize],
-                    voxelRegion3D.voxels[regionSizeSquared + i + RegionSize + 1],
-                };
+                adjacentVoxels[0] = voxels[i];
+                adjacentVoxels[1] = voxels[i + 1];
+                adjacentVoxels[2] = voxels[i + RegionSize];
+                adjacentVoxels[3] = voxels[i + RegionSize + 1];
+                adjacentVoxels[4] = voxels[regionSizeSquared + i];
+                adjacentVoxels[5] = voxels[regionSizeSquared + i + 1];
+                adjacentVoxels[6] = voxels[regionSizeSquared + i + RegionSize];
+                adjacentVoxels[7] = voxels[regionSizeSquared + i + RegionSize + 1];
 
                 byte meshMask = 0;
                 for (int j = 0; j < adjacentVoxels.Length; j++)
@@ -98,52 +113,33 @@ namespace BenchmarkCore.Modified
                 {
                     for (int j = 0; j < 3; j++)
                     {
-                        var vertex = (mesh.vertices[filled] ??= new Vector3());
+                        var vertex = vertices[filled];
                         vertex.x = rnd.Next();
                         vertex.y = rnd.Next();
                         vertex.z = rnd.Next();
-                        vertex.Null = 0;
 
-                        var normal = (mesh.normals[filled] ??= new Vector3());
+                        var normal = normals[filled];
                         normal.x = rnd.Next();
                         normal.y = rnd.Next();
                         normal.z = rnd.Next();
-                        normal.Null = 0;
 
-                        var color = (mesh.color[filled] ??= new Color());
+                        var color = colors[filled];
                         color.r = adjacentVoxels[0].VoxelType;
                         color.g = adjacentVoxels[0].SubType;
                         color.b = adjacentVoxels[0].Hp;
                         color.a = adjacentVoxels[0].Unused;
-                        color.Null = 0;
 
-                        var uv = (mesh.uv[filled] ??= new Vector2());
+                        var uv = uvs[filled];
                         uv.x = 0f;
                         uv.y = 1f;
-                        uv.Null = 0;
 
-                        mesh.triangles[filled] = (ushort)filled;
+                        triangles[filled].Value = (ushort)filled;
                         filled++;
                     }
                 }
             }
 
-            for (; filled < mesh.color.Length; ++filled)
-            {
-                var vertex = (mesh.vertices[filled] ??= new Vector3());
-                vertex.Null = 1;
-
-                var normal = (mesh.normals[filled] ??= new Vector3());
-                normal.Null = 1;
-
-                var uv = (mesh.uv[filled] ??= new Vector2());
-                uv.Null = 1;
-
-                var color = (mesh.color[filled] ??= new Color());
-                color.Null = 1;
-
-                mesh.triangles[filled] = (ushort)filled;
-            }
+            mesh.filledLength.Value = (uint)filled;
 
             return mesh;
         }

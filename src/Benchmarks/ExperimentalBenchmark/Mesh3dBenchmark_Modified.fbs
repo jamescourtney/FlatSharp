@@ -7,7 +7,6 @@ struct Vector4 (fs_writeThrough)
     y:float;
     z:float;
     w:float;
-    Null : ubyte;
 }
 
 struct Vector3Int (fs_writeThrough)
@@ -15,7 +14,6 @@ struct Vector3Int (fs_writeThrough)
     x:int32;
     y:int32;
     z:int32;
-    Null : ubyte;
 }
 
 struct Vector3  (fs_writeThrough)
@@ -23,7 +21,6 @@ struct Vector3  (fs_writeThrough)
     x:float;
     y:float;
     z:float;
-    Null : ubyte;
 }
 
 struct Vector2Int (fs_writeThrough)
@@ -37,7 +34,6 @@ struct Vector2 (fs_writeThrough)
 {
     x:float;
     y:float;
-    Null : ubyte;
 }
 
 struct Color (fs_writeThrough)
@@ -46,7 +42,6 @@ struct Color (fs_writeThrough)
     g: ubyte;
     b: ubyte;
     a: ubyte;
-    Null : ubyte;
 }
 
 struct Voxel (fs_writeThrough)
@@ -55,12 +50,16 @@ struct Voxel (fs_writeThrough)
     SubType : ubyte;
     Hp:ubyte;
     Unused:ubyte;
-    Null : ubyte;
 }
 
 struct MutableUInt32 (fs_writeThrough)
 {
     Value : uint32;
+}
+
+struct MutableUShort (fs_writeThrough)
+{
+    Value : ushort;
 }
 
 table Mesh
@@ -69,7 +68,8 @@ table Mesh
     normals:    [Vector3] (fs_vector:Array);
     uv:         [Vector2] (fs_vector:Array);
     color:      [Color] (fs_vector:Array);
-    triangles:  [ushort] (fs_vector:Array);
+    triangles:  [MutableUShort] (fs_vector:Array);
+    filledLength: MutableUInt32;
 }
 
 table VoxelRegion3D
