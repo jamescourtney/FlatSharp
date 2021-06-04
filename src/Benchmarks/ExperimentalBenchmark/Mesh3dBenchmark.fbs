@@ -1,0 +1,69 @@
+
+namespace BenchmarkCore;
+
+struct Vector4
+{
+    x:float;
+    y:float;
+    z:float;
+    w:float;
+}
+
+struct Vector3Int 
+{
+    x:int32;
+    y:int32;
+    z:int32;
+}
+
+struct Vector3 
+{
+    x:float;
+    y:float;
+    z:float;
+}
+
+struct Vector2Int
+{
+    x:int32;
+    y:int32;
+}
+
+struct Vector2
+{
+    x:float;
+    y:float;
+}
+
+struct Color
+{
+    r: ubyte;
+    g: ubyte;
+    b: ubyte;
+    a: ubyte;
+}
+
+struct Voxel
+{
+    VoxelType: ubyte;
+    SubType : ubyte;
+    Hp:ubyte;
+    Unused:ubyte;
+}
+
+table Mesh (fs_serializer:greedy)
+{
+    vertices:   [Vector3];
+    normals:    [Vector3];
+    uv:         [Vector2];
+    color:      [Color];
+    triangles:  [ushort];
+}
+
+table VoxelRegion3D (fs_serializer:greedy)
+{
+    location: Vector3Int;
+    iteration: uint32;
+    size: ushort;
+    voxels: [Voxel];
+}
