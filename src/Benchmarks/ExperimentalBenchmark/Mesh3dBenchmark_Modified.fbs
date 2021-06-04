@@ -27,7 +27,6 @@ struct Vector2Int (fs_writeThrough)
 {
     x:int32;
     y:int32;
-    Null : ubyte;
 }
 
 struct Vector2 (fs_writeThrough)
@@ -62,7 +61,7 @@ struct MutableUShort (fs_writeThrough)
     Value : ushort;
 }
 
-table Mesh
+table Mesh (fs_serializer:VectorCacheMutable)
 {
     vertices:   [Vector3] (fs_vector:Array);
     normals:    [Vector3] (fs_vector:Array);
