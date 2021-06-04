@@ -86,6 +86,7 @@ namespace BenchmarkCore
     {
         public static void Main(string[] args)
         {
+            BenchmarkRunner.Run<MeshServerUseCases>();
             BenchmarkRunner.Run<StructVectorClone>();
             //FlatSharpGlobalSettings.CollectPooledObjectStackTraces = true;
 
