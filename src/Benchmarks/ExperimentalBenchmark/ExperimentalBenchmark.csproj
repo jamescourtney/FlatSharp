@@ -31,5 +31,6 @@
   <Target Name="FBS" BeforeTargets="BeforeBuild" Condition=" '$(AppVeyorBuild)' != 'true' ">
     <Exec Command="..\..\FlatSharp.Compiler\bin\$(Configuration)\net5.0\FlatSharp.Compiler.exe -i Benchmark.fbs -o . --nullable-warnings true" />
     <Exec Command="..\..\FlatSharp.Compiler\bin\$(Configuration)\net5.0\FlatSharp.Compiler.exe -i Mesh3dBenchmark.fbs -o . --nullable-warnings true" />
+    <Exec Command="..\..\FlatSharp.Compiler\bin\$(Configuration)\net5.0\FlatSharp.Compiler.exe -i Mesh3dBenchmark_Modified.fbs -o . --nullable-warnings true" />
   </Target>
 </Project>

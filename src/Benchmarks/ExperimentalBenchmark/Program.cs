@@ -42,12 +42,12 @@ namespace BenchmarkCore
 
             this.table = new SomeTable
             {
-                Points = new List<Vec3>()
+                Points = new Vec3[20000]
             };
 
             for (int i = 0; i < 20_000; ++i)
             {
-                this.table.Points.Add(new Vec3 { X = 1, Y = 2, Z = 3 });
+                this.table.Points[i] = (new Vec3 { X = 1, Y = 2, Z = 3 });
             }
 
             this.Serialize();
@@ -63,7 +63,6 @@ namespace BenchmarkCore
         public int ParseAndTraverse()
         {
             var t = SomeTable.Serializer.Parse(this.inputBuffer);
-
             int sum = 0;
 
             var points = t.Points;
@@ -72,8 +71,11 @@ namespace BenchmarkCore
             {
                 var item = points[i];
                 sum += (int)(item.X + item.Y + item.Z);
+            }
 
-                ((IFlatBufferDeserializedObject)item).Release();
+            for (int i = 0; i < count; ++i)
+            {
+                ((IFlatBufferDeserializedObject)points[i]).Release();
             }
 
             return sum;
@@ -86,8 +88,13 @@ namespace BenchmarkCore
     {
         public static void Main(string[] args)
         {
-            BenchmarkRunner.Run<MeshServerUseCases>();
-            BenchmarkRunner.Run<StructVectorClone>();
+            //Modified.MeshServerModifiedUseCases m = new Modified.MeshServerModifiedUseCases();
+            //m.Setup();
+
+            //BenchmarkRunner.Run<MeshServerUseCases>();
+            BenchmarkRunner.Run<Modified.MeshServerModifiedUseCases>();
+
+            //BenchmarkRunner.Run<StructVectorClone>();
             //FlatSharpGlobalSettings.CollectPooledObjectStackTraces = true;
 
             //var table = new SomeTable
