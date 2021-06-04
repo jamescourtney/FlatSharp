@@ -1,0 +1,81 @@
+﻿
+namespace BenchmarkCore.Modified;
+
+struct Vector4 (fs_writeThrough)
+{
+    x:float;
+    y:float;
+    z:float;
+    w:float;
+    Null : ubyte;
+}
+
+struct Vector3Int (fs_writeThrough)
+{
+    x:int32;
+    y:int32;
+    z:int32;
+    Null : ubyte;
+}
+
+struct Vector3  (fs_writeThrough)
+{
+    x:float;
+    y:float;
+    z:float;
+    Null : ubyte;
+}
+
+struct Vector2Int (fs_writeThrough)
+{
+    x:int32;
+    y:int32;
+    Null : ubyte;
+}
+
+struct Vector2 (fs_writeThrough)
+{
+    x:float;
+    y:float;
+    Null : ubyte;
+}
+
+struct Color (fs_writeThrough)
+{
+    r: ubyte;
+    g: ubyte;
+    b: ubyte;
+    a: ubyte;
+    Null : ubyte;
+}
+
+struct Voxel (fs_writeThrough)
+{
+    VoxelType: ubyte;
+    SubType : ubyte;
+    Hp:ubyte;
+    Unused:ubyte;
+    Null : ubyte;
+}
+
+struct MutableUInt32 (fs_writeThrough)
+{
+    Value : uint32;
+}
+
+table Mesh
+{
+    vertices:   [Vector3] (fs_vector:Array);
+    normals:    [Vector3] (fs_vector:Array);
+    uv:         [Vector2] (fs_vector:Array);
+    color:      [Color] (fs_vector:Array);
+    triangles:  [ushort] (fs_vector:Array);
+}
+
+table VoxelRegion3D
+{
+    location: Vector3Int;
+    iteration: MutableUInt32;
+    size: ushort;
+    voxels: [Voxel];
+} 
