@@ -53,7 +53,7 @@ namespace FlatSharpTests
 #endif
 
         [TestMethod]
-        public void TestPooling()
+        public void Pooling_Allocation_Count_Verification()
         {
             TestTable table = new TestTable
             {
@@ -102,12 +102,104 @@ namespace FlatSharpTests
             Assert.AreEqual(1, TestTable.CtorCount);
         }
 
+        [TestMethod]
+        public void Recycle_Circular_Chain_With_Error_Conditions()
+        {
+            var a = new Chain_A
+            {
+                Next = new Chain_B
+                {
+                    Next = new Chain_C
+                    {
+                        Next = new Chain_A
+                        {
+                            Next = new Chain_B
+                            {
+                                Next = new Chain_C()
+                            }
+                        }
+                    }
+                }
+            };
+
+            FlatBufferSerializer pcSerializer = new FlatBufferSerializer(FlatBufferDeserializationOption.PropertyCache);
+            var chainASerializer = pcSerializer.Compile<Chain_A>();
+
+            byte[] buffer = new byte[1024];
+            chainASerializer.Write(buffer, a);
+
+            Assert.AreEqual(2, Chain_A.CtorCount);
+            Assert.AreEqual(2, Chain_B.CtorCount);
+            Assert.AreEqual(2, Chain_C.CtorCount);
+
+            ResetCounts();
+
+            InvalidOperationException ex;
+            for (int i = 0; i < 100; ++i)
+            {
+                Chain_A a1 = chainASerializer.Parse<Chain_A>(buffer);
+                Chain_A a1Copy = a1;
+
+                Chain_B b1 = a1.Next;
+                Chain_C c1 = b1.Next;
+                Chain_A a2 = c1.Next;
+                Chain_B b2 = a2.Next;
+                Chain_C c2 = b2.Next;
+
+                Assert.IsNotNull(c2);
+                Assert.IsNull(c2.Next);
+
+                chainASerializer.Recycle(ref a1);
+
+                Assert.IsNull(a1);
+
+                ex = Assert.ThrowsException<InvalidOperationException>(() => a1Copy.Next);
+                Assert.IsTrue(ex.Message.Contains("FlatSharp recycled object used after recycle"));
+
+                ex = Assert.ThrowsException<InvalidOperationException>(() => b1.Next);
+                Assert.IsTrue(ex.Message.Contains("FlatSharp recycled object used after recycle"));
+
+                ex = Assert.ThrowsException<InvalidOperationException>(() => c1.Next);
+                Assert.IsTrue(ex.Message.Contains("FlatSharp recycled object used after recycle"));
+
+                ex = Assert.ThrowsException<InvalidOperationException>(() => a2.Next);
+                Assert.IsTrue(ex.Message.Contains("FlatSharp recycled object used after recycle"));
+
+                ex = Assert.ThrowsException<InvalidOperationException>(() => b2.Next);
+                Assert.IsTrue(ex.Message.Contains("FlatSharp recycled object used after recycle"));
+
+                ex = Assert.ThrowsException<InvalidOperationException>(() => c2.Next);
+                Assert.IsTrue(ex.Message.Contains("FlatSharp recycled object used after recycle"));
+            }
+
+            Chain_A doubleRecycle1 = chainASerializer.Parse<Chain_A>(buffer);
+            Chain_A doubleRecycle2 = doubleRecycle1;
+
+            chainASerializer.Recycle(ref doubleRecycle1);
+            ex = Assert.ThrowsException<InvalidOperationException>(
+                () =>
+                {
+                    var temp = doubleRecycle2;
+                    chainASerializer.Recycle(ref temp);
+                });
+
+            Assert.IsTrue(ex.Message.Contains("FlatSharp recycled object recycled twice."));
+
+            Assert.AreEqual(2, Chain_A.CtorCount);
+            Assert.AreEqual(2, Chain_B.CtorCount);
+            Assert.AreEqual(2, Chain_C.CtorCount);
+        }
+
         private static void ResetCounts()
         {
             TestTable.CtorCount = 0;
             TestStruct.CtorCount = 0;
             NonRecyclableTable.CtorCount = 0;
             NonRecyclableStruct.CtorCount = 0;
+
+            Chain_A.CtorCount = 0;
+            Chain_B.CtorCount = 0;
+            Chain_C.CtorCount = 0;
         }
 
 #if NET5_0_OR_GREATER
@@ -192,6 +284,39 @@ namespace FlatSharpTests
             public NonRecyclableStruct() => CtorCount++;
 
             [FlatBufferItem(0)] public virtual int Int { get; set; }
+        }
+
+        [FlatBufferTable(PoolSize = -1)]
+        public class Chain_A
+        {
+            public static int CtorCount = 0;
+
+            public Chain_A() => CtorCount++;
+
+            [FlatBufferItem(0)]
+            public virtual Chain_B? Next { get; set; }
+        }
+
+        [FlatBufferTable(PoolSize = -1)]
+        public class Chain_B
+        {
+            public static int CtorCount = 0;
+
+            public Chain_B() => CtorCount++;
+
+            [FlatBufferItem(0)]
+            public virtual Chain_C? Next { get; set; }
+        }
+
+        [FlatBufferTable(PoolSize = -1)]
+        public class Chain_C
+        {
+            public static int CtorCount = 0;
+
+            public Chain_C() => CtorCount++;
+
+            [FlatBufferItem(0)]
+            public virtual Chain_A? Next { get; set; }
         }
     }
 }

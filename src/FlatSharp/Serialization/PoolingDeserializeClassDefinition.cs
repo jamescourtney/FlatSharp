@@ -55,7 +55,7 @@ namespace FlatSharp
                 if (this.{ReleasedVariableName})
                 {{
                     throw new InvalidOperationException(
-                        {this.CreatePoolErrorMessage("FlatSharp pooled object used after release.")});
+                        {this.CreatePoolErrorMessage("FlatSharp recycled object used after recycle.")});
                 }}
                 {base.GetGetterBody(itemModel)}
             ";
@@ -67,7 +67,7 @@ namespace FlatSharp
                 if (this.{ReleasedVariableName})
                 {{
                     throw new InvalidOperationException(
-                        {this.CreatePoolErrorMessage("FlatSharp pooled object used after release.")});
+                        {this.CreatePoolErrorMessage("FlatSharp recycled object used after recycle.")});
                 }}
                 {base.GetSetterBody(itemModel)}
             ";
@@ -91,7 +91,7 @@ namespace FlatSharp
                 if (this.{ReleasedVariableName})
                 {{
                     throw new InvalidOperationException(
-                        {this.CreatePoolErrorMessage("FlatSharp pooled object released twice.")});
+                        {this.CreatePoolErrorMessage("FlatSharp recycled object recycled twice.")});
                 }}
 
                 this.{ReleasedVariableName} = true;
