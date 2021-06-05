@@ -97,7 +97,7 @@ namespace FlatSharp
         /// the <paramref name="item"/> parameter will be set to <c>null</c>. If pooling is not enabled, this operation
         /// will be a harmless no-op (but may still return <c>true</c>).
         /// </summary>
-        void Recycle(ref T item);
+        void Recycle(ref T? item);
 
         /// <summary>
         /// Returns a new <see cref="ISerializer{T}"/> instance based on the current one with the given settings.

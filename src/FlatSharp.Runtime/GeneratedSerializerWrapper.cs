@@ -175,10 +175,13 @@ namespace FlatSharp
             };
         }
 
-        public void Recycle(ref T item)
+        public void Recycle(ref T? item)
         {
-            this.innerSerializer.Recycle(item);
-            item = default;
+            if (item is not null)
+            {
+                this.innerSerializer.Recycle(item);
+                item = default;
+            }
         }
 
         public ISerializer<T> WithSettings(SerializerSettings settings)
