@@ -25,6 +25,16 @@ namespace FlatSharp
     /// </summary>
     public record RecycleCodeGenContext
     {
+        public RecycleCodeGenContext(
+            string valueVariableName,
+            IReadOnlyDictionary<Type, string> methodNameMap,
+            FlatBufferSerializerOptions options)
+        {
+            this.ValueVariableName = valueVariableName;
+            this.MethodNameMap = methodNameMap;
+            this.Options = options;
+        }
+
         /// <summary>
         /// The variable name of the current value to serialize.
         /// </summary>
@@ -39,7 +49,6 @@ namespace FlatSharp
         /// Serialization options.
         /// </summary>
         public FlatBufferSerializerOptions Options { get; init; }
-
 
         public string GetRecycleInvocation(Type type)
         {

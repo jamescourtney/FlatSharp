@@ -492,12 +492,7 @@ $@"
                 var maxSizeContext = new GetMaxSizeCodeGenContext("value", this.maxSizeMethods, this.options);
                 var parseContext = new ParserCodeGenContext("buffer", "offset", "TInputBuffer", this.readMethods, this.writeMethods, this.recycleMethods, this.options);
                 var serializeContext = new SerializationCodeGenContext("context", "span", "spanWriter", "value", "offset", this.writeMethods, this.typeModelContainer, this.options);
-                var recycleContext = new RecycleCodeGenContext
-                {
-                    MethodNameMap = this.recycleMethods,
-                    Options = this.options,
-                    ValueVariableName = "value",
-                };
+                var recycleContext = new RecycleCodeGenContext("value", this.recycleMethods, this.options);
 
                 var maxSizeMethod = typeModel.CreateGetMaxSizeMethodBody(maxSizeContext);
                 var parseMethod = typeModel.CreateParseMethodBody(parseContext);
