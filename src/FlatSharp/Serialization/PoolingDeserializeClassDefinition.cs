@@ -81,6 +81,12 @@ namespace FlatSharp
                 .Where(f => f != ReleaseStackVariableName)
                 .Select(f => $"this.{f} = default;");
 
+            string poolSizeCheck = string.Empty;
+            if (poolSize > 0)
+            {
+                poolSizeCheck = $"if ({PoolVariableName}.Count < {poolSize})";
+            }
+
             return $@"
                 if (this.{ReleasedVariableName})
                 {{
@@ -95,7 +101,11 @@ namespace FlatSharp
                 }}
 
                 {string.Join("\r\n", releaseStatements)}
-                {PoolVariableName}.Enqueue(this);
+
+                {poolSizeCheck}
+                {{
+                    {PoolVariableName}.Enqueue(this);
+                }}
             ";
         }
 

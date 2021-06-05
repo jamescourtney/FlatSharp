@@ -118,10 +118,10 @@ namespace FlatSharp.TypeModel
             string body;
 
             string createFlatBufferVector =
-            $@"new {vectorClassName}<{context.InputBufferTypeName}>(
-                    {context.InputBufferVariableName}, 
-                    {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}), 
-                    {this.PaddedMemberInlineSize})";
+                $@"new {vectorClassName}<{context.InputBufferTypeName}>(
+                        {context.InputBufferVariableName}, 
+                        {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}), 
+                        {this.PaddedMemberInlineSize})";
 
             if (context.Options.PreallocateVectors)
             {
