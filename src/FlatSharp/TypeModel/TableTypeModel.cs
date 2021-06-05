@@ -99,11 +99,6 @@ namespace FlatSharp.TypeModel
         public override bool SerializesInline => false;
 
         /// <summary>
-        /// Indicates if we support recycle or not.
-        /// </summary>
-        public override bool SupportsRecycle => this.attribute.PoolSize != 0 || this.memberTypes.Values.Any(x => x.ItemTypeModel.SupportsRecycle);
-
-        /// <summary>
         /// Gets the maximum used index in this vtable.
         /// </summary>
         public int MaxIndex => this.occupiedVtableSlots.Any() ? this.occupiedVtableSlots.Max() : -1;
@@ -129,6 +124,13 @@ namespace FlatSharp.TypeModel
         }
 
         public override ConstructorInfo? PreferredSubclassConstructor => this.preferredConstructor;
+
+        public override IEnumerable<ITypeModel> Children => this.memberTypes.Values.Select(x => x.ItemTypeModel);
+
+        /// <summary>
+        /// Use the table attributre to determine rules for recycle.
+        /// </summary>
+        public override bool IsRecyclable => this.attribute.PoolSize != 0;
 
         public override void Initialize()
         {
@@ -764,18 +766,6 @@ $@"
         {
             tableMember = this.KeyMember;
             return tableMember != null;
-        }
-
-        public override void TraverseObjectGraph(HashSet<Type> seenTypes)
-        {
-            seenTypes.Add(this.ClrType);
-            foreach (var member in this.memberTypes.Values)
-            {
-                if (seenTypes.Add(member.ItemTypeModel.ClrType))
-                {
-                    member.ItemTypeModel.TraverseObjectGraph(seenTypes);
-                }
-            }
         }
 
         private int GetVTableLength(int index) => 4 + (2 * (index + 1));

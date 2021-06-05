@@ -94,7 +94,9 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// Indicates if we support recycle or not.
         /// </summary>
-        public override bool SupportsRecycle => this.attribute.PoolSize != 0 || this.memberTypes.Any(x => x.ItemTypeModel.SupportsRecycle);
+        public override bool IsRecyclable => this.attribute.PoolSize != 0;
+
+        public override IEnumerable<ITypeModel> Children => this.memberTypes.Select(x => x.ItemTypeModel);
 
         public override ConstructorInfo? PreferredSubclassConstructor => this.preferredConstructor;
 
@@ -290,18 +292,6 @@ $@"
 
                 this.memberTypes.Add(model);
                 this.inlineSize += length;
-            }
-        }
-
-        public override void TraverseObjectGraph(HashSet<Type> seenTypes)
-        {
-            seenTypes.Add(this.ClrType);
-            foreach (var member in this.memberTypes)
-            {
-                if (seenTypes.Add(member.ItemTypeModel.ClrType))
-                {
-                    member.ItemTypeModel.TraverseObjectGraph(seenTypes);
-                }
             }
         }
     }

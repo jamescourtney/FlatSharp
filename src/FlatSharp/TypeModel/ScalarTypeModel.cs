@@ -87,6 +87,11 @@
         public override bool SerializeMethodRequiresContext => false;
 
         /// <summary>
+        /// Scalars are leaf nodes.
+        /// </summary>
+        public override IEnumerable<ITypeModel> Children => new ITypeModel[0];
+
+        /// <summary>
         /// The name of the read method for an input buffer.
         /// </summary>
         protected abstract string InputBufferReadMethodName { get; }
@@ -140,11 +145,6 @@
             {
                 IsMethodInline = true,
             };
-        }
-
-        public override void TraverseObjectGraph(HashSet<Type> seenTypes)
-        {
-            seenTypes.Add(this.ClrType);
         }
 
         public override string FormatDefaultValueAsLiteral(object? defaultValue)

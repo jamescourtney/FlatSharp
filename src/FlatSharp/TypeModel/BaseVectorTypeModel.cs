@@ -89,10 +89,7 @@ namespace FlatSharp.TypeModel
         /// </summary>
         public override bool SerializesInline => false;
 
-        /// <summary>
-        /// We support recycle if our item does.
-        /// </summary>
-        public override bool SupportsRecycle => this.ItemTypeModel.SupportsRecycle;
+        public override IEnumerable<ITypeModel> Children => new[] { this.ItemTypeModel };
 
         /// <summary>
         /// Gets the size of each member of this vector, with padding for alignment.
@@ -169,7 +166,7 @@ namespace FlatSharp.TypeModel
 
         public override CodeGeneratedMethod CreateRecycleMethodBody(RecycleCodeGenContext context)
         {
-            if (!this.SupportsRecycle)
+            if (!this.HasRecyclableDescendant())
             {
                 return new CodeGeneratedMethod(string.Empty) { IsMethodInline = true };
             }
@@ -234,15 +231,6 @@ namespace FlatSharp.TypeModel
         }
 
         public abstract void OnInitialize();
-
-        public override void TraverseObjectGraph(HashSet<Type> seenTypes)
-        {
-            seenTypes.Add(this.ClrType);
-            if (seenTypes.Add(this.ItemTypeModel.ClrType))
-            {
-                this.ItemTypeModel.TraverseObjectGraph(seenTypes);
-            }
-        }
 
         protected string GetThrowIfNullStatement(string variableName)
         {

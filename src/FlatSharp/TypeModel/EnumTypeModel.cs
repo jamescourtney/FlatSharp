@@ -76,6 +76,8 @@
 
         public override bool SerializeMethodRequiresContext => this.underlyingTypeModel.SerializeMethodRequiresContext;
 
+        public override IEnumerable<ITypeModel> Children => new[] { this.underlyingTypeModel };
+
         public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
         {
             Type underlyingType = this.underlyingTypeModel.ClrType;
@@ -120,12 +122,6 @@
             {
                 IsMethodInline = true,
             };
-        }
-
-        public override void TraverseObjectGraph(HashSet<Type> seenTypes)
-        {
-            seenTypes.Add(this.ClrType);
-            seenTypes.Add(Enum.GetUnderlyingType(this.ClrType));
         }
 
         public override string FormatDefaultValueAsLiteral(object? defaultValue)

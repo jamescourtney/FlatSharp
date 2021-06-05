@@ -17,6 +17,7 @@
 namespace FlatSharp.TypeModel
 {
     using System;
+    using System.Collections.Generic;
     using System.Reflection;
 
     [Flags]
@@ -170,6 +171,50 @@ namespace FlatSharp.TypeModel
             {
                 return "null";
             }
+        }
+
+        /// <summary>
+        /// Recursively traverses the full object graph for the given type model.
+        /// </summary>
+        public static void TraverseObjectGraph(this ITypeModel model, HashSet<Type> seenTypes)
+        {
+            if (seenTypes.Add(model.ClrType))
+            {
+                foreach (var child in model.Children)
+                {
+                    child.TraverseObjectGraph(seenTypes);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Indicates if there is a path to a recyclable element from this type model, even if
+        /// this type model does not itself support a recycle. Uses depth-first search with cycle detection.
+        /// </summary>
+        public static bool HasRecyclableDescendant(this ITypeModel typeModel)
+        {
+            static bool Recursive(ITypeModel typeModel, HashSet<Type> seenTypes)
+            {
+                if (typeModel.IsRecyclable)
+                {
+                    return true;
+                }
+
+                if (seenTypes.Add(typeModel.ClrType))
+                {
+                    foreach (var child in typeModel.Children)
+                    {
+                        if (child.IsRecyclable || Recursive(child, seenTypes))
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
+            }
+
+            return Recursive(typeModel, new());
         }
     }
 }

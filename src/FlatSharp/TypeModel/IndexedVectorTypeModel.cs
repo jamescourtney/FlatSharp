@@ -146,12 +146,5 @@ namespace FlatSharp.TypeModel
                 IsMethodInline = true,
             };
         }
-
-        public override void TraverseObjectGraph(HashSet<Type> seenTypes)
-        {
-            seenTypes.Add(this.ClrType);
-            this.keyTypeModel.TraverseObjectGraph(seenTypes);
-            this.valueTypeModel.TraverseObjectGraph(seenTypes);
-        }
     }
 }

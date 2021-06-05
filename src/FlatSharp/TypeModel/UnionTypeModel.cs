@@ -85,14 +85,14 @@ namespace FlatSharp.TypeModel
         public override bool SerializesInline => false;
 
         /// <summary>
-        /// We support recycle if any of our elements do.
-        /// </summary>
-        public override bool SupportsRecycle => this.UnionElementTypeModel.Any(x => x.SupportsRecycle);
-
-        /// <summary>
         /// Gets the type model for this union's members. Index 0 corresponds to discriminator 1.
         /// </summary>
         public ITypeModel[] UnionElementTypeModel => this.memberTypeModels;
+
+        /// <summary>
+        /// Unions have an implicit dependency on <see cref="byte"/> for the discriminator.
+        /// </summary>
+        public override IEnumerable<ITypeModel> Children => this.memberTypeModels.Concat(new[] { this.typeModelContainer.CreateTypeModel(typeof(byte)) });
 
         public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
         {
@@ -250,7 +250,7 @@ $@"
             for (int i = 0; i < this.memberTypeModels.Length; ++i)
             {
                 var memberModel = this.memberTypeModels[i];
-                if (memberModel.SupportsRecycle)
+                if (memberModel.HasRecyclableDescendant())
                 {
                     int discriminator = i + 1;
                     var memberContext = context with { ValueVariableName = $"{context.ValueVariableName}.Item{discriminator}" };
@@ -303,18 +303,6 @@ $@"
                     }
 
                     containsString = true;
-                }
-            }
-        }
-
-        public override void TraverseObjectGraph(HashSet<Type> seenTypes)
-        {
-            seenTypes.Add(this.ClrType);
-            foreach (var member in this.memberTypeModels)
-            {
-                if (seenTypes.Add(member.ClrType))
-                {
-                    member.TraverseObjectGraph(seenTypes);
                 }
             }
         }

@@ -90,10 +90,7 @@ namespace FlatSharp.TypeModel
         /// </summary>
         public override bool SerializesInline => false;
 
-        /// <summary>
-        /// We support recycle if our union does.
-        /// </summary>
-        public override bool SupportsRecycle => this.ItemTypeModel.SupportsRecycle;
+        public override IEnumerable<ITypeModel> Children => new[] { this.ItemTypeModel };
 
         public override bool TryGetUnderlyingVectorType([NotNullWhen(true)] out ITypeModel? typeModel)
         {
@@ -207,17 +204,6 @@ namespace FlatSharp.TypeModel
         }
 
         public abstract void OnInitialize();
-
-        public override void TraverseObjectGraph(HashSet<Type> seenTypes)
-        {
-            seenTypes.Add(this.ClrType);
-            seenTypes.Add(typeof(byte));
-
-            if (seenTypes.Add(this.ItemTypeModel.ClrType))
-            {
-                this.ItemTypeModel.TraverseObjectGraph(seenTypes);
-            }
-        }
 
         private string GetThrowIfNullStatement(string variableName)
         {

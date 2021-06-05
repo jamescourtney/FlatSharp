@@ -123,7 +123,7 @@ namespace FlatSharp
 
             if (!this.options.Lazy)
             {
-                if (!string.IsNullOrEmpty(recycleMethodName) && itemModel.ItemTypeModel.SupportsRecycle)
+                if (!string.IsNullOrEmpty(recycleMethodName) && itemModel.ItemTypeModel.HasRecyclableDescendant())
                 {
                     this.recycleMethodInvocations.Add($"{recycleMethodName}(this.{GetFieldName(itemModel)});");
                 }
