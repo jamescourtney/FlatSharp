@@ -19,6 +19,7 @@ namespace FlatSharp.TypeModel
     using System;
     using System.Collections.Generic;
     using System.Collections.Immutable;
+    using System.Diagnostics;
     using System.Linq;
     using System.Reflection;
     using FlatSharp.Attributes;
@@ -34,10 +35,11 @@ namespace FlatSharp.TypeModel
         private int maxAlignment = 1;
         private ConstructorInfo? preferredConstructor;
         private MethodInfo? onDeserializeMethod;
-        private FlatBufferStructAttribute? attribute;
+        private FlatBufferStructAttribute attribute;
 
         internal StructTypeModel(Type clrType, TypeModelContainer container) : base(clrType, container)
         {
+            this.attribute = null!;
         }
 
         /// <summary>
@@ -145,17 +147,16 @@ namespace FlatSharp.TypeModel
             List<string> body = new List<string>();
             body.Add($"Span<byte> scopedSpan = {context.SpanVariableName}.Slice({context.OffsetVariableName}, {this.PhysicalLayout[0].InlineSize});");
 
-            if (!this.ClrType.IsValueType)
-            {
-                body.Add($@"
+            FlatSharpInternal.Assert(!this.ClrType.IsValueType, "Value-type struct is unexpected");
+
+            body.Add(
+                $@"
                     if ({context.ValueVariableName} is null)
                     {{
                         scopedSpan.Clear();
                         return;
                     }}
                 ");
-            }
-
 
             for (int i = 0; i < this.Members.Count; ++i)
             {
@@ -203,10 +204,11 @@ $@"
 
         public override void Initialize()
         {
-            this.attribute = this.ClrType.GetCustomAttribute<FlatBufferStructAttribute>();
-            if (this.attribute == null)
             {
-                throw new InvalidFlatBufferDefinitionException($"Can't create struct type model from type {this.ClrType.Name} because it does not have a [FlatBufferStruct] attribute.");
+                FlatBufferStructAttribute? attribute = this.ClrType.GetCustomAttribute<FlatBufferStructAttribute>();
+
+                FlatSharpInternal.Assert(attribute != null, "Missing attribute.");
+                this.attribute = attribute!;
             }
 
             TableTypeModel.EnsureClassCanBeInheritedByOutsideAssembly(this.ClrType, out this.preferredConstructor);
@@ -279,15 +281,9 @@ $@"
                     this.inlineSize,
                     length);
 
-                if (!model.IsVirtual
-                    && this.attribute.PoolSize != 0
-                    && model.SetterKind == ItemMemberModel.SetMethodKind.Init)
+                if (this.attribute.PoolSize != 0)
                 {
-                    // Pooling is not possible with non-virtual init-only setters. Compiler
-                    // correctly complains that we are messing with properties outside
-                    // of a valid context when we recycle them.
-                    throw new InvalidFlatBufferDefinitionException(
-                        $"FlatBuffer table property '{this.GetCompilableTypeName()}.{model.PropertyInfo.Name}' is non-virtual and init-only in a table with object pooling enabled. This combination is not supported. Consider marking the property as virtual, settable, or disabling pooling.");
+                    model.ValidateRecyclableSetter(this);
                 }
 
                 this.memberTypes.Add(model);

@@ -99,25 +99,25 @@ namespace FlatSharpTests
             public TestTable() => CtorCount++;
 
             [FlatBufferItem(0)]
-            public virtual string String { get; set; }
+            public virtual string? String { get; set; }
 
             [FlatBufferItem(1)]
-            public virtual IList<TestStruct> VectorOfRecyclableStruct { get; set; }
+            public virtual IList<TestStruct>? VectorOfRecyclableStruct { get; set; }
 
             [FlatBufferItem(2)]
-            public virtual IList<TestTable> VectorOfRecyclableTable { get; set; }
+            public virtual IList<TestTable>? VectorOfRecyclableTable { get; set; }
 
             [FlatBufferItem(3)]
-            public virtual IList<NonRecyclableStruct> VectorOfNonRecyclableStruct { get; set; }
+            public virtual IList<NonRecyclableStruct>? VectorOfNonRecyclableStruct { get; set; }
 
             [FlatBufferItem(4)]
-            public virtual IList<NonRecyclableTable> VectorOfNonRecyclableTable { get; set; }
+            public virtual IList<NonRecyclableTable>? VectorOfNonRecyclableTable { get; set; }
 
             [FlatBufferItem(5)]
-            public virtual FlatBufferUnion<TestStruct, TestTable, NonRecyclableStruct, NonRecyclableTable> Union { get; set; }
+            public virtual FlatBufferUnion<TestStruct, TestTable, NonRecyclableStruct, NonRecyclableTable>? Union { get; set; }
 
             [FlatBufferItem(7)]
-            public virtual IList<FlatBufferUnion<TestStruct, TestTable, NonRecyclableStruct, NonRecyclableTable>> VectorOfUnion { get; set; }
+            public virtual IList<FlatBufferUnion<TestStruct, TestTable, NonRecyclableStruct, NonRecyclableTable>>? VectorOfUnion { get; set; }
         }
 
         [FlatBufferTable]

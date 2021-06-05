@@ -46,7 +46,7 @@ namespace FlatSharp.TypeModel
         private readonly HashSet<int> occupiedVtableSlots = new HashSet<int>();
         private ConstructorInfo? preferredConstructor;
         private MethodInfo? onDeserializeMethod;
-        private FlatBufferTableAttribute? attribute;
+        private FlatBufferTableAttribute attribute = null!;
         private readonly string tableReaderClassName = "tableReader_" + Guid.NewGuid().ToString("n");
 
         internal TableTypeModel(Type clrType, TypeModelContainer typeModelProvider) : base(clrType, typeModelProvider)
@@ -134,10 +134,10 @@ namespace FlatSharp.TypeModel
 
         public override void Initialize()
         {
-            this.attribute = this.ClrType.GetCustomAttribute<FlatBufferTableAttribute>();
-            if (this.attribute == null)
             {
-                throw new InvalidFlatBufferDefinitionException($"Can't create table type model from type {this.ClrType.Name} because it does not have a [FlatBufferTable] attribute.");
+                FlatBufferTableAttribute? attr = this.ClrType.GetCustomAttribute<FlatBufferTableAttribute>();
+                FlatSharpInternal.Assert(attr != null, "Table object missing attribute");
+                this.attribute = attr;
             }
 
             ValidateFileIdentifier(this.attribute.FileIdentifier);
@@ -171,15 +171,9 @@ namespace FlatSharp.TypeModel
                     property.Property,
                     property.Attribute);
                 
-                if (!model.IsVirtual 
-                    && this.attribute.PoolSize != 0
-                    && model.SetterKind == ItemMemberModel.SetMethodKind.Init)
+                if (this.attribute.PoolSize != 0)
                 {
-                    // Pooling is not possible with non-virtual init-only setters. Compiler
-                    // correctly complains that we are messing with properties outside
-                    // of a valid context when we recycle them.
-                    throw new InvalidFlatBufferDefinitionException(
-                        $"FlatBuffer table property '{this.GetCompilableTypeName()}.{property.Property.Name}' is non-virtual and init-only in a table with object pooling enabled. This combination is not supported. Consider marking the property as virtual, settable, or disabling pooling.");
+                    model.ValidateRecyclableSetter(this);
                 }
 
                 property.ItemTypeModel.AdjustTableMember(model);

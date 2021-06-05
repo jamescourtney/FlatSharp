@@ -38,8 +38,8 @@ namespace FlatSharp
         {
             this.poolSize = poolSize;
 
-            base.instanceFieldDefinitions[AllocationStackVariableName] = $"private string {AllocationStackVariableName};";
-            base.instanceFieldDefinitions[ReleaseStackVariableName] = $"private string {ReleaseStackVariableName};";
+            base.instanceFieldDefinitions[AllocationStackVariableName] = $"private string? {AllocationStackVariableName};";
+            base.instanceFieldDefinitions[ReleaseStackVariableName] = $"private string? {ReleaseStackVariableName};";
             base.instanceFieldDefinitions[ReleasedVariableName] = $"private bool {ReleasedVariableName};";
 
             base.staticFieldDefinitions[PoolVariableName] =
@@ -79,7 +79,7 @@ namespace FlatSharp
                 .Where(f => f != ReleasedVariableName) // don't reset our metadata.
                 .Where(f => f != AllocationStackVariableName)
                 .Where(f => f != ReleaseStackVariableName)
-                .Select(f => $"this.{f} = default;");
+                .Select(f => $"this.{f} = default!;");
 
             string poolSizeCheck = string.Empty;
             if (poolSize > 0)
@@ -137,6 +137,7 @@ namespace FlatSharp
             return $@"
                 private {this.ClassName}() : base({baseCtorParams}) 
                 {{
+                    this.{InputBufferVariableName} = default!;
                 }}
 
                 private void Initialize(TInputBuffer buffer, int offset)

@@ -26,13 +26,13 @@ namespace FlatSharpTests
         [AssemblyInitialize]
         public static void AssemblyInitialize(TestContext ctx)
         {
-            //RoslynSerializerGenerator.EnableStrictValidation = true;
+            RoslynSerializerGenerator.EnableStrictValidation = true;
         }
 
         [AssemblyCleanup]
         public static void AssemblyCleanup()
         {
-            //RoslynSerializerGenerator.EnableStrictValidation = false;
+            RoslynSerializerGenerator.EnableStrictValidation = false;
         }
     }
 }

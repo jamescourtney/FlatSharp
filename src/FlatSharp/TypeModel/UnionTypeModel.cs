@@ -258,14 +258,19 @@ $@"
                 }
             }
 
-            string body = $@"
-                if (!({context.ValueVariableName} is null))
-                {{
-                    switch ({context.ValueVariableName}.{nameof(FlatBufferUnion<string>.Discriminator)}) 
+            string body = string.Empty;
+            if (switchCases.Count > 0)
+            {
+                body = 
+                    $@"
+                    if (!({context.ValueVariableName} is null))
                     {{
-                        {string.Join("\r\n", switchCases)}
-                    }}
-                }}";
+                        switch ({context.ValueVariableName}.{nameof(FlatBufferUnion<string>.Discriminator)}) 
+                        {{
+                            {string.Join("\r\n", switchCases)}
+                        }}
+                    }}";
+            }
 
             return new CodeGeneratedMethod(body);
         }

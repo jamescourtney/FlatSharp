@@ -48,7 +48,8 @@ namespace FlatSharp.TypeModel
 
         protected override string CreateLoop(FlatBufferSerializerOptions options, string vectorVariableName, string numberOfItemsVariableName, string expectedVariableName, string body)
         {
-            throw new InvalidOperationException("Flatsharp.Internal: Not expecting to do loop get max size for memory vector");
+            FlatSharpInternal.Assert(false, "Not expecting to do loop get max size for memory vector");
+            throw new Exception();
         }
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
