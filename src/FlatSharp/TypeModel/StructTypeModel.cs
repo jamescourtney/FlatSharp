@@ -35,11 +35,10 @@ namespace FlatSharp.TypeModel
         private int maxAlignment = 1;
         private ConstructorInfo? preferredConstructor;
         private MethodInfo? onDeserializeMethod;
-        private FlatBufferStructAttribute attribute;
+        private FlatBufferStructAttribute attribute = null!;
 
         internal StructTypeModel(Type clrType, TypeModelContainer container) : base(clrType, container)
         {
-            this.attribute = null!;
         }
 
         /// <summary>
@@ -125,7 +124,7 @@ namespace FlatSharp.TypeModel
                 this.onDeserializeMethod,
                 this,
                 context.Options,
-                this.attribute!.PoolSize);
+                this.attribute.PoolSize);
 
             // Build up a list of property overrides.
             for (int index = 0; index < this.Members.Count; ++index)

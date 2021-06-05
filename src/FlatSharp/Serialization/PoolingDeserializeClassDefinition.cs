@@ -134,10 +134,16 @@ namespace FlatSharp
 
         protected override string GetCtorMethodDefinition(string onDeserializedStatement, string baseCtorParams)
         {
+            string bufferAssignment = string.Empty;
+            if (base.HasEmbeddedBufferReference)
+            {
+                bufferAssignment = $"{base.GetBufferReference()} = default!;";
+            }
+
             return $@"
                 private {this.ClassName}() : base({baseCtorParams}) 
                 {{
-                    this.{InputBufferVariableName} = default!;
+                    {bufferAssignment}
                 }}
 
                 private void Initialize(TInputBuffer buffer, int offset)

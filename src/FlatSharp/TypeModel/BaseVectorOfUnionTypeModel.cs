@@ -158,15 +158,7 @@ namespace FlatSharp.TypeModel
 
         public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
         {
-            string parameters;
-            if (this.ItemTypeModel.ClrType.IsValueType)
-            {
-                parameters = context.ItemVariableName;
-            }
-            else
-            {
-                parameters = $"{context.ItemVariableName}, {context.MethodNameMap[this.ItemTypeModel.ClrType]}";
-            }
+            string parameters = parameters = $"{context.ItemVariableName}, {context.MethodNameMap[this.ItemTypeModel.ClrType]}";
 
             string body =  $"return {nameof(VectorCloneHelpers)}.{nameof(VectorCloneHelpers.Clone)}<{this.ItemTypeModel.GetCompilableTypeName()}>({parameters});";
             return new CodeGeneratedMethod(body)

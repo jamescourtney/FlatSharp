@@ -62,7 +62,7 @@ namespace FlatSharpTests
             [FlatBufferItem(3)]
             public virtual TestStruct? Struct { get; protected set; }
 
-#if NET5_0
+#if NET5_0_OR_GREATER
             [FlatBufferItem(4)]
             public virtual int BothPublicInit { get; init; }
 
@@ -86,7 +86,7 @@ namespace FlatSharpTests
             [FlatBufferItem(2)]
             public virtual int PublicGetterProtectedSetter { get; protected set; }
 
-#if NET5_0
+#if NET5_0_OR_GREATER
             [FlatBufferItem(3)]
             public virtual int BothPublicInit { get; init; }
 
@@ -114,7 +114,7 @@ namespace FlatSharpTests
             [FlatBufferItem(3)]
             public TestStructNonVirtual? Struct { get; protected set; }
 
-#if NET5_0
+#if NET5_0_OR_GREATER
             [FlatBufferItem(4)]
             public int BothPublicInit { get; init; }
 
@@ -139,7 +139,7 @@ namespace FlatSharpTests
             [FlatBufferItem(2)]
             public int PublicGetterProtectedSetter { get; protected set; }
 
-#if NET5_0
+#if NET5_0_OR_GREATER
             [FlatBufferItem(3)]
             public int PublicGetterProtectedInternalInit { get; protected internal init; }
 

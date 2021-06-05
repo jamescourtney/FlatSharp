@@ -55,7 +55,7 @@ namespace FlatSharp.Compiler
             writer.AppendLine("#pragma warning disable 0618");
 
             // Test hook to check deeply for nullability violations.
-#if NET5_0
+#if NET5_0_OR_GREATER
             if (RoslynSerializerGenerator.EnableStrictValidation && 
                 context.Options.NullableWarnings == null)
             {

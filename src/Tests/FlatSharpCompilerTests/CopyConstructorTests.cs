@@ -25,7 +25,7 @@ namespace FlatSharpTests.Compiler
     using FlatSharp.Compiler;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-#if NET5_0 || NETCOREAPP3_1
+#if NETCOREAPP3_1_OR_GREATER
 
     [TestClass]
     public class CopyConstructorTests

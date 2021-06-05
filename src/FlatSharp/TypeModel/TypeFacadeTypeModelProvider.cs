@@ -81,7 +81,7 @@ namespace FlatSharp.TypeModel
 
             public bool IsValidUnionMember => this.underlyingModel.IsValidUnionMember;
 
-            public bool IsValidSortedVectorKey => this.underlyingModel.IsValidSortedVectorKey;
+            public bool IsValidSortedVectorKey => false;
 
             public int MaxInlineSize => this.underlyingModel.MaxInlineSize;
 
