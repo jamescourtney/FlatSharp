@@ -17,13 +17,15 @@
 namespace FlatSharp
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
     using FlatSharp.TypeModel;
 
     internal class PoolingDeserializeClassDefinition : DeserializeClassDefinition
     {
-        private const string PoolVariableName = "__Pool";
+        private const string ReaderVariableName = "__Reader";
+        private const string WriterVariableName = "__Writer";
         private const string AllocationStackVariableName = "__poolDiag_allocationStack";
         private const string ReleaseStackVariableName = "__poolDiag_releaseStack";
         private const string ReleasedVariableName = "__poolDiag_released";
@@ -42,10 +44,14 @@ namespace FlatSharp
             base.instanceFieldDefinitions[ReleaseStackVariableName] = $"private string? {ReleaseStackVariableName};";
             base.instanceFieldDefinitions[ReleasedVariableName] = $"private bool {ReleasedVariableName};";
 
-            base.staticFieldDefinitions[PoolVariableName] =
+            base.staticFieldDefinitions[ReaderVariableName] =
                 $@"
-                    private static readonly System.Collections.Concurrent.ConcurrentQueue<{this.ClassName}<TInputBuffer>> {PoolVariableName} 
-                       = new System.Collections.Concurrent.ConcurrentQueue<{this.ClassName}<TInputBuffer>>();
+                    private static readonly System.Threading.Channels.ChannelReader<{this.ClassName}<TInputBuffer>> {ReaderVariableName};
+                ";
+
+            base.staticFieldDefinitions[WriterVariableName] =
+                $@"
+                    private static readonly System.Threading.Channels.ChannelWriter<{this.ClassName}<TInputBuffer>> {WriterVariableName};
                 ";
         }
 
@@ -55,7 +61,7 @@ namespace FlatSharp
                 if (this.{ReleasedVariableName})
                 {{
                     throw new InvalidOperationException(
-                        {this.CreatePoolErrorMessage("FlatSharp recycled object used after recycle.")});
+                        {this.CreatePoolErrorMessage("FlatSharp object used after recycle.")});
                 }}
                 {base.GetGetterBody(itemModel)}
             ";
@@ -67,7 +73,7 @@ namespace FlatSharp
                 if (this.{ReleasedVariableName})
                 {{
                     throw new InvalidOperationException(
-                        {this.CreatePoolErrorMessage("FlatSharp recycled object used after recycle.")});
+                        {this.CreatePoolErrorMessage("FlatSharp object used after recycle.")});
                 }}
                 {base.GetSetterBody(itemModel)}
             ";
@@ -75,23 +81,11 @@ namespace FlatSharp
 
         protected override string GetDangerousReleaseMethodBody()
         {
-            var releaseStatements = base.instanceFieldDefinitions.Keys
-                .Where(f => f != ReleasedVariableName) // don't reset our metadata.
-                .Where(f => f != AllocationStackVariableName)
-                .Where(f => f != ReleaseStackVariableName)
-                .Select(f => $"this.{f} = default!;");
-
-            string poolSizeCheck = string.Empty;
-            if (poolSize > 0)
-            {
-                poolSizeCheck = $"if ({PoolVariableName}.Count < {poolSize})";
-            }
-
             return $@"
                 if (this.{ReleasedVariableName})
                 {{
                     throw new InvalidOperationException(
-                        {this.CreatePoolErrorMessage("FlatSharp recycled object recycled twice.")});
+                        {this.CreatePoolErrorMessage("FlatSharp object recycled twice.")});
                 }}
 
                 this.{ReleasedVariableName} = true;
@@ -100,19 +94,15 @@ namespace FlatSharp
                     this.{ReleaseStackVariableName} = Environment.StackTrace;
                 }}
 
-                {string.Join("\r\n", releaseStatements)}
-
-                {poolSizeCheck}
-                {{
-                    {PoolVariableName}.Enqueue(this);
-                }}
+                {string.Join("\r\n", this.GetResetStatements())}
+                {WriterVariableName}.TryWrite(this);
             ";
         }
 
         protected override string GetGetOrCreateMethodBody()
         {
             return $@"                
-                if (!{PoolVariableName}.TryDequeue(out var item))
+                if (!{ReaderVariableName}.TryRead(out var item))
                 {{
                     item = new {this.ClassName}<TInputBuffer>();
                 }}
@@ -134,16 +124,23 @@ namespace FlatSharp
 
         protected override string GetCtorMethodDefinition(string onDeserializedStatement, string baseCtorParams)
         {
-            string bufferAssignment = string.Empty;
-            if (base.HasEmbeddedBufferReference)
+            string newChannel = $"System.Threading.Channels.Channel.CreateBounded<{this.ClassName}<TInputBuffer>>({this.poolSize})";
+            if (this.poolSize <= 0)
             {
-                bufferAssignment = $"{base.GetBufferReference()} = default!;";
+                newChannel = $"System.Threading.Channels.Channel.CreateUnbounded<{this.ClassName}<TInputBuffer>>()";
             }
 
             return $@"
+                static {this.ClassName}()
+                {{
+                    var channel = {newChannel};
+                    {ReaderVariableName} = channel.Reader;
+                    {WriterVariableName} = channel.Writer;
+                }}
+                
                 private {this.ClassName}() : base({baseCtorParams}) 
                 {{
-                    {bufferAssignment}
+                    {string.Join("\r\n", this.GetResetStatements())}
                 }}
 
                 private void Initialize(TInputBuffer buffer, int offset)
@@ -153,6 +150,13 @@ namespace FlatSharp
                 }}
             ";
         }
+
+        private IEnumerable<string> GetResetStatements() => 
+            base.instanceFieldDefinitions.Keys
+                .Where(f => f != ReleasedVariableName) // don't reset our metadata.
+                .Where(f => f != AllocationStackVariableName)
+                .Where(f => f != ReleaseStackVariableName)
+                .Select(f => $"this.{f} = default!;");
 
         private string CreatePoolErrorMessage(string message)
         {

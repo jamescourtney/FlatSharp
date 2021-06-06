@@ -168,7 +168,7 @@ namespace FlatSharp.TypeModel
         {
             if (!this.HasRecyclableDescendant())
             {
-                return new CodeGeneratedMethod(string.Empty) { IsMethodInline = true };
+                return CodeGeneratedMethod.Empty;
             }
 
             var loopContext = context with

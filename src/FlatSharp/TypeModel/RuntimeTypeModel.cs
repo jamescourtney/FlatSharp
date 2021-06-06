@@ -137,7 +137,7 @@ namespace FlatSharp.TypeModel
 
         public virtual CodeGeneratedMethod CreateRecycleMethodBody(RecycleCodeGenContext context)
         {
-            return new CodeGeneratedMethod(string.Empty) { IsMethodInline = true };
+            return CodeGeneratedMethod.Empty;
         }
 
         public virtual string FormatDefaultValueAsLiteral(object? defaultValue) => this.GetTypeDefaultExpression();

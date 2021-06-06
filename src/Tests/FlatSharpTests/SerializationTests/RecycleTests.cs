@@ -53,53 +53,82 @@ namespace FlatSharpTests
 #endif
 
         [TestMethod]
-        public void Pooling_Allocation_Count_Verification()
+        public void Recycle_Allocation_Count_Verification()
         {
-            TestTable table = new TestTable
+            static void SerializeAndParse(FlatBufferDeserializationOption option)
             {
-                String = "foo",
-                Union = new FlatBufferUnion<TestStruct, TestTable, NonRecyclableStruct, NonRecyclableTable>(new NonRecyclableStruct()),
-                VectorOfRecyclableStruct = new List<TestStruct>
+                ResetCounts();
+
+                TestTable table = new TestTable
                 {
-                    new(), new(), new(), new(), new(),
-                }
-            };
+                    String = "foo",
+                    Union = new FlatBufferUnion<TestStruct, TestTable, NonRecyclableStruct, NonRecyclableTable>(new NonRecyclableStruct()),
+                    VectorOfRecyclableStruct = new List<TestStruct>
+                    {
+                        new(), new(), new(), new(), new(),
+                    }
+                };
 
-            var fbSerializer = new FlatBufferSerializer(FlatBufferDeserializationOption.VectorCache);
-            ISerializer<TestTable> serializer = fbSerializer.Compile<TestTable>();
+                var fbSerializer = new FlatBufferSerializer(option);
+                ISerializer<TestTable> serializer = fbSerializer.Compile<TestTable>();
 
-            Assert.AreEqual(5, TestStruct.CtorCount);
-            Assert.AreEqual(1, NonRecyclableStruct.CtorCount);
-            Assert.AreEqual(1, TestTable.CtorCount);
+                Assert.AreEqual(5, TestStruct.CtorCount);
+                Assert.AreEqual(1, NonRecyclableStruct.CtorCount);
+                Assert.AreEqual(1, TestTable.CtorCount);
 
-            ResetCounts();
+                ResetCounts();
 
-            byte[] data = new byte[1024];
-            serializer.Write(data, table);
+                byte[] data = new byte[1024];
+                serializer.Write(data, table);
 
-            for (int i = 0; i < 1000; ++i)
-            {
-                var parsed = serializer.Parse(data);
-                NonRecyclableStruct @struct = parsed.Union.Item3;
-                int sum = @struct.Int;
-                foreach (var s in parsed.VectorOfRecyclableStruct)
+                for (int i = 0; i < 1000; ++i)
                 {
-                    sum += s.Int;
-                }
+                    var parsed = serializer.Parse(data);
+                    NonRecyclableStruct @struct = parsed.Union.Item3;
+                    int sum = @struct.Int;
+                    foreach (var s in parsed.VectorOfRecyclableStruct)
+                    {
+                        sum += s.Int;
+                    }
 
-                serializer.Recycle(ref parsed);
+                    serializer.Recycle(ref parsed);
+                    Assert.IsNull(parsed);
+                }
             }
+
+            SerializeAndParse(FlatBufferDeserializationOption.Greedy);
 
             // pool size is capped at 3 but we need 5, so we cons 2 items per iteration.
             // First iteration makes 5 items
             // 999 next iterations make 2 each, for total of 2003.
             Assert.AreEqual(2003, TestStruct.CtorCount);
+            Assert.AreEqual(1000, NonRecyclableStruct.CtorCount); // 1 per iteration. No recycling.
+            Assert.AreEqual(1, TestTable.CtorCount);              // Pooled -- root just has one.
 
-            // no pooling; one per iteration.
-            Assert.AreEqual(1000, NonRecyclableStruct.CtorCount); 
-
-            // no limit.
+            SerializeAndParse(FlatBufferDeserializationOption.GreedyMutable);
+            Assert.AreEqual(2003, TestStruct.CtorCount);
+            Assert.AreEqual(1000, NonRecyclableStruct.CtorCount);
             Assert.AreEqual(1, TestTable.CtorCount);
+
+            SerializeAndParse(FlatBufferDeserializationOption.VectorCache);
+            Assert.AreEqual(2003, TestStruct.CtorCount);
+            Assert.AreEqual(1000, NonRecyclableStruct.CtorCount);
+            Assert.AreEqual(1, TestTable.CtorCount);
+
+            SerializeAndParse(FlatBufferDeserializationOption.VectorCacheMutable);
+            Assert.AreEqual(2003, TestStruct.CtorCount);
+            Assert.AreEqual(1000, NonRecyclableStruct.CtorCount);
+            Assert.AreEqual(1, TestTable.CtorCount);
+
+            SerializeAndParse(FlatBufferDeserializationOption.PropertyCache);
+            Assert.AreEqual(5000, TestStruct.CtorCount);             // Vector objects leak with property cache.
+            Assert.AreEqual(1000, NonRecyclableStruct.CtorCount);  
+            Assert.AreEqual(1, TestTable.CtorCount);
+
+            SerializeAndParse(FlatBufferDeserializationOption.Lazy);
+            Assert.AreEqual(5000, TestStruct.CtorCount);             // Everything leaks with lazy
+            Assert.AreEqual(1000, NonRecyclableStruct.CtorCount);
+            Assert.AreEqual(1, TestTable.CtorCount);                 // Root is successfully recycled.
         }
 
         [TestMethod]
@@ -153,23 +182,24 @@ namespace FlatSharpTests
 
                 Assert.IsNull(a1);
 
+                const string Substring = "FlatSharp object used after recycle";
                 ex = Assert.ThrowsException<InvalidOperationException>(() => a1Copy.Next);
-                Assert.IsTrue(ex.Message.Contains("FlatSharp recycled object used after recycle"));
+                Assert.IsTrue(ex.Message.Contains(Substring));
 
                 ex = Assert.ThrowsException<InvalidOperationException>(() => b1.Next);
-                Assert.IsTrue(ex.Message.Contains("FlatSharp recycled object used after recycle"));
+                Assert.IsTrue(ex.Message.Contains(Substring));
 
                 ex = Assert.ThrowsException<InvalidOperationException>(() => c1.Next);
-                Assert.IsTrue(ex.Message.Contains("FlatSharp recycled object used after recycle"));
+                Assert.IsTrue(ex.Message.Contains(Substring));
 
                 ex = Assert.ThrowsException<InvalidOperationException>(() => a2.Next);
-                Assert.IsTrue(ex.Message.Contains("FlatSharp recycled object used after recycle"));
+                Assert.IsTrue(ex.Message.Contains(Substring));
 
                 ex = Assert.ThrowsException<InvalidOperationException>(() => b2.Next);
-                Assert.IsTrue(ex.Message.Contains("FlatSharp recycled object used after recycle"));
+                Assert.IsTrue(ex.Message.Contains(Substring));
 
                 ex = Assert.ThrowsException<InvalidOperationException>(() => c2.Next);
-                Assert.IsTrue(ex.Message.Contains("FlatSharp recycled object used after recycle"));
+                Assert.IsTrue(ex.Message.Contains(Substring));
             }
 
             Chain_A doubleRecycle1 = chainASerializer.Parse<Chain_A>(buffer);
@@ -183,7 +213,7 @@ namespace FlatSharpTests
                     chainASerializer.Recycle(ref temp);
                 });
 
-            Assert.IsTrue(ex.Message.Contains("FlatSharp recycled object recycled twice."));
+            Assert.IsTrue(ex.Message.Contains("FlatSharp object recycled twice."));
 
             Assert.AreEqual(2, Chain_A.CtorCount);
             Assert.AreEqual(2, Chain_B.CtorCount);
@@ -253,6 +283,9 @@ namespace FlatSharpTests
             public virtual FlatBufferUnion<TestStruct, TestTable, NonRecyclableStruct, NonRecyclableTable>? Union { get; set; }
 
             [FlatBufferItem(7)]
+            public virtual FlatBufferUnion<TestStruct, TestTable, NonRecyclableStruct, NonRecyclableTable>? Union2 { get; set; }
+
+            [FlatBufferItem(9)]
             public virtual IList<FlatBufferUnion<TestStruct, TestTable, NonRecyclableStruct, NonRecyclableTable>>? VectorOfUnion { get; set; }
         }
 
@@ -278,7 +311,7 @@ namespace FlatSharpTests
 
         [FlatBufferStruct]
         public class NonRecyclableStruct
-        { 
+        {
             public static int CtorCount = 0;
 
             public NonRecyclableStruct() => CtorCount++;

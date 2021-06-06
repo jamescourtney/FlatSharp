@@ -334,7 +334,7 @@ $@"
                 MetadataReference.CreateFromFile(typeof(IGeneratedSerializer<byte>).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(InvalidDataException).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(ReadOnlyDictionary<,>).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(System.Collections.Concurrent.ConcurrentQueue<>).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(System.Threading.Channels.Channel<>).Assembly.Location),
             });
 
             return references;
@@ -372,6 +372,10 @@ $@"
 
                         errors.Add($"FlatSharp compilation error: {error}, Context = \"{formatted}\"");
                     }
+
+#if DEBUG
+                    string csharp = getFormattedCSharp();
+#endif
 
                     throw new FlatSharpCompilationException(errors.ToArray(), getFormattedCSharp());
                 }

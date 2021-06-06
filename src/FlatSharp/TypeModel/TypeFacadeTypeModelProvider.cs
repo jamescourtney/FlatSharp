@@ -141,10 +141,7 @@ namespace FlatSharp.TypeModel
                 };
             }
 
-            public CodeGeneratedMethod CreateRecycleMethodBody(RecycleCodeGenContext context)
-            {
-                return new CodeGeneratedMethod(string.Empty) { IsMethodInline = true };
-            }
+            public CodeGeneratedMethod CreateRecycleMethodBody(RecycleCodeGenContext context) => CodeGeneratedMethod.Empty;
 
             public void Initialize()
             {

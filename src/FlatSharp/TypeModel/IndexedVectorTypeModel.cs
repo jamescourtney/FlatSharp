@@ -146,5 +146,18 @@ namespace FlatSharp.TypeModel
                 IsMethodInline = true,
             };
         }
+
+        public override CodeGeneratedMethod CreateRecycleMethodBody(RecycleCodeGenContext context)
+        {
+            // Like List<T>, lazy indexed vectors are "on-demand",
+            // so traversing to try and recycle just ends up allocating
+            // more. This is not helpful :)
+            if (!context.Options.PreallocateVectors)
+            {
+                return CodeGeneratedMethod.Empty;
+            }
+
+            return base.CreateRecycleMethodBody(context);
+        }
     }
 }
