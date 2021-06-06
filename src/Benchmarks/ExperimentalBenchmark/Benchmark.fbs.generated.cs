@@ -190,7 +190,7 @@ namespace BenchmarkCore
         All = (byte)(15),
     }
 
-    [FlatBufferTable(PoolSize = 0)]
+    [FlatBufferTable(RecyclePoolSize = 0)]
     [System.Runtime.CompilerServices.CompilerGenerated]
     public partial class SomeTable
         : object
@@ -1838,7 +1838,7 @@ namespace BenchmarkCore
         ) => base.Switch(caseDefault, caseVec3, caseNotRecycleable);
     }
 
-    [FlatBufferStruct(PoolSize = -1)]
+    [FlatBufferStruct(RecyclePoolSize = -1)]
     [System.Runtime.CompilerServices.CompilerGenerated]
     public partial class Vec3
         : object
@@ -1885,7 +1885,7 @@ namespace BenchmarkCore
         public virtual System.Single Z { get; set; }
 
     }
-    [FlatBufferStruct(PoolSize = 0)]
+    [FlatBufferStruct(RecyclePoolSize = 0)]
     [System.Runtime.CompilerServices.CompilerGenerated]
     public partial class NotRecycleable
         : object
@@ -1924,7 +1924,7 @@ namespace BenchmarkCore
         public virtual System.Int32 Value { get; set; }
 
     }
-    [FlatBufferStruct(PoolSize = 0)]
+    [FlatBufferStruct(RecyclePoolSize = 0)]
     [System.Runtime.CompilerServices.CompilerGenerated]
     public partial class Struct
         : object
@@ -1968,7 +1968,7 @@ namespace BenchmarkCore
         public virtual System.Int32 Int { get; set; }
 
     }
-    [FlatBufferStruct(PoolSize = 0)]
+    [FlatBufferStruct(RecyclePoolSize = 0)]
     [System.Runtime.CompilerServices.CompilerGenerated]
     public partial class OtherStruct
         : object

@@ -130,7 +130,7 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// Use the table attributre to determine rules for recycle.
         /// </summary>
-        public override bool IsRecyclable => this.attribute.PoolSize != 0;
+        public override bool IsRecyclable => this.attribute.RecyclePoolSize != 0;
 
         public override void Initialize()
         {
@@ -171,7 +171,7 @@ namespace FlatSharp.TypeModel
                     property.Property,
                     property.Attribute);
                 
-                if (this.attribute.PoolSize != 0)
+                if (this.attribute.RecyclePoolSize != 0)
                 {
                     model.ValidateRecyclableSetter(this);
                 }
@@ -674,7 +674,7 @@ $@"
         {
             // We have to implement two items: The table class and the overall "read" method.
             // Let's start with the read method.
-            var classDef = DeserializeClassDefinition.Create(this.tableReaderClassName, this.onDeserializeMethod, this, context.Options, this.attribute.PoolSize);
+            var classDef = DeserializeClassDefinition.Create(this.tableReaderClassName, this.onDeserializeMethod, this, context.Options, this.attribute.RecyclePoolSize);
 
             // Build up a list of property overrides.
             foreach (var item in this.IndexToMemberMap.Where(x => !x.Value.IsDeprecated))

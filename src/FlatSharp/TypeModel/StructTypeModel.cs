@@ -95,7 +95,7 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// Indicates if we support recycle or not.
         /// </summary>
-        public override bool IsRecyclable => this.attribute.PoolSize != 0;
+        public override bool IsRecyclable => this.attribute.RecyclePoolSize != 0;
 
         public override IEnumerable<ITypeModel> Children => this.memberTypes.Select(x => x.ItemTypeModel);
 
@@ -124,7 +124,7 @@ namespace FlatSharp.TypeModel
                 this.onDeserializeMethod,
                 this,
                 context.Options,
-                this.attribute.PoolSize);
+                this.attribute.RecyclePoolSize);
 
             // Build up a list of property overrides.
             for (int index = 0; index < this.Members.Count; ++index)
@@ -280,7 +280,7 @@ $@"
                     this.inlineSize,
                     length);
 
-                if (this.attribute.PoolSize != 0)
+                if (this.attribute.RecyclePoolSize != 0)
                 {
                     model.ValidateRecyclableSetter(this);
                 }

@@ -494,7 +494,7 @@ namespace FlatSharpTests
         }
 
 #if NET5_0_OR_GREATER
-        [FlatBufferTable(PoolSize = -1)]
+        [FlatBufferTable(RecyclePoolSize = -1)]
         public class AccessorCombinationTable_Valid
         {
             [FlatBufferItem(0)]
@@ -510,7 +510,7 @@ namespace FlatSharpTests
             public virtual int ReadOnlyVirtual { get; }
         }
 
-        [FlatBufferTable(PoolSize = -1)]
+        [FlatBufferTable(RecyclePoolSize = -1)]
         public class AccessorCombinationTable_NonVirtualInit
         {
             [FlatBufferItem(0)]
@@ -521,7 +521,7 @@ namespace FlatSharpTests
         }
 #endif
 
-        [FlatBufferTable(PoolSize = TestTablePoolSize)]
+        [FlatBufferTable(RecyclePoolSize = TestTablePoolSize)]
         public class TestTable
         {
             public static int CtorCount = 0;
@@ -560,7 +560,7 @@ namespace FlatSharpTests
             public virtual T? Item { get; set; }
         }
 
-        [FlatBufferTable(PoolSize = -1)]
+        [FlatBufferTable(RecyclePoolSize = -1)]
         public class TableWithKey
         {
             public static int CtorCount = 0;
@@ -581,7 +581,7 @@ namespace FlatSharpTests
             [FlatBufferItem(0)] public virtual int Int { get; set; }
         }
 
-        [FlatBufferStruct(PoolSize = TestStructPoolSize)]
+        [FlatBufferStruct(RecyclePoolSize = TestStructPoolSize)]
         public class TestStruct
         {
             public static int CtorCount = 0;
@@ -601,7 +601,7 @@ namespace FlatSharpTests
             [FlatBufferItem(0)] public virtual int Int { get; set; }
         }
 
-        [FlatBufferTable(PoolSize = -1)]
+        [FlatBufferTable(RecyclePoolSize = -1)]
         public class Chain_A
         {
             public static int CtorCount = 0;
@@ -612,7 +612,7 @@ namespace FlatSharpTests
             public virtual Chain_B? Next { get; set; }
         }
 
-        [FlatBufferTable(PoolSize = -1)]
+        [FlatBufferTable(RecyclePoolSize = -1)]
         public class Chain_B
         {
             public static int CtorCount = 0;
@@ -623,7 +623,7 @@ namespace FlatSharpTests
             public virtual Chain_C? Next { get; set; }
         }
 
-        [FlatBufferTable(PoolSize = -1)]
+        [FlatBufferTable(RecyclePoolSize = -1)]
         public class Chain_C
         {
             public static int CtorCount = 0;

@@ -100,7 +100,7 @@ namespace FlatSharp.Compiler
         /// <summary>
         /// Indicates that this table or struct should be pooled on deserialize.
         /// </summary>
-        public const string ObjectPool = "fs_pool";
+        public const string RecyclePoolSize = "fs_recyclePoolSize";
 
         /// <summary>
         /// Marks a table field as deprecated. Deprecated fields do not have their values serialized or parsed.
