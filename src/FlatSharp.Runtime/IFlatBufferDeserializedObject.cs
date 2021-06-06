@@ -23,7 +23,7 @@ namespace FlatSharp
     /// An interface applied to objects deserialized by FlatSharp. FlatSharp implements this
     /// interface on deserialized objects. It should not be implemented externally.
     /// </summary>
-    public interface IFlatBufferDeserializedObject
+    public interface IFlatBufferDeserializedObject : IRecyclable
     {
         /// <summary>
         /// The actual type of the table or struct. This is generally the base class.
@@ -42,17 +42,5 @@ namespace FlatSharp
         /// <see cref="FlatBufferDeserializationOption.GreedyMutable"/>.
         /// </summary>
         IInputBuffer? InputBuffer { get; }
-
-        /// <summary>
-        /// Formally releases this object and allows FlatSharp to recycle it for use in future deserialization operations. 
-        /// This method should generally only be invoked from FlatSharp-generated code, though special high-performance 
-        /// use cases may exist where it is useful. Improper use of this method may lead to unexpected results and invalid state.
-        /// This method is invoked automatically via <see cref="ISerializer{T}.Recycle(ref T?)"/>, which traverses the full object
-        /// graph and releases everything.
-        /// </summary>
-        /// <remarks>
-        /// A case where this method may be valuable is when using <see cref="FlatBufferDeserializationOption.Lazy"/> deserialization.
-        /// </remarks>
-        void DangerousRecycle();
     }
 }

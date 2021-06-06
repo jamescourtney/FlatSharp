@@ -18,7 +18,7 @@ using FlatSharp.Attributes;
 #nullable enable
 namespace FlatSharp.Compiler.Generated
 {
-    internal static class CloneHelpers_b0776414e5d947299b42535a5aa8d935
+    internal static class CloneHelpers_bba80f876f344c8197cd9957beca3057
     {
         [System.Runtime.CompilerServices.MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static BenchmarkCore.Normal Clone(BenchmarkCore.Normal item)
@@ -63,7 +63,7 @@ namespace FlatSharp.Compiler.Generated
         {
             checked
             {
-                return VectorCloneHelpers.Clone<BenchmarkCore.Vec3>(item, FlatSharp.Compiler.Generated.CloneHelpers_b0776414e5d947299b42535a5aa8d935.Clone);
+                return VectorCloneHelpers.Clone<BenchmarkCore.Vec3>(item, FlatSharp.Compiler.Generated.CloneHelpers_bba80f876f344c8197cd9957beca3057.Clone);
             }
         }
 
@@ -97,8 +97,8 @@ namespace FlatSharp.Compiler.Generated
 
                 return item.Discriminator switch
                 {
-                    1 => new BenchmarkCore.Union(FlatSharp.Compiler.Generated.CloneHelpers_b0776414e5d947299b42535a5aa8d935.Clone(item.Item1)),
-                    2 => new BenchmarkCore.Union(FlatSharp.Compiler.Generated.CloneHelpers_b0776414e5d947299b42535a5aa8d935.Clone(item.Item2)),
+                    1 => new BenchmarkCore.Union(FlatSharp.Compiler.Generated.CloneHelpers_bba80f876f344c8197cd9957beca3057.Clone(item.Item1)),
+                    2 => new BenchmarkCore.Union(FlatSharp.Compiler.Generated.CloneHelpers_bba80f876f344c8197cd9957beca3057.Clone(item.Item2)),
                     _ => throw new InvalidOperationException("Unexpected union discriminator")
                 };
             }
@@ -129,7 +129,7 @@ namespace FlatSharp.Compiler.Generated
         {
             checked
             {
-                return VectorCloneHelpers.Clone<BenchmarkCore.Union>(item, FlatSharp.Compiler.Generated.CloneHelpers_b0776414e5d947299b42535a5aa8d935.Clone);
+                return VectorCloneHelpers.Clone<BenchmarkCore.Union>(item, FlatSharp.Compiler.Generated.CloneHelpers_bba80f876f344c8197cd9957beca3057.Clone);
             }
         }
 
@@ -190,7 +190,7 @@ namespace BenchmarkCore
         All = (byte)(15),
     }
 
-    [FlatBufferTable(RecyclePoolSize = 0)]
+    [FlatBufferTableAttribute()]
     [System.Runtime.CompilerServices.CompilerGenerated]
     public partial class SomeTable
         : object
@@ -221,10 +221,10 @@ namespace BenchmarkCore
         {
             checked
             {
-                this.Points = FlatSharp.Compiler.Generated.CloneHelpers_b0776414e5d947299b42535a5aa8d935.Clone(source.Points);
-                this.Vec = FlatSharp.Compiler.Generated.CloneHelpers_b0776414e5d947299b42535a5aa8d935.Clone(source.Vec);
-                this.Union = FlatSharp.Compiler.Generated.CloneHelpers_b0776414e5d947299b42535a5aa8d935.Clone(source.Union);
-                this.UnionVec = FlatSharp.Compiler.Generated.CloneHelpers_b0776414e5d947299b42535a5aa8d935.Clone(source.UnionVec);
+                this.Points = FlatSharp.Compiler.Generated.CloneHelpers_bba80f876f344c8197cd9957beca3057.Clone(source.Points);
+                this.Vec = FlatSharp.Compiler.Generated.CloneHelpers_bba80f876f344c8197cd9957beca3057.Clone(source.Vec);
+                this.Union = FlatSharp.Compiler.Generated.CloneHelpers_bba80f876f344c8197cd9957beca3057.Clone(source.Union);
+                this.UnionVec = FlatSharp.Compiler.Generated.CloneHelpers_bba80f876f344c8197cd9957beca3057.Clone(source.UnionVec);
                 this.OnInitialized(null);
             }
         }
@@ -289,7 +289,7 @@ namespace BenchmarkCore
             {
                 checked
                 {
-                    WriteInlineValueOf_7609946702da4029853eadd791887326(writer, target, root, offset, context);
+                    WriteInlineValueOf_8ce7d7f3ec954a5a8543d0b8a17a164d(writer, target, root, offset, context);
                 }
             }
 
@@ -297,7 +297,7 @@ namespace BenchmarkCore
             {
                 checked
                 {
-                    return GetMaxSizeOf_7609946702da4029853eadd791887326(root);
+                    return GetMaxSizeOf_8ce7d7f3ec954a5a8543d0b8a17a164d(root);
                 }
             }
 
@@ -306,7 +306,7 @@ namespace BenchmarkCore
             {
                 checked
                 {
-                    return Read_7609946702da4029853eadd791887326(buffer, offset);
+                    return Read_8ce7d7f3ec954a5a8543d0b8a17a164d(buffer, offset);
                 }
             }
 
@@ -314,11 +314,11 @@ namespace BenchmarkCore
             {
                 checked
                 {
-                    Recycle_7609946702da4029853eadd791887326(root);
+                    Recycle_8ce7d7f3ec954a5a8543d0b8a17a164d(root);
                 }
             }
 
-            private static int GetMaxSizeOf_7609946702da4029853eadd791887326(BenchmarkCore.SomeTable value)
+            private static int GetMaxSizeOf_8ce7d7f3ec954a5a8543d0b8a17a164d(BenchmarkCore.SomeTable value)
             {
                 checked
                 {
@@ -328,36 +328,36 @@ namespace BenchmarkCore
 
                     if (!(index0Value is null))
                     {
-                        runningSum += GetMaxSizeOf_6d18f5642eba45fca5179424302289cf(index0Value);
+                        runningSum += GetMaxSizeOf_b6b55b583c7949f5a6edd74026128c2c(index0Value);
                     }
                     var index2Value = value.Union;
 
                     if (!(index2Value is null))
                     {
-                        runningSum += GetMaxSizeOf_28ae02aa53884c509c4cf858e1d0bbd2(index2Value);
+                        runningSum += GetMaxSizeOf_976d32b133c24c83980be3929c896677(index2Value);
                     }
                     var index4Value = value.UnionVec;
 
                     if (!(index4Value is null))
                     {
-                        runningSum += GetMaxSizeOf_f3744da6354c481f8ef4c37592e84e0b(index4Value);
+                        runningSum += GetMaxSizeOf_654bde26fea641b88e8e8f7e73a5e841(index4Value);
                     }
                     return runningSum;
 
                 }
             }
 
-            private static BenchmarkCore.SomeTable Read_7609946702da4029853eadd791887326<TInputBuffer>(
+            private static BenchmarkCore.SomeTable Read_8ce7d7f3ec954a5a8543d0b8a17a164d<TInputBuffer>(
                 TInputBuffer buffer,
                 int offset) where TInputBuffer : IInputBuffer
             {
                 checked
                 {
-                    return tableReader_02ced68ca947456081ffbf197f710fac<TInputBuffer>.GetOrCreate(buffer, offset + buffer.ReadUOffset(offset));
+                    return tableReader_c492338f629d4431812f6f6c03dee160<TInputBuffer>.GetOrCreate(buffer, offset + buffer.ReadUOffset(offset));
                 }
             }
 
-            private sealed class tableReader_02ced68ca947456081ffbf197f710fac<TInputBuffer>
+            private sealed class tableReader_c492338f629d4431812f6f6c03dee160<TInputBuffer>
                 : BenchmarkCore.SomeTable
                 , FlatSharp.IFlatBufferDeserializedObject
                 where TInputBuffer : IInputBuffer
@@ -377,18 +377,18 @@ namespace BenchmarkCore
                 private BenchmarkCore.Union? __index2Value;
                 private System.Collections.Generic.IList<BenchmarkCore.Union>? __index4Value;
 
-                public static tableReader_02ced68ca947456081ffbf197f710fac<TInputBuffer> GetOrCreate(TInputBuffer buffer, int offset)
+                public static tableReader_c492338f629d4431812f6f6c03dee160<TInputBuffer> GetOrCreate(TInputBuffer buffer, int offset)
                 {
                     checked
                     {
 
-                        var item = new tableReader_02ced68ca947456081ffbf197f710fac<TInputBuffer>(buffer, offset);
+                        var item = new tableReader_c492338f629d4431812f6f6c03dee160<TInputBuffer>(buffer, offset);
                         return item;
 
                     }
                 }
 
-                private tableReader_02ced68ca947456081ffbf197f710fac(TInputBuffer buffer, int offset) : base(__CtorContext)
+                private tableReader_c492338f629d4431812f6f6c03dee160(TInputBuffer buffer, int offset) : base(__CtorContext)
                 {
                     checked
                     {
@@ -405,14 +405,11 @@ namespace BenchmarkCore
                 FlatSharp.FlatBufferDeserializationContext IFlatBufferDeserializedObject.DeserializationContext => __CtorContext;
                 FlatSharp.IInputBuffer? IFlatBufferDeserializedObject.InputBuffer => this.__buffer;
 
-                void IFlatBufferDeserializedObject.DangerousRecycle()
+                void IRecyclable.DangerousRecycle()
                 {
                     checked
                     {
-                        Recycle_6d18f5642eba45fca5179424302289cf(this.__index0Value);
-                        Recycle_807f62fd519a4e7cb64291ee112421e3(this.__index1Value);
-                        Recycle_28ae02aa53884c509c4cf858e1d0bbd2(this.__index2Value);
-                        Recycle_f3744da6354c481f8ef4c37592e84e0b(this.__index4Value);
+
 
                     }
                 }
@@ -543,7 +540,7 @@ namespace BenchmarkCore
                         }
 
                         int absoluteLocation = offset + relativeOffset;
-                        return Read_6d18f5642eba45fca5179424302289cf(buffer, absoluteLocation); ;
+                        return Read_b6b55b583c7949f5a6edd74026128c2c(buffer, absoluteLocation); ;
                     }
                 }
 
@@ -569,7 +566,7 @@ namespace BenchmarkCore
                         }
 
                         int absoluteLocation = offset + relativeOffset;
-                        return Read_807f62fd519a4e7cb64291ee112421e3(buffer, absoluteLocation); ;
+                        return Read_508c5a8ffa9a4dd4a37b0ad4b0445448(buffer, absoluteLocation); ;
                     }
                 }
 
@@ -604,7 +601,7 @@ namespace BenchmarkCore
 
 
                         var absoluteLocations = (relativeOffset0 + offset, relativeOffset1 + offset);
-                        return Read_28ae02aa53884c509c4cf858e1d0bbd2(buffer, ref absoluteLocations); ;
+                        return Read_976d32b133c24c83980be3929c896677(buffer, ref absoluteLocations); ;
                     }
                 }
 
@@ -639,14 +636,14 @@ namespace BenchmarkCore
 
 
                         var absoluteLocations = (relativeOffset0 + offset, relativeOffset1 + offset);
-                        return Read_f3744da6354c481f8ef4c37592e84e0b(buffer, ref absoluteLocations); ;
+                        return Read_654bde26fea641b88e8e8f7e73a5e841(buffer, ref absoluteLocations); ;
                     }
                 }
             }
 
 
 
-            private static void WriteInlineValueOf_7609946702da4029853eadd791887326<TSpanWriter>(
+            private static void WriteInlineValueOf_8ce7d7f3ec954a5a8543d0b8a17a164d<TSpanWriter>(
                 TSpanWriter spanWriter,
                 Span<byte> span,
                 BenchmarkCore.SomeTable value,
@@ -737,7 +734,7 @@ namespace BenchmarkCore
                         currentOffset += 12;
 
 
-                        WriteInlineValueOf_807f62fd519a4e7cb64291ee112421e3(spanWriter, span, index1Value!, index1Offset);
+                        WriteInlineValueOf_508c5a8ffa9a4dd4a37b0ad4b0445448(spanWriter, span, index1Value!, index1Offset);
 
 
                         if (8 > vtableLength)
@@ -771,7 +768,7 @@ namespace BenchmarkCore
                     {
 
                         var offsetTuple = (index4Offset, index5Offset);
-                        WriteInlineValueOf_f3744da6354c481f8ef4c37592e84e0b(spanWriter, span, index4Value!, ref offsetTuple, context);
+                        WriteInlineValueOf_654bde26fea641b88e8e8f7e73a5e841(spanWriter, span, index4Value!, ref offsetTuple, context);
 
                     }
 
@@ -780,7 +777,7 @@ namespace BenchmarkCore
                     {
 
 
-                        WriteInlineValueOf_6d18f5642eba45fca5179424302289cf(spanWriter, span, index0Value!, index0Offset, context);
+                        WriteInlineValueOf_b6b55b583c7949f5a6edd74026128c2c(spanWriter, span, index0Value!, index0Offset, context);
 
                     }
 
@@ -789,14 +786,14 @@ namespace BenchmarkCore
                     {
 
                         var offsetTuple = (index2Offset, index3Offset);
-                        WriteInlineValueOf_28ae02aa53884c509c4cf858e1d0bbd2(spanWriter, span, index2Value!, ref offsetTuple, context);
+                        WriteInlineValueOf_976d32b133c24c83980be3929c896677(spanWriter, span, index2Value!, ref offsetTuple, context);
 
                     }
 
                 }
             }
 
-            private static void Recycle_7609946702da4029853eadd791887326(BenchmarkCore.SomeTable? value)
+            private static void Recycle_8ce7d7f3ec954a5a8543d0b8a17a164d(BenchmarkCore.SomeTable? value)
             {
                 checked
                 {
@@ -809,7 +806,7 @@ namespace BenchmarkCore
                 }
             }
 
-            private static int GetMaxSizeOf_6d18f5642eba45fca5179424302289cf(System.Collections.Generic.IList<BenchmarkCore.Vec3> value)
+            private static int GetMaxSizeOf_b6b55b583c7949f5a6edd74026128c2c(System.Collections.Generic.IList<BenchmarkCore.Vec3> value)
             {
                 checked
                 {
@@ -817,23 +814,23 @@ namespace BenchmarkCore
                 }
             }
 
-            private static System.Collections.Generic.IList<BenchmarkCore.Vec3> Read_6d18f5642eba45fca5179424302289cf<TInputBuffer>(
+            private static System.Collections.Generic.IList<BenchmarkCore.Vec3> Read_b6b55b583c7949f5a6edd74026128c2c<TInputBuffer>(
                 TInputBuffer buffer,
                 int offset) where TInputBuffer : IInputBuffer
             {
                 checked
                 {
-                    return (new FlatBufferVector_d20ed20c10214299976e213a46972320<TInputBuffer>(
+                    return (new FlatBufferVector_76a9e616e2514d51858b10a08e24fa57<TInputBuffer>(
                             buffer,
                             offset + buffer.ReadUOffset(offset),
                             12)).FlatBufferVectorToList().AsReadOnly();
                 }
             }
 
-            public sealed class FlatBufferVector_d20ed20c10214299976e213a46972320<TInputBuffer> : FlatBufferVector<BenchmarkCore.Vec3, TInputBuffer>
+            public sealed class FlatBufferVector_76a9e616e2514d51858b10a08e24fa57<TInputBuffer> : FlatBufferVector<BenchmarkCore.Vec3, TInputBuffer>
                 where TInputBuffer : IInputBuffer
             {
-                public FlatBufferVector_d20ed20c10214299976e213a46972320(
+                public FlatBufferVector_76a9e616e2514d51858b10a08e24fa57(
                     TInputBuffer memory,
                     int offset,
                     int itemSize) : base(memory, offset, itemSize)
@@ -847,14 +844,14 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_807f62fd519a4e7cb64291ee112421e3(memory, offset);
+                        return Read_508c5a8ffa9a4dd4a37b0ad4b0445448(memory, offset);
                     }
                 }
             }
 
 
 
-            private static void WriteInlineValueOf_6d18f5642eba45fca5179424302289cf<TSpanWriter>(
+            private static void WriteInlineValueOf_b6b55b583c7949f5a6edd74026128c2c<TSpanWriter>(
                 TSpanWriter spanWriter,
                 Span<byte> span,
                 System.Collections.Generic.IList<BenchmarkCore.Vec3> value,
@@ -879,7 +876,7 @@ namespace BenchmarkCore
                             var current = array[i];
 
                             SerializationHelpers.EnsureNonNull(current);
-                            WriteInlineValueOf_807f62fd519a4e7cb64291ee112421e3(spanWriter, span, current, vectorOffset);
+                            WriteInlineValueOf_508c5a8ffa9a4dd4a37b0ad4b0445448(spanWriter, span, current, vectorOffset);
                             vectorOffset += 12;
                         }
                     }
@@ -892,7 +889,7 @@ namespace BenchmarkCore
                             var current = realList[i];
 
                             SerializationHelpers.EnsureNonNull(current);
-                            WriteInlineValueOf_807f62fd519a4e7cb64291ee112421e3(spanWriter, span, current, vectorOffset);
+                            WriteInlineValueOf_508c5a8ffa9a4dd4a37b0ad4b0445448(spanWriter, span, current, vectorOffset);
                             vectorOffset += 12;
                         }
                     }
@@ -905,59 +902,24 @@ namespace BenchmarkCore
                             var current = value[i];
 
                             SerializationHelpers.EnsureNonNull(current);
-                            WriteInlineValueOf_807f62fd519a4e7cb64291ee112421e3(spanWriter, span, current, vectorOffset);
+                            WriteInlineValueOf_508c5a8ffa9a4dd4a37b0ad4b0445448(spanWriter, span, current, vectorOffset);
                             vectorOffset += 12;
-                        }
-                    }
-                }
-            }
-
-            private static void Recycle_6d18f5642eba45fca5179424302289cf(System.Collections.Generic.IList<BenchmarkCore.Vec3>? value)
-            {
-                checked
-                {
-
-                    if (value is null)
-                    {
-                        return;
-                    }
-
-                    int count = value.Count;
-
-                    if (value is BenchmarkCore.Vec3[] array)
-                    {
-
-                        for (int i = 0; i < array.Length; i = unchecked(i + 1))
-                        {
-                            var current = array[i];
-                            Recycle_807f62fd519a4e7cb64291ee112421e3(current);
-                        }
-                    }
-                    else if (value is List<BenchmarkCore.Vec3> realList)
-                    {
-
-                        int i;
-                        for (i = 0; i < count; i = unchecked(i + 1))
-                        {
-                            var current = realList[i];
-                            Recycle_807f62fd519a4e7cb64291ee112421e3(current);
-                        }
-                    }
-                    else
-                    {
-
-                        int i;
-                        for (i = 0; i < count; i = unchecked(i + 1))
-                        {
-                            var current = value[i];
-                            Recycle_807f62fd519a4e7cb64291ee112421e3(current);
                         }
                     }
                 }
             }
 
             [System.Runtime.CompilerServices.MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-            private static int GetMaxSizeOf_807f62fd519a4e7cb64291ee112421e3(BenchmarkCore.Vec3 value)
+            private static void Recycle_b6b55b583c7949f5a6edd74026128c2c(System.Collections.Generic.IList<BenchmarkCore.Vec3>? value)
+            {
+                checked
+                {
+
+                }
+            }
+
+            [System.Runtime.CompilerServices.MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+            private static int GetMaxSizeOf_508c5a8ffa9a4dd4a37b0ad4b0445448(BenchmarkCore.Vec3 value)
             {
                 checked
                 {
@@ -965,17 +927,17 @@ namespace BenchmarkCore
                 }
             }
 
-            private static BenchmarkCore.Vec3 Read_807f62fd519a4e7cb64291ee112421e3<TInputBuffer>(
+            private static BenchmarkCore.Vec3 Read_508c5a8ffa9a4dd4a37b0ad4b0445448<TInputBuffer>(
                 TInputBuffer buffer,
                 int offset) where TInputBuffer : IInputBuffer
             {
                 checked
                 {
-                    return structReader_93defae9106b4c6eaf1af77b9a8af0e0<TInputBuffer>.GetOrCreate(buffer, offset);
+                    return structReader_6fd168a83700432e84aea7c24d03a8e5<TInputBuffer>.GetOrCreate(buffer, offset);
                 }
             }
 
-            private sealed class structReader_93defae9106b4c6eaf1af77b9a8af0e0<TInputBuffer>
+            private sealed class structReader_6fd168a83700432e84aea7c24d03a8e5<TInputBuffer>
                 : BenchmarkCore.Vec3
                 , FlatSharp.IFlatBufferDeserializedObject
                 where TInputBuffer : IInputBuffer
@@ -984,72 +946,26 @@ namespace BenchmarkCore
                     = new FlatSharp.FlatBufferDeserializationContext(FlatSharp.FlatBufferDeserializationOption.VectorCache);
 
 
-                private static readonly System.Threading.Channels.ChannelReader<structReader_93defae9106b4c6eaf1af77b9a8af0e0<TInputBuffer>> __Reader;
-
-
-                private static readonly System.Threading.Channels.ChannelWriter<structReader_93defae9106b4c6eaf1af77b9a8af0e0<TInputBuffer>> __Writer;
-
 
                 private TInputBuffer __buffer;
                 private int __offset;
-                private string? __poolDiag_allocationStack;
-                private string? __poolDiag_releaseStack;
-                private bool __poolDiag_released;
                 private byte __mask0;
                 private System.Single __index0Value;
                 private System.Single __index1Value;
                 private System.Single __index2Value;
 
-                public static structReader_93defae9106b4c6eaf1af77b9a8af0e0<TInputBuffer> GetOrCreate(TInputBuffer buffer, int offset)
+                public static structReader_6fd168a83700432e84aea7c24d03a8e5<TInputBuffer> GetOrCreate(TInputBuffer buffer, int offset)
                 {
                     checked
                     {
 
-                        if (!__Reader.TryRead(out var item))
-                        {
-                            item = new structReader_93defae9106b4c6eaf1af77b9a8af0e0<TInputBuffer>();
-                        }
-
-                        item.Initialize(buffer, offset);
-
-                        item.__poolDiag_released = false;
-                        item.__poolDiag_allocationStack = null;
-                        item.__poolDiag_releaseStack = null;
-
-                        if (FlatSharpRuntimeSettings.EnableRecyclingDiagnostics)
-                        {
-                            item.__poolDiag_allocationStack = Environment.StackTrace;
-                        }
-
+                        var item = new structReader_6fd168a83700432e84aea7c24d03a8e5<TInputBuffer>(buffer, offset);
                         return item;
 
                     }
                 }
 
-                static structReader_93defae9106b4c6eaf1af77b9a8af0e0()
-                {
-                    checked
-                    {
-                        var channel = System.Threading.Channels.Channel.CreateUnbounded<structReader_93defae9106b4c6eaf1af77b9a8af0e0<TInputBuffer>>();
-                        __Reader = channel.Reader;
-                        __Writer = channel.Writer;
-                    }
-                }
-
-                private structReader_93defae9106b4c6eaf1af77b9a8af0e0() : base(__CtorContext)
-                {
-                    checked
-                    {
-                        this.__buffer = default!;
-                        this.__offset = default!;
-                        this.__mask0 = default!;
-                        this.__index0Value = default!;
-                        this.__index1Value = default!;
-                        this.__index2Value = default!;
-                    }
-                }
-
-                private void Initialize(TInputBuffer buffer, int offset)
+                private structReader_6fd168a83700432e84aea7c24d03a8e5(TInputBuffer buffer, int offset) : base(__CtorContext)
                 {
                     checked
                     {
@@ -1063,33 +979,11 @@ namespace BenchmarkCore
                 FlatSharp.FlatBufferDeserializationContext IFlatBufferDeserializedObject.DeserializationContext => __CtorContext;
                 FlatSharp.IInputBuffer? IFlatBufferDeserializedObject.InputBuffer => this.__buffer;
 
-                void IFlatBufferDeserializedObject.DangerousRecycle()
+                void IRecyclable.DangerousRecycle()
                 {
                     checked
                     {
 
-
-                        if (this.__poolDiag_released)
-                        {
-                            throw new InvalidOperationException(
-                                $"FlatSharp object recycled twice. Type = 'BenchmarkCore.Vec3', \r\n\r\n AllocationStack = '{this.__poolDiag_allocationStack}', \r\n\r\n ReleaseStack = '{this.__poolDiag_releaseStack}'");
-                        }
-
-                        this.__poolDiag_released = true;
-                        if (FlatSharpRuntimeSettings.EnableRecyclingDiagnostics)
-                        {
-                            this.__poolDiag_releaseStack = Environment.StackTrace;
-                        }
-                        else
-                        {
-                            this.__buffer = default!;
-                            this.__offset = default!;
-                            this.__mask0 = default!;
-                            this.__index0Value = default!;
-                            this.__index1Value = default!;
-                            this.__index2Value = default!;
-                            __Writer.TryWrite(this);
-                        }
 
                     }
                 }
@@ -1101,19 +995,12 @@ namespace BenchmarkCore
                         checked
                         {
 
-                            if (this.__poolDiag_released)
-                            {
-                                throw new InvalidOperationException(
-                                    $"FlatSharp object used after recycle. Type = 'BenchmarkCore.Vec3', \r\n\r\n AllocationStack = '{this.__poolDiag_allocationStack}', \r\n\r\n ReleaseStack = '{this.__poolDiag_releaseStack}'");
-                            }
-
                             if ((this.__mask0 & (byte)1) == 0)
                             {
                                 this.__index0Value = ReadIndex0Value(this.__buffer, this.__offset, default, default);
                                 this.__mask0 |= (byte)1;
                             }
                             return this.__index0Value;
-
 
                         }
                     }
@@ -1122,14 +1009,7 @@ namespace BenchmarkCore
                     {
                         checked
                         {
-
-                            if (this.__poolDiag_released)
-                            {
-                                throw new InvalidOperationException(
-                                    $"FlatSharp object used after recycle. Type = 'BenchmarkCore.Vec3', \r\n\r\n AllocationStack = '{this.__poolDiag_allocationStack}', \r\n\r\n ReleaseStack = '{this.__poolDiag_releaseStack}'");
-                            }
                             throw new NotMutableException();
-
                         }
                     }
                 }
@@ -1141,19 +1021,12 @@ namespace BenchmarkCore
                         checked
                         {
 
-                            if (this.__poolDiag_released)
-                            {
-                                throw new InvalidOperationException(
-                                    $"FlatSharp object used after recycle. Type = 'BenchmarkCore.Vec3', \r\n\r\n AllocationStack = '{this.__poolDiag_allocationStack}', \r\n\r\n ReleaseStack = '{this.__poolDiag_releaseStack}'");
-                            }
-
                             if ((this.__mask0 & (byte)2) == 0)
                             {
                                 this.__index1Value = ReadIndex1Value(this.__buffer, this.__offset, default, default);
                                 this.__mask0 |= (byte)2;
                             }
                             return this.__index1Value;
-
 
                         }
                     }
@@ -1162,14 +1035,7 @@ namespace BenchmarkCore
                     {
                         checked
                         {
-
-                            if (this.__poolDiag_released)
-                            {
-                                throw new InvalidOperationException(
-                                    $"FlatSharp object used after recycle. Type = 'BenchmarkCore.Vec3', \r\n\r\n AllocationStack = '{this.__poolDiag_allocationStack}', \r\n\r\n ReleaseStack = '{this.__poolDiag_releaseStack}'");
-                            }
                             throw new NotMutableException();
-
                         }
                     }
                 }
@@ -1181,19 +1047,12 @@ namespace BenchmarkCore
                         checked
                         {
 
-                            if (this.__poolDiag_released)
-                            {
-                                throw new InvalidOperationException(
-                                    $"FlatSharp object used after recycle. Type = 'BenchmarkCore.Vec3', \r\n\r\n AllocationStack = '{this.__poolDiag_allocationStack}', \r\n\r\n ReleaseStack = '{this.__poolDiag_releaseStack}'");
-                            }
-
                             if ((this.__mask0 & (byte)4) == 0)
                             {
                                 this.__index2Value = ReadIndex2Value(this.__buffer, this.__offset, default, default);
                                 this.__mask0 |= (byte)4;
                             }
                             return this.__index2Value;
-
 
                         }
                     }
@@ -1202,14 +1061,7 @@ namespace BenchmarkCore
                     {
                         checked
                         {
-
-                            if (this.__poolDiag_released)
-                            {
-                                throw new InvalidOperationException(
-                                    $"FlatSharp object used after recycle. Type = 'BenchmarkCore.Vec3', \r\n\r\n AllocationStack = '{this.__poolDiag_allocationStack}', \r\n\r\n ReleaseStack = '{this.__poolDiag_releaseStack}'");
-                            }
                             throw new NotMutableException();
-
                         }
                     }
                 }
@@ -1223,7 +1075,7 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_6b0cd982100045848d5b4fc39e9504b2(buffer, offset + 0); ;
+                        return Read_e741fc4cf5d14b3093a6834ceb0039af(buffer, offset + 0); ;
                     }
                 }
 
@@ -1236,7 +1088,7 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_6b0cd982100045848d5b4fc39e9504b2(buffer, offset + 4); ;
+                        return Read_e741fc4cf5d14b3093a6834ceb0039af(buffer, offset + 4); ;
                     }
                 }
 
@@ -1249,14 +1101,14 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_6b0cd982100045848d5b4fc39e9504b2(buffer, offset + 8); ;
+                        return Read_e741fc4cf5d14b3093a6834ceb0039af(buffer, offset + 8); ;
                     }
                 }
             }
 
 
 
-            private static void WriteInlineValueOf_807f62fd519a4e7cb64291ee112421e3<TSpanWriter>(
+            private static void WriteInlineValueOf_508c5a8ffa9a4dd4a37b0ad4b0445448<TSpanWriter>(
                 TSpanWriter spanWriter,
                 Span<byte> span,
                 BenchmarkCore.Vec3 value,
@@ -1273,13 +1125,13 @@ namespace BenchmarkCore
                         return;
                     }
 
-                    WriteInlineValueOf_6b0cd982100045848d5b4fc39e9504b2(spanWriter, scopedSpan, value.X, 0);
-                    WriteInlineValueOf_6b0cd982100045848d5b4fc39e9504b2(spanWriter, scopedSpan, value.Y, 4);
-                    WriteInlineValueOf_6b0cd982100045848d5b4fc39e9504b2(spanWriter, scopedSpan, value.Z, 8);
+                    WriteInlineValueOf_e741fc4cf5d14b3093a6834ceb0039af(spanWriter, scopedSpan, value.X, 0);
+                    WriteInlineValueOf_e741fc4cf5d14b3093a6834ceb0039af(spanWriter, scopedSpan, value.Y, 4);
+                    WriteInlineValueOf_e741fc4cf5d14b3093a6834ceb0039af(spanWriter, scopedSpan, value.Z, 8);
                 }
             }
 
-            private static void Recycle_807f62fd519a4e7cb64291ee112421e3(BenchmarkCore.Vec3? value)
+            private static void Recycle_508c5a8ffa9a4dd4a37b0ad4b0445448(BenchmarkCore.Vec3? value)
             {
                 checked
                 {
@@ -1293,7 +1145,7 @@ namespace BenchmarkCore
             }
 
             [System.Runtime.CompilerServices.MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-            private static int GetMaxSizeOf_6b0cd982100045848d5b4fc39e9504b2(System.Single value)
+            private static int GetMaxSizeOf_e741fc4cf5d14b3093a6834ceb0039af(System.Single value)
             {
                 checked
                 {
@@ -1302,7 +1154,7 @@ namespace BenchmarkCore
             }
 
             [System.Runtime.CompilerServices.MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-            private static System.Single Read_6b0cd982100045848d5b4fc39e9504b2<TInputBuffer>(
+            private static System.Single Read_e741fc4cf5d14b3093a6834ceb0039af<TInputBuffer>(
                 TInputBuffer buffer,
                 int offset) where TInputBuffer : IInputBuffer
             {
@@ -1313,7 +1165,7 @@ namespace BenchmarkCore
             }
 
             [System.Runtime.CompilerServices.MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-            private static void WriteInlineValueOf_6b0cd982100045848d5b4fc39e9504b2<TSpanWriter>(
+            private static void WriteInlineValueOf_e741fc4cf5d14b3093a6834ceb0039af<TSpanWriter>(
                 TSpanWriter spanWriter,
                 Span<byte> span,
                 System.Single value,
@@ -1327,7 +1179,7 @@ namespace BenchmarkCore
             }
 
             [System.Runtime.CompilerServices.MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-            private static void Recycle_6b0cd982100045848d5b4fc39e9504b2(System.Single value)
+            private static void Recycle_e741fc4cf5d14b3093a6834ceb0039af(System.Single value)
             {
                 checked
                 {
@@ -1335,7 +1187,7 @@ namespace BenchmarkCore
                 }
             }
 
-            private static int GetMaxSizeOf_28ae02aa53884c509c4cf858e1d0bbd2(BenchmarkCore.Union value)
+            private static int GetMaxSizeOf_976d32b133c24c83980be3929c896677(BenchmarkCore.Union value)
             {
                 checked
                 {
@@ -1344,10 +1196,10 @@ namespace BenchmarkCore
                     {
 
                         case 1:
-                            return 7 + GetMaxSizeOf_807f62fd519a4e7cb64291ee112421e3(value.Item1);
+                            return 7 + GetMaxSizeOf_508c5a8ffa9a4dd4a37b0ad4b0445448(value.Item1);
 
                         case 2:
-                            return 7 + GetMaxSizeOf_78478f29bb214632955bbe1577b0913e(value.Item2);
+                            return 7 + GetMaxSizeOf_a3ab59dbed5449c48cbc61159f712d80(value.Item2);
                         default:
                             throw new System.InvalidOperationException("Exception determining type of union. Discriminator = " + value.Discriminator);
                     }
@@ -1355,7 +1207,7 @@ namespace BenchmarkCore
                 }
             }
 
-            private static BenchmarkCore.Union Read_28ae02aa53884c509c4cf858e1d0bbd2<TInputBuffer>(
+            private static BenchmarkCore.Union Read_976d32b133c24c83980be3929c896677<TInputBuffer>(
                 TInputBuffer buffer,
                 ref (int offset0, int offset1) offset) where TInputBuffer : IInputBuffer
             {
@@ -1372,12 +1224,12 @@ namespace BenchmarkCore
 
                         case 1:
                             offsetLocation += buffer.ReadUOffset(offsetLocation);
-                            return new BenchmarkCore.Union(Read_807f62fd519a4e7cb64291ee112421e3(buffer, offsetLocation));
+                            return new BenchmarkCore.Union(Read_508c5a8ffa9a4dd4a37b0ad4b0445448(buffer, offsetLocation));
 
 
                         case 2:
                             offsetLocation += buffer.ReadUOffset(offsetLocation);
-                            return new BenchmarkCore.Union(Read_78478f29bb214632955bbe1577b0913e(buffer, offsetLocation));
+                            return new BenchmarkCore.Union(Read_a3ab59dbed5449c48cbc61159f712d80(buffer, offsetLocation));
 
                         default:
                             throw new System.InvalidOperationException("Exception parsing union 'BenchmarkCore.Union'. Discriminator = " + discriminator);
@@ -1386,7 +1238,7 @@ namespace BenchmarkCore
                 }
             }
 
-            private static void WriteInlineValueOf_28ae02aa53884c509c4cf858e1d0bbd2<TSpanWriter>(
+            private static void WriteInlineValueOf_976d32b133c24c83980be3929c896677<TSpanWriter>(
                 TSpanWriter spanWriter,
                 Span<byte> span,
                 BenchmarkCore.Union value,
@@ -1410,7 +1262,7 @@ namespace BenchmarkCore
 
                                 var writeOffset = context.AllocateSpace(12, 4);
                                 spanWriter.WriteUOffset(span, offset.offset1, writeOffset);
-                                WriteInlineValueOf_807f62fd519a4e7cb64291ee112421e3(spanWriter, span, value.Item1, writeOffset);
+                                WriteInlineValueOf_508c5a8ffa9a4dd4a37b0ad4b0445448(spanWriter, span, value.Item1, writeOffset);
                             }
                             break;
 
@@ -1419,7 +1271,7 @@ namespace BenchmarkCore
 
                                 var writeOffset = context.AllocateSpace(4, 4);
                                 spanWriter.WriteUOffset(span, offset.offset1, writeOffset);
-                                WriteInlineValueOf_78478f29bb214632955bbe1577b0913e(spanWriter, span, value.Item2, writeOffset);
+                                WriteInlineValueOf_a3ab59dbed5449c48cbc61159f712d80(spanWriter, span, value.Item2, writeOffset);
                             }
                             break;
                         default: throw new InvalidOperationException("Unexpected");
@@ -1427,23 +1279,16 @@ namespace BenchmarkCore
                 }
             }
 
-            private static void Recycle_28ae02aa53884c509c4cf858e1d0bbd2(BenchmarkCore.Union? value)
+            private static void Recycle_976d32b133c24c83980be3929c896677(BenchmarkCore.Union? value)
             {
                 checked
                 {
 
-                    if (!(value is null))
-                    {
-                        switch (value.Discriminator)
-                        {
-                            case 1: Recycle_807f62fd519a4e7cb64291ee112421e3(value.Item1); break;
-                        }
-                    }
                 }
             }
 
             [System.Runtime.CompilerServices.MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-            private static int GetMaxSizeOf_78478f29bb214632955bbe1577b0913e(BenchmarkCore.NotRecycleable value)
+            private static int GetMaxSizeOf_a3ab59dbed5449c48cbc61159f712d80(BenchmarkCore.NotRecycleable value)
             {
                 checked
                 {
@@ -1451,17 +1296,17 @@ namespace BenchmarkCore
                 }
             }
 
-            private static BenchmarkCore.NotRecycleable Read_78478f29bb214632955bbe1577b0913e<TInputBuffer>(
+            private static BenchmarkCore.NotRecycleable Read_a3ab59dbed5449c48cbc61159f712d80<TInputBuffer>(
                 TInputBuffer buffer,
                 int offset) where TInputBuffer : IInputBuffer
             {
                 checked
                 {
-                    return structReader_91d7f2e41d114013b463cfbec65d204e<TInputBuffer>.GetOrCreate(buffer, offset);
+                    return structReader_934d4a0c3a954876bff0963ea9cf68a7<TInputBuffer>.GetOrCreate(buffer, offset);
                 }
             }
 
-            private sealed class structReader_91d7f2e41d114013b463cfbec65d204e<TInputBuffer>
+            private sealed class structReader_934d4a0c3a954876bff0963ea9cf68a7<TInputBuffer>
                 : BenchmarkCore.NotRecycleable
                 , FlatSharp.IFlatBufferDeserializedObject
                 where TInputBuffer : IInputBuffer
@@ -1476,18 +1321,18 @@ namespace BenchmarkCore
                 private byte __mask0;
                 private System.Int32 __index0Value;
 
-                public static structReader_91d7f2e41d114013b463cfbec65d204e<TInputBuffer> GetOrCreate(TInputBuffer buffer, int offset)
+                public static structReader_934d4a0c3a954876bff0963ea9cf68a7<TInputBuffer> GetOrCreate(TInputBuffer buffer, int offset)
                 {
                     checked
                     {
 
-                        var item = new structReader_91d7f2e41d114013b463cfbec65d204e<TInputBuffer>(buffer, offset);
+                        var item = new structReader_934d4a0c3a954876bff0963ea9cf68a7<TInputBuffer>(buffer, offset);
                         return item;
 
                     }
                 }
 
-                private structReader_91d7f2e41d114013b463cfbec65d204e(TInputBuffer buffer, int offset) : base(__CtorContext)
+                private structReader_934d4a0c3a954876bff0963ea9cf68a7(TInputBuffer buffer, int offset) : base(__CtorContext)
                 {
                     checked
                     {
@@ -1501,7 +1346,7 @@ namespace BenchmarkCore
                 FlatSharp.FlatBufferDeserializationContext IFlatBufferDeserializedObject.DeserializationContext => __CtorContext;
                 FlatSharp.IInputBuffer? IFlatBufferDeserializedObject.InputBuffer => this.__buffer;
 
-                void IFlatBufferDeserializedObject.DangerousRecycle()
+                void IRecyclable.DangerousRecycle()
                 {
                     checked
                     {
@@ -1545,14 +1390,14 @@ namespace BenchmarkCore
                 {
                     checked
                     {
-                        return Read_e28f578f46624c35917f36130894fc64(buffer, offset + 0); ;
+                        return Read_e12fa17e58a34984bffd426f7bf307f9(buffer, offset + 0); ;
                     }
                 }
             }
 
 
 
-            private static void WriteInlineValueOf_78478f29bb214632955bbe1577b0913e<TSpanWriter>(
+            private static void WriteInlineValueOf_a3ab59dbed5449c48cbc61159f712d80<TSpanWriter>(
                 TSpanWriter spanWriter,
                 Span<byte> span,
                 BenchmarkCore.NotRecycleable value,
@@ -1569,11 +1414,11 @@ namespace BenchmarkCore
                         return;
                     }
 
-                    WriteInlineValueOf_e28f578f46624c35917f36130894fc64(spanWriter, scopedSpan, value.Value, 0);
+                    WriteInlineValueOf_e12fa17e58a34984bffd426f7bf307f9(spanWriter, scopedSpan, value.Value, 0);
                 }
             }
 
-            private static void Recycle_78478f29bb214632955bbe1577b0913e(BenchmarkCore.NotRecycleable? value)
+            private static void Recycle_a3ab59dbed5449c48cbc61159f712d80(BenchmarkCore.NotRecycleable? value)
             {
                 checked
                 {
@@ -1587,7 +1432,7 @@ namespace BenchmarkCore
             }
 
             [System.Runtime.CompilerServices.MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-            private static int GetMaxSizeOf_e28f578f46624c35917f36130894fc64(System.Int32 value)
+            private static int GetMaxSizeOf_e12fa17e58a34984bffd426f7bf307f9(System.Int32 value)
             {
                 checked
                 {
@@ -1596,7 +1441,7 @@ namespace BenchmarkCore
             }
 
             [System.Runtime.CompilerServices.MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-            private static System.Int32 Read_e28f578f46624c35917f36130894fc64<TInputBuffer>(
+            private static System.Int32 Read_e12fa17e58a34984bffd426f7bf307f9<TInputBuffer>(
                 TInputBuffer buffer,
                 int offset) where TInputBuffer : IInputBuffer
             {
@@ -1607,7 +1452,7 @@ namespace BenchmarkCore
             }
 
             [System.Runtime.CompilerServices.MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-            private static void WriteInlineValueOf_e28f578f46624c35917f36130894fc64<TSpanWriter>(
+            private static void WriteInlineValueOf_e12fa17e58a34984bffd426f7bf307f9<TSpanWriter>(
                 TSpanWriter spanWriter,
                 Span<byte> span,
                 System.Int32 value,
@@ -1621,7 +1466,7 @@ namespace BenchmarkCore
             }
 
             [System.Runtime.CompilerServices.MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-            private static void Recycle_e28f578f46624c35917f36130894fc64(System.Int32 value)
+            private static void Recycle_e12fa17e58a34984bffd426f7bf307f9(System.Int32 value)
             {
                 checked
                 {
@@ -1630,7 +1475,7 @@ namespace BenchmarkCore
             }
 
             [System.Runtime.CompilerServices.MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-            private static int GetMaxSizeOf_981c8caa5c614596904e269f2e5f3aed(System.Byte value)
+            private static int GetMaxSizeOf_d3f1d58cb0a24aa4a8606b1bcb5223c9(System.Byte value)
             {
                 checked
                 {
@@ -1639,7 +1484,7 @@ namespace BenchmarkCore
             }
 
             [System.Runtime.CompilerServices.MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-            private static System.Byte Read_981c8caa5c614596904e269f2e5f3aed<TInputBuffer>(
+            private static System.Byte Read_d3f1d58cb0a24aa4a8606b1bcb5223c9<TInputBuffer>(
                 TInputBuffer buffer,
                 int offset) where TInputBuffer : IInputBuffer
             {
@@ -1650,7 +1495,7 @@ namespace BenchmarkCore
             }
 
             [System.Runtime.CompilerServices.MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-            private static void WriteInlineValueOf_981c8caa5c614596904e269f2e5f3aed<TSpanWriter>(
+            private static void WriteInlineValueOf_d3f1d58cb0a24aa4a8606b1bcb5223c9<TSpanWriter>(
                 TSpanWriter spanWriter,
                 Span<byte> span,
                 System.Byte value,
@@ -1664,7 +1509,7 @@ namespace BenchmarkCore
             }
 
             [System.Runtime.CompilerServices.MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-            private static void Recycle_981c8caa5c614596904e269f2e5f3aed(System.Byte value)
+            private static void Recycle_d3f1d58cb0a24aa4a8606b1bcb5223c9(System.Byte value)
             {
                 checked
                 {
@@ -1672,7 +1517,7 @@ namespace BenchmarkCore
                 }
             }
 
-            private static int GetMaxSizeOf_f3744da6354c481f8ef4c37592e84e0b(System.Collections.Generic.IList<BenchmarkCore.Union> value)
+            private static int GetMaxSizeOf_654bde26fea641b88e8e8f7e73a5e841(System.Collections.Generic.IList<BenchmarkCore.Union> value)
             {
                 checked
                 {
@@ -1684,30 +1529,30 @@ namespace BenchmarkCore
                     {
                         var current = value[i];
                         SerializationHelpers.EnsureNonNull(current);
-                        length += GetMaxSizeOf_28ae02aa53884c509c4cf858e1d0bbd2(current);
+                        length += GetMaxSizeOf_976d32b133c24c83980be3929c896677(current);
                     }
 
                     return length;
                 }
             }
 
-            private static System.Collections.Generic.IList<BenchmarkCore.Union> Read_f3744da6354c481f8ef4c37592e84e0b<TInputBuffer>(
+            private static System.Collections.Generic.IList<BenchmarkCore.Union> Read_654bde26fea641b88e8e8f7e73a5e841<TInputBuffer>(
                 TInputBuffer buffer,
                 ref (int offset0, int offset1) offset) where TInputBuffer : IInputBuffer
             {
                 checked
                 {
-                    return (new FlatBufferUnionVector_a4ff87495eaa4cd88ddc80934c5f1c8c<TInputBuffer>(
+                    return (new FlatBufferUnionVector_d50ca68d4b654f71a972283c99917702<TInputBuffer>(
                             buffer,
                             offset.offset0 + buffer.ReadUOffset(offset.offset0),
                             offset.offset1 + buffer.ReadUOffset(offset.offset1))).FlatBufferVectorToList().AsReadOnly();
                 }
             }
 
-            public sealed class FlatBufferUnionVector_a4ff87495eaa4cd88ddc80934c5f1c8c<TInputBuffer> : FlatBufferVectorOfUnion<BenchmarkCore.Union, TInputBuffer>
+            public sealed class FlatBufferUnionVector_d50ca68d4b654f71a972283c99917702<TInputBuffer> : FlatBufferVectorOfUnion<BenchmarkCore.Union, TInputBuffer>
                 where TInputBuffer : IInputBuffer
             {
-                public FlatBufferUnionVector_a4ff87495eaa4cd88ddc80934c5f1c8c(
+                public FlatBufferUnionVector_d50ca68d4b654f71a972283c99917702(
                     TInputBuffer memory,
                     int discriminatorOffset,
                     int offsetVectorOffset) : base(memory, discriminatorOffset, offsetVectorOffset)
@@ -1722,14 +1567,14 @@ namespace BenchmarkCore
                     checked
                     {
                         var temp = (discriminatorOffset, offsetOffset);
-                        return Read_28ae02aa53884c509c4cf858e1d0bbd2(memory, ref temp);
+                        return Read_976d32b133c24c83980be3929c896677(memory, ref temp);
                     }
                 }
             }
 
 
 
-            private static void WriteInlineValueOf_f3744da6354c481f8ef4c37592e84e0b<TSpanWriter>(
+            private static void WriteInlineValueOf_654bde26fea641b88e8e8f7e73a5e841<TSpanWriter>(
                 TSpanWriter spanWriter,
                 Span<byte> span,
                 System.Collections.Generic.IList<BenchmarkCore.Union> value,
@@ -1756,7 +1601,7 @@ namespace BenchmarkCore
                         SerializationHelpers.EnsureNonNull(current);
 
                         var tuple = (discriminatorVectorOffset, offsetVectorOffset);
-                        WriteInlineValueOf_28ae02aa53884c509c4cf858e1d0bbd2(spanWriter, span, current, ref tuple, context);
+                        WriteInlineValueOf_976d32b133c24c83980be3929c896677(spanWriter, span, current, ref tuple, context);
 
                         discriminatorVectorOffset++;
                         offsetVectorOffset += sizeof(int);
@@ -1764,7 +1609,7 @@ namespace BenchmarkCore
                 }
             }
 
-            private static void Recycle_f3744da6354c481f8ef4c37592e84e0b(System.Collections.Generic.IList<BenchmarkCore.Union>? value)
+            private static void Recycle_654bde26fea641b88e8e8f7e73a5e841(System.Collections.Generic.IList<BenchmarkCore.Union>? value)
             {
                 checked
                 {
@@ -1778,7 +1623,7 @@ namespace BenchmarkCore
                     for (int i = 0; i < count; ++i)
                     {
                         var current = value[i];
-                        Recycle_28ae02aa53884c509c4cf858e1d0bbd2(current);
+                        Recycle_976d32b133c24c83980be3929c896677(current);
                     }
 
                 }
@@ -1838,7 +1683,7 @@ namespace BenchmarkCore
         ) => base.Switch(caseDefault, caseVec3, caseNotRecycleable);
     }
 
-    [FlatBufferStruct(RecyclePoolSize = -1)]
+    [FlatBufferStructAttribute()]
     [System.Runtime.CompilerServices.CompilerGenerated]
     public partial class Vec3
         : object
@@ -1864,9 +1709,9 @@ namespace BenchmarkCore
         {
             checked
             {
-                this.X = FlatSharp.Compiler.Generated.CloneHelpers_b0776414e5d947299b42535a5aa8d935.Clone(source.X);
-                this.Y = FlatSharp.Compiler.Generated.CloneHelpers_b0776414e5d947299b42535a5aa8d935.Clone(source.Y);
-                this.Z = FlatSharp.Compiler.Generated.CloneHelpers_b0776414e5d947299b42535a5aa8d935.Clone(source.Z);
+                this.X = FlatSharp.Compiler.Generated.CloneHelpers_bba80f876f344c8197cd9957beca3057.Clone(source.X);
+                this.Y = FlatSharp.Compiler.Generated.CloneHelpers_bba80f876f344c8197cd9957beca3057.Clone(source.Y);
+                this.Z = FlatSharp.Compiler.Generated.CloneHelpers_bba80f876f344c8197cd9957beca3057.Clone(source.Z);
                 this.OnInitialized(null);
             }
         }
@@ -1885,7 +1730,7 @@ namespace BenchmarkCore
         public virtual System.Single Z { get; set; }
 
     }
-    [FlatBufferStruct(RecyclePoolSize = 0)]
+    [FlatBufferStructAttribute()]
     [System.Runtime.CompilerServices.CompilerGenerated]
     public partial class NotRecycleable
         : object
@@ -1911,7 +1756,7 @@ namespace BenchmarkCore
         {
             checked
             {
-                this.Value = FlatSharp.Compiler.Generated.CloneHelpers_b0776414e5d947299b42535a5aa8d935.Clone(source.Value);
+                this.Value = FlatSharp.Compiler.Generated.CloneHelpers_bba80f876f344c8197cd9957beca3057.Clone(source.Value);
                 this.OnInitialized(null);
             }
         }
@@ -1924,7 +1769,7 @@ namespace BenchmarkCore
         public virtual System.Int32 Value { get; set; }
 
     }
-    [FlatBufferStruct(RecyclePoolSize = 0)]
+    [FlatBufferStructAttribute()]
     [System.Runtime.CompilerServices.CompilerGenerated]
     public partial class Struct
         : object
@@ -1951,8 +1796,8 @@ namespace BenchmarkCore
         {
             checked
             {
-                this.Other = FlatSharp.Compiler.Generated.CloneHelpers_b0776414e5d947299b42535a5aa8d935.Clone(source.Other);
-                this.Int = FlatSharp.Compiler.Generated.CloneHelpers_b0776414e5d947299b42535a5aa8d935.Clone(source.Int);
+                this.Other = FlatSharp.Compiler.Generated.CloneHelpers_bba80f876f344c8197cd9957beca3057.Clone(source.Other);
+                this.Int = FlatSharp.Compiler.Generated.CloneHelpers_bba80f876f344c8197cd9957beca3057.Clone(source.Int);
                 this.OnInitialized(null);
             }
         }
@@ -1968,7 +1813,7 @@ namespace BenchmarkCore
         public virtual System.Int32 Int { get; set; }
 
     }
-    [FlatBufferStruct(RecyclePoolSize = 0)]
+    [FlatBufferStructAttribute()]
     [System.Runtime.CompilerServices.CompilerGenerated]
     public partial class OtherStruct
         : object
@@ -1994,7 +1839,7 @@ namespace BenchmarkCore
         {
             checked
             {
-                this.Long = FlatSharp.Compiler.Generated.CloneHelpers_b0776414e5d947299b42535a5aa8d935.Clone(source.Long);
+                this.Long = FlatSharp.Compiler.Generated.CloneHelpers_bba80f876f344c8197cd9957beca3057.Clone(source.Long);
                 this.OnInitialized(null);
             }
         }

@@ -301,7 +301,7 @@ namespace FlatSharp
                     {typeof(FlatBufferDeserializationContext).GetCompilableTypeName()} {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.DeserializationContext)} => __CtorContext;
                     {typeof(IInputBuffer).GetCompilableTypeName()}? {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.InputBuffer)} => {this.GetBufferReference()};
 
-                    void {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.DangerousRecycle)}()
+                    void {nameof(IRecyclable)}.{nameof(IRecyclable.DangerousRecycle)}()
                     {{
                         {string.Join("\r\n", this.recycleMethodInvocations)}
                         {this.GetDangerousReleaseMethodBody()}
