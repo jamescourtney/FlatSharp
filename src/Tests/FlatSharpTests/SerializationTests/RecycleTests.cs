@@ -18,10 +18,6 @@ namespace FlatSharpTests
 {
     using System;
     using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.IO;
-    using System.Linq;
-    using System.Runtime.InteropServices;
     using FlatSharp;
     using FlatSharp.Attributes;
     using FlatSharp.TypeModel;
@@ -33,6 +29,9 @@ namespace FlatSharpTests
     [TestClass]
     public class RecycleTests
     {
+        private const int TestStructPoolSize = 3;
+        private const int TestTablePoolSize = -1;
+
 #if NET5_0_OR_GREATER
         [TestMethod]
         public void Recycle_Accessor_Combinations()
@@ -179,7 +178,6 @@ namespace FlatSharpTests
                 Assert.IsNull(c2.Next);
 
                 chainASerializer.Recycle(ref a1);
-
                 Assert.IsNull(a1);
 
                 const string Substring = "FlatSharp object used after recycle";
@@ -220,12 +218,207 @@ namespace FlatSharpTests
             Assert.AreEqual(2, Chain_C.CtorCount);
         }
 
+        [TestMethod]
+        public void PropertyCache_ListVector_IsNotRecycled()
+        {
+            var table = new GenericTable<IList<TestStruct>>
+            {
+                Item = new List<TestStruct> { new(), new(), new() }
+            };
+
+            RunVectorTest100Parses<IList<TestStruct>, TestStruct>(FlatBufferDeserializationOption.PropertyCache, table);
+            Assert.AreEqual(100 * 3, TestStruct.CtorCount); // no pooling.
+        }
+
+        [TestMethod]
+        public void VectorCache_UnionListVector_IsRecycled()
+        {
+            var table = new GenericTable<IList<FlatBufferUnion<TestStruct, string>>>
+            {
+                Item = new List<FlatBufferUnion<TestStruct, string>>
+                {
+                    new FlatBufferUnion<TestStruct, string>(new TestStruct()),
+                    new FlatBufferUnion<TestStruct, string>(new TestStruct()),
+                    new FlatBufferUnion<TestStruct, string>(new TestStruct()),
+                    new FlatBufferUnion<TestStruct, string>(string.Empty),
+                }
+            };
+
+            RunVectorTest100Parses<IList<FlatBufferUnion<TestStruct, string>>, FlatBufferUnion<TestStruct, string>>(FlatBufferDeserializationOption.VectorCache, table);
+            Assert.AreEqual(3, TestStruct.CtorCount);
+        }
+
+        [TestMethod]
+        public void PropertyCache_UnionListVector_IsNotRecycled()
+        {
+            var table = new GenericTable<IList<FlatBufferUnion<TestStruct, string>>>
+            {
+                Item = new List<FlatBufferUnion<TestStruct, string>>
+                {
+                    new FlatBufferUnion<TestStruct, string>(new TestStruct()),
+                    new FlatBufferUnion<TestStruct, string>(new TestStruct()),
+                    new FlatBufferUnion<TestStruct, string>(new TestStruct()),
+                    new FlatBufferUnion<TestStruct, string>(string.Empty),
+                }
+            };
+
+            RunVectorTest100Parses<IList<FlatBufferUnion<TestStruct, string>>, FlatBufferUnion<TestStruct, string>>(FlatBufferDeserializationOption.PropertyCache, table);
+            Assert.AreEqual(100 * 3, TestStruct.CtorCount); // no pooling.
+        }
+
+        [TestMethod]
+        public void PropertyCache_IndexedVector_IsNotRecycled()
+        {
+            var table = new GenericTable<IIndexedVector<string, TableWithKey>>
+            {
+                Item = new IndexedVector<string, TableWithKey>
+                {
+                    new TableWithKey { Key = "a" },
+                    new TableWithKey { Key = "b" },
+                    new TableWithKey { Key = "c" },
+                }
+            };
+
+            RunVectorTest100Parses<IIndexedVector<string, TableWithKey>, KeyValuePair<string, TableWithKey>>(
+                FlatBufferDeserializationOption.PropertyCache, 
+                table);
+
+            Assert.AreEqual(100 * 3, TableWithKey.CtorCount); // no pooling.
+        }
+
+        [TestMethod]
+        public void Lazy_IndexedVector_IsNotRecycled()
+        {
+            var table = new GenericTable<IIndexedVector<string, TableWithKey>>
+            {
+                Item = new IndexedVector<string, TableWithKey>
+                {
+                    new TableWithKey { Key = "a" },
+                    new TableWithKey { Key = "b" },
+                    new TableWithKey { Key = "c" },
+                }
+            };
+
+            RunVectorTest100Parses<IIndexedVector<string, TableWithKey>, KeyValuePair<string, TableWithKey>>(
+                FlatBufferDeserializationOption.Lazy,
+                table);
+
+            Assert.AreEqual(100 * 3, TableWithKey.CtorCount); // no pooling.
+        }
+
+        [TestMethod]
+        public void VectorCache_IndexedVector_IsRecycled()
+        {
+            var table = new GenericTable<IIndexedVector<string, TableWithKey>>
+            {
+                Item = new IndexedVector<string, TableWithKey>
+                {
+                    new TableWithKey { Key = "a" },
+                    new TableWithKey { Key = "b" },
+                    new TableWithKey { Key = "c" },
+                }
+            };
+
+            RunVectorTest100Parses<IIndexedVector<string, TableWithKey>, KeyValuePair<string, TableWithKey>>(
+                FlatBufferDeserializationOption.VectorCache,
+                table);
+
+            Assert.AreEqual(3, TableWithKey.CtorCount);
+        }
+
+        [TestMethod]
+        public void Greedy_IndexedVector_IsRecycled()
+        {
+            var table = new GenericTable<IIndexedVector<string, TableWithKey>>
+            {
+                Item = new IndexedVector<string, TableWithKey>
+                {
+                    new TableWithKey { Key = "a" },
+                    new TableWithKey { Key = "b" },
+                    new TableWithKey { Key = "c" },
+                }
+            };
+
+            RunVectorTest100Parses<IIndexedVector<string, TableWithKey>, KeyValuePair<string, TableWithKey>>(
+                FlatBufferDeserializationOption.Greedy,
+                table);
+
+            Assert.AreEqual(3, TableWithKey.CtorCount);
+        }
+
+        [TestMethod]
+        public void PropertyCache_UnionArrayVector_IsRecycled()
+        {
+            var table = new GenericTable<FlatBufferUnion<TestStruct, string>[]>
+            {
+                Item = new FlatBufferUnion<TestStruct, string>[]
+                {
+                    new FlatBufferUnion<TestStruct, string>(new TestStruct()),
+                    new FlatBufferUnion<TestStruct, string>(new TestStruct()),
+                    new FlatBufferUnion<TestStruct, string>(new TestStruct()),
+                    new FlatBufferUnion<TestStruct, string>(string.Empty),
+                }
+            };
+
+            RunVectorTest100Parses<FlatBufferUnion<TestStruct, string>[], FlatBufferUnion<TestStruct, string>>(FlatBufferDeserializationOption.PropertyCache, table);
+            Assert.AreEqual(3, TestStruct.CtorCount);
+        }
+
+        [TestMethod]
+        public void PropertyCache_ArrayVector_IsRecycled()
+        {
+            var table = new GenericTable<TestStruct[]>
+            {
+                Item = new TestStruct[] { new(), new(), new() }
+            };
+
+            RunVectorTest100Parses<TestStruct[], TestStruct>(FlatBufferDeserializationOption.PropertyCache, table);
+            Assert.AreEqual(3, TestStruct.CtorCount); // pooling working.
+        }
+
+        [TestMethod]
+        public void Lazy_ArrayVector_IsNotRecycled()
+        {
+            var table = new GenericTable<TestStruct[]>
+            {
+                Item = new TestStruct[] { new(), new(), new() }
+            };
+
+            RunVectorTest100Parses<TestStruct[], TestStruct>(FlatBufferDeserializationOption.Lazy, table);
+            Assert.AreEqual(100 * 3, TestStruct.CtorCount);
+        }
+
+        private void RunVectorTest100Parses<TVector, TItem>(
+            FlatBufferDeserializationOption option,
+            GenericTable<TVector> table)
+            where TVector : IEnumerable<TItem>
+        {
+            FlatBufferSerializer serializer = new FlatBufferSerializer(option);
+            var tableSerializer = serializer.Compile<GenericTable<TVector>>();
+
+            byte[] data = new byte[tableSerializer.GetMaxSize(table)];
+            tableSerializer.Write(data, table);
+
+            ResetCounts();
+            for (int i = 0; i < 100; ++i)
+            {
+                var parsed = tableSerializer.Parse(data);
+                foreach (var item in parsed.Item)
+                {
+                }
+
+                tableSerializer.Recycle(ref parsed);
+                Assert.IsNull(parsed);
+            }
+        }
+
         private static void ResetCounts()
         {
             TestTable.CtorCount = 0;
             TestStruct.CtorCount = 0;
             NonRecyclableTable.CtorCount = 0;
             NonRecyclableStruct.CtorCount = 0;
+            TableWithKey.CtorCount = 0;
 
             Chain_A.CtorCount = 0;
             Chain_B.CtorCount = 0;
@@ -257,7 +450,7 @@ namespace FlatSharpTests
         }
 #endif
 
-        [FlatBufferTable(PoolSize = -1)]
+        [FlatBufferTable(PoolSize = TestTablePoolSize)]
         public class TestTable
         {
             public static int CtorCount = 0;
@@ -290,6 +483,24 @@ namespace FlatSharpTests
         }
 
         [FlatBufferTable]
+        public class GenericTable<T>
+        {
+            [FlatBufferItem(0)]
+            public virtual T? Item { get; set; }
+        }
+
+        [FlatBufferTable(PoolSize = -1)]
+        public class TableWithKey
+        {
+            public static int CtorCount = 0;
+
+            public TableWithKey() => CtorCount++;
+
+            [FlatBufferItem(0, Key = true, Required = true)]
+            public virtual string Key { get; set; }
+        }
+
+        [FlatBufferTable]
         public class NonRecyclableTable
         {
             public static int CtorCount = 0;
@@ -299,7 +510,7 @@ namespace FlatSharpTests
             [FlatBufferItem(0)] public virtual int Int { get; set; }
         }
 
-        [FlatBufferStruct(PoolSize = 3)]
+        [FlatBufferStruct(PoolSize = TestStructPoolSize)]
         public class TestStruct
         {
             public static int CtorCount = 0;

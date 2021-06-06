@@ -88,5 +88,15 @@ namespace FlatSharp.TypeModel
                 this.itemTypeModel.SchemaType == FlatBufferSchemaType.Union, 
                 "Union vectors can't contain non-union elements");
         }
+
+        public override CodeGeneratedMethod CreateRecycleMethodBody(RecycleCodeGenContext context)
+        {
+            if (!context.Options.PreallocateVectors)
+            {
+                return CodeGeneratedMethod.Empty;
+            }
+
+            return base.CreateRecycleMethodBody(context);
+        }
     }
 }

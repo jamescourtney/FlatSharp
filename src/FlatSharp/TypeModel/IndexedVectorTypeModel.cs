@@ -41,11 +41,9 @@ namespace FlatSharp.TypeModel
 
         public override void OnInitialize()
         {
-            if (!this.ClrType.IsGenericType ||
-                this.ClrType.GetGenericTypeDefinition() != typeof(IIndexedVector<,>))
-            {
-                throw new InvalidFlatBufferDefinitionException($"Indexed vectors must be of type IIndexedVector. Type = {this.GetCompilableTypeName()}.");
-            }
+            FlatSharpInternal.Assert(
+                this.ClrType.IsGenericType && this.ClrType.GetGenericTypeDefinition() == typeof(IIndexedVector<,>),
+                $"Indexed vectors must be of type IIndexedVector. Type = {this.GetCompilableTypeName()}.");
 
             Type keyType = this.ClrType.GetGenericArguments()[0];
             Type valueType = this.ClrType.GetGenericArguments()[1];
