@@ -19,14 +19,15 @@ namespace FlatSharp
     using System;
 
     /// <summary>
-    /// Defines a property bag of global settings for FlatSharp.
+    /// Defines a property bag of global runtime settings for FlatSharp.
     /// </summary>
-    public static class FlatSharpGlobalSettings
+    public static class FlatSharpRuntimeSettings
     {
         /// <summary>
-        /// A flag that causes pooled tables and structs to collect their stack traces at allocation and release time. This allows
-        /// emitting more useful logging information at the cost of quite a bit of performance. Use to investigate runtime issues.
+        /// A flag that causes recycled tables and structs to collect their stack traces at allocation and release time. It
+        /// also disables recycling, to allow catching use-after-recycle bugs. This is a diagnostic mode that should only
+        /// be used to investigate issues.
         /// </summary>
-        public static bool CollectPooledObjectStackTraces { get; set; }
+        public static bool EnableRecyclingDiagnostics { get; set; }
     }
 }

@@ -89,13 +89,15 @@ namespace FlatSharp
                 }}
 
                 this.{ReleasedVariableName} = true;
-                if ({nameof(FlatSharpGlobalSettings)}.{nameof(FlatSharpGlobalSettings.CollectPooledObjectStackTraces)})
+                if ({nameof(FlatSharpRuntimeSettings)}.{nameof(FlatSharpRuntimeSettings.EnableRecyclingDiagnostics)})
                 {{
                     this.{ReleaseStackVariableName} = Environment.StackTrace;
                 }}
-
-                {string.Join("\r\n", this.GetResetStatements())}
-                {WriterVariableName}.TryWrite(this);
+                else
+                {{
+                    {string.Join("\r\n", this.GetResetStatements())}
+                    {WriterVariableName}.TryWrite(this);
+                }}
             ";
         }
 
@@ -113,7 +115,7 @@ namespace FlatSharp
                 item.{AllocationStackVariableName} = null;
                 item.{ReleaseStackVariableName} = null;
 
-                if ({nameof(FlatSharpGlobalSettings)}.{nameof(FlatSharpGlobalSettings.CollectPooledObjectStackTraces)})
+                if ({nameof(FlatSharpRuntimeSettings)}.{nameof(FlatSharpRuntimeSettings.EnableRecyclingDiagnostics)})
                 {{
                     item.{AllocationStackVariableName} = Environment.StackTrace;
                 }}

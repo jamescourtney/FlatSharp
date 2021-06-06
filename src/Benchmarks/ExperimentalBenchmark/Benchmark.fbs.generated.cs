@@ -1014,7 +1014,7 @@ namespace BenchmarkCore
                         item.__poolDiag_allocationStack = null;
                         item.__poolDiag_releaseStack = null;
 
-                        if (FlatSharpGlobalSettings.CollectPooledObjectStackTraces)
+                        if (FlatSharpRuntimeSettings.EnableRecyclingDiagnostics)
                         {
                             item.__poolDiag_allocationStack = Environment.StackTrace;
                         }
@@ -1059,7 +1059,7 @@ namespace BenchmarkCore
                         }
 
                         this.__poolDiag_released = true;
-                        if (FlatSharpGlobalSettings.CollectPooledObjectStackTraces)
+                        if (FlatSharpRuntimeSettings.EnableRecyclingDiagnostics)
                         {
                             this.__poolDiag_releaseStack = Environment.StackTrace;
                         }
