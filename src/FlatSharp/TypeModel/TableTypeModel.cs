@@ -750,7 +750,7 @@ $@"
 $@"
             if ({context.ValueVariableName} is {nameof(IFlatBufferDeserializedObject)} deserializedObj)
             {{
-                deserializedObj.{nameof(IFlatBufferDeserializedObject.DangerousRelease)}();
+                deserializedObj.{nameof(IFlatBufferDeserializedObject.DangerousRecycle)}();
             }}
 ";
             return new CodeGeneratedMethod(body);

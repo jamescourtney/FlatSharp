@@ -121,7 +121,7 @@ namespace FlatSharpTests
 
             SerializeAndParse(FlatBufferDeserializationOption.PropertyCache);
             Assert.AreEqual(5000, TestStruct.CtorCount);             // Vector objects leak with property cache.
-            Assert.AreEqual(1000, NonRecyclableStruct.CtorCount);  
+            Assert.AreEqual(1000, NonRecyclableStruct.CtorCount);
             Assert.AreEqual(1, TestTable.CtorCount);
 
             SerializeAndParse(FlatBufferDeserializationOption.Lazy);
@@ -280,7 +280,7 @@ namespace FlatSharpTests
             };
 
             RunVectorTest100Parses<IIndexedVector<string, TableWithKey>, KeyValuePair<string, TableWithKey>>(
-                FlatBufferDeserializationOption.PropertyCache, 
+                FlatBufferDeserializationOption.PropertyCache,
                 table);
 
             Assert.AreEqual(100 * 3, TableWithKey.CtorCount); // no pooling.
@@ -409,6 +409,74 @@ namespace FlatSharpTests
 
                 tableSerializer.Recycle(ref parsed);
                 Assert.IsNull(parsed);
+            }
+        }
+
+        [TestMethod]
+        public void Lazy_ListVector_DangerousRecycle_OK()
+        {
+            var table = new GenericTable<IList<TestStruct>>
+            {
+                Item = new List<TestStruct> { new(), new(), new() }
+            };
+
+            ResetCounts();
+
+            var serializer = new FlatBufferSerializer(FlatBufferDeserializationOption.Lazy).Compile<GenericTable<IList<TestStruct>>>();
+            byte[] data = new byte[1024];
+            serializer.Write(data, table);
+
+            for (int i = 0; i < 100; ++i)
+            {
+                var parsed = serializer.Parse(data);
+                var vector = parsed.Item;
+                int count = vector.Count;
+                for (int j = 0; j < count; ++j)
+                {
+                    var @struct = vector[j];
+                    ((IFlatBufferDeserializedObject)@struct).DangerousRecycle();
+                }
+            }
+
+            Assert.AreEqual(1, TestStruct.CtorCount);
+        }
+
+        [TestMethod]
+        public void VectorCache_ListVector_DangerousRecycle_ImproperUsage()
+        {
+            try
+            {
+                FlatSharpRuntimeSettings.EnableRecyclingDiagnostics = true;
+                var table = new GenericTable<IList<TestStruct>>
+                {
+                    Item = new List<TestStruct> { new(), new(), new() }
+                };
+
+                ResetCounts();
+
+                var serializer = new FlatBufferSerializer(FlatBufferDeserializationOption.VectorCache).Compile<GenericTable<IList<TestStruct>>>();
+                byte[] data = new byte[1024];
+                serializer.Write(data, table);
+
+                var parsed = serializer.Parse(data);
+                var vector = parsed.Item;
+                int count = vector.Count;
+                for (int j = 0; j < count; ++j)
+                {
+                    var @struct = vector[j];
+                    ((IFlatBufferDeserializedObject)@struct).DangerousRecycle();
+                }
+
+                var ex = Assert.ThrowsException<InvalidOperationException>(
+                    () => serializer.Recycle(ref parsed));
+
+                Assert.IsTrue(ex.Message.Contains("FlatSharp object recycled twice."));
+                Assert.IsTrue(ex.Message.Contains(".GetOrCreate")); // allocation stack.
+                Assert.IsTrue(ex.Message.Contains(".DangerousRecycle")); // release stack
+            }
+            finally
+            {
+                FlatSharpRuntimeSettings.EnableRecyclingDiagnostics = false;
             }
         }
 

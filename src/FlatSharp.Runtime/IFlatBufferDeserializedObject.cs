@@ -53,6 +53,6 @@ namespace FlatSharp
         /// <remarks>
         /// A case where this method may be valuable is when using <see cref="FlatBufferDeserializationOption.Lazy"/> deserialization.
         /// </remarks>
-        void DangerousRelease();
+        void DangerousRecycle();
     }
 }
