@@ -40,14 +40,14 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
-        public void Recycle_Accessor_InitNonVirtual()
+        public void Recycle_Accessor_NonVirtual()
         {
             var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
                 () => FlatBufferSerializer.Default.Compile<AccessorCombinationTable_NonVirtualInit>());
 
             Assert.AreEqual(
                 ex.Message,
-                "FlatBuffer property 'FlatSharpTests.RecycleTests.AccessorCombinationTable_NonVirtualInit.Init' is non-virtual and init-only in a table with object pooling enabled. This combination is not supported. Consider marking the property as virtual, settable, or disabling pooling.");
+                "FlatBuffer property 'FlatSharpTests.RecycleTests.AccessorCombinationTable_NonVirtualInit.Init' is non-virtual in a table with object recycling enabled. This combination is not supported. Consider marking the property as virtual or disabling recycling.");
         }
 #endif
 
@@ -430,7 +430,7 @@ namespace FlatSharpTests
         public class AccessorCombinationTable_Valid
         {
             [FlatBufferItem(0)]
-            public int Regular { get; set; }
+            public virtual int Regular { get; set; }
 
             [FlatBufferItem(1)]
             public virtual int RegularVirtual { get; set; }
@@ -447,6 +447,9 @@ namespace FlatSharpTests
         {
             [FlatBufferItem(0)]
             public int Init { get; init; }
+
+            [FlatBufferItem(1)]
+            public int Set { get; set; }
         }
 #endif
 
