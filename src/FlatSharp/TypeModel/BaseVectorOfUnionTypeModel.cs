@@ -90,6 +90,8 @@ namespace FlatSharp.TypeModel
         /// </summary>
         public override bool SerializesInline => false;
 
+        public override IEnumerable<ITypeModel> Children => new[] { this.ItemTypeModel };
+
         public override bool TryGetUnderlyingVectorType([NotNullWhen(true)] out ITypeModel? typeModel)
         {
             typeModel = this.ItemTypeModel;
@@ -156,21 +158,35 @@ namespace FlatSharp.TypeModel
 
         public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
         {
-            string parameters;
-            if (this.ItemTypeModel.ClrType.IsValueType)
-            {
-                parameters = context.ItemVariableName;
-            }
-            else
-            {
-                parameters = $"{context.ItemVariableName}, {context.MethodNameMap[this.ItemTypeModel.ClrType]}";
-            }
+            string parameters = parameters = $"{context.ItemVariableName}, {context.MethodNameMap[this.ItemTypeModel.ClrType]}";
 
             string body =  $"return {nameof(VectorCloneHelpers)}.{nameof(VectorCloneHelpers.Clone)}<{this.ItemTypeModel.GetCompilableTypeName()}>({parameters});";
             return new CodeGeneratedMethod(body)
             {
                 IsMethodInline = true,
             };
+        }
+
+        public override CodeGeneratedMethod CreateRecycleMethodBody(RecycleCodeGenContext context)
+        {
+            var itemContext = context with { ValueVariableName = "current" };
+
+            string body =
+            $@"
+                if ({context.ValueVariableName} is null)
+                {{
+                    return;
+                }}
+
+                int count = {context.ValueVariableName}.{this.LengthPropertyName};
+                for (int i = 0; i < count; ++i)
+                {{
+                      var current = {context.ValueVariableName}[i];
+                      {itemContext.GetRecycleInvocation(this.ItemTypeModel.ClrType)};
+                }}
+            ";
+
+            return new CodeGeneratedMethod(body);
         }
 
         public sealed override void Initialize()
@@ -180,17 +196,6 @@ namespace FlatSharp.TypeModel
         }
 
         public abstract void OnInitialize();
-
-        public override void TraverseObjectGraph(HashSet<Type> seenTypes)
-        {
-            seenTypes.Add(this.ClrType);
-            seenTypes.Add(typeof(byte));
-
-            if (seenTypes.Add(this.ItemTypeModel.ClrType))
-            {
-                this.ItemTypeModel.TraverseObjectGraph(seenTypes);
-            }
-        }
 
         private string GetThrowIfNullStatement(string variableName)
         {

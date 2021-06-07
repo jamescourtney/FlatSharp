@@ -18,6 +18,7 @@ namespace FlatSharp.TypeModel
 {
     using FlatSharp.Attributes;
     using System;
+    using System.Linq;
     using System.Reflection;
 
     /// <summary>
@@ -25,6 +26,12 @@ namespace FlatSharp.TypeModel
     /// </summary>
     public abstract class ItemMemberModel
     {
+        public enum SetMethodKind
+        {
+            Set = 0,
+            Init = 1,
+        }
+
         public string FriendlyName => $"{this.PropertyInfo.DeclaringType!.GetCompilableTypeName()}.{this.PropertyInfo.Name}";
 
         protected ItemMemberModel(
@@ -41,6 +48,15 @@ namespace FlatSharp.TypeModel
             this.CustomGetter = attribute.CustomGetter;
             this.IsWriteThrough = attribute.WriteThrough;
             this.IsRequired = attribute.Required;
+
+            if (setMethod is not null)
+            {
+                this.SetterKind = SetMethodKind.Set;
+                if (setMethod.ReturnParameter.GetRequiredCustomModifiers().Any(x => x.FullName == "System.Runtime.CompilerServices.IsExternalInit"))
+                {
+                    this.SetterKind = SetMethodKind.Init;
+                }
+            }
 
             string declaringType = "";
             if (propertyInfo.DeclaringType is not null)
@@ -167,6 +183,26 @@ namespace FlatSharp.TypeModel
         /// A custom getter for this item.
         /// </summary>
         public string? CustomGetter { get; set; }
+
+        /// <summary>
+        /// The semantics of the setter.
+        /// </summary>
+        public SetMethodKind? SetterKind { get; }
+
+        /// <summary>
+        /// Validates that this property's setter is valid for recycle scenarios.
+        /// </summary>
+        public void ValidateRecyclableSetter(ITypeModel context)
+        {
+            if (!this.IsVirtual)
+            {
+                // Pooling is not possible with non-virtual init-only setters. Compiler
+                // correctly complains that we are messing with properties outside
+                // of a valid context when we recycle them.
+                throw new InvalidFlatBufferDefinitionException(
+                    $"FlatBuffer property '{context.GetCompilableTypeName()}.{this.PropertyInfo.Name}' is non-virtual in a table with object recycling enabled. This combination is not supported. Consider marking the property as virtual or disabling recycling.");
+            }
+        }
 
         /// <summary>
         /// Creates a method body to read the given property. This is contextual depending

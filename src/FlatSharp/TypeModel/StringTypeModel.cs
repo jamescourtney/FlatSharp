@@ -75,6 +75,11 @@ namespace FlatSharp.TypeModel
         public override bool SerializesInline => false;
 
         /// <summary>
+        /// Strings are leaf nodes.
+        /// </summary>
+        public override IEnumerable<ITypeModel> Children => new ITypeModel[0];
+
+        /// <summary>
         /// Gets the type of span comparer for this type.
         /// </summary>
         public Type SpanComparerType => typeof(StringSpanComparer);
@@ -100,11 +105,6 @@ namespace FlatSharp.TypeModel
             {
                 IsMethodInline = true,
             };
-        }
-
-        public override void TraverseObjectGraph(HashSet<Type> seenTypes)
-        {
-            seenTypes.Add(this.ClrType);
         }
 
         public override bool TryGetSpanComparerType(out Type comparerType)

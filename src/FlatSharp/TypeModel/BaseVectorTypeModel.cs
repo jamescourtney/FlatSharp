@@ -89,6 +89,8 @@ namespace FlatSharp.TypeModel
         /// </summary>
         public override bool SerializesInline => false;
 
+        public override IEnumerable<ITypeModel> Children => new[] { this.ItemTypeModel };
+
         /// <summary>
         /// Gets the size of each member of this vector, with padding for alignment.
         /// </summary>
@@ -162,6 +164,32 @@ namespace FlatSharp.TypeModel
             return new CodeGeneratedMethod(body);
         }
 
+        public override CodeGeneratedMethod CreateRecycleMethodBody(RecycleCodeGenContext context)
+        {
+            if (!this.HasRecyclableDescendant())
+            {
+                return CodeGeneratedMethod.Empty;
+            }
+
+            var loopContext = context with
+            {
+                ValueVariableName = "current"
+            };
+
+            string loopBody = $@"{loopContext.GetRecycleInvocation(this.ItemTypeModel.ClrType)};";
+
+            string body = $@"
+                if ({context.ValueVariableName} is null)
+                {{
+                    return;
+                }}
+
+                int count = {context.ValueVariableName}.{this.LengthPropertyName};
+                {this.CreateLoop(context.Options, context.ValueVariableName, "count", "current", loopBody)}";
+
+            return new CodeGeneratedMethod(body);
+        }
+
         /// <summary>
         /// Creates a loop that executes the given body.
         /// </summary>
@@ -203,15 +231,6 @@ namespace FlatSharp.TypeModel
         }
 
         public abstract void OnInitialize();
-
-        public override void TraverseObjectGraph(HashSet<Type> seenTypes)
-        {
-            seenTypes.Add(this.ClrType);
-            if (seenTypes.Add(this.ItemTypeModel.ClrType))
-            {
-                this.ItemTypeModel.TraverseObjectGraph(seenTypes);
-            }
-        }
 
         protected string GetThrowIfNullStatement(string variableName)
         {

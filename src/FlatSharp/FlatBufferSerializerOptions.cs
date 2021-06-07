@@ -47,6 +47,9 @@ namespace FlatSharp
         /// </summary>
         public bool Devirtualize { get; }
 
+        /// <summary>
+        /// The deserialization mode.
+        /// </summary>
         public FlatBufferDeserializationOption DeserializationOption { get; }
 
         /// <summary>
@@ -84,7 +87,8 @@ namespace FlatSharp
         public bool Lazy => this.DeserializationOption == FlatBufferDeserializationOption.Lazy;
 
         /// <summary>
-        /// Indicates if FlatSharp should intercept app domain load events to look for cross-referenced generated assemblies. Mostly useful for FlatSharp unit tests.
+        /// Indicates if FlatSharp should intercept app domain load events to look for cross-referenced generated assemblies. 
+        /// Mostly useful for FlatSharp unit tests.
         /// </summary>
         public bool EnableAppDomainInterceptOnAssemblyLoad { get; set; }
     }

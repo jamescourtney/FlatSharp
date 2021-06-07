@@ -47,5 +47,10 @@ namespace FlatSharp
         /// Parses the given buffer as an instance of <typeparamref name="T"/> from the given offset.
         /// </summary>
         T Parse<TInputBuffer>(TInputBuffer buffer, int offset) where TInputBuffer : IInputBuffer;
+
+        /// <summary>
+        /// Attempts to recycle the given reference and dependencies, where possible.
+        /// </summary>
+        void Recycle(T item);
     }
 }

@@ -156,6 +156,20 @@ namespace FlatSharpTests
             this.FacadeTest<string, ReversedString, StringReversedStringConverter>(regular, reversed);
         }
 
+        [TestMethod]
+        public void Facade_SortedVector()
+        {
+            TypeModelContainer container = TypeModelContainer.CreateDefault();
+            container.RegisterTypeFacade<long, DateTimeOffset, DateTimeTicksConverter>();
+
+            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+                () => container.CreateTypeModel(typeof(ExtensionTable<IIndexedVector<DateTimeOffset, KeyTable>>)));
+
+            Assert.AreEqual(
+                "Table FlatSharpTests.TypeFacadeTests.KeyTable declares a key property on a type that that does not support being a key in a sorted vector.",
+                ex.Message);
+        }
+
         private void FacadeTest<TUnderlyingType, TType, TConverter>(
             TUnderlyingType underlyingValue,
             TType value,
@@ -195,6 +209,13 @@ namespace FlatSharpTests
         {
             [FlatBufferItem(0)]
             public virtual T? Item { get; set; }
+        }
+
+        [FlatBufferTable]
+        public class KeyTable
+        {
+            [FlatBufferItem(0, Key = true)]
+            public virtual DateTimeOffset Key { get; set; }
         }
 
         public struct NullableDateTimeTicksConverter : ITypeFacadeConverter<long?, DateTimeOffset?>

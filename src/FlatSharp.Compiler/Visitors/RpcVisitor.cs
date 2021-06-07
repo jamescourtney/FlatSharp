@@ -43,7 +43,7 @@ namespace FlatSharp.Compiler
 
         public override RpcDefinition? VisitRpc_method([NotNull] FlatBuffersParser.Rpc_methodContext context)
         {
-            var definition = this.rpcDefinition ?? throw new InvalidOperationException($"FlatSharp.Internal: Failed to initialize RPC definition");
+            FlatSharpInternal.Assert(this.rpcDefinition != null, "Failed to initialize RPC definition");
 
             var idents = context.IDENT();
             string name = idents[0].GetText();
@@ -57,7 +57,7 @@ namespace FlatSharp.Compiler
                 streamingType = ParseStreamingType(value);
             }
 
-            definition.AddRpcMethod(name, requestType, responseType, streamingType);
+            this.rpcDefinition.AddRpcMethod(name, requestType, responseType, streamingType);
             return null;
         }
 

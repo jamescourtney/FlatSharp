@@ -19,15 +19,17 @@ using BenchmarkDotNet.Running;
 using FlatSharp;
 using FlatSharp.Unsafe;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace BenchmarkCore
 {
-    [DisassemblyDiagnoser(maxDepth: 30, printSource: true, exportHtml: true, printInstructionAddresses: true)]
-    [ShortRunJob(BenchmarkDotNet.Jobs.RuntimeMoniker.NetCoreApp50, BenchmarkDotNet.Environments.Jit.RyuJit, BenchmarkDotNet.Environments.Platform.AnyCpu)]
+    [MemoryDiagnoser]
+    [ThreadingDiagnoser]
+    [MediumRunJob(BenchmarkDotNet.Jobs.RuntimeMoniker.NetCoreApp50, BenchmarkDotNet.Environments.Jit.RyuJit, BenchmarkDotNet.Environments.Platform.AnyCpu)]
     public class StructVectorClone
     {
-        private readonly byte[] data = new byte[10240];
+        private readonly byte[] data = new byte[10 * 1024 * 1024];
         private SomeTable? table;
 
         private ArrayInputBuffer inputBuffer;
@@ -41,17 +43,13 @@ namespace BenchmarkCore
 
             this.table = new SomeTable
             {
-                Struct = new Struct
-                {
-                    Int = 5,
-                    Other = new OtherStruct
-                    {
-                        Long = 4,
-                    }
-                }
+                Points = new List<Vec3>()
             };
 
-
+            for (int i = 0; i < 20_000; ++i)
+            {
+                this.table.Points.Add(new Vec3 { X = 1, Y = 2, Z = 3 });
+            }
 
             this.Serialize();
         }
@@ -59,13 +57,25 @@ namespace BenchmarkCore
         [Benchmark]
         public void Serialize()
         {
-            SomeTable.Serializer.Write(SpanWriter.Instance, this.data, this.table!);
+            int size = SomeTable.Serializer.Write(SpanWriter.Instance, this.data, this.table!);
         }
 
         [Benchmark]
-        public void Parse()
+        public int ParseAndTraverse()
         {
-            SomeTable.Serializer.Parse(this.inputBuffer);
+            var t = SomeTable.Serializer.Parse(this.inputBuffer);
+
+            int sum = 0;
+
+            var points = t.Points;
+            int count = points.Count;
+            for (int i = 0; i < count; ++i)
+            {
+                var item = points[i];
+                sum += (int)(item.X + item.Y + item.Z);
+            }
+
+            return sum;
         }
     }
 
@@ -75,34 +85,36 @@ namespace BenchmarkCore
         {
             var table = new SomeTable
             {
-                Struct = new Struct
+                Points = new List<Vec3>
                 {
-                    Int = 23,
-                    Other = new OtherStruct
-                    {
-                        Long = 45,
-                    },
-                }
+                    new Vec3 { X = 1, Y = 2, Z = 3 },
+                    new Vec3 { X = 1, Y = 2, Z = 3 },
+                    new Vec3 { X = 1, Y = 2, Z = 3 },
+                    new Vec3 { X = 1, Y = 2, Z = 3 },
+                },
+                Vec = new Vec3 { X = 4, Y = 5, Z = 6 }
             };
 
             byte[] buffer = new byte[1024];
             SomeTable.Serializer.Write(buffer, table);
 
             var parsed = SomeTable.Serializer.Parse(buffer);
-            Console.WriteLine(parsed.Struct.Int);
-            Console.WriteLine(parsed.Struct.Other.Long);
-            parsed.Struct.Int--;
-            parsed.Struct.Other = new OtherStruct { Long = 10 };
+            var parsed2 = parsed;
 
-            var parsed2 = SomeTable.Serializer.Parse(buffer);
-            Console.WriteLine(parsed2.Struct.Int);
-            Console.WriteLine(parsed2.Struct.Other.Long);
+            for (int i = 0; i < parsed2.Points.Count; ++i)
+            {
+                Console.WriteLine(parsed2.Points[i].X);
+            }
 
-            parsed2.Struct.Other = null!;
+            SomeTable.Serializer.Recycle(ref parsed);
 
-            var parsed3 = SomeTable.Serializer.Parse(buffer);
-            Console.WriteLine(parsed3.Struct.Int);
-            Console.WriteLine(parsed3.Struct.Other.Long);
+            parsed = SomeTable.Serializer.Parse(buffer);
+            parsed2 = parsed;
+
+            for (int i = 0; i < parsed2.Points.Count; ++i)
+            {
+                Console.WriteLine(parsed2.Points[i].X);
+            }
         }
     }
 }

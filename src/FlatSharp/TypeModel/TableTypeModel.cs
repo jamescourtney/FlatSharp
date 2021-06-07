@@ -46,6 +46,8 @@ namespace FlatSharp.TypeModel
         private readonly HashSet<int> occupiedVtableSlots = new HashSet<int>();
         private ConstructorInfo? preferredConstructor;
         private MethodInfo? onDeserializeMethod;
+        private FlatBufferTableAttribute attribute = null!;
+        private readonly string tableReaderClassName = "tableReader_" + Guid.NewGuid().ToString("n");
 
         internal TableTypeModel(Type clrType, TypeModelContainer typeModelProvider) : base(clrType, typeModelProvider)
         {
@@ -123,15 +125,22 @@ namespace FlatSharp.TypeModel
 
         public override ConstructorInfo? PreferredSubclassConstructor => this.preferredConstructor;
 
+        public override IEnumerable<ITypeModel> Children => this.memberTypes.Values.Select(x => x.ItemTypeModel);
+
+        /// <summary>
+        /// Use the table attributre to determine rules for recycle.
+        /// </summary>
+        public override bool IsRecyclable => this.attribute.RecyclePoolSize != 0;
+
         public override void Initialize()
         {
-            var tableAttribute = this.ClrType.GetCustomAttribute<FlatBufferTableAttribute>();
-            if (tableAttribute == null)
             {
-                throw new InvalidFlatBufferDefinitionException($"Can't create table type model from type {this.ClrType.Name} because it does not have a [FlatBufferTable] attribute.");
+                FlatBufferTableAttribute? attr = this.ClrType.GetCustomAttribute<FlatBufferTableAttribute>();
+                FlatSharpInternal.Assert(attr != null, "Table object missing attribute");
+                this.attribute = attr;
             }
 
-            ValidateFileIdentifier(tableAttribute.FileIdentifier);
+            ValidateFileIdentifier(this.attribute.FileIdentifier);
 
             EnsureClassCanBeInheritedByOutsideAssembly(this.ClrType, out this.preferredConstructor);
             this.onDeserializeMethod = ValidateOnDeserializedMethod(this);
@@ -161,6 +170,11 @@ namespace FlatSharp.TypeModel
                     property.ItemTypeModel,
                     property.Property,
                     property.Attribute);
+                
+                if (this.attribute.RecyclePoolSize != 0)
+                {
+                    model.ValidateRecyclableSetter(this);
+                }
 
                 property.ItemTypeModel.AdjustTableMember(model);
 
@@ -660,18 +674,17 @@ $@"
         {
             // We have to implement two items: The table class and the overall "read" method.
             // Let's start with the read method.
-            string className = "tableReader_" + Guid.NewGuid().ToString("n");
-            var classDef = new DeserializeClassDefinition(className, this.onDeserializeMethod, this, context.Options);
+            var classDef = DeserializeClassDefinition.Create(this.tableReaderClassName, this.onDeserializeMethod, this, context.Options, this.attribute.RecyclePoolSize);
 
             // Build up a list of property overrides.
             foreach (var item in this.IndexToMemberMap.Where(x => !x.Value.IsDeprecated))
             {
                 int index = item.Key;
                 var value = item.Value;
-                classDef.AddProperty(value, context.MethodNameMap[value.ItemTypeModel.ClrType], context.SerializeMethodNameMap[value.ItemTypeModel.ClrType]);
+                classDef.AddProperty(value, context.MethodNameMap[value.ItemTypeModel.ClrType], context.SerializeMethodNameMap[value.ItemTypeModel.ClrType], context.RecycleMethodNameMap[value.ItemTypeModel.ClrType]);
             }
 
-            string body = $"return new {className}<{context.InputBufferTypeName}>({context.InputBufferVariableName}, {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}));";
+            string body = $"return {this.tableReaderClassName}<{context.InputBufferTypeName}>.GetOrCreate({context.InputBufferVariableName}, {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}));";
             return new CodeGeneratedMethod(body)
             {
                 ClassDefinition = classDef.ToString(),
@@ -716,7 +729,7 @@ $@"
             string body =
 $@"
             int runningSum = {maxTableSize} + {maxVtableSize};
-            {string.Join("\r\n", statements)};
+            {string.Join("\r\n", statements)}
             return runningSum;
 ";
             return new CodeGeneratedMethod(body);
@@ -731,22 +744,22 @@ $@"
             };
         }
 
+        public override CodeGeneratedMethod CreateRecycleMethodBody(RecycleCodeGenContext context)
+        {
+            string body =
+$@"
+            if ({context.ValueVariableName} is {nameof(IFlatBufferDeserializedObject)} deserializedObj)
+            {{
+                deserializedObj.{nameof(IFlatBufferDeserializedObject.DangerousRecycle)}();
+            }}
+";
+            return new CodeGeneratedMethod(body);
+        }
+
         public override bool TryGetTableKeyMember([NotNullWhen(true)] out TableMemberModel? tableMember)
         {
             tableMember = this.KeyMember;
             return tableMember != null;
-        }
-
-        public override void TraverseObjectGraph(HashSet<Type> seenTypes)
-        {
-            seenTypes.Add(this.ClrType);
-            foreach (var member in this.memberTypes.Values)
-            {
-                if (seenTypes.Add(member.ItemTypeModel.ClrType))
-                {
-                    member.ItemTypeModel.TraverseObjectGraph(seenTypes);
-                }
-            }
         }
 
         private int GetVTableLength(int index) => 4 + (2 * (index + 1));

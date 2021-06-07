@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#if !NETSTANDARD2_1 && !NET5_0
+#if !NET5_0_OR_GREATER
 
 namespace System.Diagnostics.CodeAnalysis
 {
@@ -27,7 +27,16 @@ namespace System.Diagnostics.CodeAnalysis
         {
         }
     }
-    
+
+    [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
+    internal class DoesNotReturnIf : Attribute
+    {
+        public DoesNotReturnIf(bool value)
+        {
+        }
+    }
+
+
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter | AttributeTargets.ReturnValue, AllowMultiple = true, Inherited = false)]
     internal class NotNullIfNotNullAttribute : Attribute
     {
@@ -43,7 +52,7 @@ namespace System.Diagnostics.CodeAnalysis
 }
 #endif
 
-#if !NET5_0
+#if !NET5_0_OR_GREATER
 
 namespace System.Runtime.CompilerServices
 {

@@ -115,22 +115,31 @@ namespace FlatSharp.Compiler
             FieldDefinition definition,
             IDictionary<string, string?> metadata)
         {
-            if (!metadata.TryParseIntegerMetadata(new[] { MetadataKeys.Id }, out int index))
-            {
-                if (index == MetadataHelpers.DefaultIntegerAttributeValueIfPresent)
-                {
-                    ErrorContext.Current?.RegisterError($"Value of '{MetadataKeys.Id}' attribute should be set if attribute present.");
-                }
+            const int DefaultIfPresent = -1;
 
+            int? index = metadata.ParseNullableIntegerMetadata(
+                new[] { MetadataKeys.Id },
+                defaultValueIfPresent: DefaultIfPresent,
+                defaultValueIfNotPresent: null);
+
+            if (index == null)
+            {
                 return;
             }
 
-            if (index < 0)
+            if (index == DefaultIfPresent)
             {
-                ErrorContext.Current?.RegisterError($"Value of '{MetadataKeys.Id}' attribute {index} of '{definition.Name}' field is negative.");
+                ErrorContext.Current?.RegisterError($"Value of '{MetadataKeys.Id}' attribute should be set if attribute present.");
+                return;
             }
 
-            definition.Index = index;
+            if (index.Value < 0)
+            {
+                ErrorContext.Current?.RegisterError($"Value of '{MetadataKeys.Id}' attribute {index} of '{definition.Name}' field is negative.");
+                return;
+            }
+
+            definition.Index = index.Value;
             definition.IsIndexSetManually = true;
         }
 

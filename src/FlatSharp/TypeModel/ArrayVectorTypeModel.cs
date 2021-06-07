@@ -37,15 +37,8 @@ namespace FlatSharp.TypeModel
 
         public override void OnInitialize()
         {
-            if (!this.ClrType.IsArray)
-            {
-                throw new InvalidFlatBufferDefinitionException($"Array vectors must contain be arrays. Type = {this.ClrType.FullName}.");
-            }
-
-            if (this.ClrType.GetArrayRank() != 1)
-            {
-                throw new InvalidFlatBufferDefinitionException($"Array vectors may only be single-dimensional.");
-            }
+            FlatSharpInternal.Assert(this.ClrType.IsArray, $"Array vectors must be arrays. Type = {this.ClrType.FullName}.");
+            FlatSharpInternal.Assert(this.ClrType.GetArrayRank() == 1, "Array vectors may only be single-dimension.");
 
             this.itemTypeModel = this.typeModelContainer.CreateTypeModel(this.ClrType.GetElementType()!);
             if (!this.itemTypeModel.IsValidVectorMember)

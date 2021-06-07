@@ -89,6 +89,11 @@ namespace FlatSharp.TypeModel
         /// </summary>
         public ITypeModel[] UnionElementTypeModel => this.memberTypeModels;
 
+        /// <summary>
+        /// Unions have an implicit dependency on <see cref="byte"/> for the discriminator.
+        /// </summary>
+        public override IEnumerable<ITypeModel> Children => this.memberTypeModels.Concat(new[] { this.typeModelContainer.CreateTypeModel(typeof(byte)) });
+
         public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
         {
             List<string> switchCases = new List<string>();
@@ -238,6 +243,38 @@ $@"
             return new CodeGeneratedMethod(body);
         }
 
+        public override CodeGeneratedMethod CreateRecycleMethodBody(RecycleCodeGenContext context)
+        {
+            List<string> switchCases = new List<string>();
+
+            for (int i = 0; i < this.memberTypeModels.Length; ++i)
+            {
+                var memberModel = this.memberTypeModels[i];
+                if (memberModel.HasRecyclableDescendant())
+                {
+                    int discriminator = i + 1;
+                    var memberContext = context with { ValueVariableName = $"{context.ValueVariableName}.Item{discriminator}" };
+                    switchCases.Add($"case {discriminator}: {memberContext.GetRecycleInvocation(memberModel.ClrType)}; break;");
+                }
+            }
+
+            string body = string.Empty;
+            if (switchCases.Count > 0)
+            {
+                body = 
+                    $@"
+                    if (!({context.ValueVariableName} is null))
+                    {{
+                        switch ({context.ValueVariableName}.{nameof(FlatBufferUnion<string>.Discriminator)}) 
+                        {{
+                            {string.Join("\r\n", switchCases)}
+                        }}
+                    }}";
+            }
+
+            return new CodeGeneratedMethod(body);
+        }
+
         public override void Initialize()
         {
             bool containsString = false;
@@ -271,18 +308,6 @@ $@"
                     }
 
                     containsString = true;
-                }
-            }
-        }
-
-        public override void TraverseObjectGraph(HashSet<Type> seenTypes)
-        {
-            seenTypes.Add(this.ClrType);
-            foreach (var member in this.memberTypeModels)
-            {
-                if (seenTypes.Add(member.ClrType))
-                {
-                    member.TraverseObjectGraph(seenTypes);
                 }
             }
         }

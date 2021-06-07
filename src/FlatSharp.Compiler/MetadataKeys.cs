@@ -98,6 +98,11 @@ namespace FlatSharp.Compiler
         public const string WriteThrough = "fs_writeThrough";
 
         /// <summary>
+        /// Indicates that this table or struct should be pooled on deserialize.
+        /// </summary>
+        public const string RecyclePoolSize = "fs_recyclePoolSize";
+
+        /// <summary>
         /// Marks a table field as deprecated. Deprecated fields do not have their values serialized or parsed.
         /// Valid On:
         /// - Table field

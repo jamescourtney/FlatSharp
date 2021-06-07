@@ -19,6 +19,7 @@ namespace FlatSharp.TypeModel
     using System;
     using System.Collections.Generic;
     using System.Collections.Immutable;
+    using System.Diagnostics;
     using System.Linq;
     using System.Reflection;
     using FlatSharp.Attributes;
@@ -34,6 +35,7 @@ namespace FlatSharp.TypeModel
         private int maxAlignment = 1;
         private ConstructorInfo? preferredConstructor;
         private MethodInfo? onDeserializeMethod;
+        private FlatBufferStructAttribute attribute = null!;
 
         internal StructTypeModel(Type clrType, TypeModelContainer container) : base(clrType, container)
         {
@@ -90,6 +92,13 @@ namespace FlatSharp.TypeModel
         /// </summary>
         public override bool SerializesInline => true;
 
+        /// <summary>
+        /// Indicates if we support recycle or not.
+        /// </summary>
+        public override bool IsRecyclable => this.attribute.RecyclePoolSize != 0;
+
+        public override IEnumerable<ITypeModel> Children => this.memberTypes.Select(x => x.ItemTypeModel);
+
         public override ConstructorInfo? PreferredSubclassConstructor => this.preferredConstructor;
 
         /// <summary>
@@ -110,11 +119,12 @@ namespace FlatSharp.TypeModel
             // We have to implement two items: The table class and the overall "read" method.
             // Let's start with the read method.
             string className = "structReader_" + Guid.NewGuid().ToString("n");
-            DeserializeClassDefinition classDef = new DeserializeClassDefinition(
+            DeserializeClassDefinition classDef = DeserializeClassDefinition.Create(
                 className,
                 this.onDeserializeMethod,
                 this,
-                context.Options);
+                context.Options,
+                this.attribute.RecyclePoolSize);
 
             // Build up a list of property overrides.
             for (int index = 0; index < this.Members.Count; ++index)
@@ -122,10 +132,10 @@ namespace FlatSharp.TypeModel
                 var value = this.Members[index];
                 PropertyInfo propertyInfo = value.PropertyInfo;
                 Type propertyType = propertyInfo.PropertyType;
-                classDef.AddProperty(value, context.MethodNameMap[propertyType], context.SerializeMethodNameMap[propertyType]);
+                classDef.AddProperty(value, context.MethodNameMap[propertyType], context.SerializeMethodNameMap[propertyType], context.RecycleMethodNameMap[propertyType]);
             }
 
-            return new CodeGeneratedMethod($"return new {className}<{context.InputBufferTypeName}>({context.InputBufferVariableName}, {context.OffsetVariableName});")
+            return new CodeGeneratedMethod($"return {className}<{context.InputBufferTypeName}>.GetOrCreate({context.InputBufferVariableName}, {context.OffsetVariableName});")
             {
                 ClassDefinition = classDef.ToString(),
             };
@@ -136,17 +146,16 @@ namespace FlatSharp.TypeModel
             List<string> body = new List<string>();
             body.Add($"Span<byte> scopedSpan = {context.SpanVariableName}.Slice({context.OffsetVariableName}, {this.PhysicalLayout[0].InlineSize});");
 
-            if (!this.ClrType.IsValueType)
-            {
-                body.Add($@"
+            FlatSharpInternal.Assert(!this.ClrType.IsValueType, "Value-type struct is unexpected");
+
+            body.Add(
+                $@"
                     if ({context.ValueVariableName} is null)
                     {{
                         scopedSpan.Clear();
                         return;
                     }}
                 ");
-            }
-
 
             for (int i = 0; i < this.Members.Count; ++i)
             {
@@ -180,12 +189,25 @@ namespace FlatSharp.TypeModel
             };
         }
 
+        public override CodeGeneratedMethod CreateRecycleMethodBody(RecycleCodeGenContext context)
+        {
+            string body =
+$@"
+            if ({context.ValueVariableName} is {nameof(IFlatBufferDeserializedObject)} deserializedObj)
+            {{
+                deserializedObj.{nameof(IFlatBufferDeserializedObject.DangerousRecycle)}();
+            }}
+";
+            return new CodeGeneratedMethod(body);
+        }
+
         public override void Initialize()
         {
-            var structAttribute = this.ClrType.GetCustomAttribute<FlatBufferStructAttribute>();
-            if (structAttribute == null)
             {
-                throw new InvalidFlatBufferDefinitionException($"Can't create struct type model from type {this.ClrType.Name} because it does not have a [FlatBufferStruct] attribute.");
+                FlatBufferStructAttribute? attribute = this.ClrType.GetCustomAttribute<FlatBufferStructAttribute>();
+
+                FlatSharpInternal.Assert(attribute != null, "Missing attribute.");
+                this.attribute = attribute!;
             }
 
             TableTypeModel.EnsureClassCanBeInheritedByOutsideAssembly(this.ClrType, out this.preferredConstructor);
@@ -258,20 +280,13 @@ namespace FlatSharp.TypeModel
                     this.inlineSize,
                     length);
 
+                if (this.attribute.RecyclePoolSize != 0)
+                {
+                    model.ValidateRecyclableSetter(this);
+                }
+
                 this.memberTypes.Add(model);
                 this.inlineSize += length;
-            }
-        }
-
-        public override void TraverseObjectGraph(HashSet<Type> seenTypes)
-        {
-            seenTypes.Add(this.ClrType);
-            foreach (var member in this.memberTypes)
-            {
-                if (seenTypes.Add(member.ItemTypeModel.ClrType))
-                {
-                    member.ItemTypeModel.TraverseObjectGraph(seenTypes);
-                }
             }
         }
     }

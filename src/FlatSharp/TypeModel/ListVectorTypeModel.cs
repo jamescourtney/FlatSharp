@@ -118,10 +118,10 @@ namespace FlatSharp.TypeModel
             string body;
 
             string createFlatBufferVector =
-            $@"new {vectorClassName}<{context.InputBufferTypeName}>(
-                    {context.InputBufferVariableName}, 
-                    {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}), 
-                    {this.PaddedMemberInlineSize})";
+                $@"new {vectorClassName}<{context.InputBufferTypeName}>(
+                        {context.InputBufferVariableName}, 
+                        {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}), 
+                        {this.PaddedMemberInlineSize})";
 
             if (context.Options.PreallocateVectors)
             {
@@ -143,6 +143,20 @@ namespace FlatSharp.TypeModel
             }
 
             return new CodeGeneratedMethod(body) { ClassDefinition = vectorClassDef };
+        }
+
+        public override CodeGeneratedMethod CreateRecycleMethodBody(RecycleCodeGenContext context)
+        {
+            // If vector preallocation is disabled, that means that attempting to be
+            // helpful and traverse the vector for recycling purposes is actually harmful
+            // as it leads to extra allocations. Note that this is only a problem for
+            // IList/IReadOnlyList as these are interfaces. Arrays can be more aggressive.
+            if (!context.Options.PreallocateVectors)
+            {
+                return CodeGeneratedMethod.Empty;
+            }
+
+            return base.CreateRecycleMethodBody(context);
         }
     }
 }

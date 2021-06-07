@@ -47,7 +47,7 @@ namespace FlatSharp.Compiler
                 }
 
                 ErrorContext.Current?.RegisterError(
-                  $"Unable to parse attribute '{key}' with value '{value}' as as type '{typeof(T).Name}'. ");
+                  $"Unable to parse attribute '{key}' with value '{value}' as as type '{typeof(T).GetCompilableTypeName()}'. ");
 
                 return defaultValueIfPresent;
             }
@@ -65,14 +65,35 @@ namespace FlatSharp.Compiler
                 false);
         }
 
-        public static bool TryParseIntegerMetadata(this IDictionary<string, string?> metadata, string[] keys, out int value)
+        /// <summary>
+        /// Parses the pool size metadata.
+        /// </summary>
+        /// <returns><c>null</c> if the key does not exist. <c>1024</c> if the key exists but does not have a value.</returns>
+        public static int? ParseRecyclePoolSizeMetadata(this IDictionary<string, string?> metadata)
         {
-            const int DefaultIntegerAttributeValueIfNotPresent = -2;
-            value = ParseMetadata(metadata, keys, int.TryParse, DefaultIntegerAttributeValueIfPresent, DefaultIntegerAttributeValueIfNotPresent);
-            return value >= 0;
+            return metadata.ParseNullableIntegerMetadata(
+                new[] { MetadataKeys.RecyclePoolSize },
+                defaultValueIfPresent: 1024,
+                defaultValueIfNotPresent: null);
         }
 
-        public static bool? ParseNullableBooleanMetadata(this IDictionary<string, string?> metadata, params string[] keys)
+        public static int? ParseNullableIntegerMetadata(
+            this IDictionary<string, string?> metadata, 
+            string[] keys,
+            int? defaultValueIfPresent = null,
+            int? defaultValueIfNotPresent = null)
+        {
+            return ParseMetadata<int?>(
+                metadata,
+                keys,
+                TryParseNullableInt,
+                defaultValueIfPresent,
+                defaultValueIfNotPresent);
+        }
+
+        public static bool? ParseNullableBooleanMetadata(
+            this IDictionary<string, string?> metadata, 
+            params string[] keys)
         {
             return ParseMetadata<bool?>(
                 metadata,
@@ -82,7 +103,19 @@ namespace FlatSharp.Compiler
                 null);
         }
 
-        private static bool TryParseNullableBool(string value, out bool? result)
+        private static bool TryParseNullableInt(string? value, out int? result)
+        {
+            result = null;
+            if (int.TryParse(value, out var parsed))
+            {
+                result = parsed;
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool TryParseNullableBool(string? value, out bool? result)
         {
             result = null;
             if (bool.TryParse(value, out var parsed))
@@ -93,7 +126,5 @@ namespace FlatSharp.Compiler
 
             return false;
         }
-
-        internal const int DefaultIntegerAttributeValueIfPresent = -1;
     }
 }

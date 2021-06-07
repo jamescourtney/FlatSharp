@@ -175,6 +175,15 @@ namespace FlatSharp
             };
         }
 
+        public void Recycle(ref T? item)
+        {
+            if (item is not null)
+            {
+                this.innerSerializer.Recycle(item);
+                item = default;
+            }
+        }
+
         public ISerializer<T> WithSettings(SerializerSettings settings)
         {
             var clone = new GeneratedSerializerWrapper<T>(

@@ -18,6 +18,7 @@ namespace FlatSharp.Compiler
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Linq;
     using System.Reflection;
@@ -32,6 +33,7 @@ namespace FlatSharp.Compiler
 
     public class FlatSharpCompiler
     {
+        [ExcludeFromCodeCoverage]
         static int Main(string[] args)
         {
             int exitCode = -1;
@@ -53,6 +55,7 @@ namespace FlatSharp.Compiler
             return exitCode;
         }
 
+        [ExcludeFromCodeCoverage]
         private static int RunCompiler(CompilerOptions options)
         {
             using (var context = ErrorContext.Current)
@@ -301,11 +304,7 @@ namespace FlatSharp.Compiler
         private static string CreateCSharp(BaseSchemaMember rootNode, CompilerOptions options)
         {
             ErrorContext.Current.ThrowIfHasErrors();
-
-            if (string.IsNullOrEmpty(rootNode.DeclaringFile))
-            {
-                throw new InvalidFbsFileException("FlatSharp.Internal: RootNode missing declaring file");
-            }
+            FlatSharpInternal.Assert(!string.IsNullOrEmpty(rootNode.DeclaringFile), "RootNode missing declaring file");
 
             Assembly? assembly = null;
             CodeWriter writer = new CodeWriter();

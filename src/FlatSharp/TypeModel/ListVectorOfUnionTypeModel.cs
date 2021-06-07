@@ -76,18 +76,27 @@ namespace FlatSharp.TypeModel
         public override void OnInitialize()
         {
             var genericDef = this.ClrType.GetGenericTypeDefinition();
-            if (genericDef != typeof(IList<>) && genericDef != typeof(IReadOnlyList<>))
-            {
-                throw new InvalidFlatBufferDefinitionException($"List vector of union must be IList or IReadOnlyList.");
-            }
+
+            FlatSharpInternal.Assert(
+                genericDef == typeof(IList<>) || genericDef == typeof(IReadOnlyList<>), 
+                "List vector of union must be IList or IReadOnlyList.");
 
             Type innerType = this.ClrType.GetGenericArguments()[0];
             this.itemTypeModel = this.typeModelContainer.CreateTypeModel(innerType);
 
-            if (this.itemTypeModel.SchemaType != FlatBufferSchemaType.Union)
+            FlatSharpInternal.Assert(
+                this.itemTypeModel.SchemaType == FlatBufferSchemaType.Union, 
+                "Union vectors can't contain non-union elements");
+        }
+
+        public override CodeGeneratedMethod CreateRecycleMethodBody(RecycleCodeGenContext context)
+        {
+            if (!context.Options.PreallocateVectors)
             {
-                throw new InvalidFlatBufferDefinitionException("Union vectors can't contain non-union elements");
+                return CodeGeneratedMethod.Empty;
             }
+
+            return base.CreateRecycleMethodBody(context);
         }
     }
 }

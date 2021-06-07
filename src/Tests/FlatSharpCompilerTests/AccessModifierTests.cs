@@ -38,7 +38,7 @@ namespace FlatSharpTests.Compiler
             }
         }
 
-#if NET5_0
+#if NET5_0_OR_GREATER
         [TestMethod]
         public void TestAccessModifierCombinations_Init()
         {

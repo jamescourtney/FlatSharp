@@ -80,10 +80,7 @@ namespace FlatSharp.Compiler
             ErrorContext.Current.WithScope(top.FullName, () =>
             {
                 EnumDefinition? def = new EnumVisitor(top).Visit(context);
-                if (def is null)
-                {
-                    throw new InvalidOperationException("FlatSharp.Internal: Enum definition visitor returned null");
-                }
+                FlatSharpInternal.Assert(def is not null, "Enum definition visitor returned null");
 
                 def.DeclaringFile = this.CurrentFileName;
                 top.AddChild(def);
@@ -98,10 +95,7 @@ namespace FlatSharp.Compiler
             ErrorContext.Current.WithScope(top.FullName, () =>
             {
                 UnionDefinition? def = new UnionVisitor(top).Visit(context);
-                if (def is null)
-                {
-                    throw new InvalidOperationException("FlatSharp.Internal: Union definition visitor returned null");
-                }
+                FlatSharpInternal.Assert(def is not null, "Union definition visitor returned null");
 
                 def.DeclaringFile = this.CurrentFileName;
                 top.AddChild(def);
@@ -116,10 +110,7 @@ namespace FlatSharp.Compiler
             ErrorContext.Current.WithScope(top.FullName, () =>
             {
                 RpcDefinition? def = new RpcVisitor(top).Visit(context);
-                if (def is null)
-                {
-                    throw new InvalidOperationException("FlatSharp.Internal: RPC definition visitor returned null");
-                }
+                FlatSharpInternal.Assert(def is not null, "RPC definition visitor returned null");
 
                 def.DeclaringFile = this.CurrentFileName;
                 top.AddChild(def);

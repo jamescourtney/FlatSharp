@@ -91,6 +91,19 @@ namespace FlatSharp.TypeModel
         bool SerializeMethodRequiresContext { get; }
 
         /// <summary>
+        /// Indicates if this type is recyclable in isolation. Note that this does not imply
+        /// any sort of dependency relationship. If A references B, and B is recyclable, then the
+        /// <c>IsRecyclable</c> will return <c>true</c> for B and <c>false</c> for A. To discover if a
+        /// Type model has any recyclable dependencies, use <see cref="ITypeModelExtensions.HasRecyclableDescendant(ITypeModel)"/>.
+        /// </summary>
+        bool IsRecyclable { get; }
+
+        /// <summary>
+        /// Gets the direct descendants of this type model.
+        /// </summary>
+        IEnumerable<ITypeModel> Children { get; }
+
+        /// <summary>
         /// Indicates the constructor that subclasses should use. This constructor must have either 0 parameters or 1 parameter
         /// that accepts an instance of <see cref="FlatSharpDeserializationContext"/>.
         /// </summary>
@@ -118,14 +131,15 @@ namespace FlatSharp.TypeModel
         CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context);
 
         /// <summary>
+        /// Implements a TryRecycle method for the type of this type model. The method must return an int32 value representing
+        /// the maximum possible serialized size of the given item, even with alignment errors.
+        /// </summary>
+        CodeGeneratedMethod CreateRecycleMethodBody(RecycleCodeGenContext context);
+
+        /// <summary>
         /// Implements a method to clone the given instance of the type model.
         /// </summary>
         CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context);
-
-        /// <summary>
-        /// Travses the object graph to identify types needed to build a serializer.
-        /// </summary>
-        void TraverseObjectGraph(HashSet<Type> seenTypes);
 
         /// <summary>
         /// Formats the given default value into a C# literal. If the default value is null, it indicates that

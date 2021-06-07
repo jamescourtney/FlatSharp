@@ -80,6 +80,8 @@ namespace FlatSharp.TypeModel
         /// </summary>
         public override bool SerializesInline => this.underlyingTypeModel.SerializesInline;
 
+        public override IEnumerable<ITypeModel> Children => new[] { this.underlyingTypeModel };
+
         /// <summary>
         /// Validates a default value.
         /// </summary>
@@ -156,13 +158,6 @@ namespace FlatSharp.TypeModel
             {
                 IsMethodInline = true,
             };
-        }
-
-        public override void TraverseObjectGraph(HashSet<Type> seenTypes)
-        {
-            seenTypes.Add(this.ClrType);
-            seenTypes.Add(this.underlyingType);
-            this.underlyingTypeModel.TraverseObjectGraph(seenTypes);
         }
     }
 }

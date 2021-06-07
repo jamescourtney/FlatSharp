@@ -81,11 +81,15 @@ namespace FlatSharp.TypeModel
 
             public bool IsValidUnionMember => this.underlyingModel.IsValidUnionMember;
 
-            public bool IsValidSortedVectorKey => this.underlyingModel.IsValidSortedVectorKey;
+            public bool IsValidSortedVectorKey => false;
 
             public int MaxInlineSize => this.underlyingModel.MaxInlineSize;
 
             public bool SerializesInline => this.underlyingModel.SerializesInline;
+
+            public bool IsRecyclable => false;
+
+            public IEnumerable<ITypeModel> Children => new[] { this.underlyingModel };
 
             public ConstructorInfo? PreferredSubclassConstructor => this.underlyingModel.PreferredSubclassConstructor;
 
@@ -137,16 +141,10 @@ namespace FlatSharp.TypeModel
                 };
             }
 
+            public CodeGeneratedMethod CreateRecycleMethodBody(RecycleCodeGenContext context) => CodeGeneratedMethod.Empty;
+
             public void Initialize()
             {
-            }
-
-            public void TraverseObjectGraph(HashSet<Type> seenTypes)
-            {
-                seenTypes.Add(this.ClrType);
-                seenTypes.Add(typeof(TUnderlying));
-
-                this.underlyingModel.TraverseObjectGraph(seenTypes);
             }
 
             public string FormatDefaultValueAsLiteral(object? defaultValue) => this.GetTypeDefaultExpression();

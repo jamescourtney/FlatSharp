@@ -107,6 +107,10 @@ namespace FlatSharp.TypeModel
         /// </summary>
         public virtual ConstructorInfo? PreferredSubclassConstructor => null;
 
+        public virtual bool IsRecyclable => false;
+        
+        public abstract IEnumerable<ITypeModel> Children { get; }
+
         /// <summary>
         /// Validates a default value.
         /// </summary>
@@ -131,7 +135,10 @@ namespace FlatSharp.TypeModel
 
         public abstract CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context);
 
-        public abstract void TraverseObjectGraph(HashSet<Type> seenTypes);
+        public virtual CodeGeneratedMethod CreateRecycleMethodBody(RecycleCodeGenContext context)
+        {
+            return CodeGeneratedMethod.Empty;
+        }
 
         public virtual string FormatDefaultValueAsLiteral(object? defaultValue) => this.GetTypeDefaultExpression();
 
