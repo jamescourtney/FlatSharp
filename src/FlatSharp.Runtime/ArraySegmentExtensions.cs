@@ -39,7 +39,7 @@ namespace FlatSharp.Internal
                 throw new IndexOutOfRangeException();
             }
 
-            return segment.Array[segment.Offset + index];
+            return segment.Array[checked(segment.Offset + index)];
 #endif
         }
     }
