@@ -73,19 +73,22 @@ namespace FlatSharpTests.Compiler
 
                 TableVectorList : [InnerTable] ({MetadataKeys.VectorKind}:""IList"", {MetadataKeys.SortedVector});
                 TableVectorArray : [InnerTable] ({MetadataKeys.VectorKind}:""Array"", {MetadataKeys.NonVirtualProperty});
+                TableVectorArraySegment : [InnerTable] ({MetadataKeys.VectorKind}:""ArraySegment"", {MetadataKeys.NonVirtualProperty});
                 TableVectorIndexed : [InnerTable] ({MetadataKeys.VectorKind}:""IIndexedVector"");
 
                 MemVector : [ubyte] ({MetadataKeys.VectorKind}:""Memory"");
                 RoMemVector : [ubyte] ({MetadataKeys.VectorKind}:""ReadOnlyMemory"");
                 
                 ScalarVector : [uint] ({MetadataKeys.VectorKind}:""IList"");
+                ScalarVectorArraySegment : [uint] ({MetadataKeys.VectorKind}:""ArraySegment"");
                 ScalarArray : [uint] ({MetadataKeys.VectorKind}:""Array"");
 
                 UnionVector : [Any] ({MetadataKeys.VectorKind}:""IList"");
+                UnionVectorArraySegment : [Any] ({MetadataKeys.VectorKind}:""ArraySegment"");
                 UnionArray : [Any] ({MetadataKeys.VectorKind}:""Array"");
             }}
 
-            table InnerTable 
+            table InnerTable ({MetadataKeys.RecyclePoolSize}:2048)
             {{
                 String : string ({MetadataKeys.Key});   
                 String2 : string ({MetadataKeys.SharedString});

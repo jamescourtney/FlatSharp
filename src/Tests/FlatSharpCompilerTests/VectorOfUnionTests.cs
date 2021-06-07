@@ -34,7 +34,7 @@ namespace FlatSharpTests.Compiler
         [TestMethod]
         public void VectorOfUnion_CompilerTests()
         {
-            foreach (var vectorKind in new[] { "IList", "IReadOnlyList", "Array" })
+            foreach (var vectorKind in new[] { "IList", "IReadOnlyList", "Array", "ArraySegment" })
             {
                 foreach (FlatBufferDeserializationOption option in Enum.GetValues(typeof(FlatBufferDeserializationOption)))
                 {
@@ -66,23 +66,6 @@ namespace FlatSharpTests.Compiler
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(
                 schema, 
                 new());
-        }
-
-        private static bool CheckRandom<T>(T left, T right) where T : struct
-        {
-            T[] leftItems = new T[] { left };
-            T[] rightItems = new T[] { right };
-
-            return MemoryMarshal.Cast<T, byte>(leftItems).SequenceEqual(MemoryMarshal.Cast<T, byte>(rightItems));
-        }
-
-        private static T GetRandom<T>() where T : struct
-        {
-            int bytes = Marshal.SizeOf<T>();
-            byte[] random = new byte[bytes];
-            new Random().NextBytes(random);
-
-            return MemoryMarshal.Cast<byte, T>(random)[0];
         }
     }
 }

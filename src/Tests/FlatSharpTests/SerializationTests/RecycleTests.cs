@@ -219,51 +219,67 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
-        public void PropertyCache_ListVector_IsNotRecycled()
+        public void PropertyCache_ListVector_Recycle()
         {
-            var table = new GenericTable<IList<TestStruct>>
+            static void RunTest<TTable>(int expectedCount)
+                where TTable : class, ITable<IList<TestStruct>>, new()
             {
-                Item = new List<TestStruct> { new(), new(), new() }
-            };
+                var table = new TTable
+                {
+                    Item = new List<TestStruct> { new(), new(), new() }
+                };
 
-            RunVectorTest100Parses<IList<TestStruct>, TestStruct>(FlatBufferDeserializationOption.PropertyCache, table);
-            Assert.AreEqual(100 * 3, TestStruct.CtorCount); // no pooling.
+                RunVectorTest100Parses<TTable, IList<TestStruct>, TestStruct>(
+                    FlatBufferDeserializationOption.PropertyCache,
+                    table);
+
+                Assert.AreEqual(expectedCount, TestStruct.CtorCount);
+            }
+
+            // Virtual is not recycled (property cache). Non virtual is recycled.
+            RunTest<GenericTable<IList<TestStruct>>>(100 * 3);
+            RunTest<GenericTableNonVirtual<IList<TestStruct>>>(3);
         }
 
         [TestMethod]
-        public void VectorCache_UnionListVector_IsRecycled()
+        public void UnionListVectors_Recycled()
         {
-            var table = new GenericTable<IList<FlatBufferUnion<TestStruct, string>>>
+            static void RunTest<TTable>(FlatBufferDeserializationOption option, int expectedCount)
+                where TTable : class, ITable<IList<FlatBufferUnion<TestStruct, string>>>, new()
             {
-                Item = new List<FlatBufferUnion<TestStruct, string>>
+                var table = new TTable
                 {
-                    new FlatBufferUnion<TestStruct, string>(new TestStruct()),
-                    new FlatBufferUnion<TestStruct, string>(new TestStruct()),
-                    new FlatBufferUnion<TestStruct, string>(new TestStruct()),
-                    new FlatBufferUnion<TestStruct, string>(string.Empty),
-                }
-            };
+                    Item = new List<FlatBufferUnion<TestStruct, string>>
+                    {
+                        new FlatBufferUnion<TestStruct, string>(new TestStruct()),
+                        new FlatBufferUnion<TestStruct, string>(new TestStruct()),
+                        new FlatBufferUnion<TestStruct, string>(new TestStruct()),
+                        new FlatBufferUnion<TestStruct, string>(string.Empty),
+                    }
+                };
 
-            RunVectorTest100Parses<IList<FlatBufferUnion<TestStruct, string>>, FlatBufferUnion<TestStruct, string>>(FlatBufferDeserializationOption.VectorCache, table);
-            Assert.AreEqual(3, TestStruct.CtorCount);
-        }
+                RunVectorTest100Parses<TTable, IList<FlatBufferUnion<TestStruct, string>>, FlatBufferUnion<TestStruct, string>>(
+                    option,
+                    table);
 
-        [TestMethod]
-        public void PropertyCache_UnionListVector_IsNotRecycled()
-        {
-            var table = new GenericTable<IList<FlatBufferUnion<TestStruct, string>>>
-            {
-                Item = new List<FlatBufferUnion<TestStruct, string>>
-                {
-                    new FlatBufferUnion<TestStruct, string>(new TestStruct()),
-                    new FlatBufferUnion<TestStruct, string>(new TestStruct()),
-                    new FlatBufferUnion<TestStruct, string>(new TestStruct()),
-                    new FlatBufferUnion<TestStruct, string>(string.Empty),
-                }
-            };
+                Assert.AreEqual(expectedCount, TestStruct.CtorCount);
+            }
 
-            RunVectorTest100Parses<IList<FlatBufferUnion<TestStruct, string>>, FlatBufferUnion<TestStruct, string>>(FlatBufferDeserializationOption.PropertyCache, table);
-            Assert.AreEqual(100 * 3, TestStruct.CtorCount); // no pooling.
+            // Greedy is recycled always.
+            RunTest<GenericTable<IList<FlatBufferUnion<TestStruct, string>>>>(FlatBufferDeserializationOption.Greedy, 3);
+            RunTest<GenericTableNonVirtual<IList<FlatBufferUnion<TestStruct, string>>>>(FlatBufferDeserializationOption.Greedy, 3);
+
+            // Vector cache is recycled always.
+            RunTest<GenericTable<IList<FlatBufferUnion<TestStruct, string>>>>(FlatBufferDeserializationOption.VectorCache, 3);
+            RunTest<GenericTableNonVirtual<IList<FlatBufferUnion<TestStruct, string>>>>(FlatBufferDeserializationOption.VectorCache, 3);
+
+            // Property cache is recycled for NV, not recycled for virtual.
+            RunTest<GenericTable<IList<FlatBufferUnion<TestStruct, string>>>>(FlatBufferDeserializationOption.PropertyCache, 300);
+            RunTest<GenericTableNonVirtual<IList<FlatBufferUnion<TestStruct, string>>>>(FlatBufferDeserializationOption.PropertyCache, 3);
+
+            // Property cache is recycled for NV, not recycled for virtual.
+            RunTest<GenericTable<IList<FlatBufferUnion<TestStruct, string>>>>(FlatBufferDeserializationOption.Lazy, 300);
+            RunTest<GenericTableNonVirtual<IList<FlatBufferUnion<TestStruct, string>>>>(FlatBufferDeserializationOption.Lazy, 3);
         }
 
         [TestMethod]
@@ -403,6 +419,17 @@ namespace FlatSharpTests
         [TestMethod]
         public void PropertyCache_ArrayVector_IsRecycled()
         {
+            static void Test<TTable>() where TTable : ITable<TestStruct[]>, new()
+            {
+                var table = new TTable
+                {
+                    Item = new TestStruct[] { new(), new(), new() }
+                };
+
+                RunVectorTest100Parses<TestStruct[], TestStruct>(FlatBufferDeserializationOption.PropertyCache, table);
+                Assert.AreEqual(3, TestStruct.CtorCount); // pooling working.
+            }
+
             var table = new GenericTable<TestStruct[]>
             {
                 Item = new TestStruct[] { new(), new(), new() }
@@ -424,13 +451,14 @@ namespace FlatSharpTests
             Assert.AreEqual(100 * 3, TestStruct.CtorCount);
         }
 
-        private void RunVectorTest100Parses<TVector, TItem>(
+        private static void RunVectorTest100Parses<TTable, TVector, TItem>(
             FlatBufferDeserializationOption option,
-            GenericTable<TVector> table)
+            TTable table)
             where TVector : IEnumerable<TItem>
+            where TTable : class, ITable<TVector>
         {
             FlatBufferSerializer serializer = new FlatBufferSerializer(option);
-            var tableSerializer = serializer.Compile<GenericTable<TVector>>();
+            var tableSerializer = serializer.Compile<TTable>();
 
             byte[] data = new byte[tableSerializer.GetMaxSize(table)];
             tableSerializer.Write(data, table);
@@ -589,11 +617,24 @@ namespace FlatSharpTests
             public virtual IList<FlatBufferUnion<TestStruct, TestTable, NonRecyclableStruct, NonRecyclableTable>>? VectorOfUnion { get; set; }
         }
 
+        public interface ITable<T>
+        {
+            T? Item { get; set; }
+        }
+
         [FlatBufferTable]
-        public class GenericTable<T>
+        public class GenericTable<T> : ITable<T>
         {
             [FlatBufferItem(0)]
             public virtual T? Item { get; set; }
+        }
+
+
+        [FlatBufferTable]
+        public class GenericTableNonVirtual<T> : ITable<T>
+        {
+            [FlatBufferItem(0)]
+            public T? Item { get; set; }
         }
 
         [FlatBufferTable(RecyclePoolSize = -1)]

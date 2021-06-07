@@ -125,7 +125,16 @@ namespace FlatSharp
             {
                 if (!string.IsNullOrEmpty(recycleMethodName) && itemModel.ItemTypeModel.HasRecyclableDescendant())
                 {
-                    this.recycleMethodInvocations.Add($"{recycleMethodName}(this.{GetFieldName(itemModel)});");
+                    if (itemModel.IsVirtual)
+                    {
+                        this.recycleMethodInvocations.Add(
+                            $"{recycleMethodName}(this.{GetFieldName(itemModel)});");
+                    }
+                    else
+                    {
+                        this.recycleMethodInvocations.Add(
+                            $"{recycleMethodName}(base.{itemModel.PropertyInfo.Name});");
+                    }
                 }
             }
 

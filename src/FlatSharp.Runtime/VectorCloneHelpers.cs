@@ -16,6 +16,7 @@
 
 namespace FlatSharp
 {
+    using FlatSharp.Internal;
     using System;
     using System.Collections.Generic;
     using System.ComponentModel;
@@ -108,6 +109,63 @@ namespace FlatSharp
             }
 
             return newList;
+        }
+
+        public static ArraySegment<T> Clone<T>(ArraySegment<T> source)
+            where T : struct
+        {
+            if (source.Array is null)
+            {
+                return new ArraySegment<T>();
+            }
+
+            int count = source.Count;
+            T[] clone = new T[count];
+
+            Array.Copy(source.Array, source.Offset, clone, 0, count);
+
+            return new ArraySegment<T>(clone);
+        }
+
+        [return: NotNullIfNotNull("source")]
+        public static ArraySegment<T>? Clone<T>(ArraySegment<T>? source)
+            where T : struct
+        {
+            if (source is null)
+            {
+                return null;
+            }
+
+            return Clone(source);
+        }
+
+        public static ArraySegment<T> Clone<T>(ArraySegment<T> source, Func<T, T> cloneItem)
+        {
+            if (source.Array is null)
+            {
+                return new ArraySegment<T>();
+            }
+
+            int count = source.Count;
+            T[] clone = new T[count];
+
+            for (int i = 0; i < count; ++i)
+            {
+                clone[i] = cloneItem(source.Get(i));
+            }
+
+            return new ArraySegment<T>(clone);
+        }
+
+        [return: NotNullIfNotNull("source")]
+        public static ArraySegment<T>? Clone<T>(ArraySegment<T>? source, Func<T, T> cloneItem)
+        {
+            if (source is null)
+            {
+                return null;
+            }
+
+            return Clone(source.Value, cloneItem);
         }
 
         [return: NotNullIfNotNull("source")]
