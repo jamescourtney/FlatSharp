@@ -309,6 +309,29 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
+        public void NullArraySegment()
+        {
+            var root = new RootTable<ArraySegment<int>?>
+            {
+                Vector = default,
+            };
+
+            Span<byte> target = new byte[10240];
+            int offset = FlatBufferSerializer.Default.Serialize(root, target);
+            target = target.Slice(0, offset);
+
+            byte[] expectedResult =
+            {
+                4, 0, 0, 0,      // offset to table start
+                252,255,255,255, // soffset to vtable (-4)
+                4, 0,            // vtable length
+                4, 0,            // table length
+            };
+
+            Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(target));
+        }
+
+        [TestMethod]
         public void NullArray()
         {
             var root = new RootTable<int[]>
@@ -415,7 +438,7 @@ namespace FlatSharpTests
             int offset = FlatBufferSerializer.Default.Serialize(root, target);
             target = target.Slice(0, offset);
 
-            byte[] expectedResult = 
+            byte[] expectedResult =
             {
                 4, 0, 0, 0,                     // offset to table start
                 246, 255, 255, 255,             // soffset to vtable (-10)
@@ -919,6 +942,12 @@ namespace FlatSharpTests
                     Assert.IsNotNull(parsed.Vector.BinarySearchByFlatBufferKey(originalItem.Key));
                 }
             }
+        }
+
+        [TestMethod]
+        public void VectorOfArraySegment()
+        {
+
         }
 
         [TestMethod]

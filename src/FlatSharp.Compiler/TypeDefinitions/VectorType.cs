@@ -32,5 +32,6 @@ namespace FlatSharp.Compiler
         Memory,
         ReadOnlyMemory,
         IIndexedVector,
+        ArraySegment,
     }
 }
