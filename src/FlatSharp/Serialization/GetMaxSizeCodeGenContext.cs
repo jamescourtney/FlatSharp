@@ -22,15 +22,8 @@ namespace FlatSharp
     /// <summary>
     /// Code gen context for serialization methods.
     /// </summary>
-    public class GetMaxSizeCodeGenContext
+    public record GetMaxSizeCodeGenContext
     {
-        public GetMaxSizeCodeGenContext(GetMaxSizeCodeGenContext other)
-        {
-            this.ValueVariableName = other.ValueVariableName;
-            this.MethodNameMap = other.MethodNameMap;
-            this.Options = other.Options;
-        }
-
         public GetMaxSizeCodeGenContext(string valueVariableName, IReadOnlyDictionary<Type, string> methodNameMap, FlatBufferSerializerOptions options)
         {
             this.ValueVariableName = valueVariableName;
@@ -39,29 +32,19 @@ namespace FlatSharp
         }
 
         /// <summary>
-        /// Gets a new context with the value variable name overridden.
-        /// </summary>
-        public GetMaxSizeCodeGenContext With(string? valueVariableName = null)
-        {
-            var item = new GetMaxSizeCodeGenContext(this);
-            item.ValueVariableName = valueVariableName ?? this.ValueVariableName;
-            return item;
-        }
-
-        /// <summary>
         /// The variable name of the current value to serialize.
         /// </summary>
-        public string ValueVariableName { get; private set; }
+        public string ValueVariableName { get; init; }
 
         /// <summary>
         /// A mapping of type to serialize method name for that type.
         /// </summary>
-        public IReadOnlyDictionary<Type, string> MethodNameMap { get; private set; }
+        public IReadOnlyDictionary<Type, string> MethodNameMap { get; }
 
         /// <summary>
         /// Serialization options.
         /// </summary>
-        public FlatBufferSerializerOptions Options { get; private set; }
+        public FlatBufferSerializerOptions Options { get; }
 
         /// <summary>
         /// Gets a get max size invocation for the given type.

@@ -108,13 +108,13 @@ namespace FlatSharp.TypeModel
                 {
                     if (typeof(IFlatBufferUnion).IsAssignableFrom(type.GetGenericArguments()[0]))
                     {
-                        FlatSharpInternal.Assert(false, "Unsupported");
+                        typeModel = new ArraySegmentVectorOfUnionTypeModel(type, container);
                     }
                     else
                     {
                         typeModel = new ArraySegmentVectorTypeModel(type, container);
-                        return true;
                     }
+                    return true;
                 }
             }
 

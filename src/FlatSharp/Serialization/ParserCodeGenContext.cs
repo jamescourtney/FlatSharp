@@ -22,12 +22,13 @@ namespace FlatSharp
     /// <summary>
     /// Code gen context for parse methods.
     /// </summary>
-    public class ParserCodeGenContext
+    public record ParserCodeGenContext
     {
         public ParserCodeGenContext(
             string inputBufferVariableName,
             string offsetVariableName,
             string inputBufferTypeName,
+            bool isOffsetByRef,
             IReadOnlyDictionary<Type, string> methodNameMap,
             IReadOnlyDictionary<Type, string> serializeMethodNameMap,
             IReadOnlyDictionary<Type, string> recycleMethodNameMap,
@@ -39,69 +40,62 @@ namespace FlatSharp
             this.MethodNameMap = methodNameMap;
             this.SerializeMethodNameMap = serializeMethodNameMap;
             this.RecycleMethodNameMap = recycleMethodNameMap;
+            this.IsOffsetByRef = isOffsetByRef;
             this.Options = options;
-        }
-
-        public ParserCodeGenContext(ParserCodeGenContext other)
-        {
-            this.InputBufferVariableName = other.InputBufferVariableName;
-            this.OffsetVariableName = other.OffsetVariableName;
-            this.InputBufferTypeName = other.InputBufferTypeName;
-            this.MethodNameMap = other.MethodNameMap;
-            this.SerializeMethodNameMap = other.SerializeMethodNameMap;
-            this.RecycleMethodNameMap = other.RecycleMethodNameMap;
-            this.Options = other.Options;
-        }
-
-        public ParserCodeGenContext With(string? offset = null, string? inputBuffer = null)
-        {
-            ParserCodeGenContext context = new ParserCodeGenContext(this);
-            context.OffsetVariableName = offset ?? this.OffsetVariableName;
-            context.InputBufferVariableName = inputBuffer ?? this.InputBufferVariableName;
-            return context;
         }
 
         /// <summary>
         /// The variable name of the span. Represents a <see cref="System.Span{System.Byte}"/> value.
         /// </summary>
-        public string InputBufferVariableName { get; private set; }
+        public string InputBufferVariableName { get; init; }
 
         /// <summary>
         /// The type of the input buffer.
         /// </summary>
-        public string InputBufferTypeName { get; private set; }
+        public string InputBufferTypeName { get; init; }
 
         /// <summary>
         /// The variable name of the span writer. Represents a <see cref="SpanWriter"/> value.
         /// </summary>
-        public string OffsetVariableName { get; private set; }
+        public string OffsetVariableName { get; init; }
+
+        /// <summary>
+        /// Indicates if the offset variable is passed by reference.
+        /// </summary>
+        public bool IsOffsetByRef { get; init; }
 
         /// <summary>
         /// A mapping of type to serialize method name for that type.
         /// </summary>
-        public IReadOnlyDictionary<Type, string> MethodNameMap { get; private set; }
+        public IReadOnlyDictionary<Type, string> MethodNameMap { get; }
 
         /// <summary>
         /// A mapping of type to serialize method name for that type.
         /// </summary>
-        public IReadOnlyDictionary<Type, string> SerializeMethodNameMap { get; private set; }
+        public IReadOnlyDictionary<Type, string> SerializeMethodNameMap { get; }
 
         /// <summary>
         /// A mapping of type to serialize method name for that type.
         /// </summary>
-        public IReadOnlyDictionary<Type, string> RecycleMethodNameMap { get; private set; }
+        public IReadOnlyDictionary<Type, string> RecycleMethodNameMap { get; }
 
         /// <summary>
         /// Serialization options.
         /// </summary>
-        public FlatBufferSerializerOptions Options { get; private set; }
+        public FlatBufferSerializerOptions Options { get; }
 
         /// <summary>
         /// Gets a parse invocation for the given type.
         /// </summary>
         public string GetParseInvocation(Type type)
         {
-            return $"{this.MethodNameMap[type]}({this.InputBufferVariableName}, {this.OffsetVariableName})";
+            string byRef = string.Empty;
+            if (this.IsOffsetByRef)
+            {
+                byRef = "ref ";
+            }
+
+            return $"{this.MethodNameMap[type]}({this.InputBufferVariableName}, {byRef}{this.OffsetVariableName})";
         }
     }
 }

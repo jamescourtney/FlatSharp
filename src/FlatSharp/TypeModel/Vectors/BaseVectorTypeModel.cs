@@ -143,13 +143,15 @@ namespace FlatSharp.TypeModel
             var type = this.ClrType;
             var itemTypeModel = this.ItemTypeModel;
 
-            string loopInnerInvocation = context.With(
-                valueVariableName: "current",
-                offsetVariableName: "vectorOffset").GetSerializeInvocation(itemTypeModel.ClrType);
+            var innerLoopContext = context with
+            {
+                ValueVariableName = "current",
+                OffsetVariableName = "vectorOffset"
+            };
 
             string loopBody = $@"
                 {this.GetThrowIfNullStatement("current")}
-                {loopInnerInvocation};
+                {innerLoopContext.GetSerializeInvocation(itemTypeModel.ClrType)};
                 vectorOffset += {this.PaddedMemberInlineSize};";
 
             string body = $@"
@@ -171,18 +173,24 @@ namespace FlatSharp.TypeModel
                 return CodeGeneratedMethod.Empty;
             }
 
-            var loopContext = context with
-            {
-                ValueVariableName = "current"
-            };
+            var loopContext = context with { ValueVariableName = "current" };
 
-            string loopBody = $@"{loopContext.GetRecycleInvocation(this.ItemTypeModel.ClrType)};";
-
-            string body = $@"
+            string nullCheck = $@"                
                 if ({context.ValueVariableName} is null)
                 {{
                     return;
                 }}
+            ";
+
+            if (this.IsNonNullableClrValueType())
+            {
+                nullCheck = string.Empty;
+            }
+
+            string loopBody = $@"{loopContext.GetRecycleInvocation(this.ItemTypeModel.ClrType)};";
+
+            string body = $@"
+                {nullCheck}
 
                 int count = {context.ValueVariableName}.{this.LengthPropertyName};
                 {this.CreateLoop(context.Options, context.ValueVariableName, "count", "current", loopBody)}";

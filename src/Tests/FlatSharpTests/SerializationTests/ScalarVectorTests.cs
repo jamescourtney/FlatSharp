@@ -22,6 +22,7 @@ namespace FlatSharpTests
     using System.Runtime.CompilerServices;
     using FlatSharp;
     using FlatSharp.Attributes;
+    using FlatSharp.Internal;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     /// <summary>
@@ -254,6 +255,37 @@ namespace FlatSharpTests
                 for (int i = 0; i < innerVector.Length; ++i)
                 {
                     Assert.AreEqual(memoryTable.Inner.Vector[i], innerVector[i]);
+                }
+            }
+
+            {
+                var memoryTable = new RootTable<ArraySegment<T>?>
+                {
+                    Vector = new ArraySegment<T>(Enumerable.Range(0, length).Select(i => generator()).ToArray(), 0, length),
+                    Inner = new InnerTable<ArraySegment<T>?>
+                    {
+                        Vector = new ArraySegment<T>(Enumerable.Range(0, length).Select(i => generator()).ToArray(), 0, length),
+                    }
+                };
+
+                Span<byte> memory = new byte[10240];
+                int offset = FlatBufferSerializer.Default.Serialize(memoryTable, memory);
+                var memoryTableResult = FlatBufferSerializer.Default.Parse<RootTable<ArraySegment<T>?>>(memory.Slice(0, offset).ToArray());
+                var resultVector = memoryTableResult.Vector;
+                Assert.AreEqual(length, resultVector.Value.Count);
+
+                for (int i = 0; i < memoryTableResult.Vector.Value.Count; ++i)
+                {
+                    Assert.AreEqual(memoryTable.Vector.Value.Get(i), resultVector.Value.Get(i));
+                }
+
+                var inner = memoryTableResult.Inner;
+                var innerVector = inner.Vector;
+                Assert.AreEqual(length, innerVector.Value.Count);
+
+                for (int i = 0; i < innerVector.Value.Count; ++i)
+                {
+                    Assert.AreEqual(memoryTable.Inner.Vector.Value.Get(i), innerVector.Value.Get(i));
                 }
             }
         }

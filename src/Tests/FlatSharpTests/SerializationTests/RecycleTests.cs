@@ -267,6 +267,42 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
+        public void Greedy_ArraySegment_IsRecycled()
+        {
+            var items = new FlatBufferUnion<TestStruct, string>[]
+            {
+                new FlatBufferUnion<TestStruct, string>(new TestStruct()),
+                new FlatBufferUnion<TestStruct, string>(new TestStruct()),
+                new FlatBufferUnion<TestStruct, string>(new TestStruct()),
+                new FlatBufferUnion<TestStruct, string>(string.Empty),
+            };
+
+            var table = new GenericTable<ArraySegment<FlatBufferUnion<TestStruct, string>>>
+            {
+                Item = new ArraySegment<FlatBufferUnion<TestStruct, string>>(items)
+            };
+
+            var serializer = new FlatBufferSerializer(FlatBufferDeserializationOption.Greedy).Compile<GenericTable<ArraySegment<FlatBufferUnion<TestStruct, string>>>>();
+
+            byte[] buffer = new byte[1024];
+            serializer.Write(buffer, table);
+
+            ResetCounts();
+            HashSet<Array> arrays = new HashSet<Array>(); // get the backing arrays.
+            for (int i = 0; i < 100; ++i)
+            {
+                var parsed = serializer.Parse(buffer);
+                Assert.AreEqual(4, parsed.Item.Count);
+                arrays.Add(parsed.Item.Array);
+
+                serializer.Recycle(ref parsed);
+            }
+
+            Assert.AreEqual(3, TestStruct.CtorCount);
+            Assert.AreEqual(1, arrays.Count);
+        }
+
+        [TestMethod]
         public void PropertyCache_IndexedVector_IsNotRecycled()
         {
             var table = new GenericTable<IIndexedVector<string, TableWithKey>>

@@ -35,13 +35,16 @@ namespace FlatSharp.TypeModel
 
         public override string LengthPropertyName => nameof(ArraySegment<int>.Count);
 
+        public override bool IsRecyclable => true;
+
         public override void OnInitialize()
         {
             FlatSharpInternal.Assert(
-                this.ClrType.IsGenericType && this.ClrType.GetGenericTypeDefinition() == typeof(ArraySegment<>), 
+                this.ClrType.IsGenericType && this.ClrType.GetGenericTypeDefinition() == typeof(ArraySegment<>),
                 "Array segment vectors must be array segments");
-            
+
             this.itemTypeModel = this.typeModelContainer.CreateTypeModel(this.ClrType.GetGenericArguments()[0]);
+
             if (!this.itemTypeModel.IsValidVectorMember)
             {
                 throw new InvalidFlatBufferDefinitionException($"Type '{this.itemTypeModel.GetCompilableTypeName()}' is not a valid vector member.");
@@ -56,7 +59,7 @@ namespace FlatSharp.TypeModel
             string body) => $@"
                 for (int i = 0; i < {vectorVariableName}.{this.LengthPropertyName}; i = unchecked(i + 1))
                 {{
-                    var {expectedVariableName} = {vectorVariableName}[i];
+                    var {expectedVariableName} = {vectorVariableName}.Get(i);
                     {body}
                 }}";
 
@@ -73,9 +76,9 @@ namespace FlatSharp.TypeModel
                 // can handle this as memory.
                 body = $@"
                     var memory = {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadByteMemoryBlock)}({context.OffsetVariableName});
-                    var rented = System.Buffers.ArrayPool<byte>.Shared.Rent(memory.Count);
+                    var rented = System.Buffers.ArrayPool<byte>.Shared.Rent(memory.{nameof(Memory<byte>.Length)});
                     memory.CopyTo(rented);
-                    return new ArraySegment<byte>(rented, 0, memory.Count);
+                    return new ArraySegment<byte>(rented, 0, memory.{nameof(Memory<byte>.Length)});
                 ";
             }
             else
@@ -109,8 +112,11 @@ namespace FlatSharp.TypeModel
             return baseMethod with
             {
                 MethodBody = baseMethod.MethodBody + $@"
-                    System.Buffers.ArrayPool<{this.ItemTypeModel.GetCompilableTypeName()}>.Shared.Return({context.ValueVariableName}.Array, true);
-                ",
+                var array = {context.ValueVariableName}.Array;
+                if (!(array is null))
+                {{
+                    System.Buffers.ArrayPool<{this.ItemTypeModel.GetCompilableTypeName()}>.Shared.Return(array, true);
+                }}",
                 IsMethodInline = false,
             };
         }

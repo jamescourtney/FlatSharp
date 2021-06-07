@@ -17,9 +17,6 @@
 namespace FlatSharp.TypeModel
 {
     using System;
-    using System.Collections.Generic;
-    using System.Collections.Immutable;
-    using System.Diagnostics.CodeAnalysis;
 
     /// <summary>
     /// Defines a vector of union type model.

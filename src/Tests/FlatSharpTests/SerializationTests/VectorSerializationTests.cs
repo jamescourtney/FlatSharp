@@ -962,6 +962,14 @@ namespace FlatSharpTests
         public void VectorOfUnion_Array() => this.VectorOfUnionTest<RootTable<FlatBufferUnion<string, Struct, TableWithKey<int>>[]>>(
             (l, v) => v.Vector = l);
 
+        [TestMethod]
+        public void VectorOfUnion_NullableArraySegment() => this.VectorOfUnionTest<RootTable<ArraySegment<FlatBufferUnion<string, Struct, TableWithKey<int>>>?>>(
+            (l, v) => v.Vector = new ArraySegment<FlatBufferUnion<string, Struct, TableWithKey<int>>>(l));
+
+        [TestMethod]
+        public void VectorOfUnion_ArraySegment() => this.VectorOfUnionTest<RootTable<ArraySegment<FlatBufferUnion<string, Struct, TableWithKey<int>>>>>(
+            (l, v) => v.Vector = new ArraySegment<FlatBufferUnion<string, Struct, TableWithKey<int>>>(l));
+
         private void VectorOfUnionTest<V>(Action<FlatBufferUnion<string, Struct, TableWithKey<int>>[], V> setValue)
             where V : class, new()
         {

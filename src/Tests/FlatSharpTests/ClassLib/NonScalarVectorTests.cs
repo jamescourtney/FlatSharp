@@ -21,6 +21,7 @@ namespace FlatSharpTests
     using System.Linq;
     using FlatSharp;
     using FlatSharp.Attributes;
+    using FlatSharp.Internal;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     /// <summary>
@@ -162,6 +163,22 @@ namespace FlatSharpTests
                 for (int i = 0; i < memoryTableResult.Vector.Length; ++i)
                 {
                     Assert.AreEqual(memoryTable.Vector[i], resultVector[i]);
+                }
+            }
+
+            {
+                var memoryTable = new RootTable<ArraySegment<T>?>
+                {
+                    Vector = new ArraySegment<T>(Enumerable.Range(0, 10).Select(i => generator()).ToArray())
+                };
+
+                Span<byte> memory = new byte[10240];
+                int offset = serializer.Serialize(memoryTable, memory);
+                var memoryTableResult = serializer.Parse<RootTable<ArraySegment<T>?>>(memory.Slice(0, offset).ToArray());
+                var resultVector = memoryTableResult.Vector;
+                for (int i = 0; i < memoryTableResult.Vector.Value.Count; ++i)
+                {
+                    Assert.AreEqual(memoryTable.Vector.Value.Get(i), resultVector.Value.Get(i));
                 }
             }
         }

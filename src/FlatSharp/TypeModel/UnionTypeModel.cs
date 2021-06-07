@@ -187,17 +187,19 @@ $@"
                     inlineAdjustment = $"var writeOffset = {context.OffsetVariableName}.offset1;";
                 }
 
-                string caseInvocation = context.With(
-                        valueVariableName: $"{context.ValueVariableName}.Item{unionIndex}",
-                        offsetVariableName: "writeOffset")
-                    .GetSerializeInvocation(elementModel.ClrType);
+                var caseContext = context with
+                {
+                    ValueVariableName = $"{context.ValueVariableName}.Item{unionIndex}",
+                    OffsetVariableName = "writeOffset",
+                    IsOffsetByRef = false,
+                };
 
                 string @case =
 $@"
                     case {unionIndex}:
                     {{
                         {inlineAdjustment}
-                        {caseInvocation};
+                        {caseContext.GetSerializeInvocation(elementModel.ClrType)};
                     }}
                         break;";
 

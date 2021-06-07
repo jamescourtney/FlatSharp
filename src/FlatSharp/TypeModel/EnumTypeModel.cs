@@ -82,10 +82,13 @@
         {
             Type underlyingType = this.underlyingTypeModel.ClrType;
             string underlyingTypeName = CSharpHelpers.GetCompilableTypeName(underlyingType);
-            string body = context.With(valueVariableName: $"({underlyingTypeName}){context.ValueVariableName}")
-                                 .GetMaxSizeInvocation(underlyingType);
 
-            return new CodeGeneratedMethod($"return {body};")
+            var innerContext = context with
+            {
+                ValueVariableName = $"({underlyingTypeName}){context.ValueVariableName}"
+            };
+
+            return new CodeGeneratedMethod($"return {innerContext.GetMaxSizeInvocation(underlyingType)};")
             { 
                 IsMethodInline = true,
             };
@@ -107,10 +110,12 @@
             Type underlyingType = this.underlyingTypeModel.ClrType;
             string underlyingTypeName = CSharpHelpers.GetCompilableTypeName(underlyingType);
 
-            string body = context.With(valueVariableName: $"({underlyingTypeName}){context.ValueVariableName}")
-                                 .GetSerializeInvocation(underlyingType);
+            var innerContext = context with
+            {
+                ValueVariableName = $"({underlyingTypeName}){context.ValueVariableName}"
+            };
 
-            return new CodeGeneratedMethod($"{body};")
+            return new CodeGeneratedMethod($"{innerContext.GetSerializeInvocation(underlyingType)};")
             {
                 IsMethodInline = true,
             };

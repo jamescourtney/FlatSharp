@@ -92,6 +92,8 @@ namespace FlatSharp.TypeModel
 
         public override IEnumerable<ITypeModel> Children => new[] { this.ItemTypeModel };
 
+        protected virtual string Indexer(string index) => $"[{index}]";
+
         public override bool TryGetUnderlyingVectorType([NotNullWhen(true)] out ITypeModel? typeModel)
         {
             typeModel = this.ItemTypeModel;
@@ -110,7 +112,7 @@ namespace FlatSharp.TypeModel
 
                 for (int i = 0; i < count; ++i)
                 {{
-                      var current = {context.ValueVariableName}[i];
+                      var current = {context.ValueVariableName}{this.Indexer("i")};
                       {this.GetThrowIfNullStatement("current")}
                       length += {context.MethodNameMap[this.ItemTypeModel.ClrType]}(current);
                 }}
@@ -125,9 +127,11 @@ namespace FlatSharp.TypeModel
             var type = this.ClrType;
             var itemTypeModel = this.ItemTypeModel;
 
-            string innerInvocation = context.With(
-                valueVariableName: "current",
-                offsetVariableName: "ref tuple").GetSerializeInvocation(itemTypeModel.ClrType);
+            var innerContext = context with
+            {
+                ValueVariableName = "current",
+                OffsetVariableName = "tuple"
+            };
 
             string body = $@"
                 int count = {context.ValueVariableName}.{this.LengthPropertyName};
@@ -143,11 +147,11 @@ namespace FlatSharp.TypeModel
 
                 for (int i = 0; i < count; ++i)
                 {{
-                      var current = {context.ValueVariableName}[i];
+                      var current = {context.ValueVariableName}{this.Indexer("i")};
                       {this.GetThrowIfNullStatement("current")}
 
                       var tuple = (discriminatorVectorOffset, offsetVectorOffset);
-                      {innerInvocation};
+                      {innerContext.GetSerializeInvocation(itemTypeModel.ClrType)};
 
                       discriminatorVectorOffset++;
                       offsetVectorOffset += sizeof(int);
@@ -171,17 +175,26 @@ namespace FlatSharp.TypeModel
         {
             var itemContext = context with { ValueVariableName = "current" };
 
-            string body =
-            $@"
+            string nullCheck = $@"                
                 if ({context.ValueVariableName} is null)
                 {{
                     return;
                 }}
+            ";
+
+            if (this.IsNonNullableClrValueType())
+            {
+                nullCheck = string.Empty;
+            }
+
+            string body =
+            $@"
+                {nullCheck}
 
                 int count = {context.ValueVariableName}.{this.LengthPropertyName};
                 for (int i = 0; i < count; ++i)
                 {{
-                      var current = {context.ValueVariableName}[i];
+                      var current = {context.ValueVariableName}{this.Indexer("i")};
                       {itemContext.GetRecycleInvocation(this.ItemTypeModel.ClrType)};
                 }}
             ";
