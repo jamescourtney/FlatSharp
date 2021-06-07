@@ -24,27 +24,17 @@ namespace FlatSharp.TypeModel
     /// </summary>
     public class ArrayVectorTypeModel : BaseVectorTypeModel
     {
-        private ITypeModel itemTypeModel;
-
         internal ArrayVectorTypeModel(Type vectorType, TypeModelContainer provider) : base(vectorType, provider)
         {
-            this.itemTypeModel = null!;
         }
-
-        public override ITypeModel ItemTypeModel => this.itemTypeModel;
 
         public override string LengthPropertyName => nameof(Array.Length);
 
-        public override void OnInitialize()
+        public override Type OnInitialize()
         {
             FlatSharpInternal.Assert(this.ClrType.IsArray, $"Array vectors must be arrays. Type = {this.ClrType.FullName}.");
             FlatSharpInternal.Assert(this.ClrType.GetArrayRank() == 1, "Array vectors may only be single-dimension.");
-
-            this.itemTypeModel = this.typeModelContainer.CreateTypeModel(this.ClrType.GetElementType()!);
-            if (!this.itemTypeModel.IsValidVectorMember)
-            {
-                throw new InvalidFlatBufferDefinitionException($"Type '{this.itemTypeModel.GetCompilableTypeName()}' is not a valid vector member.");
-            }
+            return this.ClrType.GetElementType()!;
         }
 
         protected override string CreateLoop(
@@ -72,14 +62,11 @@ namespace FlatSharp.TypeModel
         {
             string body;
 
-            if (this.itemTypeModel is null)
-            {
-                throw new InvalidOperationException($"Flatsharp internal error: ItemTypeModel null");
-            }
+            FlatSharpInternal.Assert(this.ItemTypeModel is not null, "Flatsharp internal error: ItemTypeModel null");
 
             (string vectorClassDef, string vectorClassName) = (string.Empty, string.Empty);
 
-            if (this.itemTypeModel.ClrType == typeof(byte))
+            if (this.ItemTypeModel.ClrType == typeof(byte))
             {
                 // can handle this as memory.
                 string method = nameof(InputBufferExtensions.ReadByteMemoryBlock);
@@ -89,9 +76,9 @@ namespace FlatSharp.TypeModel
             else
             {
                 (vectorClassDef, vectorClassName) = FlatBufferVectorHelpers.CreateFlatBufferVectorSubclass(
-                    this.itemTypeModel.ClrType,
+                    this.ItemTypeModel.ClrType,
                     context.InputBufferTypeName,
-                    context.MethodNameMap[this.itemTypeModel.ClrType]);
+                    context.MethodNameMap[this.ItemTypeModel.ClrType]);
 
                 string createFlatBufferVector =
                 $@"new {vectorClassName}<{context.InputBufferTypeName}>(

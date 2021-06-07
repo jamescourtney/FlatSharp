@@ -92,10 +92,7 @@ namespace FlatSharp.TypeModel
             base.Initialize();
 
             Type? under = Nullable.GetUnderlyingType(this.ClrType);
-            if (under is null)
-            {
-                throw new InvalidFlatBufferDefinitionException("Nullable type model created for a type that is not Nullable<T>.");
-            }
+            FlatSharpInternal.Assert(under is not null, "Nullable type model created for a type that is not Nullable<T>.");
 
             this.underlyingType = under;
             this.underlyingTypeModel = this.typeModelContainer.CreateTypeModel(this.underlyingType);

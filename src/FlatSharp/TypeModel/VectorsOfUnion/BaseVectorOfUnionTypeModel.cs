@@ -28,6 +28,7 @@ namespace FlatSharp.TypeModel
     {
         internal BaseVectorOfUnionTypeModel(Type vectorType, TypeModelContainer provider) : base(vectorType, provider)
         {
+            this.ItemTypeModel = null!;
         }
 
         /// <summary>
@@ -78,7 +79,7 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// Gets the type model for this vector's elements.
         /// </summary>
-        public abstract ITypeModel ItemTypeModel { get; }
+        public ITypeModel ItemTypeModel { get; private set; }
 
         /// <summary>
         /// The name of the length property of this vector type.
@@ -205,19 +206,20 @@ namespace FlatSharp.TypeModel
         public sealed override void Initialize()
         {
             base.Initialize();
-            this.OnInitialize();
-        }
 
-        public abstract void OnInitialize();
+            this.ItemTypeModel = this.typeModelContainer.CreateTypeModel(this.OnInitialize());
+
+            FlatSharpInternal.Assert(this.ItemTypeModel.SchemaType == FlatBufferSchemaType.Union, "Union vectors can't contain non-union elements.");
+        }
+        
+        /// <summary>
+        /// Returns the type of union.
+        /// </summary>
+        public abstract Type OnInitialize();
 
         private string GetThrowIfNullStatement(string variableName)
         {
-            if (this.ItemTypeModel.IsNonNullableClrValueType())
-            {
-                // can't be null.
-                return string.Empty;
-            }
-
+            FlatSharpInternal.Assert(!this.ItemTypeModel.IsNonNullableClrValueType(), "Unions are reference types");
             return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({variableName});";
         }
     }

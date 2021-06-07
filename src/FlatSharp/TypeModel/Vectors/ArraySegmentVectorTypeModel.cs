@@ -24,31 +24,21 @@ namespace FlatSharp.TypeModel
     /// </summary>
     public class ArraySegmentVectorTypeModel : BaseVectorTypeModel
     {
-        private ITypeModel itemTypeModel;
-
         internal ArraySegmentVectorTypeModel(Type vectorType, TypeModelContainer provider) : base(vectorType, provider)
         {
-            this.itemTypeModel = null!;
         }
-
-        public override ITypeModel ItemTypeModel => this.itemTypeModel;
 
         public override string LengthPropertyName => nameof(ArraySegment<int>.Count);
 
         public override bool IsRecyclable => true;
 
-        public override void OnInitialize()
+        public override Type OnInitialize()
         {
             FlatSharpInternal.Assert(
                 this.ClrType.IsGenericType && this.ClrType.GetGenericTypeDefinition() == typeof(ArraySegment<>),
                 "Array segment vectors must be array segments");
 
-            this.itemTypeModel = this.typeModelContainer.CreateTypeModel(this.ClrType.GetGenericArguments()[0]);
-
-            if (!this.itemTypeModel.IsValidVectorMember)
-            {
-                throw new InvalidFlatBufferDefinitionException($"Type '{this.itemTypeModel.GetCompilableTypeName()}' is not a valid vector member.");
-            }
+            return this.ClrType.GetGenericArguments()[0];
         }
 
         protected override string CreateLoop(
@@ -67,11 +57,11 @@ namespace FlatSharp.TypeModel
         {
             string body;
 
-            FlatSharpInternal.Assert(this.itemTypeModel is not null, "ItemTypeModel null");
+            FlatSharpInternal.Assert(this.ItemTypeModel is not null, "ItemTypeModel null");
 
             (string vectorClassDef, string vectorClassName) = (string.Empty, string.Empty);
 
-            if (this.itemTypeModel.ClrType == typeof(byte))
+            if (this.ItemTypeModel.ClrType == typeof(byte))
             {
                 // can handle this as memory.
                 body = $@"
@@ -85,9 +75,9 @@ namespace FlatSharp.TypeModel
             {
                 (vectorClassDef, vectorClassName) = 
                     FlatBufferVectorHelpers.CreateFlatBufferVectorSubclass(
-                        this.itemTypeModel.ClrType,
+                        this.ItemTypeModel.ClrType,
                         context.InputBufferTypeName,
-                        context.MethodNameMap[this.itemTypeModel.ClrType]);
+                        context.MethodNameMap[this.ItemTypeModel.ClrType]);
 
                 body = $@"
                     var vector = new {vectorClassName}<{context.InputBufferTypeName}>(

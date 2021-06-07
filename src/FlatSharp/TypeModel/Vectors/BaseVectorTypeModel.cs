@@ -31,6 +31,7 @@ namespace FlatSharp.TypeModel
 
         internal BaseVectorTypeModel(Type vectorType, TypeModelContainer provider) : base(vectorType, provider)
         {
+            this.ItemTypeModel = null!;
         }
 
         /// <summary>
@@ -77,7 +78,7 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// Gets the type model for this vector's elements.
         /// </summary>
-        public abstract ITypeModel ItemTypeModel { get; }
+        public ITypeModel ItemTypeModel { get; private set; }
 
         /// <summary>
         /// The name of the length property of this vector type.
@@ -230,7 +231,13 @@ namespace FlatSharp.TypeModel
         public sealed override void Initialize()
         {
             base.Initialize();
-            this.OnInitialize();
+
+            this.ItemTypeModel = this.typeModelContainer.CreateTypeModel(this.OnInitialize());
+
+            if (!this.ItemTypeModel.IsValidVectorMember)
+            {
+                throw new InvalidFlatBufferDefinitionException($"Type '{this.ItemTypeModel.GetCompilableTypeName()}' is not a valid vector member.");
+            }
 
             if (this.ItemTypeModel.PhysicalLayout.Length != 1)
             {
@@ -238,7 +245,10 @@ namespace FlatSharp.TypeModel
             }
         }
 
-        public abstract void OnInitialize();
+        /// <summary>
+        /// Returns the underlying type of this vector.
+        /// </summary>
+        public abstract Type OnInitialize();
 
         protected string GetThrowIfNullStatement(string variableName)
         {

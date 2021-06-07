@@ -24,15 +24,10 @@ namespace FlatSharp.TypeModel
     /// </summary>
     public class ArraySegmentVectorOfUnionTypeModel : BaseVectorOfUnionTypeModel
     {
-        private ITypeModel itemTypeModel;
-
         public ArraySegmentVectorOfUnionTypeModel(Type clrType, TypeModelContainer container)
             : base(clrType, container)
         {
-            this.itemTypeModel = null!;
         }
-
-        public override ITypeModel ItemTypeModel => this.itemTypeModel;
 
         public override string LengthPropertyName => "Count";
 
@@ -43,10 +38,10 @@ namespace FlatSharp.TypeModel
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
             var (classDef, className) = FlatBufferVectorHelpers.CreateFlatBufferVectorOfUnionSubclass(
-                this.itemTypeModel.ClrType,
-                this.itemTypeModel,
+                this.ItemTypeModel.ClrType,
+                this.ItemTypeModel,
                 context.InputBufferTypeName,
-                context.MethodNameMap[this.itemTypeModel.ClrType]);
+                context.MethodNameMap[this.ItemTypeModel.ClrType]);
 
             string body = $@"
                 var vector = new {className}<{context.InputBufferTypeName}>(
@@ -80,15 +75,13 @@ namespace FlatSharp.TypeModel
             };
         }
 
-        public override void OnInitialize()
+        public override Type OnInitialize()
         {
             FlatSharpInternal.Assert(
                 this.ClrType.IsGenericType && this.ClrType.GetGenericTypeDefinition() == typeof(ArraySegment<>),
                 "Array segment vectors must be array segments");
 
-            this.itemTypeModel = this.typeModelContainer.CreateTypeModel(this.ClrType.GetGenericArguments()[0]);
-
-            FlatSharpInternal.Assert(this.itemTypeModel.SchemaType == FlatBufferSchemaType.Union, "Union vectors can't contain non-union elements.");
+            return this.ClrType.GetGenericArguments()[0];
         }
     }
 }
