@@ -24,12 +24,10 @@ namespace FlatSharp
 
     internal class PoolingDeserializeClassDefinition : DeserializeClassDefinition
     {
-        private const string ReaderVariableName = "__Reader";
-        private const string WriterVariableName = "__Writer";
+        private const string PoolVariableName = "__Pool";
         private const string AllocationStackVariableName = "__poolDiag_allocationStack";
         private const string ReleaseStackVariableName = "__poolDiag_releaseStack";
         private const string ReleasedVariableName = "__poolDiag_released";
-        private readonly int poolSize;
 
         public PoolingDeserializeClassDefinition(
             string className, 
@@ -38,20 +36,18 @@ namespace FlatSharp
             FlatBufferSerializerOptions options,
             int poolSize) : base(className, onDeserializeMethod, typeModel, options)
         {
-            this.poolSize = poolSize;
+            FlatSharpInternal.Assert(poolSize != 0, "Pool size must not be 0.");
 
             base.instanceFieldDefinitions[AllocationStackVariableName] = $"private string? {AllocationStackVariableName};";
             base.instanceFieldDefinitions[ReleaseStackVariableName] = $"private string? {ReleaseStackVariableName};";
             base.instanceFieldDefinitions[ReleasedVariableName] = $"private bool {ReleasedVariableName};";
 
-            base.staticFieldDefinitions[ReaderVariableName] =
-                $@"
-                    private static readonly System.Threading.Channels.ChannelReader<{this.ClassName}<TInputBuffer>> {ReaderVariableName};
-                ";
+            string actualPoolSize = poolSize < 0 ? "null" : poolSize.ToString();
 
-            base.staticFieldDefinitions[WriterVariableName] =
+            base.staticFieldDefinitions[PoolVariableName] =
                 $@"
-                    private static readonly System.Threading.Channels.ChannelWriter<{this.ClassName}<TInputBuffer>> {WriterVariableName};
+                    private static readonly {nameof(IFlatSharpObjectPool<int>)}<{this.ClassName}<TInputBuffer>> {PoolVariableName} =
+                        {nameof(FlatSharpRuntimeSettings)}.{nameof(FlatSharpRuntimeSettings.ObjectPoolFactory)}.{nameof(IFlatSharpObjectPoolFactory.Create)}<{this.ClassName}<TInputBuffer>>({actualPoolSize});
                 ";
         }
 
@@ -96,7 +92,7 @@ namespace FlatSharp
                 else
                 {{
                     {string.Join("\r\n", this.GetResetStatements())}
-                    {WriterVariableName}.TryWrite(this);
+                    {PoolVariableName}.{nameof(IFlatSharpObjectPool<int>.Return)}(this);
                 }}
             ";
         }
@@ -104,7 +100,7 @@ namespace FlatSharp
         protected override string GetGetOrCreateMethodBody()
         {
             return $@"                
-                if (!{ReaderVariableName}.TryRead(out var item))
+                if (!{PoolVariableName}.{nameof(IFlatSharpObjectPool<int>.TryTake)}(out var item))
                 {{
                     item = new {this.ClassName}<TInputBuffer>();
                 }}
@@ -126,20 +122,7 @@ namespace FlatSharp
 
         protected override string GetCtorMethodDefinition(string onDeserializedStatement, string baseCtorParams)
         {
-            string newChannel = $"System.Threading.Channels.Channel.CreateBounded<{this.ClassName}<TInputBuffer>>({this.poolSize})";
-            if (this.poolSize <= 0)
-            {
-                newChannel = $"System.Threading.Channels.Channel.CreateUnbounded<{this.ClassName}<TInputBuffer>>()";
-            }
-
             return $@"
-                static {this.ClassName}()
-                {{
-                    var channel = {newChannel};
-                    {ReaderVariableName} = channel.Reader;
-                    {WriterVariableName} = channel.Writer;
-                }}
-                
                 private {this.ClassName}() : base({baseCtorParams}) 
                 {{
                     {string.Join("\r\n", this.GetResetStatements())}

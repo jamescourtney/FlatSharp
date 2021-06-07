@@ -16,8 +16,6 @@
 
 namespace FlatSharp
 {
-    using System;
-
     /// <summary>
     /// Defines a property bag of global runtime settings for FlatSharp.
     /// </summary>
@@ -29,5 +27,12 @@ namespace FlatSharp
         /// be used to investigate issues.
         /// </summary>
         public static bool EnableRecyclingDiagnostics { get; set; }
+
+        /// <summary>
+        /// An object pool factory for Flatsharp-generated code to use to acquire object pools for object recycling. 
+        /// This must be set before the serialized code is invoked as the object pools produced by this factory
+        /// are referenced statically. It is recommended to do so at application startup time.
+        /// </summary>
+        public static IFlatSharpObjectPoolFactory ObjectPoolFactory { get; set; } = new ChannelBasedObjectPoolFactory();
     }
 }
