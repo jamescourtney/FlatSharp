@@ -135,19 +135,14 @@ namespace FlatSharp.TypeModel
         {
             if (typeModel.IsNonNullableClrValueType())
             {
-                // Structs are really weird.
-                // Value types are not guaranteed to have an equality operator defined, so we can't just assume
-                // that '==' will work, so we do a little reflection, and use the operator if it is defined.
-                // otherwise, we assume that the operands are not equal no matter what.
-                var notEqualMethod = typeModel.ClrType.GetMethod("op_Inequality", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
-                if (notEqualMethod is not null || typeModel.ClrType.IsPrimitive || typeModel.ClrType.IsEnum)
+                if (typeModel.ClrType.IsPrimitive || typeModel.ClrType.IsEnum)
                 {
                     // Let's hope that != is implemented rationally!
                     return $"{variableName} != {defaultValueLiteral}";
                 }
                 else
                 {
-                    // structs without an inequality overload have to be assumed to be not equal.
+                    // We assume non-primitive structs are not equal.
                     return "true";
                 }
             }
