@@ -42,20 +42,5 @@ namespace FlatSharp.Internal
             return segment.Array[segment.Offset + index];
 #endif
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Set<T>(this ArraySegment<T> segment, int index, T value)
-        {
-#if NETCOREAPP
-            segment[index] = value;
-#else
-            if ((uint)index >= (uint)segment.Count)
-            {
-                throw new IndexOutOfRangeException();
-            }
-
-            segment.Array[segment.Offset + index] = value;
-#endif
-        }
     }
 }
