@@ -127,18 +127,6 @@ namespace FlatSharp
             return new ArraySegment<T>(clone);
         }
 
-        [return: NotNullIfNotNull("source")]
-        public static ArraySegment<T>? Clone<T>(ArraySegment<T>? source)
-            where T : struct
-        {
-            if (source is null)
-            {
-                return null;
-            }
-
-            return Clone(source);
-        }
-
         public static ArraySegment<T> Clone<T>(ArraySegment<T> source, Func<T, T> cloneItem)
         {
             if (source.Array is null)
@@ -155,17 +143,6 @@ namespace FlatSharp
             }
 
             return new ArraySegment<T>(clone);
-        }
-
-        [return: NotNullIfNotNull("source")]
-        public static ArraySegment<T>? Clone<T>(ArraySegment<T>? source, Func<T, T> cloneItem)
-        {
-            if (source is null)
-            {
-                return null;
-            }
-
-            return Clone(source.Value, cloneItem);
         }
 
         [return: NotNullIfNotNull("source")]
