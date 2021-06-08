@@ -31,7 +31,6 @@ namespace FlatSharp
             bool isOffsetByRef,
             IReadOnlyDictionary<Type, string> methodNameMap,
             IReadOnlyDictionary<Type, string> serializeMethodNameMap,
-            IReadOnlyDictionary<Type, string> recycleMethodNameMap,
             FlatBufferSerializerOptions options)
         {
             this.InputBufferVariableName = inputBufferVariableName;
@@ -39,7 +38,6 @@ namespace FlatSharp
             this.InputBufferTypeName = inputBufferTypeName;
             this.MethodNameMap = methodNameMap;
             this.SerializeMethodNameMap = serializeMethodNameMap;
-            this.RecycleMethodNameMap = recycleMethodNameMap;
             this.IsOffsetByRef = isOffsetByRef;
             this.Options = options;
         }
@@ -73,11 +71,6 @@ namespace FlatSharp
         /// A mapping of type to serialize method name for that type.
         /// </summary>
         public IReadOnlyDictionary<Type, string> SerializeMethodNameMap { get; }
-
-        /// <summary>
-        /// A mapping of type to serialize method name for that type.
-        /// </summary>
-        public IReadOnlyDictionary<Type, string> RecycleMethodNameMap { get; }
 
         /// <summary>
         /// Serialization options.

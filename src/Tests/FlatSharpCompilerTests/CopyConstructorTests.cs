@@ -53,17 +53,15 @@ table OuterTable ({MetadataKeys.SerializerKind}: ""Greedy"") {{
   IntVector_List:[int] ({MetadataKeys.VectorKind}:""IList"", id: 9);
   IntVector_RoList:[int] ({MetadataKeys.VectorKind}:""IReadOnlyList"", id: 10);
   IntVector_Array:[int] ({MetadataKeys.VectorKind}:""Array"", id: 11);
-  IntVector_ArraySegment:[int] ({MetadataKeys.VectorKind}:""ArraySegment"", id: 12);
   
-  TableVector_List:[InnerTable] ({MetadataKeys.VectorKind}:""IList"", id: 13);
-  TableVector_RoList:[InnerTable] ({MetadataKeys.VectorKind}:""IReadOnlyList"", id: 14);
-  TableVector_Indexed:[InnerTable] ({MetadataKeys.VectorKind}:""IIndexedVector"", id: 15);
-  TableVector_Array:[InnerTable] ({MetadataKeys.VectorKindLegacy}:""Array"", id: 16);
-  TableVector_ArraySegment:[InnerTable] ({MetadataKeys.VectorKind}:""ArraySegment"", id: 17);
+  TableVector_List:[InnerTable] ({MetadataKeys.VectorKind}:""IList"", id: 12);
+  TableVector_RoList:[InnerTable] ({MetadataKeys.VectorKind}:""IReadOnlyList"", id: 13);
+  TableVector_Indexed:[InnerTable] ({MetadataKeys.VectorKind}:""IIndexedVector"", id: 14);
+  TableVector_Array:[InnerTable] ({MetadataKeys.VectorKindLegacy}:""Array"", id: 15);
 
-  ByteVector:[ubyte] ({MetadataKeys.VectorKind}:""Memory"", id: 18);
-  ByteVector_RO:[ubyte] ({MetadataKeys.VectorKind}:""ReadOnlyMemory"", id: 19);
-  Union:Union (id: 20);
+  ByteVector:[ubyte] ({MetadataKeys.VectorKind}:""Memory"", id: 16);
+  ByteVector_RO:[ubyte] ({MetadataKeys.VectorKind}:""ReadOnlyMemory"", id: 17);
+  Union:Union (id: 18);
 }}
 
 struct OuterStruct {{
@@ -99,13 +97,11 @@ table InnerTable {{
                 IntVector_Array = new[] { 7, 8, 9, },
                 IntVector_List = new[] { 10, 11, 12, }.ToList(),
                 IntVector_RoList = new[] { 13, 14, 15 }.ToList(),
-                IntVector_ArraySegment = new[] { 16, 17, 18 },
 
                 TableVector_Array = CreateInner("Rocket", "Molly", "Clementine"),
                 TableVector_Indexed = new IndexedVector<string, InnerTable>(CreateInner("Pudge", "Sunshine", "Gypsy"), false),
                 TableVector_List = CreateInner("Finnegan", "Daisy"),
                 TableVector_RoList = CreateInner("Gordita", "Lunchbox"),
-                TableVector_ArraySegment = CreateInner("George", "Peewee"),
 
                 Union = new FlatBufferUnion<OuterTable, InnerTable, OuterStruct, InnerStruct>(new OuterStruct())
             };
@@ -138,7 +134,6 @@ table InnerTable {{
             DeepCompareIntVector(original.IntVector_Array, parsed.IntVector_Array, copied.IntVector_Array);
             DeepCompareIntVector(original.IntVector_List, parsed.IntVector_List, copied.IntVector_List);
             DeepCompareIntVector(original.IntVector_RoList, parsed.IntVector_RoList, copied.IntVector_RoList);
-            DeepCompareIntVector(original.IntVector_ArraySegment, parsed.IntVector_ArraySegment, copied.IntVector_ArraySegment);
 
             Assert.AreEqual((byte)3, original.Union.Discriminator);
             Assert.AreEqual((byte)3, parsed.Union.Discriminator);
@@ -211,19 +206,6 @@ table InnerTable {{
                     Assert.IsNotNull(copiedValue);
 
                     DeepCompareInnerTable(value, parsedValue, copiedValue);
-                }
-            }
-
-            // arraysegment of table
-            {
-                int count = original.TableVector_ArraySegment.Value.Count;
-
-                for (int i = 0; i < count; ++i)
-                {
-                    var p = parsed.TableVector_ArraySegment[i];
-                    var c = copied.TableVector_ArraySegment[i];
-
-                    DeepCompareInnerTable(original.TableVector_ArraySegment.Value[i], p, c);
                 }
             }
         }
@@ -334,30 +316,24 @@ table InnerTable {{
             public int[]? IntVector_Array { get; set; }
 
             [FlatBufferItem(12)]
-            public ArraySegment<int> IntVector_ArraySegment { get; set; }
-
-            [FlatBufferItem(13)]
             public IList<InnerTable>? TableVector_List { get; set; }
 
-            [FlatBufferItem(14)]
+            [FlatBufferItem(13)]
             public IReadOnlyList<InnerTable>? TableVector_RoList { get; set; }
 
-            [FlatBufferItem(15)]
+            [FlatBufferItem(14)]
             public IIndexedVector<string, InnerTable>? TableVector_Indexed { get; set; }
 
-            [FlatBufferItem(16)]
+            [FlatBufferItem(15)]
             public InnerTable[]? TableVector_Array { get; set; }
 
-            [FlatBufferItem(17)]
-            public ArraySegment<InnerTable>? TableVector_ArraySegment { get; set; }
-
-            [FlatBufferItem(18)]
+            [FlatBufferItem(16)]
             public Memory<byte>? ByteVector { get; set; }
 
-            [FlatBufferItem(19)]
+            [FlatBufferItem(17)]
             public ReadOnlyMemory<byte>? ByteVector_RO { get; set; }
 
-            [FlatBufferItem(20)]
+            [FlatBufferItem(18)]
             public FlatBufferUnion<OuterTable, InnerTable, OuterStruct, InnerStruct>? Union { get; set; }
         }
 

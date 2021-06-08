@@ -53,8 +53,6 @@ namespace FlatSharp.Compiler
 
         public string? FileIdentifier { get; set; }
 
-        public int? RecyclePoolSize { get; set; }
-
         public FlatBufferDeserializationOption? RequestedSerializer { get; set; }
 
         protected override bool SupportsChildren => false;
@@ -65,11 +63,6 @@ namespace FlatSharp.Compiler
 
             var attributeParts = new List<string>();
             string attributeName = this.IsTable ? nameof(FlatBufferTableAttribute) : nameof(FlatBufferStructAttribute);
-
-            if (this.RecyclePoolSize != null)
-            {
-                attributeParts.Add($"{nameof(FlatBufferTableAttribute.RecyclePoolSize)} = {this.RecyclePoolSize}");
-            }
 
             if (this.IsTable && !string.IsNullOrEmpty(this.FileIdentifier))
             {

@@ -47,7 +47,6 @@ namespace FlatSharp
         private static readonly Dictionary<string, (Assembly, byte[])> AssemblyNameReferenceMapping = new Dictionary<string, (Assembly, byte[])>();
 
         private readonly Dictionary<Type, string> maxSizeMethods = new Dictionary<Type, string>();
-        private readonly Dictionary<Type, string> recycleMethods = new Dictionary<Type, string>();
         private readonly Dictionary<Type, string> writeMethods = new Dictionary<Type, string>();
         private readonly Dictionary<Type, string> readMethods = new Dictionary<Type, string>();
 
@@ -125,7 +124,6 @@ $@"
                 using System.Runtime.CompilerServices;
                 using FlatSharp;
                 using FlatSharp.Attributes;
-                using FlatSharp.Internal;
 
                 {code}
             }}";
@@ -343,8 +341,6 @@ $@"
                 MetadataReference.CreateFromFile(typeof(IGeneratedSerializer<byte>).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(InvalidDataException).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(ReadOnlyDictionary<,>).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(System.Threading.Channels.Channel<>).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(ArrayPool<>).Assembly.Location),
             });
 
             return references;
@@ -411,7 +407,6 @@ $@"
                 this.writeMethods[type] = $"WriteInlineValueOf_{nameBase}";
                 this.maxSizeMethods[type] = $"GetMaxSizeOf_{nameBase}";
                 this.readMethods[type] = $"Read_{nameBase}";
-                this.recycleMethods[type] = $"Recycle_{nameBase}";
             }
         }
 
@@ -490,17 +485,6 @@ $@"
 ";
                 this.methodDeclarations.Add(CSharpSyntaxTree.ParseText(methodText, ParseOptions).GetRoot());
             }
-
-            {
-                string methodText =
-$@"
-                public void Recycle({CSharpHelpers.GetCompilableTypeName(rootType)} root)
-                {{
-                    {this.recycleMethods[rootType]}(root);
-                }}
-";
-                this.methodDeclarations.Add(CSharpSyntaxTree.ParseText(methodText, ParseOptions).GetRoot());
-            }
         }
 
         private void ImplementMethods()
@@ -511,19 +495,16 @@ $@"
                 bool isOffsetByRef = typeModel.PhysicalLayout.Length > 1;
 
                 var maxSizeContext = new GetMaxSizeCodeGenContext("value", this.maxSizeMethods, this.options);
-                var parseContext = new ParserCodeGenContext("buffer", "offset", "TInputBuffer", isOffsetByRef, this.readMethods, this.writeMethods, this.recycleMethods, this.options);
+                var parseContext = new ParserCodeGenContext("buffer", "offset", "TInputBuffer", isOffsetByRef, this.readMethods, this.writeMethods, this.options);
                 var serializeContext = new SerializationCodeGenContext("context", "span", "spanWriter", "value", "offset", isOffsetByRef, this.writeMethods, this.typeModelContainer, this.options);
-                var recycleContext = new RecycleCodeGenContext("value", this.recycleMethods, this.options);
 
                 var maxSizeMethod = typeModel.CreateGetMaxSizeMethodBody(maxSizeContext);
                 var parseMethod = typeModel.CreateParseMethodBody(parseContext);
                 var writeMethod = typeModel.CreateSerializeMethodBody(serializeContext);
-                var recycleMethod = typeModel.CreateRecycleMethodBody(recycleContext);
 
                 this.GenerateGetMaxSizeMethod(type, maxSizeMethod, maxSizeContext);
                 this.GenerateParseMethod(typeModel, parseMethod, parseContext);
                 this.GenerateSerializeMethod(typeModel, writeMethod, serializeContext);
-                this.GenerateRecycleMethod(type, recycleMethod, recycleContext);
             }
         }
 
@@ -581,25 +562,6 @@ $@"
             {{
                 {method.MethodBody}
             }}";
-
-            this.AddMethod(method, declaration);
-        }
-
-        private void GenerateRecycleMethod(Type type, CodeGeneratedMethod method, RecycleCodeGenContext context)
-        {
-            string nullable = string.Empty;
-            if (!type.IsValueType)
-            {
-                nullable = "?";
-            }
-
-            string declaration = $@"
-                {method.GetMethodImplAttribute()}
-                private static void {this.recycleMethods[type]}({CSharpHelpers.GetCompilableTypeName(type)}{nullable} {context.ValueVariableName})
-                {{
-                    {method.MethodBody}
-                }}
-            ";
 
             this.AddMethod(method, declaration);
         }

@@ -181,30 +181,5 @@ namespace FlatSharp.TypeModel
                 }
             }
         }
-
-        /// <summary>
-        /// Indicates if there is a path to a recyclable element from this type model, even if
-        /// this type model does not itself support a recycle. Uses depth-first search with cycle detection.
-        /// </summary>
-        public static bool HasRecyclableDescendant(this ITypeModel typeModel)
-        {
-            static bool Recursive(ITypeModel typeModel, HashSet<Type> seenTypes)
-            {
-                if (seenTypes.Add(typeModel.ClrType))
-                {
-                    foreach (var child in typeModel.Children)
-                    {
-                        if (child.IsRecyclable || Recursive(child, seenTypes))
-                        {
-                            return true;
-                        }
-                    }
-                }
-
-                return false;
-            }
-
-            return Recursive(typeModel, new());
-        }
     }
 }

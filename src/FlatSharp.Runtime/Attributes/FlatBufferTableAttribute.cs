@@ -28,11 +28,5 @@ namespace FlatSharp.Attributes
         /// Specifies the file identifier for serialized tables. Must be precisely 4 ASCII characters.
         /// </summary>
         public string? FileIdentifier { get; set; }
-        
-        /// <summary>
-        /// Specifies the maximum size of the object pool for items of this type. A value of 0 indicates that the pool is disabled, -1 allows the pool to grow 
-        /// without bound.
-        /// </summary>
-        public int RecyclePoolSize { get; set; } = 0;
     }
 }

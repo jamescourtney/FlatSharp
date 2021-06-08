@@ -106,8 +106,6 @@ namespace BenchmarkCore
                 Console.WriteLine(parsed2.Points[i].X);
             }
 
-            SomeTable.Serializer.Recycle(ref parsed);
-
             parsed = SomeTable.Serializer.Parse(buffer);
             parsed2 = parsed;
 

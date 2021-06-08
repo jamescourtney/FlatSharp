@@ -136,11 +136,17 @@ $@"
                     inlineAdjustment = $"offsetLocation += buffer.{nameof(InputBufferExtensions.ReadUOffset)}(offsetLocation);";
                 }
 
+                var itemContext = context with
+                {
+                    OffsetVariableName = "offsetLocation",
+                    IsOffsetByRef = false,
+                };
+
                 string @case =
 $@"
                     case {unionIndex}:
                         {inlineAdjustment}
-                        return new {this.GetCompilableTypeName()}({context.MethodNameMap[unionMember.ClrType]}(buffer, offsetLocation));
+                        return new {this.GetCompilableTypeName()}({itemContext.GetParseInvocation(unionMember.ClrType)});
 ";
                 switchCases.Add(@case);
             }
@@ -241,38 +247,6 @@ $@"
                 return {context.ItemVariableName}.{nameof(FlatBufferUnion<string>.Discriminator)} switch {{
                     {string.Join("\r\n", switchCases)}
                 }};";
-
-            return new CodeGeneratedMethod(body);
-        }
-
-        public override CodeGeneratedMethod CreateRecycleMethodBody(RecycleCodeGenContext context)
-        {
-            List<string> switchCases = new List<string>();
-
-            for (int i = 0; i < this.memberTypeModels.Length; ++i)
-            {
-                var memberModel = this.memberTypeModels[i];
-                if (memberModel.IsRecyclable || memberModel.HasRecyclableDescendant())
-                {
-                    int discriminator = i + 1;
-                    var memberContext = context with { ValueVariableName = $"{context.ValueVariableName}.Item{discriminator}" };
-                    switchCases.Add($"case {discriminator}: {memberContext.GetRecycleInvocation(memberModel.ClrType)}; break;");
-                }
-            }
-
-            string body = string.Empty;
-            if (switchCases.Count > 0)
-            {
-                body = 
-                    $@"
-                    if (!({context.ValueVariableName} is null))
-                    {{
-                        switch ({context.ValueVariableName}.{nameof(FlatBufferUnion<string>.Discriminator)}) 
-                        {{
-                            {string.Join("\r\n", switchCases)}
-                        }}
-                    }}";
-            }
 
             return new CodeGeneratedMethod(body);
         }

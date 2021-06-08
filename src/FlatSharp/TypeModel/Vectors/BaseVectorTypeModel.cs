@@ -167,38 +167,6 @@ namespace FlatSharp.TypeModel
             return new CodeGeneratedMethod(body);
         }
 
-        public override CodeGeneratedMethod CreateRecycleMethodBody(RecycleCodeGenContext context)
-        {
-            if (!this.HasRecyclableDescendant())
-            {
-                return CodeGeneratedMethod.Empty;
-            }
-
-            var loopContext = context with { ValueVariableName = "current" };
-
-            string nullCheck = $@"                
-                if ({context.ValueVariableName} is null)
-                {{
-                    return;
-                }}
-            ";
-
-            if (this.IsNonNullableClrValueType())
-            {
-                nullCheck = string.Empty;
-            }
-
-            string loopBody = $@"{loopContext.GetRecycleInvocation(this.ItemTypeModel.ClrType)};";
-
-            string body = $@"
-                {nullCheck}
-
-                int count = {context.ValueVariableName}.{this.LengthPropertyName};
-                {this.CreateLoop(context.Options, context.ValueVariableName, "count", "current", loopBody)}";
-
-            return new CodeGeneratedMethod(body);
-        }
-
         /// <summary>
         /// Creates a loop that executes the given body.
         /// </summary>

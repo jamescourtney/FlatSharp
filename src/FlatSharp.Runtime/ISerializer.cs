@@ -92,14 +92,6 @@ namespace FlatSharp
         new T Parse(IInputBuffer buffer);
 
         /// <summary>
-        /// Attempts to return the given parsed root item to a pool recursively, walking the full object graph. 
-        /// After calling this method, the entire object graph must be considered invalid and not used. If successful,
-        /// the <paramref name="item"/> parameter will be set to <c>null</c>. If pooling is not enabled, this operation
-        /// will be a harmless no-op (but may still return <c>true</c>).
-        /// </summary>
-        void Recycle(ref T? item);
-
-        /// <summary>
         /// Returns a new <see cref="ISerializer{T}"/> instance based on the current one with the given settings.
         /// </summary>
         ISerializer<T> WithSettings(SerializerSettings settings);
