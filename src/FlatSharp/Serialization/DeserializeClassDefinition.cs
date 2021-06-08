@@ -242,10 +242,7 @@ namespace FlatSharp
         public override string ToString()
         {
             ConstructorInfo? ctor = this.typeModel.PreferredSubclassConstructor;
-            if (ctor is null)
-            {
-                throw new InvalidFlatBufferDefinitionException($"Unable to find a usable subclass constructor for '{this.typeModel.GetCompilableTypeName()}'.");
-            }
+            FlatSharpInternal.Assert(ctor is not null, $"Unable to find a usable subclass constructor for '{this.typeModel.GetCompilableTypeName()}'.");
 
             string onDeserializedStatement = string.Empty;
             if (this.onDeserializeMethod is not null)
@@ -366,8 +363,6 @@ namespace FlatSharp
                 }}
             ";
         }
-
-        protected virtual string GetDangerousReleaseMethodBody() => string.Empty;
 
         protected static string GetFieldName(ItemMemberModel itemModel) => $"__index{itemModel.Index}Value";
 

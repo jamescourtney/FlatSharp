@@ -27,11 +27,6 @@ namespace FlatSharp
         }
 
         /// <summary>
-        /// An empty method.
-        /// </summary>
-        public static CodeGeneratedMethod Empty { get; } = new CodeGeneratedMethod(string.Empty) { IsMethodInline = true };
-
-        /// <summary>
         /// The body of the method.
         /// </summary>
         public string MethodBody { get; init; }
