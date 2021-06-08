@@ -341,8 +341,6 @@ $@"
                 MetadataReference.CreateFromFile(typeof(IGeneratedSerializer<byte>).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(InvalidDataException).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(ReadOnlyDictionary<,>).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(System.Threading.Channels.Channel<>).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(ArrayPool<>).Assembly.Location),
             });
 
             return references;
