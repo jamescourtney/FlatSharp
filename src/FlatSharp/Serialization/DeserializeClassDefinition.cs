@@ -141,7 +141,7 @@ namespace FlatSharp
             }
             else if (!itemModel.IsVirtual)
             {
-                if (itemModel.ItemTypeModel.HasRecyclableDescendant())
+                if (itemModel.ItemTypeModel.IsRecyclable || itemModel.ItemTypeModel.HasRecyclableDescendant())
                 {
                     // No instance field; just need recycle statement for base.
                     this.recycleMethodInvocations.Add(
