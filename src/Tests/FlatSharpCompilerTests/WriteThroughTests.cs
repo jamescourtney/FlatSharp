@@ -30,32 +30,47 @@ namespace FlatSharpTests.Compiler
         [TestMethod]
         public void WriteThrough_OnStructField()
         {
-            string schema = $@"
-            namespace ForceWriteTests;
-            table Table ({MetadataKeys.SerializerKind}:{FlatBufferDeserializationOption.VectorCacheMutable}) {{ Struct:Struct; }}
-            struct Struct ({MetadataKeys.WriteThrough}) {{ foo:int; bar:int ({MetadataKeys.WriteThrough}:""false""); }} 
-            ";
-            
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
-            Type tableType = asm.GetType("ForceWriteTests.Table");
-            Type structType = asm.GetType("ForceWriteTests.Struct");
+            static void Test(FlatBufferDeserializationOption option)
+            {
+                string schema = $@"
+                namespace ForceWriteTests;
+                table Table ({MetadataKeys.SerializerKind}:{option}) {{ Struct:Struct; }}
+                struct Struct ({MetadataKeys.WriteThrough}) {{ foo:int; bar:int ({MetadataKeys.WriteThrough}:""false""); }} 
+                ";
 
-            ISerializer serializer = (ISerializer)tableType.GetProperty("Serializer", BindingFlags.Public | BindingFlags.Static).GetValue(null);
-            dynamic table = Activator.CreateInstance(tableType);
-            table.Struct = (dynamic)Activator.CreateInstance(structType);
-            table.Struct.foo = 42;
-            table.Struct.bar = 65;
+                Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
+                Type tableType = asm.GetType("ForceWriteTests.Table");
+                Type structType = asm.GetType("ForceWriteTests.Struct");
 
-            byte[] data = new byte[100];
-            serializer.Write(data, (object)table);
+                ISerializer serializer = (ISerializer)tableType.GetProperty("Serializer", BindingFlags.Public | BindingFlags.Static).GetValue(null);
+                dynamic table = Activator.CreateInstance(tableType);
+                table.Struct = (dynamic)Activator.CreateInstance(structType);
+                table.Struct.foo = 42;
+                table.Struct.bar = 65;
 
-            dynamic parsed = serializer.Parse(data);
-            parsed.Struct.foo = 100;
-            parsed.Struct.bar = 22;
+                byte[] data = new byte[100];
+                serializer.Write(data, (object)table);
 
-            dynamic parsed2 = serializer.Parse(data);
-            Assert.AreEqual(100, (int)parsed2.Struct.foo);
-            Assert.AreEqual(65, (int)parsed2.Struct.bar);
+                dynamic parsed = serializer.Parse(data);
+                parsed.Struct.foo = 100;
+
+                try
+                {
+                    parsed.Struct.bar = 22;
+                    Assert.AreEqual(FlatBufferDeserializationOption.VectorCacheMutable, option);
+                }
+                catch (NotMutableException)
+                {
+                    Assert.AreEqual(FlatBufferDeserializationOption.LazyWriteThrough, option);
+                }
+
+                dynamic parsed2 = serializer.Parse(data);
+                Assert.AreEqual(100, (int)parsed2.Struct.foo);
+                Assert.AreEqual(65, (int)parsed2.Struct.bar);
+            }
+
+            Test(FlatBufferDeserializationOption.LazyWriteThrough);
+            Test(FlatBufferDeserializationOption.VectorCacheMutable);
         }
     }
 }
