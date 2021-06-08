@@ -17,34 +17,26 @@
 namespace FlatSharp.TypeModel
 {
     using System;
-    using System.Collections.Generic;
-    using System.Collections.Immutable;
-    using System.Diagnostics.CodeAnalysis;
 
     /// <summary>
     /// Defines a vector of union type model.
     /// </summary>
     public class ArrayVectorOfUnionTypeModel : BaseVectorOfUnionTypeModel
     {
-        private ITypeModel itemTypeModel;
-
         public ArrayVectorOfUnionTypeModel(Type clrType, TypeModelContainer container)
             : base(clrType, container)
         {
-            this.itemTypeModel = null!;
         }
-
-        public override ITypeModel ItemTypeModel => this.itemTypeModel;
 
         public override string LengthPropertyName => "Length";
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
             var (classDef, className) = FlatBufferVectorHelpers.CreateFlatBufferVectorOfUnionSubclass(
-                this.itemTypeModel.ClrType,
-                this.itemTypeModel,
+                this.ItemTypeModel.ClrType,
+                this.ItemTypeModel,
                 context.InputBufferTypeName,
-                context.MethodNameMap[this.itemTypeModel.ClrType]);
+                context.MethodNameMap[this.ItemTypeModel.ClrType]);
 
             string createFlatBufferVector =
             $@"new {className}<{context.InputBufferTypeName}>(
@@ -57,14 +49,12 @@ namespace FlatSharp.TypeModel
             return new CodeGeneratedMethod(body) { ClassDefinition = classDef };
         }
 
-        public override void OnInitialize()
+        public override Type OnInitialize()
         {
             FlatSharpInternal.Assert(this.ClrType.IsArray, $"Array vectors must be arrays. Type = {this.ClrType.FullName}.");
             FlatSharpInternal.Assert(this.ClrType.GetArrayRank() == 1, "Array vectors may only be single-dimension.");
 
-            this.itemTypeModel = this.typeModelContainer.CreateTypeModel(this.ClrType.GetElementType()!);
-
-            FlatSharpInternal.Assert(this.itemTypeModel.SchemaType == FlatBufferSchemaType.Union, "Union vectors can't contain non-union elements.");
+            return this.ClrType.GetElementType()!;
         }
     }
 }

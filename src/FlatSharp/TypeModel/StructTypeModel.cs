@@ -167,10 +167,12 @@ namespace FlatSharp.TypeModel
                     propertyAccessor = $"{context.ValueVariableName}.{memberInfo.CustomGetter}";
                 }
 
-                var propContext = context.With(
-                    spanVariableName: "scopedSpan",
-                    offsetVariableName: $"{memberInfo.Offset}",
-                    valueVariableName: $"{propertyAccessor}");
+                var propContext = context with
+                {
+                    SpanVariableName = "scopedSpan",
+                    OffsetVariableName = $"{memberInfo.Offset}",
+                    ValueVariableName = $"{propertyAccessor}"
+                };
 
                 string invocation = propContext.GetSerializeInvocation(memberInfo.ItemTypeModel.ClrType) + ";";
                 body.Add(invocation);

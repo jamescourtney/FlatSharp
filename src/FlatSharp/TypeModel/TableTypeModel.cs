@@ -651,15 +651,20 @@ $@"
             string offsetTuple = string.Empty;
             if (vtableEntries == 1)
             {
-                serializeInvocation = context.With(
-                    valueVariableName: $"{valueVariableName}{nullForgiving}",
-                    offsetVariableName: $"{OffsetVariableName(index, 0)}").GetSerializeInvocation(memberModel.ItemTypeModel.ClrType);
+                serializeInvocation = (context with
+                {
+                    ValueVariableName = $"{valueVariableName}{nullForgiving}",
+                    OffsetVariableName = $"{OffsetVariableName(index, 0)}"
+                }).GetSerializeInvocation(memberModel.ItemTypeModel.ClrType);
             }
             else
             {
-                serializeInvocation = context.With(
-                    valueVariableName: $"{valueVariableName}{nullForgiving}",
-                    offsetVariableName: $"ref offsetTuple").GetSerializeInvocation(memberModel.ItemTypeModel.ClrType);
+                serializeInvocation = (context with
+                {
+                    ValueVariableName = $"{valueVariableName}{nullForgiving}",
+                    OffsetVariableName = $"offsetTuple",
+                    IsOffsetByRef = true,
+                }).GetSerializeInvocation(memberModel.ItemTypeModel.ClrType);
 
                 offsetTuple = $"var offsetTuple = ({string.Join(", ", Enumerable.Range(0, vtableEntries).Select(x => OffsetVariableName(index, x)))});";
             }

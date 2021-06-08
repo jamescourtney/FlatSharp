@@ -28,6 +28,7 @@ namespace FlatSharp.TypeModel
     {
         internal BaseVectorOfUnionTypeModel(Type vectorType, TypeModelContainer provider) : base(vectorType, provider)
         {
+            this.ItemTypeModel = null!;
         }
 
         /// <summary>
@@ -78,7 +79,7 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// Gets the type model for this vector's elements.
         /// </summary>
-        public abstract ITypeModel ItemTypeModel { get; }
+        public ITypeModel ItemTypeModel { get; private set; }
 
         /// <summary>
         /// The name of the length property of this vector type.
@@ -91,6 +92,8 @@ namespace FlatSharp.TypeModel
         public override bool SerializesInline => false;
 
         public override IEnumerable<ITypeModel> Children => new[] { this.ItemTypeModel };
+
+        protected virtual string Indexer(string index) => $"[{index}]";
 
         public override bool TryGetUnderlyingVectorType([NotNullWhen(true)] out ITypeModel? typeModel)
         {
@@ -110,7 +113,7 @@ namespace FlatSharp.TypeModel
 
                 for (int i = 0; i < count; ++i)
                 {{
-                      var current = {context.ValueVariableName}[i];
+                      var current = {context.ValueVariableName}{this.Indexer("i")};
                       {this.GetThrowIfNullStatement("current")}
                       length += {context.MethodNameMap[this.ItemTypeModel.ClrType]}(current);
                 }}
@@ -125,9 +128,11 @@ namespace FlatSharp.TypeModel
             var type = this.ClrType;
             var itemTypeModel = this.ItemTypeModel;
 
-            string innerInvocation = context.With(
-                valueVariableName: "current",
-                offsetVariableName: "ref tuple").GetSerializeInvocation(itemTypeModel.ClrType);
+            var innerContext = context with
+            {
+                ValueVariableName = "current",
+                OffsetVariableName = "tuple"
+            };
 
             string body = $@"
                 int count = {context.ValueVariableName}.{this.LengthPropertyName};
@@ -143,11 +148,11 @@ namespace FlatSharp.TypeModel
 
                 for (int i = 0; i < count; ++i)
                 {{
-                      var current = {context.ValueVariableName}[i];
+                      var current = {context.ValueVariableName}{this.Indexer("i")};
                       {this.GetThrowIfNullStatement("current")}
 
                       var tuple = (discriminatorVectorOffset, offsetVectorOffset);
-                      {innerInvocation};
+                      {innerContext.GetSerializeInvocation(itemTypeModel.ClrType)};
 
                       discriminatorVectorOffset++;
                       offsetVectorOffset += sizeof(int);
@@ -171,17 +176,26 @@ namespace FlatSharp.TypeModel
         {
             var itemContext = context with { ValueVariableName = "current" };
 
-            string body =
-            $@"
+            string nullCheck = $@"                
                 if ({context.ValueVariableName} is null)
                 {{
                     return;
                 }}
+            ";
+
+            if (this.IsNonNullableClrValueType())
+            {
+                nullCheck = string.Empty;
+            }
+
+            string body =
+            $@"
+                {nullCheck}
 
                 int count = {context.ValueVariableName}.{this.LengthPropertyName};
                 for (int i = 0; i < count; ++i)
                 {{
-                      var current = {context.ValueVariableName}[i];
+                      var current = {context.ValueVariableName}{this.Indexer("i")};
                       {itemContext.GetRecycleInvocation(this.ItemTypeModel.ClrType)};
                 }}
             ";
@@ -192,19 +206,20 @@ namespace FlatSharp.TypeModel
         public sealed override void Initialize()
         {
             base.Initialize();
-            this.OnInitialize();
-        }
 
-        public abstract void OnInitialize();
+            this.ItemTypeModel = this.typeModelContainer.CreateTypeModel(this.OnInitialize());
+
+            FlatSharpInternal.Assert(this.ItemTypeModel.SchemaType == FlatBufferSchemaType.Union, "Union vectors can't contain non-union elements.");
+        }
+        
+        /// <summary>
+        /// Returns the type of union.
+        /// </summary>
+        public abstract Type OnInitialize();
 
         private string GetThrowIfNullStatement(string variableName)
         {
-            if (this.ItemTypeModel.IsNonNullableClrValueType())
-            {
-                // can't be null.
-                return string.Empty;
-            }
-
+            FlatSharpInternal.Assert(!this.ItemTypeModel.IsNonNullableClrValueType(), "Unions are reference types");
             return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({variableName});";
         }
     }

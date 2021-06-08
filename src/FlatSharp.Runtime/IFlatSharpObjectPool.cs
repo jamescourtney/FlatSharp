@@ -22,16 +22,17 @@ namespace FlatSharp
     /// <summary>
     /// A simple object pool.
     /// </summary>
-    public interface IFlatSharpObjectPool<T>
+    public interface IFlatSharpObjectPool<T> 
+        where T : class, IRecyclable // generic constraint added to prevent unintentional usage.
     {
         /// <summary>
         /// Attempts to remove an item from the pool.
         /// </summary>
-        /// <returns>True if an item was removed from the pool.</returns>
+        /// <returns><c>true</c> if an item was removed from the pool, false otherwise.</returns>
         bool TryTake([NotNullWhen(true)] out T? item);
 
         /// <summary>
-        /// Returns the given item to the pool (or discards it if the pool is full).
+        /// Returns the given item to the pool or discards it if the pool is full.
         /// </summary>
         void Return(T item);
     }
@@ -46,12 +47,17 @@ namespace FlatSharp
         /// with the specified bounded capacity.
         /// </summary>
         /// <param name="capacity">The capacity, or null for unbounded.</param>
-        IFlatSharpObjectPool<T> Create<T>(int? capacity);
+        IFlatSharpObjectPool<T> Create<T>(int? capacity) 
+            where T : class, IRecyclable;  // generic constraint added to prevent unintentional usage.
     }
 
-    public class ChannelBasedObjectPoolFactory : IFlatSharpObjectPoolFactory
+    /// <summary>
+    /// An implementation of <see cref="IFlatSharpObjectPoolFactory"/> that produces 
+    /// <see cref="IFlatSharpObjectPool{T}"/> instances built on top of <see cref="Channel{T}"/>.
+    /// </summary>
+    public sealed class ChannelBasedObjectPoolFactory : IFlatSharpObjectPoolFactory
     {
-        public IFlatSharpObjectPool<T> Create<T>(int? capacity)
+        public IFlatSharpObjectPool<T> Create<T>(int? capacity) where T : class, IRecyclable
         {
             if (capacity is null)
             {
@@ -64,6 +70,7 @@ namespace FlatSharp
         }
 
         private class ChannelBasedObjectPool<T> : IFlatSharpObjectPool<T>
+             where T : class, IRecyclable
         {
             private readonly ChannelReader<T> reader;
             private readonly ChannelWriter<T> writer;
@@ -79,7 +86,7 @@ namespace FlatSharp
                 this.writer.TryWrite(item);
             }
 
-            public bool TryTake(out T? item)
+            public bool TryTake([NotNullWhen(true)] out T? item)
             {
                 return this.reader.TryRead(out item);
             }

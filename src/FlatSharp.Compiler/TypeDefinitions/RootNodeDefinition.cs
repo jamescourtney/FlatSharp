@@ -48,6 +48,7 @@ namespace FlatSharp.Compiler
             writer.AppendLine("using System.Linq;");
             writer.AppendLine("using System.Runtime.CompilerServices;");
             writer.AppendLine("using FlatSharp;");
+            writer.AppendLine("using FlatSharp.Internal;");
             writer.AppendLine("using FlatSharp.Attributes;");
 
             // disable obsolete warnings. Flatsharp allows marking default constructors

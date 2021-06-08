@@ -99,11 +99,12 @@ namespace FlatSharp.TypeModel
 
             public CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
             {
-                var body = context
-                    .With(GetConvertToUnderlyingInvocation(context.ValueVariableName))
-                    .GetMaxSizeInvocation(this.underlyingModel.ClrType);
+                context = context with
+                {
+                    ValueVariableName = GetConvertToUnderlyingInvocation(context.ValueVariableName)
+                };
 
-                return new CodeGeneratedMethod($"return {body};") { IsMethodInline = true };
+                return new CodeGeneratedMethod($"return {context.GetMaxSizeInvocation(this.underlyingModel.ClrType)};") { IsMethodInline = true };
             }
 
             public CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
@@ -119,8 +120,8 @@ namespace FlatSharp.TypeModel
 
             public CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
             {
-                string invocation = context
-                    .With(valueVariableName: GetConvertToUnderlyingInvocation(context.ValueVariableName))
+                string invocation =
+                    (context with { ValueVariableName = GetConvertToUnderlyingInvocation(context.ValueVariableName) })
                     .GetSerializeInvocation(typeof(TUnderlying));
 
                 return new CodeGeneratedMethod($"{invocation};")

@@ -114,20 +114,12 @@ namespace FlatSharp
 
         public string ClassName { get; }
 
-        public void AddProperty(ItemMemberModel itemModel, string readValueMethodName, string writeValueMethodName, string? recycleMethodName)
+        public void AddProperty(ItemMemberModel itemModel, string readValueMethodName, string writeValueMethodName, string recycleMethodName)
         {
-            this.AddFieldDefinitions(itemModel);
+            this.AddFieldDefinitions(itemModel, recycleMethodName);
             this.AddPropertyDefinitions(itemModel, writeValueMethodName);
             this.AddCtorStatements(itemModel);
             this.AddReadMethod(itemModel, readValueMethodName);
-
-            if (!this.options.Lazy)
-            {
-                if (!string.IsNullOrEmpty(recycleMethodName) && itemModel.ItemTypeModel.HasRecyclableDescendant())
-                {
-                    this.recycleMethodInvocations.Add($"{recycleMethodName}(this.{GetFieldName(itemModel)});");
-                }
-            }
 
             if (itemModel.IsWriteThrough)
             {
@@ -141,20 +133,36 @@ namespace FlatSharp
             }
         }
 
-        protected virtual void AddFieldDefinitions(ItemMemberModel itemModel)
+        protected virtual void AddFieldDefinitions(ItemMemberModel itemModel, string recycleMethodName)
         {
-            if (this.options.Lazy || !itemModel.IsVirtual)
+            if (this.options.Lazy && itemModel.IsVirtual)
             {
-                return;
+                // Nothing. No field; nothing to recycle.
             }
-
-            if (!this.options.GreedyDeserialize)
+            else if (!itemModel.IsVirtual)
             {
-                this.instanceFieldDefinitions[GetHasValueFieldName(itemModel)] = $"private byte {GetHasValueFieldName(itemModel)};";
+                if (itemModel.ItemTypeModel.HasRecyclableDescendant())
+                {
+                    // No instance field; just need recycle statement for base.
+                    this.recycleMethodInvocations.Add(
+                        $"{recycleMethodName}(base.{itemModel.PropertyInfo.Name});");
+                }
             }
+            else
+            {
+                FlatSharpInternal.Assert(!this.options.Lazy && itemModel.IsVirtual, "unexpected logic");
 
-            string typeName = itemModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType);
-            this.instanceFieldDefinitions[GetFieldName(itemModel)] = $"private {typeName} {GetFieldName(itemModel)};";
+                if (!this.options.GreedyDeserialize)
+                {
+                    this.instanceFieldDefinitions[GetHasValueFieldName(itemModel)] = $"private byte {GetHasValueFieldName(itemModel)};";
+                }
+
+                string typeName = itemModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType);
+                this.instanceFieldDefinitions[GetFieldName(itemModel)] = $"private {typeName} {GetFieldName(itemModel)};";
+
+                this.recycleMethodInvocations.Add(
+                    $"{recycleMethodName}(this.{GetFieldName(itemModel)});");
+            }
         }
 
         private void AddReadMethod(ItemMemberModel itemModel, string readValueMethodName)

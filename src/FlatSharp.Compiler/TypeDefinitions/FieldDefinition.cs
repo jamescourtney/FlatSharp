@@ -367,6 +367,9 @@ namespace FlatSharp.Compiler
                 case VectorType.ReadOnlyMemory:
                     return $"ReadOnlyMemory<{clrType}>?";
 
+                case VectorType.ArraySegment:
+                    return $"ArraySegment<{clrType}>?";
+
                 case VectorType.IIndexedVector:
                     if (string.IsNullOrWhiteSpace(sortKeyType))
                     {

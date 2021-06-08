@@ -125,6 +125,7 @@ $@"
                 using System.Runtime.CompilerServices;
                 using FlatSharp;
                 using FlatSharp.Attributes;
+                using FlatSharp.Internal;
 
                 {code}
             }}";
@@ -260,7 +261,15 @@ $@"
             {
                 EmitResult result = compilation.Emit(ms);
 
-                ThrowOnEmitFailure(result, tree, formattedTextFactory);
+                ThrowOnEmitFailure(
+                    result, 
+                    tree,
+#if DEBUG
+                    debugCSharp
+#else
+                    formattedTextFactory
+#endif
+                );
 
                 var metadataRef = compilation.ToMetadataReference();
                 ms.Position = 0;
@@ -335,6 +344,7 @@ $@"
                 MetadataReference.CreateFromFile(typeof(InvalidDataException).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(ReadOnlyDictionary<,>).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(System.Threading.Channels.Channel<>).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(ArrayPool<>).Assembly.Location),
             });
 
             return references;
@@ -343,7 +353,12 @@ $@"
         private static void ThrowOnEmitFailure(
             EmitResult result,
             SyntaxTree syntaxTree,
-            Func<string> getFormattedCSharp)
+#if DEBUG
+            string cSharp
+#else
+            Func<string> cSharpFactory
+#endif
+            )
         {
             if (!result.Success || EnableStrictValidation)
             {
@@ -373,11 +388,11 @@ $@"
                         errors.Add($"FlatSharp compilation error: {error}, Context = \"{formatted}\"");
                     }
 
-#if DEBUG
-                    string csharp = getFormattedCSharp();
+#if !DEBUG
+                    string cSharp = cSharpFactory();
 #endif
 
-                    throw new FlatSharpCompilationException(errors.ToArray(), getFormattedCSharp());
+                    throw new FlatSharpCompilationException(errors.ToArray(), cSharp);
                 }
             }
         }
@@ -493,9 +508,11 @@ $@"
             foreach (var type in this.writeMethods.Keys)
             {
                 ITypeModel typeModel = this.typeModelContainer.CreateTypeModel(type);
+                bool isOffsetByRef = typeModel.PhysicalLayout.Length > 1;
+
                 var maxSizeContext = new GetMaxSizeCodeGenContext("value", this.maxSizeMethods, this.options);
-                var parseContext = new ParserCodeGenContext("buffer", "offset", "TInputBuffer", this.readMethods, this.writeMethods, this.recycleMethods, this.options);
-                var serializeContext = new SerializationCodeGenContext("context", "span", "spanWriter", "value", "offset", this.writeMethods, this.typeModelContainer, this.options);
+                var parseContext = new ParserCodeGenContext("buffer", "offset", "TInputBuffer", isOffsetByRef, this.readMethods, this.writeMethods, this.recycleMethods, this.options);
+                var serializeContext = new SerializationCodeGenContext("context", "span", "spanWriter", "value", "offset", isOffsetByRef, this.writeMethods, this.typeModelContainer, this.options);
                 var recycleContext = new RecycleCodeGenContext("value", this.recycleMethods, this.options);
 
                 var maxSizeMethod = typeModel.CreateGetMaxSizeMethodBody(maxSizeContext);

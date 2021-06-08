@@ -35,11 +35,9 @@ namespace FlatSharp.TypeModel
             this.keyMemberModel = null!;
         }
 
-        public override ITypeModel ItemTypeModel => this.valueTypeModel;
-
         public override string LengthPropertyName => nameof(IIndexedVector<string, string>.Count);
 
-        public override void OnInitialize()
+        public override Type OnInitialize()
         {
             FlatSharpInternal.Assert(
                 this.ClrType.IsGenericType && this.ClrType.GetGenericTypeDefinition() == typeof(IIndexedVector<,>),
@@ -78,6 +76,8 @@ namespace FlatSharp.TypeModel
                 throw new InvalidFlatBufferDefinitionException(
                     $"FlatSharp indexed vector keys must have the same type as the key of the value. KeyType = {this.keyTypeModel.GetCompilableTypeName()}, Value Key Type = '{this.valueTypeModel.GetCompilableTypeName()}'.");
             }
+
+            return valueType;
         }
 
         public override void AdjustTableMember(TableMemberModel source)

@@ -103,6 +103,19 @@ namespace FlatSharp.TypeModel
                     typeModel = new IndexedVectorTypeModel(type, container);
                     return true;
                 }
+
+                if (genericDef == typeof(ArraySegment<>))
+                {
+                    if (typeof(IFlatBufferUnion).IsAssignableFrom(type.GetGenericArguments()[0]))
+                    {
+                        typeModel = new ArraySegmentVectorOfUnionTypeModel(type, container);
+                    }
+                    else
+                    {
+                        typeModel = new ArraySegmentVectorTypeModel(type, container);
+                    }
+                    return true;
+                }
             }
 
             if (typeof(IFlatBufferUnion).IsAssignableFrom(type))

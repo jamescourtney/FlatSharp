@@ -33,194 +33,6 @@ namespace FlatSharpTests
     public class VectorSerializationTests
     {
         [TestMethod]
-        public void NullListVector()
-        {
-            var root = new RootTable<IList<short>>
-            {
-                Vector = null
-            };
-
-            Span<byte> target = new byte[10240];
-            int offset = FlatBufferSerializer.Default.Serialize(root, target);
-            target = target.Slice(0, offset);
-
-            byte[] expectedResult =
-            {
-                4, 0, 0, 0,      // offset to table start
-                252,255,255,255, // soffset to vtable (-4)
-                4, 0,            // vtable length
-                4, 0,            // table length
-            };
-
-            Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(target));
-        }
-
-        [TestMethod]
-        public void EmptyListVector()
-        {
-            var root = new RootTable<IList<short>>
-            {
-                Vector = new short[0],
-            };
-
-            Span<byte> target = new byte[10240];
-            int offset = FlatBufferSerializer.Default.Serialize(root, target);
-            target = target.Slice(0, offset);
-
-            byte[] expectedResult =
-            {
-                4, 0, 0, 0,          // offset to table start
-                248, 255, 255, 255,  // soffset to vtable (-8)
-                12, 0, 0, 0,         // uoffset_t to vector
-                6, 0,                // vtable length
-                8, 0,                // table length
-                4, 0,                // offset of index 0 field
-                0, 0,                // padding to 4-byte alignment
-                0, 0, 0, 0,          // vector length
-            };
-
-            Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(target));
-        }
-
-        [TestMethod]
-        public void SimpleListVector()
-        {
-            var root = new RootTable<IList<short>>
-            {
-                Vector = new short[] { 1, 2, 3, }
-            };
-
-            Span<byte> target = new byte[10240];
-            int offset = FlatBufferSerializer.Default.Serialize(root, target);
-            target = target.Slice(0, offset);
-
-            byte[] expectedResult =
-            {
-                4, 0, 0, 0,          // offset to table start
-                248, 255, 255, 255,  // soffset to vtable (-8)
-                12, 0, 0, 0,         // uoffset_t to vector
-                6, 0,                // vtable length
-                8, 0,                // table length
-                4, 0,                // offset of index 0 field
-                0, 0,                // padding to 4-byte alignment
-                3, 0, 0, 0,          // vector length
-
-                // vector data
-                1, 0,
-                2, 0,
-                3, 0
-            };
-
-            Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(target));
-        }
-
-        [TestMethod]
-        public void EmptyMemoryVector()
-        {
-            var root = new RootTable<Memory<byte>>
-            {
-                Vector = default,
-            };
-
-            Span<byte> target = new byte[10240];
-            int offset = FlatBufferSerializer.Default.Serialize(root, target);
-            target = target.Slice(0, offset);
-
-            byte[] expectedResult =
-            {
-                4, 0, 0, 0,          // offset to table start
-                248, 255, 255, 255,  // soffset to vtable (-8)
-                12, 0, 0, 0,         // uoffset_t to vector
-                6, 0,                // vtable length
-                8, 0,                // table length
-                4, 0,                // offset of index 0 field
-                0, 0,                // padding to 4-byte alignment
-                0, 0, 0, 0,          // vector length
-            };
-
-            Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(target));
-        }
-
-        [TestMethod]
-        public void SimpleMemoryVector()
-        {
-            var root = new RootTable<Memory<byte>>
-            {
-                Vector = new byte[] { 1, 2, 3 },
-            };
-
-            Span<byte> target = new byte[10240];
-            int offset = FlatBufferSerializer.Default.Serialize(root, target);
-            target = target.Slice(0, offset);
-
-            byte[] expectedResult =
-            {
-                4, 0, 0, 0,          // offset to table start
-                248, 255, 255, 255,  // soffset to vtable (-8)
-                12, 0, 0, 0,         // uoffset_t to vector
-                6, 0,                // vtable length
-                8, 0,                // table length
-                4, 0,                // offset of index 0 field
-                0, 0,                // padding to 4-byte alignment
-                3, 0, 0, 0,          // vector length
-                1, 2, 3,             // True false true
-            };
-
-            Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(target));
-        }
-
-        [TestMethod]
-        public void SimpleNullableMemoryVector()
-        {
-            var root = new RootTable<Memory<byte>?>
-            {
-                Vector = new byte[] { 1, 2, 3 },
-            };
-
-            Span<byte> target = new byte[10240];
-            int offset = FlatBufferSerializer.Default.Serialize(root, target);
-            target = target.Slice(0, offset);
-
-            byte[] expectedResult =
-            {
-                4, 0, 0, 0,          // offset to table start
-                248, 255, 255, 255,  // soffset to vtable (-8)
-                12, 0, 0, 0,         // uoffset_t to vector
-                6, 0,                // vtable length
-                8, 0,                // table length
-                4, 0,                // offset of index 0 field
-                0, 0,                // padding to 4-byte alignment
-                3, 0, 0, 0,          // vector length
-                1, 2, 3,             // data
-            };
-
-            Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(target));
-        }
-
-        [TestMethod]
-        public void NullString()
-        {
-            var root = new RootTable<string>
-            {
-                Vector = default,
-            };
-
-            Span<byte> target = new byte[10240];
-            int offset = FlatBufferSerializer.Default.Serialize(root, target);
-            target = target.Slice(0, offset);
-
-            byte[] expectedResult =
-            {
-                4, 0, 0, 0,      // offset to table start
-                252,255,255,255, // soffset to vtable (-4)
-                4, 0,            // vtable length
-                4, 0,            // table length
-            };
-
-            Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(target));
-        }
-
-        [TestMethod]
         public void EmptyString()
         {
             var root = new RootTable<string>
@@ -277,85 +89,134 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
-        public void SimpleArray()
+        public void Simple_Scalar_Vectors()
         {
-            var root = new RootTable<long[]>
+            static void Test<T>(Func<byte[], T> factory)
             {
-                Vector = new[] { 1L, 2, 3 }
-            };
+                byte[] expectedResult =
+                {
+                    4, 0, 0, 0,          // offset to table start
+                    248, 255, 255, 255,  // soffset to vtable (-8)
+                    12, 0, 0, 0,         // uoffset_t to vector
+                    6, 0,                // vtable length
+                    8, 0,                // table length
+                    4, 0,                // offset of index 0 field
+                    0, 0,                // padding to 4-byte alignment
+                    3, 0, 0, 0,          // vector length
 
-            Span<byte> target = new byte[10240];
-            int offset = FlatBufferSerializer.Default.Serialize(root, target);
-            target = target.Slice(0, offset);
+                    // vector data
+                    1, 2, 3,
+                };
 
-            byte[] expectedResult =
-            {
-                4, 0, 0, 0,          // offset to table start
-                248, 255, 255, 255,  // soffset to vtable (-8)
-                12, 0, 0, 0,         // uoffset_t to vector
-                6, 0,                // vtable length
-                8, 0,                // table length
-                4, 0,                // offset of index 0 field
-                0, 0,                // padding to 4-byte alignment
-                3, 0, 0, 0,          // vector length
+                var root = new RootTable<T>
+                {
+                    Vector = factory(new byte[] { 1, 2, 3 })
+                };
 
-                // vector data
-                1, 0, 0, 0, 0, 0, 0, 0,
-                2, 0, 0, 0, 0, 0, 0, 0,
-                3, 0, 0, 0, 0, 0, 0, 0,
-            };
+                Span<byte> target = new byte[1024];
+                int offset = FlatBufferSerializer.Default.Serialize(root, target);
+                string csharp = FlatBufferSerializer.Default.Compile(root).CSharp;
 
-            Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(target));
+                target = target.Slice(0, offset);
+
+                Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(target));
+            }
+
+            Test<IList<byte>>(a => a.ToList());
+            Test<IReadOnlyList<byte>>(a => a.ToList());
+            Test<byte[]>(a => a);
+            Test<Memory<byte>>(a => a.AsMemory());
+            Test<ReadOnlyMemory<byte>>(a => a.AsMemory());
+            Test<Memory<byte>?>(a => a.AsMemory());
+            Test<ReadOnlyMemory<byte>?>(a => a.AsMemory());
+            Test<ArraySegment<byte>>(a => new ArraySegment<byte>(a));
+            Test<ArraySegment<byte>?>(a => new ArraySegment<byte>(a));
         }
 
         [TestMethod]
-        public void NullArray()
+        public void Empty_Vectors()
         {
-            var root = new RootTable<int[]>
+            static void Test<T>(T instance)
             {
-                Vector = default,
-            };
+                byte[] expectedResult =
+                {
+                    4, 0, 0, 0,          // offset to table start
+                    248, 255, 255, 255,  // soffset to vtable (-8)
+                    12, 0, 0, 0,         // uoffset_t to vector
+                    6, 0,                // vtable length
+                    8, 0,                // table length
+                    4, 0,                // offset of index 0 field
+                    0, 0,                // padding to 4-byte alignment
+                    0, 0, 0, 0,          // vector length
+                };
 
-            Span<byte> target = new byte[10240];
-            int offset = FlatBufferSerializer.Default.Serialize(root, target);
-            target = target.Slice(0, offset);
+                var root = new RootTable<T>
+                {
+                    Vector = instance
+                };
 
-            byte[] expectedResult =
-            {
-                4, 0, 0, 0,      // offset to table start
-                252,255,255,255, // soffset to vtable (-4)
-                4, 0,            // vtable length
-                4, 0,            // table length
-            };
+                Span<byte> target = new byte[1024];
+                int offset = FlatBufferSerializer.Default.Serialize(root, target);
+                string csharp = FlatBufferSerializer.Default.Compile(root).CSharp;
 
-            Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(target));
+                target = target.Slice(0, offset);
+
+                Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(target));
+            }
+
+            Test<IList<int>>(new List<int>());
+            Test<IReadOnlyList<int>>(new List<int>());
+            Test<int[]>(new int[0]);
+            Test<Memory<byte>>(new Memory<byte>(new byte[0]));
+            Test<ReadOnlyMemory<byte>>(new ReadOnlyMemory<byte>(new byte[0]));
+            Test<Memory<byte>?>(new Memory<byte>(new byte[0]));
+            Test<ReadOnlyMemory<byte>?>(new ReadOnlyMemory<byte>(new byte[0]));
+            Test<IIndexedVector<string, TableWithKey<string>>>(new IndexedVector<string, TableWithKey<string>>());
+            Test<ArraySegment<int>>(new ArraySegment<int>());
+            Test<ArraySegment<int>?>(new ArraySegment<int>());
         }
 
         [TestMethod]
-        public void EmptyArray()
+        public void Null_Vectors()
         {
-            var root = new RootTable<int[]>
+            static void Test<T>()
             {
-                Vector = new int[0],
-            };
+                byte[] expectedResult =
+                {
+                    4, 0, 0, 0,      // offset to table start
+                    252,255,255,255, // soffset to vtable (-4)
+                    4, 0,            // vtable length
+                    4, 0,            // table length
+                };
 
-            Span<byte> target = new byte[10240];
-            int offset = FlatBufferSerializer.Default.Serialize(root, target);
-            target = target.Slice(0, offset);
+                var root = new RootTable<T>
+                {
+                    Vector = default(T)
+                };
 
-            byte[] expectedResult =
-            {
-                4, 0, 0, 0,          // offset to table start
-                248, 255, 255, 255,  // soffset to vtable (-8)
-                12, 0, 0, 0,         // uoffset_t to vector
-                6, 0,                // vtable length
-                8, 0,                // table length
-                4, 0,                // offset of index 0 field
-                0, 0,                // padding to 4-byte alignment
-                0, 0, 0, 0,          // vector length
-            };
+                Span<byte> target = new byte[1024];
+                int offset = FlatBufferSerializer.Default.Serialize(root, target);
+                string csharp = FlatBufferSerializer.Default.Compile(root).CSharp;
 
-            Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(target));
+                target = target.Slice(0, offset);
+
+                Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(target));
+            }
+
+            Test<IList<int>>();
+            Test<IReadOnlyList<int>>();
+            Test<int[]>();
+            Test<Memory<byte>?>();
+            Test<ReadOnlyMemory<byte>?>();
+            Test<IIndexedVector<string, TableWithKey<string>>>();
+            Test<ArraySegment<int>?>();
+
+            Test<FlatBufferUnion<string>[]>();
+            Test<IList<FlatBufferUnion<string>>>();
+            Test<IReadOnlyList<FlatBufferUnion<string>>>();
+            Test<ArraySegment<FlatBufferUnion<string>>?>();
+
+            Test<string>();
         }
 
         [TestMethod]
@@ -415,7 +276,7 @@ namespace FlatSharpTests
             int offset = FlatBufferSerializer.Default.Serialize(root, target);
             target = target.Slice(0, offset);
 
-            byte[] expectedResult = 
+            byte[] expectedResult =
             {
                 4, 0, 0, 0,                     // offset to table start
                 246, 255, 255, 255,             // soffset to vtable (-10)
@@ -932,6 +793,14 @@ namespace FlatSharpTests
         [TestMethod]
         public void VectorOfUnion_Array() => this.VectorOfUnionTest<RootTable<FlatBufferUnion<string, Struct, TableWithKey<int>>[]>>(
             (l, v) => v.Vector = l);
+
+        [TestMethod]
+        public void VectorOfUnion_NullableArraySegment() => this.VectorOfUnionTest<RootTable<ArraySegment<FlatBufferUnion<string, Struct, TableWithKey<int>>>?>>(
+            (l, v) => v.Vector = new ArraySegment<FlatBufferUnion<string, Struct, TableWithKey<int>>>(l));
+
+        [TestMethod]
+        public void VectorOfUnion_ArraySegment() => this.VectorOfUnionTest<RootTable<ArraySegment<FlatBufferUnion<string, Struct, TableWithKey<int>>>>>(
+            (l, v) => v.Vector = new ArraySegment<FlatBufferUnion<string, Struct, TableWithKey<int>>>(l));
 
         private void VectorOfUnionTest<V>(Action<FlatBufferUnion<string, Struct, TableWithKey<int>>[], V> setValue)
             where V : class, new()

@@ -24,25 +24,20 @@ namespace FlatSharp.TypeModel
     /// </summary>
     public class ListVectorOfUnionTypeModel : BaseVectorOfUnionTypeModel
     {
-        private ITypeModel itemTypeModel;
-
         public ListVectorOfUnionTypeModel(Type clrType, TypeModelContainer container)
             : base(clrType, container)
         {
-            this.itemTypeModel = null!;
         }
-
-        public override ITypeModel ItemTypeModel => this.itemTypeModel;
 
         public override string LengthPropertyName => nameof(List<byte>.Count);
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
             var (classDef, className) = FlatBufferVectorHelpers.CreateFlatBufferVectorOfUnionSubclass(
-                this.itemTypeModel.ClrType,
-                this.itemTypeModel,
+                this.ItemTypeModel.ClrType,
+                this.ItemTypeModel,
                 context.InputBufferTypeName,
-                context.MethodNameMap[this.itemTypeModel.ClrType]);
+                context.MethodNameMap[this.ItemTypeModel.ClrType]);
 
             string createFlatBufferVector =
                 $@"new {className}<{context.InputBufferTypeName}>(
@@ -73,7 +68,7 @@ namespace FlatSharp.TypeModel
             return new CodeGeneratedMethod(body) { ClassDefinition = classDef };
         }
 
-        public override void OnInitialize()
+        public override Type OnInitialize()
         {
             var genericDef = this.ClrType.GetGenericTypeDefinition();
 
@@ -81,12 +76,7 @@ namespace FlatSharp.TypeModel
                 genericDef == typeof(IList<>) || genericDef == typeof(IReadOnlyList<>), 
                 "List vector of union must be IList or IReadOnlyList.");
 
-            Type innerType = this.ClrType.GetGenericArguments()[0];
-            this.itemTypeModel = this.typeModelContainer.CreateTypeModel(innerType);
-
-            FlatSharpInternal.Assert(
-                this.itemTypeModel.SchemaType == FlatBufferSchemaType.Union, 
-                "Union vectors can't contain non-union elements");
+            return this.ClrType.GetGenericArguments()[0];
         }
 
         public override CodeGeneratedMethod CreateRecycleMethodBody(RecycleCodeGenContext context)

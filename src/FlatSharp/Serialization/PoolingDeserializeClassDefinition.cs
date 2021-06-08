@@ -46,7 +46,7 @@ namespace FlatSharp
 
             base.staticFieldDefinitions[PoolVariableName] =
                 $@"
-                    private static readonly {nameof(IFlatSharpObjectPool<int>)}<{this.ClassName}<TInputBuffer>> {PoolVariableName} =
+                    private static readonly IFlatSharpObjectPool<{this.ClassName}<TInputBuffer>> {PoolVariableName} =
                         {nameof(FlatSharpRuntimeSettings)}.{nameof(FlatSharpRuntimeSettings.ObjectPoolFactory)}.{nameof(IFlatSharpObjectPoolFactory.Create)}<{this.ClassName}<TInputBuffer>>({actualPoolSize});
                 ";
         }
@@ -92,7 +92,7 @@ namespace FlatSharp
                 else
                 {{
                     {string.Join("\r\n", this.GetResetStatements())}
-                    {PoolVariableName}.{nameof(IFlatSharpObjectPool<int>.Return)}(this);
+                    {PoolVariableName}.Return(this);
                 }}
             ";
         }
@@ -100,7 +100,7 @@ namespace FlatSharp
         protected override string GetGetOrCreateMethodBody()
         {
             return $@"                
-                if (!{PoolVariableName}.{nameof(IFlatSharpObjectPool<int>.TryTake)}(out var item))
+                if (!{PoolVariableName}.TryTake(out var item))
                 {{
                     item = new {this.ClassName}<TInputBuffer>();
                 }}
