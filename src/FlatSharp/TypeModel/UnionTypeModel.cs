@@ -252,7 +252,7 @@ $@"
             for (int i = 0; i < this.memberTypeModels.Length; ++i)
             {
                 var memberModel = this.memberTypeModels[i];
-                if (memberModel.HasRecyclableDescendant())
+                if (memberModel.IsRecyclable || memberModel.HasRecyclableDescendant())
                 {
                     int discriminator = i + 1;
                     var memberContext = context with { ValueVariableName = $"{context.ValueVariableName}.Item{discriminator}" };

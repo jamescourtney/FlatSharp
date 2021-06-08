@@ -190,11 +190,6 @@ namespace FlatSharp.TypeModel
         {
             static bool Recursive(ITypeModel typeModel, HashSet<Type> seenTypes)
             {
-                if (typeModel.IsRecyclable)
-                {
-                    return true;
-                }
-
                 if (seenTypes.Add(typeModel.ClrType))
                 {
                     foreach (var child in typeModel.Children)
