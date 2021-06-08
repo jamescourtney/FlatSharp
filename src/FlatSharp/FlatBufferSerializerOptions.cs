@@ -82,9 +82,16 @@ namespace FlatSharp
         public bool PropertyCache => !this.Lazy && !this.GreedyDeserialize;
 
         /// <summary>
-        /// Bananas
+        /// Indicates if properties are always read lazily.
         /// </summary>
-        public bool Lazy => this.DeserializationOption == FlatBufferDeserializationOption.Lazy;
+        public bool Lazy => this.DeserializationOption == FlatBufferDeserializationOption.Lazy ||
+                            this.DeserializationOption == FlatBufferDeserializationOption.LazyWriteThrough;
+
+        /// <summary>
+        /// Indicates if write through is supported.
+        /// </summary>
+        public bool SupportsWriteThrough => this.DeserializationOption == FlatBufferDeserializationOption.LazyWriteThrough ||
+                                            this.DeserializationOption == FlatBufferDeserializationOption.VectorCacheMutable;
 
         /// <summary>
         /// Indicates if FlatSharp should intercept app domain load events to look for cross-referenced generated assemblies. 

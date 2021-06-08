@@ -123,10 +123,10 @@ namespace FlatSharp
 
             if (itemModel.IsWriteThrough)
             {
-                if (this.options.DeserializationOption != FlatBufferDeserializationOption.VectorCacheMutable)
+                if (!this.options.SupportsWriteThrough)
                 {
                     throw new InvalidFlatBufferDefinitionException(
-                        $"Property '{itemModel.PropertyInfo.Name}' of {this.typeModel.SchemaType} '{this.typeModel.GetCompilableTypeName()}' specifies the WriteThrough option. However, WriteThrough is only supported when using deserialization option 'VectorCacheMutable'.");
+                        $"Property '{itemModel.PropertyInfo.Name}' of {this.typeModel.SchemaType} '{this.typeModel.GetCompilableTypeName()}' specifies the WriteThrough option. However, WriteThrough is only supported when using deserialization option 'VectorCacheMutable' or 'LazyWriteThrough'.");
                 }
 
                 this.AddWriteThroughMethod(itemModel, writeValueMethodName);
@@ -323,26 +323,36 @@ namespace FlatSharp
 
         protected virtual string GetSetterBody(ItemMemberModel itemModel)
         {
-            string setterBody;
+            List<string> setterLines = new List<string>();
 
-            if (!this.options.GenerateMutableObjects)
+            bool writeThrough = this.options.SupportsWriteThrough && itemModel.IsWriteThrough;
+
+            if (this.options.GenerateMutableObjects || writeThrough)
             {
-                setterBody = $"throw new NotMutableException();";
-            }
-            else if (this.options.GreedyDeserialize)
-            {
-                setterBody = $"this.{GetFieldName(itemModel)} = value;";
+                if (!options.Lazy)
+                {
+                    // If we aren't lazy, we need a backing field.
+                    setterLines.Add($"this.{GetFieldName(itemModel)} = value;");
+
+                    if (!options.GreedyDeserialize)
+                    {
+                        // If we aren't lazy and aren't greedy, we also need an IsPresent mask.
+                        setterLines.Add($"this.{GetHasValueFieldName(itemModel)} |= {GetHasValueFieldMask(itemModel)};");
+                    }
+                }
+
+                // Finally, if we are writethrough enabled, we need to do that too.
+                if (writeThrough)
+                {
+                    setterLines.Add($"{GetWriteMethodName(itemModel)}({this.GetBufferReference()}, {OffsetVariableName}, value);");
+                }
             }
             else
             {
-                setterBody = $"this.{GetFieldName(itemModel)} = value; this.{GetHasValueFieldName(itemModel)} |= {GetHasValueFieldMask(itemModel)};";
-                if (itemModel.IsWriteThrough)
-                {
-                    setterBody += $"{GetWriteMethodName(itemModel)}({this.GetBufferReference()}, {OffsetVariableName}, value);";
-                }
+                setterLines.Add($"throw new NotMutableException();");
             }
 
-            return setterBody;
+            return string.Join("\r\n", setterLines);
         }
 
         protected virtual string GetGetterBody(ItemMemberModel itemModel)
