@@ -92,11 +92,6 @@ namespace FlatSharp.TypeModel
         /// </summary>
         public override bool SerializesInline => true;
 
-        /// <summary>
-        /// Indicates if we support recycle or not.
-        /// </summary>
-        public override bool IsRecyclable => this.attribute.RecyclePoolSize != 0;
-
         public override IEnumerable<ITypeModel> Children => this.memberTypes.Select(x => x.ItemTypeModel);
 
         public override ConstructorInfo? PreferredSubclassConstructor => this.preferredConstructor;
@@ -123,8 +118,7 @@ namespace FlatSharp.TypeModel
                 className,
                 this.onDeserializeMethod,
                 this,
-                context.Options,
-                this.attribute.RecyclePoolSize);
+                context.Options);
 
             // Build up a list of property overrides.
             for (int index = 0; index < this.Members.Count; ++index)
@@ -132,7 +126,7 @@ namespace FlatSharp.TypeModel
                 var value = this.Members[index];
                 PropertyInfo propertyInfo = value.PropertyInfo;
                 Type propertyType = propertyInfo.PropertyType;
-                classDef.AddProperty(value, context.MethodNameMap[propertyType], context.SerializeMethodNameMap[propertyType], context.RecycleMethodNameMap[propertyType]);
+                classDef.AddProperty(value, context.MethodNameMap[propertyType], context.SerializeMethodNameMap[propertyType]);
             }
 
             return new CodeGeneratedMethod($"return {className}<{context.InputBufferTypeName}>.GetOrCreate({context.InputBufferVariableName}, {context.OffsetVariableName});")
@@ -189,18 +183,6 @@ namespace FlatSharp.TypeModel
             {
                 IsMethodInline = true,
             };
-        }
-
-        public override CodeGeneratedMethod CreateRecycleMethodBody(RecycleCodeGenContext context)
-        {
-            string body =
-$@"
-            if ({context.ValueVariableName} is {nameof(IFlatBufferDeserializedObject)} deserializedObj)
-            {{
-                deserializedObj.{nameof(IFlatBufferDeserializedObject.DangerousRecycle)}();
-            }}
-";
-            return new CodeGeneratedMethod(body);
         }
 
         public override void Initialize()
@@ -281,11 +263,6 @@ $@"
                     item.Attribute,
                     this.inlineSize,
                     length);
-
-                if (this.attribute.RecyclePoolSize != 0)
-                {
-                    model.ValidateRecyclableSetter(this);
-                }
 
                 this.memberTypes.Add(model);
                 this.inlineSize += length;

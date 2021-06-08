@@ -23,7 +23,7 @@ namespace FlatSharp
     /// An interface applied to objects deserialized by FlatSharp. FlatSharp implements this
     /// interface on deserialized objects. It should not be implemented externally.
     /// </summary>
-    public interface IFlatBufferDeserializedObject : IRecyclable
+    public interface IFlatBufferDeserializedObject
     {
         /// <summary>
         /// The actual type of the table or struct. This is generally the base class.

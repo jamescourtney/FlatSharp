@@ -87,8 +87,6 @@ namespace FlatSharp.TypeModel
 
             public bool SerializesInline => this.underlyingModel.SerializesInline;
 
-            public bool IsRecyclable => false;
-
             public IEnumerable<ITypeModel> Children => new[] { this.underlyingModel };
 
             public ConstructorInfo? PreferredSubclassConstructor => this.underlyingModel.PreferredSubclassConstructor;
@@ -141,8 +139,6 @@ namespace FlatSharp.TypeModel
                     IsMethodInline = true,
                 };
             }
-
-            public CodeGeneratedMethod CreateRecycleMethodBody(RecycleCodeGenContext context) => CodeGeneratedMethod.Empty;
 
             public void Initialize()
             {

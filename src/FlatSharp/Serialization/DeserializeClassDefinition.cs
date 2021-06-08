@@ -34,7 +34,6 @@ namespace FlatSharp
         protected readonly List<string> propertyOverrides = new();
         protected readonly List<string> initializeStatements = new();
         protected readonly List<string> readMethods = new();
-        protected readonly List<string> recycleMethodInvocations = new();
 
         // Maps field name -> field initializer.
         protected readonly Dictionary<string, string> instanceFieldDefinitions = new();
@@ -97,26 +96,18 @@ namespace FlatSharp
             string className,
             MethodInfo? onDeserializeMethod,
             ITypeModel typeModel,
-            FlatBufferSerializerOptions options,
-            int poolSize)
+            FlatBufferSerializerOptions options)
         {
-            if (poolSize != 0)
-            {
-                return new PoolingDeserializeClassDefinition(className, onDeserializeMethod, typeModel, options, poolSize);
-            }
-            else
-            {
-                return new DeserializeClassDefinition(className, onDeserializeMethod, typeModel, options);
-            }
+            return new DeserializeClassDefinition(className, onDeserializeMethod, typeModel, options);
         }
 
         public bool HasEmbeddedBufferReference => !this.options.GreedyDeserialize;
 
         public string ClassName { get; }
 
-        public void AddProperty(ItemMemberModel itemModel, string readValueMethodName, string writeValueMethodName, string recycleMethodName)
+        public void AddProperty(ItemMemberModel itemModel, string readValueMethodName, string writeValueMethodName)
         {
-            this.AddFieldDefinitions(itemModel, recycleMethodName);
+            this.AddFieldDefinitions(itemModel);
             this.AddPropertyDefinitions(itemModel, writeValueMethodName);
             this.AddCtorStatements(itemModel);
             this.AddReadMethod(itemModel, readValueMethodName);
@@ -133,36 +124,20 @@ namespace FlatSharp
             }
         }
 
-        protected virtual void AddFieldDefinitions(ItemMemberModel itemModel, string recycleMethodName)
+        protected virtual void AddFieldDefinitions(ItemMemberModel itemModel)
         {
-            if (this.options.Lazy && itemModel.IsVirtual)
+            if (!itemModel.IsVirtual || this.options.Lazy)
             {
-                // Nothing. No field; nothing to recycle.
+                return;
             }
-            else if (!itemModel.IsVirtual)
+
+            if (!this.options.GreedyDeserialize)
             {
-                if (itemModel.ItemTypeModel.IsRecyclable || itemModel.ItemTypeModel.HasRecyclableDescendant())
-                {
-                    // No instance field; just need recycle statement for base.
-                    this.recycleMethodInvocations.Add(
-                        $"{recycleMethodName}(base.{itemModel.PropertyInfo.Name});");
-                }
+                this.instanceFieldDefinitions[GetHasValueFieldName(itemModel)] = $"private byte {GetHasValueFieldName(itemModel)};";
             }
-            else
-            {
-                FlatSharpInternal.Assert(!this.options.Lazy && itemModel.IsVirtual, "unexpected logic");
 
-                if (!this.options.GreedyDeserialize)
-                {
-                    this.instanceFieldDefinitions[GetHasValueFieldName(itemModel)] = $"private byte {GetHasValueFieldName(itemModel)};";
-                }
-
-                string typeName = itemModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType);
-                this.instanceFieldDefinitions[GetFieldName(itemModel)] = $"private {typeName} {GetFieldName(itemModel)};";
-
-                this.recycleMethodInvocations.Add(
-                    $"{recycleMethodName}(this.{GetFieldName(itemModel)});");
-            }
+            string typeName = itemModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType);
+            this.instanceFieldDefinitions[GetFieldName(itemModel)] = $"private {typeName} {GetFieldName(itemModel)};";
         }
 
         private void AddReadMethod(ItemMemberModel itemModel, string readValueMethodName)
@@ -308,12 +283,6 @@ namespace FlatSharp
                     {typeof(Type).GetCompilableTypeName()} {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.TableOrStructType)} => typeof({typeModel.GetCompilableTypeName()});
                     {typeof(FlatBufferDeserializationContext).GetCompilableTypeName()} {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.DeserializationContext)} => __CtorContext;
                     {typeof(IInputBuffer).GetCompilableTypeName()}? {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.InputBuffer)} => {this.GetBufferReference()};
-
-                    void {nameof(IRecyclable)}.{nameof(IRecyclable.DangerousRecycle)}()
-                    {{
-                        {string.Join("\r\n", this.recycleMethodInvocations)}
-                        {this.GetDangerousReleaseMethodBody()}
-                    }}
 
                     {string.Join("\r\n", this.propertyOverrides)}
                     {string.Join("\r\n", this.readMethods)}

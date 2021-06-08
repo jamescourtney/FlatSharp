@@ -46,24 +46,6 @@ namespace FlatSharp.Compiler
                 definition.NonVirtual = metadata.ParseNullableBooleanMetadata(MetadataKeys.NonVirtualProperty, MetadataKeys.NonVirtualPropertyLegacy);
                 definition.ForceWrite = metadata.ParseNullableBooleanMetadata(MetadataKeys.ForceWrite);
                 definition.WriteThrough = metadata.ParseNullableBooleanMetadata(MetadataKeys.WriteThrough);
-                definition.RecyclePoolSize = metadata.ParseRecyclePoolSizeMetadata();
-
-                if (metadata.TryGetValue(MetadataKeys.RecyclePoolSize, out string? poolSize))
-                {
-                    if (string.IsNullOrEmpty(poolSize))
-                    {
-                        // Use 1024 as rational default.
-                        definition.RecyclePoolSize = 1024;
-                    }
-                    else if (int.TryParse(poolSize, out int value))
-                    {
-                        definition.RecyclePoolSize = value;
-                    }
-                    else
-                    {
-                        ErrorContext.Current.RegisterError($"Unable to parse '{MetadataKeys.RecyclePoolSize}' value '{poolSize}' as an integer.");
-                    }
-                }
 
                 definition.DefaultConstructorKind = metadata.ParseMetadata<DefaultConstructorKind?>(
                     new[] { MetadataKeys.DefaultConstructorKind },

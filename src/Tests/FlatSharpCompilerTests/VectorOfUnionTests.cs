@@ -34,7 +34,7 @@ namespace FlatSharpTests.Compiler
         [TestMethod]
         public void VectorOfUnion_CompilerTests()
         {
-            foreach (var vectorKind in new[] { "IList", "IReadOnlyList", "Array", "ArraySegment" })
+            foreach (var vectorKind in new[] { "IList", "IReadOnlyList", "Array" })
             {
                 foreach (FlatBufferDeserializationOption option in Enum.GetValues(typeof(FlatBufferDeserializationOption)))
                 {

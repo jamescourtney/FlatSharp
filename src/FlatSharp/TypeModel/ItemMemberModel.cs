@@ -190,21 +190,6 @@ namespace FlatSharp.TypeModel
         public SetMethodKind? SetterKind { get; }
 
         /// <summary>
-        /// Validates that this property's setter is valid for recycle scenarios.
-        /// </summary>
-        public void ValidateRecyclableSetter(ITypeModel context)
-        {
-            if (!this.IsVirtual)
-            {
-                // Pooling is not possible with non-virtual init-only setters. Compiler
-                // correctly complains that we are messing with properties outside
-                // of a valid context when we recycle them.
-                throw new InvalidFlatBufferDefinitionException(
-                    $"FlatBuffer property '{context.GetCompilableTypeName()}.{this.PropertyInfo.Name}' is non-virtual in a table with object recycling enabled. This combination is not supported. Consider marking the property as virtual or disabling recycling.");
-            }
-        }
-
-        /// <summary>
         /// Creates a method body to read the given property. This is contextual depending
         /// on whether this member is table/struct/etc.
         /// </summary>

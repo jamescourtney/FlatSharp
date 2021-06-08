@@ -106,8 +106,6 @@ namespace FlatSharp.TypeModel
         /// Most things don't have an explicit constructor.
         /// </summary>
         public virtual ConstructorInfo? PreferredSubclassConstructor => null;
-
-        public virtual bool IsRecyclable => false;
         
         public abstract IEnumerable<ITypeModel> Children { get; }
 
@@ -134,11 +132,6 @@ namespace FlatSharp.TypeModel
         public abstract CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context);
 
         public abstract CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context);
-
-        public virtual CodeGeneratedMethod CreateRecycleMethodBody(RecycleCodeGenContext context)
-        {
-            return CodeGeneratedMethod.Empty;
-        }
 
         public virtual string FormatDefaultValueAsLiteral(object? defaultValue) => this.GetTypeDefaultExpression();
 

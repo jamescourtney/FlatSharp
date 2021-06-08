@@ -172,37 +172,6 @@ namespace FlatSharp.TypeModel
             };
         }
 
-        public override CodeGeneratedMethod CreateRecycleMethodBody(RecycleCodeGenContext context)
-        {
-            var itemContext = context with { ValueVariableName = "current" };
-
-            string nullCheck = $@"                
-                if ({context.ValueVariableName} is null)
-                {{
-                    return;
-                }}
-            ";
-
-            if (this.IsNonNullableClrValueType())
-            {
-                nullCheck = string.Empty;
-            }
-
-            string body =
-            $@"
-                {nullCheck}
-
-                int count = {context.ValueVariableName}.{this.LengthPropertyName};
-                for (int i = 0; i < count; ++i)
-                {{
-                      var current = {context.ValueVariableName}{this.Indexer("i")};
-                      {itemContext.GetRecycleInvocation(this.ItemTypeModel.ClrType)};
-                }}
-            ";
-
-            return new CodeGeneratedMethod(body);
-        }
-
         public sealed override void Initialize()
         {
             base.Initialize();

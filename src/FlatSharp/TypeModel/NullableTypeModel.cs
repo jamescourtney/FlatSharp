@@ -155,26 +155,5 @@ namespace FlatSharp.TypeModel
                 IsMethodInline = true,
             };
         }
-
-        public override CodeGeneratedMethod CreateRecycleMethodBody(RecycleCodeGenContext context)
-        {
-            if (!this.HasRecyclableDescendant())
-            {
-                return CodeGeneratedMethod.Empty;
-            }
-
-            var valueContext = context with { ValueVariableName = context.ValueVariableName + ".Value" };
-            string body = $@"
-                if ({context.ValueVariableName}.HasValue)
-                {{
-                    {valueContext.GetRecycleInvocation(this.underlyingType)};
-                }}
-            ";
-
-            return new CodeGeneratedMethod(body)
-            {
-                IsMethodInline = true
-            };
-        }
     }
 }

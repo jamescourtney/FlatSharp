@@ -373,14 +373,6 @@ namespace FlatSharpTests
         public void VectorOfUnion_Array() => this.VectorOfUnionTest<RootTable<FlatBufferUnion<string, Struct, TableWithKey<int>>[]>>(
             v => v.Vector);
 
-        [TestMethod]
-        public void VectorOfUnion_ArraySegment() => this.VectorOfUnionTest<RootTable<ArraySegment<FlatBufferUnion<string, Struct, TableWithKey<int>>>>>(
-            v => v.Vector.ToArray());
-
-        [TestMethod]
-        public void VectorOfUnion_NullableArraySegment() => this.VectorOfUnionTest<RootTable<ArraySegment<FlatBufferUnion<string, Struct, TableWithKey<int>>>?>>(
-            v => v.Vector.Value.ToArray());
-
         private void VectorOfUnionTest<V>(Func<V, FlatBufferUnion<string, Struct, TableWithKey<int>>[]> getItems)
             where V : class, new()
         {

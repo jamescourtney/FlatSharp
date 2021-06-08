@@ -65,18 +65,6 @@ namespace FlatSharp.Compiler
                 false);
         }
 
-        /// <summary>
-        /// Parses the pool size metadata.
-        /// </summary>
-        /// <returns><c>null</c> if the key does not exist. <c>1024</c> if the key exists but does not have a value.</returns>
-        public static int? ParseRecyclePoolSizeMetadata(this IDictionary<string, string?> metadata)
-        {
-            return metadata.ParseNullableIntegerMetadata(
-                new[] { MetadataKeys.RecyclePoolSize },
-                defaultValueIfPresent: 1024,
-                defaultValueIfNotPresent: null);
-        }
-
         public static int? ParseNullableIntegerMetadata(
             this IDictionary<string, string?> metadata, 
             string[] keys,

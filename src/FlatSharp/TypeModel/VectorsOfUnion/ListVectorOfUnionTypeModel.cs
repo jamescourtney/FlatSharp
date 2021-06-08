@@ -78,15 +78,5 @@ namespace FlatSharp.TypeModel
 
             return this.ClrType.GetGenericArguments()[0];
         }
-
-        public override CodeGeneratedMethod CreateRecycleMethodBody(RecycleCodeGenContext context)
-        {
-            if (!context.Options.PreallocateVectors)
-            {
-                return CodeGeneratedMethod.Empty;
-            }
-
-            return base.CreateRecycleMethodBody(context);
-        }
     }
 }

@@ -129,8 +129,6 @@ namespace FlatSharpTests
             Test<ReadOnlyMemory<byte>>(a => a.AsMemory());
             Test<Memory<byte>?>(a => a.AsMemory());
             Test<ReadOnlyMemory<byte>?>(a => a.AsMemory());
-            Test<ArraySegment<byte>>(a => new ArraySegment<byte>(a));
-            Test<ArraySegment<byte>?>(a => new ArraySegment<byte>(a));
         }
 
         [TestMethod]
@@ -172,8 +170,6 @@ namespace FlatSharpTests
             Test<Memory<byte>?>(new Memory<byte>(new byte[0]));
             Test<ReadOnlyMemory<byte>?>(new ReadOnlyMemory<byte>(new byte[0]));
             Test<IIndexedVector<string, TableWithKey<string>>>(new IndexedVector<string, TableWithKey<string>>());
-            Test<ArraySegment<int>>(new ArraySegment<int>());
-            Test<ArraySegment<int>?>(new ArraySegment<int>());
         }
 
         [TestMethod]
@@ -209,12 +205,10 @@ namespace FlatSharpTests
             Test<Memory<byte>?>();
             Test<ReadOnlyMemory<byte>?>();
             Test<IIndexedVector<string, TableWithKey<string>>>();
-            Test<ArraySegment<int>?>();
 
             Test<FlatBufferUnion<string>[]>();
             Test<IList<FlatBufferUnion<string>>>();
             Test<IReadOnlyList<FlatBufferUnion<string>>>();
-            Test<ArraySegment<FlatBufferUnion<string>>?>();
 
             Test<string>();
         }
@@ -793,14 +787,6 @@ namespace FlatSharpTests
         [TestMethod]
         public void VectorOfUnion_Array() => this.VectorOfUnionTest<RootTable<FlatBufferUnion<string, Struct, TableWithKey<int>>[]>>(
             (l, v) => v.Vector = l);
-
-        [TestMethod]
-        public void VectorOfUnion_NullableArraySegment() => this.VectorOfUnionTest<RootTable<ArraySegment<FlatBufferUnion<string, Struct, TableWithKey<int>>>?>>(
-            (l, v) => v.Vector = new ArraySegment<FlatBufferUnion<string, Struct, TableWithKey<int>>>(l));
-
-        [TestMethod]
-        public void VectorOfUnion_ArraySegment() => this.VectorOfUnionTest<RootTable<ArraySegment<FlatBufferUnion<string, Struct, TableWithKey<int>>>>>(
-            (l, v) => v.Vector = new ArraySegment<FlatBufferUnion<string, Struct, TableWithKey<int>>>(l));
 
         private void VectorOfUnionTest<V>(Action<FlatBufferUnion<string, Struct, TableWithKey<int>>[], V> setValue)
             where V : class, new()

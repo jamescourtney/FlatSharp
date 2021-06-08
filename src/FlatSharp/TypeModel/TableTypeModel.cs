@@ -127,11 +127,6 @@ namespace FlatSharp.TypeModel
 
         public override IEnumerable<ITypeModel> Children => this.memberTypes.Values.Select(x => x.ItemTypeModel);
 
-        /// <summary>
-        /// Use the table attributre to determine rules for recycle.
-        /// </summary>
-        public override bool IsRecyclable => this.attribute.RecyclePoolSize != 0;
-
         public override void Initialize()
         {
             {
@@ -170,11 +165,6 @@ namespace FlatSharp.TypeModel
                     property.ItemTypeModel,
                     property.Property,
                     property.Attribute);
-                
-                if (this.attribute.RecyclePoolSize != 0)
-                {
-                    model.ValidateRecyclableSetter(this);
-                }
 
                 property.ItemTypeModel.AdjustTableMember(model);
 
@@ -679,14 +669,14 @@ $@"
         {
             // We have to implement two items: The table class and the overall "read" method.
             // Let's start with the read method.
-            var classDef = DeserializeClassDefinition.Create(this.tableReaderClassName, this.onDeserializeMethod, this, context.Options, this.attribute.RecyclePoolSize);
+            var classDef = DeserializeClassDefinition.Create(this.tableReaderClassName, this.onDeserializeMethod, this, context.Options);
 
             // Build up a list of property overrides.
             foreach (var item in this.IndexToMemberMap.Where(x => !x.Value.IsDeprecated))
             {
                 int index = item.Key;
                 var value = item.Value;
-                classDef.AddProperty(value, context.MethodNameMap[value.ItemTypeModel.ClrType], context.SerializeMethodNameMap[value.ItemTypeModel.ClrType], context.RecycleMethodNameMap[value.ItemTypeModel.ClrType]);
+                classDef.AddProperty(value, context.MethodNameMap[value.ItemTypeModel.ClrType], context.SerializeMethodNameMap[value.ItemTypeModel.ClrType]);
             }
 
             string body = $"return {this.tableReaderClassName}<{context.InputBufferTypeName}>.GetOrCreate({context.InputBufferVariableName}, {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}));";
@@ -747,18 +737,6 @@ $@"
             {
                 IsMethodInline = true,
             };
-        }
-
-        public override CodeGeneratedMethod CreateRecycleMethodBody(RecycleCodeGenContext context)
-        {
-            string body =
-$@"
-            if ({context.ValueVariableName} is {nameof(IFlatBufferDeserializedObject)} deserializedObj)
-            {{
-                deserializedObj.{nameof(IFlatBufferDeserializedObject.DangerousRecycle)}();
-            }}
-";
-            return new CodeGeneratedMethod(body);
         }
 
         public override bool TryGetTableKeyMember([NotNullWhen(true)] out TableMemberModel? tableMember)
