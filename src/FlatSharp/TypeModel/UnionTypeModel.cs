@@ -136,11 +136,17 @@ $@"
                     inlineAdjustment = $"offsetLocation += buffer.{nameof(InputBufferExtensions.ReadUOffset)}(offsetLocation);";
                 }
 
+                var itemContext = context with
+                {
+                    OffsetVariableName = "offsetLocation",
+                    IsOffsetByRef = false,
+                };
+
                 string @case =
 $@"
                     case {unionIndex}:
                         {inlineAdjustment}
-                        return new {this.GetCompilableTypeName()}({context.MethodNameMap[unionMember.ClrType]}(buffer, offsetLocation));
+                        return new {this.GetCompilableTypeName()}({itemContext.GetParseInvocation(unionMember.ClrType)});
 ";
                 switchCases.Add(@case);
             }
