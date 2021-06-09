@@ -117,7 +117,7 @@ namespace FlatSharp
                 if (!this.options.SupportsWriteThrough)
                 {
                     throw new InvalidFlatBufferDefinitionException(
-                        $"Property '{itemModel.PropertyInfo.Name}' of {this.typeModel.SchemaType} '{this.typeModel.GetCompilableTypeName()}' specifies the WriteThrough option. However, WriteThrough is only supported when using deserialization option 'VectorCacheMutable' or 'LazyWriteThrough'.");
+                        $"Property '{itemModel.PropertyInfo.Name}' of {this.typeModel.SchemaType} '{this.typeModel.GetCompilableTypeName()}' specifies the WriteThrough option. However, WriteThrough is only supported when using deserialization option 'VectorCacheMutable' or 'Lazy'.");
                 }
 
                 this.AddWriteThroughMethod(itemModel, writeValueMethodName);
