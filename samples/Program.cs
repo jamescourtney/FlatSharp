@@ -17,6 +17,7 @@
             IndexedVectors.IndexedVectorsExample.Run();
             TypeFacades.TypeFacadesExample.Run();
             StructVectors.StructVectorsSample.Run();
+            WriteThrough.WriteThroughSample.Run();
         }
     }
 }

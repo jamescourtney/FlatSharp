@@ -17,12 +17,16 @@
 namespace Samples.WriteThrough
 {
     using System;
+    using System.Buffers.Binary;
+    using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Security.Cryptography;
+    using System.Text;
     using FlatSharp;
 
     /// <summary>
     /// FlatSharp supports Write-Through in limited cases:
-    /// - Serialization method is VectorCacheMutable
+    /// - Serialization method is VectorCacheMutable or Lazy.
     /// - Struct field has been opted into write-through.
     /// 
     /// Write Through allows you to make updates to an already-serialized FlatBuffer in-place without a full parse or re-serialize.
@@ -32,43 +36,127 @@ namespace Samples.WriteThrough
     {
         public static void Run()
         {
-            Roster roster = new Roster
+            byte[] rawData;
+
             {
-                Walkers = new[]
+                // Each block is 128 bytes. For a 1MB filter, we need 8192 blocks.
+                BloomFilter filter = new BloomFilter(1024 * 1024 / 128);
+
+                // Write our bloom filter out to an array. It should be about 1MB in size.
+                rawData = new byte[BloomFilter.Serializer.GetMaxSize(filter)];
+                BloomFilter.Serializer.Write(rawData, filter);
+            }
+
+            // This bloom filter will let us do in-place updates to the 'rawData' array,
+            // eliminating the need to re-serialize on each update. If you want extra credit,
+            // consider using memory mapped files here to automatically flush to disk!
+            BloomFilter writeThroughFilter = BloomFilter.Serializer.Parse(rawData);
+
+            // Add a bunch of random keys to our bloom filter. Keep in mind that we're
+            // doing this *in place*. No Parse->Update->Re-serialize here. All of these operations
+            // are happening directly into the 'rawData' array up above.
+            List<string> keysInFilter = new List<string>();
+            for (int i = 0; i < 25_000; ++i)
+            {
+                string key = Guid.NewGuid().ToString();
+                keysInFilter.Add(key);
+
+                Debug.Assert(!writeThroughFilter.MightContain(key), "Filter shouldn't contain any keys yet");
+                writeThroughFilter.Add(key);
+                Debug.Assert(writeThroughFilter.MightContain(key), "Filter should contain that key now.");
+            }
+
+            // Let's prove the writethrough worked now. Let's re-parse the data and verify that our keys
+            // are still there!
+            writeThroughFilter = BloomFilter.Serializer.Parse(rawData);
+            foreach (var key in keysInFilter)
+            {
+                Debug.Assert(writeThroughFilter.MightContain(key), "Filter still contains the key! WriteThrough worked :)");
+            }
+
+            // For some fun, we can also test some keys that aren't in there.
+            for (int i = 0; i < 1000; ++i)
+            {
+                Debug.Assert(!writeThroughFilter.MightContain(Guid.NewGuid().ToString()));
+            }
+        }
+    }
+
+    /// <summary>
+    /// FlatSharp generates the data definitions. We are adding the methods in this partial declaration.
+    /// </summary>
+    public partial class BloomFilter
+    {
+        // Bloom filters use multiple hash functions to figure out which bits to set.
+        // These were chosen arbitrarily by what was available in .NET. Ideally, you'd
+        // use murmur3 or something appropriate for this use case :)
+        private readonly HashAlgorithm[] hashAlgorithms = new HashAlgorithm[] { SHA256Managed.Create(), SHA1Managed.Create(), MD5.Create() };
+
+        public BloomFilter(int blockCount)
+        {
+            this.Blocks = new List<Block>(blockCount);
+            for (int i = 0; i < blockCount; ++i)
+            {
+                this.Blocks.Add(new Block());
+            }
+        }
+
+        public int BlockCount => this.Blocks.Count;
+
+        public bool MightContain(string key)
+        {
+            byte[] keyBytes = this.GetKeyBytes(key);
+
+            for (int i = 0; i < this.hashAlgorithms.Length; ++i)
+            {
+                this.GetBlockAddress(keyBytes, this.hashAlgorithms[i], out Block block, out int blockIndex, out ulong blockMask);
+
+                if ((block.Data[blockIndex] & blockMask) == 0)
                 {
-                    new DogWalker { Name = "Beth", CurrentDog = new DogReference { Id = 7 }, Position = new Location { Latitude = 1.2, Longitude = 2.1, NoWriteThrough = 10 } },
-                    new DogWalker { Name = "Jerry", CurrentDog = new DogReference { Id = 127 }, Position = new Location { Latitude = 12.7, Longitude = 128 } },
-                    new DogWalker { Name = "Summer", CurrentDog = new DogReference { Id = 22 }, Position = new Location { Latitude = 36.4, Longitude = 32.1 } },
+                    return false;
                 }
-            };
+            }
 
-            // Write the data to the buffer the first time.
-            byte[] data = new byte[1024];
-            Roster.Serializer.Write(data, roster);
+            return true;
+        }
 
-            // Parsed now refers to the buffer. Any changes we make to the fs_writeThrough fields will be reflected back.
-            Roster parsed = Roster.Serializer.Parse(data);
-            var walker = parsed.Walkers![0];
+        public bool Add(string key)
+        {
+            byte[] keyBytes = this.GetKeyBytes(key);
 
-            // Walking dog 8 in Tokyo now.
-            walker.CurrentDog!.Id = 8;
-            walker.Position!.Latitude = 35.683;
-            walker.Position.Longitude = 139.808;
+            for (int i = 0; i < this.hashAlgorithms.Length; ++i)
+            {
+                this.GetBlockAddress(keyBytes, this.hashAlgorithms[i], out Block block, out int blockIndex, out ulong blockMask);
+                block.Data[blockIndex] |= blockMask;
+            }
 
-            // we can update this field, but since writethrough is disabled, the changes won't be reflected in the buffer.
-            walker.Position.NoWriteThrough = 1024; 
+            return true;
+        }
 
-            // Now let's parse again and see our changes.
-            // Notice that we never invoked .Write to rewrite the whole structure back.
-            // We only mutated a few fields.
-            parsed = Roster.Serializer.Parse(data);
+        private byte[] GetKeyBytes(string key)
+        {
+            return Encoding.UTF8.GetBytes(key);
+        }
 
-            walker = parsed.Walkers![0];
+        private void GetBlockAddress(byte[] key, HashAlgorithm hashAlgorithm, out Block block, out int blockIndex, out ulong blockMask)
+        {
+            byte[] hash = hashAlgorithm.ComputeHash(key);
 
-            Debug.Assert(walker.CurrentDog!.Id == 8, "Dog has been updated. Was 7 originally.");
-            Debug.Assert(walker.Position!.Latitude == 35.683, "Latitude has been updated. Was 1.2 originally.");
-            Debug.Assert(walker.Position!.Longitude == 139.808, "Longitude has been updated. Was 2.1 originally.");
-            Debug.Assert(walker.Position!.NoWriteThrough == 10, "NoWriteThrough was unchanged.");
+            // Use the hash to get the address of the bit we're looking for.
+            // First 4 bytes finds the block.
+            int hash1 = BinaryPrimitives.ReadInt32LittleEndian(hash) & int.MaxValue; // positive-valued int32 hash.
+
+            // Second 4 bytes finds the offset within the block.
+            int hash2 = BinaryPrimitives.ReadInt32LittleEndian(hash.AsSpan().Slice(4)) & int.MaxValue;
+
+            // Third 4 bytes finds the bit mask within the ulong.
+            int hash3 = BinaryPrimitives.ReadInt32LittleEndian(hash.AsSpan().Slice(8)) & int.MaxValue;
+
+            block = this.Blocks[hash1 % this.BlockCount];
+            blockIndex = hash2 % block.Data.Count;
+
+            int positionInBlock = hash3 % 64;
+            blockMask = ((ulong)1) << positionInBlock;
         }
     }
 }

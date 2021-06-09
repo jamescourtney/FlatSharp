@@ -18,31 +18,23 @@
 // WriteThrough is great when you only need to make small changes to a FlatBuffer and don't want to pay the cost
 // of a complete read-modify-write sequence. With WriteThrough enabled, you can make select updates directly back to the buffer.
 
-// WriteThrough is only applicable to structs, and is only available when using "VectorCacheMutable" as the serializer.
+// WriteThrough is only applicable to structs, and is only available when using "VectorCacheMutable" or "Lazy" as the serializer.
 
 namespace Samples.WriteThrough;
 
-// In this contrived example, imagine an animal shelter. There are lots of volunteers walking different dogs.
-// Each volunteer only has one dog at a time, but they can change dogs quite frequently. We'd like to
-// be able to update the current dog that each volunteer is walking without doing a full parse and re-serialize
-// of the entire list of volunteers. There are also lots of dog-nappers around, so we need to be able to update
-// the last known location of a given volunteer so we can call the police if they go missing.
+// A bloom filter is a probabilistic data structure 
+// used for answering the question "might this item be in the collection?"
+// with a high degree of confidence. This sample uses FlatSharp to store a
+// large Bloom Filter and make efficient in-place updates to it using the WriteThrough option.
 
-table Roster (fs_serializer:"VectorCacheMutable") {
-   Walkers : [DogWalker];
+table BloomFilter (fs_serializer:Lazy, fs_defaultCtor:None)
+{
+	// Our bloom filter is a vector of blocks.
+	Blocks : [Block] (required);
 }
 
-table DogWalker {
-    Name : string;
-    CurrentDog : DogReference;
-    Position : Location;
-}
-
-struct DogReference { Id : int (fs_writeThrough); }
-
-// Can be applied to all items in a struct.
-struct Location (fs_writeThrough) { 
-    Latitude : double; 
-    Longitude : double; 
-    NoWriteThrough : int (fs_writeThrough:"false"); 
+// We define a block as 128 bytes.
+struct Block
+{
+    Data : [ulong:16]  (fs_writeThrough);
 }
