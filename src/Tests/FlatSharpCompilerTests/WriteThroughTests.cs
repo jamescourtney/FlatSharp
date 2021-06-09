@@ -61,7 +61,7 @@ namespace FlatSharpTests.Compiler
                 }
                 catch (NotMutableException)
                 {
-                    Assert.AreEqual(FlatBufferDeserializationOption.LazyWriteThrough, option);
+                    Assert.AreEqual(FlatBufferDeserializationOption.Lazy, option);
                 }
 
                 dynamic parsed2 = serializer.Parse(data);
@@ -69,7 +69,7 @@ namespace FlatSharpTests.Compiler
                 Assert.AreEqual(65, (int)parsed2.Struct.bar);
             }
 
-            Test(FlatBufferDeserializationOption.LazyWriteThrough);
+            Test(FlatBufferDeserializationOption.Lazy);
             Test(FlatBufferDeserializationOption.VectorCacheMutable);
         }
     }

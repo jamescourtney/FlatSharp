@@ -84,13 +84,12 @@ namespace FlatSharp
         /// <summary>
         /// Indicates if properties are always read lazily.
         /// </summary>
-        public bool Lazy => this.DeserializationOption == FlatBufferDeserializationOption.Lazy ||
-                            this.DeserializationOption == FlatBufferDeserializationOption.LazyWriteThrough;
+        public bool Lazy => this.DeserializationOption == FlatBufferDeserializationOption.Lazy;
 
         /// <summary>
         /// Indicates if write through is supported.
         /// </summary>
-        public bool SupportsWriteThrough => this.DeserializationOption == FlatBufferDeserializationOption.LazyWriteThrough ||
+        public bool SupportsWriteThrough => this.DeserializationOption == FlatBufferDeserializationOption.Lazy ||
                                             this.DeserializationOption == FlatBufferDeserializationOption.VectorCacheMutable;
 
         /// <summary>

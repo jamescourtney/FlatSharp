@@ -36,7 +36,7 @@ namespace FlatSharpTests
         {
             foreach (FlatBufferDeserializationOption option in Enum.GetValues(typeof(FlatBufferDeserializationOption)))
             {
-                if (option == FlatBufferDeserializationOption.VectorCacheMutable || option == FlatBufferDeserializationOption.LazyWriteThrough)
+                if (option == FlatBufferDeserializationOption.VectorCacheMutable || option == FlatBufferDeserializationOption.Lazy)
                 {
                     continue;
                 }
@@ -46,7 +46,7 @@ namespace FlatSharpTests
 
                 Assert.AreEqual(
                     ex.Message,
-                    "Property 'Value' of Struct 'FlatSharpTests.WriteThroughTests.WriteThroughStruct<System.Boolean>' specifies the WriteThrough option. However, WriteThrough is only supported when using deserialization option 'VectorCacheMutable' or 'LazyWriteThrough'.");
+                    "Property 'Value' of Struct 'FlatSharpTests.WriteThroughTests.WriteThroughStruct<System.Boolean>' specifies the WriteThrough option. However, WriteThrough is only supported when using deserialization option 'VectorCacheMutable' or 'Lazy'.");
             }
         }
 
@@ -81,7 +81,7 @@ namespace FlatSharpTests
             }
 
             Test(FlatBufferDeserializationOption.VectorCacheMutable);
-            Test(FlatBufferDeserializationOption.LazyWriteThrough);
+            Test(FlatBufferDeserializationOption.Lazy);
         }
 
         [TestMethod]
@@ -123,7 +123,7 @@ namespace FlatSharpTests
                     // we are null temporarily until we re-parse.
                     Assert.AreSame(null, parsed2.Struct.Value);
                 }
-                else if (option == FlatBufferDeserializationOption.LazyWriteThrough)
+                else if (option == FlatBufferDeserializationOption.Lazy)
                 {
                     // lazy write through clears it out.
                     Assert.AreEqual(0, parsed2.Struct.Value.Prop1);
@@ -141,7 +141,7 @@ namespace FlatSharpTests
             }
 
             Test(FlatBufferDeserializationOption.VectorCacheMutable);
-            Test(FlatBufferDeserializationOption.LazyWriteThrough);
+            Test(FlatBufferDeserializationOption.Lazy);
         }
 
         [TestMethod]
@@ -175,7 +175,7 @@ namespace FlatSharpTests
             }
 
             Test(FlatBufferDeserializationOption.VectorCacheMutable);
-            Test(FlatBufferDeserializationOption.LazyWriteThrough);
+            Test(FlatBufferDeserializationOption.Lazy);
         }
 
         [TestMethod]
@@ -209,18 +209,18 @@ namespace FlatSharpTests
             }
 
             Test(FlatBufferDeserializationOption.VectorCacheMutable);
-            Test(FlatBufferDeserializationOption.LazyWriteThrough);
+            Test(FlatBufferDeserializationOption.Lazy);
         }
 
         [TestMethod]
-        public void WriteThrough_LazyWriteThrough_ThrowsForOtherProperties()
+        public void WriteThrough_Lazy_ThrowsForOtherProperties()
         {
             var table = new Table<OtherStruct>
             {
                 Struct = new OtherStruct { Prop1 = 1, Prop2 = 2 }
             };
 
-            var serializer = new FlatBufferSerializer(FlatBufferDeserializationOption.LazyWriteThrough);
+            var serializer = new FlatBufferSerializer(FlatBufferDeserializationOption.Lazy);
 
             byte[] buffer = new byte[1024];
             serializer.Serialize(table, buffer);

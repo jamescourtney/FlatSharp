@@ -53,11 +53,6 @@ namespace FlatSharp
         GreedyMutable = 5,
 
         /// <summary>
-        /// Same properties as <see cref="Lazy"/>, but struct members with the WriteThrough attribute are mutable.
-        /// </summary>
-        LazyWriteThrough = 6,
-
-        /// <summary>
         /// Default options.
         /// </summary>
         Default = GreedyMutable,
