@@ -30,7 +30,7 @@ jobs:
       
     - name: Benchmark
       working-directory: src
-      run: runbenchmarks.cmd
+      run: .\runbenchmarks.cmd
       
     - name: Upload Packages
       uses: actions/upload-artifact@v2
