@@ -1,8 +1,6 @@
 name: Benchmark
 
 on:
-  push:
-    branches: [ master ]
   pull_request:
     branches: [ master ]
   workflow_dispatch:
@@ -28,9 +26,9 @@ jobs:
       working-directory: src
       run: dotnet build -c Release --no-restore
       
-    - name: Benchmark
-      working-directory: src
-      run: .\runbenchmarks.cmd
+    - name: Benchmark Current Version
+      working-directory: src/Benchmarks/Benchmark/bin/Release/net5.0
+      run: dotnet Benchmark.dll
       
     - name: Upload Packages
       uses: actions/upload-artifact@v2
