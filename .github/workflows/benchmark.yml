@@ -1,0 +1,43 @@
+name: .NET
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-2019
+    env:
+      AppVeyorBuild: true
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Setup .NET 5
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.x
+      
+    - name: Restore dependencies
+      working-directory: src
+      run: dotnet restore
+      
+    - name: Build
+      working-directory: src
+      run: dotnet build -c Release --no-restore
+      
+    - name: Benchmark
+      working-directory: src
+      run: runbenchmarks.cmd
+      
+    - name: Upload Packages
+      uses: actions/upload-artifact@v2
+      with:
+        name: Packages
+        path: |
+           ./**/*.html
+           ./**/*.md
+           ./**/*.csv
+        
