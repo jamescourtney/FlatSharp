@@ -99,29 +99,44 @@ namespace FlatSharp.Compiler
             Span<string> parts = name.Split('.');
 
             // Go up to the first namespace node in the tree.
-            BaseSchemaMember? rootNode = this;
-            while (!(rootNode is NamespaceDefinition) && !(rootNode is RootNodeDefinition))
+            BaseSchemaMember? firstNsOrRoot = this;
+            while (!(firstNsOrRoot is NamespaceDefinition) && !(firstNsOrRoot is RootNodeDefinition))
             {
-                rootNode = rootNode!.Parent;
+                firstNsOrRoot = firstNsOrRoot!.Parent;
             }
 
-            FlatSharpInternal.Assert(rootNode is not null, "Root not should not be null");
+            FlatSharpInternal.Assert(firstNsOrRoot is not null, "Root not should not be null");
 
-            // If there is a qualification, it means we only ever search upwards.
-            if (parts.Length != 1)
+            // always look within our namespace first if it is unqualified.
+            if (parts.Length == 1)
             {
-                rootNode = rootNode.Parent;
+                if (firstNsOrRoot.Children.TryGetValue(parts[0], out node))
+                {
+                    return true;
+                }
             }
 
-            while (rootNode is not null)
+            // Search upwards now, starting from our namespace's parent.
+            if (Search(parts, firstNsOrRoot.Parent, out node))
+            {
+                return true;
+            }
+
+            // Now search downwards too.
+            return Search(parts, firstNsOrRoot, out node);
+        }
+
+        private static bool Search(Span<string> parts, BaseSchemaMember? fromNode, [NotNullWhen(true)] out BaseSchemaMember? node)
+        {
+            while (fromNode is not null)
             {
                 // Try to find recursively from each namespace.
-                if (this.TryResolveDescendentsFromNode(rootNode, parts, out node))
+                if (TryResolveDescendentsFromNode(fromNode, parts, out node))
                 {
                     return true;
                 }
 
-                rootNode = rootNode.Parent;
+                fromNode = fromNode.Parent;
             }
 
             node = null;
@@ -149,7 +164,7 @@ namespace FlatSharp.Compiler
             return false;
         }
 
-        private bool TryResolveDescendentsFromNode(BaseSchemaMember startNode, Span<string> parts, [NotNullWhen(true)] out BaseSchemaMember? node)
+        private static bool TryResolveDescendentsFromNode(BaseSchemaMember startNode, Span<string> parts, [NotNullWhen(true)] out BaseSchemaMember? node)
         {
             node = startNode;
             while (node.Children.TryGetValue(parts[0], out node))
