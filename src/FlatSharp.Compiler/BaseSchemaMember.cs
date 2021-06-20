@@ -99,23 +99,33 @@ namespace FlatSharp.Compiler
             Span<string> parts = name.Split('.');
 
             // Go up to the first namespace node in the tree.
-            BaseSchemaMember rootNode = this;
+            BaseSchemaMember? rootNode = this;
             while (!(rootNode is NamespaceDefinition) && !(rootNode is RootNodeDefinition))
             {
-                rootNode = rootNode.Parent!;
+                rootNode = rootNode!.Parent;
             }
 
-            if (this.TryResolveDescendentsFromNode(rootNode, parts, out node))
-            {
-                return true;
-            }
+            FlatSharpInternal.Assert(rootNode is not null, "Root not should not be null");
 
-            while (rootNode.Parent != null)
+            // If there is a qualification, it means we only ever search upwards.
+            if (parts.Length != 1)
             {
                 rootNode = rootNode.Parent;
             }
 
-            return this.TryResolveDescendentsFromNode(rootNode, parts, out node);
+            while (rootNode is not null)
+            {
+                // Try to find recursively from each namespace.
+                if (this.TryResolveDescendentsFromNode(rootNode, parts, out node))
+                {
+                    return true;
+                }
+
+                rootNode = rootNode.Parent;
+            }
+
+            node = null;
+            return false;
         }
 
         public bool TryResolveTypeModelWithError(string name, CompileContext context, [NotNullWhen(true)] out ITypeModel? typeModel)

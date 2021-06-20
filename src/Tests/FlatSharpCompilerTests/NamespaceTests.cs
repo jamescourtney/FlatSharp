@@ -123,5 +123,60 @@ table T3
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
         }
+
+        [TestMethod]
+        public void TestUpwardsResolution()
+        {
+            string schema = $@"
+                namespace A; table TA {{ V : int; }}
+
+                namespace A.B; table TB {{ V : TA; }}
+
+                // This test verifies that B.TB resolves as A.B.TB and not A.B.C.B.TB
+                namespace A.B.C; table TC {{ V1 : B.TB; V2 : TB; V3 : TA; V4 : A.B.C.B.TB; }}
+
+                namespace A.B.C.B; table TB {{ V : int; }}
+";
+
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
+
+            Type tc = asm.GetType("A.B.C.TC");
+
+            PropertyInfo prop = tc.GetProperty("V1");
+            Assert.AreEqual(asm.GetType("A.B.TB"), prop.PropertyType);
+
+            prop = tc.GetProperty("V2");
+            Assert.AreEqual(asm.GetType("A.B.TB"), prop.PropertyType);
+
+            prop = tc.GetProperty("V3");
+            Assert.AreEqual(asm.GetType("A.TA"), prop.PropertyType);
+
+            prop = tc.GetProperty("V4");
+            Assert.AreEqual(asm.GetType("A.B.C.B.TB"), prop.PropertyType);
+        }
+
+        [TestMethod]
+        public void TestCousinResolution()
+        {
+            string schema = $@"
+                namespace A; table TA {{ V : int; }}
+
+                namespace A.B; table TB {{ V : TA; }}
+
+                namespace A.B.C; table TABC {{ V : int; }}
+
+                namespace A.C; table TC {{ V1 : B.TB; V2 : B.C.TABC; }}
+            ";
+
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
+
+            Type tc = asm.GetType("A.C.TC");
+
+            PropertyInfo prop = tc.GetProperty("V1");
+            Assert.AreEqual(asm.GetType("A.B.TB"), prop.PropertyType);
+
+            prop = tc.GetProperty("V2");
+            Assert.AreEqual(asm.GetType("A.B.C.TABC"), prop.PropertyType);
+        }
     }
 }

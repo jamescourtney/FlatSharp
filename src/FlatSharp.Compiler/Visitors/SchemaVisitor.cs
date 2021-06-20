@@ -151,7 +151,7 @@ namespace FlatSharp.Compiler
 
         private BaseSchemaMember GetOrCreateNamespace(Span<string> parts, BaseSchemaMember parent)
         {
-            if (!parent.TryResolveName(parts[0], out var existingNode))
+            if (!parent.Children.TryGetValue(parts[0], out var existingNode))
             {
                 existingNode = new NamespaceDefinition(parts[0], parent);
                 existingNode.DeclaringFile = this.CurrentFileName;
