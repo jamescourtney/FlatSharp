@@ -20,6 +20,8 @@ namespace FlatSharp.Compiler
     using System.Collections.Generic;
     using System.Reflection;
 
+    using FlatSharp.TypeModel;
+
     public enum RpcStreamingType
     {
         Unary = 0,
@@ -126,12 +128,17 @@ namespace FlatSharp.Compiler
         {
             return ErrorContext.Current.WithScope(typeName, () =>
             {
-                if (!base.TryResolveTypeModelWithError(typeName, context, out var typeModel))
+                ITypeModel? typeModel = null;
+                if (this.TryResolveName(typeName, out BaseSchemaMember? node))
                 {
-                    return false;
+                    Type? type = context.PreviousAssembly?.GetType(node.FullName);
+                    if (type is not null)
+                    {
+                        context.TypeModelContainer.TryCreateTypeModel(type, out typeModel);
+                    }
                 }
 
-                if (typeModel.SchemaType == TypeModel.FlatBufferSchemaType.Table)
+                if (typeModel?.SchemaType == FlatBufferSchemaType.Table)
                 {
                     if (typeModel.ClrType.GetProperty(TableOrStructDefinition.SerializerPropertyName, BindingFlags.Static | BindingFlags.Public) == null)
                     {
@@ -141,7 +148,7 @@ namespace FlatSharp.Compiler
                 }
                 else
                 {
-                    ErrorContext.Current.RegisterError($"RPC definitions can only operate on tables. Unable to resolve '{typeName}' as a table. It is detected as a '{typeModel.SchemaType}'");
+                    ErrorContext.Current.RegisterError($"RPC definitions can only operate on tables. Unable to resolve '{typeName}' as a table.");
                     return false;
                 }
 

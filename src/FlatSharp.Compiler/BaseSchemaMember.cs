@@ -127,27 +127,6 @@ namespace FlatSharp.Compiler
             return false;
         }
 
-        public bool TryResolveTypeModelWithError(string name, CompileContext context, [NotNullWhen(true)] out ITypeModel? typeModel)
-        {
-            // FBS alias.
-            if (context.TypeModelContainer.TryResolveFbsAlias(name, out typeModel))
-            {
-                return true;
-            }
-
-            if (this.TryResolveName(name, out var node))
-            {
-                Type? type = context.PreviousAssembly?.GetType(node.FullName);
-                if (type != null && context.TypeModelContainer.TryCreateTypeModel(type, out typeModel))
-                {
-                    return true;
-                }
-            }
-
-            ErrorContext.Current.RegisterError($"Unable to resolve type: '{name}'. Context = '{this.FullName}'.");
-            return false;
-        }
-
         private static bool TryResolveDescendentsFromNode(BaseSchemaMember startNode, Span<string> parts, [NotNullWhen(true)] out BaseSchemaMember? node)
         {
             node = startNode;
