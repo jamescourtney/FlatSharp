@@ -206,16 +206,6 @@ namespace FlatSharp.Compiler
             return false;
         }
 
-        public string ResolveTypeName(string fbsFieldType, CompileContext? context, out ITypeModel? resolvedTypeModel)
-        {
-            if (this.TryResolveTypeName(fbsFieldType, context, out resolvedTypeModel, out string? typeName))
-            {
-                return typeName;
-            }
-
-            return fbsFieldType;
-        }
-
         private string GenerateSerializerForType(
             CompileContext context,
             FlatBufferDeserializationOption deserializationOption)
@@ -225,11 +215,7 @@ namespace FlatSharp.Compiler
                 CSharpHelpers.ConvertProtectedInternalToProtected = false;
 
                 Type? type = context.PreviousAssembly?.GetType(this.FullName);
-                if (type is null)
-                {
-                    ErrorContext.Current.RegisterError($"Flatsharp failed to find expected type '{this.FullName}' in assembly.");
-                    return string.Empty;
-                }
+                FlatSharpInternal.Assert(type is not null, $"Flatsharp failed to find expected type '{this.FullName}' in assembly.");
 
                 var options = new FlatBufferSerializerOptions(deserializationOption);
                 var generator = new RoslynSerializerGenerator(options, context.TypeModelContainer);

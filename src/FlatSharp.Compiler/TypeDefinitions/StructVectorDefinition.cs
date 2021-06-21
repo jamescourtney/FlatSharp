@@ -50,7 +50,11 @@ namespace FlatSharp.Compiler
 
         public void EmitStructVector(TableOrStructDefinition parent, CodeWriter writer, CompileContext context)
         {
-            string typeName = parent.ResolveTypeName(this.FbsTypeName, context, out ITypeModel? typeModel);
+            if (!parent.TryResolveTypeName(this.FbsTypeName, context, out ITypeModel? typeModel, out string? typeName))
+            {
+                ErrorContext.Current.RegisterError($"Unable to resolve '{this.FbsTypeName}'.");
+                return;
+            }
 
             writer.AppendLine($"public {this.ClassName} {this.Name} {{ get; }}");
             writer.AppendLine();
