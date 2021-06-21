@@ -66,9 +66,7 @@ namespace FlatSharp.Compiler
             var top = this.parseStack.Peek();
             ErrorContext.Current.WithScope(top.FullName, () =>
             {
-                TableOrStructDefinition def = new TypeVisitor(top).Visit(context);
-                def.DeclaringFile = this.CurrentFileName;
-                top.AddChild(def);
+                TableOrStructDefinition def = new TypeVisitor(top, this.CurrentFileName).Visit(context);
             });
 
             return null;
@@ -151,7 +149,7 @@ namespace FlatSharp.Compiler
 
         private BaseSchemaMember GetOrCreateNamespace(Span<string> parts, BaseSchemaMember parent)
         {
-            if (!parent.TryResolveName(parts[0], out var existingNode))
+            if (!parent.Children.TryGetValue(parts[0], out var existingNode))
             {
                 existingNode = new NamespaceDefinition(parts[0], parent);
                 existingNode.DeclaringFile = this.CurrentFileName;

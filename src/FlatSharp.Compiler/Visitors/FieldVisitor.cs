@@ -180,10 +180,10 @@ namespace FlatSharp.Compiler
                 typeContext = context.type().structvector_type().core_type();
                 string toParse = context.type().structvector_type().INTEGER_CONSTANT().GetText();
 
-                if (!int.TryParse(toParse, out var length) || length < 0)
+                if (!int.TryParse(toParse, out var length) || length <= 0)
                 {
                     ErrorContext.Current?.RegisterError(
-                        $"Unable to parse '{toParse}' as a struct vector length. Lengths should be a nonnegative base 10 integer.");
+                        $"Unable to parse '{toParse}' as a struct vector length. Lengths should be a postive base 10 integer.");
                 }
                 else
                 {
@@ -196,13 +196,9 @@ namespace FlatSharp.Compiler
                 typeContext = context.type().core_type();
             }
 
-            if (typeContext is null)
-            {
-                throw new InvalidOperationException("Flatsharp encountered an internal error: Type context was null when parsing");
-            }
+            FlatSharpInternal.Assert(typeContext is not null, "Type context was null when parsing");
 
             string fbsFieldType = typeContext.GetText();
-
             return (fbsFieldType, vectorType, structVectorLength);
         }
     }

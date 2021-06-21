@@ -73,6 +73,27 @@ namespace FlatSharpTests.Compiler
         public void StructVector_Double() => this.RunTest<double>("double", 11, FlatBufferDeserializationOption.Greedy);
 
         [TestMethod]
+        public void StructVector_InvalidType()
+        {
+            string schema = $@"
+            namespace StructVectorTests;
+
+            table Table ({MetadataKeys.SerializerKind}) {{
+                foo:Foo;
+            }}
+            struct Foo {{
+              V:[Bar:7] ({MetadataKeys.NonVirtualProperty});
+            }}";
+
+            var ex = Assert.ThrowsException<InvalidFbsFileException>(
+                () => FlatSharpCompiler.CompileAndLoadAssembly(
+                    schema,
+                    new()));
+
+            Assert.IsTrue(ex.Message.Contains("Unable to resolve struct vector type 'Bar'."));
+        }
+
+        [TestMethod]
         public void StructVector_NestedStruct()
         {
             int length = 7;

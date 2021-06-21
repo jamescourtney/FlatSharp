@@ -20,6 +20,7 @@ namespace FlatSharp.Compiler
     using FlatSharp.TypeModel;
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Reflection;
     using System.Runtime.ExceptionServices;
@@ -182,18 +183,27 @@ namespace FlatSharp.Compiler
             }
         }
 
-        public string ResolveTypeName(string fbsFieldType, CompileContext context, out ITypeModel? resolvedTypeModel)
+        public bool TryResolveTypeName(
+            string fbsFieldType, 
+            CompileContext? context, 
+            out ITypeModel? resolvedTypeModel, 
+            [NotNullWhen(true)] out string? typeName)
         {
-            if (context.TypeModelContainer.TryResolveFbsAlias(fbsFieldType, out resolvedTypeModel))
+            resolvedTypeModel = null;
+
+            if (context is not null && context.TypeModelContainer.TryResolveFbsAlias(fbsFieldType, out resolvedTypeModel))
             {
-                fbsFieldType = resolvedTypeModel.ClrType.FullName ?? throw new InvalidOperationException("Full name was null");
+                typeName = resolvedTypeModel.ClrType.FullName ?? throw new InvalidOperationException("Full name was null");
+                return true;
             }
             else if (this.TryResolveName(fbsFieldType, out var node))
             {
-                fbsFieldType = node.GlobalName;
+                typeName = node.GlobalName;
+                return true;
             }
 
-            return fbsFieldType;
+            typeName = null;
+            return false;
         }
 
         private string GenerateSerializerForType(
@@ -205,11 +215,7 @@ namespace FlatSharp.Compiler
                 CSharpHelpers.ConvertProtectedInternalToProtected = false;
 
                 Type? type = context.PreviousAssembly?.GetType(this.FullName);
-                if (type is null)
-                {
-                    ErrorContext.Current.RegisterError($"Flatsharp failed to find expected type '{this.FullName}' in assembly.");
-                    return string.Empty;
-                }
+                FlatSharpInternal.Assert(type is not null, $"Flatsharp failed to find expected type '{this.FullName}' in assembly.");
 
                 var options = new FlatBufferSerializerOptions(deserializationOption);
                 var generator = new RoslynSerializerGenerator(options, context.TypeModelContainer);

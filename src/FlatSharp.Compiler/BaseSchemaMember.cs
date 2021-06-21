@@ -99,47 +99,35 @@ namespace FlatSharp.Compiler
             Span<string> parts = name.Split('.');
 
             // Go up to the first namespace node in the tree.
-            BaseSchemaMember rootNode = this;
-            while (!(rootNode is NamespaceDefinition) && !(rootNode is RootNodeDefinition))
+            BaseSchemaMember? firstNsOrRoot = this;
+            while (!(firstNsOrRoot is NamespaceDefinition) && !(firstNsOrRoot is RootNodeDefinition))
             {
-                rootNode = rootNode.Parent!;
+                firstNsOrRoot = firstNsOrRoot!.Parent;
             }
 
-            if (this.TryResolveDescendentsFromNode(rootNode, parts, out node))
-            {
-                return true;
-            }
+            FlatSharpInternal.Assert(firstNsOrRoot is not null, "Root not should not be null");
 
-            while (rootNode.Parent != null)
-            {
-                rootNode = rootNode.Parent;
-            }
-
-            return this.TryResolveDescendentsFromNode(rootNode, parts, out node);
+            return Search(parts, firstNsOrRoot, out node);
         }
 
-        public bool TryResolveTypeModelWithError(string name, CompileContext context, [NotNullWhen(true)] out ITypeModel? typeModel)
+        private static bool Search(Span<string> parts, BaseSchemaMember? fromNode, [NotNullWhen(true)] out BaseSchemaMember? node)
         {
-            // FBS alias.
-            if (context.TypeModelContainer.TryResolveFbsAlias(name, out typeModel))
+            while (fromNode is not null)
             {
-                return true;
-            }
-
-            if (this.TryResolveName(name, out var node))
-            {
-                Type? type = context.PreviousAssembly?.GetType(node.FullName);
-                if (type != null && context.TypeModelContainer.TryCreateTypeModel(type, out typeModel))
+                // Try to find recursively from each namespace.
+                if (TryResolveDescendentsFromNode(fromNode, parts, out node))
                 {
                     return true;
                 }
+
+                fromNode = fromNode.Parent;
             }
 
-            ErrorContext.Current.RegisterError($"Unable to resolve type: '{name}'. Context = '{this.FullName}'.");
+            node = null;
             return false;
         }
 
-        private bool TryResolveDescendentsFromNode(BaseSchemaMember startNode, Span<string> parts, [NotNullWhen(true)] out BaseSchemaMember? node)
+        private static bool TryResolveDescendentsFromNode(BaseSchemaMember startNode, Span<string> parts, [NotNullWhen(true)] out BaseSchemaMember? node)
         {
             node = startNode;
             while (node.Children.TryGetValue(parts[0], out node))
