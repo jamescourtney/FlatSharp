@@ -170,16 +170,11 @@ namespace FlatSharp.Compiler
             CompileContext context,
             [NotNullWhen(true)] out ITypeModel? typeModel)
         {
-            typeModel = null;
             var flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
             Type? propertyType = context.PreviousAssembly?.GetType(this.Parent.FullName)?.GetProperty(this.Name, flags)?.PropertyType;
 
-            if (propertyType is null)
-            {
-                ErrorContext.Current.RegisterError($"Unable to find property '{this.Name}' from parent '{this.Parent.Name}'.");
-                return false;
-            }
-
+            FlatSharpInternal.Assert(propertyType is not null, $"Unable to find property '{this.Name}' from parent '{this.Parent.Name}'.");
+            
             if (!context.TypeModelContainer.TryCreateTypeModel(propertyType, out typeModel))
             {
                 ErrorContext.Current.RegisterError($"Type model container failed to create type model for type '{propertyType}'.");

@@ -52,7 +52,7 @@ namespace FlatSharp.Compiler
         {
             if (!parent.TryResolveTypeName(this.FbsTypeName, context, out ITypeModel? typeModel, out string? typeName))
             {
-                ErrorContext.Current.RegisterError($"Unable to resolve '{this.FbsTypeName}'.");
+                ErrorContext.Current.RegisterError($"Unable to resolve struct vector type '{this.FbsTypeName}'.");
                 return;
             }
 
