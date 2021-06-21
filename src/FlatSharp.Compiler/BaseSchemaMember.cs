@@ -107,22 +107,6 @@ namespace FlatSharp.Compiler
 
             FlatSharpInternal.Assert(firstNsOrRoot is not null, "Root not should not be null");
 
-            // always look within our namespace first if it is unqualified.
-            if (parts.Length == 1)
-            {
-                if (firstNsOrRoot.Children.TryGetValue(parts[0], out node))
-                {
-                    return true;
-                }
-            }
-
-            // Search upwards now, starting from our namespace's parent.
-            if (Search(parts, firstNsOrRoot.Parent, out node))
-            {
-                return true;
-            }
-
-            // Now search downwards too.
             return Search(parts, firstNsOrRoot, out node);
         }
 

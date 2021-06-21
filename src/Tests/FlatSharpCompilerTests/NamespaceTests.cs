@@ -178,5 +178,68 @@ table T3
             prop = tc.GetProperty("V2");
             Assert.AreEqual(asm.GetType("A.B.C.TABC"), prop.PropertyType);
         }
+
+        [TestMethod]
+        public void TestSameName()
+        {
+            string schema = $@"
+                namespace A; 
+                table TA 
+                {{
+                    //SelfRef1: A.TA;
+                    //SelfRef2 : TA;
+                    //ChildRef : A.A.TA;
+                    //GrandChildRef : A.A.A.TA;
+                }}
+
+                namespace A.A; 
+                table TA 
+                {{
+                    SelfRef: TA;
+                    ChildRef1 : A.TA;
+                    ChildRef2 : A.A.TA;
+                    ChildRef3 : A.A.A.TA;
+                }}
+
+                namespace A.A.A; 
+                table TA  
+                {{
+                    //SelfRef1: A.TA;
+                    //SelfRef2 : TA;
+                    //SelfRef3 : A.A.TA;
+                    //SelfRef4 : A.A.A.TA;
+                }}
+            ";
+
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
+
+
+            void TestProperty(Type type, string propertyName, string expectedTypeName)
+            {
+                PropertyInfo? pi = type.GetProperty(propertyName);
+                Type? expectedType = asm.GetType(expectedTypeName);
+
+                Assert.IsNotNull(pi);
+                Assert.IsNotNull(expectedType);
+
+                Assert.AreEqual(expectedType, pi.PropertyType);
+            }
+
+            {
+                //Type type = asm.GetType("A.TA");
+                //TestProperty(type, "SelfRef1", "A.TA");
+                //TestProperty(type, "SelfRef2", "A.TA");
+                //TestProperty(type, "ChildRef", "A.A.TA");
+                //TestProperty(type, "GrandChildRef", "A.A.A.TA");
+            }
+
+            {
+                Type type = asm.GetType("A.A.TA");
+                TestProperty(type, "SelfRef", "A.A.TA");
+                TestProperty(type, "ChildRef1", "A.A.A.TA");
+                TestProperty(type, "ChildRef2", "A.A.A.TA");
+                TestProperty(type, "ChildRef3", "A.A.A.TA");
+            }
+        }
     }
 }
