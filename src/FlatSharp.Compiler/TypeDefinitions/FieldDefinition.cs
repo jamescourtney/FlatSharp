@@ -24,6 +24,8 @@ namespace FlatSharp.Compiler
 
     internal record FieldDefinition
     {
+        private string? clrType;
+
         public FieldDefinition(
             TableOrStructDefinition parentDefinition,
             string name,
@@ -32,6 +34,8 @@ namespace FlatSharp.Compiler
             this.Parent = parentDefinition;
             this.Name = name;
             this.FbsFieldType = fieldType;
+
+            this.GetClrFieldType(null);
         }
 
         public int Index { get; set; }
@@ -72,6 +76,19 @@ namespace FlatSharp.Compiler
 
         public TableOrStructDefinition Parent { get; }
 
+        public string? GetClrFieldType(CompileContext? context)
+        {
+            if (this.clrType is null)
+            {
+                if (this.Parent.TryResolveTypeName(this.FbsFieldType, context, out _, out string? type))
+                {
+                    this.clrType = type;
+                }
+            }
+
+            return this.clrType;
+        }
+
         public void WriteDefaultConstructorLine(CodeWriter writer, CompileContext context)
         {
             ErrorContext.Current.WithScope(this.Name, () =>
@@ -109,11 +126,6 @@ namespace FlatSharp.Compiler
             ErrorContext.Current.WithScope(this.Name, () =>
             {
                 if (context.CompilePass <= CodeWritingPass.PropertyModeling)
-                {
-                    return;
-                }
-
-                if (!this.Parent.TryResolveTypeModelWithError(this.FbsFieldType, context, out _))
                 {
                     return;
                 }
@@ -338,14 +350,18 @@ namespace FlatSharp.Compiler
                 return typeof(SharedString).FullName ?? throw new InvalidOperationException("Full name was null");
             }
 
-            string clrType = this.Parent.ResolveTypeName(this.FbsFieldType, context, out _);
+            string? clrType = this.GetClrFieldType(context);
+            if (clrType is null)
+            {
+                ErrorContext.Current.RegisterError($"Unable to resolve FBS type: {this.FbsFieldType}.");
+            }
 
             if (this.IsOptionalScalar)
             {
                 clrType += "?";
             }
 
-            return clrType;
+            return clrType ?? string.Empty;
         }
 
         private string GetClrVectorTypeName(VectorType vectorType, string clrType, string sortKeyType)

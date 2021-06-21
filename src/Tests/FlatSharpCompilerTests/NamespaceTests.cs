@@ -125,17 +125,17 @@ table T3
         }
 
         [TestMethod]
-        public void TestUpwardsResolution()
+        public void TestOutOfOrderResolution()
         {
             string schema = $@"
-                namespace A; table TA {{ V : int; }}
+                namespace A; table TA {{ }}
 
                 namespace A.B; table TB {{ V : TA; }}
 
                 // This test verifies that B.TB resolves as A.B.TB and not A.B.C.B.TB
                 namespace A.B.C; table TC {{ V1 : B.TB; V2 : TB; V3 : TA; V4 : A.B.C.B.TB; }}
 
-                namespace A.B.C.B; table TB {{ V : int; }}
+                namespace A.B.C.B; table TB {{ }}
 ";
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
@@ -180,39 +180,38 @@ table T3
         }
 
         [TestMethod]
-        public void TestSameName()
+        public void TestSameName_Permutation1()
         {
             string schema = $@"
                 namespace A; 
                 table TA 
                 {{
-                    //SelfRef1: A.TA;
-                    //SelfRef2 : TA;
-                    //ChildRef : A.A.TA;
-                    //GrandChildRef : A.A.A.TA;
+                    SelfRef1 : A.TA;           
+                    SelfRef2 : TA;              
+                    GrandChildRef1 : A.A.TA;   // not defined when this is declared; evaluated later as a relative namespace (we are in 'A').
+                    GrandChildRef2 : A.A.A.TA; // not defined when this is declared; evaluated later as an fully qualified namespace.
                 }}
 
                 namespace A.A; 
                 table TA 
                 {{
-                    SelfRef: TA;
-                    ChildRef1 : A.TA;
-                    ChildRef2 : A.A.TA;
-                    ChildRef3 : A.A.A.TA;
+                    SelfRef1  : TA;
+                    SelfRef2  : A.TA;
+                    SelfRef3  : A.A.TA;
+                    ChildRef1 : A.A.A.TA;
                 }}
 
                 namespace A.A.A; 
                 table TA  
                 {{
-                    //SelfRef1: A.TA;
-                    //SelfRef2 : TA;
-                    //SelfRef3 : A.A.TA;
-                    //SelfRef4 : A.A.A.TA;
+                    SelfRef1 : A.TA;
+                    SelfRef2 : TA;
+                    SelfRef3 : A.A.TA;
+                    SelfRef4 : A.A.A.TA;
                 }}
             ";
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
-
 
             void TestProperty(Type type, string propertyName, string expectedTypeName)
             {
@@ -226,19 +225,168 @@ table T3
             }
 
             {
-                //Type type = asm.GetType("A.TA");
-                //TestProperty(type, "SelfRef1", "A.TA");
-                //TestProperty(type, "SelfRef2", "A.TA");
-                //TestProperty(type, "ChildRef", "A.A.TA");
-                //TestProperty(type, "GrandChildRef", "A.A.A.TA");
+                Type type = asm.GetType("A.TA");
+                TestProperty(type, "SelfRef1", "A.TA");
+                TestProperty(type, "SelfRef2", "A.TA");
+                TestProperty(type, "GrandChildRef1", "A.A.A.TA");
+                TestProperty(type, "GrandChildRef2", "A.A.A.TA");
             }
 
             {
                 Type type = asm.GetType("A.A.TA");
-                TestProperty(type, "SelfRef", "A.A.TA");
+                TestProperty(type, "SelfRef1", "A.A.TA");
+                TestProperty(type, "SelfRef2", "A.A.TA");
+                TestProperty(type, "SelfRef3", "A.A.TA");
+                TestProperty(type, "ChildRef1", "A.A.A.TA");
+            }
+
+            {
+                Type type = asm.GetType("A.A.A.TA");
+                TestProperty(type, "SelfRef1", "A.A.A.TA");
+                TestProperty(type, "SelfRef2", "A.A.A.TA");
+                TestProperty(type, "SelfRef3", "A.A.A.TA");
+                TestProperty(type, "SelfRef4", "A.A.A.TA");
+            }
+        }
+
+        [TestMethod]
+        public void TestSameName_Permutation2()
+        {
+            string schema = $@"
+                namespace A.A.A; 
+                table TA  
+                {{
+                    SelfRef1 : A.TA;
+                    SelfRef2 : TA;
+                    SelfRef3 : A.A.TA;
+                    SelfRef4 : A.A.A.TA;
+                }}
+
+                namespace A.A; 
+                table TA 
+                {{
+                    SelfRef1  : TA;
+                    ChildRef1 : A.TA;
+                    ChildRef2 : A.A.A.TA;
+                    ChildRef3 : A.A.TA;
+                }}
+
+                namespace A; 
+                table TA 
+                {{
+                    ChildRef : A.TA;           
+                    SelfRef  : TA;              
+                    GrandChildRef1 : A.A.TA;   // not defined when this is declared; evaluated later as a relative namespace (we are in 'A').
+                    GrandChildRef2 : A.A.A.TA; // not defined when this is declared; evaluated later as an fully qualified namespace.
+                }}
+            ";
+
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
+
+            void TestProperty(Type type, string propertyName, string expectedTypeName)
+            {
+                PropertyInfo? pi = type.GetProperty(propertyName);
+                Type? expectedType = asm.GetType(expectedTypeName);
+
+                Assert.IsNotNull(pi);
+                Assert.IsNotNull(expectedType);
+
+                Assert.AreEqual(expectedType, pi.PropertyType);
+            }
+
+            {
+                Type type = asm.GetType("A.TA");
+                TestProperty(type, "ChildRef", "A.A.TA");
+                TestProperty(type, "SelfRef", "A.TA");
+                TestProperty(type, "GrandChildRef1", "A.A.A.TA");
+                TestProperty(type, "GrandChildRef2", "A.A.A.TA");
+            }
+
+            {
+                Type type = asm.GetType("A.A.TA");
+                TestProperty(type, "SelfRef1", "A.A.TA");
                 TestProperty(type, "ChildRef1", "A.A.A.TA");
                 TestProperty(type, "ChildRef2", "A.A.A.TA");
                 TestProperty(type, "ChildRef3", "A.A.A.TA");
+            }
+
+            {
+                Type type = asm.GetType("A.A.A.TA");
+                TestProperty(type, "SelfRef1", "A.A.A.TA");
+                TestProperty(type, "SelfRef2", "A.A.A.TA");
+                TestProperty(type, "SelfRef3", "A.A.A.TA");
+                TestProperty(type, "SelfRef4", "A.A.A.TA");
+            }
+        }
+
+        [TestMethod]
+        public void TestSameName_Permutation3()
+        {
+            string schema = $@"
+                namespace A.A; 
+                table TA 
+                {{
+                    SelfRef1  : TA;
+                    SelfRef2  : A.TA;
+                    SelfRef3  : A.A.TA;
+
+                    ChildRef1 : A.A.A.TA;
+                }}
+
+                namespace A.A.A; 
+                table TA  
+                {{
+                    SelfRef1 : A.TA;
+                    SelfRef2 : TA;
+                    SelfRef3 : A.A.TA;
+                    SelfRef4 : A.A.A.TA;
+                }}
+
+                namespace A; 
+                table TA 
+                {{
+                    ChildRef : A.TA;           
+                    SelfRef  : TA;              
+                    GrandChildRef1 : A.A.TA;
+                    GrandChildRef2 : A.A.A.TA;
+                }}
+            ";
+
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
+
+            void TestProperty(Type type, string propertyName, string expectedTypeName)
+            {
+                PropertyInfo? pi = type.GetProperty(propertyName);
+                Type? expectedType = asm.GetType(expectedTypeName);
+
+                Assert.IsNotNull(pi);
+                Assert.IsNotNull(expectedType);
+
+                Assert.AreEqual(expectedType, pi.PropertyType);
+            }
+
+            {
+                Type type = asm.GetType("A.TA");
+                TestProperty(type, "ChildRef", "A.A.TA");
+                TestProperty(type, "SelfRef", "A.TA");
+                TestProperty(type, "GrandChildRef1", "A.A.A.TA");
+                TestProperty(type, "GrandChildRef2", "A.A.A.TA");
+            }
+
+            {
+                Type type = asm.GetType("A.A.TA");
+                TestProperty(type, "SelfRef1", "A.A.TA");
+                TestProperty(type, "SelfRef2", "A.A.TA");
+                TestProperty(type, "SelfRef3", "A.A.TA");
+                TestProperty(type, "ChildRef1", "A.A.A.TA");
+            }
+
+            {
+                Type type = asm.GetType("A.A.A.TA");
+                TestProperty(type, "SelfRef1", "A.A.A.TA");
+                TestProperty(type, "SelfRef2", "A.A.A.TA");
+                TestProperty(type, "SelfRef3", "A.A.A.TA");
+                TestProperty(type, "SelfRef4", "A.A.A.TA");
             }
         }
     }

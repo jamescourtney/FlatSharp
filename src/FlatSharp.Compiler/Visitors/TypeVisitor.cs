@@ -25,10 +25,12 @@ namespace FlatSharp.Compiler
     internal class TypeVisitor : FlatBuffersBaseVisitor<TableOrStructDefinition>
     {
         private readonly BaseSchemaMember parent;
+        private readonly string declaringFileName;
 
-        public TypeVisitor(BaseSchemaMember parent)
+        public TypeVisitor(BaseSchemaMember parent, string declaringFileName)
         {
             this.parent = parent;
+            this.declaringFileName = declaringFileName;
         }
 
         public override TableOrStructDefinition VisitType_decl([NotNull] FlatBuffersParser.Type_declContext context)
@@ -38,6 +40,9 @@ namespace FlatSharp.Compiler
             TableOrStructDefinition definition = new TableOrStructDefinition(
                 context.IDENT().GetText(),
                 this.parent);
+
+            definition.DeclaringFile = this.declaringFileName;
+            this.parent.AddChild(definition);
 
             ErrorContext.Current.WithScope(definition.Name, () =>
             {
