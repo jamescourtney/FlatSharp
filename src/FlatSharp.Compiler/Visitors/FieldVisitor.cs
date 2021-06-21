@@ -183,7 +183,7 @@ namespace FlatSharp.Compiler
                 if (!int.TryParse(toParse, out var length) || length <= 0)
                 {
                     ErrorContext.Current?.RegisterError(
-                        $"Unable to parse '{toParse}' as a struct vector length. Lengths should be a nonnegative base 10 integer.");
+                        $"Unable to parse '{toParse}' as a struct vector length. Lengths should be a postive base 10 integer.");
                 }
                 else
                 {
