@@ -20,6 +20,8 @@ namespace FlatSharpTests.Compiler
     using System.Linq;
     using System.Reflection;
     using System.Threading.Channels;
+    using System.Threading.Tasks;
+    using System.Threading.Tasks.Sources;
     using FlatSharp;
     using FlatSharp.Compiler;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -27,7 +29,10 @@ namespace FlatSharpTests.Compiler
     [TestClass]
     public class GrpcTests
     {
+        // Strange assembly reference issue with netcoreapp2.1
+#if NETCOREAPP3_0_OR_GREATER || NETFRAMEWORK
         [TestMethod]
+#endif
         public void RouteGuideTest()
         {
             string schema = $@"
@@ -79,7 +84,13 @@ namespace routeguide;
             Assembly compiled = FlatSharpCompiler.CompileAndLoadAssembly(
                 schema,
                 new(),
-                additionalReferences: new[] { typeof(Grpc.Core.AsyncClientStreamingCall<,>).Assembly, typeof(ChannelReader<>).Assembly });
+                additionalReferences: new[] 
+                { 
+                    typeof(Grpc.Core.AsyncClientStreamingCall<,>).Assembly, 
+                    typeof(ChannelReader<>).Assembly, 
+                    typeof(ValueTask).Assembly,
+                    typeof(IValueTaskSource).Assembly,
+                });
 
             var rpcType = compiled.GetType("routeguide.RouteGuide");
             Assert.IsNotNull(rpcType);
