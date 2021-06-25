@@ -22,7 +22,7 @@ field_decl : IDENT ':' type ( '=' defaultValue_decl )? metadata ';' ;
 
 defaultValue_decl : scalar | 'null';
 
-rpc_decl : 'rpc_service' IDENT '{' rpc_method+ '}' ;
+rpc_decl : 'rpc_service' IDENT metadata '{' rpc_method+ '}' ;
 
 rpc_method : IDENT '(' IDENT ')' ':' IDENT metadata ';' ;
 

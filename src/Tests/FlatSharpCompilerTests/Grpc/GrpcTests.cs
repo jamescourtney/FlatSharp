@@ -19,6 +19,7 @@ namespace FlatSharpTests.Compiler
     using System;
     using System.Linq;
     using System.Reflection;
+    using System.Threading.Channels;
     using FlatSharp;
     using FlatSharp.Compiler;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -32,7 +33,7 @@ namespace FlatSharpTests.Compiler
             string schema = $@"
 namespace routeguide;
 
-    rpc_service RouteGuide
+    rpc_service RouteGuide ({MetadataKeys.RpcInterface})
     {{
         GetFeature(Point):Feature;
         ListFeatures(Rectangle):Feature (streaming:server);
@@ -74,10 +75,11 @@ namespace routeguide;
         distance:int;
         elapsed_time:int;
     }}";
+
             Assembly compiled = FlatSharpCompiler.CompileAndLoadAssembly(
                 schema,
                 new(),
-                additionalReferences: new[] { typeof(Grpc.Core.AsyncClientStreamingCall<,>).Assembly });
+                additionalReferences: new[] { typeof(Grpc.Core.AsyncClientStreamingCall<,>).Assembly, typeof(ChannelReader<>).Assembly });
 
             var rpcType = compiled.GetType("routeguide.RouteGuide");
             Assert.IsNotNull(rpcType);

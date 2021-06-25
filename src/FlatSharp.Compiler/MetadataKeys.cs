@@ -98,6 +98,11 @@ namespace FlatSharp.Compiler
         public const string WriteThrough = "fs_writeThrough";
 
         /// <summary>
+        /// Indicates that a defined rpc should have an interface generated for it.
+        /// </summary>
+        public const string RpcInterface = "fs_rpcInterface";
+
+        /// <summary>
         /// Marks a table field as deprecated. Deprecated fields do not have their values serialized or parsed.
         /// Valid On:
         /// - Table field

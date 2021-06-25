@@ -37,6 +37,18 @@ namespace FlatSharp.Compiler
         public override RpcDefinition? VisitRpc_decl([NotNull] FlatBuffersParser.Rpc_declContext context)
         {
             this.rpcDefinition = new RpcDefinition(context.IDENT().GetText(), this.parent);
+            var metadata = new MetadataVisitor().Visit(context.metadata());
+
+            if (metadata.TryGetValue(MetadataKeys.RpcInterface, out string? value))
+            {
+                if (string.IsNullOrEmpty(value))
+                {
+                    value = $"I{this.rpcDefinition.Name}";
+                }
+
+                this.rpcDefinition.GeneratedInterfaceName = value;
+            }
+
             base.VisitRpc_decl(context);
             return this.rpcDefinition;
         }
