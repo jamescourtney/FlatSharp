@@ -13,7 +13,7 @@ table SomeTable (fs_serializer:VectorCache) {
 
 union Union { Vec3, NotRecycleable }
 
-struct Vec3 (fs_recyclePoolSize:1000) {
+struct Vec3 {
     X : float;
 	Y : float;
 	Z : float;
