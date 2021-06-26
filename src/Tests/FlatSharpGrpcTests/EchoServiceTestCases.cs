@@ -60,7 +60,7 @@ namespace FlatSharpTests
                 var source = new CancellationTokenSource();
                 source.Cancel();
 
-                await Assert.ThrowsExceptionAsync<TaskCanceledException>(
+                await this.AssertCanceled(
                     () => client.EchoUnary(new StringMessage { Value = "hi" }, source.Token));
             });
         }
@@ -224,7 +224,7 @@ namespace FlatSharpTests
                     }
                 }
 
-                await Assert.ThrowsExceptionAsync<TaskCanceledException>(() => task);
+                await this.AssertCanceled(() => task);
 
                 Assert.IsTrue(channel.Reader.Completion.IsCompleted);
                 Assert.IsFalse(channel.Reader.Completion.IsCompletedSuccessfully);
@@ -379,6 +379,21 @@ namespace FlatSharpTests
         private Task EchoTest_Interface(Func<EchoService.IEchoService, Task> callback)
         {
             return this.EchoTest(client => callback(client));
+        }
+
+        private async Task AssertCanceled(Func<Task> callback)
+        {
+            try
+            {
+                await callback();
+                Assert.Fail("Exception was not thrown");
+            }
+            catch (TaskCanceledException)
+            {
+            }
+            catch (RpcException ex) when (ex.StatusCode == StatusCode.Cancelled)
+            {
+            }
         }
 
         private class EchoServer : EchoService.EchoServiceServerBase
