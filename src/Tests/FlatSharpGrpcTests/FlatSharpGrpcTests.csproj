@@ -29,6 +29,6 @@
   </ItemGroup>
 
   <Target Name="FBS" BeforeTargets="BeforeBuild">
-    <Exec Command="dotnet ..\..\FlatSharp.Compiler\bin\$(Configuration)\net5.0\FlatSharp.Compiler.dll -i Grpc.fbs -o ." />
+    <Exec Command="..\..\FlatSharp.Compiler\bin\$(Configuration)\net5.0\FlatSharp.Compiler.exe -i Grpc.fbs -o ." />
   </Target>
 </Project>
