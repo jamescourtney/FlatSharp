@@ -9,7 +9,7 @@ table MultiStringMessage (fs_serializer) {
     Value : [string];
 }
 
-rpc_service EchoService {
+rpc_service EchoService (fs_rpcInterface) {
     EchoUnary(StringMessage) : StringMessage;
     EchoClientStreaming(StringMessage) : MultiStringMessage (streaming:"client");
     EchoServerStreaming(MultiStringMessage) : StringMessage (streaming:"server");

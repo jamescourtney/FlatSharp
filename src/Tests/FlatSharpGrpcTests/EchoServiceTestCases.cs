@@ -20,11 +20,14 @@ namespace FlatSharpTests
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
 
     using FlatSharpTests.EchoServiceTests;
     using Grpc.Core;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+    using SChannel = System.Threading.Channels.Channel;
 
     [TestClass]
     public class EchoServiceTestCases
@@ -36,6 +39,29 @@ namespace FlatSharpTests
             {
                 var response = await client.EchoUnary(new StringMessage { Value = "hi" });
                 Assert.AreEqual("hi", response.Value);
+            });
+        }
+
+        [TestMethod]
+        public Task EchoUnary_Interface()
+        {
+            return this.EchoTest_Interface(async client =>
+            {
+                var response = await client.EchoUnary(new StringMessage { Value = "hi" }, CancellationToken.None);
+                Assert.AreEqual("hi", response.Value);
+            });
+        }
+
+        [TestMethod]
+        public Task EchoUnary_Interface_Cancelled()
+        {
+            return this.EchoTest_Interface(async client =>
+            {
+                var source = new CancellationTokenSource();
+                source.Cancel();
+
+                await Assert.ThrowsExceptionAsync<OperationCanceledException>(
+                    () => client.EchoUnary(new StringMessage { Value = "hi" }, source.Token));
             });
         }
 
@@ -60,7 +86,98 @@ namespace FlatSharpTests
 
                 MultiStringMessage response = await streamingCall;
 
-                Assert.AreEqual(100, response > ValueTask);
+                Assert.AreEqual(100, response.Value.Count);
+                for (int i = 0; i < 100; ++i)
+                {
+                    Assert.AreEqual(messages[i], response.Value[i]);
+                }
+            });
+        }
+
+        [TestMethod]
+        public Task EchoClientStreaming_Interface()
+        {
+            return this.EchoTest_Interface(async client =>
+            {
+                var requestChannel = SChannel.CreateUnbounded<StringMessage>();
+
+                List<string> messages = new();
+                for (int i = 0; i < 100; ++i)
+                {
+                    string msg = Guid.NewGuid().ToString();
+                    await requestChannel.Writer.WriteAsync(
+                        new StringMessage { Value = msg });
+                    messages.Add(msg);
+                }
+
+                requestChannel.Writer.Complete();
+
+                MultiStringMessage response = await client.EchoClientStreaming(requestChannel, CancellationToken.None);
+
+                Assert.AreEqual(100, response.Value.Count);
+                for (int i = 0; i < 100; ++i)
+                {
+                    Assert.AreEqual(messages[i], response.Value[i]);
+                }
+            });
+        }
+
+        [TestMethod]
+        public Task EchoClientStreaming_Interface_Cancelled()
+        {
+            return this.EchoTest_Interface(async client =>
+            {
+                CancellationTokenSource cts = new();
+                var requestChannel = SChannel.CreateUnbounded<StringMessage>();
+                await requestChannel.Writer.WriteAsync(new StringMessage { Value = "foo" });
+                await requestChannel.Writer.WriteAsync(new StringMessage { Value = "bar" });
+
+                var responseTask = client.EchoClientStreaming(requestChannel, cts.Token);
+                await Task.Delay(TimeSpan.FromMilliseconds(50));
+
+                cts.Cancel();
+
+                await Assert.ThrowsExceptionAsync<OperationCanceledException>(() => responseTask);
+            });
+        }
+
+        [TestMethod]
+        public Task EchoServerStreaming()
+        {
+            return this.EchoTest(async client =>
+            {
+                MultiStringMessage message = new MultiStringMessage
+                {
+                    Value = Enumerable.Range(0, 100).Select(x => Guid.NewGuid().ToString()).ToList()
+                };
+
+                var streamingCall = client.EchoServerStreaming(message);
+                int i = 0;
+                while (await streamingCall.ResponseStream.MoveNext())
+                {
+                    Assert.AreEqual(message.Value[i++], streamingCall.ResponseStream.Current.Value);
+                }
+
+                Assert.AreEqual(100, i);
+            });
+        }
+
+        [TestMethod]
+        public Task EchoDuplexStreaming()
+        {
+            return this.EchoTest(async client =>
+            {
+                var duplexCall = client.EchoDuplexStreaming();
+                for (int i = 0; i < 100; ++i)
+                {
+                    string str = Guid.NewGuid().ToString();
+                    await duplexCall.RequestStream.WriteAsync(new StringMessage { Value = str });
+
+                    await duplexCall.ResponseStream.MoveNext();
+                    Assert.AreEqual(str, duplexCall.ResponseStream.Current.Value);
+                }
+
+                await duplexCall.RequestStream.CompleteAsync();
             });
         }
 
@@ -82,6 +199,11 @@ namespace FlatSharpTests
             {
                 await server.KillAsync();
             }
+        }
+
+        private Task EchoTest_Interface(Func<EchoService.IEchoService, Task> callback)
+        {
+            return this.EchoTest(client => callback(client));
         }
 
         private class EchoServer : EchoService.EchoServiceServerBase

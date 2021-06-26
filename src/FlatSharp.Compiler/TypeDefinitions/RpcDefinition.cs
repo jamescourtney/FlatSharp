@@ -444,10 +444,20 @@ namespace FlatSharp.Compiler
 
             void GenerateUnaryInterfaceImpl(string methodName, string requestType, string responseType)
             {
-                writer.AppendLine($"Task<{responseType}> {this.GeneratedInterfaceName}.{methodName}({requestType} request, CancellationToken token)");
+                writer.AppendLine($"async Task<{responseType}> {this.GeneratedInterfaceName}.{methodName}({requestType} request, CancellationToken token)");
                 using (writer.WithBlock())
                 {
-                    writer.AppendLine($"return this.{methodName}(request, cancellationToken: token).ResponseAsync;");
+                    writer.AppendLine("try");
+                    using (writer.WithBlock())
+                    {
+                        writer.AppendLine($"return await this.{methodName}(request, cancellationToken: token).ResponseAsync;");
+                    }
+                    writer.AppendLine($"catch ({GrpcCore}.RpcException ex) when (ex.StatusCode == {GrpcCore}.StatusCode.Cancelled)");
+
+                    using (writer.WithBlock())
+                    {
+                        writer.AppendLine("throw new OperationCanceledException();");
+                    }
                 }
             }
 
