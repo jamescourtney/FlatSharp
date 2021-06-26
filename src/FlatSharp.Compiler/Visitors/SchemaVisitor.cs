@@ -66,6 +66,7 @@ namespace FlatSharp.Compiler
             var top = this.parseStack.Peek();
             ErrorContext.Current.WithScope(top.FullName, () =>
             {
+                FlatSharpInternal.Assert(this.CurrentFileName is not null, "Current file name should not be null");
                 TableOrStructDefinition def = new TypeVisitor(top, this.CurrentFileName).Visit(context);
             });
 
