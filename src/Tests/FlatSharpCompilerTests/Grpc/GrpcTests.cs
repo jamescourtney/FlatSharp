@@ -195,7 +195,7 @@ namespace NoPrecompiledSerializer;
             Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.TestHookCreateCSharp(schema, new()));
         }
 
-#if !NETCOREAPP2_1 // netcoreapp2.1 has issues with this.
+#if NET5_0_OR_GREATER
         [TestMethod]
         public void RpcInterfaceWithName()
         {
@@ -213,7 +213,13 @@ namespace NoPrecompiledSerializer;
             string schema = $@"
                 namespace Foobar;
                 table Message ({MetadataKeys.SerializerKind}) {{ Value : string; }}
-                rpc_service FoobarService ({attribute}) {{ GetMessage(Message) : Message; }}
+                rpc_service FoobarService ({attribute}) 
+                {{ 
+                    GetMessage1(Message) : Message;
+                    GetMessage2(Message) : Message (streaming:""client"");
+                    GetMessage3(Message) : Message (streaming:""server"");
+                    GetMessage4(Message) : Message (streaming:""duplex"");
+                }}
             ";
 
             Assembly compiled = FlatSharpCompiler.CompileAndLoadAssembly(
