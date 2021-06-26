@@ -53,7 +53,7 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
-        public Task EchoUnary_Interface_Cancelled()
+        public Task EchoUnary_Interface_Canceled()
         {
             return this.EchoTest_Interface(async client =>
             {
@@ -123,21 +123,21 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
-        public Task EchoClientStreaming_Interface_Cancelled()
+        public Task EchoClientStreaming_Interface_Canceled()
         {
             return this.EchoTest_Interface(async client =>
             {
                 CancellationTokenSource cts = new();
-                var requestChannel = SChannel.CreateUnbounded<StringMessage>();
-                await requestChannel.Writer.WriteAsync(new StringMessage { Value = "foo" });
-                await requestChannel.Writer.WriteAsync(new StringMessage { Value = "bar" });
+                var channel = SChannel.CreateUnbounded<StringMessage>();
+                await channel.Writer.WriteAsync(new StringMessage { Value = "foo" });
+                await channel.Writer.WriteAsync(new StringMessage { Value = "bar" });
 
-                var responseTask = client.EchoClientStreaming(requestChannel, cts.Token);
-                await Task.Delay(TimeSpan.FromMilliseconds(50));
+                var responseTask = client.EchoClientStreaming(channel, cts.Token);
+                //await Task.Delay(TimeSpan.FromMilliseconds(50));
 
                 cts.Cancel();
 
-                await Assert.ThrowsExceptionAsync<OperationCanceledException>(() => responseTask);
+                await Assert.ThrowsExceptionAsync<TaskCanceledException>(() => responseTask);
             });
         }
 
@@ -163,6 +163,75 @@ namespace FlatSharpTests
         }
 
         [TestMethod]
+        public Task EchoServerStreaming_Interface()
+        {
+            return this.EchoTest_Interface(async client =>
+            {
+                MultiStringMessage message = new MultiStringMessage
+                {
+                    Value = Enumerable.Range(0, 100).Select(x => Guid.NewGuid().ToString()).ToList()
+                };
+
+                var channel = SChannel.CreateUnbounded<StringMessage>();
+
+                var task = client.EchoServerStreaming(message, channel, CancellationToken.None);
+
+                int i = 0;
+                while (await channel.Reader.WaitToReadAsync())
+                {
+                    Assert.IsTrue(channel.Reader.TryRead(out var item));
+                    Assert.AreEqual(message.Value[i++], item.Value);
+                }
+
+                Assert.AreEqual(100, i);
+
+                await task;
+
+                Assert.IsTrue(channel.Reader.Completion.IsCompleted);
+                Assert.IsTrue(channel.Reader.Completion.IsCompletedSuccessfully);
+            });
+        }
+
+        [TestMethod]
+        public Task EchoServerStreaming_Interface_Canceled()
+        {
+            return this.EchoTest_Interface(async client =>
+            {
+                MultiStringMessage message = new MultiStringMessage
+                {
+                    Value = Enumerable.Range(0, 100).Select(x => Guid.NewGuid().ToString()).ToList()
+                };
+
+                var channel = SChannel.CreateUnbounded<StringMessage>();
+                CancellationTokenSource cts = new();
+
+                var task = client.EchoServerStreaming(message, channel, cts.Token);
+
+                int i = 0;
+                while (await channel.Reader.WaitToReadAsync(cts.Token))
+                {
+                    Assert.IsTrue(channel.Reader.TryRead(out var item));
+                    Assert.AreEqual(message.Value[i++], item.Value);
+
+                    if (i == 50)
+                    {
+                        cts.Cancel();
+
+                        await Assert.ThrowsExceptionAsync<TaskCanceledException>(
+                            async () => await channel.Reader.WaitToReadAsync(cts.Token));
+
+                        break;
+                    }
+                }
+
+                await Assert.ThrowsExceptionAsync<TaskCanceledException>(() => task);
+
+                Assert.IsTrue(channel.Reader.Completion.IsCompleted);
+                Assert.IsFalse(channel.Reader.Completion.IsCompletedSuccessfully);
+            });
+        }
+
+        [TestMethod]
         public Task EchoDuplexStreaming()
         {
             return this.EchoTest(async client =>
@@ -178,6 +247,112 @@ namespace FlatSharpTests
                 }
 
                 await duplexCall.RequestStream.CompleteAsync();
+            });
+        }
+
+        [TestMethod]
+        public Task EchoDuplexStreaming_Interface()
+        {
+            return this.EchoTest_Interface(async client =>
+            {
+                var sourceChannel = SChannel.CreateUnbounded<StringMessage>();
+                var destChannel = SChannel.CreateUnbounded<StringMessage>();
+                var duplexCall = client.EchoDuplexStreaming(sourceChannel.Reader, destChannel.Writer, CancellationToken.None);
+
+                for (int i = 0; i < 100; ++i)
+                {
+                    string str = Guid.NewGuid().ToString();
+                    await sourceChannel.Writer.WriteAsync(new StringMessage { Value = str });
+
+                    var item = await destChannel.Reader.ReadAsync();
+                    Assert.AreEqual(str, item.Value);
+                }
+
+                sourceChannel.Writer.Complete();
+                await duplexCall;
+
+                Assert.IsTrue(destChannel.Reader.Completion.IsCompletedSuccessfully);
+            });
+        }
+
+        [TestMethod]
+        public Task EchoDuplexStreaming_Interface_Canceled_BeforeCompletion()
+        {
+            return this.EchoTest_Interface(async client =>
+            {
+                CancellationTokenSource cts = new();
+
+                var sourceChannel = SChannel.CreateUnbounded<StringMessage>();
+                var destChannel = SChannel.CreateUnbounded<StringMessage>();
+
+                var duplexCall = client.EchoDuplexStreaming(sourceChannel.Reader, destChannel.Writer, cts.Token);
+
+                for (int i = 0; i < 100; ++i)
+                {
+                    string str = Guid.NewGuid().ToString();
+                    await sourceChannel.Writer.WriteAsync(new StringMessage { Value = str });
+
+                    var item = await destChannel.Reader.ReadAsync();
+                    Assert.AreEqual(str, item.Value);
+                }
+
+                cts.Cancel();
+                await Task.Delay(50);
+                sourceChannel.Writer.Complete();
+                await Assert.ThrowsExceptionAsync<TaskCanceledException>(() => duplexCall);
+
+                Assert.IsTrue(destChannel.Reader.Completion.IsCompleted);
+                Assert.IsFalse(destChannel.Reader.Completion.IsCompletedSuccessfully);
+            });
+        }
+
+        [TestMethod]
+        public Task EchoDuplexStreaming_Interface_Canceled_OnWrite()
+        {
+            return this.EchoTest_Interface(async client =>
+            {
+                CancellationTokenSource cts = new();
+
+                var sourceChannel = SChannel.CreateUnbounded<StringMessage>();
+                var destChannel = SChannel.CreateUnbounded<StringMessage>();
+
+                var duplexCall = client.EchoDuplexStreaming(sourceChannel.Reader, destChannel.Writer, cts.Token);
+
+                for (int i = 0; i < 100; ++i)
+                {
+                    string str = Guid.NewGuid().ToString();
+                    await sourceChannel.Writer.WriteAsync(new StringMessage { Value = str });
+
+                    if (i == 50)
+                    {
+                        cts.Cancel();
+                        await Task.Delay(50);
+
+                        try
+                        {
+                            await destChannel.Reader.ReadAsync();
+                            Assert.Fail();
+                        }
+                        catch (System.Threading.Channels.ChannelClosedException)
+                        {
+                        }
+                        catch (TaskCanceledException)
+                        {
+                        }
+
+                        break;
+                    }
+                    else
+                    {
+                        var item = await destChannel.Reader.ReadAsync();
+                        Assert.AreEqual(str, item.Value);
+                    }
+                }
+
+                await Assert.ThrowsExceptionAsync<TaskCanceledException>(() => duplexCall);
+
+                Assert.IsTrue(destChannel.Reader.Completion.IsCompleted);
+                Assert.IsFalse(destChannel.Reader.Completion.IsCompletedSuccessfully);
             });
         }
 

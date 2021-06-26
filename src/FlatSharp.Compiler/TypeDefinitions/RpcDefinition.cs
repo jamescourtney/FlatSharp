@@ -399,6 +399,20 @@ namespace FlatSharp.Compiler
                 }
             }
 
+            void WithCancellationHandling(string methodName, Action callback)
+            {
+                writer.AppendLine("try");
+                using (writer.WithBlock())
+                {
+                    callback();
+                }
+                writer.AppendLine($"catch ({GrpcCore}.RpcException ex) when (ex.StatusCode == {GrpcCore}.StatusCode.Cancelled)");
+                using (writer.WithBlock())
+                {
+                    writer.AppendLine($"throw new TaskCanceledException(\"The {methodName} RPC was canceled.\", ex);");
+                }
+            }
+
             void ReadFromRequestChannelIntoRequestStream(string cancellationTokenName)
             {
                 writer.AppendLine("try");
@@ -447,17 +461,9 @@ namespace FlatSharp.Compiler
                 writer.AppendLine($"async Task<{responseType}> {this.GeneratedInterfaceName}.{methodName}({requestType} request, CancellationToken token)");
                 using (writer.WithBlock())
                 {
-                    writer.AppendLine("try");
-                    using (writer.WithBlock())
-                    {
-                        writer.AppendLine($"return await this.{methodName}(request, cancellationToken: token).ResponseAsync;");
-                    }
-                    writer.AppendLine($"catch ({GrpcCore}.RpcException ex) when (ex.StatusCode == {GrpcCore}.StatusCode.Cancelled)");
-
-                    using (writer.WithBlock())
-                    {
-                        writer.AppendLine($"throw new TaskCanceledException(\"The {methodName} RPC was canceled.\", ex);");
-                    }
+                    WithCancellationHandling(
+                        methodName,
+                        () => writer.AppendLine($"return await this.{methodName}(request, cancellationToken: token).ResponseAsync;"));
                 }
             }
 
@@ -466,11 +472,12 @@ namespace FlatSharp.Compiler
                 writer.AppendLine($"async Task<{responseType}> {this.GeneratedInterfaceName}.{methodName}({Channels}.ChannelReader<{requestType}> requestChannel, CancellationToken token)");
                 using (writer.WithBlock())
                 {
-                    writer.AppendLine($"var call = this.{methodName}(cancellationToken: token);");
-
-                    ReadFromRequestChannelIntoRequestStream("token");
-
-                    writer.AppendLine($"return await call.ResponseAsync;");
+                    WithCancellationHandling(methodName, () =>
+                    {
+                        writer.AppendLine($"var call = this.{methodName}(cancellationToken: token);");
+                        ReadFromRequestChannelIntoRequestStream("token");
+                        writer.AppendLine($"return await call.ResponseAsync;");
+                    });
                 }
             }
 
@@ -479,9 +486,11 @@ namespace FlatSharp.Compiler
                 writer.AppendLine($"async Task {this.GeneratedInterfaceName}.{methodName}({requestType} request, {Channels}.ChannelWriter<{responseType}> responseChannel, CancellationToken token)");
                 using (writer.WithBlock())
                 {
-                    writer.AppendLine($"var call = this.{methodName}(request, cancellationToken: token);");
-
-                    ReadFromResponseStreamIntoResponseChannel("token");
+                    WithCancellationHandling(methodName, () =>
+                    {
+                        writer.AppendLine($"var call = this.{methodName}(request, cancellationToken: token);");
+                        ReadFromResponseStreamIntoResponseChannel("token");
+                    });
                 }
             }
 
@@ -512,22 +521,27 @@ namespace FlatSharp.Compiler
                         }
                         writer.AppendLine("));");
 
-                        writer.AppendLine("try");
-                        using (writer.WithBlock())
-                        {
-                            writer.AppendLine("while (tasks.Count > 0)");
-                            using (writer.WithBlock())
+                        WithCancellationHandling(
+                            methodName,
+                            () =>
                             {
-                                writer.AppendLine("Task completedTask = await Task.WhenAny(tasks);");
-                                writer.AppendLine("tasks.Remove(completedTask);");
-                                writer.AppendLine("await completedTask;");
-                            }
-                        }
-                        writer.AppendLine("finally");
-                        using (writer.WithBlock())
-                        {
-                            writer.AppendLine("cts.Cancel();");
-                        }
+                                writer.AppendLine("try");
+                                using (writer.WithBlock())
+                                {
+                                    writer.AppendLine("while (tasks.Count > 0)");
+                                    using (writer.WithBlock())
+                                    {
+                                        writer.AppendLine("Task completedTask = await Task.WhenAny(tasks);");
+                                        writer.AppendLine("tasks.Remove(completedTask);");
+                                        writer.AppendLine("await completedTask;");
+                                    }
+                                }
+                                writer.AppendLine("finally");
+                                using (writer.WithBlock())
+                                {
+                                    writer.AppendLine("cts.Cancel();");
+                                }
+                            });
                     }
                 }
             }
