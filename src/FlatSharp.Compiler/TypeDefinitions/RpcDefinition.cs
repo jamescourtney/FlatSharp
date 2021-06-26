@@ -91,6 +91,12 @@ namespace FlatSharp.Compiler
                 return;
             }
 
+            bool generateInterface = !string.IsNullOrWhiteSpace(this.GeneratedInterfaceName);
+            if (generateInterface)
+            {
+                this.DefineInterface(writer);
+            }
+
             writer.AppendLine($"public static partial class {this.Name}");
             using (writer.WithBlock())
             {
@@ -104,12 +110,6 @@ namespace FlatSharp.Compiler
                 // #3: Define all of the methods in our RPC. These are the core
                 // of the client/server classes.
                 var methods = this.DefineMethods(writer, marshallers);
-
-                bool generateInterface = !string.IsNullOrWhiteSpace(this.GeneratedInterfaceName);
-                if (generateInterface)
-                {
-                    this.DefineInterface(writer);
-                }
 
                 this.DefineServerBaseClass(writer, methods);
                 this.DefineClientClass(writer, methods, generateInterface);

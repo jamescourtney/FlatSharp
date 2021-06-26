@@ -29,16 +29,13 @@ namespace FlatSharpTests.Compiler
     [TestClass]
     public class GrpcTests
     {
-        // Strange assembly reference issue with netcoreapp2.1
-#if NETCOREAPP3_0_OR_GREATER || NETFRAMEWORK
         [TestMethod]
-#endif
         public void RouteGuideTest()
         {
             string schema = $@"
 namespace routeguide;
 
-    rpc_service RouteGuide ({MetadataKeys.RpcInterface})
+    rpc_service RouteGuide
     {{
         GetFeature(Point):Feature;
         ListFeatures(Rectangle):Feature (streaming:server);
@@ -80,7 +77,6 @@ namespace routeguide;
         distance:int;
         elapsed_time:int;
     }}";
-
             Assembly compiled = FlatSharpCompiler.CompileAndLoadAssembly(
                 schema,
                 new(),
@@ -88,8 +84,6 @@ namespace routeguide;
                 { 
                     typeof(Grpc.Core.AsyncClientStreamingCall<,>).Assembly, 
                     typeof(ChannelReader<>).Assembly, 
-                    typeof(ValueTask).Assembly,
-                    typeof(IValueTaskSource).Assembly,
                 });
 
             var rpcType = compiled.GetType("routeguide.RouteGuide");
@@ -200,5 +194,47 @@ namespace NoPrecompiledSerializer;
 
             Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.TestHookCreateCSharp(schema, new()));
         }
+
+#if !NETCOREAPP2_1 // netcoreapp2.1 has issues with this.
+        [TestMethod]
+        public void RpcInterfaceWithName()
+        {
+            this.RpcInterfaceWithName($"{MetadataKeys.RpcInterface}:\"IBlahService\"", "IBlahService");
+        }
+
+        [TestMethod]
+        public void RpcInterfaceWithDefaultName()
+        {
+            this.RpcInterfaceWithName($"{MetadataKeys.RpcInterface}", "IFoobarService");
+        }
+
+        private void RpcInterfaceWithName(string attribute, string expectedInterfaceName)
+        {
+            string schema = $@"
+                namespace Foobar;
+                table Message ({MetadataKeys.SerializerKind}) {{ Value : string; }}
+                rpc_service FoobarService ({attribute}) {{ GetMessage(Message) : Message; }}
+            ";
+
+            Assembly compiled = FlatSharpCompiler.CompileAndLoadAssembly(
+                schema,
+                new(),
+                additionalReferences: new[]
+                {
+                    typeof(Grpc.Core.AsyncClientStreamingCall<,>).Assembly,
+                    typeof(ChannelReader<>).Assembly,
+                });
+
+            var rpcType = compiled.GetType("Foobar.FoobarService+FoobarServiceClient");
+            var interfaceType = compiled.GetType($"Foobar.{expectedInterfaceName}");
+
+            Assert.IsNotNull(interfaceType);
+            Assert.IsTrue(interfaceType.IsInterface);
+
+            Assert.IsNotNull(rpcType);
+            Assert.AreEqual(1, rpcType.GetInterfaces().Length);
+            Assert.AreEqual(interfaceType, rpcType.GetInterfaces()[0]);
+        }
+#endif
     }
 }

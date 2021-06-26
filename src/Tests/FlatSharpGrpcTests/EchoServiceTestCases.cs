@@ -133,7 +133,6 @@ namespace FlatSharpTests
                 await channel.Writer.WriteAsync(new StringMessage { Value = "bar" });
 
                 var responseTask = client.EchoClientStreaming(channel, cts.Token);
-                //await Task.Delay(TimeSpan.FromMilliseconds(50));
 
                 cts.Cancel();
 
@@ -217,7 +216,7 @@ namespace FlatSharpTests
                     {
                         cts.Cancel();
 
-                        await Assert.ThrowsExceptionAsync<TaskCanceledException>(
+                        await this.AssertCanceled(
                             async () => await channel.Reader.WaitToReadAsync(cts.Token));
 
                         break;
@@ -299,7 +298,7 @@ namespace FlatSharpTests
                 cts.Cancel();
                 await Task.Delay(50);
                 sourceChannel.Writer.Complete();
-                await Assert.ThrowsExceptionAsync<TaskCanceledException>(() => duplexCall);
+                await this.AssertCanceled(() => duplexCall);
 
                 Assert.IsTrue(destChannel.Reader.Completion.IsCompleted);
                 Assert.IsFalse(destChannel.Reader.Completion.IsCompletedSuccessfully);
@@ -349,7 +348,7 @@ namespace FlatSharpTests
                     }
                 }
 
-                await Assert.ThrowsExceptionAsync<TaskCanceledException>(() => duplexCall);
+                await this.AssertCanceled(() => duplexCall);
 
                 Assert.IsTrue(destChannel.Reader.Completion.IsCompleted);
                 Assert.IsFalse(destChannel.Reader.Completion.IsCompletedSuccessfully);
@@ -376,7 +375,7 @@ namespace FlatSharpTests
             }
         }
 
-        private Task EchoTest_Interface(Func<EchoService.IEchoService, Task> callback)
+        private Task EchoTest_Interface(Func<IEchoService, Task> callback)
         {
             return this.EchoTest(client => callback(client));
         }
