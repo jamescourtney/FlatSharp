@@ -29,6 +29,9 @@ jobs:
     - name: Restore dependencies
       working-directory: src
       run: dotnet restore
+    - name: Build Compiler
+      working-directory: src/FlatSharp.Compiler
+      run: dotnet build -c Release --no-restore
     - name: Build
       working-directory: src
       run: dotnet build -c Release --no-restore
