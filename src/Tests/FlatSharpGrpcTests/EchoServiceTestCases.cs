@@ -137,7 +137,7 @@ namespace FlatSharpTests
 
                 cts.Cancel();
 
-                await Assert.ThrowsExceptionAsync<TaskCanceledException>(() => responseTask);
+                await this.AssertCanceled(() => responseTask);
             });
         }
 
