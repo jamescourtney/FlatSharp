@@ -2,10 +2,9 @@
   <Import Project="..\..\common.props" />
 
   <PropertyGroup>
-    <TargetFrameworks Condition=" '$(AppVeyorBuild)' != 'true' ">netcoreapp2.1;net47;netcoreapp3.1;net472;net5.0</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(AppVeyorBuild)' == 'true' ">netcoreapp2.1;net47;netcoreapp3.1;net5.0</TargetFrameworks>
+    <TargetFrameworks>net5.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
-    <AssemblyName>FlatSharpCompilerTests</AssemblyName>
+    <AssemblyName>FlatSharpGrpcTests</AssemblyName>
     <RootNamespace>FlatSharpTests</RootNamespace>
     <DelaySign>false</DelaySign>
     <SignAssembly>true</SignAssembly>
@@ -13,9 +12,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\FlatSharpTests\AssemblyCleanup.cs" Link="AssemblyCleanup.cs" />
+    <Compile Remove="Grpc.fbs.generated.cs" />
+    <Compile Include="Grpc.fbs.generated.cs" />
   </ItemGroup>
-
+  
   <ItemGroup>
     <PackageReference Include="Grpc.Core" Version="2.27.0" />
     <PackageReference Include="Grpc.Core.Api" Version="2.35.0" />
@@ -32,4 +32,8 @@
     <ProjectReference Include="..\..\FlatSharp.Unsafe\FlatSharp.Unsafe.csproj" />
     <ProjectReference Include="..\..\FlatSharp\FlatSharp.csproj" />
   </ItemGroup>
+
+  <Target Name="FBS" BeforeTargets="BeforeBuild">
+    <Exec Command="dotnet ..\..\FlatSharp.Compiler\bin\$(Configuration)\net5.0\FlatSharp.Compiler.dll -i Grpc.fbs -o ." />
+  </Target>
 </Project>

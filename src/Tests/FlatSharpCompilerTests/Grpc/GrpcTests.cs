@@ -19,6 +19,9 @@ namespace FlatSharpTests.Compiler
     using System;
     using System.Linq;
     using System.Reflection;
+    using System.Threading.Channels;
+    using System.Threading.Tasks;
+    using System.Threading.Tasks.Sources;
     using FlatSharp;
     using FlatSharp.Compiler;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -77,7 +80,11 @@ namespace routeguide;
             Assembly compiled = FlatSharpCompiler.CompileAndLoadAssembly(
                 schema,
                 new(),
-                additionalReferences: new[] { typeof(Grpc.Core.AsyncClientStreamingCall<,>).Assembly });
+                additionalReferences: new[] 
+                { 
+                    typeof(Grpc.Core.AsyncClientStreamingCall<,>).Assembly, 
+                    typeof(ChannelReader<>).Assembly, 
+                });
 
             var rpcType = compiled.GetType("routeguide.RouteGuide");
             Assert.IsNotNull(rpcType);
@@ -187,5 +194,53 @@ namespace NoPrecompiledSerializer;
 
             Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.TestHookCreateCSharp(schema, new()));
         }
+
+#if NET5_0_OR_GREATER
+        [TestMethod]
+        public void RpcInterfaceWithName()
+        {
+            this.RpcInterfaceWithName($"{MetadataKeys.RpcInterface}:\"IBlahService\"", "IBlahService");
+        }
+
+        [TestMethod]
+        public void RpcInterfaceWithDefaultName()
+        {
+            this.RpcInterfaceWithName($"{MetadataKeys.RpcInterface}", "IFoobarService");
+        }
+
+        private void RpcInterfaceWithName(string attribute, string expectedInterfaceName)
+        {
+            string schema = $@"
+                namespace Foobar;
+                table Message ({MetadataKeys.SerializerKind}) {{ Value : string; }}
+                rpc_service FoobarService ({attribute}) 
+                {{ 
+                    GetMessage1(Message) : Message;
+                    GetMessage2(Message) : Message (streaming:""client"");
+                    GetMessage3(Message) : Message (streaming:""server"");
+                    GetMessage4(Message) : Message (streaming:""duplex"");
+                }}
+            ";
+
+            Assembly compiled = FlatSharpCompiler.CompileAndLoadAssembly(
+                schema,
+                new(),
+                additionalReferences: new[]
+                {
+                    typeof(Grpc.Core.AsyncClientStreamingCall<,>).Assembly,
+                    typeof(ChannelReader<>).Assembly,
+                });
+
+            var rpcType = compiled.GetType("Foobar.FoobarService+FoobarServiceClient");
+            var interfaceType = compiled.GetType($"Foobar.{expectedInterfaceName}");
+
+            Assert.IsNotNull(interfaceType);
+            Assert.IsTrue(interfaceType.IsInterface);
+
+            Assert.IsNotNull(rpcType);
+            Assert.AreEqual(1, rpcType.GetInterfaces().Length);
+            Assert.AreEqual(interfaceType, rpcType.GetInterfaces()[0]);
+        }
+#endif
     }
 }

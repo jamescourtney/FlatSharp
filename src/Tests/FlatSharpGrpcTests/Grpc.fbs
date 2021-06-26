@@ -1,0 +1,17 @@
+﻿
+namespace FlatSharpTests.EchoServiceTests;
+
+table StringMessage (fs_serializer) {
+    Value : string;
+}
+
+table MultiStringMessage (fs_serializer) {
+    Value : [string];
+}
+
+rpc_service EchoService (fs_rpcInterface) {
+    EchoUnary(StringMessage) : StringMessage;
+    EchoClientStreaming(StringMessage) : MultiStringMessage (streaming:"client");
+    EchoServerStreaming(MultiStringMessage) : StringMessage (streaming:"server");
+    EchoDuplexStreaming(StringMessage) : StringMessage (streaming:"duplex");
+}

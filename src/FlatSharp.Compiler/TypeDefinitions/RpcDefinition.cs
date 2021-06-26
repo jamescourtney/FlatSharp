@@ -38,6 +38,7 @@ namespace FlatSharp.Compiler
     internal class RpcDefinition : BaseSchemaMember
     {
         private const string GrpcCore = "Grpc.Core";
+        private const string Channels = "System.Threading.Channels";
 
         private static readonly string CreateMarshallerFunction = $@"
         private static Grpc.Core.Marshaller<T> CreateMarshaller<T>(ISerializer<T> serializer) where T : class
@@ -60,6 +61,8 @@ namespace FlatSharp.Compiler
         {
             this.methods = new Dictionary<string, (string, string, RpcStreamingType)>();
         }
+
+        public string? GeneratedInterfaceName { get; set; }
 
         public IReadOnlyDictionary<string, (string requestType, string responseType, RpcStreamingType streamingType)> Methods => this.methods;
 
@@ -88,6 +91,12 @@ namespace FlatSharp.Compiler
                 return;
             }
 
+            bool generateInterface = !string.IsNullOrWhiteSpace(this.GeneratedInterfaceName);
+            if (generateInterface)
+            {
+                this.DefineInterface(writer);
+            }
+
             writer.AppendLine($"public static partial class {this.Name}");
             using (writer.WithBlock())
             {
@@ -103,7 +112,7 @@ namespace FlatSharp.Compiler
                 var methods = this.DefineMethods(writer, marshallers);
 
                 this.DefineServerBaseClass(writer, methods);
-                this.DefineClientClass(writer, methods);
+                this.DefineClientClass(writer, methods, generateInterface);
             }
         }
 
@@ -313,11 +322,48 @@ namespace FlatSharp.Compiler
             throw new InvalidOperationException("Unrecognized streaming type: " + streamingType);
         }
 
-        private void DefineClientClass(CodeWriter writer, Dictionary<string, string> methodMapping)
+        private void DefineInterface(CodeWriter writer)
+        {
+            writer.AppendLine($"public interface {this.GeneratedInterfaceName}");
+            using (writer.WithBlock())
+            {
+                foreach (var method in this.methods)
+                {
+                    switch (method.Value.streamingType)
+                    {
+                        case RpcStreamingType.Unary:
+                            writer.AppendLine($"Task<{method.Value.responseType}> {method.Key}({method.Value.requestType} request, CancellationToken token);");
+                            break;
+
+                        case RpcStreamingType.Client:
+                            writer.AppendLine($"Task<{method.Value.responseType}> {method.Key}({Channels}.ChannelReader<{method.Value.requestType}> requestChannel, CancellationToken token);");
+                            break;
+
+                        case RpcStreamingType.Server:
+                            writer.AppendLine($"Task {method.Key}({method.Value.requestType} request, {Channels}.ChannelWriter<{method.Value.responseType}> responseChannel, CancellationToken token);");
+                            break;
+
+                        case RpcStreamingType.Bidirectional:
+                            writer.AppendLine($"Task {method.Key}({Channels}.ChannelReader<{method.Value.requestType}> requestChannel, {Channels}.ChannelWriter<{method.Value.responseType}> responseChannel, CancellationToken token);");
+                            break;
+                    }
+                }
+            }
+        }
+
+        private void DefineClientClass(
+            CodeWriter writer, 
+            Dictionary<string, string> methodMapping, 
+            bool generateInterface)
         {
             string clientClassName = $"{this.Name}Client";
+            string interfaceDeclaration = string.Empty;
+            if (generateInterface)
+            {
+                interfaceDeclaration = $", {this.GeneratedInterfaceName}";
+            }
 
-            writer.AppendLine($"public partial class {clientClassName} : {GrpcCore}.ClientBase<{clientClassName}>");
+            writer.AppendLine($"public partial class {clientClassName} : {GrpcCore}.ClientBase<{clientClassName}>{interfaceDeclaration}");
             using (writer.WithBlock())
             {
                 this.DefineClientConstructors(writer, clientClassName);
@@ -325,6 +371,151 @@ namespace FlatSharp.Compiler
                 foreach (var item in this.methods)
                 {
                     this.WriteClientMethod(writer, item.Key, item.Value.requestType, item.Value.responseType, item.Value.streamingType, methodMapping);
+                }
+
+                if (generateInterface)
+                {
+                    foreach (var item in this.methods)
+                    {
+                        switch (item.Value.streamingType)
+                        {
+                            case RpcStreamingType.Unary:
+                                GenerateUnaryInterfaceImpl(item.Key, item.Value.requestType, item.Value.responseType);
+                                break;
+
+                            case RpcStreamingType.Client:
+                                GenerateClientStreamingInterfaceImpl(item.Key, item.Value.requestType, item.Value.responseType);
+                                break;
+
+                            case RpcStreamingType.Server:
+                                GenerateServerStreamingImpl(item.Key, item.Value.requestType, item.Value.responseType);
+                                break;
+
+                            case RpcStreamingType.Bidirectional:
+                                GenerateBidirectionalStreamingImpl(item.Key, item.Value.requestType, item.Value.responseType);
+                                break;
+                        }
+                    }
+                }
+            }
+
+            void ReadFromRequestChannelIntoRequestStream(string cancellationTokenName)
+            {
+                writer.AppendLine("try");
+                using (writer.WithBlock())
+                {
+                    writer.AppendLine($"while (await requestChannel.WaitToReadAsync({cancellationTokenName}))");
+                    using (writer.WithBlock())
+                    {
+                        writer.AppendLine("while (requestChannel.TryRead(out var item))");
+                        using (writer.WithBlock())
+                        {
+                            writer.AppendLine($"await call.RequestStream.WriteAsync(item);");
+                        }
+                    }
+                }
+                writer.AppendLine("finally");
+                using (writer.WithBlock())
+                {
+                    writer.AppendLine("await call.RequestStream.CompleteAsync();");
+                }
+            }
+
+            void ReadFromResponseStreamIntoResponseChannel(string cancellationTokenName)
+            {
+                writer.AppendLine("try");
+                using (writer.WithBlock())
+                {
+                    writer.AppendLine($"while (await call.ResponseStream.MoveNext({cancellationTokenName}))");
+                    using (writer.WithBlock())
+                    {
+                        writer.AppendLine($"await responseChannel.WriteAsync(call.ResponseStream.Current, {cancellationTokenName});");
+                    }
+
+                    writer.AppendLine("responseChannel.Complete();");
+                }
+                writer.AppendLine("catch (Exception ex)");
+                using (writer.WithBlock())
+                {
+                    writer.AppendLine("responseChannel.TryComplete(ex);");
+                    writer.AppendLine("throw;");
+                }
+            }
+
+            void GenerateUnaryInterfaceImpl(string methodName, string requestType, string responseType)
+            {
+                writer.AppendLine($"async Task<{responseType}> {this.GeneratedInterfaceName}.{methodName}({requestType} request, CancellationToken token)");
+                using (writer.WithBlock())
+                {
+                    writer.AppendLine($"return await this.{methodName}(request, cancellationToken: token).ResponseAsync;");
+                }
+            }
+
+            void GenerateClientStreamingInterfaceImpl(string methodName, string requestType, string responseType)
+            {
+                writer.AppendLine($"async Task<{responseType}> {this.GeneratedInterfaceName}.{methodName}({Channels}.ChannelReader<{requestType}> requestChannel, CancellationToken token)");
+                using (writer.WithBlock())
+                {
+                    writer.AppendLine($"var call = this.{methodName}(cancellationToken: token);");
+                    ReadFromRequestChannelIntoRequestStream("token");
+                    writer.AppendLine($"return await call.ResponseAsync;");
+                }
+            }
+
+            void GenerateServerStreamingImpl(string methodName, string requestType, string responseType)
+            {
+                writer.AppendLine($"async Task {this.GeneratedInterfaceName}.{methodName}({requestType} request, {Channels}.ChannelWriter<{responseType}> responseChannel, CancellationToken token)");
+                using (writer.WithBlock())
+                {
+                    writer.AppendLine($"var call = this.{methodName}(request, cancellationToken: token);");
+                    ReadFromResponseStreamIntoResponseChannel("token");
+                }
+            }
+
+            void GenerateBidirectionalStreamingImpl(string methodName, string requestType, string responseType)
+            {
+                writer.AppendLine($"async Task {this.GeneratedInterfaceName}.{methodName}({Channels}.ChannelReader<{requestType}> requestChannel, {Channels}.ChannelWriter<{responseType}> responseChannel, CancellationToken token)");
+                using (writer.WithBlock())
+                {
+                    writer.AppendLine($"using (var cts = CancellationTokenSource.CreateLinkedTokenSource(token))");
+                    using (writer.WithBlock())
+                    {
+                        writer.AppendLine("var tasks = new List<Task>();");
+                        writer.AppendLine($"var call = this.{methodName}(cancellationToken: cts.Token);");
+
+                        // pulls from request channel and writes into the call.
+                        writer.AppendLine("tasks.Add(Task.Run(async () => ");
+                        using (writer.WithBlock())
+                        {
+                            ReadFromRequestChannelIntoRequestStream("cts.Token");
+                        }
+                        writer.AppendLine("));");
+
+                        // reads from the response stream and pushes to the channel.
+                        writer.AppendLine("tasks.Add(Task.Run(async () => ");
+                        using (writer.WithBlock())
+                        {
+                            ReadFromResponseStreamIntoResponseChannel("cts.Token");
+                        }
+                        writer.AppendLine("));");
+
+                        writer.AppendLine("try");
+                        using (writer.WithBlock())
+                        {
+                            writer.AppendLine("while (tasks.Count > 0)");
+                            using (writer.WithBlock())
+                            {
+                                writer.AppendLine("Task completedTask = await Task.WhenAny(tasks);");
+                                writer.AppendLine("tasks.Remove(completedTask);");
+                                writer.AppendLine("await completedTask;");
+                            }
+                        }
+                        writer.AppendLine("finally");
+                        using (writer.WithBlock())
+                        {
+                            writer.AppendLine("cts.Cancel();");
+                        }
+                    }
                 }
             }
         }
