@@ -60,7 +60,7 @@ namespace FlatSharpTests
                 var source = new CancellationTokenSource();
                 source.Cancel();
 
-                await Assert.ThrowsExceptionAsync<OperationCanceledException>(
+                await Assert.ThrowsExceptionAsync<TaskCanceledException>(
                     () => client.EchoUnary(new StringMessage { Value = "hi" }, source.Token));
             });
         }

@@ -456,7 +456,7 @@ namespace FlatSharp.Compiler
 
                     using (writer.WithBlock())
                     {
-                        writer.AppendLine("throw new OperationCanceledException();");
+                        writer.AppendLine($"throw new TaskCanceledException(\"The {methodName} RPC was canceled.\", ex);");
                     }
                 }
             }
