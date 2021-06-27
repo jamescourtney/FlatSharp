@@ -256,11 +256,26 @@ namespace FlatSharp
                 baseParams = "__CtorContext";
             }
 
+            Type interfaceType = typeof(IFlatBufferDeserializedObject);
+
+            string addressableStructImplementation = string.Empty;
+            if (this.typeModel.SchemaType == FlatBufferSchemaType.Struct &&
+                this.typeModel.PhysicalLayout.Length == 1 &&
+                !this.options.GreedyDeserialize)
+            {
+                interfaceType = typeof(IFlatBufferAddressableStruct);
+                addressableStructImplementation = $@"
+                    int {nameof(IFlatBufferAddressableStruct)}.{nameof(IFlatBufferAddressableStruct.Size)} => {this.typeModel.PhysicalLayout[0].InlineSize};
+                    int {nameof(IFlatBufferAddressableStruct)}.{nameof(IFlatBufferAddressableStruct.Offset)} => this.{OffsetVariableName};
+                    int {nameof(IFlatBufferAddressableStruct)}.{nameof(IFlatBufferAddressableStruct.Alignment)} => {this.typeModel.PhysicalLayout[0].Alignment};
+                ";
+            }
+
             return 
             $@"
                 private sealed class {this.ClassName}<TInputBuffer> 
                     : {typeModel.GetCompilableTypeName()} 
-                    , {typeof(IFlatBufferDeserializedObject).GetCompilableTypeName()}
+                    , {interfaceType.GetCompilableTypeName()}
                     where TInputBuffer : IInputBuffer
                 {{
                     private static readonly {typeof(FlatBufferDeserializationContext).GetCompilableTypeName()} __CtorContext 
@@ -280,6 +295,7 @@ namespace FlatSharp
                     {typeof(Type).GetCompilableTypeName()} {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.TableOrStructType)} => typeof({typeModel.GetCompilableTypeName()});
                     {typeof(FlatBufferDeserializationContext).GetCompilableTypeName()} {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.DeserializationContext)} => __CtorContext;
                     {typeof(IInputBuffer).GetCompilableTypeName()}? {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.InputBuffer)} => {this.GetBufferReference()};
+                    {addressableStructImplementation}
 
                     {string.Join("\r\n", this.propertyOverrides)}
                     {string.Join("\r\n", this.readMethods)}

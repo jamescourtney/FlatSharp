@@ -21,6 +21,7 @@ using FlatSharp.Unsafe;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace BenchmarkCore
 {
@@ -99,19 +100,30 @@ namespace BenchmarkCore
             SomeTable.Serializer.Write(buffer, table);
 
             var parsed = SomeTable.Serializer.Parse(buffer);
-            var parsed2 = parsed;
 
-            for (int i = 0; i < parsed2.Points.Count; ++i)
+            Vec3 vec = parsed.Points[0];
+            int length = parsed.Points.Count;
+
+            System.Numerics.Vector3 vec3 = default;
+
+            if (vec is IFlatBufferAddressableStruct @struct)
             {
-                Console.WriteLine(parsed2.Points[i].X);
+                int offset = @struct.Offset;
+                int size = @struct.Size;
+                int alignment = @struct.Alignment;
+
+                for (int i = 0; i < length; ++i)
+                {
+                    vec3 += AsVec3(buffer, offset, size);
+
+                    offset += size;
+                    offset += SerializationHelpers.GetAlignmentError(offset, alignment);
+                }
             }
 
-            parsed = SomeTable.Serializer.Parse(buffer);
-            parsed2 = parsed;
-
-            for (int i = 0; i < parsed2.Points.Count; ++i)
+            static System.Numerics.Vector3 AsVec3(Memory<byte> memory, int offset, int length)
             {
-                Console.WriteLine(parsed2.Points[i].X);
+                return MemoryMarshal.Cast<byte, System.Numerics.Vector3>(memory.Span.Slice(offset, length))[0];
             }
         }
     }
