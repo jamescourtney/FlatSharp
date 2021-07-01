@@ -33,7 +33,8 @@ table AverageResponse (fs_serializer:lazy)
 	Average:double;
 }
 
-rpc_service StatsService
+// Specify the fs_rpcInterface attribute to generate an interface for this service.
+rpc_service StatsService (fs_rpcInterface:"IStatsService")
 {
 	// Single input, single output.
 	SingleOperation(BulkNumbers):AverageResponse;
