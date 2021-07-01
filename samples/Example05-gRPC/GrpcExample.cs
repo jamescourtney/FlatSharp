@@ -37,72 +37,129 @@ namespace Samples.GrpcExample
 
             Thread.Sleep(1000);
 
-            var client = new StatsService.StatsServiceClient(new Channel("127.0.0.1", 50001, ChannelCredentials.Insecure));
+            StatsService.StatsServiceClient client = new StatsService.StatsServiceClient(new Channel("127.0.0.1", 50001, ChannelCredentials.Insecure));
 
-            // Three different ways of computing the average of [1,2,3,4]. We're pretty sure it's 2.5 at this point.
+            // We can use the client in two different ways:
+            // 1) as a traditional gRPC client:
+            GrpcOperations(client).GetAwaiter().GetResult();
 
-            // Unary operations take one request and send one response.
-            // Our operation includes the whole array of data.
-            UnaryOperation(client).GetAwaiter().GetResult();
-
-            // Client streaming operations let the client send many requests and the server sends one response.
-            // The client streams the individual numbers it wants averaged, and the server sends the aggregated response at the end.
-            ClientStreamingOperation(client).GetAwaiter().GetResult();
-
-            // Duplex streaming operations let the client send a stream of requests and the server send a stream of responses.
-            // We send the cumulative average after each request in this example.
-            DuplexStreamingOperation(client).GetAwaiter().GetResult();
-
-            // Server streaming operations are the opposite of client streaming. One client request results in a stream of server responses.
-            // However, this is left as an exercise to the reader.
+            // 2) As an async interface with Channel<T>
+            InterfaceOperations((IStatsService)client).GetAwaiter().GetResult();
 
             Thread.Sleep(1000);
 
             server.ShutdownAsync().GetAwaiter().GetResult();
         }
 
-        private static async Task UnaryOperation(StatsService.StatsServiceClient client)
+        /// <summary>
+        /// This example uses the Grpc operations on the stats service client. The Grpc methods allow specifying
+        /// Grpc Headers and are tightly coupled with the Grpc interfaces.
+        /// </summary>
+        private static async Task GrpcOperations(StatsService.StatsServiceClient client)
         {
-            AverageResponse response = await client.SingleOperation(new BulkNumbers { Items = new[] { 1d, 2d, 3d, 4d } });
-            Console.WriteLine("[Unary] Average is: " + response.Average);
-        }
-
-        private static async Task ClientStreamingOperation(StatsService.StatsServiceClient client)
-        {
-            AsyncClientStreamingCall<SingleNumber, AverageResponse> call = client.AverageStreaming(default);
-
-            await call.RequestStream.WriteAsync(new SingleNumber { Item = 1d });
-            await call.RequestStream.WriteAsync(new SingleNumber { Item = 2d });
-            await call.RequestStream.WriteAsync(new SingleNumber { Item = 3d });
-            await call.RequestStream.WriteAsync(new SingleNumber { Item = 4d });
-
-            await call.RequestStream.CompleteAsync();
-            AverageResponse response = await call.ResponseAsync;
-
-            Console.WriteLine("[Client Streaming] Average is: " + response.Average);
-        }
-
-        private static async Task DuplexStreamingOperation(StatsService.StatsServiceClient client)
-        {
-            AsyncDuplexStreamingCall<SingleNumber, AverageResponse> call = client.DuplexAverage(default);
-
-            for (int i = 1; i < 5; ++i)
+            // Unary operation
             {
-                await call.RequestStream.WriteAsync(new SingleNumber { Item = i });
-
-                if (await call.ResponseStream.MoveNext())
-                {
-                    AverageResponse response = call.ResponseStream.Current;
-                    Console.WriteLine("[Duplex Streaming] Current average is: " + response.Average);
-                }
-                else
-                {
-                    // Error
-                    return;
-                }
+                AverageResponse response = await client.SingleOperation(new BulkNumbers { Items = new[] { 1d, 2d, 3d, 4d } });
+                Console.WriteLine("[Unary] Average is: " + response.Average);
             }
 
-            await call.RequestStream.CompleteAsync();
+            // Client streaming
+            {
+                AsyncClientStreamingCall<SingleNumber, AverageResponse> call = client.AverageStreaming(default);
+
+                await call.RequestStream.WriteAsync(new SingleNumber { Item = 1d });
+                await call.RequestStream.WriteAsync(new SingleNumber { Item = 2d });
+                await call.RequestStream.WriteAsync(new SingleNumber { Item = 3d });
+                await call.RequestStream.WriteAsync(new SingleNumber { Item = 4d });
+
+                await call.RequestStream.CompleteAsync();
+                AverageResponse response = await call.ResponseAsync;
+
+                Console.WriteLine("[Client Streaming] Average is: " + response.Average);
+            }
+
+            // Duplex Streaming
+            {
+                AsyncDuplexStreamingCall<SingleNumber, AverageResponse> call = client.DuplexAverage(default);
+
+                for (int i = 1; i < 5; ++i)
+                {
+                    await call.RequestStream.WriteAsync(new SingleNumber { Item = i });
+
+                    if (await call.ResponseStream.MoveNext())
+                    {
+                        AverageResponse response = call.ResponseStream.Current;
+                        Console.WriteLine("[Duplex Streaming] Current average is: " + response.Average);
+                    }
+                    else
+                    {
+                        // Error
+                        return;
+                    }
+                }
+
+                await call.RequestStream.CompleteAsync();
+            }
+        }
+
+        /// <summary>
+        /// Instead of using the tightly-bound gRPC methods, we can instead use the service
+        /// interface that flatsharp generates. <see cref="StatsService.StatsServiceClient"/> implements <see cref="IStatsService"/>.
+        /// </summary>
+        /// <param name="statsService"></param>
+        /// <returns></returns>
+        private static async Task InterfaceOperations(IStatsService statsService)
+        {
+            // Unary operation
+            {
+                AverageResponse response = await statsService.SingleOperation(new BulkNumbers { Items = new[] { 1d, 2d, 3d, 4d } }, CancellationToken.None);
+                Console.WriteLine("[Unary] Average is: " + response.Average);
+            }
+
+            // Client streaming
+            {
+                // to limit the rate of requests, you can instead create a bounded channel.
+                var requestChannel = System.Threading.Channels.Channel.CreateUnbounded<SingleNumber>();
+
+                Task<AverageResponse> responseTask = statsService.AverageStreaming(requestChannel.Reader, CancellationToken.None);
+
+                await requestChannel.Writer.WriteAsync(new SingleNumber { Item = 1d });
+                await requestChannel.Writer.WriteAsync(new SingleNumber { Item = 2d });
+                await requestChannel.Writer.WriteAsync(new SingleNumber { Item = 3d });
+                await requestChannel.Writer.WriteAsync(new SingleNumber { Item = 4d });
+
+                // Indicate that the channel won't ever have anything else written to it. This will cause the async call to complete.
+                // if the channel writer is not completed, the responseTask will never complete.
+                requestChannel.Writer.Complete();
+
+                AverageResponse response = await responseTask;
+                Console.WriteLine("[Client Streaming] Average is: " + response.Average);
+            }
+
+            // Duplex Streaming
+            {
+                var requestChannel = System.Threading.Channels.Channel.CreateBounded<SingleNumber>(1);
+                var responseChannel = System.Threading.Channels.Channel.CreateBounded<AverageResponse>(1);
+
+                Task call = statsService.DuplexAverage(requestChannel.Reader, responseChannel.Writer, CancellationToken.None);
+
+                // To write to the remote server, we write to the request channel. To receive the remote server's 
+                // responses, we read from the response channel.
+                for (int i = 1; i < 5; ++i)
+                {
+                    await requestChannel.Writer.WriteAsync(new SingleNumber { Item = i });
+
+                    if (await responseChannel.Reader.WaitToReadAsync())
+                    {
+                        AverageResponse response = await responseChannel.Reader.ReadAsync();
+                        Console.WriteLine("[Duplex Streaming] Current average is: " + response.Average);
+                    }
+                }
+
+                // Complete the request channel when we are finished.
+                requestChannel.Writer.Complete();
+                await call;
+            }
         }
 
         private class ServerImpl : StatsService.StatsServiceServerBase

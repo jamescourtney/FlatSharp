@@ -18,6 +18,7 @@
             TypeFacades.TypeFacadesExample.Run();
             StructVectors.StructVectorsSample.Run();
             WriteThrough.WriteThroughSample.Run();
+            StructMarshalling.StructMarshallingSample.Run();
         }
     }
 }
