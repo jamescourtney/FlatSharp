@@ -93,6 +93,15 @@ namespace FlatSharp
                                             this.DeserializationOption == FlatBufferDeserializationOption.VectorCacheMutable;
 
         /// <summary>
+        /// Indicates if the object is immutable OR changes to the object are guaranteed to be written back to the buffer.
+        /// </summary>
+        /// <remarks>
+        /// VectorCacheMutable is not eligible here, since only some changes are written back.
+        /// </remarks>
+        public bool CanSkipSerialize => this.DeserializationOption == FlatBufferDeserializationOption.Lazy ||
+                                                      this.DeserializationOption == FlatBufferDeserializationOption.PropertyCache;
+
+        /// <summary>
         /// Indicates if FlatSharp should intercept app domain load events to look for cross-referenced generated assemblies. 
         /// Mostly useful for FlatSharp unit tests.
         /// </summary>

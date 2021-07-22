@@ -66,6 +66,13 @@ namespace FlatSharp
                 throw new ArgumentNullException(nameof(item), "The root table may not be null.");
             }
 
+            if (item is IFlatBufferDeserializedObject deserializedObj && deserializedObj.CanSkipSerialize)
+            {
+                IInputBuffer? inputBuffer = deserializedObj.InputBuffer;
+                FlatSharpInternal.Assert(inputBuffer is not null, "Input buffer was null");
+                return inputBuffer.Length;
+            }
+
             return sizeof(uint)                                      // uoffset to first table
                  + SerializationHelpers.GetMaxPadding(sizeof(uint))  // alignment error
                  + this.innerSerializer.GetMaxSize(item)             // size of item
@@ -114,6 +121,20 @@ namespace FlatSharp
                 {
                     SizeNeeded = this.GetMaxSize(item)
                 };
+            }
+
+            if (item is IFlatBufferDeserializedObject deserializedObj && deserializedObj.CanSkipSerialize)
+            {
+                IInputBuffer? inputBuffer = deserializedObj.InputBuffer;
+                FlatSharpInternal.Assert(inputBuffer is not null, "Input buffer was null");
+
+                if (destination.Length < inputBuffer.Length)
+                {
+                    throw new BufferTooSmallException { SizeNeeded = inputBuffer.Length };
+                }
+
+                inputBuffer.GetReadOnlyByteMemory(0, inputBuffer.Length).Span.CopyTo(destination);
+                return inputBuffer.Length;
             }
 
 #if DEBUG
