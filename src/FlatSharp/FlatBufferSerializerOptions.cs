@@ -98,8 +98,8 @@ namespace FlatSharp
         /// <remarks>
         /// VectorCacheMutable is not eligible here, since only some changes are written back.
         /// </remarks>
-        public bool CanSkipSerialize => this.DeserializationOption == FlatBufferDeserializationOption.Lazy ||
-                                                      this.DeserializationOption == FlatBufferDeserializationOption.PropertyCache;
+        public bool CanSerializeWithMemoryCopy => this.DeserializationOption == FlatBufferDeserializationOption.Lazy ||
+                                                  this.DeserializationOption == FlatBufferDeserializationOption.PropertyCache;
 
         /// <summary>
         /// Indicates if FlatSharp should intercept app domain load events to look for cross-referenced generated assemblies. 

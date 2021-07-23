@@ -125,6 +125,9 @@ namespace FlatSharpTests
             Assert.AreEqual(35, actualBytes);
             Assert.AreEqual(35, bytesWritten);
             Assert.AreEqual(35, serializer.GetMaxSize(parsed));
+
+            serializer.Compile<TestTable<WriteThroughStruct>>().EnableMemoryCopySerialization = false;
+            Assert.AreEqual(70, serializer.GetMaxSize(parsed));
         }
 
         [TestMethod]
