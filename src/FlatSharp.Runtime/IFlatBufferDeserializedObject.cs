@@ -47,6 +47,6 @@ namespace FlatSharp
         /// are written back to the underlying buffer. This can allow serialize operations to be
         /// implemented as memcopy instead of a full serialize flow.
         /// </summary>
-        bool CanSkipSerialize { get; }
+        bool CanSerializeWithMemoryCopy { get; }
     }
 }

@@ -59,6 +59,8 @@ namespace FlatSharp
 
         public byte[]? AssemblyBytes { get; }
 
+        public bool EnableMemoryCopySerialization { get; set; }
+
         public int GetMaxSize(T item)
         {
             if (item is null)
@@ -66,7 +68,9 @@ namespace FlatSharp
                 throw new ArgumentNullException(nameof(item), "The root table may not be null.");
             }
 
-            if (item is IFlatBufferDeserializedObject deserializedObj && deserializedObj.CanSkipSerialize)
+            if (this.EnableMemoryCopySerialization &&
+                item is IFlatBufferDeserializedObject deserializedObj &&
+                deserializedObj.CanSerializeWithMemoryCopy)
             {
                 IInputBuffer? inputBuffer = deserializedObj.InputBuffer;
                 FlatSharpInternal.Assert(inputBuffer is not null, "Input buffer was null");
@@ -123,7 +127,9 @@ namespace FlatSharp
                 };
             }
 
-            if (item is IFlatBufferDeserializedObject deserializedObj && deserializedObj.CanSkipSerialize)
+            if (this.EnableMemoryCopySerialization &&
+                item is IFlatBufferDeserializedObject deserializedObj && 
+                deserializedObj.CanSerializeWithMemoryCopy)
             {
                 IInputBuffer? inputBuffer = deserializedObj.InputBuffer;
                 FlatSharpInternal.Assert(inputBuffer is not null, "Input buffer was null");
