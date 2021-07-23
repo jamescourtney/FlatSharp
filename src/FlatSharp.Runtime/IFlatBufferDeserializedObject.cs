@@ -17,7 +17,6 @@
 namespace FlatSharp
 {
     using System;
-    using System.ComponentModel;
 
     /// <summary>
     /// An interface applied to objects deserialized by FlatSharp. FlatSharp implements this
@@ -42,5 +41,12 @@ namespace FlatSharp
         /// <see cref="FlatBufferDeserializationOption.GreedyMutable"/>.
         /// </summary>
         IInputBuffer? InputBuffer { get; }
+
+        /// <summary>
+        /// Indcates that this deserialized object is immutable or has semantics where all changes
+        /// are written back to the underlying buffer. This can allow serialize operations to be
+        /// implemented as memcopy instead of a full serialize flow.
+        /// </summary>
+        bool CanSerializeWithMemoryCopy { get; }
     }
 }
