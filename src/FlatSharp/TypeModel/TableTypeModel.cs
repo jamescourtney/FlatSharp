@@ -170,7 +170,7 @@ namespace FlatSharp.TypeModel
 
                 if (property.Attribute.Key)
                 {
-                    if (this.KeyMember != null)
+                    if (this.KeyMember is not null)
                     {
                         throw new InvalidFlatBufferDefinitionException($"Table {this.GetCompilableTypeName()} has more than one [FlatBufferItemAttribute] with Key set to true.");
                     }
