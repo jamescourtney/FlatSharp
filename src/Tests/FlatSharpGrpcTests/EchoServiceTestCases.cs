@@ -22,16 +22,54 @@ namespace FlatSharpTests
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
-
+    using FlatSharp;
     using FlatSharpTests.EchoServiceTests;
     using Grpc.Core;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-
+    using Other.Namespace.Foobar;
     using SChannel = System.Threading.Channels.Channel;
 
     [TestClass]
     public class EchoServiceTestCases
     {
+        [TestMethod]
+        public async Task GrpcSerializersOverridable()
+        {
+            Assert.ThrowsException<ArgumentNullException>(
+                () => EchoService.Serializer<StringMessage>.Value = null);
+
+            EchoService.Serializer<MultiStringMessage>.Value = MultiStringMessage.Serializer.WithSettings(
+                new SerializerSettings 
+                { 
+                    SharedStringWriterFactory = () => new SharedStringWriter()
+                });
+
+            await this.EchoTest(async client =>
+            {
+                var requestStream = System.Threading.Channels.Channel.CreateUnbounded<StringMessage>();
+
+                byte[] random = new byte[1024];
+                new Random().NextBytes(random);
+                string randomB64 = Convert.ToBase64String(random);
+
+                for (int i = 0; i < 100; ++i)
+                {
+                    await requestStream.Writer.WriteAsync(new StringMessage { Value = randomB64 });
+                }
+
+                requestStream.Writer.Complete();
+
+                MultiStringMessage response = await ((IEchoService)client).EchoClientStreaming(requestStream, default);
+
+                // Test that the string is only written once. This confirms that our update to the serializer worked as intended.
+                Assert.IsInstanceOfType(response, typeof(IFlatBufferDeserializedObject));
+                IFlatBufferDeserializedObject obj = (IFlatBufferDeserializedObject)response;
+                Assert.IsTrue(obj.InputBuffer.Length < 2048);
+            });
+
+            EchoService.Serializer<MultiStringMessage>.Value = MultiStringMessage.Serializer;
+        }
+
         [TestMethod]
         public Task EchoUnary()
         {
@@ -147,7 +185,7 @@ namespace FlatSharpTests
             {
                 MultiStringMessage message = new MultiStringMessage
                 {
-                    Value = Enumerable.Range(0, 100).Select(x => Guid.NewGuid().ToString()).ToList()
+                    Value = Enumerable.Range(0, 100).Select(x => (SharedString)Guid.NewGuid().ToString()).ToList()
                 };
 
                 var streamingCall = client.EchoServerStreaming(message);
@@ -168,7 +206,7 @@ namespace FlatSharpTests
             {
                 MultiStringMessage message = new MultiStringMessage
                 {
-                    Value = Enumerable.Range(0, 100).Select(x => Guid.NewGuid().ToString()).ToList()
+                    Value = Enumerable.Range(0, 100).Select(x => (SharedString)Guid.NewGuid().ToString()).ToList()
                 };
 
                 var channel = SChannel.CreateUnbounded<StringMessage>();
@@ -198,7 +236,7 @@ namespace FlatSharpTests
             {
                 MultiStringMessage message = new MultiStringMessage
                 {
-                    Value = Enumerable.Range(0, 100).Select(x => Guid.NewGuid().ToString()).ToList()
+                    Value = Enumerable.Range(0, 100).Select(x => (SharedString)Guid.NewGuid().ToString()).ToList()
                 };
 
                 var channel = SChannel.CreateUnbounded<StringMessage>();
@@ -420,13 +458,18 @@ namespace FlatSharpTests
 
             public override async Task<MultiStringMessage> EchoClientStreaming(IAsyncStreamReader<StringMessage> requestStream, ServerCallContext callContext)
             {
-                List<string> messages = new List<string>();
+                List<SharedString> messages = new List<SharedString>();
                 while (await requestStream.MoveNext(callContext.CancellationToken))
                 {
                     messages.Add(requestStream.Current.Value);
                 }
 
                 return new MultiStringMessage { Value = messages };
+            }
+
+            public override Task<StringMessage> NsTest(Blah request, ServerCallContext callContext)
+            {
+                return Task.FromResult(new StringMessage { Value = "foo" });
             }
         }
     }

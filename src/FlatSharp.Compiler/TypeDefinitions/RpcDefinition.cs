@@ -41,20 +41,20 @@ namespace FlatSharp.Compiler
         private const string Channels = "System.Threading.Channels";
 
         private static readonly string CreateMarshallerFunction = $@"
-        private static Grpc.Core.Marshaller<T> CreateMarshaller<T>(ISerializer<T> serializer) where T : class
+        private static Grpc.Core.Marshaller<T> CreateMarshaller<T>() where T : class
         {{
             return Grpc.Core.Marshallers.Create<T>(
                 (item, sc) =>
                 {{
+                    var serializer = Serializer<T>.Value;
                     var bufferWriter = sc.GetBufferWriter();
                     var span = bufferWriter.GetSpan(serializer.GetMaxSize(item));
                     int bytesWritten = serializer.Write(SpanWriter.Instance, span, item);
                     bufferWriter.Advance(bytesWritten);
                     sc.Complete();
                 }},
-                dc => serializer.Parse(new ArrayInputBuffer(dc.PayloadAsNewBuffer())));
+                dc => Serializer<T>.Value.Parse(new ArrayInputBuffer(dc.PayloadAsNewBuffer())));
         }}";
-
         private readonly Dictionary<string, (string requestType, string responseType, RpcStreamingType streamingType)> methods;
 
         public RpcDefinition(string serviceName, BaseSchemaMember parent) : base(serviceName, parent)
@@ -100,6 +100,19 @@ namespace FlatSharp.Compiler
             writer.AppendLine($"public static partial class {this.Name}");
             using (writer.WithBlock())
             {
+                writer.AppendLine(@"
+                    public static class Serializer<T> where T : class
+                    {
+                        private static ISerializer<T> field;
+
+                        public static ISerializer<T> Value
+                        {
+                            get => field;
+                            set => field = value ?? throw new ArgumentNullException(""value"");
+                        }
+                    }
+                    ");
+
                 // #1: Define the static marshaller method:
                 writer.AppendLine(CreateMarshallerFunction);
                 writer.AppendLine(string.Empty);
@@ -110,6 +123,16 @@ namespace FlatSharp.Compiler
                 // #3: Define all of the methods in our RPC. These are the core
                 // of the client/server classes.
                 var methods = this.DefineMethods(writer, marshallers);
+
+                // #4: Static constructor to initialize default serializers.
+                writer.AppendLine($"static {this.Name}()");
+                using (writer.WithBlock())
+                {
+                    foreach (string type in marshallers.Keys)
+                    {
+                        writer.AppendLine($"Serializer<{type}>.Value = {type}.Serializer;");
+                    }
+                }
 
                 this.DefineServerBaseClass(writer, methods);
                 this.DefineClientClass(writer, methods, generateInterface);
@@ -190,7 +213,7 @@ namespace FlatSharp.Compiler
         private string GenerateMarshaller(string type, CodeWriter writer)
         {
             string name = $"__Marshaller_{Guid.NewGuid():n}";
-            writer.AppendLine($"private static readonly {GrpcCore}.Marshaller<{type}> {name} = CreateMarshaller({type}.Serializer);");
+            writer.AppendLine($"private static readonly {GrpcCore}.Marshaller<{type}> {name} = CreateMarshaller<{type}>();");
 
             return name;
         }

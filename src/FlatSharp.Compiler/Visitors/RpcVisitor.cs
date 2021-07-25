@@ -57,10 +57,9 @@ namespace FlatSharp.Compiler
         {
             FlatSharpInternal.Assert(this.rpcDefinition != null, "Failed to initialize RPC definition");
 
-            var idents = context.IDENT();
-            string name = idents[0].GetText();
-            string requestType = idents[1].GetText();
-            string responseType = idents[2].GetText();
+            string name = context.IDENT().GetText();
+            string requestType = context.type()[0].GetText();
+            string responseType = context.type()[1].GetText();
             Dictionary<string, string?> metadata = new MetadataVisitor().Visit(context.metadata());
 
             var streamingType = RpcStreamingType.Unary;
