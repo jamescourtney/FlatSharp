@@ -33,20 +33,41 @@ namespace FlatSharpTests
     public class EchoServiceTestCases
     {
         [TestMethod]
-        public async Task GrpcSerializersOverridable()
+        public async Task GrpcSerializersOverridable_EnableSharedStrings()
         {
-            Assert.ThrowsException<ArgumentNullException>(
-                () => EchoService.Serializer<StringMessage>.Value = null);
+            try
+            {
+                Assert.ThrowsException<ArgumentNullException>(
+                    () => EchoService.Serializer<StringMessage>.Value = null);
 
-            EchoService.Serializer<MultiStringMessage>.Value = MultiStringMessage.Serializer.WithSettings(
-                new SerializerSettings 
-                { 
-                    SharedStringWriterFactory = () => new SharedStringWriter()
-                });
+                EchoService.Serializer<MultiStringMessage>.Value = MultiStringMessage.Serializer.WithSettings(
+                    new SerializerSettings
+                    {
+                        SharedStringWriterFactory = () => new SharedStringWriter()
+                    });
 
+                int length = await this.SharedStringsTest_Common();
+                Assert.IsTrue(length <= 2048);
+            }
+            finally
+            {
+                EchoService.Serializer<MultiStringMessage>.Value = MultiStringMessage.Serializer;
+            }
+        }
+        
+        [TestMethod]
+        public async Task GrpcSerializersOverridable_NoSharedStrings()
+        {
+            int length = await this.SharedStringsTest_Common();
+            Assert.IsTrue(length >= 100_000);
+        }
+
+        private async Task<int> SharedStringsTest_Common()
+        {
+            int length = 0;
             await this.EchoTest(async client =>
             {
-                var requestStream = System.Threading.Channels.Channel.CreateUnbounded<StringMessage>();
+                var requestStream = SChannel.CreateUnbounded<StringMessage>();
 
                 byte[] random = new byte[1024];
                 new Random().NextBytes(random);
@@ -64,10 +85,10 @@ namespace FlatSharpTests
                 // Test that the string is only written once. This confirms that our update to the serializer worked as intended.
                 Assert.IsInstanceOfType(response, typeof(IFlatBufferDeserializedObject));
                 IFlatBufferDeserializedObject obj = (IFlatBufferDeserializedObject)response;
-                Assert.IsTrue(obj.InputBuffer.Length < 2048);
+                length = obj.InputBuffer.Length;
             });
 
-            EchoService.Serializer<MultiStringMessage>.Value = MultiStringMessage.Serializer;
+            return length;
         }
 
         [TestMethod]
@@ -127,7 +148,7 @@ namespace FlatSharpTests
                 Assert.AreEqual(100, response.Value.Count);
                 for (int i = 0; i < 100; ++i)
                 {
-                    Assert.AreEqual(messages[i], response.Value[i]);
+                    Assert.AreEqual<string>(messages[i], response.Value[i]);
                 }
             });
         }
@@ -155,7 +176,7 @@ namespace FlatSharpTests
                 Assert.AreEqual(100, response.Value.Count);
                 for (int i = 0; i < 100; ++i)
                 {
-                    Assert.AreEqual(messages[i], response.Value[i]);
+                    Assert.AreEqual<string>(messages[i], response.Value[i]);
                 }
             });
         }

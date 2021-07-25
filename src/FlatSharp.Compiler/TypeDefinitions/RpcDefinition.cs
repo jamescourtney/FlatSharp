@@ -100,17 +100,23 @@ namespace FlatSharp.Compiler
             writer.AppendLine($"public static partial class {this.Name}");
             using (writer.WithBlock())
             {
-                writer.AppendLine(@"
+                writer.AppendLine($@"
                     public static class Serializer<T> where T : class
-                    {
-                        private static ISerializer<T> field;
+                    {{
+                        private static ISerializer<T> __value;
+
+                        static Serializer()
+                        {{
+                            __value = null!;
+                            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof({this.Name}).TypeHandle);
+                        }}
 
                         public static ISerializer<T> Value
-                        {
-                            get => field;
-                            set => field = value ?? throw new ArgumentNullException(""value"");
-                        }
-                    }
+                        {{
+                            get => __value;
+                            set => __value = value ?? throw new ArgumentNullException(nameof(value));
+                        }}
+                    }}
                     ");
 
                 // #1: Define the static marshaller method:
@@ -125,6 +131,9 @@ namespace FlatSharp.Compiler
                 var methods = this.DefineMethods(writer, marshallers);
 
                 // #4: Static constructor to initialize default serializers.
+                writer.AppendLine($"static partial void OnStaticInitialization();");
+                writer.AppendLine();
+
                 writer.AppendLine($"static {this.Name}()");
                 using (writer.WithBlock())
                 {
@@ -132,7 +141,10 @@ namespace FlatSharp.Compiler
                     {
                         writer.AppendLine($"Serializer<{type}>.Value = {type}.Serializer;");
                     }
+
+                    writer.AppendLine("OnStaticInitialization();");
                 }
+
 
                 this.DefineServerBaseClass(writer, methods);
                 this.DefineClientClass(writer, methods, generateInterface);
