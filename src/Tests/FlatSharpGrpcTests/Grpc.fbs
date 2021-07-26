@@ -1,12 +1,15 @@
 ﻿
+namespace Other.Namespace.Foobar;
+table Blah (fs_serializer) { Value : int; }
+
 namespace FlatSharpTests.EchoServiceTests;
 
 table StringMessage (fs_serializer) {
     Value : string;
 }
 
-table MultiStringMessage (fs_serializer) {
-    Value : [string];
+table MultiStringMessage (fs_serializer:"VectorCacheMutable") {
+    Value : [string] (fs_sharedString);
 }
 
 rpc_service EchoService (fs_rpcInterface) {
@@ -14,4 +17,6 @@ rpc_service EchoService (fs_rpcInterface) {
     EchoClientStreaming(StringMessage) : MultiStringMessage (streaming:"client");
     EchoServerStreaming(MultiStringMessage) : StringMessage (streaming:"server");
     EchoDuplexStreaming(StringMessage) : StringMessage (streaming:"duplex");
+
+    NsTest(Other.Namespace.Foobar.Blah) : StringMessage;
 }

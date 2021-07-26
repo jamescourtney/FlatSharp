@@ -64,6 +64,9 @@ namespace FlatSharpTests
             this.StringInputBufferTest(new MemoryInputBuffer(StringInput));
             this.TestDeserializeBoth(b => new MemoryInputBuffer(b));
             this.TestReadByteArray(b => new MemoryInputBuffer(b));
+            this.TableSerializationTest(
+                SpanWriter.Instance,
+                (s, b) => s.Parse<PrimitiveTypesTable>(b.AsMemory()));
         }
 
         [TestMethod]
@@ -77,6 +80,10 @@ namespace FlatSharpTests
             var ex = Assert.ThrowsException<InvalidOperationException>(
                 () => this.TestDeserialize<ReadOnlyMemoryInputBuffer, MemoryTable>(b => new ReadOnlyMemoryInputBuffer(b)));
             Assert.AreEqual("ReadOnlyMemory inputs may not deserialize writable memory.", ex.Message);
+
+            this.TableSerializationTest(
+                SpanWriter.Instance,
+                (s, b) => s.Parse<PrimitiveTypesTable>((ReadOnlyMemory<byte>)b.AsMemory()));
         }
 
         [TestMethod]
@@ -86,6 +93,9 @@ namespace FlatSharpTests
             this.StringInputBufferTest(new ArrayInputBuffer(StringInput));
             this.TestDeserializeBoth(b => new ArrayInputBuffer(b));
             this.TestReadByteArray(b => new ArrayInputBuffer(b));
+            this.TableSerializationTest(
+                SpanWriter.Instance,
+                (s, b) => s.Parse<PrimitiveTypesTable>(b));
         }
 
         [TestMethod]
@@ -95,6 +105,9 @@ namespace FlatSharpTests
             this.StringInputBufferTest(new UnsafeArrayInputBuffer(StringInput));
             this.TestDeserializeBoth(b => new UnsafeArrayInputBuffer(b));
             this.TestReadByteArray(b => new UnsafeArrayInputBuffer(b));
+            this.TableSerializationTest(
+                new UnsafeSpanWriter(),
+                (s, b) => s.Parse<PrimitiveTypesTable>(new UnsafeArrayInputBuffer(b)));
         }
 
         [TestMethod]
@@ -176,6 +189,46 @@ namespace FlatSharpTests
             Assert.AreEqual(
                 "FlatBuffer was in an invalid format: Decoded uoffset_t had value less than 4. Value = 3",
                 ex.Message);
+        }
+
+        private void TableSerializationTest(
+            ISpanWriter writer,
+            Func<FlatBufferSerializer, byte[], PrimitiveTypesTable> parse)
+        {
+            PrimitiveTypesTable original = new()
+            {
+                A = true,
+                B = 1,
+                C = 2,
+                D = 3,
+                E = 4,
+                F = 5,
+                G = 6,
+                H = 7,
+                I = 8,
+                J = 9.1f,
+                K = 10.2,
+                L = "foobar",
+                M = "foobar2",
+            };
+
+            byte[] data = new byte[1024];
+            FlatBufferSerializer.Default.Serialize(original, data, writer);
+            PrimitiveTypesTable parsed = parse(FlatBufferSerializer.Default, data);
+
+            Assert.AreEqual(original.A, parsed.A);
+            Assert.AreEqual(original.B, parsed.B);
+            Assert.AreEqual(original.C, parsed.C);
+            Assert.AreEqual(original.D, parsed.D);
+            Assert.AreEqual(original.E, parsed.E);
+            Assert.AreEqual(original.F, parsed.F);
+            Assert.AreEqual(original.G, parsed.G);
+            Assert.AreEqual(original.H, parsed.H);
+            Assert.AreEqual(original.I, parsed.I);
+            Assert.AreEqual(original.J, parsed.J);
+            Assert.AreEqual(original.K, parsed.K);
+            Assert.AreEqual(original.L, parsed.L);
+            Assert.AreEqual(original.M, parsed.M);
         }
 
         private void InputBufferTest(IInputBuffer ib)
@@ -260,6 +313,49 @@ namespace FlatSharpTests
         private interface IMemoryTable
         {
             ReadOnlyMemory<byte> Memory { get; set; }
+        }
+
+        [FlatBufferTable]
+        public class PrimitiveTypesTable
+        {
+            [FlatBufferItem(0)]
+            public virtual bool A { get; set; }
+
+            [FlatBufferItem(1)]
+            public virtual byte B { get; set; }
+
+            [FlatBufferItem(2)]
+            public virtual sbyte C { get; set; }
+
+            [FlatBufferItem(3)]
+            public virtual ushort D { get; set; }
+
+            [FlatBufferItem(4)]
+            public virtual short E { get; set; }
+
+            [FlatBufferItem(5)]
+            public virtual uint F { get; set; }
+
+            [FlatBufferItem(6)]
+            public virtual int G { get; set; }
+
+            [FlatBufferItem(7)]
+            public virtual ulong H { get; set; }
+
+            [FlatBufferItem(8)]
+            public virtual long I { get; set; }
+
+            [FlatBufferItem(9)]
+            public virtual float J { get; set; }
+
+            [FlatBufferItem(10)]
+            public virtual double K { get; set; }
+
+            [FlatBufferItem(11)]
+            public virtual string? L { get; set; }
+
+            [FlatBufferItem(12)]
+            public virtual SharedString? M { get; set; }
         }
 
         [FlatBufferTable]

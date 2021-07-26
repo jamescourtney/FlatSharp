@@ -41,5 +41,16 @@ namespace FlatSharp
             get;
             set;
         }
+
+        /// <summary>
+        /// When set, enables a performance optimization that allows serialization of a deserialized object
+        /// to be implemented as a memory copy operation. This feature is experimental and may be removed in
+        /// future releases of FlatSharp.
+        /// </summary>
+        public bool EnableMemoryCopySerialization 
+        {
+            get; 
+            set; 
+        }
     }
 }

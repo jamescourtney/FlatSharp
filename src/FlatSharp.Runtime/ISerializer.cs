@@ -47,13 +47,6 @@ namespace FlatSharp
         byte[]? AssemblyBytes { get; }
 
         /// <summary>
-        /// When set, enables a performance optimization that allows serialization of a deserialized object
-        /// to be implemented as a memory copy operation. This feature is experimental and may be removed in
-        /// future releases of FlatSharp.
-        /// </summary>
-        bool EnableMemoryCopySerialization { get; set; }
-
-        /// <summary>
         /// Writes the given item to the buffer using the given spanwriter.
         /// </summary>
         /// <param name="writer">The span writer.</param>

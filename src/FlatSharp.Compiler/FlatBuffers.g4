@@ -24,7 +24,7 @@ defaultValue_decl : scalar | 'null';
 
 rpc_decl : 'rpc_service' IDENT metadata '{' rpc_method+ '}' ;
 
-rpc_method : IDENT '(' IDENT ')' ':' IDENT metadata ';' ;
+rpc_method : IDENT '(' type ')' ':' type metadata ';' ;
 
 // fixed original grammar: allow namespaces for IDENTs
 type : vector_type | structvector_type | core_type ;
