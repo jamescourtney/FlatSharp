@@ -135,9 +135,7 @@ namespace FlatSharpTests
                 for (int i = 0; i < 100; ++i)
                 {
                     string msg = Guid.NewGuid().ToString();
-                    await streamingCall.RequestStream.WriteAsync(
-                        new StringMessage { Value = msg });
-
+                    await streamingCall.RequestStream.WriteAsync(new StringMessage { Value = msg });
                     messages.Add(msg);
                 }
 
@@ -164,8 +162,7 @@ namespace FlatSharpTests
                 for (int i = 0; i < 100; ++i)
                 {
                     string msg = Guid.NewGuid().ToString();
-                    await requestChannel.Writer.WriteAsync(
-                        new StringMessage { Value = msg });
+                    await requestChannel.Writer.WriteAsync(new StringMessage { Value = msg });
                     messages.Add(msg);
                 }
 
