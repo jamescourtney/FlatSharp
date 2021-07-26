@@ -21,6 +21,7 @@ namespace Samples.GrpcExample
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
+    using FlatSharp;
     using Grpc.Core;
 
     /// <summary>
@@ -30,21 +31,39 @@ namespace Samples.GrpcExample
     {
         public static void Run()
         {
+            {
+                // The echo service often returns back the same item that it received. We should configure it to enable shared strings
+                // and other optimizations.
+                SerializerSettings settings = new()
+                {
+                    // Memory copy serialization enables fast re-serialization for already-deserialized flatbuffer items.
+                    // Since the echo service is simple, this is a good optimization to enable.
+                    EnableMemoryCopySerialization = true,
+
+                    // Turn on writing shared strings.
+                    SharedStringWriterFactory = () => new SharedStringWriter(),
+                };
+
+                // Update the serializers used for the echo service.
+                EchoService.Serializer<SingleMessage>.Value = EchoService.Serializer<SingleMessage>.Value.WithSettings(settings);
+                EchoService.Serializer<MultiMessage>.Value = EchoService.Serializer<MultiMessage>.Value.WithSettings(settings);
+            }
+
             Server server = new Server();
             server.Ports.Add("127.0.0.1", 50001, ServerCredentials.Insecure);
-            server.Services.Add(StatsService.BindService(new ServerImpl()));
+            server.Services.Add(EchoService.BindService(new ServerImpl()));
             server.Start();
 
             Thread.Sleep(1000);
 
-            StatsService.StatsServiceClient client = new StatsService.StatsServiceClient(new Channel("127.0.0.1", 50001, ChannelCredentials.Insecure));
+            EchoService.EchoServiceClient client = new(new Channel("127.0.0.1", 50001, ChannelCredentials.Insecure));
 
             // We can use the client in two different ways:
             // 1) as a traditional gRPC client:
             GrpcOperations(client).GetAwaiter().GetResult();
 
             // 2) As an async interface with Channel<T>
-            InterfaceOperations((IStatsService)client).GetAwaiter().GetResult();
+            InterfaceOperations((IEchoService)client).GetAwaiter().GetResult();
 
             Thread.Sleep(1000);
 
@@ -55,41 +74,41 @@ namespace Samples.GrpcExample
         /// This example uses the Grpc operations on the stats service client. The Grpc methods allow specifying
         /// Grpc Headers and are tightly coupled with the Grpc interfaces.
         /// </summary>
-        private static async Task GrpcOperations(StatsService.StatsServiceClient client)
+        private static async Task GrpcOperations(EchoService.EchoServiceClient client)
         {
             // Unary operation
             {
-                AverageResponse response = await client.SingleOperation(new BulkNumbers { Items = new[] { 1d, 2d, 3d, 4d } });
-                Console.WriteLine("[Unary] Average is: " + response.Average);
+                SingleMessage unaryResponse = await client.EchoUnary(new SingleMessage { Message = "hi there" }, default);
+                Console.WriteLine($"EchoUnary: {unaryResponse.Message}");
             }
 
             // Client streaming
             {
-                AsyncClientStreamingCall<SingleNumber, AverageResponse> call = client.AverageStreaming(default);
+                AsyncClientStreamingCall<SingleMessage, MultiMessage> call = client.EchoClientStreaming(default);
 
-                await call.RequestStream.WriteAsync(new SingleNumber { Item = 1d });
-                await call.RequestStream.WriteAsync(new SingleNumber { Item = 2d });
-                await call.RequestStream.WriteAsync(new SingleNumber { Item = 3d });
-                await call.RequestStream.WriteAsync(new SingleNumber { Item = 4d });
+                await call.RequestStream.WriteAsync(new SingleMessage { Message = "foo" });
+                await call.RequestStream.WriteAsync(new SingleMessage { Message = "bar" });
+                await call.RequestStream.WriteAsync(new SingleMessage { Message = "baz" });
+                await call.RequestStream.WriteAsync(new SingleMessage { Message = "bat" });
 
                 await call.RequestStream.CompleteAsync();
-                AverageResponse response = await call.ResponseAsync;
+                MultiMessage response = await call.ResponseAsync;
 
-                Console.WriteLine("[Client Streaming] Average is: " + response.Average);
+                Console.WriteLine("EchoClientStreaming: " + string.Join(", ", response.Message));
             }
 
             // Duplex Streaming
             {
-                AsyncDuplexStreamingCall<SingleNumber, AverageResponse> call = client.DuplexAverage(default);
+                AsyncDuplexStreamingCall<SingleMessage, SingleMessage> call = client.EchoDuplex(default);
 
                 for (int i = 1; i < 5; ++i)
                 {
-                    await call.RequestStream.WriteAsync(new SingleNumber { Item = i });
+                    await call.RequestStream.WriteAsync(new SingleMessage { Message = $"Item{i}" });
 
                     if (await call.ResponseStream.MoveNext())
                     {
-                        AverageResponse response = call.ResponseStream.Current;
-                        Console.WriteLine("[Duplex Streaming] Current average is: " + response.Average);
+                        SingleMessage response = call.ResponseStream.Current;
+                        Console.WriteLine("[Duplex Streaming] Received: " + response.Message);
                     }
                     else
                     {
@@ -104,55 +123,80 @@ namespace Samples.GrpcExample
 
         /// <summary>
         /// Instead of using the tightly-bound gRPC methods, we can instead use the service
-        /// interface that flatsharp generates. <see cref="StatsService.StatsServiceClient"/> implements <see cref="IStatsService"/>.
+        /// interface that flatsharp generates. <see cref="EchoService.EchoServiceClient"/> implements <see cref="IEchoService"/>.
         /// </summary>
-        /// <param name="statsService"></param>
-        /// <returns></returns>
-        private static async Task InterfaceOperations(IStatsService statsService)
+        private static async Task InterfaceOperations(IEchoService echoService)
         {
             // Unary operation
             {
-                AverageResponse response = await statsService.SingleOperation(new BulkNumbers { Items = new[] { 1d, 2d, 3d, 4d } }, CancellationToken.None);
-                Console.WriteLine("[Unary] Average is: " + response.Average);
+                SingleMessage unaryResponse = await echoService.EchoUnary(new SingleMessage { Message = "hi there" }, default);
+                Console.WriteLine($"EchoUnary: {unaryResponse.Message}");
             }
 
             // Client streaming
             {
                 // to limit the rate of requests, you can instead create a bounded channel.
-                var requestChannel = System.Threading.Channels.Channel.CreateUnbounded<SingleNumber>();
+                var requestChannel = System.Threading.Channels.Channel.CreateUnbounded<SingleMessage>();
 
-                Task<AverageResponse> responseTask = statsService.AverageStreaming(requestChannel.Reader, CancellationToken.None);
+                Task<MultiMessage> responseTask = echoService.EchoClientStreaming(requestChannel.Reader, CancellationToken.None);
 
-                await requestChannel.Writer.WriteAsync(new SingleNumber { Item = 1d });
-                await requestChannel.Writer.WriteAsync(new SingleNumber { Item = 2d });
-                await requestChannel.Writer.WriteAsync(new SingleNumber { Item = 3d });
-                await requestChannel.Writer.WriteAsync(new SingleNumber { Item = 4d });
+                await requestChannel.Writer.WriteAsync(new SingleMessage { Message = "foo" });
+                await requestChannel.Writer.WriteAsync(new SingleMessage { Message = "bar" });
+                await requestChannel.Writer.WriteAsync(new SingleMessage { Message = "baz" });
+                await requestChannel.Writer.WriteAsync(new SingleMessage { Message = "bat" });
 
                 // Indicate that the channel won't ever have anything else written to it. This will cause the async call to complete.
                 // if the channel writer is not completed, the responseTask will never complete.
                 requestChannel.Writer.Complete();
 
-                AverageResponse response = await responseTask;
-                Console.WriteLine("[Client Streaming] Average is: " + response.Average);
+                MultiMessage response = await responseTask;
+                Console.WriteLine("EchoClientStreaming: " + string.Join(", ", response.Message));
+            }
+
+            // Server Streaming
+            {
+                // This creates a bounded channel that can hold one item. To enable faster processing,
+                // you can also create an unbounded channel.
+                var responseChannel = System.Threading.Channels.Channel.CreateBounded<SingleMessage>(1);
+
+                MultiMessage request = new()
+                {
+                    Message = new List<SharedString>
+                    {
+                        "foo", "bar", "baz", "bat"
+                    }
+                };
+
+                Task responseTask = echoService.EchoServerStreaming(request, responseChannel.Writer, CancellationToken.None);
+
+                while (await responseChannel.Reader.WaitToReadAsync())
+                {
+                    while (responseChannel.Reader.TryRead(out SingleMessage? message))
+                    {
+                        Console.WriteLine("EchoServerStreaming: " + message.Message);
+                    }
+                }
+
+                await responseTask;
             }
 
             // Duplex Streaming
             {
-                var requestChannel = System.Threading.Channels.Channel.CreateBounded<SingleNumber>(1);
-                var responseChannel = System.Threading.Channels.Channel.CreateBounded<AverageResponse>(1);
+                var requestChannel = System.Threading.Channels.Channel.CreateBounded<SingleMessage>(1);
+                var responseChannel = System.Threading.Channels.Channel.CreateBounded<SingleMessage>(1);
 
-                Task call = statsService.DuplexAverage(requestChannel.Reader, responseChannel.Writer, CancellationToken.None);
+                Task call = echoService.EchoDuplex(requestChannel.Reader, responseChannel.Writer, CancellationToken.None);
 
                 // To write to the remote server, we write to the request channel. To receive the remote server's 
                 // responses, we read from the response channel.
                 for (int i = 1; i < 5; ++i)
                 {
-                    await requestChannel.Writer.WriteAsync(new SingleNumber { Item = i });
+                    await requestChannel.Writer.WriteAsync(new SingleMessage { Message = $"Item{i}" });
 
                     if (await responseChannel.Reader.WaitToReadAsync())
                     {
-                        AverageResponse response = await responseChannel.Reader.ReadAsync();
-                        Console.WriteLine("[Duplex Streaming] Current average is: " + response.Average);
+                        SingleMessage response = await responseChannel.Reader.ReadAsync();
+                        Console.WriteLine("[Duplex Streaming] Received: " + response.Message);
                     }
                 }
 
@@ -162,52 +206,41 @@ namespace Samples.GrpcExample
             }
         }
 
-        private class ServerImpl : StatsService.StatsServiceServerBase
+        private class ServerImpl : EchoService.EchoServiceServerBase
         {
-            public override Task<AverageResponse> SingleOperation(BulkNumbers request, ServerCallContext callContext)
+            public override Task<SingleMessage> EchoUnary(SingleMessage request, ServerCallContext callContext)
             {
-                return Task.FromResult(new AverageResponse
-                {
-                    Average = request.Items is not null ? request.Items.Average() : 0,
-                });
+                return Task.FromResult(request);
             }
 
-            public override async Task<AverageResponse> AverageStreaming(IAsyncStreamReader<SingleNumber> requestStream, ServerCallContext callContext)
+            public override async Task<MultiMessage> EchoClientStreaming(IAsyncStreamReader<SingleMessage> requestStream, ServerCallContext callContext)
             {
-                double runningSum = 0;
-                int runningSamples = 0;
-                
-                while (await requestStream.MoveNext(default))
+                MultiMessage response = new()
                 {
-                    SingleNumber item = requestStream.Current;
+                    Message = new List<SharedString>()
+                };
 
-                    runningSum += item.Item;
-                    runningSamples++;
+                while (await requestStream.MoveNext(callContext.CancellationToken))
+                {
+                    response.Message.Add(requestStream.Current.Message);
                 }
 
-                return new AverageResponse
-                {
-                    Average = runningSum / runningSamples
-                };
+                return response;
             }
 
-            public override async Task DuplexAverage(IAsyncStreamReader<SingleNumber> requestStream, IServerStreamWriter<AverageResponse> responseStream, ServerCallContext callContext)
+            public override async Task EchoServerStreaming(MultiMessage request, IServerStreamWriter<SingleMessage> responseStream, ServerCallContext callContext)
             {
-                double runningSum = 0;
-                int runningSamples = 0;
-
-                while (await requestStream.MoveNext(default))
+                foreach (string message in request.Message)
                 {
-                    SingleNumber item = requestStream.Current;
+                    await responseStream.WriteAsync(new SingleMessage { Message = message });
+                }
+            }
 
-                    runningSum += item.Item;
-                    runningSamples++;
-
-                    await responseStream.WriteAsync(
-                        new AverageResponse
-                        {
-                            Average = runningSum / runningSamples
-                        });
+            public override async Task EchoDuplex(IAsyncStreamReader<SingleMessage> requestStream, IServerStreamWriter<SingleMessage> responseStream, ServerCallContext callContext)
+            {
+                while (await requestStream.MoveNext(callContext.CancellationToken))
+                {
+                    await responseStream.WriteAsync(requestStream.Current);
                 }
             }
         }
