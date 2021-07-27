@@ -16,32 +16,21 @@
 
 namespace Samples.GrpcExample;
 
-enum MathOperation : ubyte { None, Add, Subtract, Multiply, Divide }
-
-table BulkNumbers (fs_serializer:lazy)
+table SingleMessage (fs_serializer:"Lazy")
 {
-	Items:[double];
+    Message : string (required);
 }
 
-table SingleNumber (fs_serializer:lazy)
+table MultiMessage (fs_serializer:"Lazy")
 {
-	Item:double;
-}
-
-table AverageResponse (fs_serializer:lazy)
-{
-	Average:double;
+    Message : [string] (fs_sharedString, required);
 }
 
 // Specify the fs_rpcInterface attribute to generate an interface for this service.
-rpc_service StatsService (fs_rpcInterface:"IStatsService")
+rpc_service EchoService (fs_rpcInterface:"IEchoService")
 {
-	// Single input, single output.
-	SingleOperation(BulkNumbers):AverageResponse;
-
-	// Stream of inputs. Server sends single response once client has sent all inputs.
-	AverageStreaming(SingleNumber):AverageResponse (streaming:client);
-
-	// Duplex streaming. Server sends an update response each time the client sends a new input.
-	DuplexAverage(SingleNumber):AverageResponse (streaming:duplex);
+     EchoUnary (SingleMessage) : SingleMessage;
+     EchoClientStreaming (SingleMessage) : MultiMessage (streaming : "client");
+     EchoServerStreaming (MultiMessage) : SingleMessage (streaming : "server");
+     EchoDuplex (SingleMessage) : SingleMessage         (streaming : "duplex");
 }

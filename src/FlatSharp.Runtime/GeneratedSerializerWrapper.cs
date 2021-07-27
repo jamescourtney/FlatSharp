@@ -18,7 +18,6 @@ namespace FlatSharp
 {
     using System;
     using System.Diagnostics;
-    using System.IO;
     using System.Reflection;
     using System.Threading;
 
@@ -31,9 +30,9 @@ namespace FlatSharp
 
         private readonly IGeneratedSerializer<T> innerSerializer;
         private readonly Lazy<string?> lazyCSharp;
-
-        private ThreadLocal<ISharedStringWriter>? sharedStringWriter;
-        private SerializerSettings? settings;
+        private readonly ThreadLocal<ISharedStringWriter>? sharedStringWriter;
+        private readonly Func<ISharedStringReader>? sharedStringReaderFactory;
+        private readonly bool enableMemoryCopySerialization;
         private readonly string? fileIdentifier;
 
         public GeneratedSerializerWrapper(
@@ -51,6 +50,24 @@ namespace FlatSharp
             this.fileIdentifier = tableAttribute?.FileIdentifier;
         }
 
+        private GeneratedSerializerWrapper(GeneratedSerializerWrapper<T> template, SerializerSettings settings)
+        {
+            this.lazyCSharp = template.lazyCSharp;
+            this.Assembly = template.Assembly;
+            this.AssemblyBytes = template.AssemblyBytes;
+            this.innerSerializer = template.innerSerializer;
+            this.fileIdentifier = template.fileIdentifier;
+
+            this.enableMemoryCopySerialization = settings.EnableMemoryCopySerialization;
+            this.sharedStringReaderFactory = settings.SharedStringReaderFactory;
+
+            Func<ISharedStringWriter>? writerFactory = settings.SharedStringWriterFactory;
+            if (writerFactory is not null)
+            {
+                this.sharedStringWriter = new ThreadLocal<ISharedStringWriter>(writerFactory);
+            }
+        }
+
         Type ISerializer.RootType => typeof(T);
 
         public string? CSharp => this.lazyCSharp.Value;
@@ -66,7 +83,7 @@ namespace FlatSharp
                 throw new ArgumentNullException(nameof(item), "The root table may not be null.");
             }
 
-            if (this.settings?.EnableMemoryCopySerialization == true &&
+            if (this.enableMemoryCopySerialization &&
                 item is IFlatBufferDeserializedObject deserializedObj &&
                 deserializedObj.CanSerializeWithMemoryCopy)
             {
@@ -104,7 +121,7 @@ namespace FlatSharp
                 throw new ArgumentException("Buffer is too small to be valid!");
             }
 
-            buffer.SharedStringReader = this.settings?.SharedStringReaderFactory?.Invoke();
+            buffer.SharedStringReader = this.sharedStringReaderFactory?.Invoke();
             return buffer.InvokeParse(this.innerSerializer, 0);
         }
 
@@ -125,7 +142,7 @@ namespace FlatSharp
                 };
             }
 
-            if (this.settings?.EnableMemoryCopySerialization == true &&
+            if (this.enableMemoryCopySerialization &&
                 item is IFlatBufferDeserializedObject deserializedObj &&
                 deserializedObj.CanSerializeWithMemoryCopy)
             {
@@ -202,21 +219,7 @@ namespace FlatSharp
 
         public ISerializer<T> WithSettings(SerializerSettings settings)
         {
-            var clone = new GeneratedSerializerWrapper<T>(
-                   this.innerSerializer,
-                   this.Assembly,
-                   () => this.CSharp,
-                   this.AssemblyBytes);
-
-            clone.settings = settings;
-
-            var writerFactory = settings.SharedStringWriterFactory;
-            if (writerFactory != null)
-            {
-                clone.sharedStringWriter = new ThreadLocal<ISharedStringWriter>(writerFactory);
-            }
-
-            return clone;
+            return new GeneratedSerializerWrapper<T>(this, settings);
         }
     }
 }
