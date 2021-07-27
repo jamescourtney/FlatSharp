@@ -142,7 +142,7 @@ namespace FlatSharp
                 };
             }
 
-            if (this.enableMemoryCopySerialization == true &&
+            if (this.enableMemoryCopySerialization &&
                 item is IFlatBufferDeserializedObject deserializedObj &&
                 deserializedObj.CanSerializeWithMemoryCopy)
             {
