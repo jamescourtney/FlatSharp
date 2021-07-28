@@ -36,10 +36,7 @@ namespace FlatSharp
 
         internal static string GetCompilableTypeName(this Type t)
         {
-            if (string.IsNullOrEmpty(t.FullName))
-            {
-                throw new InvalidOperationException($"FlatSharp.Unexpected: {t} has null/empty fully name.");
-            }
+            FlatSharpInternal.Assert(!string.IsNullOrEmpty(t.FullName), $"{t} has null/empty full name.");
 
             string name;
             if (t.IsGenericType)
@@ -66,45 +63,30 @@ namespace FlatSharp
         }
 
         internal static (AccessModifier propertyModifier, AccessModifier? getModifer, AccessModifier? setModifier) GetPropertyAccessModifiers(
-            AccessModifier? getModifier,
+            AccessModifier getModifier,
             AccessModifier? setModifier)
         {
-            if (getModifier is null || setModifier is null)
+            if (setModifier is null)
             {
-                if (getModifier is null && setModifier is null)
-                {
-                    return (AccessModifier.Public, null, null);
-                }
-                else if (getModifier is null)
-                {
-                    return (setModifier!.Value, null, null);
-                }
-                else
-                {
-                    return (getModifier.Value, null, null);
-                }
+                return (getModifier, null, null);
             }
 
-            if (getModifier.Value < setModifier.Value)
+            if (getModifier < setModifier.Value)
             {
-                return (getModifier.Value, null, setModifier.Value);
+                return (getModifier, null, setModifier.Value);
             }
-            else if (setModifier.Value < getModifier.Value)
+            else if (setModifier.Value < getModifier)
             {
-                return (setModifier.Value, getModifier.Value, null);
+                return (setModifier.Value, getModifier, null);
             }
 
-            return (getModifier.Value, null, null);
+            return (getModifier, null, null);
         }
 
         internal static (AccessModifier propertyModifier, AccessModifier? getModifer, AccessModifier? setModifier) GetPropertyAccessModifiers(
             PropertyInfo property)
         {
-            if (property.GetMethod is null)
-            {
-                throw new InvalidOperationException($"FlatSharp internal error: Property {property.DeclaringType?.Name}.{property.Name} has null get method.");
-            }
-
+            FlatSharpInternal.Assert(property.GetMethod is not null, $"Property {property.DeclaringType?.Name}.{property.Name} has null get method.");
             var getModifier = GetAccessModifier(property.GetMethod);
 
             if (property.SetMethod is null)
