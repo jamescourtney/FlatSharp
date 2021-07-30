@@ -43,11 +43,10 @@ namespace FlatSharp.Compiler
 
         protected override void OnWriteCode(CodeWriter writer, CompileContext context)
         {
-            if (!context.TypeModelContainer.TryResolveFbsAlias(this.FbsUnderlyingType, out var typeModel))
-            {
-                ErrorContext.Current.RegisterError($"Enum with underlying type '{this.FbsUnderlyingType}' could not be resolved by type model.");
-                return;
-            }
+            // Grammar guarantees we have a known type alias.
+            FlatSharpInternal.Assert(
+                context.TypeModelContainer.TryResolveFbsAlias(this.FbsUnderlyingType, out ITypeModel? typeModel),
+                "Unable to resolve type model");
 
             writer.AppendLine($"[FlatBufferEnum(typeof({typeModel.ClrType.FullName}))]");
             writer.AppendLine("[System.Runtime.CompilerServices.CompilerGenerated]");
@@ -143,7 +142,7 @@ namespace FlatSharp.Compiler
 
                     if (!model.TryFormatStringAsLiteral(bigInt.ToString(), out string? standardizedString))
                     {
-                        ErrorContext.Current?.RegisterError($"Could not format value for enum '{this.Name}'. Value = {bigInt}.");
+                        ErrorContext.Current?.RegisterError($"Could not format value '{bigInt}' as a {model.GetCompilableTypeName()} for enum '{this.Name}'. Make sure the value is expressable as '{model.GetCompilableTypeName()}'");
                         continue;
                     }
 

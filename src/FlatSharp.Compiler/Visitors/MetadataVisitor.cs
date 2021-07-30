@@ -27,18 +27,18 @@ namespace FlatSharp.Compiler
     {
         public override Dictionary<string, string?> VisitMetadata([NotNull] FlatBuffersParser.MetadataContext context)
         {
-            return this.VisitCommasep_ident_with_opt_single_value(context.commasep_ident_with_opt_single_value());
+            return this.VisitMetadata_list(context.metadata_list());
         }
 
-        public override Dictionary<string, string?> VisitCommasep_ident_with_opt_single_value([NotNull] FlatBuffersParser.Commasep_ident_with_opt_single_valueContext context)
+        public override Dictionary<string, string?> VisitMetadata_list([NotNull] FlatBuffersParser.Metadata_listContext context)
         {
             var pairs = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
-            if (context?.ident_with_opt_single_value() != null)
+            if (context?.metadata_item() != null)
             {
-                foreach (var item in context.ident_with_opt_single_value())
+                foreach (var item in context.metadata_item())
                 {
-                    string identifier = item.IDENT().GetText();
-                    string? value = item.single_value()?.GetText()?.Trim('"');
+                    string identifier = item.Key.Text;
+                    string? value = item.Value?.GetText()?.Trim('"');
 
                     pairs[identifier] = value;
                 }

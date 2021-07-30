@@ -38,7 +38,7 @@ namespace FlatSharp.Compiler
 
             this.enumDef = new EnumDefinition(
                 typeName: typeName,
-                underlyingTypeName: context.type().GetText(),
+                underlyingTypeName: context.integer_type_name().GetText(),
                 parent: this.parent);
 
             ErrorContext.Current.WithScope(this.enumDef.Name, () =>

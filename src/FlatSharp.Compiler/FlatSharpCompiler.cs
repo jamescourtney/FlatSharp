@@ -272,8 +272,8 @@ namespace FlatSharp.Compiler
             FlatBuffersLexer lexer = new FlatBuffersLexer(input);
             CommonTokenStream tokenStream = new CommonTokenStream(lexer);
             FlatBuffersParser parser = new FlatBuffersParser(tokenStream);
-            parser.AddErrorListener(new CustomErrorListener());
 
+            parser.AddErrorListener(new CustomErrorListener());
             return parser;
         }
 

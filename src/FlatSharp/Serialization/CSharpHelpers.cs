@@ -143,6 +143,5 @@ namespace FlatSharp
 
             throw new InvalidOperationException("Unexpected method visibility: " + method.Name);
         }
-
     }
 }

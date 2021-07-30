@@ -29,12 +29,14 @@ namespace FlatSharpTests.Compiler
         [TestMethod]
         public void BasicEnumTest_Byte()
         {
+            this.EnumTest<byte>("uint8");
             this.EnumTest<byte>("ubyte");
         }
 
         [TestMethod]
         public void BasicEnumTest_SByte()
         {
+            this.EnumTest<sbyte>("int8");
             this.EnumTest<sbyte>("byte");
         }
 
@@ -130,26 +132,30 @@ namespace FlatSharpTests.Compiler
         [TestMethod]
         public void InvalidEnumTest_WrongUnderlyingType_Bool()
         {
-            Assert.ThrowsException<InvalidFbsFileException>(() => this.EnumTest<bool>("bool"));
+            var ex = Assert.ThrowsException<InvalidFbsFileException>(() => this.EnumTest<bool>("bool")); 
+            Assert.IsTrue(ex.Message.Contains("mismatched input 'bool' expecting {'byte', 'ubyte', 'short', 'ushort', 'int', 'uint', 'long', 'ulong', 'int8', 'uint8', 'int16', 'uint16', 'int32', 'uint32', 'int64', 'uint64'}'"));
         }
 
         [TestMethod]
         public void InvalidEnumTest_WrongUnderlyingType_Double()
         {
-            Assert.ThrowsException<FlatSharpCompilationException>(() => this.EnumTest<double>("double"));
+            var ex = Assert.ThrowsException<InvalidFbsFileException>(() => this.EnumTest<double>("double"));
+            Assert.IsTrue(ex.Message.Contains("mismatched input 'double' expecting {'byte', 'ubyte', 'short', 'ushort', 'int', 'uint', 'long', 'ulong', 'int8', 'uint8', 'int16', 'uint16', 'int32', 'uint32', 'int64', 'uint64'}'"));
         }
 
         [TestMethod]
         public void InvalidEnumTest_WrongUnderlyingType_Float()
         {
-            Assert.ThrowsException<FlatSharpCompilationException>(() => this.EnumTest<float>("float"));
+            var ex = Assert.ThrowsException<InvalidFbsFileException>(() => this.EnumTest<float>("float"));
+            Assert.IsTrue(ex.Message.Contains("mismatched input 'float' expecting {'byte', 'ubyte', 'short', 'ushort', 'int', 'uint', 'long', 'ulong', 'int8', 'uint8', 'int16', 'uint16', 'int32', 'uint32', 'int64', 'uint64'}'"));
         }
 
         [TestMethod]
         public void InvalidEnumTest_DuplicateValues()
         {
             string fbs = $"namespace Foo.Bar; enum MyEnum : ubyte {{ Red = 0x0, Blue = 0X10, Yellow = 16 }}";
-            Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(fbs, new()));
+            var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(fbs, new()));
+            Assert.IsTrue(ex.Message.Contains("Enum 'MyEnum' contains duplicate value '16'."));
         }
 
         [TestMethod]
@@ -157,13 +163,48 @@ namespace FlatSharpTests.Compiler
         {
             string fbs = $"namespace Foo.Bar; enum MyEnum : ubyte {{ Red = 0x0, Blue = 3, Yellow = 2 }}";
             var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(fbs, new()));
+            Assert.IsTrue(ex.Message.Contains("Enum 'MyEnum' must declare values sorted in ascending order."));
         }
 
         [TestMethod]
-        public void InvalidEnumTest_ValueOutOfRangeOfUnderlyingType()
+        public void InvalidEnumTest_ValueOutOfRangeOfUnderlyingType_Above()
         {
             string fbs = $"namespace Foo.Bar; enum MyEnum : ubyte {{ Red = 0x0, Blue = 255, Yellow = 256 }}";
-            Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(fbs, new()));
+            var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(fbs, new()));
+            Assert.IsTrue(ex.Message.Contains("Could not format value '256' as a System.Byte for enum 'MyEnum'. Make sure the value is expressable as 'System.Byte'"));
+        }
+
+        [TestMethod]
+        public void InvalidEnumTest_ValueOutOfRangeOfUnderlyingType_Below()
+        {
+            string fbs = $"namespace Foo.Bar; enum MyEnum : ulong {{ Red = -1, Blue = 255, Yellow = 256 }}";
+            var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(fbs, new()));
+            Assert.IsTrue(ex.Message.Contains("Could not format value '-1' as a System.UInt64 for enum 'MyEnum'. Make sure the value is expressable as 'System.UInt64'"));
+        }
+
+        [TestMethod]
+        public void InvalidEnumTest_UnknownType()
+        {
+            string fbs = $"namespace Foo.Bar; enum MyEnum : foobar {{ Red = 0x0, Blue = 255, Yellow = 256 }}";
+            var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(fbs, new()));
+            Assert.IsTrue(ex.Message.Contains("mismatched input 'foobar' expecting {'byte', 'ubyte', 'short', 'ushort', 'int', 'uint', 'long', 'ulong', 'int8', 'uint8', 'int16', 'uint16', 'int32', 'uint32', 'int64', 'uint64'}'"));
+        }
+
+        [TestMethod]
+        public void InvalidEnumTest_String()
+        {
+            string fbs = $"namespace Foo.Bar; enum MyEnum : string {{ Red, Blue, Yellow }}";
+            var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(fbs, new()));
+            Assert.IsTrue(ex.Message.Contains("mismatched input 'string' expecting {'byte', 'ubyte', 'short', 'ushort', 'int', 'uint', 'long', 'ulong', 'int8', 'uint8', 'int16', 'uint16', 'int32', 'uint32', 'int64', 'uint64'}'"));
+        }
+
+        [TestMethod]
+        public void InvalidEnumTest_NotAnInt()
+        {
+            // Quirk of the grammar allows this.
+            string fbs = $"namespace Foo.Bar; enum MyEnum : uint {{ Red = 1.2 }}";
+            var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(fbs, new()));
+            Assert.IsTrue(ex.Message.Contains("mismatched input '1.2' expecting {HEX_INTEGER_CONSTANT, INTEGER_CONSTANT}"));
         }
 
         [TestMethod]
