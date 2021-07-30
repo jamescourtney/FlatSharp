@@ -46,7 +46,7 @@ namespace FlatSharp.Compiler
                     return parsed;
                 }
 
-                ErrorContext.Current?.RegisterError(
+                ErrorContext.Current.RegisterError(
                   $"Unable to parse attribute '{key}' with value '{value}' as as type '{typeof(T).GetCompilableTypeName()}'. ");
 
                 return defaultValueIfPresent;

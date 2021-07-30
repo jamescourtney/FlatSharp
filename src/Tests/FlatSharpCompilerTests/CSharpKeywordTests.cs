@@ -14,26 +14,22 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Compiler
+namespace FlatSharpTests.Compiler
 {
-    using System.IO;
+    using System;
+    using FlatSharp;
+    using FlatSharp.Compiler;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-    /// <summary>
-    /// Loads an include file.
-    /// </summary>
-    internal class IncludeFileLoader : IIncludeLoader
+    [TestClass]
+    public class CSharpKeywordTests
     {
-        public string LoadInclude(string fullPath)
+        [TestMethod]
+        public void ClassKeyword()
         {
-            try
-            {
-                return File.ReadAllText(fullPath);
-            }
-            catch (IOException ex)
-            {
-                ErrorContext.Current.RegisterError(ex.Message);
-                return string.Empty;
-            }
+            string fbs = $"namespace Foo.Bar; enum class : ubyte (bit_flags) {{ Red, Blue, Green, Yellow }}";
+            Assert.ThrowsException<FlatSharpCompilationException>(
+                () => FlatSharpCompiler.CompileAndLoadAssembly(fbs, new()));
         }
     }
 }

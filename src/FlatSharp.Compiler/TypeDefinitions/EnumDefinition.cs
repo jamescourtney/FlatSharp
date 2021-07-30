@@ -43,11 +43,10 @@ namespace FlatSharp.Compiler
 
         protected override void OnWriteCode(CodeWriter writer, CompileContext context)
         {
-            if (!context.TypeModelContainer.TryResolveFbsAlias(this.FbsUnderlyingType, out var typeModel))
-            {
-                ErrorContext.Current.RegisterError($"Enum with underlying type '{this.FbsUnderlyingType}' could not be resolved by type model.");
-                return;
-            }
+            // Grammar guarantees we have a known type alias.
+            FlatSharpInternal.Assert(
+                context.TypeModelContainer.TryResolveFbsAlias(this.FbsUnderlyingType, out ITypeModel? typeModel),
+                "Unable to resolve type model");
 
             writer.AppendLine($"[FlatBufferEnum(typeof({typeModel.ClrType.FullName}))]");
             writer.AppendLine("[System.Runtime.CompilerServices.CompilerGenerated]");
@@ -83,15 +82,21 @@ namespace FlatSharp.Compiler
 
             foreach (var kvp in this.NameValuePairs)
             {
+                if (results.ContainsKey(kvp.name))
+                {
+                    ErrorContext.Current.RegisterError($"Enum '{this.Name}' may not have duplicate names. Duplicate = '{kvp.name}'");
+                    continue;
+                }
+
                 if (!string.IsNullOrEmpty(kvp.value))
                 {
-                    ErrorContext.Current?.RegisterError($"Enum '{this.Name}' declares the '{MetadataKeys.BitFlags}' attribute. FlatSharp does not support specifying explicit values when used in conjunction with bit flags.");
+                    ErrorContext.Current.RegisterError($"Enum '{this.Name}' declares the '{MetadataKeys.BitFlags}' attribute. FlatSharp does not support specifying explicit values when used in conjunction with bit flags.");
                     continue;
                 }
 
                 if (!model.TryFormatStringAsLiteral(nextValue.ToString(), out string? literal))
                 {
-                    ErrorContext.Current?.RegisterError($"Could not format value for enum '{this.Name}'. Value = {nextValue}. Make sure that the enum type has enough space for this many flags.");
+                    ErrorContext.Current.RegisterError($"Could not format value for enum '{this.Name}'. Value = {nextValue}. Make sure that the enum type has enough space for this many flags.");
                     continue;
                 }
 
@@ -101,16 +106,16 @@ namespace FlatSharp.Compiler
                 results[kvp.name] = literal;
             }
 
-            if (model.TryFormatStringAsLiteral("0", out string? zero) &&
-                model.TryFormatStringAsLiteral(allFlags.ToString(), out string? all))
-            {
-                results["None"] = zero;
-                results["All"] = all;
-            }
-            else
-            {
-                ErrorContext.Current?.RegisterError($"Failed to generate all/none flags.");
-            }
+            FlatSharpInternal.Assert(
+                model.TryFormatStringAsLiteral(allFlags.ToString(), out string? all),
+                "Failed to format all flags.");
+
+            FlatSharpInternal.Assert(
+                model.TryFormatStringAsLiteral("0", out string? zero),
+                "Failed to generate none flags.");
+
+            results["None"] = zero;
+            results["All"] = all;
 
             return results;
         }
@@ -127,7 +132,7 @@ namespace FlatSharp.Compiler
 
                 if (results.ContainsKey(key))
                 {
-                    ErrorContext.Current?.RegisterError($"Enum '{this.Name}' may not have duplicate names. Duplicate = '{key}'");
+                    ErrorContext.Current.RegisterError($"Enum '{this.Name}' may not have duplicate names. Duplicate = '{key}'");
                     continue;
                 }
 
@@ -138,19 +143,19 @@ namespace FlatSharp.Compiler
                     // If the value got set backwards.
                     if (bigInt < nextValue && results.Count > 0)
                     {
-                        ErrorContext.Current?.RegisterError($"Enum '{this.Name}' must declare values sorted in ascending order.");
+                        ErrorContext.Current.RegisterError($"Enum '{this.Name}' must declare values sorted in ascending order.");
                     }
 
                     if (!model.TryFormatStringAsLiteral(bigInt.ToString(), out string? standardizedString))
                     {
-                        ErrorContext.Current?.RegisterError($"Could not format value for enum '{this.Name}'. Value = {bigInt}.");
+                        ErrorContext.Current.RegisterError($"Could not format value '{bigInt}' as a {model.GetCompilableTypeName()} for enum '{this.Name}'. Make sure the value is expressable as '{model.GetCompilableTypeName()}'");
                         continue;
                     }
 
                     // C# compiler won't complain about duplicate values.
                     if (results.Values.Any(x => x == standardizedString))
                     {
-                        ErrorContext.Current?.RegisterError($"Enum '{this.Name}' contains duplicate value '{value}'.");
+                        ErrorContext.Current.RegisterError($"Enum '{this.Name}' contains duplicate value '{value}'.");
                     }
 
                     results[key] = standardizedString;
@@ -162,7 +167,7 @@ namespace FlatSharp.Compiler
 
                     if (!model.TryFormatStringAsLiteral(value, out string? standardizedString))
                     {
-                        ErrorContext.Current?.RegisterError($"Could not format value for enum '{this.Name}'. Value = {value}.");
+                        ErrorContext.Current.RegisterError($"Could not format value for enum '{this.Name}'. Value = {value}.");
                         continue;
                     }
 
@@ -205,7 +210,7 @@ namespace FlatSharp.Compiler
                 }
             }
 
-            ErrorContext.Current?.RegisterError($"Unable to parse enum value '{value}' as an integer.");
+            ErrorContext.Current.RegisterError($"Unable to parse enum value '{value}' as an integer.");
             return null;
         }
     }

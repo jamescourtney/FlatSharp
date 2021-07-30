@@ -129,13 +129,13 @@ namespace FlatSharp.Compiler
 
             if (index == DefaultIfPresent)
             {
-                ErrorContext.Current?.RegisterError($"Value of '{MetadataKeys.Id}' attribute should be set if attribute present.");
+                ErrorContext.Current.RegisterError($"Value of '{MetadataKeys.Id}' attribute should be set if attribute present.");
                 return;
             }
 
             if (index.Value < 0)
             {
-                ErrorContext.Current?.RegisterError($"Value of '{MetadataKeys.Id}' attribute {index} of '{definition.Name}' field is negative.");
+                ErrorContext.Current.RegisterError($"Value of '{MetadataKeys.Id}' attribute {index} of '{definition.Name}' field is negative.");
                 return;
             }
 
@@ -164,14 +164,14 @@ namespace FlatSharp.Compiler
                 {
                     if (!Enum.TryParse<VectorType>(vectorTypeString, true, out vectorType))
                     {
-                        ErrorContext.Current?.RegisterError(
+                        ErrorContext.Current.RegisterError(
                             $"Unable to parse '{vectorTypeString}' as a vector type. Valid choices are: {string.Join(", ", Enum.GetNames(typeof(VectorType)))}.");
                     }
                 }
             }
             else if (metadata.ContainsKey(MetadataKeys.VectorKind) || metadata.ContainsKey(MetadataKeys.VectorKindLegacy))
             {
-                ErrorContext.Current?.RegisterError(
+                ErrorContext.Current.RegisterError(
                     $"Non-vectors may not have the '{MetadataKeys.VectorKind}' or '{MetadataKeys.VectorKindLegacy}' attributes.");
             }
 
@@ -182,7 +182,7 @@ namespace FlatSharp.Compiler
 
                 if (!int.TryParse(toParse, out var length) || length <= 0)
                 {
-                    ErrorContext.Current?.RegisterError(
+                    ErrorContext.Current.RegisterError(
                         $"Unable to parse '{toParse}' as a struct vector length. Lengths should be a postive base 10 integer.");
                 }
                 else

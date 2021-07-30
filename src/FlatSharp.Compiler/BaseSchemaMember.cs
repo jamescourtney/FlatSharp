@@ -79,12 +79,12 @@ namespace FlatSharp.Compiler
             {
                 if (!this.SupportsChildren)
                 {
-                    ErrorContext.Current?.RegisterError($"Unable to add child to current context.");
+                    ErrorContext.Current.RegisterError($"Unable to add child to current context.");
                 }
 
                 if (this.children.ContainsKey(child.Name))
                 {
-                    ErrorContext.Current?.RegisterError($"Duplicate member name '{child.Name}'.");
+                    ErrorContext.Current.RegisterError($"Duplicate member name '{child.Name}'.");
                 }
 
                 this.children[child.Name] = child;

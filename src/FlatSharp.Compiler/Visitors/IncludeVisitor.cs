@@ -39,7 +39,7 @@ namespace FlatSharp.Compiler
             string? includeFile = context.STRING_CONSTANT()?.GetText()?.Trim('"').Trim();
             if (string.IsNullOrEmpty(includeFile))
             {
-                ErrorContext.Current?.RegisterError("Include directive was empty.");
+                ErrorContext.Current.RegisterError("Include directive was empty.");
             }
             else
             {
