@@ -38,6 +38,7 @@ namespace FlatSharpTests
                 Assert.IsTrue(a == (SharedString)b);
                 Assert.IsTrue((SharedString)a == (SharedString)b);
                 Assert.AreEqual<SharedString>(a, b);
+                Assert.AreEqual(((SharedString)a).ToString(), b);
 
                 if (b is not null)
                 {
