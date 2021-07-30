@@ -30,7 +30,7 @@ namespace FlatSharp.Compiler
             [NotNull] string msg,
             [Nullable] RecognitionException e)
         {
-            ErrorContext.Current?.RegisterError($"Syntax error FBS file: Token='{offendingSymbol.Text}', Msg='{msg}' Line='{line}:{charPositionInLine}");
+            ErrorContext.Current.RegisterError($"Syntax error FBS file: Token='{offendingSymbol.Text}', Msg='{msg}' Line='{line}:{charPositionInLine}");
         }
     }
 }

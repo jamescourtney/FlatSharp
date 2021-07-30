@@ -31,7 +31,7 @@ namespace FlatSharp.Compiler
             }
             catch (IOException ex)
             {
-                ErrorContext.Current?.RegisterError(ex.Message);
+                ErrorContext.Current.RegisterError(ex.Message);
                 return string.Empty;
             }
         }

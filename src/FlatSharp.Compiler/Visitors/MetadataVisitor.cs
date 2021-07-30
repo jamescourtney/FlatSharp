@@ -48,7 +48,7 @@ namespace FlatSharp.Compiler
             {
                 if (pairs.ContainsKey(unsupportedAttribute))
                 {
-                    ErrorContext.Current?.RegisterError($"FlatSharpCompiler does not support the '{unsupportedAttribute}' attribute in FBS files.");
+                    ErrorContext.Current.RegisterError($"FlatSharpCompiler does not support the '{unsupportedAttribute}' attribute in FBS files.");
                 }
             }
 
