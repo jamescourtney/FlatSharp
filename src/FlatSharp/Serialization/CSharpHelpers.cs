@@ -66,21 +66,16 @@ namespace FlatSharp
             AccessModifier getModifier,
             AccessModifier? setModifier)
         {
-            if (setModifier is null)
+            if (setModifier is null || getModifier == setModifier.Value)
             {
                 return (getModifier, null, null);
             }
 
-            if (getModifier < setModifier.Value)
-            {
-                return (getModifier, null, setModifier.Value);
-            }
-            else if (setModifier.Value < getModifier)
-            {
-                return (setModifier.Value, getModifier, null);
-            }
+            FlatSharpInternal.Assert(
+                getModifier < setModifier.Value,
+                "Getter expected to be more visible than setter");
 
-            return (getModifier, null, null);
+            return (getModifier, null, setModifier);
         }
 
         internal static (AccessModifier propertyModifier, AccessModifier? getModifer, AccessModifier? setModifier) GetPropertyAccessModifiers(
