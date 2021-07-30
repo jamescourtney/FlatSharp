@@ -17,6 +17,7 @@
 namespace FlatSharpTests
 {
     using System;
+    using System.Collections.Generic;
     using FlatSharp;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -69,6 +70,7 @@ namespace FlatSharpTests
                     if (b is not null)
                     {
                         Assert.IsFalse(((SharedString)b).Equals(a));
+                        Assert.IsFalse(((SharedString)b).Equals(new List<int>()));
                     }
                 }
             }
