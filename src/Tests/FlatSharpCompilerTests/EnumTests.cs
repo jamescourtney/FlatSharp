@@ -159,6 +159,30 @@ namespace FlatSharpTests.Compiler
         }
 
         [TestMethod]
+        public void InvalidEnumTest_NaturalOverflow()
+        {
+            string fbs = $"namespace Foo.Bar; enum MyEnum : ubyte {{ Red = 255, Blue }}";
+            var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(fbs, new()));
+            Assert.IsTrue(ex.Message.Contains("Could not format value for enum 'MyEnum'. Value = 256."));
+        }
+
+        [TestMethod]
+        public void InvalidEnumTest_DuplicateNames()
+        {
+            string fbs = $"namespace Foo.Bar; enum MyEnum : ubyte {{ Red, Blue, Yellow, Red }}";
+            var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(fbs, new()));
+            Assert.IsTrue(ex.Message.Contains("Enum 'MyEnum' may not have duplicate names. Duplicate = 'Red'"));
+        }
+
+        [TestMethod]
+        public void InvalidEnumTest_DuplicateNames_BitFlags()
+        {
+            string fbs = $"namespace Foo.Bar; enum MyEnum : ubyte (bit_flags) {{ Red, Blue, Yellow, Red }}";
+            var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(fbs, new()));
+            Assert.IsTrue(ex.Message.Contains("Enum 'MyEnum' may not have duplicate names. Duplicate = 'Red'"));
+        }
+
+        [TestMethod]
         public void InvalidEnumTest_NonAscendingValues()
         {
             string fbs = $"namespace Foo.Bar; enum MyEnum : ubyte {{ Red = 0x0, Blue = 3, Yellow = 2 }}";

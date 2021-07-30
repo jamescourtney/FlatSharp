@@ -82,6 +82,12 @@ namespace FlatSharp.Compiler
 
             foreach (var kvp in this.NameValuePairs)
             {
+                if (results.ContainsKey(kvp.name))
+                {
+                    ErrorContext.Current?.RegisterError($"Enum '{this.Name}' may not have duplicate names. Duplicate = '{kvp.name}'");
+                    continue;
+                }
+
                 if (!string.IsNullOrEmpty(kvp.value))
                 {
                     ErrorContext.Current?.RegisterError($"Enum '{this.Name}' declares the '{MetadataKeys.BitFlags}' attribute. FlatSharp does not support specifying explicit values when used in conjunction with bit flags.");
@@ -100,16 +106,16 @@ namespace FlatSharp.Compiler
                 results[kvp.name] = literal;
             }
 
-            if (model.TryFormatStringAsLiteral("0", out string? zero) &&
-                model.TryFormatStringAsLiteral(allFlags.ToString(), out string? all))
-            {
-                results["None"] = zero;
-                results["All"] = all;
-            }
-            else
-            {
-                ErrorContext.Current?.RegisterError($"Failed to generate all/none flags.");
-            }
+            FlatSharpInternal.Assert(
+                model.TryFormatStringAsLiteral(allFlags.ToString(), out string? all),
+                "Failed to format all flags.");
+
+            FlatSharpInternal.Assert(
+                model.TryFormatStringAsLiteral("0", out string? zero),
+                "Failed to generate none flags.");
+
+            results["None"] = zero;
+            results["All"] = all;
 
             return results;
         }
