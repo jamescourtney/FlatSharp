@@ -111,6 +111,7 @@ namespace FlatSharp.Compiler
         public void Dispose()
         {
             FlatSharpInternal.Assert(this.contextStack.Count == 0, "Context was not fully popped");
+            ThreadLocalContext.Value = new ErrorContext();
         }
     }
 }
