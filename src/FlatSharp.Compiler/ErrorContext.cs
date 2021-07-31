@@ -28,30 +28,7 @@ namespace FlatSharp.Compiler
     {
         private static readonly ThreadLocal<ErrorContext> ThreadLocalContext = new ThreadLocal<ErrorContext>(() => new ErrorContext());
 
-        [AllowNull]
-        public static ErrorContext Current
-        {
-            get
-            {
-                var context = ThreadLocalContext.Value;
-                if (context == null)
-                {
-                    context = new ErrorContext();
-                    ThreadLocalContext.Value = context;
-                }
-
-                return context;
-            }
-            private set
-            {
-                if (ThreadLocalContext.Value != null && value != null && value != ThreadLocalContext.Value)
-                {
-                    throw new InvalidOperationException("Duplicate error contexts on same thread! Was another context not disposed?");
-                }
-
-                ThreadLocalContext.Value = value ?? new ErrorContext();
-            }
-        }
+        public static ErrorContext Current => ThreadLocalContext.Value;
 
         private readonly LinkedList<(string scope, int? lineNumber, string? context)> contextStack = new LinkedList<(string, int?, string?)>();
         private readonly List<string> errors = new List<string>();
@@ -121,22 +98,8 @@ namespace FlatSharp.Compiler
             if (this.contextStack.Count > 0)
             {
                 var top = this.contextStack.Last();
-
-                string lineNumber = string.Empty;
-                if (top.lineNumber != null)
-                {
-                    lineNumber = $", Line={lineNumber}";
-                }
-
-                string context = string.Empty;
-                if (!string.IsNullOrEmpty(top.context))
-                {
-                    context = $", Context={top.context}";
-                }
-
                 string scope = string.Join(".", this.contextStack.Select(x => x.scope));
-
-                this.errors.Add($"Message='{message}', Scope={scope}{lineNumber}{context}");
+                this.errors.Add($"Message='{message}', Scope={scope}");
             }
             else
             {
@@ -147,8 +110,8 @@ namespace FlatSharp.Compiler
 
         public void Dispose()
         {
-            Debug.Assert(this.contextStack.Count == 0);
-            Current = null;
+            FlatSharpInternal.Assert(this.contextStack.Count == 0, "Context was not fully popped");
+            ThreadLocalContext.Value = new ErrorContext();
         }
     }
 }
