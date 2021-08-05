@@ -372,11 +372,6 @@ $@"
                     {
                         string error = failure.ToString();
                         SyntaxNode node = syntaxTree.GetRoot().FindNode(failure.Location.SourceSpan);
-                        if (node.Parent is not null)
-                        {
-                            node = node.Parent;
-                        }
-
                         var formattedNode = Formatter.Format(node, workspace);
                         string formatted = formattedNode.ToFullString();
                         formatted = formatted.Trim().Replace('\r', ' ').Replace('\n', ' ');

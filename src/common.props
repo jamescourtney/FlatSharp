@@ -8,7 +8,7 @@
   
   <PropertyGroup>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>5.6.0</Version>
+    <Version>5.6.1</Version>
     <Version Condition=" '$(VersionMajor)' != '' ">$(VersionMajor)</Version>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <Authors>James Courtney</Authors>
@@ -16,7 +16,7 @@
     <Copyright>2021</Copyright>
     <RepositoryUrl>https://github.com/jamescourtney/FlatSharp/</RepositoryUrl>
     <PackageTags>flatbuffers serialization flatbuffer flatsharp</PackageTags>
-    <PackageReleaseNotes>Opportunistically serialize with memcopy when possible.</PackageReleaseNotes>
+    <PackageReleaseNotes>Better error messaging when using C# keywords in FBS files.</PackageReleaseNotes>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>    
     <NuspecProperties>version=$(Version);releaseNotes=$(PackageReleaseNotes)</NuspecProperties>
