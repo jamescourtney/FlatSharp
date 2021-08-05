@@ -60,24 +60,26 @@ namespace FlatSharp.Compiler
         {
             using (var context = ErrorContext.Current)
             {
+                if (string.IsNullOrEmpty(options.InputFile))
+                {
+                    Console.Error.WriteLine($"FlatSharp Compiler: No input file specified.");
+                    return -1;
+                }
+
+                if (string.IsNullOrEmpty(options.OutputDirectory))
+                {
+                    Console.Error.WriteLine("FlatSharp compiler: No output directory specified.");
+                    return -1;
+                }
+
+                // Read existing file to see if we even need to do any work.
+                string fbsFileName = Path.GetFileName(options.InputFile);
+                string outputFileName = fbsFileName + ".generated.cs";
+                string outputFullPath = Path.Combine(options.OutputDirectory, outputFileName);
+
                 try
                 {
                     context.PushScope("$");
-
-                    if (string.IsNullOrEmpty(options.InputFile))
-                    {
-                        throw new InvalidFbsFileException("No input file specified.");
-                    }
-
-                    if (string.IsNullOrEmpty(options.OutputDirectory))
-                    {
-                        throw new InvalidFbsFileException("No output directory specified.");
-                    }
-
-                    // Read existing file to see if we even need to do any work.
-                    string fbsFileName = Path.GetFileName(options.InputFile);
-                    string outputFileName = fbsFileName + ".generated.cs";
-                    string outputFullPath = Path.Combine(options.OutputDirectory, outputFileName);
 
                     int attemptCount = 0;
                     while (attemptCount++ <= 5)
@@ -101,8 +103,18 @@ namespace FlatSharp.Compiler
                                 }
                             }
 
-                            string cSharp = CreateCSharp(rootNode, options);
-                            File.WriteAllText(outputFullPath, cSharp);
+                            string cSharp = string.Empty;
+                            try
+                            {
+                                CreateCSharp(rootNode, options, out cSharp);
+                            }
+                            finally
+                            {
+                                if (cSharp is not null)
+                                {
+                                    File.WriteAllText(outputFullPath, cSharp);
+                                }
+                            }
                         }
                         catch (IOException)
                         {
@@ -123,12 +135,14 @@ namespace FlatSharp.Compiler
 
                     return -1;
                 }
-                catch (FlatSharpCompilationException ex)
+                catch (FlatSharpCompilationException)
                 {
-                    foreach (var message in ex.CompilerErrors)
-                    {
-                        Console.Error.WriteLine(message);
-                    }
+                    Console.Error.WriteLine(
+                        $"FlatSharp failed to generate valid C# output. \r\n" + 
+                        $"This is commonly caused by the fbs schema using a C# keyword, for example: \r\n" + 
+                        $"\ttable SomeTable {{\r\n\t\tclass : string\r\n\t}}\r\n" +
+                        "\r\n" +
+                        $"The output can be viewed in: '{Path.GetFullPath(outputFullPath)}'.");
 
                     return -1;
                 }
@@ -177,7 +191,7 @@ namespace FlatSharp.Compiler
                 {
                     Assembly[] additionalRefs = additionalReferences?.ToArray() ?? Array.Empty<Assembly>();
                     var rootNode = ParseSyntax("root.fbs", includeLoader);
-                    string cSharp = CreateCSharp(rootNode, options);
+                    CreateCSharp(rootNode, options, out string cSharp);
                     var (assembly, formattedText, _) = RoslynSerializerGenerator.CompileAssembly(cSharp, true, additionalRefs);
                     string debugText = formattedText();
                     return assembly;
@@ -297,59 +311,74 @@ namespace FlatSharp.Compiler
 
             using (ErrorContext.Current)
             {
-                return CreateCSharp(ParseSyntax("root.fbs", includeLoader), options);
+                CreateCSharp(ParseSyntax("root.fbs", includeLoader), options, out string csharp);
+                return csharp;
             }
         }
 
-        private static string CreateCSharp(BaseSchemaMember rootNode, CompilerOptions options)
+        private static void CreateCSharp(
+            BaseSchemaMember rootNode,
+            CompilerOptions options,
+            out string csharp)
         {
-            ErrorContext.Current.ThrowIfHasErrors();
-            FlatSharpInternal.Assert(!string.IsNullOrEmpty(rootNode.DeclaringFile), "RootNode missing declaring file");
+            csharp = string.Empty;
 
-            Assembly? assembly = null;
-            CodeWriter writer = new CodeWriter();
-            var steps = new[]
+            try
             {
+                ErrorContext.Current.ThrowIfHasErrors();
+                FlatSharpInternal.Assert(!string.IsNullOrEmpty(rootNode.DeclaringFile), "RootNode missing declaring file");
+
+                Assembly? assembly = null;
+                CodeWriter writer = new CodeWriter();
+                var steps = new[]
+                {
                 CodeWritingPass.Initialization,
                 CodeWritingPass.PropertyModeling,
                 CodeWritingPass.SerializerGeneration,
                 CodeWritingPass.RpcGeneration,
             };
 
-            foreach (var step in steps)
-            {
-                var localOptions = options;
-
-                if (step <= CodeWritingPass.PropertyModeling)
+                foreach (var step in steps)
                 {
-                    localOptions = localOptions with { NullableWarnings = false };
-                }
+                    var localOptions = options;
 
-                if (step > CodeWritingPass.Initialization)
-                {
-                    string code = writer.ToString();
-                    (assembly, _, _) = RoslynSerializerGenerator.CompileAssembly(code, true);
-                }
-
-                writer = new CodeWriter();
-
-                rootNode.WriteCode(
-                    writer,
-                    new CompileContext
+                    if (step <= CodeWritingPass.PropertyModeling)
                     {
-                        CompilePass = step,
-                        Options = localOptions,
-                        RootFile = rootNode.DeclaringFile,
-                        PreviousAssembly = assembly,
-                        TypeModelContainer = TypeModelContainer.CreateDefault(),
-                    });
+                        localOptions = localOptions with { NullableWarnings = false };
+                    }
 
-                ErrorContext.Current.ThrowIfHasErrors();
+                    if (step > CodeWritingPass.Initialization)
+                    {
+                        csharp = writer.ToString();
+                        (assembly, _, _) = RoslynSerializerGenerator.CompileAssembly(csharp, true);
+                    }
+
+                    writer = new CodeWriter();
+
+                    rootNode.WriteCode(
+                        writer,
+                        new CompileContext
+                        {
+                            CompilePass = step,
+                            Options = localOptions,
+                            RootFile = rootNode.DeclaringFile,
+                            PreviousAssembly = assembly,
+                            TypeModelContainer = TypeModelContainer.CreateDefault(),
+                        });
+
+                    ErrorContext.Current.ThrowIfHasErrors();
+                }
+
+                csharp = writer.ToString();
+
             }
-
-            string rawCode = writer.ToString();
-            string formattedCode = RoslynSerializerGenerator.GetFormattedText(rawCode);
-            return formattedCode;
+            finally
+            {
+                if (csharp is not null)
+                {
+                    csharp = RoslynSerializerGenerator.GetFormattedText(csharp);
+                }
+            }
         }
     }
 }

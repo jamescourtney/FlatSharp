@@ -28,7 +28,7 @@ namespace FlatSharp.Compiler
     {
         private static readonly ThreadLocal<ErrorContext> ThreadLocalContext = new ThreadLocal<ErrorContext>(() => new ErrorContext());
 
-        public static ErrorContext Current => ThreadLocalContext.Value;
+        public static ErrorContext Current => ThreadLocalContext.Value!;
 
         private readonly LinkedList<(string scope, int? lineNumber, string? context)> contextStack = new LinkedList<(string, int?, string?)>();
         private readonly List<string> errors = new List<string>();
