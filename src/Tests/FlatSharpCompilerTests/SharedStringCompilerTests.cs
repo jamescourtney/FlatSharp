@@ -22,13 +22,12 @@ namespace FlatSharpTests.Compiler
     using System.Reflection;
     using FlatSharp;
     using FlatSharp.Compiler;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
     public class SharedStringCompilerTests
     {
-        [TestMethod, Ignore]
-        public void SharedStringInlineTypeTest()
+        // [Fact]
+        private void SharedStringInlineTypeTest()
         {
             string schema = $@"
             namespace SharedStringTests;
@@ -43,12 +42,12 @@ namespace FlatSharpTests.Compiler
             Type tableType = asm.GetTypes().Single(x => x.FullName == "SharedStringTests.Table");
             var property = tableType.GetProperty("foo");
 
-            Assert.AreEqual(typeof(SharedString), property.PropertyType);
-            Assert.AreEqual(typeof(SharedString[]), tableType.GetProperty("bar").PropertyType);
-            Assert.AreEqual(typeof(IList<SharedString>), tableType.GetProperty("baz").PropertyType);
+            Assert.Equal(typeof(SharedString), property.PropertyType);
+            Assert.Equal(typeof(SharedString[]), tableType.GetProperty("bar").PropertyType);
+            Assert.Equal(typeof(IList<SharedString>), tableType.GetProperty("baz").PropertyType);
         }
 
-        [TestMethod]
+        [Fact]
         public void SharedStringMetadataTypeTest()
         {
             string schema = $@"
@@ -64,9 +63,9 @@ namespace FlatSharpTests.Compiler
             Type tableType = asm.GetTypes().Single(x => x.FullName == "SharedStringTests.Table");
             var property = tableType.GetProperty("foo");
 
-            Assert.AreEqual(typeof(SharedString), property.PropertyType);
-            Assert.AreEqual(typeof(SharedString[]), tableType.GetProperty("bar").PropertyType);
-            Assert.AreEqual(typeof(IList<SharedString>), tableType.GetProperty("baz").PropertyType);
+            Assert.Equal(typeof(SharedString), property.PropertyType);
+            Assert.Equal(typeof(SharedString[]), tableType.GetProperty("bar").PropertyType);
+            Assert.Equal(typeof(IList<SharedString>), tableType.GetProperty("baz").PropertyType);
         }
     }
 }

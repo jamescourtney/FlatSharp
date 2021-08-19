@@ -19,12 +19,12 @@ namespace FlatSharpTests
     using System;
     using System.Collections.Generic;
     using FlatSharp;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
+    
     public class SharedStringClassLibTests
     {
-        [TestMethod]
+        [Fact]
         public void SharedString_Equality()
         {
             foreach (var value in new[] { "foo", null })
@@ -32,22 +32,22 @@ namespace FlatSharpTests
                 string a = value;
                 string b = value;
 
-                Assert.AreEqual(a, b);
-                Assert.AreEqual((SharedString)a, b);
-                Assert.IsTrue((SharedString)a == b);
-                Assert.IsTrue(a == (SharedString)b);
-                Assert.IsTrue((SharedString)a == (SharedString)b);
-                Assert.AreEqual<SharedString>(a, b);
+                Assert.Equal(a, b);
+                Assert.Equal((SharedString)a, b);
+                Assert.True((SharedString)a == b);
+                Assert.True(a == (SharedString)b);
+                Assert.True((SharedString)a == (SharedString)b);
+                Assert.Equal<SharedString>(a, b);
 
                 if (b is not null)
                 {
-                    Assert.AreEqual(((SharedString)b).ToString(), b);
-                    Assert.IsTrue(((SharedString)b).Equals(a));
+                    Assert.Equal(((SharedString)b).ToString(), b);
+                    Assert.True(((SharedString)b).Equals(a));
                 }
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SharedString_Inequality()
         {
             string[] values = new[] { "foo", null };
@@ -61,17 +61,17 @@ namespace FlatSharpTests
                         continue;
                     }
 
-                    Assert.AreNotEqual(a, b);
-                    Assert.AreNotEqual((SharedString)a, b);
-                    Assert.IsTrue((SharedString)a != b);
-                    Assert.IsTrue(a != (SharedString)b);
-                    Assert.IsTrue((SharedString)a != (SharedString)b);
-                    Assert.AreNotEqual<SharedString>(a, b);
+                    Assert.NotEqual(a, b);
+                    Assert.False((SharedString)a == b);
+                    Assert.True((SharedString)a != b);
+                    Assert.True(a != (SharedString)b);
+                    Assert.True((SharedString)a != (SharedString)b);
+                    Assert.NotEqual<SharedString>(a, b);
 
                     if (b is not null)
                     {
-                        Assert.IsFalse(((SharedString)b).Equals(a));
-                        Assert.IsFalse(((SharedString)b).Equals(new List<int>()));
+                        Assert.False(((SharedString)b).Equals(a));
+                        Assert.False(((SharedString)b).Equals(new List<int>()));
                     }
                 }
             }

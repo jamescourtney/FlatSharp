@@ -20,12 +20,12 @@ namespace FlatSharpTests
     using FlatSharp;
     using FlatSharp.Attributes;
     using FlatSharp.TypeModel;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
+    
     public class DeserializedConstructorTests
     {
-        [TestMethod]
+        [Fact]
         public void Deserialized_PublicContextConstructor()
         {
             this.RunSuccessTest<
@@ -33,7 +33,7 @@ namespace FlatSharpTests
                 PublicContextConstructorStruct>();
         }
 
-        [TestMethod]
+        [Fact]
         public void Deserialized_MixedContextConstructor_Public_Protected()
         {
             this.RunSuccessTest<
@@ -45,7 +45,7 @@ namespace FlatSharpTests
                 PublicContextConstructorStruct>();
         }
 
-        [TestMethod]
+        [Fact]
         public void Deserialized_MixedContextConstructor_Public_ProtectedInternal()
         {
             this.RunSuccessTest<
@@ -57,7 +57,7 @@ namespace FlatSharpTests
                 PublicContextConstructorStruct>();
         }
 
-        [TestMethod]
+        [Fact]
         public void Deserialized_ProtectedContextConstructor()
         {
             this.RunSuccessTest<
@@ -65,7 +65,7 @@ namespace FlatSharpTests
                 ProtectedContextConstructorStruct>();
         }
 
-        [TestMethod]
+        [Fact]
         public void Deserialized_ProtectedInternalContextConstructor()
         {
             this.RunSuccessTest<
@@ -73,24 +73,24 @@ namespace FlatSharpTests
                 ProtectedInternalContextConstructorStruct>();
         }
 
-        [TestMethod]
+        [Fact]
         public void Deserialized_PrivateContextConstructor()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() => 
+            Assert.Throws<InvalidFlatBufferDefinitionException>(() => 
                 this.RunSuccessTest<
                     PrivateContextConstructorTable<PrivateContextConstructorStruct>,
                     PrivateContextConstructorStruct>());
         }
 
-        [TestMethod]
+        [Fact]
         public void Deserialized_MixedContextConstructor_Public_Private()
         {
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
                 this.RunSuccessTest<
                     PublicContextConstructorTable<PrivateContextConstructorStruct>,
                     PrivateContextConstructorStruct>());
 
-            Assert.ThrowsException<InvalidFlatBufferDefinitionException>(() =>
+            Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
                 this.RunSuccessTest<
                     PrivateContextConstructorTable<PublicContextConstructorStruct>,
                     PublicContextConstructorStruct>());
@@ -111,10 +111,10 @@ namespace FlatSharpTests
                 serializer.Serialize(table, data);
                 TTable result = serializer.Parse<TTable>(data);
 
-                Assert.IsNull(table.Context);
-                Assert.AreEqual(item, result.Context.DeserializationOption);
-                Assert.AreEqual(item, result.Struct.Context.DeserializationOption);
-                Assert.IsFalse(object.ReferenceEquals(result.Context, result.Struct.Context));
+                Assert.Null(table.Context);
+                Assert.Equal(item, result.Context.DeserializationOption);
+                Assert.Equal(item, result.Struct.Context.DeserializationOption);
+                Assert.False(object.ReferenceEquals(result.Context, result.Struct.Context));
             }
         }
 

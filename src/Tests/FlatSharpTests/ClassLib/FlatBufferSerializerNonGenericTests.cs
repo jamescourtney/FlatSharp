@@ -23,83 +23,82 @@ namespace FlatSharpTests
     using System.Linq;
     using FlatSharp;
     using FlatSharp.Attributes;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
     public class FlatBufferSerializerNonGenericTests
     {
-        [TestMethod]
+        [Fact]
         public void NonGenericSerializer_FromType()
         {
             ISerializer serializer = FlatBufferSerializer.Default.Compile(typeof(SomeTable));
-            Assert.IsInstanceOfType(serializer, typeof(ISerializer<SomeTable>));
-            Assert.AreEqual(typeof(SomeTable), serializer.RootType);
+            Assert.IsAssignableFrom<ISerializer<SomeTable>>(serializer);
+            Assert.Equal(typeof(SomeTable), serializer.RootType);
 
-            Assert.IsTrue(serializer.GetMaxSize(new SomeTable()) > 0);
-            Assert.ThrowsException<ArgumentNullException>(() => serializer.GetMaxSize(null));
-            Assert.ThrowsException<ArgumentException>(() => serializer.GetMaxSize(new SomeOtherTable()));
+            Assert.True(serializer.GetMaxSize(new SomeTable()) > 0);
+            Assert.Throws<ArgumentNullException>(() => serializer.GetMaxSize(null));
+            Assert.Throws<ArgumentException>(() => serializer.GetMaxSize(new SomeOtherTable()));
 
             byte[] data = new byte[1024];
-            Assert.IsTrue(serializer.Write(data, new SomeTable { A = 3 }) > 0);
-            Assert.ThrowsException<ArgumentNullException>(() => serializer.Write(data, null));
-            Assert.ThrowsException<ArgumentException>(() => serializer.Write(data, new SomeOtherTable()));
+            Assert.True(serializer.Write(data, new SomeTable { A = 3 }) > 0);
+            Assert.Throws<ArgumentNullException>(() => serializer.Write(data, null));
+            Assert.Throws<ArgumentException>(() => serializer.Write(data, new SomeOtherTable()));
 
             object parsed = serializer.Parse(data);
-            Assert.IsTrue(typeof(SomeTable).IsAssignableFrom(parsed.GetType()));
-            Assert.AreNotEqual(typeof(SomeTable), parsed.GetType());
-            Assert.IsInstanceOfType(parsed, typeof(IFlatBufferDeserializedObject));
+            Assert.True(typeof(SomeTable).IsAssignableFrom(parsed.GetType()));
+            Assert.NotEqual(typeof(SomeTable), parsed.GetType());
+            Assert.IsAssignableFrom<IFlatBufferDeserializedObject>(parsed);
 
             var deserialized = (IFlatBufferDeserializedObject)parsed;
-            Assert.AreEqual(deserialized.TableOrStructType, typeof(SomeTable));
-            Assert.IsNull(deserialized.InputBuffer); // greedy
-            Assert.AreEqual(FlatBufferDeserializationOption.Default, deserialized.DeserializationContext.DeserializationOption);
+            Assert.Equal(typeof(SomeTable), deserialized.TableOrStructType);
+            Assert.Null(deserialized.InputBuffer); // greedy
+            Assert.Equal(FlatBufferDeserializationOption.Default, deserialized.DeserializationContext.DeserializationOption);
 
             ISerializer parsedSerializer = FlatBufferSerializer.Default.Compile(deserialized);
             ISerializer parsedSerializer2 = FlatBufferSerializer.Default.Compile(parsed);
 
-            Assert.AreSame(serializer, parsedSerializer);
-            Assert.AreSame(serializer, parsedSerializer2);
+            Assert.Same(serializer, parsedSerializer);
+            Assert.Same(serializer, parsedSerializer2);
         }
 
-        [TestMethod]
+        [Fact]
         public void NonGenericSerializer_FromInstance()
         {
             var flatBufferSerializer = new FlatBufferSerializer(FlatBufferDeserializationOption.Lazy);
 
             ISerializer serializer = flatBufferSerializer.Compile(new SomeTable());
-            Assert.IsInstanceOfType(serializer, typeof(ISerializer<SomeTable>));
-            Assert.AreEqual(typeof(SomeTable), serializer.RootType);
+            Assert.IsAssignableFrom<ISerializer<SomeTable>>(serializer);
+            Assert.Equal(typeof(SomeTable), serializer.RootType);
 
-            Assert.IsTrue(serializer.GetMaxSize(new SomeTable()) > 0);
-            Assert.ThrowsException<ArgumentNullException>(() => serializer.GetMaxSize(null));
-            Assert.ThrowsException<ArgumentException>(() => serializer.GetMaxSize(new SomeOtherTable()));
+            Assert.True(serializer.GetMaxSize(new SomeTable()) > 0);
+            Assert.Throws<ArgumentNullException>(() => serializer.GetMaxSize(null));
+            Assert.Throws<ArgumentException>(() => serializer.GetMaxSize(new SomeOtherTable()));
 
             Memory<byte> data = new byte[1024];
-            Assert.IsTrue(serializer.Write(data, new SomeTable { A = 3 }) > 0);
-            Assert.ThrowsException<ArgumentNullException>(() => serializer.Write(data, null));
-            Assert.ThrowsException<ArgumentException>(() => serializer.Write(data, new SomeOtherTable()));
+            Assert.True(serializer.Write(data, new SomeTable { A = 3 }) > 0);
+            Assert.Throws<ArgumentNullException>(() => serializer.Write(data, null));
+            Assert.Throws<ArgumentException>(() => serializer.Write(data, new SomeOtherTable()));
 
             object parsed = serializer.Parse(data);
-            Assert.IsTrue(typeof(SomeTable).IsAssignableFrom(parsed.GetType()));
-            Assert.AreNotEqual(typeof(SomeTable), parsed.GetType());
-            Assert.IsInstanceOfType(parsed, typeof(IFlatBufferDeserializedObject));
+            Assert.True(typeof(SomeTable).IsAssignableFrom(parsed.GetType()));
+            Assert.NotEqual(typeof(SomeTable), parsed.GetType());
+            Assert.IsAssignableFrom<IFlatBufferDeserializedObject>(parsed);
 
             var deserialized = (IFlatBufferDeserializedObject)parsed;
-            Assert.AreEqual(deserialized.TableOrStructType, typeof(SomeTable));
-            Assert.IsNotNull(deserialized.InputBuffer); // lazy
-            Assert.AreEqual(FlatBufferDeserializationOption.Lazy, deserialized.DeserializationContext.DeserializationOption);
+            Assert.Equal(typeof(SomeTable), deserialized.TableOrStructType);
+            Assert.NotNull(deserialized.InputBuffer); // lazy
+            Assert.Equal(FlatBufferDeserializationOption.Lazy, deserialized.DeserializationContext.DeserializationOption);
 
             ISerializer parsedSerializer = flatBufferSerializer.Compile(deserialized);
             ISerializer parsedSerializer2 = flatBufferSerializer.Compile(parsed);
 
-            Assert.AreSame(serializer, parsedSerializer);
-            Assert.AreSame(serializer, parsedSerializer2);
+            Assert.Same(serializer, parsedSerializer);
+            Assert.Same(serializer, parsedSerializer2);
 
             // Test that items deserialized from serializer 1 can be used by serializer 2. Why? Who knows!
             var flatBufferSerializer2 = new FlatBufferSerializer(FlatBufferDeserializationOption.Lazy);
             ISerializer serializer3 = flatBufferSerializer2.Compile(parsed);
-            Assert.AreEqual(typeof(SomeTable), serializer3.RootType);
-            Assert.AreNotSame(serializer, serializer3);
+            Assert.Equal(typeof(SomeTable), serializer3.RootType);
+            Assert.NotSame(serializer, serializer3);
             serializer3.Write(data, parsed);
         }
 

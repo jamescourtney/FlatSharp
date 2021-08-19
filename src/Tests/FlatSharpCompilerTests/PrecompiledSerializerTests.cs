@@ -23,12 +23,12 @@ namespace FlatSharpTests.Compiler
     using FlatSharp;
     using FlatSharp.Attributes;
     using FlatSharp.Compiler;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
+    
     public class PrecompiledSerializerTests
     {
-        [TestMethod]
+        [Fact]
         public void MonsterTest()
         {
             // https://github.com/google/flatbuffers/blob/master/samples/monster.fbs
@@ -77,18 +77,18 @@ root_type Monster;";
             object vec = Activator.CreateInstance(vecType);
             dynamic dVec = vec;
 
-            Assert.AreEqual((short)150, dMonster.mana);
-            Assert.AreEqual((short)100, dMonster.hp);
-            Assert.IsFalse(dMonster.friendly);
-            Assert.AreEqual("Blue", dMonster.color.ToString());
-            Assert.IsNull(dMonster.pos);
+            Assert.Equal((short)150, dMonster.mana);
+            Assert.Equal((short)100, dMonster.hp);
+            Assert.False(dMonster.friendly);
+            Assert.Equal("Blue", dMonster.color.ToString());
+            Assert.Null(dMonster.pos);
 
-            Assert.AreEqual(typeof(IList<byte>), monsterType.GetProperty("inventory").PropertyType);
-            Assert.AreEqual(typeof(IList<>).MakeGenericType(vecType), monsterType.GetProperty("path").PropertyType);
-            Assert.AreEqual(typeof(IList<>).MakeGenericType(weaponType), monsterType.GetProperty("weapons").PropertyType);
-            Assert.IsTrue(typeof(FlatBufferUnion<,>).MakeGenericType(weaponType, vecType).IsAssignableFrom(monsterType.GetProperty("equipped").PropertyType));
-            Assert.AreEqual(typeof(string), monsterType.GetProperty("name").PropertyType);
-            Assert.IsTrue(monsterType.GetProperty("friendly").GetCustomAttribute<FlatBufferItemAttribute>().Deprecated);
+            Assert.Equal(typeof(IList<byte>), monsterType.GetProperty("inventory").PropertyType);
+            Assert.Equal(typeof(IList<>).MakeGenericType(vecType), monsterType.GetProperty("path").PropertyType);
+            Assert.Equal(typeof(IList<>).MakeGenericType(weaponType), monsterType.GetProperty("weapons").PropertyType);
+            Assert.True(typeof(FlatBufferUnion<,>).MakeGenericType(weaponType, vecType).IsAssignableFrom(monsterType.GetProperty("equipped").PropertyType));
+            Assert.Equal(typeof(string), monsterType.GetProperty("name").PropertyType);
+            Assert.True(monsterType.GetProperty("friendly").GetCustomAttribute<FlatBufferItemAttribute>().Deprecated);
 
             byte[] data = new byte[1024];
 
@@ -96,64 +96,64 @@ root_type Monster;";
             compiled.Write(data, monster);
             dynamic parsedMonster = compiled.Parse(data);
 
-            Assert.AreEqual("Blue", parsedMonster.color.ToString());
+            Assert.Equal("Blue", parsedMonster.color.ToString());
         }
 
-        [TestMethod]
+        [Fact]
         public void FlagsOptions_Greedy()
         {
             this.TestFlags(FlatBufferDeserializationOption.Greedy, $"{MetadataKeys.SerializerKind}:{nameof(FlatBufferDeserializationOption.Greedy)}");
         }
 
-        [TestMethod]
+        [Fact]
         public void FlagsOptions_MutableGreedy()
         {
             this.TestFlags(FlatBufferDeserializationOption.GreedyMutable, $"{MetadataKeys.SerializerKind}:{nameof(FlatBufferDeserializationOption.GreedyMutable)}");
         }
 
-        [TestMethod]
+        [Fact]
         public void FlagsOptions_Default()
         {
             this.TestFlags(FlatBufferDeserializationOption.Default, $"{MetadataKeys.SerializerKind}:{nameof(FlatBufferDeserializationOption.Default)}");
         }
 
-        [TestMethod]
+        [Fact]
         public void FlagsOptions_Default_Implicit()
         {
             this.TestFlags(FlatBufferDeserializationOption.Default, $"{MetadataKeys.SerializerKind}");
         }
 
-        [TestMethod]
+        [Fact]
         public void FlagsOptions_Lazy()
         {
             this.TestFlags(FlatBufferDeserializationOption.Lazy, $"{MetadataKeys.SerializerKind}:{nameof(FlatBufferDeserializationOption.Lazy)}");
         }
 
-        [TestMethod]
+        [Fact]
         public void FlagsOptions_MutableVectorCache()
         {
             this.TestFlags(FlatBufferDeserializationOption.VectorCacheMutable, $"{MetadataKeys.SerializerKind}:{nameof(FlatBufferDeserializationOption.VectorCacheMutable)}");
         }
 
-        [TestMethod]
+        [Fact]
         public void FlagsOptions_VectorCache()
         {
             this.TestFlags(FlatBufferDeserializationOption.VectorCache, $"{MetadataKeys.SerializerKind}:{nameof(FlatBufferDeserializationOption.VectorCache)}");
         }
 
-        [TestMethod]
+        [Fact]
         public void FlagsOptions_PropertyCache()
         {
             this.TestFlags(FlatBufferDeserializationOption.PropertyCache, $"{MetadataKeys.SerializerKind}:{nameof(FlatBufferDeserializationOption.PropertyCache)}");
         }
 
-        [TestMethod]
+        [Fact]
         public void FlagsOptions_Invalid()
         {
-            Assert.ThrowsException<InvalidFbsFileException>(() => this.TestFlags(default, $"{MetadataKeys.SerializerKind}:banana"));
-            Assert.ThrowsException<InvalidFbsFileException>(() => this.TestFlags(default, $"{MetadataKeys.SerializerKind}:\"banana\""));
-            Assert.ThrowsException<InvalidFbsFileException>(() => this.TestFlags(default, $"{MetadataKeys.SerializerKind}:\"greedy|banana\""));
-            Assert.ThrowsException<InvalidFbsFileException>(() => this.TestFlags(default, $"{MetadataKeys.SerializerKind}:\"greedy|mutablegreedy\""));
+            Assert.Throws<InvalidFbsFileException>(() => this.TestFlags(default, $"{MetadataKeys.SerializerKind}:banana"));
+            Assert.Throws<InvalidFbsFileException>(() => this.TestFlags(default, $"{MetadataKeys.SerializerKind}:\"banana\""));
+            Assert.Throws<InvalidFbsFileException>(() => this.TestFlags(default, $"{MetadataKeys.SerializerKind}:\"greedy|banana\""));
+            Assert.Throws<InvalidFbsFileException>(() => this.TestFlags(default, $"{MetadataKeys.SerializerKind}:\"greedy|mutablegreedy\""));
         }
 
         private void TestFlags(FlatBufferDeserializationOption expectedFlags, string metadata)
@@ -162,17 +162,17 @@ root_type Monster;";
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
 
             Type type = asm.GetType("Test.FooTable");
-            Assert.IsNotNull(type);
+            Assert.NotNull(type);
 
             Type serializerType = type.GetNestedType(RoslynSerializerGenerator.GeneratedSerializerClassName, BindingFlags.NonPublic | BindingFlags.Public);
             
-            Assert.IsNotNull(serializerType);
-            Assert.IsTrue(serializerType.IsNested);
-            Assert.IsTrue(serializerType.IsNestedPrivate);
+            Assert.NotNull(serializerType);
+            Assert.True(serializerType.IsNested);
+            Assert.True(serializerType.IsNestedPrivate);
 
             var attribute = serializerType.GetCustomAttribute<FlatSharpGeneratedSerializerAttribute>();
-            Assert.IsNotNull(attribute);
-            Assert.AreEqual(expectedFlags, attribute.DeserializationOption);
+            Assert.NotNull(attribute);
+            Assert.Equal(expectedFlags, attribute.DeserializationOption);
         }
     }
 }

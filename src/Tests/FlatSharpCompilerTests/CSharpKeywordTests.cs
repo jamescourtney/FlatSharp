@@ -19,16 +19,16 @@ namespace FlatSharpTests.Compiler
     using System;
     using FlatSharp;
     using FlatSharp.Compiler;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
+    
     public class CSharpKeywordTests
     {
-        [TestMethod]
+        [Fact]
         public void ClassKeyword()
         {
             string fbs = $"namespace Foo.Bar; enum class : ubyte (bit_flags) {{ Red, Blue, Green, Yellow }}";
-            Assert.ThrowsException<FlatSharpCompilationException>(
+            Assert.Throws<FlatSharpCompilationException>(
                 () => FlatSharpCompiler.CompileAndLoadAssembly(fbs, new()));
         }
     }

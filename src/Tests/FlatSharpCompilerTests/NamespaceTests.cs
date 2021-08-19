@@ -24,9 +24,9 @@ namespace FlatSharpTests.Compiler
     using FlatSharp.Attributes;
     using FlatSharp.Compiler;
     using FlatSharp.TypeModel;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
+    
     public class NamespaceTests
     {
         // https://github.com/google/flatbuffers/tree/master/tests/namespace_test
@@ -73,20 +73,20 @@ table SecondTableInA {
     refer_to_c:NamespaceC.TableInC;
 }";
 
-        [TestMethod]
+        [Fact]
         public void TestMultipleNamespaces()
         {
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(Schema, new());
 
-            Assert.IsNotNull(asm.GetType("NamespaceA.NamespaceB.TableInNestedNS"));
-            Assert.IsNotNull(asm.GetType("NamespaceA.NamespaceB.EnumInNestedNS"));
-            Assert.IsNotNull(asm.GetType("NamespaceA.NamespaceB.StructInNestedNS"));
-            Assert.IsNotNull(asm.GetType("NamespaceA.TableInFirstNS"));
-            Assert.IsNotNull(asm.GetType("NamespaceC.TableInC"));
-            Assert.IsNotNull(asm.GetType("NamespaceA.SecondTableInA"));
+            Assert.NotNull(asm.GetType("NamespaceA.NamespaceB.TableInNestedNS"));
+            Assert.NotNull(asm.GetType("NamespaceA.NamespaceB.EnumInNestedNS"));
+            Assert.NotNull(asm.GetType("NamespaceA.NamespaceB.StructInNestedNS"));
+            Assert.NotNull(asm.GetType("NamespaceA.TableInFirstNS"));
+            Assert.NotNull(asm.GetType("NamespaceC.TableInC"));
+            Assert.NotNull(asm.GetType("NamespaceA.SecondTableInA"));
         }
 
-        [TestMethod]
+        [Fact]
         public void TestCrossNamespaceUnion()
         {
             string schema = @"
@@ -124,7 +124,7 @@ table T3
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
         }
 
-        [TestMethod]
+        [Fact]
         public void TestOutOfOrderResolution()
         {
             string schema = $@"
@@ -143,19 +143,19 @@ table T3
             Type tc = asm.GetType("A.B.C.TC");
 
             PropertyInfo prop = tc.GetProperty("V1");
-            Assert.AreEqual(asm.GetType("A.B.TB"), prop.PropertyType);
+            Assert.Equal(asm.GetType("A.B.TB"), prop.PropertyType);
 
             prop = tc.GetProperty("V2");
-            Assert.AreEqual(asm.GetType("A.B.TB"), prop.PropertyType);
+            Assert.Equal(asm.GetType("A.B.TB"), prop.PropertyType);
 
             prop = tc.GetProperty("V3");
-            Assert.AreEqual(asm.GetType("A.TA"), prop.PropertyType);
+            Assert.Equal(asm.GetType("A.TA"), prop.PropertyType);
 
             prop = tc.GetProperty("V4");
-            Assert.AreEqual(asm.GetType("A.B.C.B.TB"), prop.PropertyType);
+            Assert.Equal(asm.GetType("A.B.C.B.TB"), prop.PropertyType);
         }
 
-        [TestMethod]
+        [Fact]
         public void TestCousinResolution()
         {
             string schema = $@"
@@ -173,13 +173,13 @@ table T3
             Type tc = asm.GetType("A.C.TC");
 
             PropertyInfo prop = tc.GetProperty("V1");
-            Assert.AreEqual(asm.GetType("A.B.TB"), prop.PropertyType);
+            Assert.Equal(asm.GetType("A.B.TB"), prop.PropertyType);
 
             prop = tc.GetProperty("V2");
-            Assert.AreEqual(asm.GetType("A.B.C.TABC"), prop.PropertyType);
+            Assert.Equal(asm.GetType("A.B.C.TABC"), prop.PropertyType);
         }
 
-        [TestMethod]
+        [Fact]
         public void TestSameName_Permutation1()
         {
             string schema = $@"
@@ -218,10 +218,10 @@ table T3
                 PropertyInfo? pi = type.GetProperty(propertyName);
                 Type? expectedType = asm.GetType(expectedTypeName);
 
-                Assert.IsNotNull(pi);
-                Assert.IsNotNull(expectedType);
+                Assert.NotNull(pi);
+                Assert.NotNull(expectedType);
 
-                Assert.AreEqual(expectedType, pi.PropertyType);
+                Assert.Equal(expectedType, pi.PropertyType);
             }
 
             {
@@ -249,7 +249,7 @@ table T3
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void TestSameName_Permutation2()
         {
             string schema = $@"
@@ -288,10 +288,10 @@ table T3
                 PropertyInfo? pi = type.GetProperty(propertyName);
                 Type? expectedType = asm.GetType(expectedTypeName);
 
-                Assert.IsNotNull(pi);
-                Assert.IsNotNull(expectedType);
+                Assert.NotNull(pi);
+                Assert.NotNull(expectedType);
 
-                Assert.AreEqual(expectedType, pi.PropertyType);
+                Assert.Equal(expectedType, pi.PropertyType);
             }
 
             {
@@ -319,7 +319,7 @@ table T3
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void TestSameName_Permutation3()
         {
             string schema = $@"
@@ -359,10 +359,10 @@ table T3
                 PropertyInfo? pi = type.GetProperty(propertyName);
                 Type? expectedType = asm.GetType(expectedTypeName);
 
-                Assert.IsNotNull(pi);
-                Assert.IsNotNull(expectedType);
+                Assert.NotNull(pi);
+                Assert.NotNull(expectedType);
 
-                Assert.AreEqual(expectedType, pi.PropertyType);
+                Assert.Equal(expectedType, pi.PropertyType);
             }
 
             {

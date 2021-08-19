@@ -17,22 +17,25 @@
 namespace FlatSharpTests
 {
     using System;
+    using System.Runtime.CompilerServices;
     using FlatSharp;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-    [TestClass]
-    public partial class AssemblyCleanupClass
+    public partial class ModuleInitializer
     {
-        [AssemblyInitialize]
-        public static void AssemblyInitialize(TestContext ctx)
+        [ModuleInitializer]
+        public static void AssemblyInitialize()
         {
             RoslynSerializerGenerator.EnableStrictValidation = true;
         }
-
-        [AssemblyCleanup]
-        public static void AssemblyCleanup()
-        {
-            RoslynSerializerGenerator.EnableStrictValidation = false;
-        }
     }
 }
+
+#if !NET5_0_OR_GREATER
+namespace System.Runtime.CompilerServices
+{
+    [AttributeUsage(AttributeTargets.Method)]
+    public class ModuleInitializerAttribute : Attribute
+    {
+    }
+}
+#endif

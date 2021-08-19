@@ -25,19 +25,19 @@ namespace FlatSharpTests
     using FlatSharp;
     using FlatSharpTests.EchoServiceTests;
     using Grpc.Core;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
     using Other.Namespace.Foobar;
     using SChannel = System.Threading.Channels.Channel;
 
-    [TestClass]
+    
     public class EchoServiceTestCases
     {
-        [TestMethod]
+        [Fact]
         public async Task GrpcSerializersOverridable_EnableSharedStrings()
         {
             try
             {
-                Assert.ThrowsException<ArgumentNullException>(
+                Assert.Throws<ArgumentNullException>(
                     () => EchoService.Serializer<StringMessage>.Value = null);
 
                 EchoService.Serializer<MultiStringMessage>.Value = MultiStringMessage.Serializer.WithSettings(
@@ -47,7 +47,7 @@ namespace FlatSharpTests
                     });
 
                 int length = await this.SharedStringsTest_Common();
-                Assert.IsTrue(length <= 2048);
+                Assert.True(length <= 2048);
             }
             finally
             {
@@ -55,11 +55,11 @@ namespace FlatSharpTests
             }
         }
         
-        [TestMethod]
+        [Fact]
         public async Task GrpcSerializersOverridable_NoSharedStrings()
         {
             int length = await this.SharedStringsTest_Common();
-            Assert.IsTrue(length >= 100_000);
+            Assert.True(length >= 100_000);
         }
 
         private async Task<int> SharedStringsTest_Common()
@@ -83,7 +83,7 @@ namespace FlatSharpTests
                 MultiStringMessage response = await ((IEchoService)client).EchoClientStreaming(requestStream, default);
 
                 // Test that the string is only written once. This confirms that our update to the serializer worked as intended.
-                Assert.IsInstanceOfType(response, typeof(IFlatBufferDeserializedObject));
+                Assert.IsAssignableFrom<IFlatBufferDeserializedObject>(response);
                 IFlatBufferDeserializedObject obj = (IFlatBufferDeserializedObject)response;
                 length = obj.InputBuffer.Length;
             });
@@ -91,27 +91,27 @@ namespace FlatSharpTests
             return length;
         }
 
-        [TestMethod]
+        [Fact]
         public Task EchoUnary()
         {
             return this.EchoTest(async client =>
             {
                 var response = await client.EchoUnary(new StringMessage { Value = "hi" });
-                Assert.AreEqual("hi", response.Value);
+                Assert.Equal("hi", response.Value);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public Task EchoUnary_Interface()
         {
             return this.EchoTest_Interface(async client =>
             {
                 var response = await client.EchoUnary(new StringMessage { Value = "hi" }, CancellationToken.None);
-                Assert.AreEqual("hi", response.Value);
+                Assert.Equal("hi", response.Value);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public Task EchoUnary_Interface_Canceled()
         {
             return this.EchoTest_Interface(async client =>
@@ -124,7 +124,7 @@ namespace FlatSharpTests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public Task EchoClientStreaming()
         {
             return this.EchoTest(async client =>
@@ -143,15 +143,15 @@ namespace FlatSharpTests
 
                 MultiStringMessage response = await streamingCall;
 
-                Assert.AreEqual(100, response.Value.Count);
+                Assert.Equal(100, response.Value.Count);
                 for (int i = 0; i < 100; ++i)
                 {
-                    Assert.AreEqual<string>(messages[i], response.Value[i]);
+                    Assert.Equal(messages[i], response.Value[i]);
                 }
             });
         }
 
-        [TestMethod]
+        [Fact]
         public Task EchoClientStreaming_Interface()
         {
             return this.EchoTest_Interface(async client =>
@@ -170,15 +170,15 @@ namespace FlatSharpTests
 
                 MultiStringMessage response = await client.EchoClientStreaming(requestChannel, CancellationToken.None);
 
-                Assert.AreEqual(100, response.Value.Count);
+                Assert.Equal(100, response.Value.Count);
                 for (int i = 0; i < 100; ++i)
                 {
-                    Assert.AreEqual<string>(messages[i], response.Value[i]);
+                    Assert.Equal(messages[i], response.Value[i]);
                 }
             });
         }
 
-        [TestMethod]
+        [Fact]
         public Task EchoClientStreaming_Interface_Canceled()
         {
             return this.EchoTest_Interface(async client =>
@@ -196,7 +196,7 @@ namespace FlatSharpTests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public Task EchoServerStreaming()
         {
             return this.EchoTest(async client =>
@@ -210,14 +210,14 @@ namespace FlatSharpTests
                 int i = 0;
                 while (await streamingCall.ResponseStream.MoveNext())
                 {
-                    Assert.AreEqual(message.Value[i++], streamingCall.ResponseStream.Current.Value);
+                    Assert.Equal(message.Value[i++], streamingCall.ResponseStream.Current.Value);
                 }
 
-                Assert.AreEqual(100, i);
+                Assert.Equal(100, i);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public Task EchoServerStreaming_Interface()
         {
             return this.EchoTest_Interface(async client =>
@@ -234,20 +234,20 @@ namespace FlatSharpTests
                 int i = 0;
                 while (await channel.Reader.WaitToReadAsync())
                 {
-                    Assert.IsTrue(channel.Reader.TryRead(out var item));
-                    Assert.AreEqual(message.Value[i++], item.Value);
+                    Assert.True(channel.Reader.TryRead(out var item));
+                    Assert.Equal(message.Value[i++], item.Value);
                 }
 
-                Assert.AreEqual(100, i);
+                Assert.Equal(100, i);
 
                 await task;
 
-                Assert.IsTrue(channel.Reader.Completion.IsCompleted);
-                Assert.IsTrue(channel.Reader.Completion.IsCompletedSuccessfully);
+                Assert.True(channel.Reader.Completion.IsCompleted);
+                Assert.True(channel.Reader.Completion.IsCompletedSuccessfully);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public Task EchoServerStreaming_Interface_Canceled()
         {
             return this.EchoTest_Interface(async client =>
@@ -265,8 +265,8 @@ namespace FlatSharpTests
                 int i = 0;
                 while (await channel.Reader.WaitToReadAsync(cts.Token))
                 {
-                    Assert.IsTrue(channel.Reader.TryRead(out var item));
-                    Assert.AreEqual(message.Value[i++], item.Value);
+                    Assert.True(channel.Reader.TryRead(out var item));
+                    Assert.Equal(message.Value[i++], item.Value);
 
                     if (i == 50)
                     {
@@ -281,12 +281,12 @@ namespace FlatSharpTests
 
                 await this.AssertCanceled(() => task);
 
-                Assert.IsTrue(channel.Reader.Completion.IsCompleted);
-                Assert.IsFalse(channel.Reader.Completion.IsCompletedSuccessfully);
+                Assert.True(channel.Reader.Completion.IsCompleted);
+                Assert.False(channel.Reader.Completion.IsCompletedSuccessfully);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public Task EchoDuplexStreaming()
         {
             return this.EchoTest(async client =>
@@ -298,14 +298,14 @@ namespace FlatSharpTests
                     await duplexCall.RequestStream.WriteAsync(new StringMessage { Value = str });
 
                     await duplexCall.ResponseStream.MoveNext();
-                    Assert.AreEqual(str, duplexCall.ResponseStream.Current.Value);
+                    Assert.Equal(str, duplexCall.ResponseStream.Current.Value);
                 }
 
                 await duplexCall.RequestStream.CompleteAsync();
             });
         }
 
-        [TestMethod]
+        [Fact]
         public Task EchoDuplexStreaming_Interface()
         {
             return this.EchoTest_Interface(async client =>
@@ -320,17 +320,17 @@ namespace FlatSharpTests
                     await sourceChannel.Writer.WriteAsync(new StringMessage { Value = str });
 
                     var item = await destChannel.Reader.ReadAsync();
-                    Assert.AreEqual(str, item.Value);
+                    Assert.Equal(str, item.Value);
                 }
 
                 sourceChannel.Writer.Complete();
                 await duplexCall;
 
-                Assert.IsTrue(destChannel.Reader.Completion.IsCompletedSuccessfully);
+                Assert.True(destChannel.Reader.Completion.IsCompletedSuccessfully);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public Task EchoDuplexStreaming_Interface_Canceled_BeforeCompletion()
         {
             return this.EchoTest_Interface(async client =>
@@ -348,7 +348,7 @@ namespace FlatSharpTests
                     await sourceChannel.Writer.WriteAsync(new StringMessage { Value = str });
 
                     var item = await destChannel.Reader.ReadAsync();
-                    Assert.AreEqual(str, item.Value);
+                    Assert.Equal(str, item.Value);
                 }
 
                 cts.Cancel();
@@ -356,12 +356,12 @@ namespace FlatSharpTests
                 sourceChannel.Writer.Complete();
                 await this.AssertCanceled(() => duplexCall);
 
-                Assert.IsTrue(destChannel.Reader.Completion.IsCompleted);
-                Assert.IsFalse(destChannel.Reader.Completion.IsCompletedSuccessfully);
+                Assert.True(destChannel.Reader.Completion.IsCompleted);
+                Assert.False(destChannel.Reader.Completion.IsCompletedSuccessfully);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public Task EchoDuplexStreaming_Interface_Canceled_OnWrite()
         {
             return this.EchoTest_Interface(async client =>
@@ -386,7 +386,7 @@ namespace FlatSharpTests
                         try
                         {
                             await destChannel.Reader.ReadAsync();
-                            Assert.Fail();
+                            Assert.False(true, "Exception not thrown");
                         }
                         catch (System.Threading.Channels.ChannelClosedException)
                         {
@@ -400,14 +400,14 @@ namespace FlatSharpTests
                     else
                     {
                         var item = await destChannel.Reader.ReadAsync();
-                        Assert.AreEqual(str, item.Value);
+                        Assert.Equal(str, item.Value);
                     }
                 }
 
                 await this.AssertCanceled(() => duplexCall);
 
-                Assert.IsTrue(destChannel.Reader.Completion.IsCompleted);
-                Assert.IsFalse(destChannel.Reader.Completion.IsCompletedSuccessfully);
+                Assert.True(destChannel.Reader.Completion.IsCompleted);
+                Assert.False(destChannel.Reader.Completion.IsCompletedSuccessfully);
             });
         }
 
@@ -441,7 +441,7 @@ namespace FlatSharpTests
             try
             {
                 await callback();
-                Assert.Fail("Exception was not thrown");
+                Assert.False(true, "Exception was not thrown");
             }
             catch (TaskCanceledException)
             {

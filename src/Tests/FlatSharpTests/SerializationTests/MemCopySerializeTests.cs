@@ -21,15 +21,15 @@ namespace FlatSharpTests
     using System.Runtime.InteropServices;
     using FlatSharp;
     using FlatSharp.Attributes;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
     /// <summary>
     /// Tests serialization using the memory copy shortcut.
     /// </summary>
-    [TestClass]
+    
     public class MemCopySerializeTests
     {
-        [TestMethod]
+        [Fact]
         public void GreedyMemoryCopySerialization_NoEffect()
         {
             TestTable<Struct> t = new()
@@ -45,7 +45,7 @@ namespace FlatSharpTests
             var compiled = serializer.Compile<TestTable<Struct>>().WithSettings(new SerializerSettings { EnableMemoryCopySerialization = true });
 
             byte[] data = new byte[1024];
-            Assert.AreEqual(70, compiled.GetMaxSize(t));
+            Assert.Equal(70, compiled.GetMaxSize(t));
             int actualBytes = compiled.Write(data, t);
 
             // First test: Parse the array but don't trim the buffer. This causes the underlying
@@ -54,12 +54,12 @@ namespace FlatSharpTests
             byte[] data2 = new byte[2048];
             int bytesWritten = compiled.Write(data2, parsed);
 
-            Assert.AreEqual(35, actualBytes);
-            Assert.AreEqual(35, bytesWritten);
-            Assert.AreEqual(70, compiled.GetMaxSize(parsed));
+            Assert.Equal(35, actualBytes);
+            Assert.Equal(35, bytesWritten);
+            Assert.Equal(70, compiled.GetMaxSize(parsed));
         }
 
-        [TestMethod]
+        [Fact]
         public void VectorCacheMemoryCopySerialization_NoEffect()
         {
             TestTable<Struct> t = new()
@@ -75,7 +75,7 @@ namespace FlatSharpTests
             var compiled = serializer.Compile<TestTable<Struct>>().WithSettings(new SerializerSettings { EnableMemoryCopySerialization = true });
 
             byte[] data = new byte[1024];
-            Assert.AreEqual(70, compiled.GetMaxSize(t));
+            Assert.Equal(70, compiled.GetMaxSize(t));
             int actualBytes = compiled.Write(data, t);
 
             // First test: Parse the array but don't trim the buffer. This causes the underlying
@@ -84,12 +84,12 @@ namespace FlatSharpTests
             byte[] data2 = new byte[2048];
             int bytesWritten = compiled.Write(data2, parsed);
 
-            Assert.AreEqual(35, actualBytes);
-            Assert.AreEqual(35, bytesWritten);
-            Assert.AreEqual(70, compiled.GetMaxSize(parsed));
+            Assert.Equal(35, actualBytes);
+            Assert.Equal(35, bytesWritten);
+            Assert.Equal(70, compiled.GetMaxSize(parsed));
         }
 
-        [TestMethod]
+        [Fact]
         public void LazyMemoryCopySerialization()
         {
             TestTable<WriteThroughStruct> t = new()
@@ -105,7 +105,7 @@ namespace FlatSharpTests
             var compiled = serializer.Compile<TestTable<WriteThroughStruct>>().WithSettings(new SerializerSettings { EnableMemoryCopySerialization = true });
 
             byte[] data = new byte[1024];
-            Assert.AreEqual(70, compiled.GetMaxSize(t));
+            Assert.Equal(70, compiled.GetMaxSize(t));
             int actualBytes = compiled.Write(data, t);
 
             // First test: Parse the array but don't trim the buffer. This causes the underlying
@@ -114,23 +114,23 @@ namespace FlatSharpTests
             byte[] data2 = new byte[2048];
             int bytesWritten = compiled.Write(data2, parsed);
 
-            Assert.AreEqual(35, actualBytes);
-            Assert.AreEqual(1024, bytesWritten); // We use mem copy serialization here, and we gave it 1024 bytes when we parsed. So we get 1024 bytes back out.
-            Assert.AreEqual(1024, compiled.GetMaxSize(parsed));
-            Assert.ThrowsException<BufferTooSmallException>(() => compiled.Write(new byte[35], parsed));
+            Assert.Equal(35, actualBytes);
+            Assert.Equal(1024, bytesWritten); // We use mem copy serialization here, and we gave it 1024 bytes when we parsed. So we get 1024 bytes back out.
+            Assert.Equal(1024, compiled.GetMaxSize(parsed));
+            Assert.Throws<BufferTooSmallException>(() => compiled.Write(new byte[35], parsed));
 
             // Repeat, but now using the trimmed array.
             parsed = compiled.Parse(data.AsMemory().Slice(0, actualBytes));
             bytesWritten = compiled.Write(data2, parsed);
-            Assert.AreEqual(35, actualBytes);
-            Assert.AreEqual(35, bytesWritten);
-            Assert.AreEqual(35, compiled.GetMaxSize(parsed));
+            Assert.Equal(35, actualBytes);
+            Assert.Equal(35, bytesWritten);
+            Assert.Equal(35, compiled.GetMaxSize(parsed));
 
             // Default still returns 70.
-            Assert.AreEqual(70, serializer.GetMaxSize(parsed));
+            Assert.Equal(70, serializer.GetMaxSize(parsed));
         }
 
-        [TestMethod]
+        [Fact]
         public void PropertyCacheMemoryCopySerialization()
         {
             TestTable<Struct> t = new()
@@ -146,7 +146,7 @@ namespace FlatSharpTests
             var compiled = serializer.Compile<TestTable<Struct>>().WithSettings(new SerializerSettings { EnableMemoryCopySerialization = true });
 
             byte[] data = new byte[1024];
-            Assert.AreEqual(70, compiled.GetMaxSize(t));
+            Assert.Equal(70, compiled.GetMaxSize(t));
             int actualBytes = compiled.Write(data, t);
 
             // First test: Parse the array but don't trim the buffer. This causes the underlying
@@ -155,20 +155,20 @@ namespace FlatSharpTests
             byte[] data2 = new byte[2048];
             int bytesWritten = compiled.Write(data2, parsed);
 
-            Assert.AreEqual(35, actualBytes);
-            Assert.AreEqual(1024, bytesWritten); // We use mem copy serialization here, and we gave it 1024 bytes when we parsed. So we get 1024 bytes back out.
-            Assert.AreEqual(1024, compiled.GetMaxSize(parsed));
-            Assert.ThrowsException<BufferTooSmallException>(() => compiled.Write(new byte[35], parsed));
+            Assert.Equal(35, actualBytes);
+            Assert.Equal(1024, bytesWritten); // We use mem copy serialization here, and we gave it 1024 bytes when we parsed. So we get 1024 bytes back out.
+            Assert.Equal(1024, compiled.GetMaxSize(parsed));
+            Assert.Throws<BufferTooSmallException>(() => compiled.Write(new byte[35], parsed));
 
             // Repeat, but now using the trimmed array.
             parsed = compiled.Parse(data.AsMemory().Slice(0, actualBytes));
             bytesWritten = compiled.Write(data2, parsed);
-            Assert.AreEqual(35, actualBytes);
-            Assert.AreEqual(35, bytesWritten);
-            Assert.AreEqual(35, compiled.GetMaxSize(parsed));
+            Assert.Equal(35, actualBytes);
+            Assert.Equal(35, bytesWritten);
+            Assert.Equal(35, compiled.GetMaxSize(parsed));
 
             // Default still returns 70.
-            Assert.AreEqual(70, serializer.GetMaxSize(parsed));
+            Assert.Equal(70, serializer.GetMaxSize(parsed));
         }
 
         [FlatBufferTable]

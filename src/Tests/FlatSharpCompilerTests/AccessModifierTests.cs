@@ -21,12 +21,12 @@ namespace FlatSharpTests.Compiler
     using System.Reflection;
     using FlatSharp;
     using FlatSharp.Compiler;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
+    
     public class AccessModifierTests
     {
-        [TestMethod]
+        [Fact]
         public void TestAccessModifierCombinations_Setters()
         {
             foreach (SetterKind setterKind in new[] { SetterKind.None, SetterKind.Public, SetterKind.Protected, SetterKind.ProtectedInternal })
@@ -39,7 +39,7 @@ namespace FlatSharpTests.Compiler
         }
 
 #if NET5_0_OR_GREATER
-        [TestMethod]
+        [Fact]
         public void TestAccessModifierCombinations_Init()
         {
             foreach (SetterKind setterKind in new[] { SetterKind.PublicInit, SetterKind.ProtectedInit, SetterKind.ProtectedInternalInit })
@@ -74,55 +74,55 @@ namespace FlatSharpTests.Compiler
             foreach (var typeName in new[] { "VirtualTests.VirtualTable", "VirtualTests.VirtualStruct" })
             {
                 Type type = asm.GetType(typeName);
-                Assert.IsTrue(type.IsPublic);
+                Assert.True(type.IsPublic);
                 var defaultProperty = type.GetProperty("Default");
                 var forcedVirtualProperty = type.GetProperty("ForcedVirtual");
                 var forcedNonVirtualProperty = type.GetProperty("ForcedNonVirtual");
 
-                Assert.IsNotNull(defaultProperty);
-                Assert.IsNotNull(forcedVirtualProperty);
-                Assert.IsNotNull(forcedNonVirtualProperty);
+                Assert.NotNull(defaultProperty);
+                Assert.NotNull(forcedVirtualProperty);
+                Assert.NotNull(forcedNonVirtualProperty);
 
-                Assert.IsTrue(defaultProperty.GetMethod.IsPublic);
-                Assert.IsTrue(forcedVirtualProperty.GetMethod.IsPublic);
-                Assert.IsTrue(forcedNonVirtualProperty.GetMethod.IsPublic);
+                Assert.True(defaultProperty.GetMethod.IsPublic);
+                Assert.True(forcedVirtualProperty.GetMethod.IsPublic);
+                Assert.True(forcedNonVirtualProperty.GetMethod.IsPublic);
 
                 if (setterKind == SetterKind.PublicInit ||
                     setterKind == SetterKind.ProtectedInit ||
                     setterKind == SetterKind.ProtectedInternalInit)
                 {
-                    Assert.IsNotNull(defaultProperty.SetMethod.ReturnParameter.GetRequiredCustomModifiers().Any(x => x.FullName == "System.Runtime.CompilerServices.IsExternalInit"));
-                    Assert.IsNotNull(forcedVirtualProperty.SetMethod.ReturnParameter.GetRequiredCustomModifiers().Any(x => x.FullName == "System.Runtime.CompilerServices.IsExternalInit"));
-                    Assert.IsNotNull(forcedNonVirtualProperty.SetMethod.ReturnParameter.GetRequiredCustomModifiers().Any(x => x.FullName == "System.Runtime.CompilerServices.IsExternalInit"));
+                    Assert.Contains(defaultProperty.SetMethod.ReturnParameter.GetRequiredCustomModifiers(), x => x.FullName == "System.Runtime.CompilerServices.IsExternalInit");
+                    Assert.Contains(forcedVirtualProperty.SetMethod.ReturnParameter.GetRequiredCustomModifiers(), x => x.FullName == "System.Runtime.CompilerServices.IsExternalInit");
+                    Assert.Contains(forcedNonVirtualProperty.SetMethod.ReturnParameter.GetRequiredCustomModifiers(), x => x.FullName == "System.Runtime.CompilerServices.IsExternalInit");
                 }
 
                 if (setterKind == SetterKind.None)
                 {
-                    Assert.IsNull(defaultProperty.SetMethod);
-                    Assert.IsNull(forcedVirtualProperty.SetMethod);
-                    Assert.IsNotNull(forcedNonVirtualProperty.SetMethod); // non-virtual can't have null setters.
+                    Assert.Null(defaultProperty.SetMethod);
+                    Assert.Null(forcedVirtualProperty.SetMethod);
+                    Assert.NotNull(forcedNonVirtualProperty.SetMethod); // non-virtual can't have null setters.
                 }
                 else if (setterKind == SetterKind.Protected || setterKind == SetterKind.ProtectedInit)
                 {
-                    Assert.IsTrue(defaultProperty.SetMethod.IsFamily);
-                    Assert.IsTrue(forcedVirtualProperty.SetMethod.IsFamily);
-                    Assert.IsTrue(forcedNonVirtualProperty.SetMethod.IsFamily);
+                    Assert.True(defaultProperty.SetMethod.IsFamily);
+                    Assert.True(forcedVirtualProperty.SetMethod.IsFamily);
+                    Assert.True(forcedNonVirtualProperty.SetMethod.IsFamily);
                 }
                 else if (setterKind == SetterKind.ProtectedInternal || setterKind == SetterKind.ProtectedInternalInit)
                 {
-                    Assert.IsTrue(defaultProperty.SetMethod.IsFamilyOrAssembly);
-                    Assert.IsTrue(forcedVirtualProperty.SetMethod.IsFamilyOrAssembly);
-                    Assert.IsTrue(forcedNonVirtualProperty.SetMethod.IsFamilyOrAssembly);
+                    Assert.True(defaultProperty.SetMethod.IsFamilyOrAssembly);
+                    Assert.True(forcedVirtualProperty.SetMethod.IsFamilyOrAssembly);
+                    Assert.True(forcedNonVirtualProperty.SetMethod.IsFamilyOrAssembly);
                 }
                 else if (setterKind == SetterKind.Public || setterKind == SetterKind.PublicInit)
                 {
-                    Assert.IsTrue(defaultProperty.SetMethod.IsPublic);
-                    Assert.IsTrue(forcedVirtualProperty.SetMethod.IsPublic);
-                    Assert.IsTrue(forcedNonVirtualProperty.SetMethod.IsPublic);
+                    Assert.True(defaultProperty.SetMethod.IsPublic);
+                    Assert.True(forcedVirtualProperty.SetMethod.IsPublic);
+                    Assert.True(forcedNonVirtualProperty.SetMethod.IsPublic);
                 }
                 else
                 {
-                    Assert.Fail();
+                    Assert.False(true);
                 }
             }
         }

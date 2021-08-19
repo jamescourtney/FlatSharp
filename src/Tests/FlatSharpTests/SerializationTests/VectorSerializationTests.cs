@@ -24,15 +24,15 @@ namespace FlatSharpTests
     using System.Runtime.InteropServices;
     using FlatSharp;
     using FlatSharp.Attributes;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
     /// <summary>
     /// Binary format testing for vector serialization.
     /// </summary>
-    [TestClass]
+    
     public class VectorSerializationTests
     {
-        [TestMethod]
+        [Fact]
         public void EmptyString()
         {
             var root = new RootTable<string>
@@ -57,10 +57,10 @@ namespace FlatSharpTests
                 0,                   // null terminator (special case for strings).
             };
 
-            Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(target));
+            Assert.True(expectedResult.AsSpan().SequenceEqual(target));
         }
 
-        [TestMethod]
+        [Fact]
         public void SimpleString()
         {
             var root = new RootTable<string>
@@ -85,10 +85,10 @@ namespace FlatSharpTests
                 1, 2, 3, 0,          // data + null terminator (special case for string vectors).
             };
 
-            Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(target));
+            Assert.True(expectedResult.AsSpan().SequenceEqual(target));
         }
 
-        [TestMethod]
+        [Fact]
         public void Simple_Scalar_Vectors()
         {
             static void Test<T>(Func<byte[], T> factory)
@@ -119,7 +119,7 @@ namespace FlatSharpTests
 
                 target = target.Slice(0, offset);
 
-                Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(target));
+                Assert.True(expectedResult.AsSpan().SequenceEqual(target));
             }
 
             Test<IList<byte>>(a => a.ToList());
@@ -131,7 +131,7 @@ namespace FlatSharpTests
             Test<ReadOnlyMemory<byte>?>(a => a.AsMemory());
         }
 
-        [TestMethod]
+        [Fact]
         public void Empty_Vectors()
         {
             static void Test<T>(T instance)
@@ -159,7 +159,7 @@ namespace FlatSharpTests
 
                 target = target.Slice(0, offset);
 
-                Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(target));
+                Assert.True(expectedResult.AsSpan().SequenceEqual(target));
             }
 
             Test<IList<int>>(new List<int>());
@@ -172,7 +172,7 @@ namespace FlatSharpTests
             Test<IIndexedVector<string, TableWithKey<string>>>(new IndexedVector<string, TableWithKey<string>>());
         }
 
-        [TestMethod]
+        [Fact]
         public void Null_Vectors()
         {
             static void Test<T>()
@@ -196,7 +196,7 @@ namespace FlatSharpTests
 
                 target = target.Slice(0, offset);
 
-                Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(target));
+                Assert.True(expectedResult.AsSpan().SequenceEqual(target));
             }
 
             Test<IList<int>>();
@@ -213,7 +213,7 @@ namespace FlatSharpTests
             Test<string>();
         }
 
-        [TestMethod]
+        [Fact]
         public void UnalignedStruct_5Byte()
         {
             var root = new RootTable<FiveByteStruct[]>
@@ -251,10 +251,10 @@ namespace FlatSharpTests
                 0, 0, 0,             // padding
             };
 
-            Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(target));
+            Assert.True(expectedResult.AsSpan().SequenceEqual(target));
         }
 
-        [TestMethod]
+        [Fact]
         public void UnalignedStruct_9Byte()
         {
             var root = new RootTable2<NineByteStruct[]>
@@ -292,10 +292,10 @@ namespace FlatSharpTests
                 0, 0, 0, 0, 0, 0, 0,            // padding
             };
 
-            Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(target));
+            Assert.True(expectedResult.AsSpan().SequenceEqual(target));
         }
 
-        [TestMethod]
+        [Fact]
         public void NullStringInVector()
         {
             var root = new RootTable<IList<string>>
@@ -306,10 +306,10 @@ namespace FlatSharpTests
             var serializer = FlatBufferSerializer.Default.Compile<RootTable<IList<string>>>();
 
             byte[] target = new byte[10240];
-            Assert.ThrowsException<InvalidDataException>(() => FlatBufferSerializer.Default.Serialize(root, target));
+            Assert.Throws<InvalidDataException>(() => FlatBufferSerializer.Default.Serialize(root, target));
         }
 
-        [TestMethod]
+        [Fact]
         public void NullStructInVector()
         {
             var root = new RootTable<IList<Struct>>
@@ -320,10 +320,10 @@ namespace FlatSharpTests
             var serializer = FlatBufferSerializer.Default.Compile<RootTable<IList<Struct>>>();
 
             byte[] target = new byte[10240];
-            Assert.ThrowsException<InvalidDataException>(() => FlatBufferSerializer.Default.Serialize(root, target));
+            Assert.Throws<InvalidDataException>(() => FlatBufferSerializer.Default.Serialize(root, target));
         }
 
-        [TestMethod]
+        [Fact]
         public void AlignedStructVectorMaxSize()
         {
             var root = new RootTable<IList<Struct>>();
@@ -336,10 +336,10 @@ namespace FlatSharpTests
             var maxSize = FlatBufferSerializer.Default.GetMaxSize(root);
 
             // padding + length + padding + 2 * itemLength
-            Assert.AreEqual(3 + 4 + 3 + (2 * 4), maxSize - baselineMaxSize);
+            Assert.Equal(3 + 4 + 3 + (2 * 4), maxSize - baselineMaxSize);
         }
 
-        [TestMethod]
+        [Fact]
         public void UnalignedStruct_5Byte_VectorMaxSize()
         {
             var root = new RootTable<IList<FiveByteStruct>>();
@@ -352,10 +352,10 @@ namespace FlatSharpTests
             var maxSize = FlatBufferSerializer.Default.GetMaxSize(root);
 
             // padding + length + padding to 4 byte alignment + (2 * (padding + itemLength))
-            Assert.AreEqual(3 + 4 + 3 + (2 * (3 + 5)), maxSize - baselineMaxSize);
+            Assert.Equal(3 + 4 + 3 + (2 * (3 + 5)), maxSize - baselineMaxSize);
         }
 
-        [TestMethod]
+        [Fact]
         public void UnalignedStruct_9Byte_VectorMaxSize()
         {
             var root = new RootTable<IList<NineByteStruct>>();
@@ -368,10 +368,10 @@ namespace FlatSharpTests
             var maxSize = FlatBufferSerializer.Default.GetMaxSize(root);
 
             // padding + length + padding to 8 byte alignment + (2 * (padding + itemLength))
-            Assert.AreEqual(3 + 4 + 7 + (2 * (7 + 9)), maxSize - baselineMaxSize);
+            Assert.Equal(3 + 4 + 7 + (2 * (7 + 9)), maxSize - baselineMaxSize);
         }
 
-        [TestMethod]
+        [Fact]
         public void SortedVector_StringKey()
         {
             var root = new RootTableSorted<IList<TableWithKey<string>>>();
@@ -390,14 +390,14 @@ namespace FlatSharpTests
 
             var parsed = FlatBufferSerializer.Default.Parse<RootTableSorted<IList<TableWithKey<string>>>>(data);
 
-            Assert.AreEqual(parsed.Vector[0].Key, "");
-            Assert.AreEqual(parsed.Vector[1].Key, "a");
-            Assert.AreEqual(parsed.Vector[2].Key, "b");
-            Assert.AreEqual(parsed.Vector[3].Key, "c");
-            Assert.AreEqual(parsed.Vector[4].Key, "d");
+            Assert.Equal("", parsed.Vector[0].Key);
+            Assert.Equal("a", parsed.Vector[1].Key);
+            Assert.Equal("b", parsed.Vector[2].Key);
+            Assert.Equal("c", parsed.Vector[3].Key);
+            Assert.Equal("d", parsed.Vector[4].Key);
         }
 
-        [TestMethod]
+        [Fact]
         public void SortedVector_SharedStringKey()
         {
             var root = new RootTableSorted<IList<TableWithKey<SharedString>>>();
@@ -424,18 +424,18 @@ namespace FlatSharpTests
 
             var parsed = serializer.Parse(data);
 
-            Assert.AreEqual(parsed.Vector[0].Key.String, "");
-            Assert.AreEqual(parsed.Vector[1].Key.String, "a");
-            Assert.AreEqual(parsed.Vector[2].Key.String, "a");
-            Assert.AreEqual(parsed.Vector[3].Key.String, "b");
-            Assert.AreEqual(parsed.Vector[4].Key.String, "c");
-            Assert.AreEqual(parsed.Vector[5].Key.String, "d");
+            Assert.Equal("", parsed.Vector[0].Key.String);
+            Assert.Equal("a", parsed.Vector[1].Key.String);
+            Assert.Equal("a", parsed.Vector[2].Key.String);
+            Assert.Equal("b", parsed.Vector[3].Key.String);
+            Assert.Equal("c", parsed.Vector[4].Key.String);
+            Assert.Equal("d", parsed.Vector[5].Key.String);
 
-            Assert.IsNotNull(parsed.Vector.BinarySearchByFlatBufferKey((SharedString)"b"));
-            Assert.IsTrue(object.ReferenceEquals(parsed.Vector[1].Key, parsed.Vector[2].Key));
+            Assert.NotNull(parsed.Vector.BinarySearchByFlatBufferKey((SharedString)"b"));
+            Assert.True(object.ReferenceEquals(parsed.Vector[1].Key, parsed.Vector[2].Key));
         }
 
-        [TestMethod]
+        [Fact]
         public void SortedVector_StringKey_Null()
         {
             var root = new RootTableSorted<IList<TableWithKey<string>>>();
@@ -448,46 +448,46 @@ namespace FlatSharpTests
             };
 
             byte[] data = new byte[1024];
-            Assert.ThrowsException<InvalidOperationException>(() => FlatBufferSerializer.Default.Serialize(root, data));
-            Assert.ThrowsException<InvalidOperationException>(() => root.Vector.BinarySearchByFlatBufferKey("AAA"));
-            Assert.ThrowsException<InvalidOperationException>(() => root.Vector.BinarySearchByFlatBufferKey(3));
-            Assert.ThrowsException<ArgumentNullException>(() => root.Vector.BinarySearchByFlatBufferKey((string)null));
+            Assert.Throws<InvalidOperationException>(() => FlatBufferSerializer.Default.Serialize(root, data));
+            Assert.Throws<InvalidOperationException>(() => root.Vector.BinarySearchByFlatBufferKey("AAA"));
+            Assert.Throws<InvalidOperationException>(() => root.Vector.BinarySearchByFlatBufferKey(3));
+            Assert.Throws<ArgumentNullException>(() => root.Vector.BinarySearchByFlatBufferKey((string)null));
         }
 
-        [TestMethod]
+        [Fact]
         public void SortedVector_Bool() => this.SortedVectorTest<bool>(rng => rng.Next() % 2 == 0, Comparer<bool>.Default);
 
-        [TestMethod]
+        [Fact]
         public void SortedVector_Byte() => this.SortedVectorStructTest<byte>();
 
-        [TestMethod]
+        [Fact]
         public void SortedVector_SByte() => this.SortedVectorStructTest<sbyte>();
 
-        [TestMethod]
+        [Fact]
         public void SortedVector_UShort() => this.SortedVectorStructTest<ushort>();
 
-        [TestMethod]
+        [Fact]
         public void SortedVector_Short() => this.SortedVectorStructTest<short>();
 
-        [TestMethod]
+        [Fact]
         public void SortedVector_Uint() => this.SortedVectorStructTest<uint>();
 
-        [TestMethod]
+        [Fact]
         public void SortedVector_Int() => this.SortedVectorStructTest<int>();
 
-        [TestMethod]
+        [Fact]
         public void SortedVector_Ulong() => this.SortedVectorStructTest<ulong>();
 
-        [TestMethod]
+        [Fact]
         public void SortedVector_Long() => this.SortedVectorStructTest<long>();
 
-        [TestMethod]
+        [Fact]
         public void SortedVector_Double() => this.SortedVectorStructTest<double>();
 
-        [TestMethod]
+        [Fact]
         public void SortedVector_Float() => this.SortedVectorStructTest<float>();
 
-        [TestMethod]
+        [Fact]
         public void SortedVector_String_Base64()
         {
             this.SortedVectorTest<string>(
@@ -501,7 +501,7 @@ namespace FlatSharpTests
                 new Utf8StringComparer());
         }
 
-        [TestMethod]
+        [Fact]
         public void SortedVector_String_RandomChars()
         {
             this.SortedVectorTest<string>(
@@ -519,7 +519,7 @@ namespace FlatSharpTests
                 new Utf8StringComparer());
         }
 
-        [TestMethod]
+        [Fact]
         public void SortedVector_String_Empty()
         {
             int i = 0;
@@ -538,7 +538,7 @@ namespace FlatSharpTests
                 new Utf8StringComparer());
         }
 
-        [TestMethod]
+        [Fact]
         public void IndexedVector_Simple()
         {
             var table = new RootTableSorted<IIndexedVector<string, TableWithKey<string>>>
@@ -558,16 +558,16 @@ namespace FlatSharpTests
 
             var parsed = serializer.Parse<RootTableSorted<IIndexedVector<string, TableWithKey<string>>>>(data);
 
-            Assert.AreEqual("AAA", parsed.Vector["a"].Value);
-            Assert.AreEqual("BBB", parsed.Vector["b"].Value);
-            Assert.AreEqual("CCC", parsed.Vector["c"].Value);
+            Assert.Equal("AAA", parsed.Vector["a"].Value);
+            Assert.Equal("BBB", parsed.Vector["b"].Value);
+            Assert.Equal("CCC", parsed.Vector["c"].Value);
 
-            Assert.IsTrue(parsed.Vector.TryGetValue("a", out var value) && value.Value == "AAA");
-            Assert.IsTrue(parsed.Vector.TryGetValue("b", out value) && value.Value == "BBB");
-            Assert.IsTrue(parsed.Vector.TryGetValue("c", out value) && value.Value == "CCC");
+            Assert.True(parsed.Vector.TryGetValue("a", out var value) && value.Value == "AAA");
+            Assert.True(parsed.Vector.TryGetValue("b", out value) && value.Value == "BBB");
+            Assert.True(parsed.Vector.TryGetValue("c", out value) && value.Value == "CCC");
         }
 
-        [TestMethod]
+        [Fact]
         public void IndexedVector_RandomString()
         {
             var table = new RootTable<IIndexedVector<string, TableWithKey<string>>>
@@ -593,11 +593,11 @@ namespace FlatSharpTests
 
             foreach (var key in keys)
             {
-                Assert.AreEqual(table.Vector[key].Value, parsed.Vector[key].Value);
+                Assert.Equal(table.Vector[key].Value, parsed.Vector[key].Value);
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void IndexedVector_SharedStrings()
         {
             var table = new RootTable<IIndexedVector<SharedString, TableWithKey<SharedString>>>
@@ -630,40 +630,40 @@ namespace FlatSharpTests
                 SharedString key = kvp.Key;
                 SharedString value = kvp.Value.Key;
 
-                Assert.IsTrue(object.ReferenceEquals(key.String, value.String));
+                Assert.True(object.ReferenceEquals(key.String, value.String));
             }
 
             foreach (var key in keys)
             {
                 SharedString expectedKey = key;
-                Assert.IsTrue(parsed.Vector.TryGetValue(key, out var value));
-                Assert.AreEqual(expectedKey, value.Key);
-                Assert.IsFalse(object.ReferenceEquals(expectedKey.String, value.Key.String));
+                Assert.True(parsed.Vector.TryGetValue(key, out var value));
+                Assert.Equal(expectedKey, value.Key);
+                Assert.False(object.ReferenceEquals(expectedKey.String, value.Key.String));
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void IndexedVector_RandomByte() => IndexedVectorScalarTest<byte>();
 
-        [TestMethod]
+        [Fact]
         public void IndexedVector_RandomSByte() => IndexedVectorScalarTest<sbyte>();
 
-        [TestMethod]
+        [Fact]
         public void IndexedVector_RandomUShort() => IndexedVectorScalarTest<ushort>();
 
-        [TestMethod]
+        [Fact]
         public void IndexedVector_RandomShort() => IndexedVectorScalarTest<short>();
 
-        [TestMethod]
+        [Fact]
         public void IndexedVector_RandomUInt() => IndexedVectorScalarTest<uint>();
 
-        [TestMethod]
+        [Fact]
         public void IndexedVector_RandomInt() => IndexedVectorScalarTest<int>();
 
-        [TestMethod]
+        [Fact]
         public void IndexedVector_RandomULong() => IndexedVectorScalarTest<ulong>();
 
-        [TestMethod]
+        [Fact]
         public void IndexedVector_RandomLong() => IndexedVectorScalarTest<long>();
 
         private void IndexedVectorScalarTest<T>() where T : struct
@@ -694,21 +694,21 @@ namespace FlatSharpTests
 
                 foreach (var key in keys)
                 {
-                    Assert.AreEqual(table.Vector[key].Value, parsed.Vector[key].Value);
+                    Assert.Equal(table.Vector[key].Value, parsed.Vector[key].Value);
                 }
 
                 // verify sorted and that we can read it when it's from a normal vector.
                 var parsedList = serializer.Parse<RootTable<IList<TableWithKey<T>>>>(data);
-                Assert.AreEqual(parsed.Vector.Count, parsedList.Vector.Count);
+                Assert.Equal(parsed.Vector.Count, parsedList.Vector.Count);
                 var previous = parsedList.Vector[0];
                 for (int i = 1; i < parsedList.Vector.Count; ++i)
                 {
                     var item = parsedList.Vector[i];
-                    Assert.IsTrue(Comparer<T>.Default.Compare(previous.Key, item.Key) <= 0);
+                    Assert.True(Comparer<T>.Default.Compare(previous.Key, item.Key) <= 0);
 
-                    Assert.IsTrue(parsed.Vector.TryGetValue(item.Key, out var fromDict));
-                    Assert.AreEqual(item.Key, fromDict.Key);
-                    Assert.AreEqual(item.Value, fromDict.Value);
+                    Assert.True(parsed.Vector.TryGetValue(item.Key, out var fromDict));
+                    Assert.Equal(item.Key, fromDict.Key);
+                    Assert.Equal(item.Value, fromDict.Value);
 
                     previous = item;
                 }
@@ -758,33 +758,33 @@ namespace FlatSharpTests
             FlatBufferSerializer.Default.Serialize(root, data);
 
             var parsed = FlatBufferSerializer.Default.Parse<RootTableSorted<TableWithKey<TKey>[]>>(data);
-            Assert.AreEqual(parsed.Vector.Length, root.Vector.Length);
+            Assert.Equal(parsed.Vector.Length, root.Vector.Length);
 
             if (parsed.Vector.Length > 0)
             {
                 TableWithKey<TKey> previous = parsed.Vector[0];
                 for (int i = 0; i < parsed.Vector.Length; ++i)
                 {
-                    Assert.IsTrue(comparer.Compare(previous.Key, parsed.Vector[i].Key) <= 0);
+                    Assert.True(comparer.Compare(previous.Key, parsed.Vector[i].Key) <= 0);
                     previous = parsed.Vector[i];
                 }
 
                 foreach (var originalItem in root.Vector)
                 {
-                    Assert.IsNotNull(parsed.Vector.BinarySearchByFlatBufferKey(originalItem.Key));
+                    Assert.NotNull(parsed.Vector.BinarySearchByFlatBufferKey(originalItem.Key));
                 }
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void VectorOfUnion_List() => this.VectorOfUnionTest<RootTable<IList<FlatBufferUnion<string, Struct, TableWithKey<int>>>>>(
             (l, v) => v.Vector = l.ToList());
 
-        [TestMethod]
+        [Fact]
         public void VectorOfUnion_ReadOnlyList() => this.VectorOfUnionTest<RootTable<IReadOnlyList<FlatBufferUnion<string, Struct, TableWithKey<int>>>>>(
             (l, v) => v.Vector = l.ToList());
 
-        [TestMethod]
+        [Fact]
         public void VectorOfUnion_Array() => this.VectorOfUnionTest<RootTable<FlatBufferUnion<string, Struct, TableWithKey<int>>[]>>(
             (l, v) => v.Vector = l);
 
@@ -832,7 +832,7 @@ namespace FlatSharpTests
             int written = FlatBufferSerializer.Default.Serialize(value, data);
             data = data.AsSpan().Slice(0, written).ToArray();
 
-            Assert.IsTrue(data.SequenceEqual(expectedData));
+            Assert.True(data.SequenceEqual(expectedData));
         }
 
         [FlatBufferTable]

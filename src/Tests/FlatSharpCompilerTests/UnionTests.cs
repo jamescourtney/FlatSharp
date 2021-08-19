@@ -21,12 +21,12 @@ namespace FlatSharpTests.Compiler
     using System.Reflection;
     using FlatSharp;
     using FlatSharp.Compiler;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
+    
     public class UnionTests
     {
-        [TestMethod]
+        [Fact]
         public void TestUnionCustomClassGeneration()
         {
             string schema = $@"
@@ -48,47 +48,47 @@ table D ({MetadataKeys.SerializerKind}) {{ Union:TestUnion; }}
             Type cType = asm.GetType("Foobar.C");
             Type dType = asm.GetType("Foobar.D");
 
-            Assert.AreEqual(unionType, dType.GetProperty("Union").PropertyType);
+            Assert.Equal(unionType, dType.GetProperty("Union").PropertyType);
 
             // Custom union derives from FlatBufferUnion
-            Assert.IsTrue(typeof(FlatBufferUnion<,,>).MakeGenericType(aType, bType, cType).IsAssignableFrom(unionType));
+            Assert.True(typeof(FlatBufferUnion<,,>).MakeGenericType(aType, bType, cType).IsAssignableFrom(unionType));
             Type[] types = new[] { aType, bType, cType };
             string[] expectedAliases = new[] { "First", "B", "C" };
 
             // Validate nested enum
             Type nestedEnum = unionType.GetNestedTypes().Single();
-            Assert.IsTrue(nestedEnum.IsEnum);
-            Assert.AreEqual("ItemKind", nestedEnum.Name);
-            Assert.AreEqual(typeof(byte), Enum.GetUnderlyingType(nestedEnum));
-            Assert.AreEqual(types.Length, Enum.GetValues(nestedEnum).Length);
+            Assert.True(nestedEnum.IsEnum);
+            Assert.Equal("ItemKind", nestedEnum.Name);
+            Assert.Equal(typeof(byte), Enum.GetUnderlyingType(nestedEnum));
+            Assert.Equal(types.Length, Enum.GetValues(nestedEnum).Length);
             for (int i = 0; i < types.Length; ++i)
             {
-                Assert.AreEqual(expectedAliases[i], Enum.GetName(nestedEnum, (byte)(i + 1)));
+                Assert.Equal(expectedAliases[i], Enum.GetName(nestedEnum, (byte)(i + 1)));
             }
 
             // Custom union defines ctors for all input types.
             foreach (var type in types)
             {
                 var ctor = unionType.GetConstructor(new[] { type });
-                Assert.IsNotNull(ctor);
+                Assert.NotNull(ctor);
             }
 
             var switchMethods = unionType.GetMethods().Where(m => m.Name == "Switch").Where(m => m.DeclaringType == unionType).ToArray();
-            Assert.AreEqual(4, switchMethods.Length);
-            Assert.AreEqual(2, switchMethods.Count(x => x.ReturnType.FullName != "System.Void")); // 2 of them return something.
-            Assert.IsTrue(switchMethods.All(x => x.IsHideBySig)); // all of them hide the method from the base class.
+            Assert.Equal(4, switchMethods.Length);
+            Assert.Equal(2, switchMethods.Count(x => x.ReturnType.FullName != "System.Void")); // 2 of them return something.
+            Assert.True(switchMethods.All(x => x.IsHideBySig)); // all of them hide the method from the base class.
 
             // Validate parameter names on switch method.
             var switchMethod = switchMethods.Single(x => x.ReturnType.FullName == "System.Void" && !x.IsGenericMethod);
             var parameters = switchMethod.GetParameters();
-            Assert.AreEqual(types.Length + 1, parameters.Length);
-            Assert.AreEqual(typeof(Action), parameters[0].ParameterType);
-            Assert.AreEqual("caseDefault", parameters[0].Name);
+            Assert.Equal(types.Length + 1, parameters.Length);
+            Assert.Equal(typeof(Action), parameters[0].ParameterType);
+            Assert.Equal("caseDefault", parameters[0].Name);
 
             for (int i = 0; i < types.Length; ++i)
             {
-                Assert.AreEqual(typeof(Action<>).MakeGenericType(types[i]), parameters[i + 1].ParameterType);
-                Assert.AreEqual("case" + expectedAliases[i], parameters[i + 1].Name);
+                Assert.Equal(typeof(Action<>).MakeGenericType(types[i]), parameters[i + 1].ParameterType);
+                Assert.Equal("case" + expectedAliases[i], parameters[i + 1].Name);
             }
 
             // Now let's use it a little bit.
@@ -101,13 +101,13 @@ table D ({MetadataKeys.SerializerKind}) {{ Union:TestUnion; }}
 
                 byte kindValue = Convert.ToByte((object)union.Kind);
 
-                Assert.AreEqual(i + 1, discriminator);
-                Assert.AreEqual(i + 1, kindValue);
-                Assert.AreEqual(expectedAliases[i], kind.ToString());
+                Assert.Equal(i + 1, discriminator);
+                Assert.Equal(i + 1, kindValue);
+                Assert.Equal(expectedAliases[i], kind.ToString());
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void TestUnionWithStringGeneration()
         {
             string schema = $@"
@@ -128,10 +128,10 @@ table D ({MetadataKeys.SerializerKind}) {{ Union:TestUnion; }}
 
             Type dType = asm.GetType("Foobar.D");
 
-            Assert.AreEqual(unionType, dType.GetProperty("Union").PropertyType);
+            Assert.Equal(unionType, dType.GetProperty("Union").PropertyType);
         }
 
-        [TestMethod]
+        [Fact]
         public void TestUnionWithAliasedStringGeneration()
         {
             string schema = $@"
@@ -151,7 +151,7 @@ table D ({MetadataKeys.SerializerKind}) {{ Union:TestUnion; }}
             Type unionType = asm.GetType("Foobar.TestUnion");
             Type dType = asm.GetType("Foobar.D");
 
-            Assert.AreEqual(unionType, dType.GetProperty("Union").PropertyType);
+            Assert.Equal(unionType, dType.GetProperty("Union").PropertyType);
         }
     }
 }

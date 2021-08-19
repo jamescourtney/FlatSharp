@@ -21,12 +21,12 @@ namespace FlatSharpTests.Compiler
     using System.Reflection;
     using FlatSharp;
     using FlatSharp.Compiler;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
+    
     public class NullableAnnotationTests
     {
-        [TestMethod]
+        [Fact]
         public void NullableAnnotations()
         {
             string schema = $@"

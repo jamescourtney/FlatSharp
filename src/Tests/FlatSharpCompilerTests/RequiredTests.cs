@@ -22,12 +22,12 @@ namespace FlatSharpTests.Compiler
     using FlatSharp;
     using FlatSharp.Attributes;
     using FlatSharp.Compiler;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
+    
     public class RequiredTests
     {
-        [TestMethod]
+        [Fact]
         public void Required_Attribute_OnParse()
         {
             string schema = $@"
@@ -50,22 +50,22 @@ namespace FlatSharpTests.Compiler
             ISerializer serializer = (ISerializer)tableType.GetProperty("Serializer", BindingFlags.Public | BindingFlags.Static).GetValue(null);
             dynamic parsed = serializer.Parse(buffer);
 
-            var ex = Assert.ThrowsException<System.IO.InvalidDataException>(
+            var ex = Assert.Throws<System.IO.InvalidDataException>(
                 () => parsed.String);
 
-            Assert.AreEqual(
+            Assert.Equal(
                 "Table property 'RequiredTests.Table.String' is marked as required, but was missing from the buffer.",
                 ex.Message);
 
-            ex = Assert.ThrowsException<System.IO.InvalidDataException>(
+            ex = Assert.Throws<System.IO.InvalidDataException>(
                 () => parsed.Struct);
 
-            Assert.AreEqual(
+            Assert.Equal(
                 "Table property 'RequiredTests.Table.Struct' is marked as required, but was missing from the buffer.",
                 ex.Message);
         }
 
-        [TestMethod]
+        [Fact]
         public void Required_Attribute_OnSerialize()
         {
             string schema = $@"
@@ -81,7 +81,7 @@ namespace FlatSharpTests.Compiler
 
             ISerializer serializer = (ISerializer)tableType.GetProperty("Serializer", BindingFlags.Public | BindingFlags.Static).GetValue(null);
 
-            Assert.ThrowsException<InvalidOperationException>(
+            Assert.Throws<InvalidOperationException>(
                 () => serializer.Write(buffer, Activator.CreateInstance(tableType)));
         }
     }

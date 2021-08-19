@@ -23,42 +23,42 @@ namespace FlatSharpTests.Compiler
     using FlatSharp;
     using FlatSharp.Attributes;
     using FlatSharp.Compiler;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
+    
     public class RealExamples
     {
-        [TestMethod]
+        [Fact]
         public void MonsterTest_Greedy()
         {
             this.MonsterTest("greedy");
         }
 
-        [TestMethod]
+        [Fact]
         public void MonsterTest_VectorCache()
         {
             this.MonsterTest("vectorcache");
         }
 
-        [TestMethod]
+        [Fact]
         public void MonsterTest_VectorCacheMutable()
         {
             this.MonsterTest("vectorcache");
         }
 
-        [TestMethod]
+        [Fact]
         public void MonsterTest_Lazy()
         {
             this.MonsterTest("lazy");
         }
 
-        [TestMethod]
+        [Fact]
         public void MonsterTest_PropertyCache()
         {
             this.MonsterTest("propertycache");
         }
 
-        [TestMethod]
+        [Fact]
         public void MonsterTest_GreedyMutable()
         {
             this.MonsterTest("greedymutable");
@@ -123,28 +123,28 @@ table Weapon {{
             object vec = Activator.CreateInstance(vec3Type);
             dynamic dVec = vec;
 
-            Assert.AreEqual((short)150, dMonster.mana);
-            Assert.AreEqual((short)100, dMonster.hp);
-            Assert.IsFalse(dMonster.friendly);
-            Assert.AreEqual("Blue", dMonster.color.ToString());
-            Assert.IsNull(dMonster.pos);
+            Assert.Equal((short)150, dMonster.mana);
+            Assert.Equal((short)100, dMonster.hp);
+            Assert.False(dMonster.friendly);
+            Assert.Equal("Blue", dMonster.color.ToString());
+            Assert.Null(dMonster.pos);
 
-            Assert.AreEqual(typeof(IList<byte>), monsterType.GetProperty("inventory").PropertyType);
-            Assert.AreEqual(typeof(IList<>).MakeGenericType(vec3Type), monsterType.GetProperty("path").PropertyType);
-            Assert.AreEqual(typeof(IList<>).MakeGenericType(weaponType), monsterType.GetProperty("weapons").PropertyType);
-            Assert.IsTrue(typeof(FlatBufferUnion<,,,,>).MakeGenericType(weaponType, vec3Type, vec4Type, monsterType, typeof(string)).IsAssignableFrom(monsterType.GetProperty("equipped").PropertyType));
-            Assert.AreEqual(typeof(string), monsterType.GetProperty("name").PropertyType);
-            Assert.IsTrue(monsterType.GetProperty("friendly").GetCustomAttribute<FlatBufferItemAttribute>().Deprecated);
+            Assert.Equal(typeof(IList<byte>), monsterType.GetProperty("inventory").PropertyType);
+            Assert.Equal(typeof(IList<>).MakeGenericType(vec3Type), monsterType.GetProperty("path").PropertyType);
+            Assert.Equal(typeof(IList<>).MakeGenericType(weaponType), monsterType.GetProperty("weapons").PropertyType);
+            Assert.True(typeof(FlatBufferUnion<,,,,>).MakeGenericType(weaponType, vec3Type, vec4Type, monsterType, typeof(string)).IsAssignableFrom(monsterType.GetProperty("equipped").PropertyType));
+            Assert.Equal(typeof(string), monsterType.GetProperty("name").PropertyType);
+            Assert.True(monsterType.GetProperty("friendly").GetCustomAttribute<FlatBufferItemAttribute>().Deprecated);
 
             byte[] data = new byte[1024];
             ISerializer monsterSerializer = CompilerTestHelpers.CompilerTestSerializer.Compile(monster);
 
             monsterSerializer.Write(data, monster);
             var parsedMonster = monsterSerializer.Parse(data);
-            Assert.AreNotEqual(parsedMonster.GetType(), monster.GetType());
+            Assert.NotEqual(parsedMonster.GetType(), monster.GetType());
 
             var copiedMonster = Activator.CreateInstance(monsterType, new[] { parsedMonster });
-            Assert.AreEqual(copiedMonster.GetType(), monster.GetType());
+            Assert.Equal(copiedMonster.GetType(), monster.GetType());
         }
     }
 }

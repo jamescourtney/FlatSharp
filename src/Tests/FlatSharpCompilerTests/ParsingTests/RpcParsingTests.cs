@@ -21,12 +21,12 @@ namespace FlatSharpTests.Compiler
     using System.Reflection;
     using FlatSharp;
     using FlatSharp.Compiler;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
+    
     public class RpcParsingTests
     {
-        [TestMethod]
+        [Fact]
         public void BasicEnumTest_Byte()
         {
             string schema = @"
@@ -44,14 +44,14 @@ rpc_service Service {
 ";
             BaseSchemaMember member = FlatSharpCompiler.TestHookParseSyntax(schema);
             var rpcDef = member.Children["Foo"].Children["Bar"].Children["Service"] as RpcDefinition;
-            Assert.IsNotNull(rpcDef);
+            Assert.NotNull(rpcDef);
 
-            Assert.AreEqual(5, rpcDef.Methods.Count);
-            Assert.AreEqual(("Request", "Response", RpcStreamingType.Unary), rpcDef.Methods["HelloUnary"]);
-            Assert.AreEqual(("Request", "Response", RpcStreamingType.Unary), rpcDef.Methods["HelloUnaryImplicit"]);
-            Assert.AreEqual(("Request", "Response", RpcStreamingType.Server), rpcDef.Methods["HelloServer"]);
-            Assert.AreEqual(("Request", "Response", RpcStreamingType.Client), rpcDef.Methods["HelloClient"]); 
-            Assert.AreEqual(("Request", "Response", RpcStreamingType.Bidirectional), rpcDef.Methods["HelloBidi"]);
+            Assert.Equal(5, rpcDef.Methods.Count);
+            Assert.Equal(("Request", "Response", RpcStreamingType.Unary), rpcDef.Methods["HelloUnary"]);
+            Assert.Equal(("Request", "Response", RpcStreamingType.Unary), rpcDef.Methods["HelloUnaryImplicit"]);
+            Assert.Equal(("Request", "Response", RpcStreamingType.Server), rpcDef.Methods["HelloServer"]);
+            Assert.Equal(("Request", "Response", RpcStreamingType.Client), rpcDef.Methods["HelloClient"]); 
+            Assert.Equal(("Request", "Response", RpcStreamingType.Bidirectional), rpcDef.Methods["HelloBidi"]);
         }
     }
 }

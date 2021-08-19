@@ -19,16 +19,16 @@ namespace FlatSharpTests.Compiler
     using System;
     using FlatSharp;
     using FlatSharp.Compiler;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
+    
     public class FullTests
     {
 #if NET5_0_OR_GREATER
         /// <summary>
         /// Tests that we can compile a complex schema.
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void FullTest()
         {
             foreach (FlatBufferDeserializationOption option in Enum.GetValues(typeof(FlatBufferDeserializationOption)))

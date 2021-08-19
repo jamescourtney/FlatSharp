@@ -22,15 +22,15 @@ namespace FlatSharpTests
     using System.Linq;
     using FlatSharp;
     using FlatSharp.Attributes;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
     /// <summary>
     /// Binary format testing for vector deserialization.
     /// </summary>
-    [TestClass]
+    
     public class VectorDeserializationTests
     {
-        [TestMethod]
+        [Fact]
         public void NullListVector()
         {
             byte[] data =
@@ -42,10 +42,10 @@ namespace FlatSharpTests
             };
 
             var item = FlatBufferSerializer.Default.Parse<RootTable<IList<short>>>(data);
-            Assert.AreEqual(null, item.Vector);
+            Assert.Null(item.Vector);
         }
 
-        [TestMethod]
+        [Fact]
         public void EmptyListVector()
         {
             byte[] data =
@@ -61,10 +61,10 @@ namespace FlatSharpTests
             };
 
             var item = FlatBufferSerializer.Default.Parse<RootTable<IList<short>>>(data);
-            Assert.AreEqual(0, item.Vector.Count);
+            Assert.Equal(0, item.Vector.Count);
         }
 
-        [TestMethod]
+        [Fact]
         public void SimpleListVector()
         {
             byte[] data =
@@ -86,13 +86,13 @@ namespace FlatSharpTests
 
             var item = FlatBufferSerializer.Default.Parse<RootTable<IList<short>>>(data);
 
-            Assert.AreEqual(3, item.Vector.Count);
-            Assert.AreEqual(1, item.Vector[0]);
-            Assert.AreEqual(2, item.Vector[1]);
-            Assert.AreEqual(3, item.Vector[2]);
+            Assert.Equal(3, item.Vector.Count);
+            Assert.Equal(1, item.Vector[0]);
+            Assert.Equal(2, item.Vector[1]);
+            Assert.Equal(3, item.Vector[2]);
         }
 
-        [TestMethod]
+        [Fact]
         public void EmptyMemoryVector()
         {
             byte[] data =
@@ -108,10 +108,10 @@ namespace FlatSharpTests
             };
             
             var item = FlatBufferSerializer.Default.Parse<RootTable<Memory<byte>>>(data);
-            Assert.IsTrue(item.Vector.IsEmpty);
+            Assert.True(item.Vector.IsEmpty);
         }
 
-        [TestMethod]
+        [Fact]
         public void SimpleMemoryVector()
         {
             byte[] data =
@@ -128,13 +128,13 @@ namespace FlatSharpTests
             };
 
             var item = FlatBufferSerializer.Default.Parse<RootTable<Memory<byte>>>(data);
-            Assert.AreEqual(3, item.Vector.Length);
-            Assert.AreEqual((byte)1, item.Vector.Span[0]);
-            Assert.AreEqual((byte)2, item.Vector.Span[1]);
-            Assert.AreEqual((byte)3, item.Vector.Span[2]);
+            Assert.Equal(3, item.Vector.Length);
+            Assert.Equal((byte)1, item.Vector.Span[0]);
+            Assert.Equal((byte)2, item.Vector.Span[1]);
+            Assert.Equal((byte)3, item.Vector.Span[2]);
         }
 
-        [TestMethod]
+        [Fact]
         public void NullString()
         {
             byte[] data =
@@ -146,10 +146,10 @@ namespace FlatSharpTests
             };
 
             var item = FlatBufferSerializer.Default.Parse<RootTable<string>>(data);
-            Assert.AreEqual(null, item.Vector);
+            Assert.Null(item.Vector);
         }
 
-        [TestMethod]
+        [Fact]
         public void EmptyString()
         {
             byte[] data =
@@ -166,10 +166,10 @@ namespace FlatSharpTests
             };
 
             var item = FlatBufferSerializer.Default.Parse<RootTable<string>>(data);
-            Assert.AreEqual(string.Empty, item.Vector);
+            Assert.Equal(string.Empty, item.Vector);
         }
 
-        [TestMethod]
+        [Fact]
         public void SimpleString()
         {
             byte[] data =
@@ -186,11 +186,11 @@ namespace FlatSharpTests
             };
 
             var item = FlatBufferSerializer.Default.Parse<RootTable<string>>(data);
-            Assert.AreEqual(3, item.Vector.Length);
-            Assert.AreEqual(new string(new char[] { (char)1, (char)2, (char)3 }), item.Vector);
+            Assert.Equal(3, item.Vector.Length);
+            Assert.Equal(new string(new char[] { (char)1, (char)2, (char)3 }), item.Vector);
         }
 
-        [TestMethod]
+        [Fact]
         public void NullArray()
         {
             byte[] data =
@@ -202,10 +202,10 @@ namespace FlatSharpTests
             };
 
             var item = FlatBufferSerializer.Default.Parse<RootTable<int[]>>(data);
-            Assert.IsNull(item.Vector);
+            Assert.Null(item.Vector);
         }
 
-        [TestMethod]
+        [Fact]
         public void EmptyArray()
         {
             byte[] data =
@@ -222,13 +222,13 @@ namespace FlatSharpTests
 
             // we parse non-scalar array and scalar arrays differently, so test for both.
             var item = FlatBufferSerializer.Default.Parse<RootTable<int[]>>(data);
-            Assert.AreEqual(0, item.Vector.Length);
+            Assert.Empty(item.Vector);
 
             var stringItem = FlatBufferSerializer.Default.Parse<RootTable<string[]>>(data);
-            Assert.AreEqual(0, stringItem.Vector.Length);
+            Assert.Empty(stringItem.Vector);
         }
 
-        [TestMethod]
+        [Fact]
         public void SimpleArray()
         {
             byte[] data =
@@ -249,13 +249,13 @@ namespace FlatSharpTests
             };
 
             var item = FlatBufferSerializer.Default.Parse<RootTable<long[]>>(data);
-            Assert.AreEqual(3, item.Vector.Length);
-            Assert.AreEqual(1L, item.Vector[0]);
-            Assert.AreEqual(2L, item.Vector[1]);
-            Assert.AreEqual(3L, item.Vector[2]);
+            Assert.Equal(3, item.Vector.Length);
+            Assert.Equal(1L, item.Vector[0]);
+            Assert.Equal(2L, item.Vector[1]);
+            Assert.Equal(3L, item.Vector[2]);
         }
 
-        [TestMethod]
+        [Fact]
         public void StringVector_GreedyDeserialize_Mutable()
         {
             RootTable<IList<string>> root = new RootTable<IList<string>>
@@ -271,14 +271,14 @@ namespace FlatSharpTests
 
             var parsed = serializer.Parse<RootTable<IList<string>>>(buffer);
 
-            Assert.AreEqual(typeof(List<string>), parsed.Vector.GetType());
-            Assert.IsFalse(parsed.Vector.IsReadOnly);
+            Assert.Equal(typeof(List<string>), parsed.Vector.GetType());
+            Assert.False(parsed.Vector.IsReadOnly);
 
             // Shouldn't throw.
             parsed.Vector.Add("four");
         }
 
-        [TestMethod]
+        [Fact]
         public void StringVector_GreedyDeserialize_NotMutable()
         {
             RootTable<IList<string>> root = new RootTable<IList<string>>
@@ -294,13 +294,13 @@ namespace FlatSharpTests
 
             var parsed = serializer.Parse<RootTable<IList<string>>>(buffer);
 
-            Assert.AreEqual(typeof(ReadOnlyCollection<string>), parsed.Vector.GetType());
-            Assert.IsTrue(parsed.Vector.IsReadOnly);
+            Assert.Equal(typeof(ReadOnlyCollection<string>), parsed.Vector.GetType());
+            Assert.True(parsed.Vector.IsReadOnly);
 
-            Assert.ThrowsException<NotSupportedException>(() => parsed.Vector.Add("four"));
+            Assert.Throws<NotSupportedException>(() => parsed.Vector.Add("four"));
         }
 
-        [TestMethod]
+        [Fact]
         public void MemoryVector_GreedyDeserialize()
         {
             RootTable<Memory<byte>> root = new RootTable<Memory<byte>>()
@@ -319,20 +319,20 @@ namespace FlatSharpTests
             var parsed1 = serializer.Parse<RootTable<Memory<byte>>>(buffer);
             var parsed2 = serializer.Parse<RootTable<Memory<byte>>>(buffer);
 
-            Assert.AreEqual((byte)1, parsed1.Vector.Span[0]);
-            Assert.AreEqual((byte)1, parsed2.Vector.Span[0]);
+            Assert.Equal((byte)1, parsed1.Vector.Span[0]);
+            Assert.Equal((byte)1, parsed2.Vector.Span[0]);
 
             // Asser that this change affects only the 'parsed1' object.
             parsed1.Vector.Span[0] = 2;
 
-            Assert.AreEqual((byte)2, parsed1.Vector.Span[0]);
-            Assert.AreEqual((byte)1, parsed2.Vector.Span[0]);
+            Assert.Equal((byte)2, parsed1.Vector.Span[0]);
+            Assert.Equal((byte)1, parsed2.Vector.Span[0]);
         }
 
         /// <summary>
         /// Asserts that when greedy parsing is off, a change to the memory of the parsed object represents a change in the buffer.
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void MemoryVector_LazyDeserialize()
         {
             RootTable<Memory<byte>> root = new RootTable<Memory<byte>>()
@@ -351,25 +351,25 @@ namespace FlatSharpTests
             var parsed1 = serializer.Parse<RootTable<Memory<byte>>>(buffer);
             var parsed2 = serializer.Parse<RootTable<Memory<byte>>>(buffer);
 
-            Assert.AreEqual((byte)1, parsed1.Vector.Span[0]);
-            Assert.AreEqual((byte)1, parsed2.Vector.Span[0]);
+            Assert.Equal((byte)1, parsed1.Vector.Span[0]);
+            Assert.Equal((byte)1, parsed2.Vector.Span[0]);
 
             // Asser that this change affects both objects.
             parsed1.Vector.Span[0] = 2;
 
-            Assert.AreEqual((byte)2, parsed1.Vector.Span[0]);
-            Assert.AreEqual((byte)2, parsed2.Vector.Span[0]);
+            Assert.Equal((byte)2, parsed1.Vector.Span[0]);
+            Assert.Equal((byte)2, parsed2.Vector.Span[0]);
         }
 
-        [TestMethod]
+        [Fact]
         public void VectorOfUnion_List() => this.VectorOfUnionTest<RootTable<IList<FlatBufferUnion<string, Struct, TableWithKey<int>>>>>(
             v => v.Vector.ToArray());
 
-        [TestMethod]
+        [Fact]
         public void VectorOfUnion_ReadOnlyList() => this.VectorOfUnionTest<RootTable<IReadOnlyList<FlatBufferUnion<string, Struct, TableWithKey<int>>>>>(
             v => v.Vector.ToArray());
 
-        [TestMethod]
+        [Fact]
         public void VectorOfUnion_Array() => this.VectorOfUnionTest<RootTable<FlatBufferUnion<string, Struct, TableWithKey<int>>[]>>(
             v => v.Vector);
 
@@ -409,15 +409,15 @@ namespace FlatSharpTests
                 V parsed = serializer.Parse<V>(data);
                 var items = getItems(parsed);
 
-                Assert.IsTrue(items[0].TryGet(out string str));
-                Assert.AreEqual("foo", str);
+                Assert.True(items[0].TryGet(out string str));
+                Assert.Equal("foo", str);
 
-                Assert.IsTrue(items[1].TryGet(out Struct @struct));
-                Assert.AreEqual(3, @struct.Integer);
+                Assert.True(items[1].TryGet(out Struct @struct));
+                Assert.Equal(3, @struct.Integer);
 
-                Assert.IsTrue(items[2].TryGet(out TableWithKey<int> table));
-                Assert.AreEqual(1, table.Key);
-                Assert.IsNull(table.Value);
+                Assert.True(items[2].TryGet(out TableWithKey<int> table));
+                Assert.Equal(1, table.Key);
+                Assert.Null(table.Value);
             }
         }
 

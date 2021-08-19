@@ -18,7 +18,7 @@ namespace FlatSharpTests
 {
     using FlatSharp;
     using FlatSharp.Attributes;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
     using System;
     using System.Collections.Generic;
     using System.Text;
@@ -26,10 +26,10 @@ namespace FlatSharpTests
     /// <summary>
     /// Tests default values on a table.
     /// </summary>
-    [TestClass]
+    
     public class SharedStringTests
     {
-        [TestMethod]
+        [Fact]
         public void Test_NonSharedStringVector()
         {
             var t = new StringsVector<string>
@@ -69,10 +69,10 @@ namespace FlatSharpTests
                 (byte)'n', (byte)'g', 0,  // null terminator
             };
 
-            Assert.IsTrue(expectedBytes.AsSpan().SequenceEqual(destination.AsSpan().Slice(0, bytesWritten)));
+            Assert.True(expectedBytes.AsSpan().SequenceEqual(destination.AsSpan().Slice(0, bytesWritten)));
         }
 
-        [TestMethod]
+        [Fact]
         public void Test_TableNonSharedStrings()
         {
             var t = new StringsTable<string>
@@ -113,10 +113,10 @@ namespace FlatSharpTests
                 (byte)'n', (byte)'g', 0, // null terminator.
             };
 
-            Assert.IsTrue(expectedBytes.AsSpan().SequenceEqual(destination.AsSpan().Slice(0, bytesWritten)));
+            Assert.True(expectedBytes.AsSpan().SequenceEqual(destination.AsSpan().Slice(0, bytesWritten)));
         }
 
-        [TestMethod]
+        [Fact]
         public void Test_VectorSharedStrings()
         {
             var t = new StringsVector<SharedString>
@@ -136,7 +136,7 @@ namespace FlatSharpTests
 
             int bytesWritten = serializer.Write(SpanWriter.Instance, destination, t);
 
-            Assert.IsTrue(bytesWritten <= maxBytes);
+            Assert.True(bytesWritten <= maxBytes);
 
             byte[] expectedBytes = new byte[]
             {
@@ -154,10 +154,10 @@ namespace FlatSharpTests
                 (byte)'n', (byte)'g', 0 // null terminator.
             };
 
-            Assert.IsTrue(expectedBytes.AsSpan().SequenceEqual(destination.AsSpan().Slice(0, bytesWritten)));
+            Assert.True(expectedBytes.AsSpan().SequenceEqual(destination.AsSpan().Slice(0, bytesWritten)));
         }
 
-        [TestMethod]
+        [Fact]
         public void Test_TableSharedStrings()
         {
             var t = new StringsTable<SharedString>
@@ -192,10 +192,10 @@ namespace FlatSharpTests
                 0 // null terminator.
             };
 
-            Assert.IsTrue(expectedBytes.AsSpan().SequenceEqual(destination.AsSpan().Slice(0, bytesWritten)));
+            Assert.True(expectedBytes.AsSpan().SequenceEqual(destination.AsSpan().Slice(0, bytesWritten)));
         }
 
-        [TestMethod]
+        [Fact]
         public void Test_TableSharedStringsWithNull()
         {
             var t = new StringsTable<SharedString>
@@ -227,13 +227,13 @@ namespace FlatSharpTests
                 (byte)'n', (byte)'g', 0 // null terminator.
             };
 
-            Assert.IsTrue(expectedBytes.AsSpan().SequenceEqual(destination.AsSpan().Slice(0, bytesWritten)));
+            Assert.True(expectedBytes.AsSpan().SequenceEqual(destination.AsSpan().Slice(0, bytesWritten)));
         }
 
         /// <summary>
         /// Tests with an LRU string writer that can only hold onto one item at a time. Each new string it sees evicts the old one.
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void Test_TableSharedStringsWithEviction()
         {
             var t = new StringsTable<SharedString>
@@ -272,13 +272,13 @@ namespace FlatSharpTests
                 (byte)'n', (byte)'g', 0 // null terminator
             };
 
-            Assert.IsTrue(expectedBytes.AsSpan().SequenceEqual(destination.AsSpan().Slice(0, bytesWritten)));
+            Assert.True(expectedBytes.AsSpan().SequenceEqual(destination.AsSpan().Slice(0, bytesWritten)));
         }
 
         /// <summary>
         /// Identical to the above test but with a large enough LRU cache to handle both strings.
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void Test_TableSharedStringsWithoutEviction()
         {
             var t = new StringsTable<SharedString>
@@ -302,13 +302,13 @@ namespace FlatSharpTests
             // We can't predict ordering since there is hashing under the hood.
             int firstIndex = destination.AsSpan().IndexOf(stringBytes);
             int secondIndex = destination.AsSpan().Slice(0, firstIndex + 1).IndexOf(stringBytes);
-            Assert.AreEqual(-1, secondIndex);
+            Assert.Equal(-1, secondIndex);
         }
 
         /// <summary>
         /// Tests reading shared strings.
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void Test_ReadSharedStrings()
         {
             var t = new StringsTable<SharedString>
@@ -329,18 +329,18 @@ namespace FlatSharpTests
             int bytesWritten = serializer.Write(SpanWriter.Instance, destination, t);
 
             var table = serializer.Parse(destination);
-            Assert.AreEqual("string", (string)table.String1);
-            Assert.AreEqual("foo", (string)table.String2);
-            Assert.AreEqual("string", (string)table.String3);
+            Assert.Equal("string", (string)table.String1);
+            Assert.Equal("foo", (string)table.String2);
+            Assert.Equal("string", (string)table.String3);
 
-            Assert.IsTrue(object.ReferenceEquals(table.String1.String, table.String3.String));
+            Assert.True(object.ReferenceEquals(table.String1.String, table.String3.String));
         }
 
 
         /// <summary>
         /// Tests reading shared strings.
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void Test_ReadSharedStrings_NoFactories()
         {
             var t = new StringsTable<SharedString>
@@ -356,40 +356,40 @@ namespace FlatSharpTests
             int bytesWritten = serializer.Write(SpanWriter.Instance, destination, t);
 
             var table = serializer.Parse(destination);
-            Assert.AreEqual("string", (string)table.String1);
-            Assert.AreEqual("foo", (string)table.String2);
-            Assert.AreEqual("string", (string)table.String3);
+            Assert.Equal("string", (string)table.String1);
+            Assert.Equal("foo", (string)table.String2);
+            Assert.Equal("string", (string)table.String3);
 
-            Assert.IsFalse(object.ReferenceEquals(table.String1.String, table.String3.String));
+            Assert.False(object.ReferenceEquals(table.String1.String, table.String3.String));
         }
 
-        [TestMethod]
+        [Fact]
         public void Test_SharedStringEqualityOverloads()
         {
             void AssertEqual(SharedString sharedStr, string str)
             {
-                Assert.IsTrue(sharedStr == str);
-                Assert.IsTrue(str == sharedStr);
-                Assert.IsFalse(sharedStr != str);
-                Assert.IsFalse(str != sharedStr);
+                Assert.True(sharedStr == str);
+                Assert.True(str == sharedStr);
+                Assert.False(sharedStr != str);
+                Assert.False(str != sharedStr);
 
-                Assert.IsTrue(sharedStr?.Equals(str) ?? true);
-                Assert.IsTrue(sharedStr?.Equals((object)str) ?? true);
-                Assert.IsTrue(sharedStr?.Equals((object)(SharedString)str) ?? true);
-                Assert.IsTrue(sharedStr?.Equals((SharedString)str) ?? true);
+                Assert.True(sharedStr?.Equals(str) ?? true);
+                Assert.True(sharedStr?.Equals((object)str) ?? true);
+                Assert.True(sharedStr?.Equals((object)(SharedString)str) ?? true);
+                Assert.True(sharedStr?.Equals((SharedString)str) ?? true);
             }
 
             void AssertNotEqual(SharedString sharedStr, string str)
             {
-                Assert.IsTrue(sharedStr != str);
-                Assert.IsTrue(str != sharedStr);
-                Assert.IsFalse(sharedStr == str);
-                Assert.IsFalse(str == sharedStr);
+                Assert.True(sharedStr != str);
+                Assert.True(str != sharedStr);
+                Assert.False(sharedStr == str);
+                Assert.False(str == sharedStr);
 
-                Assert.IsFalse(sharedStr?.Equals(str) ?? false);
-                Assert.IsFalse(sharedStr?.Equals((object)str) ?? false);
-                Assert.IsFalse(sharedStr?.Equals((object)(SharedString)str) ?? false);
-                Assert.IsFalse(sharedStr?.Equals((SharedString)str) ?? false);
+                Assert.False(sharedStr?.Equals(str) ?? false);
+                Assert.False(sharedStr?.Equals((object)str) ?? false);
+                Assert.False(sharedStr?.Equals((object)(SharedString)str) ?? false);
+                Assert.False(sharedStr?.Equals((SharedString)str) ?? false);
             }
 
             const string foo = "foo";

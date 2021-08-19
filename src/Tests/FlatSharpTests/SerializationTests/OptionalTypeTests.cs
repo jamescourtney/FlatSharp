@@ -25,48 +25,48 @@ namespace FlatSharpTests
     using FlatSharp;
     using FlatSharp.Attributes;
     using FlatSharp.TypeModel;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
     /// <summary>
     /// Binary format testing for vector serialization.
     /// </summary>
-    [TestClass]
+    
     public class OptionalTypeTests
     {
-        [TestMethod]
+        [Fact]
         public void OptionalTypeSerialize_Bool() => this.RunTest<bool>();
 
-        [TestMethod]
+        [Fact]
         public void OptionalTypeSerialize_Byte() => this.RunTest<byte>();
 
-        [TestMethod]
+        [Fact]
         public void OptionalTypeSerialize_SByte() => this.RunTest<sbyte>();
 
-        [TestMethod]
+        [Fact]
         public void OptionalTypeSerialize_UShort() => this.RunTest<ushort>();
 
-        [TestMethod]
+        [Fact]
         public void OptionalTypeSerialize_Short() => this.RunTest<short>();
 
-        [TestMethod]
+        [Fact]
         public void OptionalTypeSerialize_UInt() => this.RunTest<uint>();
 
-        [TestMethod]
+        [Fact]
         public void OptionalTypeSerialize_Int() => this.RunTest<int>();
 
-        [TestMethod]
+        [Fact]
         public void OptionalTypeSerialize_ULong() => this.RunTest<ulong>();
 
-        [TestMethod]
+        [Fact]
         public void OptionalTypeSerialize_Float() => this.RunTest<float>();
 
-        [TestMethod]
+        [Fact]
         public void OptionalTypeSerialize_Double() => this.RunTest<double>();
 
-        [TestMethod]
+        [Fact]
         public void OptionalTypeSerialize_ByteEnum() => this.RunTest<ByteEnum>();
 
-        [TestMethod]
+        [Fact]
         public void OptionalTypeSerialize_LongEnum() => this.RunTest<LongEnum>();
 
         private void RunTest<T>() where T : struct
@@ -79,14 +79,14 @@ namespace FlatSharpTests
             byte[] data = new byte[1024];
             int defaultBytesWritten = FlatBufferSerializer.Default.Serialize(table, data);
 
-            Assert.AreEqual(12, defaultBytesWritten);
-            Assert.AreEqual(null, FlatBufferSerializer.Default.Parse<OptionalTypeTable<T>>(data).Value);
+            Assert.Equal(12, defaultBytesWritten);
+            Assert.Null(FlatBufferSerializer.Default.Parse<OptionalTypeTable<T>>(data).Value);
 
             table.Value = default(T);
             int actualBytesWritten = FlatBufferSerializer.Default.Serialize(table, data);
 
-            Assert.IsTrue(actualBytesWritten >= defaultBytesWritten + RuntimeTypeModel.CreateFrom(typeof(T)).PhysicalLayout.Single().InlineSize);
-            Assert.AreEqual(default(T), FlatBufferSerializer.Default.Parse<OptionalTypeTable<T>>(data).Value);
+            Assert.True(actualBytesWritten >= defaultBytesWritten + RuntimeTypeModel.CreateFrom(typeof(T)).PhysicalLayout.Single().InlineSize);
+            Assert.Equal(default(T), FlatBufferSerializer.Default.Parse<OptionalTypeTable<T>>(data).Value);
         }
 
         [FlatBufferEnum(typeof(byte))]

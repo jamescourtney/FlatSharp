@@ -22,12 +22,12 @@ namespace FlatSharpTests.Compiler
     using FlatSharp;
     using FlatSharp.Attributes;
     using FlatSharp.Compiler;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
+    
     public class ForceWriteTests
     {
-        [TestMethod]
+        [Fact]
         public void ForceWrite_OnStruct()
         {
             string schema = $@"
@@ -36,11 +36,11 @@ namespace FlatSharpTests.Compiler
             struct Struct {{ foo:int; }} 
             ";
 
-            var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.IsTrue(ex.Errors[0].StartsWith("Message='Property 'Struct' on table 'ForceWriteTests.Table' declares the ForceWrite option, but the type is not supported for force write.', Scope=$"));
+            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+            Assert.StartsWith("Message='Property 'Struct' on table 'ForceWriteTests.Table' declares the ForceWrite option, but the type is not supported for force write.', Scope=$", ex.Errors[0]);
         }
 
-        [TestMethod]
+        [Fact]
         public void ForceWrite_OnStructVector()
         {
             string schema = $@"
@@ -49,11 +49,11 @@ namespace FlatSharpTests.Compiler
             struct Struct {{ foo:int; }} 
             ";
 
-            var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.IsTrue(ex.Errors[0].StartsWith("Message='Property 'Struct' on table 'ForceWriteTests.Table' declares the ForceWrite option, but the type is not supported for force write.', Scope=$"));
+            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+            Assert.StartsWith("Message='Property 'Struct' on table 'ForceWriteTests.Table' declares the ForceWrite option, but the type is not supported for force write.', Scope=$", ex.Errors[0]);
         }
 
-        [TestMethod]
+        [Fact]
         public void ForceWrite_OnTable()
         {
             string schema = $@"
@@ -62,11 +62,11 @@ namespace FlatSharpTests.Compiler
             table OtherTable {{ foo:int; }} 
             ";
 
-            var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.IsTrue(ex.Errors[0].StartsWith("Message='Property 'OtherTable' on table 'ForceWriteTests.Table' declares the ForceWrite option, but the type is not supported for force write.', Scope=$"));
+            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+            Assert.StartsWith("Message='Property 'OtherTable' on table 'ForceWriteTests.Table' declares the ForceWrite option, but the type is not supported for force write.', Scope=$", ex.Errors[0]);
         }
 
-        [TestMethod]
+        [Fact]
         public void ForceWrite_OnTableVector()
         {
             string schema = $@"
@@ -75,11 +75,11 @@ namespace FlatSharpTests.Compiler
             table OtherTable {{ foo:int; }} 
             ";
 
-            var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.IsTrue(ex.Errors[0].StartsWith("Message='Property 'OtherTable' on table 'ForceWriteTests.Table' declares the ForceWrite option, but the type is not supported for force write.', Scope=$"));
+            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+            Assert.StartsWith("Message='Property 'OtherTable' on table 'ForceWriteTests.Table' declares the ForceWrite option, but the type is not supported for force write.', Scope=$", ex.Errors[0]);
         }
 
-        [TestMethod]
+        [Fact]
         public void ForceWrite_OnOptionalScalar()
         {
             string schema = $@"
@@ -87,11 +87,11 @@ namespace FlatSharpTests.Compiler
             table Table {{  optInt:int = null ({MetadataKeys.ForceWrite}); }}
             ";
 
-            var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.IsTrue(ex.Errors[0].StartsWith("Message='Property 'optInt' on table 'ForceWriteTests.Table' declares the ForceWrite option, but the type is not supported for force write.', Scope=$"));
+            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+            Assert.StartsWith("Message='Property 'optInt' on table 'ForceWriteTests.Table' declares the ForceWrite option, but the type is not supported for force write.', Scope=$", ex.Errors[0]);
         }
 
-        [TestMethod]
+        [Fact]
         public void ForceWrite_OnUnion()
         {
             string schema = $@"
@@ -102,20 +102,20 @@ namespace FlatSharpTests.Compiler
             table Table {{  Union:SU ({MetadataKeys.ForceWrite}); }}
             ";
 
-            var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.IsTrue(ex.Errors[0].StartsWith("Message='Property 'Union' on table 'ForceWriteTests.Table' declares the ForceWrite option, but the type is not supported for force write.', Scope=$"));
+            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+            Assert.StartsWith("Message='Property 'Union' on table 'ForceWriteTests.Table' declares the ForceWrite option, but the type is not supported for force write.', Scope=$", ex.Errors[0]);
         }
 
-        [TestMethod]
+        [Fact]
         public void ForceWrite_NoTableOption() => this.RunTest(string.Empty, false);
 
-        [TestMethod]
+        [Fact]
         public void ForceWrite_TableOptionDisabled() => this.RunTest($"{MetadataKeys.ForceWrite}:\"false\"", false);
 
-        [TestMethod]
+        [Fact]
         public void ForceWrite_TableOptionEnabledImplicit() => this.RunTest(MetadataKeys.ForceWrite, true);
 
-        [TestMethod]
+        [Fact]
         public void ForceWrite_TableOptionEnabledExplicit() => this.RunTest($"{MetadataKeys.ForceWrite}:\"true\"", true);
 
         private void RunTest(string tableMetadata, bool defaultEnabled)
@@ -159,8 +159,8 @@ namespace FlatSharpTests.Compiler
             {
                 var prop = type.GetProperty(propertyName);
                 var attr = prop.GetCustomAttribute<FlatBufferItemAttribute>();
-                Assert.IsNotNull(attr);
-                Assert.AreEqual(enabled, attr.ForceWrite);
+                Assert.NotNull(attr);
+                Assert.Equal(enabled, attr.ForceWrite);
             }
 
             AssertForceWrite("Default", defaultEnabled);

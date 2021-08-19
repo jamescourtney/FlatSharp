@@ -22,12 +22,12 @@ namespace FlatSharpTests.Compiler
     using FlatSharp;
     using FlatSharp.Attributes;
     using FlatSharp.Compiler;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
+    
     public class WriteThroughTests
     {
-        [TestMethod]
+        [Fact]
         public void WriteThrough_OnStructField()
         {
             static void Test(FlatBufferDeserializationOption option)
@@ -57,16 +57,16 @@ namespace FlatSharpTests.Compiler
                 try
                 {
                     parsed.Struct.bar = 22;
-                    Assert.AreEqual(FlatBufferDeserializationOption.VectorCacheMutable, option);
+                    Assert.Equal(FlatBufferDeserializationOption.VectorCacheMutable, option);
                 }
                 catch (NotMutableException)
                 {
-                    Assert.AreEqual(FlatBufferDeserializationOption.Lazy, option);
+                    Assert.Equal(FlatBufferDeserializationOption.Lazy, option);
                 }
 
                 dynamic parsed2 = serializer.Parse(data);
-                Assert.AreEqual(100, (int)parsed2.Struct.foo);
-                Assert.AreEqual(65, (int)parsed2.Struct.bar);
+                Assert.Equal(100, (int)parsed2.Struct.foo);
+                Assert.Equal(65, (int)parsed2.Struct.bar);
             }
 
             Test(FlatBufferDeserializationOption.Lazy);

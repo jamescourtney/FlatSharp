@@ -27,8 +27,6 @@ namespace FlatSharp
     /// </summary>
     internal static class CSharpHelpers
     {
-        internal static bool ConvertProtectedInternalToProtected = true;
-
         internal const string GeneratedClassInputBufferFieldName = "__buffer";
         internal const string GeneratedClassOffsetFieldName = "__offset";
         internal const string GeneratedClassMaxVtableIndexFieldName = "__maxVTableIndex";
@@ -79,17 +77,18 @@ namespace FlatSharp
         }
 
         internal static (AccessModifier propertyModifier, AccessModifier? getModifer, AccessModifier? setModifier) GetPropertyAccessModifiers(
-            PropertyInfo property)
+            PropertyInfo property,
+            bool convertProtectedInternalToProtected)
         {
             FlatSharpInternal.Assert(property.GetMethod is not null, $"Property {property.DeclaringType?.Name}.{property.Name} has null get method.");
-            var getModifier = GetAccessModifier(property.GetMethod);
+            var getModifier = GetAccessModifier(property.GetMethod, convertProtectedInternalToProtected);
 
             if (property.SetMethod is null)
             {
                 return (getModifier, null, null);
             }
 
-            var setModifier = GetAccessModifier(property.SetMethod);
+            var setModifier = GetAccessModifier(property.SetMethod, convertProtectedInternalToProtected);
 
             return GetPropertyAccessModifiers(getModifier, setModifier);
         }
@@ -114,7 +113,7 @@ namespace FlatSharp
             };
         }
 
-        internal static AccessModifier GetAccessModifier(this MethodInfo method)
+        internal static AccessModifier GetAccessModifier(this MethodInfo method, bool convertProtectedInternalToProtected)
         {
             if (method.IsPublic)
             {
@@ -123,7 +122,7 @@ namespace FlatSharp
 
             if (method.IsFamilyOrAssembly)
             {
-                if (ConvertProtectedInternalToProtected)
+                if (convertProtectedInternalToProtected)
                 {
                     return AccessModifier.Protected;
                 }

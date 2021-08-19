@@ -24,12 +24,12 @@ namespace FlatSharpTests.Compiler
     using System.Threading.Tasks.Sources;
     using FlatSharp;
     using FlatSharp.Compiler;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
+    
     public class GrpcTests
     {
-        [TestMethod]
+        [Fact]
         public void RouteGuideTest()
         {
             string schema = $@"
@@ -87,35 +87,35 @@ namespace routeguide;
                 });
 
             var rpcType = compiled.GetType("routeguide.RouteGuide");
-            Assert.IsNotNull(rpcType);
+            Assert.NotNull(rpcType);
 
             var serverBaseClass = rpcType.GetNestedType("RouteGuideServerBase");
-            Assert.IsTrue(serverBaseClass.IsAbstract);
+            Assert.True(serverBaseClass.IsAbstract);
             var attribute = serverBaseClass.GetCustomAttribute<Grpc.Core.BindServiceMethodAttribute>();
-            Assert.IsNotNull(attribute);
+            Assert.NotNull(attribute);
 
             var bindServiceMethod = rpcType.GetMethod("BindService", new [] {serverBaseClass});
-            Assert.IsNotNull(bindServiceMethod);
-            Assert.AreEqual(bindServiceMethod.Name, attribute.BindMethodName);
-            Assert.AreEqual(rpcType, attribute.BindType);
-            Assert.IsTrue(bindServiceMethod.IsPublic);
-            Assert.IsTrue(bindServiceMethod.IsStatic);
+            Assert.NotNull(bindServiceMethod);
+            Assert.Equal(bindServiceMethod.Name, attribute.BindMethodName);
+            Assert.Equal(rpcType, attribute.BindType);
+            Assert.True(bindServiceMethod.IsPublic);
+            Assert.True(bindServiceMethod.IsStatic);
 
             var bindServiceOverload =
                 rpcType.GetMethod("BindService", new[] {typeof(Grpc.Core.ServiceBinderBase), serverBaseClass});
-            Assert.IsNotNull(bindServiceOverload);
-            Assert.AreEqual(bindServiceOverload.Name, attribute.BindMethodName);
-            Assert.AreEqual(rpcType, attribute.BindType);
-            Assert.IsTrue(bindServiceOverload.IsPublic);
-            Assert.IsTrue(bindServiceOverload.IsStatic);
-            Assert.AreEqual(bindServiceOverload.ReturnType, typeof(void));
+            Assert.NotNull(bindServiceOverload);
+            Assert.Equal(bindServiceOverload.Name, attribute.BindMethodName);
+            Assert.Equal(rpcType, attribute.BindType);
+            Assert.True(bindServiceOverload.IsPublic);
+            Assert.True(bindServiceOverload.IsStatic);
+            Assert.Equal(typeof(void), bindServiceOverload.ReturnType);
 
             var clientClass = rpcType.GetNestedType("RouteGuideClient");
-            Assert.IsFalse(clientClass.IsAbstract);
-            Assert.AreEqual(clientClass.BaseType.GetGenericTypeDefinition(), typeof(Grpc.Core.ClientBase<>));
+            Assert.False(clientClass.IsAbstract);
+            Assert.Equal(typeof(Grpc.Core.ClientBase<>), clientClass.BaseType.GetGenericTypeDefinition());
         }
 
-        [TestMethod]
+        [Fact]
         public void RpcUnknownType()
         {
             string schema = $@"
@@ -132,10 +132,10 @@ namespace RpcUnknownType;
         longitude:int32;
     }}";
 
-            Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.TestHookCreateCSharp(schema, new()));
+            Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.TestHookCreateCSharp(schema, new()));
         }
 
-        [TestMethod]
+        [Fact]
         public void RpcUnknownStreamingType()
         {
             string schema = $@"
@@ -152,10 +152,10 @@ namespace RpcUnknownStreamingType;
         longitude:int32;
     }}";
 
-            Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.TestHookCreateCSharp(schema, new()));
+            Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.TestHookCreateCSharp(schema, new()));
         }
 
-        [TestMethod]
+        [Fact]
         public void RpcReturnsAStruct()
         {
             string schema = $@"
@@ -172,10 +172,10 @@ namespace RpcReturnsAStruct;
         longitude:int32;
     }}";
 
-            Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.TestHookCreateCSharp(schema, new()));
+            Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.TestHookCreateCSharp(schema, new()));
         }
 
-        [TestMethod]
+        [Fact]
         public void NoPrecompiledSerializer()
         {
             string schema = $@"
@@ -192,23 +192,23 @@ namespace NoPrecompiledSerializer;
         longitude:int32;
     }}";
 
-            Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.TestHookCreateCSharp(schema, new()));
+            Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.TestHookCreateCSharp(schema, new()));
         }
 
 #if NET5_0_OR_GREATER
-        [TestMethod]
+        [Fact]
         public void RpcInterfaceWithName()
         {
-            this.RpcInterfaceWithName($"{MetadataKeys.RpcInterface}:\"IBlahService\"", "IBlahService");
+            this.RpcInterfaceWithNameHelper($"{MetadataKeys.RpcInterface}:\"IBlahService\"", "IBlahService");
         }
 
-        [TestMethod]
+        [Fact]
         public void RpcInterfaceWithDefaultName()
         {
-            this.RpcInterfaceWithName($"{MetadataKeys.RpcInterface}", "IFoobarService");
+            this.RpcInterfaceWithNameHelper($"{MetadataKeys.RpcInterface}", "IFoobarService");
         }
 
-        private void RpcInterfaceWithName(string attribute, string expectedInterfaceName)
+        private void RpcInterfaceWithNameHelper(string attribute, string expectedInterfaceName)
         {
             string schema = $@"
                 namespace Foobar;
@@ -234,12 +234,12 @@ namespace NoPrecompiledSerializer;
             var rpcType = compiled.GetType("Foobar.FoobarService+FoobarServiceClient");
             var interfaceType = compiled.GetType($"Foobar.{expectedInterfaceName}");
 
-            Assert.IsNotNull(interfaceType);
-            Assert.IsTrue(interfaceType.IsInterface);
+            Assert.NotNull(interfaceType);
+            Assert.True(interfaceType.IsInterface);
 
-            Assert.IsNotNull(rpcType);
-            Assert.AreEqual(1, rpcType.GetInterfaces().Length);
-            Assert.AreEqual(interfaceType, rpcType.GetInterfaces()[0]);
+            Assert.NotNull(rpcType);
+            Assert.Single(rpcType.GetInterfaces());
+            Assert.Equal(interfaceType, rpcType.GetInterfaces()[0]);
         }
 #endif
     }

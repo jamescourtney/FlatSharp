@@ -185,7 +185,7 @@ namespace FlatSharp
             }
 
             string setter = string.Empty;
-            var accessModifiers = CSharpHelpers.GetPropertyAccessModifiers(itemModel.PropertyInfo);
+            var accessModifiers = CSharpHelpers.GetPropertyAccessModifiers(itemModel.PropertyInfo, this.options.ConvertProtectedInternalToProtected);
 
             if (itemModel.PropertyInfo.SetMethod is not null)
             {

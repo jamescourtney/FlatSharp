@@ -19,12 +19,12 @@ namespace FlatSharpTests
     using System;
     using FlatSharp;
     using FlatSharp.Attributes;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
+    
     public class OnDeserializedMethodTests
     {
-        [TestMethod]
+        [Fact]
         public void OnDeserializedMethods_Invoked()
         {
             OnDeserializedTable table = new OnDeserializedTable
@@ -41,8 +41,8 @@ namespace FlatSharpTests
 
             var parsed = FlatBufferSerializer.Default.Parse<OnDeserializedTable>(data);
 
-            Assert.IsTrue(parsed.OnDeserializedCalled);
-            Assert.IsTrue(parsed.Struct.OnDeserializedCalled);
+            Assert.True(parsed.OnDeserializedCalled);
+            Assert.True(parsed.Struct.OnDeserializedCalled);
         }
 
         [FlatBufferTable]

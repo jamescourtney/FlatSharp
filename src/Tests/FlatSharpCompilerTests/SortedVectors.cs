@@ -25,12 +25,12 @@ namespace FlatSharpTests.Compiler
     using FlatSharp.Attributes;
     using FlatSharp.Compiler;
     using FlatSharp.TypeModel;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
+    
     public class SortedVectors
     {
-        [TestMethod]
+        [Fact]
         public void SortedVector_StringKey()
         {
             string schema = $@"
@@ -50,17 +50,17 @@ table VectorMember {{
             var memberType = asm.GetType("VectorMember");
 
             var prop = memberType.GetProperty("Key");
-            Assert.IsNotNull(prop);
-            Assert.AreEqual(typeof(string), prop.PropertyType);
-            Assert.IsTrue(prop.GetCustomAttribute<FlatBufferItemAttribute>().Key);
+            Assert.NotNull(prop);
+            Assert.Equal(typeof(string), prop.PropertyType);
+            Assert.True(prop.GetCustomAttribute<FlatBufferItemAttribute>().Key);
 
             prop = memberType.GetProperty("Data");
-            Assert.IsNotNull(prop);
-            Assert.AreEqual(typeof(int), prop.PropertyType);
-            Assert.IsFalse(prop.GetCustomAttribute<FlatBufferItemAttribute>().Key);
+            Assert.NotNull(prop);
+            Assert.Equal(typeof(int), prop.PropertyType);
+            Assert.False(prop.GetCustomAttribute<FlatBufferItemAttribute>().Key);
         }
 
-        [TestMethod]
+        [Fact]
         public void SortedVector_IntKey()
         {
             string schema = $@"
@@ -80,21 +80,21 @@ table VectorMember {{
             var memberType = asm.GetType("VectorMember");
 
             var prop = memberType.GetProperty("Key");
-            Assert.IsNotNull(prop);
-            Assert.AreEqual(typeof(int), prop.PropertyType);
-            Assert.IsTrue(prop.GetCustomAttribute<FlatBufferItemAttribute>().Key);
+            Assert.NotNull(prop);
+            Assert.Equal(typeof(int), prop.PropertyType);
+            Assert.True(prop.GetCustomAttribute<FlatBufferItemAttribute>().Key);
 
             prop = memberType.GetProperty("Data");
-            Assert.IsNotNull(prop);
-            Assert.AreEqual(typeof(string), prop.PropertyType);
-            Assert.IsFalse(prop.GetCustomAttribute<FlatBufferItemAttribute>().Key);
+            Assert.NotNull(prop);
+            Assert.Equal(typeof(string), prop.PropertyType);
+            Assert.False(prop.GetCustomAttribute<FlatBufferItemAttribute>().Key);
         }
 
         /// <summary>
         /// Tests that the compiler doesn't really care about what junk you write when a serializer
         /// is not present.
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void SortedVector_InvalidKeys_NoSerializer()
         {
             string schema = $@"
@@ -126,25 +126,25 @@ table VectorMember {{
             {
                 if (prop.Name == "Vector")
                 {
-                    Assert.IsTrue(prop.GetCustomAttribute<FlatBufferItemAttribute>().SortedVector);
+                    Assert.True(prop.GetCustomAttribute<FlatBufferItemAttribute>().SortedVector);
                 }
                 else
                 {
-                    Assert.IsFalse(prop.GetCustomAttribute<FlatBufferItemAttribute>().SortedVector);
+                    Assert.False(prop.GetCustomAttribute<FlatBufferItemAttribute>().SortedVector);
                 }
 
                 if (prop.Name == "Data")
                 {
-                    Assert.IsTrue(prop.GetCustomAttribute<FlatBufferItemAttribute>().Key);
+                    Assert.True(prop.GetCustomAttribute<FlatBufferItemAttribute>().Key);
                 }
                 else
                 {
-                    Assert.IsFalse(prop.GetCustomAttribute<FlatBufferItemAttribute>().Key);
+                    Assert.False(prop.GetCustomAttribute<FlatBufferItemAttribute>().Key);
                 }
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SortedVector_InvalidKeys_WithSerializer()
         {
             string schema = $@"
@@ -167,49 +167,49 @@ table VectorMember {{
 }}
 
 ";
-            Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+            Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
         }
 
-        [TestMethod]
+        [Fact]
         public void SortedVector_IndexedVector_KeyTypesCorrect_SharedString() => this.SortedVector_IndexedVector_KeyTypesCorrect<SharedString>("string", MetadataKeys.SharedString);
 
-        [TestMethod]
+        [Fact]
         public void SortedVector_IndexedVector_KeyTypesCorrect_String() => this.SortedVector_IndexedVector_KeyTypesCorrect<string>("string");
 
-        [TestMethod]
+        [Fact]
         public void SortedVector_IndexedVector_KeyTypesCorrect_Bool() => this.SortedVector_IndexedVector_KeyTypesCorrect<bool>("bool");
 
-        [TestMethod]
+        [Fact]
         public void SortedVector_IndexedVector_KeyTypesCorrect_Byte() => this.SortedVector_IndexedVector_KeyTypesCorrect<byte>("ubyte");
 
-        [TestMethod]
+        [Fact]
         public void SortedVector_IndexedVector_KeyTypesCorrect_SByte() => this.SortedVector_IndexedVector_KeyTypesCorrect<sbyte>("byte");
 
-        [TestMethod]
+        [Fact]
         public void SortedVector_IndexedVector_KeyTypesCorrect_UShort() => this.SortedVector_IndexedVector_KeyTypesCorrect<ushort>("ushort");
 
-        [TestMethod]
+        [Fact]
         public void SortedVector_IndexedVector_KeyTypesCorrect_Short() => this.SortedVector_IndexedVector_KeyTypesCorrect<short>("short");
 
-        [TestMethod]
+        [Fact]
         public void SortedVector_IndexedVector_KeyTypesCorrect_UInt() => this.SortedVector_IndexedVector_KeyTypesCorrect<uint>("uint");
 
-        [TestMethod]
+        [Fact]
         public void SortedVector_IndexedVector_KeyTypesCorrect_Int() => this.SortedVector_IndexedVector_KeyTypesCorrect<int>("int");
 
-        [TestMethod]
+        [Fact]
         public void SortedVector_IndexedVector_KeyTypesCorrect_ULong() => this.SortedVector_IndexedVector_KeyTypesCorrect<ulong>("ulong");
 
-        [TestMethod]
+        [Fact]
         public void SortedVector_IndexedVector_KeyTypesCorrect_Long() => this.SortedVector_IndexedVector_KeyTypesCorrect<long>("long");
 
-        [TestMethod]
+        [Fact]
         public void SortedVector_IndexedVector_KeyTypesCorrect_Float() => this.SortedVector_IndexedVector_KeyTypesCorrect<float>("float");
 
-        [TestMethod]
+        [Fact]
         public void SortedVector_IndexedVector_KeyTypesCorrect_Double() => this.SortedVector_IndexedVector_KeyTypesCorrect<double>("double");
 
-        [TestMethod]
+        [Fact]
         public void SortedVector_IndexedVector_NoKey()
         {
             string schema = $@"
@@ -219,7 +219,7 @@ table Monster ({MetadataKeys.SerializerKind}) {{
 table VectorMember {{
     Data:string;
 }}";
-            Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+            Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
         }
 
         private void SortedVector_IndexedVector_KeyTypesCorrect<TKeyType>(string type, string metadata = null)
@@ -236,16 +236,16 @@ table VectorMember {{
             var vectorMemberType = asm.GetTypes().Single(t => t.Name == "VectorMember");
 
             var monsterProperties = monsterType.GetProperties(BindingFlags.Instance | BindingFlags.Public).ToList();
-            Assert.AreEqual(1, monsterProperties.Count);
+            Assert.Single(monsterProperties);
 
             var vectorMemberProperties = vectorMemberType.GetProperties(BindingFlags.Instance | BindingFlags.Public).ToList();
-            Assert.AreEqual(1, vectorMemberProperties.Count);
+            Assert.Single(vectorMemberProperties);
 
-            Assert.AreEqual("Data", vectorMemberProperties[0].Name);
-            Assert.AreEqual(typeof(TKeyType), vectorMemberProperties[0].PropertyType);
+            Assert.Equal("Data", vectorMemberProperties[0].Name);
+            Assert.Equal(typeof(TKeyType), vectorMemberProperties[0].PropertyType);
 
-            Assert.AreEqual("Vector", monsterProperties[0].Name);
-            Assert.AreEqual(typeof(IIndexedVector<,>).MakeGenericType(typeof(TKeyType), vectorMemberType), monsterProperties[0].PropertyType);
+            Assert.Equal("Vector", monsterProperties[0].Name);
+            Assert.Equal(typeof(IIndexedVector<,>).MakeGenericType(typeof(TKeyType), vectorMemberType), monsterProperties[0].PropertyType);
         }
     }
 }

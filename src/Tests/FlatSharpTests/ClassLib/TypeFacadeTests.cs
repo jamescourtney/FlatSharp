@@ -22,19 +22,19 @@ namespace FlatSharpTests
     using FlatSharp.Attributes;
     using FlatSharp.Runtime;
     using FlatSharp.TypeModel;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
+    
     public class TypeFacadeTests
     {
-        [TestMethod]
+        [Fact]
         public void Facade_DateTimeOffset_Ticks()
         {
             DateTimeOffset ts = DateTimeOffset.UtcNow;
             this.FacadeTest<long, DateTimeOffset, DateTimeTicksConverter>(ts.UtcTicks, ts);
         }
 
-        [TestMethod]
+        [Fact]
         public void Facade_Chained()
         {
             TypeModelContainer container = TypeModelContainer.CreateDefault();
@@ -52,7 +52,7 @@ namespace FlatSharpTests
         /// <summary>
         /// Test using a string to store a DateTimeOffset.
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void Facade_DateTimeOffset_String()
         {
             DateTimeOffset ts = DateTimeOffset.UtcNow;
@@ -64,7 +64,7 @@ namespace FlatSharpTests
         /// <summary>
         /// Test using nullable long to store nullable datetimeoffset.
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void Facade_NullableDateTimeOffset_NullableLong()
         {
             DateTimeOffset ts = DateTimeOffset.UtcNow;
@@ -77,7 +77,7 @@ namespace FlatSharpTests
         /// <summary>
         /// Test using string to store nullable datetimeoffset.
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void Facade_NullableDateTimeOffset_NullableString()
         {
             DateTimeOffset ts = DateTimeOffset.UtcNow;
@@ -90,7 +90,7 @@ namespace FlatSharpTests
         /// <summary>
         /// Test using an improperly defined facade (returns null when converting to the underlying type).
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void Facade_NullReturnedFromConverter()
         {
             TypeModelContainer container = TypeModelContainer.CreateDefault();
@@ -109,18 +109,18 @@ namespace FlatSharpTests
                     new ExtensionTable<DateTimeOffset> { Item = DateTimeOffset.UtcNow },
                     destination);
 
-                Assert.Fail();
+                Assert.False(true, "expected exception");
             }
             catch (InvalidOperationException ex)
             {
-                Assert.IsTrue(ex.Message.Contains("ITypeFacadeConverter"));
+                Assert.Contains("ITypeFacadeConverter", ex.Message);
             }
         }
 
         /// <summary>
         /// Test using an improperly defined facade (returns null when converting to the underlying type).
         /// </summary>
-        [TestMethod]
+        [Fact]
         public void Facade_NullReturnedFromConverter2()
         {
             TypeModelContainer container = TypeModelContainer.CreateDefault();
@@ -139,15 +139,15 @@ namespace FlatSharpTests
                     new ExtensionTable<DateTimeOffset?> { Item = DateTimeOffset.UtcNow },
                     destination);
 
-                Assert.Fail();
+                Assert.False(true, "Expected exception");
             }
             catch (InvalidOperationException ex)
             {
-                Assert.IsTrue(ex.Message.Contains("ITypeFacadeConverter"));
+                Assert.Contains("ITypeFacadeConverter", ex.Message);
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void Facade_ReversedString()
         {
             ReversedString reversed = new ReversedString("foobar");
@@ -156,16 +156,16 @@ namespace FlatSharpTests
             this.FacadeTest<string, ReversedString, StringReversedStringConverter>(regular, reversed);
         }
 
-        [TestMethod]
+        [Fact]
         public void Facade_SortedVector()
         {
             TypeModelContainer container = TypeModelContainer.CreateDefault();
             container.RegisterTypeFacade<long, DateTimeOffset, DateTimeTicksConverter>();
 
-            var ex = Assert.ThrowsException<InvalidFlatBufferDefinitionException>(
+            var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(
                 () => container.CreateTypeModel(typeof(ExtensionTable<IIndexedVector<DateTimeOffset, KeyTable>>)));
 
-            Assert.AreEqual(
+            Assert.Equal(
                 "Table FlatSharpTests.TypeFacadeTests.KeyTable declares a key property on a type that that does not support being a key in a sorted vector.",
                 ex.Message);
         }
@@ -196,12 +196,12 @@ namespace FlatSharpTests
             serializer.Serialize(facadeItem, destination);
             serializer.Serialize(underlyingItem, destination2);
 
-            Assert.IsTrue(destination.AsSpan().SequenceEqual(destination2));
+            Assert.True(destination.AsSpan().SequenceEqual(destination2));
 
             var parsed = serializer.Parse<ExtensionTable<TType>>(destination);
 
-            Assert.AreEqual(parsed.Item, value);
-            Assert.AreEqual(serializer.GetMaxSize(facadeItem), serializer.GetMaxSize(underlyingItem));
+            Assert.Equal(parsed.Item, value);
+            Assert.Equal(serializer.GetMaxSize(facadeItem), serializer.GetMaxSize(underlyingItem));
         }
 
         [FlatBufferTable]
