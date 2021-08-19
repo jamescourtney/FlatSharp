@@ -45,12 +45,7 @@ namespace FlatSharp
 			<# } #>
 			{
 				private readonly byte discriminator;
-				
-				<# foreach (var genericType in range) { #>
-
-				protected readonly T<#= genericType #>? item<#= genericType #>;
-				
-				<# } #>
+				private readonly object value;
 				
 				<# foreach (var genericType in range) { #>
 
@@ -62,7 +57,7 @@ namespace FlatSharp
 					}
 
 					this.discriminator = <#= genericType #>;
-					this.item<#= genericType #> = item;
+					this.value = item;
 				}
 				
 				<# } #>
@@ -77,7 +72,7 @@ namespace FlatSharp
 					{
 						if (this.discriminator == <#= genericType #>)
 						{
-							return this.item<#= genericType #>!;
+							return (T<#= genericType #>)this.value;
 						}
 						else
 						{
@@ -88,14 +83,16 @@ namespace FlatSharp
 
 				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T<#= genericType #>? item)
 				{
-					item = default;
 					if (this.discriminator == <#= genericType #>)
 					{
-						item = this.item<#= genericType #>!;
+						item = (T<#= genericType #>)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				<# 
@@ -111,7 +108,7 @@ namespace FlatSharp
 					<# foreach (var genericType in range) { #>
 						case <#= genericType #>:
 						{
-							case<#= genericType #>(this.item<#= genericType #>!);
+							case<#= genericType #>((T<#= genericType #>)this.value);
 							break;
 						}
 					<# } #>
@@ -131,7 +128,7 @@ namespace FlatSharp
 					<# foreach (var genericType in range) { #>
 						case <#= genericType #>:
 						{
-							case<#= genericType #>(state, this.item<#= genericType #>!);
+							case<#= genericType #>(state, (T<#= genericType #>)this.value);
 							break;
 						}
 					<# } #>
@@ -151,7 +148,7 @@ namespace FlatSharp
 					<# foreach (var genericType in range) { #>
 						case <#= genericType #>:
 						{
-							return case<#= genericType #>(this.item<#= genericType #>!);
+							return case<#= genericType #>((T<#= genericType #>)this.value);
 						}
 					<# } #>
 						default:
@@ -169,7 +166,7 @@ namespace FlatSharp
 					<# foreach (var genericType in range) { #>
 						case <#= genericType #>:
 						{
-							return case<#= genericType #>(state, this.item<#= genericType #>!);
+							return case<#= genericType #>(state, (T<#= genericType #>)this.value);
 						}
 					<# } #>
 						default:
@@ -181,20 +178,8 @@ namespace FlatSharp
 				{
 					if (other is FlatBufferUnion<<#= string.Join(", ", range.Select(x => "T" + x)) #>> otherUnion)
 					{
-						if (this.discriminator != otherUnion.Discriminator)
-						{
-							return false;
-						}
-
-						switch (this.discriminator)
-						{
-						<# foreach (var genericType in range) { #>
-							case <#= genericType #>:
-								return this.Item<#= genericType #>.Equals(otherUnion.Item<#= genericType #>);
-						<# } #>
-							default:
-								throw new System.InvalidOperationException("Unexpected discriminator: " + this.discriminator);
-						}
+						return this.discriminator == otherUnion.Discriminator &&
+						       this.value.Equals(otherUnion.value);
 					}
 					else
 					{
@@ -204,15 +189,7 @@ namespace FlatSharp
 
 				public override int GetHashCode()
 				{
-					switch (this.discriminator)
-					{
-					<# foreach (var genericType in range) { #>
-						case <#= genericType #>:
-							return this.Item<#= genericType #>.GetHashCode() ^ <#= genericType #>;
-					<# } #>
-						default:
-							throw new System.InvalidOperationException("Unexpected discriminator: " + this.discriminator);
-					}
+					return this.value.GetHashCode() ^ this.discriminator;
 				}
 			}
 	<#
