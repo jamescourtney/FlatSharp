@@ -27,15 +27,15 @@ namespace FlatSharpTests
     using FlatSharp;
     using FlatSharp.Attributes;
     using FlatSharp.TypeModel;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
     /// <summary>
     /// Verifies expected binary formats for test data.
     /// </summary>
-    [TestClass]
+    
     public class TableSerializationTests
     {
-        [TestMethod]
+        [Fact]
         public void AllMembersNull()
         {
             SimpleTable table = new SimpleTable();
@@ -51,16 +51,16 @@ namespace FlatSharpTests
             };
 
             int bytesWritten = FlatBufferSerializer.Default.Serialize(table, buffer);
-            Assert.IsTrue(expectedData.AsSpan().SequenceEqual(buffer.AsSpan().Slice(0, bytesWritten)));
+            Assert.True(expectedData.AsSpan().SequenceEqual(buffer.AsSpan().Slice(0, bytesWritten)));
         }
 
-        [TestMethod]
+        [Fact]
         public void RootTableNull()
         {
-            Assert.ThrowsException<ArgumentNullException>(() => FlatBufferSerializer.Default.Serialize<SimpleTable>(null, new byte[1024]));
+            Assert.Throws<ArgumentNullException>(() => FlatBufferSerializer.Default.Serialize<SimpleTable>(null, new byte[1024]));
         }
 
-        [TestMethod]
+        [Fact]
         public void TableWithStruct()
         {
             SimpleTable table = new SimpleTable
@@ -85,10 +85,10 @@ namespace FlatSharpTests
             };
 
             int bytesWritten = FlatBufferSerializer.Default.Serialize(table, buffer);
-            Assert.IsTrue(expectedData.AsSpan().SequenceEqual(buffer.AsSpan().Slice(0, bytesWritten)));
+            Assert.True(expectedData.AsSpan().SequenceEqual(buffer.AsSpan().Slice(0, bytesWritten)));
         }
 
-        [TestMethod]
+        [Fact]
         public void TableWithStructAndString()
         {
             SimpleTable table = new SimpleTable
@@ -116,10 +116,10 @@ namespace FlatSharpTests
             };
 
             int bytesWritten = FlatBufferSerializer.Default.Serialize(table, buffer);
-            Assert.IsTrue(expectedData.AsSpan().SequenceEqual(buffer.AsSpan().Slice(0, bytesWritten)));
+            Assert.True(expectedData.AsSpan().SequenceEqual(buffer.AsSpan().Slice(0, bytesWritten)));
         }
 
-        [TestMethod]
+        [Fact]
         public void EmptyTableSerialize()
         {
             EmptyTable table = new EmptyTable();
@@ -135,13 +135,13 @@ namespace FlatSharpTests
             };
 
             int bytesWritten = FlatBufferSerializer.Default.Serialize(table, buffer);
-            Assert.IsTrue(expectedData.AsSpan().SequenceEqual(buffer.AsSpan().Slice(0, bytesWritten)));
+            Assert.True(expectedData.AsSpan().SequenceEqual(buffer.AsSpan().Slice(0, bytesWritten)));
 
             int maxSize = FlatBufferSerializer.Default.GetMaxSize(table);
-            Assert.AreEqual(23, maxSize);
+            Assert.Equal(23, maxSize);
         }
 
-        [TestMethod]
+        [Fact]
         public void TableWithStructAndStringNonVirtual()
         {
             SimpleTableNonVirtual table = new SimpleTableNonVirtual
@@ -169,23 +169,23 @@ namespace FlatSharpTests
             };
 
             int bytesWritten = FlatBufferSerializer.Default.Serialize(table, buffer);
-            Assert.IsTrue(expectedData.AsSpan().SequenceEqual(buffer.AsSpan().Slice(0, bytesWritten)));
+            Assert.True(expectedData.AsSpan().SequenceEqual(buffer.AsSpan().Slice(0, bytesWritten)));
             var parsed = FlatBufferSerializer.Default.Parse<SimpleTableNonVirtual>(buffer);
         }
 
-        [TestMethod]
+        [Fact]
         public void TableParse_NotMutable()
         {
             var options = new FlatBufferSerializerOptions(FlatBufferDeserializationOption.Lazy);
             var table = this.SerializeAndParse(options, out _);
 
-            Assert.ThrowsException<NotMutableException>(() => table.String = null);
-            Assert.ThrowsException<NotMutableException>(() => table.Struct = null);
-            Assert.ThrowsException<NotMutableException>(() => table.StructVector = new List<SimpleStruct>());
-            Assert.ThrowsException<NotMutableException>(() => table.StructVector.Add(null));
+            Assert.Throws<NotMutableException>(() => table.String = null);
+            Assert.Throws<NotMutableException>(() => table.Struct = null);
+            Assert.Throws<NotMutableException>(() => table.StructVector = new List<SimpleStruct>());
+            Assert.Throws<NotMutableException>(() => table.StructVector.Add(null));
         }
 
-        [TestMethod]
+        [Fact]
         public void TableParse_LazyMutable()
         {
             var options = new FlatBufferSerializerOptions(FlatBufferDeserializationOption.VectorCacheMutable);
@@ -193,23 +193,23 @@ namespace FlatSharpTests
             
             var newString = Guid.NewGuid().ToString();
             table.String = newString;
-            Assert.AreEqual(newString, table.String);
+            Assert.Equal(newString, table.String);
 
             var newLong = DateTimeOffset.UtcNow.Ticks;
             table.Struct.Long = newLong;
-            Assert.AreEqual(newLong, table.Struct.Long);
+            Assert.Equal(newLong, table.Struct.Long);
 
             var newStruct = new SimpleStruct();
             table.Struct = newStruct;
-            Assert.AreEqual(newStruct, table.Struct);
+            Assert.Equal(newStruct, table.Struct);
 
-            Assert.AreEqual(typeof(List<SimpleStruct>), table.StructVector.GetType());
+            Assert.Equal(typeof(List<SimpleStruct>), table.StructVector.GetType());
             int count = table.StructVector.Count;
             table.StructVector.Add(new SimpleStruct());
-            Assert.AreEqual(count + 1, table.StructVector.Count);
+            Assert.Equal(count + 1, table.StructVector.Count);
         }
 
-        [TestMethod]
+        [Fact]
         public void TableParse_GreedyImmutable()
         {
             var options = new FlatBufferSerializerOptions(FlatBufferDeserializationOption.Greedy);
@@ -227,23 +227,23 @@ namespace FlatSharpTests
                 }
             }
 
-            Assert.IsTrue(reaped, "GC did not reclaim underlying byte buffer.");
+            Assert.True(reaped, "GC did not reclaim underlying byte buffer.");
 
             // The buffer has been collected. Now verify that we can read all the data as
             // we expect. This demonstrates that we've copied, as well as that we've 
             // released references.
-            Assert.IsNotNull(table.String);
-            Assert.IsNotNull(table.Struct);
-            Assert.IsNotNull(table.StructVector);
+            Assert.NotNull(table.String);
+            Assert.NotNull(table.Struct);
+            Assert.NotNull(table.StructVector);
 
-            Assert.AreEqual("hi", table.String);
-            Assert.AreEqual(1, table.Struct.Byte);
-            Assert.AreEqual(2, table.Struct.Long);
-            Assert.AreEqual(3u, table.Struct.Uint);
+            Assert.Equal("hi", table.String);
+            Assert.Equal(1, table.Struct.Byte);
+            Assert.Equal(2, table.Struct.Long);
+            Assert.Equal(3u, table.Struct.Uint);
 
-            Assert.AreEqual(4, table.StructVector[0].Byte);
-            Assert.AreEqual(5, table.StructVector[0].Long);
-            Assert.AreEqual(6u, table.StructVector[0].Uint);
+            Assert.Equal(4, table.StructVector[0].Byte);
+            Assert.Equal(5, table.StructVector[0].Long);
+            Assert.Equal(6u, table.StructVector[0].Uint);
         }
 
         private SimpleTable SerializeAndParse(FlatBufferSerializerOptions options, out WeakReference<byte[]> buffer)

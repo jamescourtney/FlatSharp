@@ -23,20 +23,19 @@ namespace FlatSharpTests
     using System.Linq;
     using FlatSharp;
     using FlatSharp.Attributes;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
     using Union = FlatSharp.FlatBufferUnion<string, FlatBufferVectorOfUnionTests.Struct, FlatBufferVectorOfUnionTests.Table>;
 
     /// <summary>
     /// Tests for the FlatBufferVector class that implements IList.
     /// </summary>
-    [TestClass]
+    
     public class FlatBufferVectorOfUnionTests
     {
         private TableVector vector;
 
-        [TestInitialize]
-        public void TestInitialize()
+        public FlatBufferVectorOfUnionTests()
         {
             var original = new TableVector
             {
@@ -55,45 +54,45 @@ namespace FlatSharpTests
             this.vector = serializer.Parse<TableVector>(buffer.Slice(0, bytesWritten).ToArray());
         }
 
-        [TestMethod]
+        [Fact]
         public void FlatBufferVector_OutOfRange()
         {
-            Assert.ThrowsException<IndexOutOfRangeException>(() => this.vector.Vector[-1]);
-            Assert.ThrowsException<IndexOutOfRangeException>(() => this.vector.Vector[5]);
+            Assert.Throws<IndexOutOfRangeException>(() => this.vector.Vector[-1]);
+            Assert.Throws<IndexOutOfRangeException>(() => this.vector.Vector[5]);
         }
 
-        [TestMethod]
+        [Fact]
         public void FlatBufferVector_NotMutable()
         {
-            Assert.IsTrue(this.vector.Vector.IsReadOnly);
-            Assert.ThrowsException<NotMutableException>(() => this.vector.Vector[0] = new Union("foobar"));
-            Assert.ThrowsException<NotMutableException>(() => this.vector.Vector.Add(new Union("foobar")));
-            Assert.ThrowsException<NotMutableException>(() => this.vector.Vector.Clear());
-            Assert.ThrowsException<NotMutableException>(() => this.vector.Vector.Insert(0, new Union("foobar")));
-            Assert.ThrowsException<NotMutableException>(() => this.vector.Vector.Remove(new Union("foobar")));
-            Assert.ThrowsException<NotMutableException>(() => this.vector.Vector.RemoveAt(0));
+            Assert.True(this.vector.Vector.IsReadOnly);
+            Assert.Throws<NotMutableException>(() => this.vector.Vector[0] = new Union("foobar"));
+            Assert.Throws<NotMutableException>(() => this.vector.Vector.Add(new Union("foobar")));
+            Assert.Throws<NotMutableException>(() => this.vector.Vector.Clear());
+            Assert.Throws<NotMutableException>(() => this.vector.Vector.Insert(0, new Union("foobar")));
+            Assert.Throws<NotMutableException>(() => this.vector.Vector.Remove(new Union("foobar")));
+            Assert.Throws<NotMutableException>(() => this.vector.Vector.RemoveAt(0));
         }
 
-        [TestMethod]
+        [Fact]
         public void FlatBufferVector_GetEnumerator()
         {
             int i = 0; 
             foreach (var item in this.vector.Vector)
             {
-                Assert.AreEqual(i + 1, item.Discriminator);
+                Assert.Equal(i + 1, item.Discriminator);
                 i++;
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void FlatBufferVector_Contains()
         {
-            Assert.IsFalse(this.vector.Vector.Contains(null));
-            Assert.IsTrue(this.vector.Vector.Contains(new Union("foobar")));
-            Assert.IsFalse(this.vector.Vector.Contains(new Union("blah")));
+            Assert.False(this.vector.Vector.Contains(null));
+            Assert.True(this.vector.Vector.Contains(new Union("foobar")));
+            Assert.False(this.vector.Vector.Contains(new Union("blah")));
         }
 
-        [TestMethod]
+        [Fact]
         public void FlatBufferVector_CopyTo()
         {
             Union[] array = new Union[100];
@@ -102,21 +101,21 @@ namespace FlatSharpTests
             
             for (int i = 0; i < 50; ++i)
             {
-                Assert.IsNull(array[i]);
+                Assert.Null(array[i]);
             }
 
             for (int i = 0; i < this.vector.Vector.Count; ++i)
             {
-                Assert.IsNotNull(array[i + 50]);
+                Assert.NotNull(array[i + 50]);
             }
 
             for (int i = 50 + this.vector.Vector.Count; i < array.Length; ++i)
             {
-                Assert.IsNull(array[i]);
+                Assert.Null(array[i]);
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void FlatBufferVector_CopyTo_SizedArray()
         {
             Union[] array = new Union[this.vector.Vector.Count];
@@ -124,16 +123,16 @@ namespace FlatSharpTests
 
             for (int i = 0; i < this.vector.Vector.Count; ++i)
             {
-                Assert.IsNotNull(array[i]);
+                Assert.NotNull(array[i]);
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void FlatBufferVector_IndexOf()
         {
-            Assert.AreEqual(-1, this.vector.Vector.IndexOf(null));
-            Assert.AreEqual(0, this.vector.Vector.IndexOf(new Union("foobar")));
-            Assert.AreEqual(-1, this.vector.Vector.IndexOf(new Union("monster")));
+            Assert.Equal(-1, this.vector.Vector.IndexOf(null));
+            Assert.Equal(0, this.vector.Vector.IndexOf(new Union("foobar")));
+            Assert.Equal(-1, this.vector.Vector.IndexOf(new Union("monster")));
         }
 
         [FlatBufferTable]

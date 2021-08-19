@@ -27,15 +27,15 @@ namespace FlatSharpTests
     using FlatSharp;
     using FlatSharp.Attributes;
     using FlatSharp.TypeModel;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
     /// <summary>
     /// Verifies expected binary formats for test data.
     /// </summary>
-    [TestClass]
+    
     public class ConstructorTests
     {
-        [TestMethod]
+        [Fact]
         public void ConstructorSerializationTests()
         {
             OuterTable outer = new OuterTable
@@ -47,17 +47,17 @@ namespace FlatSharpTests
             FlatBufferSerializer.Default.Serialize(outer, data);
             var parsed = FlatBufferSerializer.Default.Parse<OuterTable>(data);
 
-            Assert.IsNotNull(parsed.Context);
-            Assert.IsNull(outer.Context);
+            Assert.NotNull(parsed.Context);
+            Assert.Null(outer.Context);
 
-            Assert.IsNull(parsed.Struct.InnerA.Context);
-            Assert.IsNull(outer.Struct.InnerA.Context);
+            Assert.Null(parsed.Struct.InnerA.Context);
+            Assert.Null(outer.Struct.InnerA.Context);
 
-            Assert.IsNotNull(parsed.Struct.InnerB.Context);
-            Assert.IsNull(outer.Struct.InnerB.Context);
+            Assert.NotNull(parsed.Struct.InnerB.Context);
+            Assert.Null(outer.Struct.InnerB.Context);
         }
 
-        [TestMethod]
+        [Fact]
         public void Struct_Serialize_InnerNull()
         {
             OuterTable outer = new OuterTable
@@ -74,7 +74,7 @@ namespace FlatSharpTests
             var parsed = FlatBufferSerializer.Default.Parse<OuterTable>(data);
 
             // Null overwrites buffer to 0 on serialize.
-            Assert.AreEqual(0, parsed.Struct.InnerB.Item);
+            Assert.Equal(0, parsed.Struct.InnerB.Item);
 
             Span<byte> expected = new byte[]
             {
@@ -89,10 +89,10 @@ namespace FlatSharpTests
                 6, 0, 36, 0, 4, 0,
             };
 
-            Assert.IsTrue(expected.SequenceEqual(data.AsSpan().Slice(0, length)));
+            Assert.True(expected.SequenceEqual(data.AsSpan().Slice(0, length)));
         }
 
-        [TestMethod]
+        [Fact]
         public void Struct_Serialize_InnerNull_2()
         {
             OuterTable outer = new OuterTable
@@ -109,7 +109,7 @@ namespace FlatSharpTests
             var parsed = FlatBufferSerializer.Default.Parse<OuterTable>(data);
 
             // Null overwrites buffer to 0 on serialize.
-            Assert.AreEqual(0, parsed.Struct.InnerA.Item);
+            Assert.Equal(0, parsed.Struct.InnerA.Item);
         }
 
         [FlatBufferTable]

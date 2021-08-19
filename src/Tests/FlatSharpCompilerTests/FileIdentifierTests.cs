@@ -22,12 +22,12 @@ namespace FlatSharpTests.Compiler
     using FlatSharp;
     using FlatSharp.Attributes;
     using FlatSharp.Compiler;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
+    
     public class FileIdentifierTests
     {
-        [TestMethod]
+        [Fact]
         public void Multiple_Root_Types_Different_Namespaces()
         {
             string schema = $@"
@@ -41,11 +41,11 @@ namespace FlatSharpTests.Compiler
             file_identifier ""food"";
             ";
 
-            var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.IsTrue(ex.Errors[0].StartsWith("Message='Duplicate root types: 'Table' and 'TableB'.', Scope=$"));
+            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+            Assert.StartsWith("Message='Duplicate root types: 'Table' and 'TableB'.', Scope=$", ex.Errors[0]);
         }
 
-        [TestMethod]
+        [Fact]
         public void Multiple_Root_Types_Same_Namespace()
         {
             string schema = $@"
@@ -56,11 +56,11 @@ namespace FlatSharpTests.Compiler
             root_type Table;
             ";
 
-            var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.IsTrue(ex.Errors[0].StartsWith("Message='Duplicate root types: 'Table' and 'Table'.', Scope=$"));
+            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+            Assert.StartsWith("Message='Duplicate root types: 'Table' and 'Table'.', Scope=$", ex.Errors[0]);
         }
 
-        [TestMethod]
+        [Fact]
         public void Multiple_File_Identifiers_Different_Namespaces()
         {
             string schema = $@"
@@ -74,11 +74,11 @@ namespace FlatSharpTests.Compiler
             file_identifier ""food"";
             ";
 
-            var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.IsTrue(ex.Errors[0].StartsWith("Message='Duplicate file identifiers: 'doof' and 'food'.', Scope=$"));
+            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+            Assert.StartsWith("Message='Duplicate file identifiers: 'doof' and 'food'.', Scope=$", ex.Errors[0]);
         }
 
-        [TestMethod]
+        [Fact]
         public void Multiple_File_Identifiers_Same_Namespace()
         {
             string schema = $@"
@@ -89,11 +89,11 @@ namespace FlatSharpTests.Compiler
             root_type Table;
             ";
 
-            var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.IsTrue(ex.Errors[0].StartsWith("Message='Duplicate file identifiers: 'food' and 'doof'.', Scope=$"));
+            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+            Assert.StartsWith("Message='Duplicate file identifiers: 'food' and 'doof'.', Scope=$", ex.Errors[0]);
         }
 
-        [TestMethod]
+        [Fact]
         public void Unknown_Root_Type_No_File_Identifier()
         {
             string schema = $@"
@@ -102,11 +102,11 @@ namespace FlatSharpTests.Compiler
             root_type Something;
             ";
 
-            var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.IsTrue(ex.Errors[0].StartsWith("Message='Unable to resolve root_type 'Something'.', Scope=$"));
+            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+            Assert.StartsWith("Message='Unable to resolve root_type 'Something'.', Scope=$", ex.Errors[0]);
         }
 
-        [TestMethod]
+        [Fact]
         public void Struct_Root_Type()
         {
             string schema = $@"
@@ -116,11 +116,11 @@ namespace FlatSharpTests.Compiler
             root_type Struct;
             ";
 
-            var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.IsTrue(ex.Errors[0].StartsWith("Message='root_type 'Struct' does not reference a table.', Scope=$"));
+            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+            Assert.StartsWith("Message='root_type 'Struct' does not reference a table.', Scope=$", ex.Errors[0]);
         }
 
-        [TestMethod]
+        [Fact]
         public void Enum_Root_Type()
         {
             string schema = $@"
@@ -130,11 +130,11 @@ namespace FlatSharpTests.Compiler
             root_type Enum;
             ";
 
-            var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.IsTrue(ex.Errors[0].StartsWith("Message='root_type 'Enum' does not reference a table.', Scope=$"));
+            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+            Assert.StartsWith("Message='root_type 'Enum' does not reference a table.', Scope=$", ex.Errors[0]);
         }
 
-        [TestMethod]
+        [Fact]
         public void Unknown_Root_Type_With_File_Identifier()
         {
             string schema = $@"
@@ -144,11 +144,11 @@ namespace FlatSharpTests.Compiler
             file_identifier ""abcd"";
             ";
 
-            var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.IsTrue(ex.Errors[0].StartsWith("Message='Unable to resolve root_type 'Something'.', Scope=$"));
+            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+            Assert.StartsWith("Message='Unable to resolve root_type 'Something'.', Scope=$", ex.Errors[0]);
         }
 
-        [TestMethod]
+        [Fact]
         public void File_Identifier_With_No_Root_Type()
         {
             string schema = $@"
@@ -158,11 +158,11 @@ namespace FlatSharpTests.Compiler
             ";
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
-            Assert.IsNull(
+            Assert.Null(
                 asm.GetType("FileIdTests.A.Table").GetCustomAttribute<FlatBufferTableAttribute>().FileIdentifier);
         }
 
-        [TestMethod]
+        [Fact]
         public void Root_Type_With_No_File_Identifier()
         {
             string schema = $@"
@@ -172,11 +172,11 @@ namespace FlatSharpTests.Compiler
             ";
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
-            Assert.IsNull(
+            Assert.Null(
                 asm.GetType("FileIdTests.A.Table").GetCustomAttribute<FlatBufferTableAttribute>().FileIdentifier);
         }
 
-        [TestMethod]
+        [Fact]
         public void File_Identifier_With_Manually_Specified_Id()
         {
             string schema = $@"
@@ -187,12 +187,12 @@ namespace FlatSharpTests.Compiler
             ";
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
-            Assert.AreEqual(
+            Assert.Equal(
                 "AbCd",
                 asm.GetType("FileIdTests.A.Table").GetCustomAttribute<FlatBufferTableAttribute>().FileIdentifier);
         }
 
-        [TestMethod]
+        [Fact]
         public void File_Identifier_With_Manually_Specified_Id_Conflict()
         {
             string schema = $@"
@@ -202,11 +202,11 @@ namespace FlatSharpTests.Compiler
             root_type Table;
             ";
 
-            var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.IsTrue(ex.Errors[0].StartsWith("Message='root_type 'Table' has conflicting file identifiers: 'AbCd' and 'abcd'.', Scope=$"));
+            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+            Assert.StartsWith("Message='root_type 'Table' has conflicting file identifiers: 'AbCd' and 'abcd'.', Scope=$", ex.Errors[0]);
         }
 
-        [TestMethod]
+        [Fact]
         public void Manually_Specified_Id_With_No_File_Id()
         {
             string schema = $@"
@@ -216,12 +216,12 @@ namespace FlatSharpTests.Compiler
             ";
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
-            Assert.AreEqual(
+            Assert.Equal(
                 "AbCd",
                 asm.GetType("FileIdTests.A.Table").GetCustomAttribute<FlatBufferTableAttribute>().FileIdentifier);
         }
 
-        [TestMethod]
+        [Fact]
         public void Manually_Specified_Id_With_No_File_Id_Unquoted()
         {
             string schema = $@"
@@ -231,12 +231,12 @@ namespace FlatSharpTests.Compiler
             ";
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
-            Assert.AreEqual(
+            Assert.Equal(
                 "AbCd",
                 asm.GetType("FileIdTests.A.Table").GetCustomAttribute<FlatBufferTableAttribute>().FileIdentifier);
         }
 
-        [TestMethod]
+        [Fact]
         public void Manually_Specified_Id_TooLong()
         {
             string schema = $@"
@@ -245,8 +245,8 @@ namespace FlatSharpTests.Compiler
             root_type Table;
             ";
 
-            var ex = Assert.ThrowsException<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.AreEqual(ex.Errors[0], "Message='File identifier 'AbCdefg' is invalid. FileIdentifiers must be exactly 4 ASCII characters.', Scope=$.");
+            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+            Assert.Equal("Message='File identifier 'AbCdefg' is invalid. FileIdentifiers must be exactly 4 ASCII characters.', Scope=$.", ex.Errors[0]);
         }
     }
 }

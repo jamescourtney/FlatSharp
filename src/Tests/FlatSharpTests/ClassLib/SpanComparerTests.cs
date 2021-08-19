@@ -21,12 +21,12 @@ namespace FlatSharpTests
     using System.Runtime.InteropServices;
     using System.Text;
     using FlatSharp;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
+    
     public class SpanComparerTests
     {
-        [TestMethod]
+        [Fact]
         [ExcludeFromCodeCoverage]
         public void RandomFlatBufferStringComparison()
         {
@@ -51,23 +51,23 @@ namespace FlatSharpTests
                 Span<byte> span2 = SerializationHelpers.Encoding.GetBytes(str2);
 
                 Utf8StringComparer utf8Comparer = new Utf8StringComparer();
-                Assert.AreEqual(0, StringSpanComparer.Instance.Compare(true, span, true, span));
-                Assert.AreEqual(0, utf8Comparer.Compare(str, str));
+                Assert.Equal(0, StringSpanComparer.Instance.Compare(true, span, true, span));
+                Assert.Equal(0, utf8Comparer.Compare(str, str));
 
-                Assert.AreEqual(0, StringSpanComparer.Instance.Compare(true, span2, true, span2));
-                Assert.AreEqual(0, utf8Comparer.Compare(str2, str2));
+                Assert.Equal(0, StringSpanComparer.Instance.Compare(true, span2, true, span2));
+                Assert.Equal(0, utf8Comparer.Compare(str2, str2));
 
                 int expected = utf8Comparer.Compare(str, str2);
                 int actual = StringSpanComparer.Instance.Compare(true, span, true, span2);
-                Assert.AreEqual(expected, actual);
+                Assert.Equal(expected, actual);
 
                 expected = utf8Comparer.Compare(str2, str);
                 actual = StringSpanComparer.Instance.Compare(true, span2, true, span);
-                Assert.AreEqual(expected, actual);
+                Assert.Equal(expected, actual);
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void TestBoolComparer()
         {
             BoolSpanComparer comparer = new BoolSpanComparer(default);
@@ -75,40 +75,40 @@ namespace FlatSharpTests
             Span<byte> f = new byte[1] { SerializationHelpers.False };
             Span<byte> t = new byte[1] { SerializationHelpers.True };
 
-            Assert.AreEqual(false.CompareTo(true), comparer.Compare(true, f, true, t));
-            Assert.AreEqual(false.CompareTo(false), comparer.Compare(true, f, true, f));
-            Assert.AreEqual(true.CompareTo(true), comparer.Compare(true, t, true, t));
-            Assert.AreEqual(true.CompareTo(false), comparer.Compare(true, t, true, f));
+            Assert.Equal(false.CompareTo(true), comparer.Compare(true, f, true, t));
+            Assert.Equal(false.CompareTo(false), comparer.Compare(true, f, true, f));
+            Assert.Equal(true.CompareTo(true), comparer.Compare(true, t, true, t));
+            Assert.Equal(true.CompareTo(false), comparer.Compare(true, t, true, f));
         }
 
-        [TestMethod]
+        [Fact]
         public void TestByteComparer() => this.Compare<byte>(new ByteSpanComparer(default), sizeof(byte));
 
-        [TestMethod]
+        [Fact]
         public void TestSByteComparer() => this.Compare<sbyte>(new SByteSpanComparer(default), sizeof(sbyte));
 
-        [TestMethod]
+        [Fact]
         public void TestUShortComparer() => this.Compare<ushort>(new UShortSpanComparer(default), sizeof(ushort));
 
-        [TestMethod]
+        [Fact]
         public void TestShortComparer() => this.Compare<short>(new ShortSpanComparer(default), sizeof(short));
 
-        [TestMethod]
+        [Fact]
         public void TestUIntComaprer() => this.Compare<uint>(new UIntSpanComparer(default), sizeof(uint));
 
-        [TestMethod]
+        [Fact]
         public void TestIntComparer() => this.Compare<int>(new IntSpanComparer(default), sizeof(int));
 
-        [TestMethod]
+        [Fact]
         public void TestULongComparer() => this.Compare<ulong>(new ULongSpanComparer(default), sizeof(ulong));
 
-        [TestMethod]
+        [Fact]
         public void TestLongComparer() => this.Compare<long>(new LongSpanComparer(default), sizeof(long));
 
-        [TestMethod]
+        [Fact]
         public void TestDoubleComparer() => this.Compare<double>(new DoubleSpanComparer(default), sizeof(double));
 
-        [TestMethod]
+        [Fact]
         public void TestFloatComparer() => this.Compare<float>(new FloatSpanComparer(default), sizeof(float));
 
         private void Compare<T>(ISpanComparer comparer, int size) where T : struct, IComparable<T>
@@ -128,16 +128,16 @@ namespace FlatSharpTests
                 var leftSpan = leftData.AsSpan().Slice(0, size);
                 var rightSpan = rightData.AsSpan().Slice(0, size);
 
-                Assert.AreEqual(
+                Assert.Equal(
                     a.CompareTo(b),
                     comparer.Compare(true, leftSpan, true, rightSpan));
 
-                Assert.AreEqual(
+                Assert.Equal(
                     b.CompareTo(a),
                     comparer.Compare(true, rightSpan, true, leftSpan));
 
-                Assert.AreEqual(0, comparer.Compare(true, leftSpan, true, leftSpan));
-                Assert.AreEqual(0, comparer.Compare(true, rightSpan, true, rightSpan));
+                Assert.Equal(0, comparer.Compare(true, leftSpan, true, leftSpan));
+                Assert.Equal(0, comparer.Compare(true, rightSpan, true, rightSpan));
             }
         }
     }

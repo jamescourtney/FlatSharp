@@ -19,12 +19,12 @@ namespace FlatSharpTests
     using System;
     using FlatSharp;
     using FlatSharp.Attributes;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
+    
     public class AlignmentTests
     {
-        [TestMethod]
+        [Fact]
         public void NestedStructWithOddAlignment_Parse()
         {
             var builder = new FlatBuffers.FlatBufferBuilder(1024);
@@ -37,25 +37,25 @@ namespace FlatSharpTests
             byte[] realBuffer = builder.SizedByteArray();
             var parsed = FlatBufferSerializer.Default.Parse<AlignmentTestDataHolder>(realBuffer);
 
-            Assert.IsNotNull(parsed);
+            Assert.NotNull(parsed);
 
             var outer = parsed.Value;
-            Assert.IsNotNull(outer);
-            Assert.AreEqual(1, outer.A);
-            Assert.AreEqual(2, outer.B);
-            Assert.AreEqual(3, outer.C);
-            Assert.AreEqual(4u, outer.D);
-            Assert.AreEqual(5, outer.E);
-            Assert.AreEqual(6ul, outer.F);
+            Assert.NotNull(outer);
+            Assert.Equal(1, outer.A);
+            Assert.Equal(2, outer.B);
+            Assert.Equal(3, outer.C);
+            Assert.Equal(4u, outer.D);
+            Assert.Equal(5, outer.E);
+            Assert.Equal(6ul, outer.F);
 
             var inner = outer.Inner;
-            Assert.IsNotNull(inner);
-            Assert.AreEqual(7, inner.A);
-            Assert.AreEqual(8, inner.B);
-            Assert.AreEqual(9, inner.C);
+            Assert.NotNull(inner);
+            Assert.Equal(7, inner.A);
+            Assert.Equal(8, inner.B);
+            Assert.Equal(9, inner.C);
         }
 
-        [TestMethod]
+        [Fact]
         public void NestedStructWithOddAlignment_Serialize()
         {
             AlignmentTestDataHolder holder = new AlignmentTestDataHolder
@@ -82,25 +82,21 @@ namespace FlatSharpTests
 
             var parsed = Oracle.AlignmentTestOuterHoder.GetRootAsAlignmentTestOuterHoder(new FlatBuffers.ByteBuffer(memory.Slice(0, offset).ToArray()));
 
-            Assert.IsNotNull(parsed);
-
             var outer = parsed.Value.Value;
-            Assert.IsNotNull(outer);
-            Assert.AreEqual(1, outer.A);
-            Assert.AreEqual(2, outer.B);
-            Assert.AreEqual(3, outer.C);
-            Assert.AreEqual(4u, outer.D);
-            Assert.AreEqual(5, outer.E);
-            Assert.AreEqual(6ul, outer.F);
+            Assert.Equal(1, outer.A);
+            Assert.Equal(2, outer.B);
+            Assert.Equal(3, outer.C);
+            Assert.Equal(4u, outer.D);
+            Assert.Equal(5, outer.E);
+            Assert.Equal(6ul, outer.F);
 
             var inner = outer.G;
-            Assert.IsNotNull(inner);
-            Assert.AreEqual(7, inner.A);
-            Assert.AreEqual(8, inner.B);
-            Assert.AreEqual(9, inner.C);
+            Assert.Equal(7, inner.A);
+            Assert.Equal(8, inner.B);
+            Assert.Equal(9, inner.C);
         }
 
-        [TestMethod]
+        [Fact]
         public void StructVectorDeserialize()
         {
             Oracle.StructVectorsTableT table = new Oracle.StructVectorsTableT
@@ -125,22 +121,22 @@ namespace FlatSharpTests
 
             var parsed = FlatBufferSerializer.Default.Parse<StructVectorsTable>(serialized);
 
-            Assert.AreEqual<ulong>(1, parsed.Vectors.Hash_0);
-            Assert.AreEqual<ulong>(2, parsed.Vectors.Hash_1);
-            Assert.AreEqual<ulong>(3, parsed.Vectors.Hash_2);
-            Assert.AreEqual<ulong>(4, parsed.Vectors.Hash_3);
+            Assert.Equal<ulong>(1, parsed.Vectors.Hash_0);
+            Assert.Equal<ulong>(2, parsed.Vectors.Hash_1);
+            Assert.Equal<ulong>(3, parsed.Vectors.Hash_2);
+            Assert.Equal<ulong>(4, parsed.Vectors.Hash_3);
 
-            Assert.AreEqual(5, parsed.Vectors.AlignmentVec_0.Int);
-            Assert.AreEqual(6, parsed.Vectors.AlignmentVec_0.Byte);
+            Assert.Equal(5, parsed.Vectors.AlignmentVec_0.Int);
+            Assert.Equal(6, parsed.Vectors.AlignmentVec_0.Byte);
 
-            Assert.AreEqual(7, parsed.Vectors.AlignmentVec_1.Int);
-            Assert.AreEqual(8, parsed.Vectors.AlignmentVec_1.Byte);
+            Assert.Equal(7, parsed.Vectors.AlignmentVec_1.Int);
+            Assert.Equal(8, parsed.Vectors.AlignmentVec_1.Byte);
 
-            Assert.AreEqual(9, parsed.Vectors.AlignmentVec_2.Int);
-            Assert.AreEqual(10, parsed.Vectors.AlignmentVec_2.Byte);
+            Assert.Equal(9, parsed.Vectors.AlignmentVec_2.Int);
+            Assert.Equal(10, parsed.Vectors.AlignmentVec_2.Byte);
         }
 
-        [TestMethod]
+        [Fact]
         public void StructVectorSerialize()
         {
             StructVectorsTable table = new StructVectorsTable
@@ -162,19 +158,19 @@ namespace FlatSharpTests
 
             var parsed = Oracle.StructVectorsTable.GetRootAsStructVectorsTable(new FlatBuffers.ByteBuffer(data)).UnPack();
 
-            Assert.AreEqual<ulong>(1, parsed.Vec.HashVec[0]);
-            Assert.AreEqual<ulong>(2, parsed.Vec.HashVec[1]);
-            Assert.AreEqual<ulong>(3, parsed.Vec.HashVec[2]);
-            Assert.AreEqual<ulong>(4, parsed.Vec.HashVec[3]);
+            Assert.Equal<ulong>(1, parsed.Vec.HashVec[0]);
+            Assert.Equal<ulong>(2, parsed.Vec.HashVec[1]);
+            Assert.Equal<ulong>(3, parsed.Vec.HashVec[2]);
+            Assert.Equal<ulong>(4, parsed.Vec.HashVec[3]);
 
-            Assert.AreEqual(5, parsed.Vec.AlignmentVec[0].Int);
-            Assert.AreEqual(6, parsed.Vec.AlignmentVec[0].Byte);
+            Assert.Equal(5, parsed.Vec.AlignmentVec[0].Int);
+            Assert.Equal(6, parsed.Vec.AlignmentVec[0].Byte);
 
-            Assert.AreEqual(7, parsed.Vec.AlignmentVec[1].Int);
-            Assert.AreEqual(8, parsed.Vec.AlignmentVec[1].Byte);
+            Assert.Equal(7, parsed.Vec.AlignmentVec[1].Int);
+            Assert.Equal(8, parsed.Vec.AlignmentVec[1].Byte);
 
-            Assert.AreEqual(9, parsed.Vec.AlignmentVec[2].Int);
-            Assert.AreEqual(10, parsed.Vec.AlignmentVec[2].Byte);
+            Assert.Equal(9, parsed.Vec.AlignmentVec[2].Int);
+            Assert.Equal(10, parsed.Vec.AlignmentVec[2].Byte);
         }
 
         [FlatBufferTable]

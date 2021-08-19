@@ -20,30 +20,30 @@ namespace FlatSharpTests
     using System.Linq;
     using FlatSharp;
     using FlatSharp.Attributes;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
     /// <summary>
     /// Tests serialization of nested structs.
     /// </summary>
-    [TestClass]
+    
     public class NestedStructTests
     {
-        [TestMethod]
+        [Fact]
         public void NestedStructs_Greedy() => this.RunTest(FlatBufferDeserializationOption.Greedy);
 
-        [TestMethod]
+        [Fact]
         public void NestedStructs_GreedyMutable() => this.RunTest(FlatBufferDeserializationOption.GreedyMutable);
 
-        [TestMethod]
+        [Fact]
         public void NestedStructs_VectorCacheMutable() => this.RunTest(FlatBufferDeserializationOption.VectorCacheMutable);
 
-        [TestMethod]
+        [Fact]
         public void NestedStructs_VectorCache() => this.RunTest(FlatBufferDeserializationOption.VectorCache);
 
-        [TestMethod]
+        [Fact]
         public void NestedStructs_PropertyCache() => this.RunTest(FlatBufferDeserializationOption.PropertyCache);
 
-        [TestMethod]
+        [Fact]
         public void NestedStructs_Lazy() => this.RunTest(FlatBufferDeserializationOption.Lazy);
 
         private void RunTest(FlatBufferDeserializationOption option)
@@ -62,8 +62,8 @@ namespace FlatSharpTests
             serializer.Serialize(table, data);
 
             var parsed = serializer.Parse<Table>(data);
-            Assert.AreEqual(3, parsed.Outer.InnerVirtual.A);
-            Assert.AreEqual(30, parsed.Outer.NonVirtualInner.A);
+            Assert.Equal(3, parsed.Outer.InnerVirtual.A);
+            Assert.Equal(30, parsed.Outer.NonVirtualInner.A);
         }
 
         [FlatBufferTable]

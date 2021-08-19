@@ -23,12 +23,12 @@ namespace FlatSharpTests
     using System.Linq;
     using FlatSharp;
     using FlatSharp.Attributes;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
     /// <summary>
     /// Tests for the FlatBufferVector class that implements IList.
     /// </summary>
-    [TestClass]
+    
     public class IndexedVectorTests
     {
         private List<string> stringKeys;
@@ -37,8 +37,7 @@ namespace FlatSharpTests
         private TableVector<int> intVectorSource;
         private TableVector<int> intVectorParsed;
 
-        [TestInitialize]
-        public void TestInitialize()
+        public IndexedVectorTests()
         {
             this.stringVectorSource = new TableVector<string> { Vector = new IndexedVector<string, VectorMember<string>>() };
             this.intVectorSource = new TableVector<int> { Vector = new IndexedVector<int, VectorMember<int>>() };
@@ -66,38 +65,38 @@ namespace FlatSharpTests
             this.intVectorParsed = serializer.Parse<TableVector<int>>(buffer.Slice(0, bytesWritten).ToArray());
         }
 
-        [TestMethod]
+        [Fact]
         public void IndexedVector_KeyNotFound()
         {
-            Assert.ThrowsException<ArgumentNullException>(() => this.stringVectorSource.Vector[null]);
-            Assert.ThrowsException<KeyNotFoundException>(() => this.stringVectorSource.Vector[string.Empty]);
-            Assert.ThrowsException<ArgumentNullException>(() => this.stringVectorParsed.Vector[null]);
-            Assert.ThrowsException<KeyNotFoundException>(() => this.stringVectorParsed.Vector[string.Empty]);
+            Assert.Throws<ArgumentNullException>(() => this.stringVectorSource.Vector[null]);
+            Assert.Throws<KeyNotFoundException>(() => this.stringVectorSource.Vector[string.Empty]);
+            Assert.Throws<ArgumentNullException>(() => this.stringVectorParsed.Vector[null]);
+            Assert.Throws<KeyNotFoundException>(() => this.stringVectorParsed.Vector[string.Empty]);
 
-            Assert.ThrowsException<KeyNotFoundException>(() => this.intVectorSource.Vector[int.MinValue]);
-            Assert.ThrowsException<KeyNotFoundException>(() => this.intVectorSource.Vector[int.MaxValue]);
-            Assert.ThrowsException<KeyNotFoundException>(() => this.intVectorParsed.Vector[int.MinValue]);
-            Assert.ThrowsException<KeyNotFoundException>(() => this.intVectorParsed.Vector[int.MaxValue]);
+            Assert.Throws<KeyNotFoundException>(() => this.intVectorSource.Vector[int.MinValue]);
+            Assert.Throws<KeyNotFoundException>(() => this.intVectorSource.Vector[int.MaxValue]);
+            Assert.Throws<KeyNotFoundException>(() => this.intVectorParsed.Vector[int.MinValue]);
+            Assert.Throws<KeyNotFoundException>(() => this.intVectorParsed.Vector[int.MaxValue]);
         }
 
-        [TestMethod]
+        [Fact]
         public void IndexedVector_NotMutable()
         {
-            Assert.IsTrue(this.stringVectorParsed.Vector.IsReadOnly);
-            Assert.IsTrue(this.stringVectorSource.Vector.IsReadOnly);
+            Assert.True(this.stringVectorParsed.Vector.IsReadOnly);
+            Assert.True(this.stringVectorSource.Vector.IsReadOnly);
 
-            Assert.ThrowsException<NotMutableException>(() => this.stringVectorSource.Vector.AddOrReplace(null));
-            Assert.ThrowsException<NotMutableException>(() => this.stringVectorSource.Vector.Clear());
-            Assert.ThrowsException<NotMutableException>(() => this.stringVectorSource.Vector.Remove(null));
-            Assert.IsFalse(this.stringVectorSource.Vector.Add(null));
+            Assert.Throws<NotMutableException>(() => this.stringVectorSource.Vector.AddOrReplace(null));
+            Assert.Throws<NotMutableException>(() => this.stringVectorSource.Vector.Clear());
+            Assert.Throws<NotMutableException>(() => this.stringVectorSource.Vector.Remove(null));
+            Assert.False(this.stringVectorSource.Vector.Add(null));
 
-            Assert.ThrowsException<NotMutableException>(() => this.stringVectorParsed.Vector.AddOrReplace(null));
-            Assert.ThrowsException<NotMutableException>(() => this.stringVectorParsed.Vector.Clear());
-            Assert.ThrowsException<NotMutableException>(() => this.stringVectorParsed.Vector.Remove(null));
-            Assert.IsFalse(this.stringVectorParsed.Vector.Add(null));
+            Assert.Throws<NotMutableException>(() => this.stringVectorParsed.Vector.AddOrReplace(null));
+            Assert.Throws<NotMutableException>(() => this.stringVectorParsed.Vector.Clear());
+            Assert.Throws<NotMutableException>(() => this.stringVectorParsed.Vector.Remove(null));
+            Assert.False(this.stringVectorParsed.Vector.Add(null));
         }
 
-        [TestMethod]
+        [Fact]
         public void IndexedVector_GetEnumerator()
         {
             EnumeratorTest(this.stringVectorParsed.Vector);
@@ -109,72 +108,72 @@ namespace FlatSharpTests
             int i = 0;
             foreach (var item in vector)
             {
-                Assert.AreEqual(item.Key, i.ToString());
-                Assert.AreEqual(item.Value.Key, i.ToString());
+                Assert.Equal(item.Key, i.ToString());
+                Assert.Equal(item.Value.Key, i.ToString());
                 i++;
             }
 
             var keys = new HashSet<string>(this.stringKeys);
-            Assert.AreEqual(vector.Count, keys.Count);
+            Assert.Equal(vector.Count, keys.Count);
             foreach (string key in keys)
             {
-                Assert.IsTrue(vector.ContainsKey(key));
+                Assert.True(vector.ContainsKey(key));
             }
 
             foreach (var kvp in vector)
             {
-                Assert.IsTrue(vector.ContainsKey(kvp.Key));
-                Assert.IsTrue(vector.TryGetValue(kvp.Key, out var value));
-                Assert.AreEqual(kvp.Key, value.Key);
+                Assert.True(vector.ContainsKey(kvp.Key));
+                Assert.True(vector.TryGetValue(kvp.Key, out var value));
+                Assert.Equal(kvp.Key, value.Key);
 
                 keys.Remove(value.Key);
             }
 
-            Assert.AreEqual(0, keys.Count);
+            Assert.Empty(keys);
         }
 
-        [TestMethod]
+        [Fact]
         public void IndexedVector_ContainsKey()
         {
-            Assert.IsTrue(this.stringVectorSource.Vector.ContainsKey("1"));
-            Assert.IsTrue(this.stringVectorSource.Vector.ContainsKey("5"));
-            Assert.IsFalse(this.stringVectorSource.Vector.ContainsKey("20"));
-            Assert.ThrowsException<ArgumentNullException>(() => this.stringVectorSource.Vector.ContainsKey(null));
+            Assert.True(this.stringVectorSource.Vector.ContainsKey("1"));
+            Assert.True(this.stringVectorSource.Vector.ContainsKey("5"));
+            Assert.False(this.stringVectorSource.Vector.ContainsKey("20"));
+            Assert.Throws<ArgumentNullException>(() => this.stringVectorSource.Vector.ContainsKey(null));
 
-            Assert.IsTrue(this.stringVectorParsed.Vector.ContainsKey("1"));
-            Assert.IsTrue(this.stringVectorParsed.Vector.ContainsKey("5"));
-            Assert.IsFalse(this.stringVectorParsed.Vector.ContainsKey("20"));
-            Assert.ThrowsException<ArgumentNullException>(() => this.stringVectorParsed.Vector.ContainsKey(null));
+            Assert.True(this.stringVectorParsed.Vector.ContainsKey("1"));
+            Assert.True(this.stringVectorParsed.Vector.ContainsKey("5"));
+            Assert.False(this.stringVectorParsed.Vector.ContainsKey("20"));
+            Assert.Throws<ArgumentNullException>(() => this.stringVectorParsed.Vector.ContainsKey(null));
         }
 
-        [TestMethod]
+        [Fact]
         public void IndexedVector_Mutations()
         {
             IndexedVector<string, VectorMember<string>> vector = new IndexedVector<string, VectorMember<string>>();
             var item = new VectorMember<string> { Key = "foobar" };
 
-            Assert.IsFalse(vector.ContainsKey(item.Key));
-            Assert.IsFalse(vector.TryGetValue(item.Key, out _));
-            Assert.AreEqual(0, vector.Count);
-            Assert.AreEqual(0, vector.Count());
-            Assert.IsTrue(vector.Add(item));
-            Assert.IsFalse(vector.Add(item));
-            Assert.IsTrue(vector.ContainsKey(item.Key));
-            Assert.IsTrue(vector.TryGetValue(item.Key, out _));
-            Assert.AreEqual(1, vector.Count);
-            Assert.AreEqual(1, vector.Count());
-            Assert.IsTrue(vector.Remove(item.Key));
-            Assert.IsFalse(vector.Remove(item.Key));
-            Assert.AreEqual(0, vector.Count);
-            Assert.AreEqual(0, vector.Count());
-            Assert.IsTrue(vector.Add(item));
-            Assert.AreEqual(1, vector.Count);
-            Assert.AreEqual(1, vector.Count());
+            Assert.False(vector.ContainsKey(item.Key));
+            Assert.False(vector.TryGetValue(item.Key, out _));
+            Assert.Equal(0, vector.Count);
+            Assert.Empty(vector);
+            Assert.True(vector.Add(item));
+            Assert.False(vector.Add(item));
+            Assert.True(vector.ContainsKey(item.Key));
+            Assert.True(vector.TryGetValue(item.Key, out _));
+            Assert.Equal(1, vector.Count);
+            Assert.Single(vector);
+            Assert.True(vector.Remove(item.Key));
+            Assert.False(vector.Remove(item.Key));
+            Assert.Equal(0, vector.Count);
+            Assert.Empty(vector);
+            Assert.True(vector.Add(item));
+            Assert.Equal(1, vector.Count);
+            Assert.Single(vector);
             vector.Clear();
-            Assert.AreEqual(0, vector.Count);
-            Assert.AreEqual(0, vector.Count());
-            Assert.IsFalse(vector.ContainsKey(item.Key));
-            Assert.IsFalse(vector.TryGetValue(item.Key, out _));
+            Assert.Equal(0, vector.Count);
+            Assert.Empty(vector);
+            Assert.False(vector.ContainsKey(item.Key));
+            Assert.False(vector.TryGetValue(item.Key, out _));
         }
 
         [FlatBufferTable]

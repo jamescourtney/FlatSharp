@@ -25,116 +25,116 @@ namespace FlatSharpTests.Compiler
     using FlatSharp.Attributes;
     using FlatSharp.Compiler;
     using FlatSharp.TypeModel;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
+    
     public class TypeModelAliasTests
     {
-        [TestMethod]
+        [Fact]
         public void Alias_String()
             => this.AssertResolve("string", typeof(string), typeof(StringTypeModel));
 
-        [TestMethod]
+        [Fact]
         public void Alias_Bool()
             => this.AssertResolve("bool", typeof(bool), typeof(BoolTypeModel));
 
-        [TestMethod]
+        [Fact]
         public void Alias_Byte()
             => this.AssertResolve("byte", typeof(sbyte), typeof(SByteTypeModel));
 
-        [TestMethod]
+        [Fact]
         public void Alias_Int8()
             => this.AssertResolve("int8", typeof(sbyte), typeof(SByteTypeModel));
 
-        [TestMethod]
+        [Fact]
         public void Alias_UByte()
             => this.AssertResolve("ubyte", typeof(byte), typeof(ByteTypeModel));
 
-        [TestMethod]
+        [Fact]
         public void Alias_UInt8()
             => this.AssertResolve("uint8", typeof(byte), typeof(ByteTypeModel));
 
-        [TestMethod]
+        [Fact]
         public void Alias_Short()
             => this.AssertResolve("short", typeof(short), typeof(ShortTypeModel));
 
-        [TestMethod]
+        [Fact]
         public void Alias_Int16()
             => this.AssertResolve("int16", typeof(short), typeof(ShortTypeModel));
 
-        [TestMethod]
+        [Fact]
         public void Alias_UShort()
             => this.AssertResolve("ushort", typeof(ushort), typeof(UShortTypeModel));
 
-        [TestMethod]
+        [Fact]
         public void Alias_UInt16()
             => this.AssertResolve("uint16", typeof(ushort), typeof(UShortTypeModel));
 
-        [TestMethod]
+        [Fact]
         public void Alias_Int()
             => this.AssertResolve("int", typeof(int), typeof(IntTypeModel));
 
-        [TestMethod]
+        [Fact]
         public void Alias_Int32()
             => this.AssertResolve("int32", typeof(int), typeof(IntTypeModel));
 
-        [TestMethod]
+        [Fact]
         public void Alias_UInt()
             => this.AssertResolve("uint", typeof(uint), typeof(UIntTypeModel));
 
-        [TestMethod]
+        [Fact]
         public void Alias_UInt32()
             => this.AssertResolve("uint32", typeof(uint), typeof(UIntTypeModel));
 
-        [TestMethod]
+        [Fact]
         public void Alias_Long()
             => this.AssertResolve("long", typeof(long), typeof(LongTypeModel));
 
-        [TestMethod]
+        [Fact]
         public void Alias_Int64()
             => this.AssertResolve("int64", typeof(long), typeof(LongTypeModel));
 
-        [TestMethod]
+        [Fact]
         public void Alias_ULong()
             => this.AssertResolve("ulong", typeof(ulong), typeof(ULongTypeModel));
 
-        [TestMethod]
+        [Fact]
         public void Alias_UInt64()
             => this.AssertResolve("uint64", typeof(ulong), typeof(ULongTypeModel));
 
-        [TestMethod]
+        [Fact]
         public void Alias_Float32()
             => this.AssertResolve("float32", typeof(float), typeof(FloatTypeModel));
 
-        [TestMethod]
+        [Fact]
         public void Alias_Float()
             => this.AssertResolve("float", typeof(float), typeof(FloatTypeModel));
 
-        [TestMethod]
+        [Fact]
         public void Alias_Float64()
             => this.AssertResolve("float64", typeof(double), typeof(DoubleTypeModel));
 
-        [TestMethod]
+        [Fact]
         public void Alias_Double()
             => this.AssertResolve("double", typeof(double), typeof(DoubleTypeModel));
 
-        [TestMethod]
+        [Fact]
         public void Alias_Invalid()
         {
             TypeModelContainer container = TypeModelContainer.CreateDefault();
-            Assert.IsFalse(container.TryResolveFbsAlias("foo", out _));
-            Assert.IsFalse(container.TryResolveFbsAlias("Double", out _));
-            Assert.IsFalse(container.TryResolveFbsAlias("", out _));
-            Assert.IsFalse(container.TryResolveFbsAlias(null, out _));
+            Assert.False(container.TryResolveFbsAlias("foo", out _));
+            Assert.False(container.TryResolveFbsAlias("Double", out _));
+            Assert.False(container.TryResolveFbsAlias("", out _));
+            Assert.False(container.TryResolveFbsAlias(null, out _));
         }
 
         private void AssertResolve(string alias, Type clrType, Type typeModelType)
         {
             TypeModelContainer container = TypeModelContainer.CreateDefault();
-            Assert.IsTrue(container.TryResolveFbsAlias(alias, out ITypeModel? typeModel));
+            Assert.True(container.TryResolveFbsAlias(alias, out ITypeModel? typeModel));
 
-            Assert.IsInstanceOfType(typeModel, typeModelType);
-            Assert.AreEqual(clrType, typeModel.ClrType);
+            Assert.IsType(typeModelType, typeModel);
+            Assert.Equal(clrType, typeModel.ClrType);
         }
     }
 }

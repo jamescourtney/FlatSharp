@@ -26,53 +26,53 @@ namespace FlatSharpTests.Compiler
     using FlatSharp.Attributes;
     using FlatSharp.Compiler;
     using FlatSharp.TypeModel;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
+    
     public class StructVectorTests
     {
-        [TestMethod]
+        [Fact]
         public void StructVector_Byte_NegativeLength() 
-            => Assert.ThrowsException<InvalidFbsFileException>(() => this.RunTest<byte>("ubyte", -3, FlatBufferDeserializationOption.Greedy));
+            => Assert.Throws<InvalidFbsFileException>(() => this.RunTest<byte>("ubyte", -3, FlatBufferDeserializationOption.Greedy));
 
-        [TestMethod]
+        [Fact]
         public void StructVector_Byte_ZeroLength()
-            => Assert.ThrowsException<InvalidFbsFileException>(() => this.RunTest<byte>("ubyte", 0, FlatBufferDeserializationOption.Greedy));
+            => Assert.Throws<InvalidFbsFileException>(() => this.RunTest<byte>("ubyte", 0, FlatBufferDeserializationOption.Greedy));
 
-        [TestMethod]
+        [Fact]
         public void StructVector_Byte() => this.RunTest<byte>("ubyte", 1, FlatBufferDeserializationOption.Greedy);
 
-        [TestMethod]
+        [Fact]
         public void StructVector_SByte() => this.RunTest<sbyte>("byte", 2, FlatBufferDeserializationOption.GreedyMutable);
 
-        [TestMethod]
+        [Fact]
         public void StructVector_Bool() => this.RunTest<bool>("bool", 3, FlatBufferDeserializationOption.VectorCache);
 
-        [TestMethod]
+        [Fact]
         public void StructVector_UShort() => this.RunTest<ushort>("ushort", 4, FlatBufferDeserializationOption.VectorCacheMutable);
 
-        [TestMethod]
+        [Fact]
         public void StructVector_Short() => this.RunTest<short>("short", 5, FlatBufferDeserializationOption.PropertyCache);
 
-        [TestMethod]
+        [Fact]
         public void StructVector_UInt() => this.RunTest<uint>("uint", 6, FlatBufferDeserializationOption.Lazy);
 
-        [TestMethod]
+        [Fact]
         public void StructVector_Int() => this.RunTest<int>("int", 7, FlatBufferDeserializationOption.Greedy);
 
-        [TestMethod]
+        [Fact]
         public void StructVector_ULong() => this.RunTest<ulong>("ulong", 8, FlatBufferDeserializationOption.Greedy);
 
-        [TestMethod]
+        [Fact]
         public void StructVector_Long() => this.RunTest<long>("long", 9, FlatBufferDeserializationOption.Greedy);
 
-        [TestMethod]
+        [Fact]
         public void StructVector_Float() => this.RunTest<float>("float", 10, FlatBufferDeserializationOption.Greedy);
 
-        [TestMethod]
+        [Fact]
         public void StructVector_Double() => this.RunTest<double>("double", 11, FlatBufferDeserializationOption.Greedy);
 
-        [TestMethod]
+        [Fact]
         public void StructVector_InvalidType()
         {
             string schema = $@"
@@ -85,15 +85,15 @@ namespace FlatSharpTests.Compiler
               V:[Bar:7] ({MetadataKeys.NonVirtualProperty});
             }}";
 
-            var ex = Assert.ThrowsException<InvalidFbsFileException>(
+            var ex = Assert.Throws<InvalidFbsFileException>(
                 () => FlatSharpCompiler.CompileAndLoadAssembly(
                     schema,
                     new()));
 
-            Assert.IsTrue(ex.Message.Contains("Unable to resolve struct vector type 'Bar'."));
+            Assert.Contains("Unable to resolve struct vector type 'Bar'.", ex.Message);
         }
 
-        [TestMethod]
+        [Fact]
         public void StructVector_NestedStruct()
         {
             int length = 7;
@@ -117,8 +117,8 @@ namespace FlatSharpTests.Compiler
             Type fooType = asm.GetType("StructVectorTests.Foo");
 
             var property = fooType.GetProperty("__flatsharp__V_0", BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.IsFalse(property.GetMethod.IsVirtual);
-            Assert.IsFalse(property.SetMethod.IsVirtual);
+            Assert.False(property.GetMethod.IsVirtual);
+            Assert.False(property.SetMethod.IsVirtual);
 
             Type barType = asm.GetType("StructVectorTests.Bar");
 
@@ -126,7 +126,7 @@ namespace FlatSharpTests.Compiler
             dynamic foo = Activator.CreateInstance(fooType);
             table.foo = foo;
 
-            Assert.AreEqual(length, foo.V.Count);
+            Assert.Equal(length, foo.V.Count);
 
             dynamic dList = Activator.CreateInstance(typeof(List<>).MakeGenericType(barType));
             for (int i = 0; i < length; ++i)
@@ -142,9 +142,9 @@ namespace FlatSharpTests.Compiler
             foo.V.CopyFrom(dList);
             for (int i = 0; i < length; ++i)
             {
-                Assert.AreNotSame(dList[i], foo.V[i]);
-                Assert.AreEqual<byte>(dList[i].A, foo.V[i].A);
-                Assert.AreEqual<ulong>(dList[i].B, foo.V[i].B);
+                Assert.NotSame(dList[i], foo.V[i]);
+                Assert.Equal<byte>(dList[i].A, foo.V[i].A);
+                Assert.Equal<ulong>(dList[i].B, foo.V[i].B);
             }
 
             for (int i = 0; i < length; ++i)
@@ -163,13 +163,13 @@ namespace FlatSharpTests.Compiler
             dynamic parsed = serializer.Parse(data);
             dynamic copy = Activator.CreateInstance(tableType, (object)parsed);
 
-            Assert.AreEqual(length, parsed.foo.V.Count);
+            Assert.Equal(length, parsed.foo.V.Count);
             for (int i = 0; i < length; ++i)
             {
-                Assert.AreEqual((byte)i, parsed.foo.V[i].A);
-                Assert.AreEqual((byte)i, copy.foo.V[i].A);
-                Assert.AreEqual((ulong)i, parsed.foo.V[i].B);
-                Assert.AreEqual((ulong)i, copy.foo.V[i].B);
+                Assert.Equal((byte)i, parsed.foo.V[i].A);
+                Assert.Equal((byte)i, copy.foo.V[i].A);
+                Assert.Equal((ulong)i, parsed.foo.V[i].B);
+                Assert.Equal((ulong)i, copy.foo.V[i].B);
             }
         }
 
@@ -192,33 +192,33 @@ namespace FlatSharpTests.Compiler
             Type tableType = asm.GetType("StructVectorTests.Table");
             Type fooType = asm.GetType("StructVectorTests.Foo");
             var typeModel = TypeModelContainer.CreateDefault().CreateTypeModel(fooType);
-            Assert.AreEqual(FlatBufferSchemaType.Struct, typeModel.SchemaType);
+            Assert.Equal(FlatBufferSchemaType.Struct, typeModel.SchemaType);
 
             for (int i = 0; i < length; ++i)
             {
                 PropertyInfo p = fooType.GetProperty($"__flatsharp__V_{i}", BindingFlags.Instance | BindingFlags.NonPublic);
-                Assert.IsTrue(p.GetMethod.IsFamily);
-                Assert.IsTrue(p.SetMethod.IsFamily);
-                Assert.IsTrue(p.GetMethod.IsVirtual);
-                Assert.IsTrue(p.SetMethod.IsVirtual);
+                Assert.True(p.GetMethod.IsFamily);
+                Assert.True(p.SetMethod.IsFamily);
+                Assert.True(p.GetMethod.IsVirtual);
+                Assert.True(p.SetMethod.IsVirtual);
 
                 var attr = p.GetCustomAttribute<FlatBufferItemAttribute>();
-                Assert.IsNotNull(attr);
-                Assert.AreEqual(i, attr.Index);
-                Assert.AreEqual($"V[{attr.Index}]", attr.CustomGetter);
+                Assert.NotNull(attr);
+                Assert.Equal(i, attr.Index);
+                Assert.Equal($"V[{attr.Index}]", attr.CustomGetter);
             }
 
             var vectorProperty = fooType.GetProperty("V");
-            Assert.IsNull(vectorProperty.GetCustomAttribute<FlatBufferItemAttribute>()); // pseudo-item, not actual.
-            Assert.IsTrue(vectorProperty.GetMethod.IsPublic);
-            Assert.IsFalse(vectorProperty.GetMethod.IsVirtual);
-            Assert.IsNull(vectorProperty.SetMethod);
+            Assert.Null(vectorProperty.GetCustomAttribute<FlatBufferItemAttribute>()); // pseudo-item, not actual.
+            Assert.True(vectorProperty.GetMethod.IsPublic);
+            Assert.False(vectorProperty.GetMethod.IsVirtual);
+            Assert.Null(vectorProperty.SetMethod);
 
             dynamic table = Activator.CreateInstance(tableType);
             dynamic foo = Activator.CreateInstance(fooType);
             table.foo = foo;
 
-            Assert.AreEqual(length, foo.V.Count);
+            Assert.Equal(length, foo.V.Count);
 
             // Test copyFrom with full array.
             List<T> items = new List<T>();
@@ -249,7 +249,7 @@ namespace FlatSharpTests.Compiler
 
             dynamic copy = Activator.CreateInstance(tableType, (object)parsed);
 
-            Assert.AreEqual(length, parsed.foo.V.Count);
+            Assert.Equal(length, parsed.foo.V.Count);
             for (int i = 0; i < length; ++i)
             {
                 CheckRandom<T>(foo.V[i], parsed.foo.V[i]);
@@ -270,11 +270,11 @@ namespace FlatSharpTests.Compiler
                     parsed.foo.V[i] = GetRandom<T>();
                 }
 
-                Assert.IsTrue(isMutable);
+                Assert.True(isMutable);
             }
             catch (NotMutableException)
             {
-                Assert.IsFalse(isMutable);
+                Assert.False(isMutable);
             }
         }
 

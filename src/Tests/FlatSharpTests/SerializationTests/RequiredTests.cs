@@ -23,23 +23,23 @@ namespace FlatSharpTests
     using FlatSharp;
     using FlatSharp.Attributes;
     using FlatSharp.TypeModel;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
     /// <summary>
     /// Tests the 'required' attribute.
     /// </summary>
-    [TestClass]
+    
     public class RequiredTests
     {
-        [TestMethod]
+        [Fact]
         public void Required_FieldNotPresent_ThrowsOnSerialize()
         {
             static void RunTest<T>()
             {
                 var item = new RequiredTable<T>() { Item = default };
-                var ex = Assert.ThrowsException<InvalidOperationException>(() => FlatBufferSerializer.Default.Serialize(item, new byte[1024]));
+                var ex = Assert.Throws<InvalidOperationException>(() => FlatBufferSerializer.Default.Serialize(item, new byte[1024]));
 
-                Assert.AreEqual(
+                Assert.Equal(
                     $"Table property '{item.GetType().GetCompilableTypeName()}.Item' is marked as required, but was not set.",
                     ex.Message);
             }
@@ -50,7 +50,7 @@ namespace FlatSharpTests
             RunTest<Memory<byte>?>();
         }
 
-        [TestMethod]
+        [Fact]
         public void Required_FieldNotPresent_ThrowsOnParse_Greedy()
         {
             static void RunTest<T>()
@@ -60,9 +60,9 @@ namespace FlatSharpTests
 
                 var serializer = new FlatBufferSerializer(FlatBufferDeserializationOption.Greedy);
                 serializer.Serialize(item, data);
-                var ex = Assert.ThrowsException<System.IO.InvalidDataException>(() => serializer.Parse<RequiredTable<T>>(data));
+                var ex = Assert.Throws<System.IO.InvalidDataException>(() => serializer.Parse<RequiredTable<T>>(data));
 
-                Assert.AreEqual(
+                Assert.Equal(
                     $"Table property '{typeof(RequiredTable<T>).GetCompilableTypeName()}.Item' is marked as required, but was missing from the buffer.",
                     ex.Message);
             }

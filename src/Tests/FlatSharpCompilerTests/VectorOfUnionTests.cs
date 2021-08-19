@@ -26,12 +26,12 @@ namespace FlatSharpTests.Compiler
     using FlatSharp.Attributes;
     using FlatSharp.Compiler;
     using FlatSharp.TypeModel;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
+    
     public class VectorOfUnionTests
     {
-        [TestMethod]
+        [Fact]
         public void VectorOfUnion_CompilerTests()
         {
             foreach (var vectorKind in new[] { "IList", "IReadOnlyList", "Array" })

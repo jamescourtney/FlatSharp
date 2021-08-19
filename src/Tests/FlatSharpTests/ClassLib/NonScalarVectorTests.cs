@@ -21,17 +21,17 @@ namespace FlatSharpTests
     using System.Linq;
     using FlatSharp;
     using FlatSharp.Attributes;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
     /// <summary>
     /// Tests various types of vectors (List/ReadOnlyList/Memory/ReadOnlyMemory/Array) for primitive types.
     /// </summary>
-    [TestClass]
+    
     public class NonScalarVectorTests
     {
         private static readonly Random r = new Random();
         
-        [TestMethod]
+        [Fact]
         public void StringVector()
         {
             this.TestType(
@@ -44,7 +44,7 @@ namespace FlatSharpTests
                 });
         }
 
-        [TestMethod]
+        [Fact]
         public void StringVector_Cache()
         {
             this.TestType(
@@ -57,7 +57,7 @@ namespace FlatSharpTests
                 });
         }
 
-        [TestMethod]
+        [Fact]
         public void TableVector()
         {
             this.TestType(
@@ -70,7 +70,7 @@ namespace FlatSharpTests
                 });
         }
 
-        [TestMethod]
+        [Fact]
         public void TableVector_Cache()
         {
             this.TestType(
@@ -83,7 +83,7 @@ namespace FlatSharpTests
                 });
         }
 
-        [TestMethod]
+        [Fact]
         public void StructVector()
         {
             this.TestType(
@@ -94,7 +94,7 @@ namespace FlatSharpTests
                 });
         }
 
-        [TestMethod]
+        [Fact]
         public void StructVector_Cache()
         {
             this.TestType(
@@ -123,10 +123,10 @@ namespace FlatSharpTests
                 var resultVector = memoryTableResult.Vector;
                 for (int i = 0; i < memoryTableResult.Vector.Count; ++i)
                 {
-                    Assert.AreEqual<T>(memoryTable.Vector[i], resultVector[i]);
+                    Assert.Equal<T>(memoryTable.Vector[i], resultVector[i]);
 
                     // reference equality should correspond to the serializer.
-                    Assert.AreEqual(listCache, object.ReferenceEquals(resultVector[i], resultVector[i])); 
+                    Assert.Equal(listCache, object.ReferenceEquals(resultVector[i], resultVector[i])); 
                 }
             }
 
@@ -142,10 +142,10 @@ namespace FlatSharpTests
                 var resultVector = memoryTableResult.Vector;
                 for (int i = 0; i < memoryTableResult.Vector.Count; ++i)
                 {
-                    Assert.AreEqual(memoryTable.Vector[i], resultVector[i]);
+                    Assert.Equal(memoryTable.Vector[i], resultVector[i]);
 
                     // reference equality should correspond to the serializer.
-                    Assert.AreEqual(listCache, object.ReferenceEquals(resultVector[i], resultVector[i]));
+                    Assert.Equal(listCache, object.ReferenceEquals(resultVector[i], resultVector[i]));
                 }
             }
 
@@ -161,7 +161,7 @@ namespace FlatSharpTests
                 var resultVector = memoryTableResult.Vector;
                 for (int i = 0; i < memoryTableResult.Vector.Length; ++i)
                 {
-                    Assert.AreEqual(memoryTable.Vector[i], resultVector[i]);
+                    Assert.Equal(memoryTable.Vector[i], resultVector[i]);
                 }
             }
         }

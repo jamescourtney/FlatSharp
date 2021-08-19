@@ -20,49 +20,49 @@ namespace FlatSharpTests
     using System.Linq;
     using FlatSharp;
     using FlatSharp.Attributes;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
     /// <summary>
     /// Tests that table properties with the force_write attribute are written,
     /// even if they carry the default value.
     /// </summary>
-    [TestClass]
+    
     public class ForceWriteTests
     {
-        [TestMethod]
+        [Fact]
         public void ForceWrite_Bool() => this.RunTest<bool>();
 
-        [TestMethod]
+        [Fact]
         public void ForceWrite_Byte() => this.RunTest<byte>();
 
-        [TestMethod]
+        [Fact]
         public void ForceWrite_SByte() => this.RunTest<sbyte>();
 
-        [TestMethod]
+        [Fact]
         public void ForceWrite_UShort() => this.RunTest<ushort>();
 
-        [TestMethod]
+        [Fact]
         public void ForceWrite_Short() => this.RunTest<short>();
 
-        [TestMethod]
+        [Fact]
         public void ForceWrite_UInt() => this.RunTest<uint>();
 
-        [TestMethod]
+        [Fact]
         public void ForceWrite_Int() => this.RunTest<int>();
 
-        [TestMethod]
+        [Fact]
         public void ForceWrite_ULong() => this.RunTest<ulong>();
 
-        [TestMethod]
+        [Fact]
         public void ForceWrite_Long() => this.RunTest<long>();
 
-        [TestMethod]
+        [Fact]
         public void ForceWrite_Float() => this.RunTest<float>();
 
-        [TestMethod]
+        [Fact]
         public void ForceWrite_Double() => this.RunTest<double>();
 
-        [TestMethod]
+        [Fact]
         public void ForceWrite_Enum() => this.RunTest<SomeEnum>();
 
         private void RunTest<T>() where T : struct
@@ -93,10 +93,10 @@ namespace FlatSharpTests
             int optionalBytesWritten = FlatBufferSerializer.Default.Serialize(optionalTable, optionalData);
             int noForceWriteBytesWritten = FlatBufferSerializer.Default.Serialize(noForceWrite, omittedData);
 
-            Assert.AreEqual(optionalBytesWritten, forceBytesWritten);
-            Assert.IsTrue(noForceWriteBytesWritten + 2 < forceBytesWritten);
+            Assert.Equal(optionalBytesWritten, forceBytesWritten);
+            Assert.True(noForceWriteBytesWritten + 2 < forceBytesWritten);
 
-            Assert.IsTrue(
+            Assert.True(
                 forceWriteData
                     .AsSpan()
                     .Slice(0, forceBytesWritten)

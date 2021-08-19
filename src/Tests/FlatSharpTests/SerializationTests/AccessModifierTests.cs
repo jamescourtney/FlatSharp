@@ -27,21 +27,21 @@ namespace FlatSharpTests
     using FlatSharp;
     using FlatSharp.Attributes;
     using FlatSharp.TypeModel;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
     /// <summary>
     /// Verifies expected binary formats for test data.
     /// </summary>
-    [TestClass]
+    
     public class AccessModifierTests
     {
-        [TestMethod]
+        [Fact]
         public void BuildSerializer_AccessMethods_Virtual()
         {
             FlatBufferSerializer.Default.GetMaxSize(new TestClass());
         }
 
-        [TestMethod]
+        [Fact]
         public void BuildSerializer_AccessMethods_NonVirtual()
         {
             FlatBufferSerializer.Default.GetMaxSize(new TestClassNonVirtual());

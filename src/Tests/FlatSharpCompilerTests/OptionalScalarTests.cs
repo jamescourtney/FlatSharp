@@ -22,12 +22,12 @@ namespace FlatSharpTests.Compiler
     using System.Reflection;
     using FlatSharp;
     using FlatSharp.Compiler;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
+    
     public class OptionalScalarTests
     {
-        [TestMethod]
+        [Fact]
         public void TestOptionalScalars()
         {
             string schema = $@"
@@ -58,22 +58,22 @@ namespace FlatSharpTests.Compiler
 
             Type tableType = asm.GetTypes().Single(x => x.FullName == "OptionalScalarTests.Table");
 
-            Assert.AreEqual(typeof(bool?), tableType.GetProperty("Bool").PropertyType);
-            Assert.AreEqual(typeof(byte?), tableType.GetProperty("Byte").PropertyType);
-            Assert.AreEqual(typeof(sbyte?), tableType.GetProperty("SByte").PropertyType);
-            Assert.AreEqual(typeof(ushort?), tableType.GetProperty("UShort").PropertyType);
-            Assert.AreEqual(typeof(short?), tableType.GetProperty("Short").PropertyType);
-            Assert.AreEqual(typeof(uint?), tableType.GetProperty("UInt").PropertyType);
-            Assert.AreEqual(typeof(int?), tableType.GetProperty("Int").PropertyType);
-            Assert.AreEqual(typeof(ulong?), tableType.GetProperty("ULong").PropertyType);
-            Assert.AreEqual(typeof(long?), tableType.GetProperty("Long").PropertyType);
-            Assert.AreEqual(typeof(double?), tableType.GetProperty("Double").PropertyType);
-            Assert.AreEqual(typeof(float?), tableType.GetProperty("Float").PropertyType);
+            Assert.Equal(typeof(bool?), tableType.GetProperty("Bool").PropertyType);
+            Assert.Equal(typeof(byte?), tableType.GetProperty("Byte").PropertyType);
+            Assert.Equal(typeof(sbyte?), tableType.GetProperty("SByte").PropertyType);
+            Assert.Equal(typeof(ushort?), tableType.GetProperty("UShort").PropertyType);
+            Assert.Equal(typeof(short?), tableType.GetProperty("Short").PropertyType);
+            Assert.Equal(typeof(uint?), tableType.GetProperty("UInt").PropertyType);
+            Assert.Equal(typeof(int?), tableType.GetProperty("Int").PropertyType);
+            Assert.Equal(typeof(ulong?), tableType.GetProperty("ULong").PropertyType);
+            Assert.Equal(typeof(long?), tableType.GetProperty("Long").PropertyType);
+            Assert.Equal(typeof(double?), tableType.GetProperty("Double").PropertyType);
+            Assert.Equal(typeof(float?), tableType.GetProperty("Float").PropertyType);
 
             var underlyingType = Nullable.GetUnderlyingType(tableType.GetProperty("Enum").PropertyType);
-            Assert.IsTrue(underlyingType != null);
-            Assert.IsTrue(underlyingType.IsEnum);
-            Assert.AreEqual(typeof(byte), Enum.GetUnderlyingType(underlyingType));
+            Assert.True(underlyingType != null);
+            Assert.True(underlyingType.IsEnum);
+            Assert.Equal(typeof(byte), Enum.GetUnderlyingType(underlyingType));
         }
     }
 }

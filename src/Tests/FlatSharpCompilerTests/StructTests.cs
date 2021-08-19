@@ -21,12 +21,12 @@ namespace FlatSharpTests.Compiler
     using System.Reflection;
     using FlatSharp;
     using FlatSharp.Compiler;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
+    
     public class StructTests
     {
-        [TestMethod]
+        [Fact]
         public void BasicStructTest()
         {
             string schema = @"
@@ -65,7 +65,7 @@ namespace FlatSharpTests.Compiler
             dFoo.length = 52;
 
             dynamic dTable = table;
-            Assert.AreEqual(3, dTable.defaultInt);
+            Assert.Equal(3, dTable.defaultInt);
             dTable.foo = dFoo;
 
             byte[] destination = new byte[1024];
@@ -74,16 +74,16 @@ namespace FlatSharpTests.Compiler
             int bytesWritten = serializer.Write(destination, table);
             object parsed = serializer.Parse(destination);
 
-            Assert.IsTrue(tableType.IsAssignableFrom(parsed.GetType()));
+            Assert.True(tableType.IsAssignableFrom(parsed.GetType()));
 
             dynamic dParsedTable = parsed;
-            Assert.AreEqual(3, dParsedTable.defaultInt);
+            Assert.Equal(3, dParsedTable.defaultInt);
 
             dynamic dParsedFoo = dParsedTable.foo;
-            Assert.AreEqual(dFoo.id, dParsedFoo.id);
-            Assert.AreEqual(dFoo.count, dParsedFoo.count);
-            Assert.AreEqual(dFoo.prefix, dParsedFoo.prefix);
-            Assert.AreEqual(dFoo.length, dParsedFoo.length);
+            Assert.Equal(dFoo.id, dParsedFoo.id);
+            Assert.Equal(dFoo.count, dParsedFoo.count);
+            Assert.Equal(dFoo.prefix, dParsedFoo.prefix);
+            Assert.Equal(dFoo.length, dParsedFoo.length);
         }
     }
 }

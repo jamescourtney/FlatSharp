@@ -25,28 +25,28 @@ namespace FlatSharpTests
     using System.Text;
     using FlatSharp;
     using FlatSharp.Attributes;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
     /// <summary>
     /// Verifies expected binary formats for test data.
     /// </summary>
-    [TestClass]
+    
     public class UnionTests
     {
-        [TestMethod]
+        [Fact]
         public void Union_2Items_TableAndStruct_RoundTrip()
         {
             var expectedStruct = new SimpleStruct { Long = 123 };
             var expectedTable = new SimpleTable { Int = 456 };
 
             var testStruct = CreateAndDeserialize1(expectedStruct, expectedTable);
-            Assert.AreEqual(testStruct.Long, 123);
+            Assert.Equal(123, testStruct.Long);
 
             var testTable = CreateAndDeserialize2(expectedStruct, expectedTable);
-            Assert.AreEqual(testTable.Int, 456);
+            Assert.Equal(456, testTable.Int);
         }
 
-        [TestMethod]
+        [Fact]
         public void Union_2Items_Struct_SerializationTest()
         {
             byte[] expectedData =
@@ -74,10 +74,10 @@ namespace FlatSharpTests
             Span<byte> data = new byte[100];
             int count = FlatBufferSerializer.Default.Serialize(union, data);
 
-            Assert.IsTrue(expectedData.AsSpan().SequenceEqual(data.Slice(0, count)));
+            Assert.True(expectedData.AsSpan().SequenceEqual(data.Slice(0, count)));
         }
 
-        [TestMethod]
+        [Fact]
         public void Union_2Items_Table_SerializationTest()
         {
             byte[] expectedData =
@@ -108,28 +108,28 @@ namespace FlatSharpTests
             Span<byte> data = new byte[100];
             int count = FlatBufferSerializer.Default.Serialize(union, data);
 
-            Assert.IsTrue(expectedData.AsSpan().SequenceEqual(data.Slice(0, count)));
+            Assert.True(expectedData.AsSpan().SequenceEqual(data.Slice(0, count)));
         }
 
-        [TestMethod]
+        [Fact]
         public void Union_2Items_StringAndTable_RoundTrip()
         {
             var expectedString = "foobar";
             var expectedInt = 123;
             var expectedTable = new SimpleTable { Int = expectedInt };
 
-            Assert.AreEqual(expectedString, CreateAndDeserialize1(expectedString, expectedTable));
-            Assert.AreEqual(expectedInt, CreateAndDeserialize2(expectedString, expectedTable).Int);
+            Assert.Equal(expectedString, CreateAndDeserialize1(expectedString, expectedTable));
+            Assert.Equal(expectedInt, CreateAndDeserialize2(expectedString, expectedTable).Int);
         }
 
-        [TestMethod]
+        [Fact]
         public void Union_2Items_MultipleStructs_RoundTrip()
         {
             var simpleStruct1 = new SimpleStruct { Long = 3 };
             var simpleStruct2 = new SimpleStruct2 { Long = 4 };
 
-            Assert.AreEqual(simpleStruct1.Long, CreateAndDeserialize1(simpleStruct1, simpleStruct2).Long);
-            Assert.AreEqual(simpleStruct2.Long, CreateAndDeserialize2(simpleStruct1, simpleStruct2).Long);
+            Assert.Equal(simpleStruct1.Long, CreateAndDeserialize1(simpleStruct1, simpleStruct2).Long);
+            Assert.Equal(simpleStruct2.Long, CreateAndDeserialize2(simpleStruct1, simpleStruct2).Long);
         }
 
         private static T1 CreateAndDeserialize1<T1, T2>(T1 one, T2 two)
@@ -144,7 +144,7 @@ namespace FlatSharpTests
             FlatBufferSerializer.Default.Serialize(table, buffer);
 
             var parseResult = FlatBufferSerializer.Default.Parse<UnionTable<T1, T2>>(buffer);
-            Assert.AreEqual(1, parseResult.Item.Discriminator);
+            Assert.Equal(1, parseResult.Item.Discriminator);
 
             return parseResult.Item.Item1;
         }
@@ -161,7 +161,7 @@ namespace FlatSharpTests
             FlatBufferSerializer.Default.Serialize(table, buffer);
 
             var parseResult = FlatBufferSerializer.Default.Parse<UnionTable<T1, T2>>(buffer);
-            Assert.AreEqual(2, parseResult.Item.Discriminator);
+            Assert.Equal(2, parseResult.Item.Discriminator);
 
             return parseResult.Item.Item2;
         }

@@ -18,7 +18,7 @@ namespace FlatSharpTests
 {
     using FlatSharp;
     using FlatSharp.Unsafe;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
     using System;
     using System.Collections.Generic;
     using System.Runtime.InteropServices;
@@ -27,29 +27,29 @@ namespace FlatSharpTests
     /// Does oracle-based testing using the Google.Flatbuffers code. These test all boil down to:
     ///     Can the Google Flatbuffer code parse data we generated?
     /// </summary>
-    [TestClass]
+    
     public partial class OracleSerializeTests
     {
-        [TestMethod]
+        [Fact]
         public void SimpleTypes_SafeSpanWriter() =>
             this.SimpleTypesTest<SpanWriter, BasicTypes>(new SpanWriter());
 
-        [TestMethod]
+        [Fact]
         public void SimpleTypes_ForceWrite()
         {
             this.SimpleTypesTest<SpanWriter, BasicTypes>(new SpanWriter());
         }
 
-        [TestMethod]
+        [Fact]
         public void SimpleTypesForceWrite_SizeCompare()
         {
             int withForceWriteSize = this.SimpleTypesDefaultValues_Test<BasicTypesForceWrite>();
             int defaultSize = this.SimpleTypesDefaultValues_Test<BasicTypes>();
 
-            Assert.IsTrue(withForceWriteSize > defaultSize);
+            Assert.True(withForceWriteSize > defaultSize);
         }
 
-        [TestMethod]
+        [Fact]
         public void SimpleTypes_UnsafeSpanWriter() =>
             this.SimpleTypesTest<UnsafeSpanWriter, BasicTypes>(new UnsafeSpanWriter());
 
@@ -64,21 +64,21 @@ namespace FlatSharpTests
             var oracle = Oracle.BasicTypes.GetRootAsBasicTypes(
                 new FlatBuffers.ByteBuffer(memory.Slice(0, size).ToArray()));
 
-            Assert.AreEqual(oracle.Byte, simple.Byte);
-            Assert.AreEqual(oracle.SByte, simple.SByte);
+            Assert.Equal(oracle.Byte, simple.Byte);
+            Assert.Equal(oracle.SByte, simple.SByte);
 
-            Assert.AreEqual(oracle.UShort, simple.UShort);
-            Assert.AreEqual(oracle.Short, simple.Short);
+            Assert.Equal(oracle.UShort, simple.UShort);
+            Assert.Equal(oracle.Short, simple.Short);
 
-            Assert.AreEqual(oracle.UInt, simple.UInt);
-            Assert.AreEqual(oracle.Int, simple.Int);
+            Assert.Equal(oracle.UInt, simple.UInt);
+            Assert.Equal(oracle.Int, simple.Int);
 
-            Assert.AreEqual(oracle.ULong, simple.ULong);
-            Assert.AreEqual(oracle.Long, simple.Long);
+            Assert.Equal(oracle.ULong, simple.ULong);
+            Assert.Equal(oracle.Long, simple.Long);
 
-            Assert.AreEqual(oracle.Float, simple.Float);
-            Assert.AreEqual(oracle.Double, simple.Double);
-            Assert.AreEqual(oracle.String, simple.String);
+            Assert.Equal(oracle.Float, simple.Float);
+            Assert.Equal(oracle.Double, simple.Double);
+            Assert.Equal(oracle.String, simple.String);
 
             return size;
         }
@@ -109,25 +109,25 @@ namespace FlatSharpTests
             var oracle = Oracle.BasicTypes.GetRootAsBasicTypes(
                 new FlatBuffers.ByteBuffer(memory.Slice(0, size).ToArray()));
 
-            Assert.IsTrue(oracle.Bool);
-            Assert.AreEqual(oracle.Byte, simple.Byte);
-            Assert.AreEqual(oracle.SByte, simple.SByte);
+            Assert.True(oracle.Bool);
+            Assert.Equal(oracle.Byte, simple.Byte);
+            Assert.Equal(oracle.SByte, simple.SByte);
 
-            Assert.AreEqual(oracle.UShort, simple.UShort);
-            Assert.AreEqual(oracle.Short, simple.Short);
+            Assert.Equal(oracle.UShort, simple.UShort);
+            Assert.Equal(oracle.Short, simple.Short);
 
-            Assert.AreEqual(oracle.UInt, simple.UInt);
-            Assert.AreEqual(oracle.Int, simple.Int);
+            Assert.Equal(oracle.UInt, simple.UInt);
+            Assert.Equal(oracle.Int, simple.Int);
 
-            Assert.AreEqual(oracle.ULong, simple.ULong);
-            Assert.AreEqual(oracle.Long, simple.Long);
+            Assert.Equal(oracle.ULong, simple.ULong);
+            Assert.Equal(oracle.Long, simple.Long);
 
-            Assert.AreEqual(oracle.Float, simple.Float);
-            Assert.AreEqual(oracle.Double, simple.Double);
-            Assert.AreEqual(oracle.String, simple.String);
+            Assert.Equal(oracle.Float, simple.Float);
+            Assert.Equal(oracle.Double, simple.Double);
+            Assert.Equal(oracle.String, simple.String);
         }
 
-        [TestMethod]
+        [Fact]
         public void LinkedList()
         {
             var simple = new TestLinkedListNode
@@ -146,12 +146,12 @@ namespace FlatSharpTests
             var oracle = Oracle.LinkedListNode.GetRootAsLinkedListNode(
                 new FlatBuffers.ByteBuffer(memory.Slice(0, size).ToArray()));
 
-            Assert.AreEqual(oracle.Value, simple.Value);
-            Assert.AreEqual(oracle.Next?.Value, simple.Next.Value);
-            Assert.IsNull(oracle.Next?.Next);
+            Assert.Equal(oracle.Value, simple.Value);
+            Assert.Equal(oracle.Next?.Value, simple.Next.Value);
+            Assert.Null(oracle.Next?.Next);
         }
 
-        [TestMethod]
+        [Fact]
         public void StructWithinTable()
         {
             LocationHolder holder = new LocationHolder
@@ -172,26 +172,26 @@ namespace FlatSharpTests
             var oracle = Oracle.LocationHolder.GetRootAsLocationHolder(
                 new FlatBuffers.ByteBuffer(memory.Slice(0, size).ToArray()));
 
-            Assert.AreEqual(holder.Fake, oracle.Fake);
+            Assert.Equal(holder.Fake, oracle.Fake);
 
-            Assert.AreEqual(holder.Location.X, oracle.SingleLocation.Value.X);
-            Assert.AreEqual(holder.Location.Y, oracle.SingleLocation.Value.Y);
-            Assert.AreEqual(holder.Location.Z, oracle.SingleLocation.Value.Z);
+            Assert.Equal(holder.Location.X, oracle.SingleLocation.Value.X);
+            Assert.Equal(holder.Location.Y, oracle.SingleLocation.Value.Y);
+            Assert.Equal(holder.Location.Z, oracle.SingleLocation.Value.Z);
 
-            Assert.AreEqual(holder.LocationVector.Count, oracle.LocationVectorLength);
+            Assert.Equal(holder.LocationVector.Count, oracle.LocationVectorLength);
 
             for (int i = 0; i < holder.LocationVector.Count; ++i)
             {
                 var holderLoc = holder.LocationVector[i];
                 var oracleLoc = oracle.LocationVector(i);
 
-                Assert.AreEqual(holderLoc.X, oracleLoc.Value.X);
-                Assert.AreEqual(holderLoc.Y, oracleLoc.Value.Y);
-                Assert.AreEqual(holderLoc.Z, oracleLoc.Value.Z);
+                Assert.Equal(holderLoc.X, oracleLoc.Value.X);
+                Assert.Equal(holderLoc.Y, oracleLoc.Value.Y);
+                Assert.Equal(holderLoc.Z, oracleLoc.Value.Z);
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void ScalarVectors()
         {
             ScalarVectorsTable table = new ScalarVectorsTable
@@ -208,33 +208,33 @@ namespace FlatSharpTests
             var oracle = Oracle.Vectors.GetRootAsVectors(
                 new FlatBuffers.ByteBuffer(memory.Slice(0, size).ToArray()));
 
-            Assert.AreEqual(table.IntVector.Count, oracle.IntVectorLength);
-            Assert.AreEqual(table.LongVector.Count, oracle.LongVectorLength);
-            Assert.AreEqual(table.ByteVector1.Count, oracle.ByteVector1Length);
-            Assert.AreEqual(table.ByteVector2.Value.Length, oracle.ByteVector2Length);
+            Assert.Equal(table.IntVector.Count, oracle.IntVectorLength);
+            Assert.Equal(table.LongVector.Count, oracle.LongVectorLength);
+            Assert.Equal(table.ByteVector1.Count, oracle.ByteVector1Length);
+            Assert.Equal(table.ByteVector2.Value.Length, oracle.ByteVector2Length);
 
             for (int i = 0; i < table.IntVector.Count; ++i)
             {
-                Assert.AreEqual(table.IntVector[i], oracle.IntVector(i));
+                Assert.Equal(table.IntVector[i], oracle.IntVector(i));
             }
 
             for (int i = 0; i < table.LongVector.Count; ++i)
             {
-                Assert.AreEqual(table.LongVector[i], oracle.LongVector(i));
+                Assert.Equal(table.LongVector[i], oracle.LongVector(i));
             }
 
             for (int i = 0; i < table.ByteVector1.Count; ++i)
             {
-                Assert.AreEqual(table.ByteVector1[i], oracle.ByteVector1(i));
+                Assert.Equal(table.ByteVector1[i], oracle.ByteVector1(i));
             }
 
             for (int i = 0; i < table.ByteVector2.Value.Length; ++i)
             {
-                Assert.AreEqual(table.ByteVector2.Value.Span[i], oracle.ByteVector2(i));
+                Assert.Equal(table.ByteVector2.Value.Span[i], oracle.ByteVector2(i));
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void FiveByteStructVector()
         {
             FiveByteStructTable table = new FiveByteStructTable
@@ -254,19 +254,19 @@ namespace FlatSharpTests
             var oracle = Oracle.FiveByteStructTable.GetRootAsFiveByteStructTable(
                 new FlatBuffers.ByteBuffer(buffer.ToArray()));
 
-            Assert.AreEqual(3, oracle.VectorLength);
+            Assert.Equal(3, oracle.VectorLength);
 
-            Assert.AreEqual(1, oracle.Vector(0).Value.Int);
-            Assert.AreEqual((byte)1, oracle.Vector(0).Value.Byte);
+            Assert.Equal(1, oracle.Vector(0).Value.Int);
+            Assert.Equal((byte)1, oracle.Vector(0).Value.Byte);
 
-            Assert.AreEqual(2, oracle.Vector(1).Value.Int);
-            Assert.AreEqual((byte)2, oracle.Vector(1).Value.Byte);
+            Assert.Equal(2, oracle.Vector(1).Value.Int);
+            Assert.Equal((byte)2, oracle.Vector(1).Value.Byte);
 
-            Assert.AreEqual(3, oracle.Vector(2).Value.Int);
-            Assert.AreEqual((byte)3, oracle.Vector(2).Value.Byte);
+            Assert.Equal(3, oracle.Vector(2).Value.Int);
+            Assert.Equal((byte)3, oracle.Vector(2).Value.Byte);
         }
 
-        [TestMethod]
+        [Fact]
         public void Union_Table_BasicTypes()
         {
             var simple = new BasicTypes
@@ -296,28 +296,28 @@ namespace FlatSharpTests
             var oracle = Oracle.UnionTable.GetRootAsUnionTable(
                 new FlatBuffers.ByteBuffer(memory.Slice(0, size).ToArray()));
 
-            Assert.AreEqual(1, (int)oracle.ValueType);
+            Assert.Equal(1, (int)oracle.ValueType);
             var bt = oracle.Value<Oracle.BasicTypes>().Value;
 
-            Assert.IsTrue(bt.Bool);
-            Assert.AreEqual(bt.Byte, simple.Byte);
-            Assert.AreEqual(bt.SByte, simple.SByte);
+            Assert.True(bt.Bool);
+            Assert.Equal(bt.Byte, simple.Byte);
+            Assert.Equal(bt.SByte, simple.SByte);
 
-            Assert.AreEqual(bt.UShort, simple.UShort);
-            Assert.AreEqual(bt.Short, simple.Short);
+            Assert.Equal(bt.UShort, simple.UShort);
+            Assert.Equal(bt.Short, simple.Short);
 
-            Assert.AreEqual(bt.UInt, simple.UInt);
-            Assert.AreEqual(bt.Int, simple.Int);
+            Assert.Equal(bt.UInt, simple.UInt);
+            Assert.Equal(bt.Int, simple.Int);
 
-            Assert.AreEqual(bt.ULong, simple.ULong);
-            Assert.AreEqual(bt.Long, simple.Long);
+            Assert.Equal(bt.ULong, simple.ULong);
+            Assert.Equal(bt.Long, simple.Long);
 
-            Assert.AreEqual(bt.Float, simple.Float);
-            Assert.AreEqual(bt.Double, simple.Double);
-            Assert.AreEqual(bt.String, simple.String);
+            Assert.Equal(bt.Float, simple.Float);
+            Assert.Equal(bt.Double, simple.Double);
+            Assert.Equal(bt.String, simple.String);
         }
 
-        [TestMethod]
+        [Fact]
         public void Union_String()
         {
             var table = new UnionTable
@@ -334,11 +334,10 @@ namespace FlatSharpTests
             // There is nothing to assert here, since the google C# SDK does not support reading strings
             // out of a union. All indications are that we are doing it right, but there's no way to test
             // this particular scenario.
-            Assert.AreEqual(3, (int)oracle.ValueType);
-            Assert.Inconclusive();
+            Assert.Equal(3, (int)oracle.ValueType);
         }
 
-        [TestMethod]
+        [Fact]
         public void Union_NotSet()
         {
             var table = new UnionTable
@@ -352,10 +351,10 @@ namespace FlatSharpTests
             var oracle = Oracle.UnionTable.GetRootAsUnionTable(
                 new FlatBuffers.ByteBuffer(memory.Slice(0, size).ToArray()));
 
-            Assert.AreEqual(0, (int)oracle.ValueType);
+            Assert.Equal(0, (int)oracle.ValueType);
         }
 
-        [TestMethod]
+        [Fact]
         public void Union_Struct_Location()
         {
             var location = new Location
@@ -374,15 +373,15 @@ namespace FlatSharpTests
             var oracle = Oracle.UnionTable.GetRootAsUnionTable(
                 new FlatBuffers.ByteBuffer(memory.Slice(0, size).ToArray()));
 
-            Assert.AreEqual(2, (int)oracle.ValueType);
+            Assert.Equal(2, (int)oracle.ValueType);
             var bt = oracle.Value<Oracle.Location>().Value;
 
-            Assert.AreEqual(bt.X, location.X);
-            Assert.AreEqual(bt.Y, location.Y);
-            Assert.AreEqual(bt.Z, location.Z);
+            Assert.Equal(bt.X, location.X);
+            Assert.Equal(bt.Y, location.Y);
+            Assert.Equal(bt.Z, location.Z);
         }
 
-        [TestMethod]
+        [Fact]
         public void NestedStruct_InnerStructSet()
         {
             var nested = new NestedStructs
@@ -400,14 +399,14 @@ namespace FlatSharpTests
             var oracle = Oracle.NestedStructs.GetRootAsNestedStructs(
                 new FlatBuffers.ByteBuffer(memory.Slice(0, size).ToArray()));
 
-            Assert.IsNotNull(oracle.Outer);
+            Assert.NotNull(oracle.Outer);
 
             var outer = oracle.Outer.Value;
-            Assert.AreEqual(100, outer.A);
-            Assert.AreEqual(401, outer.Inner.A);
+            Assert.Equal(100, outer.A);
+            Assert.Equal(401, outer.Inner.A);
         }
 
-        [TestMethod]
+        [Fact]
         public void NestedStruct_InnerStructNotSet()
         {
             var nested = new NestedStructs
@@ -425,14 +424,14 @@ namespace FlatSharpTests
             var oracle = Oracle.NestedStructs.GetRootAsNestedStructs(
                 new FlatBuffers.ByteBuffer(memory.Slice(0, size).ToArray()));
 
-            Assert.IsNotNull(oracle.Outer);
+            Assert.NotNull(oracle.Outer);
 
             var outer = oracle.Outer.Value;
-            Assert.AreEqual(100, outer.A);
-            Assert.AreEqual(0, outer.Inner.A);
+            Assert.Equal(100, outer.A);
+            Assert.Equal(0, outer.Inner.A);
         }
 
-        [TestMethod]
+        [Fact]
         public void VectorOfUnion()
         {
             ArrayVectorOfUnionTable table = new ArrayVectorOfUnionTable
@@ -451,25 +450,25 @@ namespace FlatSharpTests
             var oracle = Oracle.UnionVectorTable.GetRootAsUnionVectorTable(
                 new FlatBuffers.ByteBuffer(memory.Slice(0, size).ToArray()));
 
-            Assert.AreEqual(3, oracle.ValueLength);
+            Assert.Equal(3, oracle.ValueLength);
 
-            Assert.AreEqual(Oracle.Union.BasicTypes, oracle.ValueType(0));
-            Assert.AreEqual(Oracle.Union.Location, oracle.ValueType(1));
-            Assert.AreEqual(Oracle.Union.stringValue, oracle.ValueType(2));
+            Assert.Equal(Oracle.Union.BasicTypes, oracle.ValueType(0));
+            Assert.Equal(Oracle.Union.Location, oracle.ValueType(1));
+            Assert.Equal(Oracle.Union.stringValue, oracle.ValueType(2));
 
             var basicTypes = oracle.Value<Oracle.BasicTypes>(0).Value;
-            Assert.AreEqual(7, basicTypes.Int);
+            Assert.Equal(7, basicTypes.Int);
 
             var location = oracle.Value<Oracle.Location>(1).Value;
-            Assert.AreEqual(1, location.X);
-            Assert.AreEqual(2, location.Y);
-            Assert.AreEqual(3, location.Z);
+            Assert.Equal(1, location.X);
+            Assert.Equal(2, location.Y);
+            Assert.Equal(3, location.Z);
 
             string stringValue = oracle.ValueAsString(2);
-            Assert.AreEqual("foobar", stringValue);
+            Assert.Equal("foobar", stringValue);
         }
 
-        [TestMethod]
+        [Fact]
         public void SortedVectors()
         {
             var test = new SortedVectorTest<SortedVectorItem<int>>
@@ -501,7 +500,7 @@ namespace FlatSharpTests
             VerifySorted<IList<SortedVectorItem<double>>, SortedVectorItem<double>, double>(parsed.Double, i => i.Value, i => table.Double(i).Value.Value, t => table.DoubleByKey(t) != null, Comparer<double>.Default);
         }
 
-        [TestMethod]
+        [Fact]
         public void SortedVectors_DefaultValue()
         {
             var test = new SortedVectorTest<SortedVectorDefaultValueItem>
@@ -513,8 +512,8 @@ namespace FlatSharpTests
             SortedVectorDefaultValueItem myItem = new SortedVectorDefaultValueItem();
             byte[] data = new byte[1024 * 1024];
             int bytesWritten = FlatBufferSerializer.Default.Serialize(myItem, data);
-            Assert.AreEqual(5, myItem.Value);
-            //Assert.AreEqual(18, bytesWritten); // table offset (4), vtable offset (4), vtable headers (6), data (4)
+            Assert.Equal(5, myItem.Value);
+            //Assert.Equal(18, bytesWritten); // table offset (4), vtable offset (4), vtable headers (6), data (4)
 
             const int Iterations = 1000;
             Random random = new Random();
@@ -548,12 +547,12 @@ namespace FlatSharpTests
                 TKey current = keyGet(items[i]);
                 TKey oracle = oracleGet(i);
 
-                Assert.IsTrue(comparer.Compare(previous, current) <= 0);
-                Assert.IsTrue(comparer.Compare(previous, oracle) <= 0);
-                Assert.IsTrue(comparer.Compare(current, oracle) == 0);
+                Assert.True(comparer.Compare(previous, current) <= 0);
+                Assert.True(comparer.Compare(previous, oracle) <= 0);
+                Assert.True(comparer.Compare(current, oracle) == 0);
 
                 // FlatBuffers c# has a bug where binary search is broken when using default values.
-                // Assert.IsTrue(oracleContains(current));
+                // Assert.True(oracleContains(current));
             }
         }
 

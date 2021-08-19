@@ -21,15 +21,15 @@ namespace FlatSharpTests
     using System.Runtime.InteropServices;
     using FlatSharp;
     using FlatSharp.Attributes;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
     /// <summary>
     /// Verifies the IFlatBufferAddressableStruct interface is implemented correctly.
     /// </summary>
-    [TestClass]
+    
     public class AddressableStructTests
     {
-        [TestMethod]
+        [Fact]
         public void GreedyStructs_NotAddressable()
         {
             Table table = new()
@@ -53,16 +53,16 @@ namespace FlatSharpTests
 
             for (int i = 0; i < parsed.Points.Count; ++i)
             {
-                Assert.IsNotInstanceOfType(parsed.Points[i], typeof(IFlatBufferAddressableStruct));
+                Assert.False(typeof(IFlatBufferAddressableStruct).IsAssignableFrom(parsed.JaggedList[i].GetType()));
             }
 
             for (int i = 0; i < parsed.JaggedList.Count; ++i)
             {
-                Assert.IsNotInstanceOfType(parsed.JaggedList[i], typeof(IFlatBufferAddressableStruct));
+                Assert.False(typeof(IFlatBufferAddressableStruct).IsAssignableFrom(parsed.JaggedList[i].GetType()));
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void AddressableStructTest_AccessEachItem()
         {
             Table table = new()
@@ -90,30 +90,30 @@ namespace FlatSharpTests
 
             for (int i = 0; i < parsed.Points.Count; ++i)
             {
-                Assert.AreEqual(i + 1, parsed.Points[i].X);
-                Assert.AreEqual(i + 1, parsed.Points[i].Y);
-                Assert.AreEqual(i + 1, parsed.Points[i].Z);
+                Assert.Equal(i + 1, parsed.Points[i].X);
+                Assert.Equal(i + 1, parsed.Points[i].Y);
+                Assert.Equal(i + 1, parsed.Points[i].Z);
 
-                Assert.IsTrue(parsed.Points[i].TryGetVec3(out var vec3));
+                Assert.True(parsed.Points[i].TryGetVec3(out var vec3));
 
-                Assert.AreEqual(i + 1, vec3.X);
-                Assert.AreEqual(i + 1, vec3.Y);
-                Assert.AreEqual(i + 1, vec3.Z);
+                Assert.Equal(i + 1, vec3.X);
+                Assert.Equal(i + 1, vec3.Y);
+                Assert.Equal(i + 1, vec3.Z);
             }
 
             for (int i = 0; i < parsed.JaggedList.Count; ++i)
             {
-                Assert.AreEqual(i + 1, parsed.JaggedList[i].AlignmentImp);
-                Assert.AreEqual(i + 1, parsed.JaggedList[i].Value);
+                Assert.Equal(i + 1, parsed.JaggedList[i].AlignmentImp);
+                Assert.Equal(i + 1, parsed.JaggedList[i].Value);
 
-                Assert.IsTrue(parsed.JaggedList[i].TryGetStruct(out var s));
+                Assert.True(parsed.JaggedList[i].TryGetStruct(out var s));
 
-                Assert.AreEqual(i + 1, s.AlignmentImp);
-                Assert.AreEqual(i + 1, s.Value);
+                Assert.Equal(i + 1, s.AlignmentImp);
+                Assert.Equal(i + 1, s.Value);
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void AddressableStructTest_ManualTraversal()
         {
             Table table = new()
@@ -150,9 +150,9 @@ namespace FlatSharpTests
                     System.Numerics.Vector3 vec3 = MemoryMarshal.Cast<byte, System.Numerics.Vector3>(
                         buffer.AsSpan().Slice(offset, size))[0];
 
-                    Assert.AreEqual(i + 1, vec3.X);
-                    Assert.AreEqual(i + 1, vec3.Y);
-                    Assert.AreEqual(i + 1, vec3.Z);
+                    Assert.Equal(i + 1, vec3.X);
+                    Assert.Equal(i + 1, vec3.Y);
+                    Assert.Equal(i + 1, vec3.Z);
 
                     offset += size;
                     offset += SerializationHelpers.GetAlignmentError(offset, alignment);
@@ -170,8 +170,8 @@ namespace FlatSharpTests
                     JaggedValueStruct vec3 = MemoryMarshal.Cast<byte, JaggedValueStruct>(
                         buffer.AsSpan().Slice(offset))[0];
 
-                    Assert.AreEqual(i + 1, vec3.AlignmentImp);
-                    Assert.AreEqual(i + 1, vec3.Value);
+                    Assert.Equal(i + 1, vec3.AlignmentImp);
+                    Assert.Equal(i + 1, vec3.Value);
 
                     offset += size;
                     offset += SerializationHelpers.GetAlignmentError(offset, alignment);
@@ -205,15 +205,15 @@ namespace FlatSharpTests
             {
                 if (this is IFlatBufferAddressableStruct @struct)
                 {
-                    Assert.AreEqual(12, @struct.Size);
-                    Assert.AreEqual(4, @struct.Alignment);
-                    Assert.AreEqual(0, @struct.Offset % 4);
-                    Assert.AreEqual(12, Marshal.SizeOf<System.Numerics.Vector3>());
+                    Assert.Equal(12, @struct.Size);
+                    Assert.Equal(4, @struct.Alignment);
+                    Assert.Equal(0, @struct.Offset % 4);
+                    Assert.Equal(12, Marshal.SizeOf<System.Numerics.Vector3>());
 
                     var span = MemoryMarshal.Cast<byte, System.Numerics.Vector3>(
                         @struct.InputBuffer.GetByteMemory(@struct.Offset, @struct.Size).Span);
 
-                    Assert.AreEqual(1, span.Length);
+                    Assert.Equal(1, span.Length);
 
                     vec3 = span[0];
                     return true;
@@ -237,9 +237,9 @@ namespace FlatSharpTests
             {
                 if (this is IFlatBufferAddressableStruct @struct)
                 {
-                    Assert.AreEqual(9, @struct.Size);
-                    Assert.AreEqual(8, @struct.Alignment);
-                    Assert.AreEqual(0, @struct.Offset % 8);
+                    Assert.Equal(9, @struct.Size);
+                    Assert.Equal(8, @struct.Alignment);
+                    Assert.Equal(0, @struct.Offset % 8);
 
                     int nativeSize = Marshal.SizeOf<JaggedValueStruct>();
 
@@ -247,12 +247,12 @@ namespace FlatSharpTests
                     nextItem += SerializationHelpers.GetAlignmentError(nextItem, @struct.Alignment);
                     int paddedSize = nextItem - @struct.Offset;
 
-                    Assert.AreEqual(nativeSize, paddedSize);
+                    Assert.Equal(nativeSize, paddedSize);
 
                     var span = MemoryMarshal.Cast<byte, JaggedValueStruct>(
                         @struct.InputBuffer.GetByteMemory(@struct.Offset, nativeSize).Span);
 
-                    Assert.AreEqual(1, span.Length);
+                    Assert.Equal(1, span.Length);
 
                     value = span[0];
                     return true;

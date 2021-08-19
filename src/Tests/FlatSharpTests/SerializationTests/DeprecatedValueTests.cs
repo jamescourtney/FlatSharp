@@ -18,17 +18,17 @@
 {
     using FlatSharp;
     using FlatSharp.Attributes;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
     using System;
     using System.Diagnostics;
     
     /// <summary>
     /// Tests default values on a table.
     /// </summary>
-    [TestClass]
+    
     public class DeprecatedValueTests
     {
-        [TestMethod]
+        [Fact]
         public void Ignore_DeprecatedValueOnRead()
         {
             // hand-craft a table here:
@@ -48,21 +48,22 @@
 
             var parsed = FlatBufferSerializer.Default.Parse<DeprecatedTable>(data);
 
-            Assert.AreEqual(0, parsed.Value);
-            Assert.AreEqual(255L, parsed.Long);
+            Assert.Equal(0, parsed.Value);
+            Assert.Equal(255L, parsed.Long);
 
             var nonDeprecatedParsed = FlatBufferSerializer.Default.Parse<NonDeprecatedTable>(data);
 
-            Assert.AreEqual(123, nonDeprecatedParsed.Value);
-            Assert.AreEqual(255L, nonDeprecatedParsed.Long);
+            Assert.Equal(123, nonDeprecatedParsed.Value);
+            Assert.Equal(255L, nonDeprecatedParsed.Long);
         }
 
-        [TestMethod]
+        [Fact]
         public void Ignore_DeprecatedValueOnWrite()
         {
             if (Debugger.IsAttached)
             {
-                Assert.Inconclusive("This test has a wonderful way of crashing Visual Studio when the debugger is attached. It runs fine without the debugger attached.");
+                // This test has a wonderful way of crashing Visual Studio when the debugger is attached. It runs fine without the debugger attached.
+                return;
             }
 
             var deprecatedTable = new DeprecatedTable
@@ -88,12 +89,12 @@
             int bytesWritten = FlatBufferSerializer.Default.Serialize(deprecatedTable, buffer);
             byte[] actualBytes = buffer.Slice(0, bytesWritten).ToArray();
 
-            Assert.IsTrue(data.AsSpan().SequenceEqual(actualBytes));
+            Assert.True(data.AsSpan().SequenceEqual(actualBytes));
 
             var nonDeprecatedParsed = FlatBufferSerializer.Default.Parse<NonDeprecatedTable>(actualBytes);
 
-            Assert.AreEqual(0, nonDeprecatedParsed.Value);
-            Assert.AreEqual(255L, nonDeprecatedParsed.Long);
+            Assert.Equal(0, nonDeprecatedParsed.Value);
+            Assert.Equal(255L, nonDeprecatedParsed.Long);
         }
 
         [FlatBufferTable]

@@ -21,271 +21,271 @@ namespace FlatSharpTests
     using System.Collections.ObjectModel;
     using FlatSharp;
     using FlatSharp.Attributes;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
     /// <summary>
     /// Tests that generated deserializers behave the way we expect.
     /// </summary>
-    [TestClass]
+    
     public class DeserializationOptionsTests
     {
         private static readonly string[] Strings = new[] { string.Empty, "a", "ab", "abc", "abcd", "abcde" };
         private static readonly byte[] Bytes = new byte[] { 1, 2, 3, 4, 5, 6 };
         private static readonly byte[] InputBuffer = new byte[10240];
 
-        [TestMethod]
+        [Fact]
         public void DeserializationOption_Lazy_IList()
         {
             var table = this.SerializeAndParse<IList<string>>(FlatBufferDeserializationOption.Lazy, Strings);
 
-            Assert.AreEqual(typeof(FlatBufferVector<,>), table.Vector.GetType().BaseType.GetGenericTypeDefinition());
-            Assert.IsFalse(object.ReferenceEquals(table.Vector, table.Vector));
+            Assert.Equal(typeof(FlatBufferVector<,>), table.Vector.GetType().BaseType.GetGenericTypeDefinition());
+            Assert.False(object.ReferenceEquals(table.Vector, table.Vector));
 
             var vector = table.Vector;
-            Assert.IsFalse(object.ReferenceEquals(vector[5], vector[5]));
-            Assert.IsFalse(object.ReferenceEquals(table.First, table.First));
-            Assert.IsFalse(object.ReferenceEquals(table.Second, table.Second));
+            Assert.False(object.ReferenceEquals(vector[5], vector[5]));
+            Assert.False(object.ReferenceEquals(table.First, table.First));
+            Assert.False(object.ReferenceEquals(table.Second, table.Second));
 
-            Assert.AreEqual(Strings.Length, table.Vector.Count);
-            Assert.ThrowsException<NotMutableException>(() => table.Vector[0] = "foobar");
-            Assert.ThrowsException<NotMutableException>(() => table.Vector.Clear());
-            Assert.ThrowsException<NotMutableException>(() => table.First.First = 3);
-            Assert.ThrowsException<NotMutableException>(() => table.First = null);
+            Assert.Equal(Strings.Length, table.Vector.Count);
+            Assert.Throws<NotMutableException>(() => table.Vector[0] = "foobar");
+            Assert.Throws<NotMutableException>(() => table.Vector.Clear());
+            Assert.Throws<NotMutableException>(() => table.First.First = 3);
+            Assert.Throws<NotMutableException>(() => table.First = null);
         }
 
-        [TestMethod]
+        [Fact]
         public void DeserializationOption_Lazy_IReadOnlyList()
         {
             var table = this.SerializeAndParse<IReadOnlyList<string>>(FlatBufferDeserializationOption.Lazy, Strings);
 
-            Assert.AreEqual(typeof(FlatBufferVector<,>), table.Vector.GetType().BaseType.GetGenericTypeDefinition());
-            Assert.IsFalse(object.ReferenceEquals(table.Vector, table.Vector));
-            Assert.IsFalse(object.ReferenceEquals(table.Vector[5], table.Vector[5]));
-            Assert.IsFalse(object.ReferenceEquals(table.First, table.First));
-            Assert.IsFalse(object.ReferenceEquals(table.Second, table.Second));
-            Assert.AreEqual(Strings.Length, table.Vector.Count);
-            Assert.ThrowsException<NotMutableException>(() => table.First.First = 3);
-            Assert.ThrowsException<NotMutableException>(() => table.First = null);
+            Assert.Equal(typeof(FlatBufferVector<,>), table.Vector.GetType().BaseType.GetGenericTypeDefinition());
+            Assert.False(object.ReferenceEquals(table.Vector, table.Vector));
+            Assert.False(object.ReferenceEquals(table.Vector[5], table.Vector[5]));
+            Assert.False(object.ReferenceEquals(table.First, table.First));
+            Assert.False(object.ReferenceEquals(table.Second, table.Second));
+            Assert.Equal(Strings.Length, table.Vector.Count);
+            Assert.Throws<NotMutableException>(() => table.First.First = 3);
+            Assert.Throws<NotMutableException>(() => table.First = null);
         }
 
-        [TestMethod]
+        [Fact]
         public void DeserializationOption_Lazy_Array()
         {
             var table = this.SerializeAndParse<string[]>(FlatBufferDeserializationOption.Lazy, Strings);
 
-            Assert.IsFalse(object.ReferenceEquals(table.Vector, table.Vector));
-            Assert.IsFalse(object.ReferenceEquals(table.Vector[5], table.Vector[5]));
-            Assert.IsFalse(object.ReferenceEquals(table.First, table.First));
-            Assert.IsFalse(object.ReferenceEquals(table.Second, table.Second));
-            Assert.AreEqual(Strings.Length, table.Vector.Length);
-            Assert.ThrowsException<NotMutableException>(() => table.First.First = 3);
-            Assert.ThrowsException<NotMutableException>(() => table.First = null);
+            Assert.False(object.ReferenceEquals(table.Vector, table.Vector));
+            Assert.False(object.ReferenceEquals(table.Vector[5], table.Vector[5]));
+            Assert.False(object.ReferenceEquals(table.First, table.First));
+            Assert.False(object.ReferenceEquals(table.Second, table.Second));
+            Assert.Equal(Strings.Length, table.Vector.Length);
+            Assert.Throws<NotMutableException>(() => table.First.First = 3);
+            Assert.Throws<NotMutableException>(() => table.First = null);
         }
 
-        [TestMethod]
+        [Fact]
         public void DeserializationOption_Lazy_Memory()
         {
             var table = this.SerializeAndParse<Memory<byte>>(FlatBufferDeserializationOption.Lazy, Bytes);
 
             // Each span overlaps the input buffer. Means we are not eagerly copying out.
-            Assert.IsTrue(table.Vector.Span.Overlaps(InputBuffer));
-            Assert.IsFalse(object.ReferenceEquals(table.First, table.First));
-            Assert.IsFalse(object.ReferenceEquals(table.Second, table.Second));
+            Assert.True(table.Vector.Span.Overlaps(InputBuffer));
+            Assert.False(object.ReferenceEquals(table.First, table.First));
+            Assert.False(object.ReferenceEquals(table.Second, table.Second));
 
-            Assert.AreEqual(Bytes.Length, table.Vector.Length);
-            Assert.ThrowsException<NotMutableException>(() => table.First.First = 3);
-            Assert.ThrowsException<NotMutableException>(() => table.First = null);
+            Assert.Equal(Bytes.Length, table.Vector.Length);
+            Assert.Throws<NotMutableException>(() => table.First.First = 3);
+            Assert.Throws<NotMutableException>(() => table.First = null);
         }
 
-        [TestMethod]
+        [Fact]
         public void DeserializationOption_Lazy_ReadOnlyMemory()
         {
             var table = this.SerializeAndParse<ReadOnlyMemory<byte>>(FlatBufferDeserializationOption.Lazy, Bytes);
 
             // Each span overlaps the input buffer. Means we are not eagerly copying out.
-            Assert.IsTrue(table.Vector.Span.Overlaps(InputBuffer));
-            Assert.IsFalse(object.ReferenceEquals(table.First, table.First));
-            Assert.IsFalse(object.ReferenceEquals(table.Second, table.Second));
+            Assert.True(table.Vector.Span.Overlaps(InputBuffer));
+            Assert.False(object.ReferenceEquals(table.First, table.First));
+            Assert.False(object.ReferenceEquals(table.Second, table.Second));
 
-            Assert.AreEqual(Bytes.Length, table.Vector.Length);
-            Assert.ThrowsException<NotMutableException>(() => table.First.First = 3);
-            Assert.ThrowsException<NotMutableException>(() => table.First = null);
+            Assert.Equal(Bytes.Length, table.Vector.Length);
+            Assert.Throws<NotMutableException>(() => table.First.First = 3);
+            Assert.Throws<NotMutableException>(() => table.First = null);
         }
 
-        [TestMethod]
+        [Fact]
         public void DeserializationOption_PropertyCache_IList()
         {
             var table = this.SerializeAndParse<IList<string>>(FlatBufferDeserializationOption.PropertyCache, Strings);
 
-            Assert.AreEqual(typeof(FlatBufferVector<,>), table.Vector.GetType().BaseType.GetGenericTypeDefinition());
-            Assert.IsTrue(object.ReferenceEquals(table.Vector, table.Vector));
+            Assert.Equal(typeof(FlatBufferVector<,>), table.Vector.GetType().BaseType.GetGenericTypeDefinition());
+            Assert.True(object.ReferenceEquals(table.Vector, table.Vector));
 
             var vector = table.Vector;
-            Assert.IsFalse(object.ReferenceEquals(vector[5], vector[5]));
-            Assert.IsTrue(object.ReferenceEquals(table.First, table.First));
-            Assert.IsTrue(object.ReferenceEquals(table.Second, table.Second));
+            Assert.False(object.ReferenceEquals(vector[5], vector[5]));
+            Assert.True(object.ReferenceEquals(table.First, table.First));
+            Assert.True(object.ReferenceEquals(table.Second, table.Second));
 
-            Assert.AreEqual(Strings.Length, table.Vector.Count);
-            Assert.ThrowsException<NotMutableException>(() => table.Vector[0] = "foobar");
-            Assert.ThrowsException<NotMutableException>(() => table.Vector.Clear());
-            Assert.ThrowsException<NotMutableException>(() => table.First.First = 3);
-            Assert.ThrowsException<NotMutableException>(() => table.First = null);
+            Assert.Equal(Strings.Length, table.Vector.Count);
+            Assert.Throws<NotMutableException>(() => table.Vector[0] = "foobar");
+            Assert.Throws<NotMutableException>(() => table.Vector.Clear());
+            Assert.Throws<NotMutableException>(() => table.First.First = 3);
+            Assert.Throws<NotMutableException>(() => table.First = null);
         }
 
-        [TestMethod]
+        [Fact]
         public void DeserializationOption_PropertyCache_IReadOnlyList()
         {
             var table = this.SerializeAndParse<IReadOnlyList<string>>(FlatBufferDeserializationOption.PropertyCache, Strings);
 
-            Assert.AreEqual(typeof(FlatBufferVector<,>), table.Vector.GetType().BaseType.GetGenericTypeDefinition());
-            Assert.IsTrue(object.ReferenceEquals(table.Vector, table.Vector));
-            Assert.IsFalse(object.ReferenceEquals(table.Vector[5], table.Vector[5]));
-            Assert.IsTrue(object.ReferenceEquals(table.First, table.First));
-            Assert.IsTrue(object.ReferenceEquals(table.Second, table.Second));
-            Assert.AreEqual(Strings.Length, table.Vector.Count);
-            Assert.ThrowsException<NotMutableException>(() => table.First.First = 3);
-            Assert.ThrowsException<NotMutableException>(() => table.First = null);
+            Assert.Equal(typeof(FlatBufferVector<,>), table.Vector.GetType().BaseType.GetGenericTypeDefinition());
+            Assert.True(object.ReferenceEquals(table.Vector, table.Vector));
+            Assert.False(object.ReferenceEquals(table.Vector[5], table.Vector[5]));
+            Assert.True(object.ReferenceEquals(table.First, table.First));
+            Assert.True(object.ReferenceEquals(table.Second, table.Second));
+            Assert.Equal(Strings.Length, table.Vector.Count);
+            Assert.Throws<NotMutableException>(() => table.First.First = 3);
+            Assert.Throws<NotMutableException>(() => table.First = null);
         }
 
-        [TestMethod]
+        [Fact]
         public void DeserializationOption_PropertyCache_Array()
         {
             var table = this.SerializeAndParse<string[]>(FlatBufferDeserializationOption.PropertyCache, Strings);
 
-            Assert.IsTrue(object.ReferenceEquals(table.Vector, table.Vector));
-            Assert.IsTrue(object.ReferenceEquals(table.Vector[5], table.Vector[5]));
-            Assert.IsTrue(object.ReferenceEquals(table.First, table.First));
-            Assert.IsTrue(object.ReferenceEquals(table.Second, table.Second));
-            Assert.AreEqual(Strings.Length, table.Vector.Length);
-            Assert.ThrowsException<NotMutableException>(() => table.First.First = 3);
-            Assert.ThrowsException<NotMutableException>(() => table.First = null);
+            Assert.True(object.ReferenceEquals(table.Vector, table.Vector));
+            Assert.True(object.ReferenceEquals(table.Vector[5], table.Vector[5]));
+            Assert.True(object.ReferenceEquals(table.First, table.First));
+            Assert.True(object.ReferenceEquals(table.Second, table.Second));
+            Assert.Equal(Strings.Length, table.Vector.Length);
+            Assert.Throws<NotMutableException>(() => table.First.First = 3);
+            Assert.Throws<NotMutableException>(() => table.First = null);
         }
 
-        [TestMethod]
+        [Fact]
         public void DeserializationOption_PropertyCache_Memory()
         {
             var table = this.SerializeAndParse<Memory<byte>>(FlatBufferDeserializationOption.PropertyCache, Bytes);
 
             // Each span overlaps the input buffer. Means we are not eagerly copying out.
-            Assert.IsTrue(table.Vector.Span.Overlaps(InputBuffer));
-            Assert.IsTrue(object.ReferenceEquals(table.First, table.First));
-            Assert.IsTrue(object.ReferenceEquals(table.Second, table.Second));
+            Assert.True(table.Vector.Span.Overlaps(InputBuffer));
+            Assert.True(object.ReferenceEquals(table.First, table.First));
+            Assert.True(object.ReferenceEquals(table.Second, table.Second));
 
-            Assert.AreEqual(Bytes.Length, table.Vector.Length);
-            Assert.ThrowsException<NotMutableException>(() => table.First.First = 3);
-            Assert.ThrowsException<NotMutableException>(() => table.First = null);
+            Assert.Equal(Bytes.Length, table.Vector.Length);
+            Assert.Throws<NotMutableException>(() => table.First.First = 3);
+            Assert.Throws<NotMutableException>(() => table.First = null);
         }
 
-        [TestMethod]
+        [Fact]
         public void DeserializationOption_PropertyCache_ReadOnlyMemory()
         {
             var table = this.SerializeAndParse<ReadOnlyMemory<byte>>(FlatBufferDeserializationOption.PropertyCache, Bytes);
 
             // Each span overlaps the input buffer. Means we are not eagerly copying out.
-            Assert.IsTrue(table.Vector.Span.Overlaps(InputBuffer));
-            Assert.IsTrue(object.ReferenceEquals(table.First, table.First));
-            Assert.IsTrue(object.ReferenceEquals(table.Second, table.Second));
+            Assert.True(table.Vector.Span.Overlaps(InputBuffer));
+            Assert.True(object.ReferenceEquals(table.First, table.First));
+            Assert.True(object.ReferenceEquals(table.Second, table.Second));
 
-            Assert.AreEqual(Bytes.Length, table.Vector.Length);
-            Assert.ThrowsException<NotMutableException>(() => table.First.First = 3);
-            Assert.ThrowsException<NotMutableException>(() => table.First = null);
+            Assert.Equal(Bytes.Length, table.Vector.Length);
+            Assert.Throws<NotMutableException>(() => table.First.First = 3);
+            Assert.Throws<NotMutableException>(() => table.First = null);
         }
 
-        [TestMethod]
+        [Fact]
         public void DeserializationOption_VectorCache_IList()
         {
             var table = this.SerializeAndParse<IList<string>>(FlatBufferDeserializationOption.VectorCache, Strings);
 
-            Assert.AreEqual(typeof(ReadOnlyCollection<string>), table.Vector.GetType());
-            Assert.IsTrue(object.ReferenceEquals(table.Vector, table.Vector));
+            Assert.Equal(typeof(ReadOnlyCollection<string>), table.Vector.GetType());
+            Assert.True(object.ReferenceEquals(table.Vector, table.Vector));
 
             var vector = table.Vector;
-            Assert.IsTrue(object.ReferenceEquals(vector[5], vector[5]));
-            Assert.IsTrue(object.ReferenceEquals(table.First, table.First));
-            Assert.IsTrue(object.ReferenceEquals(table.Second, table.Second));
+            Assert.True(object.ReferenceEquals(vector[5], vector[5]));
+            Assert.True(object.ReferenceEquals(table.First, table.First));
+            Assert.True(object.ReferenceEquals(table.Second, table.Second));
 
-            Assert.AreEqual(Strings.Length, table.Vector.Count);
-            Assert.ThrowsException<NotSupportedException>(() => table.Vector[0] = "foobar");
-            Assert.ThrowsException<NotSupportedException>(() => table.Vector.Clear());
-            Assert.ThrowsException<NotMutableException>(() => table.First.First = 3);
-            Assert.ThrowsException<NotMutableException>(() => table.First = null);
+            Assert.Equal(Strings.Length, table.Vector.Count);
+            Assert.Throws<NotSupportedException>(() => table.Vector[0] = "foobar");
+            Assert.Throws<NotSupportedException>(() => table.Vector.Clear());
+            Assert.Throws<NotMutableException>(() => table.First.First = 3);
+            Assert.Throws<NotMutableException>(() => table.First = null);
         }
 
-        [TestMethod]
+        [Fact]
         public void DeserializationOption_VectorCache_IReadOnlyList()
         {
             var table = this.SerializeAndParse<IReadOnlyList<string>>(FlatBufferDeserializationOption.VectorCache, Strings);
 
-            Assert.AreEqual(typeof(ReadOnlyCollection<string>), table.Vector.GetType());
-            Assert.IsTrue(object.ReferenceEquals(table.Vector, table.Vector));
-            Assert.IsTrue(object.ReferenceEquals(table.Vector[5], table.Vector[5]));
-            Assert.IsTrue(object.ReferenceEquals(table.First, table.First));
-            Assert.IsTrue(object.ReferenceEquals(table.Second, table.Second));
-            Assert.AreEqual(Strings.Length, table.Vector.Count);
-            Assert.ThrowsException<NotMutableException>(() => table.First.First = 3);
-            Assert.ThrowsException<NotMutableException>(() => table.First = null);
+            Assert.Equal(typeof(ReadOnlyCollection<string>), table.Vector.GetType());
+            Assert.True(object.ReferenceEquals(table.Vector, table.Vector));
+            Assert.True(object.ReferenceEquals(table.Vector[5], table.Vector[5]));
+            Assert.True(object.ReferenceEquals(table.First, table.First));
+            Assert.True(object.ReferenceEquals(table.Second, table.Second));
+            Assert.Equal(Strings.Length, table.Vector.Count);
+            Assert.Throws<NotMutableException>(() => table.First.First = 3);
+            Assert.Throws<NotMutableException>(() => table.First = null);
         }
 
-        [TestMethod]
+        [Fact]
         public void DeserializationOption_VectorCache_Array()
         {
             var table = this.SerializeAndParse<string[]>(FlatBufferDeserializationOption.VectorCache, Strings);
 
-            Assert.IsTrue(object.ReferenceEquals(table.Vector, table.Vector));
-            Assert.IsTrue(object.ReferenceEquals(table.Vector[5], table.Vector[5]));
-            Assert.IsTrue(object.ReferenceEquals(table.First, table.First));
-            Assert.IsTrue(object.ReferenceEquals(table.Second, table.Second));
-            Assert.AreEqual(Strings.Length, table.Vector.Length);
-            Assert.ThrowsException<NotMutableException>(() => table.First.First = 3);
-            Assert.ThrowsException<NotMutableException>(() => table.First = null);
+            Assert.True(object.ReferenceEquals(table.Vector, table.Vector));
+            Assert.True(object.ReferenceEquals(table.Vector[5], table.Vector[5]));
+            Assert.True(object.ReferenceEquals(table.First, table.First));
+            Assert.True(object.ReferenceEquals(table.Second, table.Second));
+            Assert.Equal(Strings.Length, table.Vector.Length);
+            Assert.Throws<NotMutableException>(() => table.First.First = 3);
+            Assert.Throws<NotMutableException>(() => table.First = null);
         }
 
-        [TestMethod]
+        [Fact]
         public void DeserializationOption_VectorCache_Memory()
         {
             var table = this.SerializeAndParse<Memory<byte>>(FlatBufferDeserializationOption.VectorCache, Bytes);
 
             // Each span overlaps the input buffer. Means we are not eagerly copying out.
-            Assert.IsTrue(table.Vector.Span.Overlaps(InputBuffer));
-            Assert.IsTrue(object.ReferenceEquals(table.First, table.First));
-            Assert.IsTrue(object.ReferenceEquals(table.Second, table.Second));
+            Assert.True(table.Vector.Span.Overlaps(InputBuffer));
+            Assert.True(object.ReferenceEquals(table.First, table.First));
+            Assert.True(object.ReferenceEquals(table.Second, table.Second));
 
-            Assert.AreEqual(Bytes.Length, table.Vector.Length);
-            Assert.ThrowsException<NotMutableException>(() => table.First.First = 3);
-            Assert.ThrowsException<NotMutableException>(() => table.First = null);
+            Assert.Equal(Bytes.Length, table.Vector.Length);
+            Assert.Throws<NotMutableException>(() => table.First.First = 3);
+            Assert.Throws<NotMutableException>(() => table.First = null);
         }
 
-        [TestMethod]
+        [Fact]
         public void DeserializationOption_VectorCache_ReadOnlyMemory()
         {
             var table = this.SerializeAndParse<ReadOnlyMemory<byte>>(FlatBufferDeserializationOption.VectorCache, Bytes);
             string originalHash = this.GetInputBufferHash();
 
             // Each span overlaps the input buffer. Means we are not eagerly copying out.
-            Assert.IsTrue(table.Vector.Span.Overlaps(InputBuffer));
-            Assert.IsTrue(object.ReferenceEquals(table.First, table.First));
-            Assert.IsTrue(object.ReferenceEquals(table.Second, table.Second));
+            Assert.True(table.Vector.Span.Overlaps(InputBuffer));
+            Assert.True(object.ReferenceEquals(table.First, table.First));
+            Assert.True(object.ReferenceEquals(table.Second, table.Second));
 
-            Assert.AreEqual(Bytes.Length, table.Vector.Length);
-            Assert.ThrowsException<NotMutableException>(() => table.First.First = 3);
-            Assert.ThrowsException<NotMutableException>(() => table.First = null);
-            Assert.AreEqual(originalHash, this.GetInputBufferHash());
+            Assert.Equal(Bytes.Length, table.Vector.Length);
+            Assert.Throws<NotMutableException>(() => table.First.First = 3);
+            Assert.Throws<NotMutableException>(() => table.First = null);
+            Assert.Equal(originalHash, this.GetInputBufferHash());
         }
 
-        [TestMethod]
+        [Fact]
         public void DeserializationOption_VectorCacheMutable_IList()
         {
             var table = this.SerializeAndParse<IList<string>>(FlatBufferDeserializationOption.VectorCacheMutable, Strings);
             string originalHash = this.GetInputBufferHash();
 
-            Assert.AreEqual(typeof(List<string>), table.Vector.GetType());
-            Assert.IsTrue(object.ReferenceEquals(table.Vector, table.Vector));
+            Assert.Equal(typeof(List<string>), table.Vector.GetType());
+            Assert.True(object.ReferenceEquals(table.Vector, table.Vector));
 
             var vector = table.Vector;
-            Assert.IsTrue(object.ReferenceEquals(vector[5], vector[5]));
-            Assert.IsTrue(object.ReferenceEquals(table.First, table.First));
-            Assert.IsTrue(object.ReferenceEquals(table.Second, table.Second));
-            Assert.AreEqual(Strings.Length, table.Vector.Count);
+            Assert.True(object.ReferenceEquals(vector[5], vector[5]));
+            Assert.True(object.ReferenceEquals(table.First, table.First));
+            Assert.True(object.ReferenceEquals(table.Second, table.Second));
+            Assert.Equal(Strings.Length, table.Vector.Count);
 
             table.Vector[0] = "foobar";
             table.First = new FirstStruct { First = 10 };
@@ -293,188 +293,188 @@ namespace FlatSharpTests
             table.Vector.Clear();
             table.Second.Second = 3;
 
-            Assert.AreEqual(originalHash, this.GetInputBufferHash());
+            Assert.Equal(originalHash, this.GetInputBufferHash());
         }
 
-        [TestMethod]
+        [Fact]
         public void DeserializationOption_VectorCacheMutable_IReadOnlyList()
         {
             var table = this.SerializeAndParse<IReadOnlyList<string>>(FlatBufferDeserializationOption.VectorCacheMutable, Strings);
             string originalHash = this.GetInputBufferHash();
 
-            Assert.AreEqual(typeof(List<string>), table.Vector.GetType());
-            Assert.IsTrue(object.ReferenceEquals(table.Vector, table.Vector));
-            Assert.IsTrue(object.ReferenceEquals(table.Vector[5], table.Vector[5]));
-            Assert.IsTrue(object.ReferenceEquals(table.First, table.First));
-            Assert.IsTrue(object.ReferenceEquals(table.Second, table.Second));
-            Assert.AreEqual(Strings.Length, table.Vector.Count);
+            Assert.Equal(typeof(List<string>), table.Vector.GetType());
+            Assert.True(object.ReferenceEquals(table.Vector, table.Vector));
+            Assert.True(object.ReferenceEquals(table.Vector[5], table.Vector[5]));
+            Assert.True(object.ReferenceEquals(table.First, table.First));
+            Assert.True(object.ReferenceEquals(table.Second, table.Second));
+            Assert.Equal(Strings.Length, table.Vector.Count);
 
             table.First = new FirstStruct { First = 10 };
             table.Second.Second = 3;
 
-            Assert.AreEqual(originalHash, this.GetInputBufferHash());
+            Assert.Equal(originalHash, this.GetInputBufferHash());
         }
 
-        [TestMethod]
+        [Fact]
         public void DeserializationOption_VectorCacheMutable_Array()
         {
             var table = this.SerializeAndParse<string[]>(FlatBufferDeserializationOption.VectorCacheMutable, Strings);
             string originalHash = this.GetInputBufferHash();
 
-            Assert.IsTrue(object.ReferenceEquals(table.Vector, table.Vector));
-            Assert.IsTrue(object.ReferenceEquals(table.Vector[5], table.Vector[5]));
-            Assert.IsTrue(object.ReferenceEquals(table.First, table.First));
-            Assert.IsTrue(object.ReferenceEquals(table.Second, table.Second));
-            Assert.AreEqual(Strings.Length, table.Vector.Length);
+            Assert.True(object.ReferenceEquals(table.Vector, table.Vector));
+            Assert.True(object.ReferenceEquals(table.Vector[5], table.Vector[5]));
+            Assert.True(object.ReferenceEquals(table.First, table.First));
+            Assert.True(object.ReferenceEquals(table.Second, table.Second));
+            Assert.Equal(Strings.Length, table.Vector.Length);
 
             table.First = new FirstStruct { First = 10 };
             table.Second.Second = 3;
             table.Union = new FlatBufferUnion<FirstStruct, SecondStruct, string>("banana");
 
-            Assert.AreEqual(originalHash, this.GetInputBufferHash());
+            Assert.Equal(originalHash, this.GetInputBufferHash());
         }
 
-        [TestMethod]
+        [Fact]
         public void DeserializationOption_VectorCacheMutable_Memory()
         {
             var table = this.SerializeAndParse<Memory<byte>>(FlatBufferDeserializationOption.VectorCacheMutable, Bytes);
             string originalHash = this.GetInputBufferHash();
 
             // Each span overlaps the input buffer. Means we are not eagerly copying out.
-            Assert.IsTrue(table.Vector.Span.Overlaps(InputBuffer));
-            Assert.IsTrue(object.ReferenceEquals(table.First, table.First));
-            Assert.IsTrue(object.ReferenceEquals(table.Second, table.Second));
+            Assert.True(table.Vector.Span.Overlaps(InputBuffer));
+            Assert.True(object.ReferenceEquals(table.First, table.First));
+            Assert.True(object.ReferenceEquals(table.Second, table.Second));
 
-            Assert.AreEqual(Bytes.Length, table.Vector.Length);
+            Assert.Equal(Bytes.Length, table.Vector.Length);
 
             table.First = new FirstStruct { First = 10 };
             table.Second.Second = 3;
             table.Union = new FlatBufferUnion<FirstStruct, SecondStruct, string>("banana");
 
-            Assert.AreEqual(originalHash, this.GetInputBufferHash());
+            Assert.Equal(originalHash, this.GetInputBufferHash());
 
             table.Vector.Span[0] = byte.MaxValue;
-            Assert.AreNotEqual(originalHash, this.GetInputBufferHash());
+            Assert.NotEqual(originalHash, this.GetInputBufferHash());
         }
 
-        [TestMethod]
+        [Fact]
         public void DeserializationOption_VectorCacheMutable_ReadOnlyMemory()
         {
             var table = this.SerializeAndParse<ReadOnlyMemory<byte>>(FlatBufferDeserializationOption.VectorCacheMutable, Bytes);
             string originalHash = this.GetInputBufferHash();
 
             // Each span overlaps the input buffer. Means we are not eagerly copying out.
-            Assert.IsTrue(table.Vector.Span.Overlaps(InputBuffer));
-            Assert.IsTrue(object.ReferenceEquals(table.First, table.First));
-            Assert.IsTrue(object.ReferenceEquals(table.Second, table.Second));
+            Assert.True(table.Vector.Span.Overlaps(InputBuffer));
+            Assert.True(object.ReferenceEquals(table.First, table.First));
+            Assert.True(object.ReferenceEquals(table.Second, table.Second));
 
-            Assert.AreEqual(Bytes.Length, table.Vector.Length);
+            Assert.Equal(Bytes.Length, table.Vector.Length);
 
             table.First = new FirstStruct { First = 10 };
             table.Second.Second = 3;
             table.Union = new FlatBufferUnion<FirstStruct, SecondStruct, string>("banana");
 
-            Assert.AreEqual(originalHash, this.GetInputBufferHash());
+            Assert.Equal(originalHash, this.GetInputBufferHash());
         }
 
-        [TestMethod]
+        [Fact]
         public void DeserializationOption_Greedy_IList()
         {
             var table = this.SerializeAndParse<IList<string>>(FlatBufferDeserializationOption.Greedy, Strings);
             InputBuffer.AsSpan().Fill(0);
 
-            Assert.AreEqual(typeof(ReadOnlyCollection<string>), table.Vector.GetType());
-            Assert.IsTrue(object.ReferenceEquals(table.Vector, table.Vector));
+            Assert.Equal(typeof(ReadOnlyCollection<string>), table.Vector.GetType());
+            Assert.True(object.ReferenceEquals(table.Vector, table.Vector));
 
             var vector = table.Vector;
-            Assert.IsTrue(object.ReferenceEquals(vector[5], vector[5]));
-            Assert.IsTrue(object.ReferenceEquals(table.First, table.First));
-            Assert.IsTrue(object.ReferenceEquals(table.Second, table.Second));
+            Assert.True(object.ReferenceEquals(vector[5], vector[5]));
+            Assert.True(object.ReferenceEquals(table.First, table.First));
+            Assert.True(object.ReferenceEquals(table.Second, table.Second));
 
-            Assert.AreEqual(Strings.Length, table.Vector.Count);
-            Assert.ThrowsException<NotSupportedException>(() => table.Vector[0] = "foobar");
-            Assert.ThrowsException<NotSupportedException>(() => table.Vector.Clear());
-            Assert.ThrowsException<NotMutableException>(() => table.First.First = 3);
-            Assert.ThrowsException<NotMutableException>(() => table.First = null);
+            Assert.Equal(Strings.Length, table.Vector.Count);
+            Assert.Throws<NotSupportedException>(() => table.Vector[0] = "foobar");
+            Assert.Throws<NotSupportedException>(() => table.Vector.Clear());
+            Assert.Throws<NotMutableException>(() => table.First.First = 3);
+            Assert.Throws<NotMutableException>(() => table.First = null);
         }
 
-        [TestMethod]
+        [Fact]
         public void DeserializationOption_Greedy_IReadOnlyList()
         {
             var table = this.SerializeAndParse<IReadOnlyList<string>>(FlatBufferDeserializationOption.Greedy, Strings);
             InputBuffer.AsSpan().Fill(0);
 
-            Assert.AreEqual(typeof(ReadOnlyCollection<string>), table.Vector.GetType());
-            Assert.IsTrue(object.ReferenceEquals(table.Vector, table.Vector));
-            Assert.IsTrue(object.ReferenceEquals(table.Vector[5], table.Vector[5]));
-            Assert.IsTrue(object.ReferenceEquals(table.First, table.First));
-            Assert.IsTrue(object.ReferenceEquals(table.Second, table.Second));
-            Assert.AreEqual(Strings.Length, table.Vector.Count);
-            Assert.ThrowsException<NotMutableException>(() => table.First.First = 3);
-            Assert.ThrowsException<NotMutableException>(() => table.First = null);
+            Assert.Equal(typeof(ReadOnlyCollection<string>), table.Vector.GetType());
+            Assert.True(object.ReferenceEquals(table.Vector, table.Vector));
+            Assert.True(object.ReferenceEquals(table.Vector[5], table.Vector[5]));
+            Assert.True(object.ReferenceEquals(table.First, table.First));
+            Assert.True(object.ReferenceEquals(table.Second, table.Second));
+            Assert.Equal(Strings.Length, table.Vector.Count);
+            Assert.Throws<NotMutableException>(() => table.First.First = 3);
+            Assert.Throws<NotMutableException>(() => table.First = null);
         }
 
-        [TestMethod]
+        [Fact]
         public void DeserializationOption_Greedy_Array()
         {
             var table = this.SerializeAndParse<string[]>(FlatBufferDeserializationOption.Greedy, Strings);
             InputBuffer.AsSpan().Fill(0);
 
-            Assert.IsTrue(object.ReferenceEquals(table.Vector, table.Vector));
-            Assert.IsTrue(object.ReferenceEquals(table.Vector[5], table.Vector[5]));
-            Assert.IsTrue(object.ReferenceEquals(table.First, table.First));
-            Assert.IsTrue(object.ReferenceEquals(table.Second, table.Second));
-            Assert.AreEqual(Strings.Length, table.Vector.Length);
-            Assert.ThrowsException<NotMutableException>(() => table.First.First = 3);
-            Assert.ThrowsException<NotMutableException>(() => table.First = null);
+            Assert.True(object.ReferenceEquals(table.Vector, table.Vector));
+            Assert.True(object.ReferenceEquals(table.Vector[5], table.Vector[5]));
+            Assert.True(object.ReferenceEquals(table.First, table.First));
+            Assert.True(object.ReferenceEquals(table.Second, table.Second));
+            Assert.Equal(Strings.Length, table.Vector.Length);
+            Assert.Throws<NotMutableException>(() => table.First.First = 3);
+            Assert.Throws<NotMutableException>(() => table.First = null);
         }
 
-        [TestMethod]
+        [Fact]
         public void DeserializationOption_Greedy_Memory()
         {
             var table = this.SerializeAndParse<Memory<byte>>(FlatBufferDeserializationOption.Greedy, Bytes);
             InputBuffer.AsSpan().Fill(0);
 
             // Greedy makes a copy of the input memory.
-            Assert.IsFalse(table.Vector.Span.Overlaps(InputBuffer));
-            Assert.IsTrue(object.ReferenceEquals(table.First, table.First));
-            Assert.IsTrue(object.ReferenceEquals(table.Second, table.Second));
+            Assert.False(table.Vector.Span.Overlaps(InputBuffer));
+            Assert.True(object.ReferenceEquals(table.First, table.First));
+            Assert.True(object.ReferenceEquals(table.Second, table.Second));
 
-            Assert.AreEqual(Bytes.Length, table.Vector.Length);
-            Assert.ThrowsException<NotMutableException>(() => table.First.First = 3);
-            Assert.ThrowsException<NotMutableException>(() => table.First = null);
+            Assert.Equal(Bytes.Length, table.Vector.Length);
+            Assert.Throws<NotMutableException>(() => table.First.First = 3);
+            Assert.Throws<NotMutableException>(() => table.First = null);
         }
 
-        [TestMethod]
+        [Fact]
         public void DeserializationOption_Greedy_ReadOnlyMemory()
         {
             var table = this.SerializeAndParse<ReadOnlyMemory<byte>>(FlatBufferDeserializationOption.Greedy, Bytes);
             InputBuffer.AsSpan().Fill(0);
 
             // Greedy makes a copy of the input memory.
-            Assert.IsFalse(table.Vector.Span.Overlaps(InputBuffer));
-            Assert.IsTrue(object.ReferenceEquals(table.First, table.First));
-            Assert.IsTrue(object.ReferenceEquals(table.Second, table.Second));
+            Assert.False(table.Vector.Span.Overlaps(InputBuffer));
+            Assert.True(object.ReferenceEquals(table.First, table.First));
+            Assert.True(object.ReferenceEquals(table.Second, table.Second));
 
-            Assert.AreEqual(Bytes.Length, table.Vector.Length);
-            Assert.ThrowsException<NotMutableException>(() => table.First.First = 3);
-            Assert.ThrowsException<NotMutableException>(() => table.First = null);
+            Assert.Equal(Bytes.Length, table.Vector.Length);
+            Assert.Throws<NotMutableException>(() => table.First.First = 3);
+            Assert.Throws<NotMutableException>(() => table.First = null);
         }
 
-        [TestMethod]
+        [Fact]
         public void DeserializationOption_GreedyMutable_IList()
         {
             var table = this.SerializeAndParse<IList<string>>(FlatBufferDeserializationOption.GreedyMutable, Strings);
             InputBuffer.AsSpan().Fill(0);
 
-            Assert.AreEqual(typeof(List<string>), table.Vector.GetType());
-            Assert.IsTrue(object.ReferenceEquals(table.Vector, table.Vector));
+            Assert.Equal(typeof(List<string>), table.Vector.GetType());
+            Assert.True(object.ReferenceEquals(table.Vector, table.Vector));
 
             var vector = table.Vector;
-            Assert.IsTrue(object.ReferenceEquals(vector[5], vector[5]));
-            Assert.IsTrue(object.ReferenceEquals(table.First, table.First));
-            Assert.IsTrue(object.ReferenceEquals(table.Second, table.Second));
-            Assert.AreEqual(Strings.Length, table.Vector.Count);
+            Assert.True(object.ReferenceEquals(vector[5], vector[5]));
+            Assert.True(object.ReferenceEquals(table.First, table.First));
+            Assert.True(object.ReferenceEquals(table.Second, table.Second));
+            Assert.Equal(Strings.Length, table.Vector.Count);
 
             table.Vector[0] = "foobar";
             table.First = new FirstStruct { First = 10 };
@@ -483,70 +483,70 @@ namespace FlatSharpTests
             table.Second.Second = 3;
         }
 
-        [TestMethod]
+        [Fact]
         public void DeserializationOption_GreedyMutable_IReadOnlyList()
         {
             var table = this.SerializeAndParse<IReadOnlyList<string>>(FlatBufferDeserializationOption.GreedyMutable, Strings);
             InputBuffer.AsSpan().Fill(0);
 
-            Assert.AreEqual(typeof(List<string>), table.Vector.GetType());
-            Assert.IsTrue(object.ReferenceEquals(table.Vector, table.Vector));
-            Assert.IsTrue(object.ReferenceEquals(table.Vector[5], table.Vector[5]));
-            Assert.IsTrue(object.ReferenceEquals(table.First, table.First));
-            Assert.IsTrue(object.ReferenceEquals(table.Second, table.Second));
-            Assert.AreEqual(Strings.Length, table.Vector.Count);
+            Assert.Equal(typeof(List<string>), table.Vector.GetType());
+            Assert.True(object.ReferenceEquals(table.Vector, table.Vector));
+            Assert.True(object.ReferenceEquals(table.Vector[5], table.Vector[5]));
+            Assert.True(object.ReferenceEquals(table.First, table.First));
+            Assert.True(object.ReferenceEquals(table.Second, table.Second));
+            Assert.Equal(Strings.Length, table.Vector.Count);
 
             table.First = new FirstStruct { First = 10 };
             table.Second.Second = 3;
         }
 
-        [TestMethod]
+        [Fact]
         public void DeserializationOption_GreedyMutable_Array()
         {
             var table = this.SerializeAndParse<string[]>(FlatBufferDeserializationOption.GreedyMutable, Strings);
             InputBuffer.AsSpan().Fill(0);
 
-            Assert.IsTrue(object.ReferenceEquals(table.Vector, table.Vector));
-            Assert.IsTrue(object.ReferenceEquals(table.Vector[5], table.Vector[5]));
-            Assert.IsTrue(object.ReferenceEquals(table.First, table.First));
-            Assert.IsTrue(object.ReferenceEquals(table.Second, table.Second));
-            Assert.AreEqual(Strings.Length, table.Vector.Length);
+            Assert.True(object.ReferenceEquals(table.Vector, table.Vector));
+            Assert.True(object.ReferenceEquals(table.Vector[5], table.Vector[5]));
+            Assert.True(object.ReferenceEquals(table.First, table.First));
+            Assert.True(object.ReferenceEquals(table.Second, table.Second));
+            Assert.Equal(Strings.Length, table.Vector.Length);
 
             table.First = new FirstStruct { First = 10 };
             table.Second.Second = 3;
             table.Union = new FlatBufferUnion<FirstStruct, SecondStruct, string>("banana");
         }
 
-        [TestMethod]
+        [Fact]
         public void DeserializationOption_GreedyMutable_Memory()
         {
             var table = this.SerializeAndParse<Memory<byte>>(FlatBufferDeserializationOption.GreedyMutable, Bytes); 
             InputBuffer.AsSpan().Fill(0);
 
             // Each span overlaps the input buffer. Means we are not eagerly copying out.
-            Assert.IsFalse(table.Vector.Span.Overlaps(InputBuffer));
-            Assert.IsTrue(object.ReferenceEquals(table.First, table.First));
-            Assert.IsTrue(object.ReferenceEquals(table.Second, table.Second));
+            Assert.False(table.Vector.Span.Overlaps(InputBuffer));
+            Assert.True(object.ReferenceEquals(table.First, table.First));
+            Assert.True(object.ReferenceEquals(table.Second, table.Second));
 
-            Assert.AreEqual(Bytes.Length, table.Vector.Length);
+            Assert.Equal(Bytes.Length, table.Vector.Length);
 
             table.First = new FirstStruct { First = 10 };
             table.Second.Second = 3;
             table.Union = new FlatBufferUnion<FirstStruct, SecondStruct, string>("banana");
         }
 
-        [TestMethod]
+        [Fact]
         public void DeserializationOption_GreedyMutable_ReadOnlyMemory()
         {
             var table = this.SerializeAndParse<ReadOnlyMemory<byte>>(FlatBufferDeserializationOption.GreedyMutable, Bytes);
             InputBuffer.AsSpan().Fill(0);
 
             // Each span overlaps the input buffer. Means we are not eagerly copying out.
-            Assert.IsFalse(table.Vector.Span.Overlaps(InputBuffer));
-            Assert.IsTrue(object.ReferenceEquals(table.First, table.First));
-            Assert.IsTrue(object.ReferenceEquals(table.Second, table.Second));
+            Assert.False(table.Vector.Span.Overlaps(InputBuffer));
+            Assert.True(object.ReferenceEquals(table.First, table.First));
+            Assert.True(object.ReferenceEquals(table.Second, table.Second));
 
-            Assert.AreEqual(Bytes.Length, table.Vector.Length);
+            Assert.Equal(Bytes.Length, table.Vector.Length);
 
             table.First = new FirstStruct { First = 10 };
             table.Second.Second = 3;
@@ -578,10 +578,10 @@ namespace FlatSharpTests
             serializer.Serialize(value, InputBuffer);
             InnerTable<T> parsed = serializer.Parse<InnerTable<T>>(InputBuffer); 
 
-            Assert.AreEqual(1, parsed.First.First);
-            Assert.AreEqual(2, parsed.Second.Second);
-            Assert.AreEqual("Foo bar baz bat", parsed.String);
-            Assert.AreEqual(3, parsed.Union.Item2.Second);
+            Assert.Equal(1, parsed.First.First);
+            Assert.Equal(2, parsed.Second.Second);
+            Assert.Equal("Foo bar baz bat", parsed.String);
+            Assert.Equal(3, parsed.Union.Item2.Second);
 
             return parsed;
         }

@@ -27,12 +27,12 @@ namespace FlatSharpTests
     using FlatSharp;
     using FlatSharp.Attributes;
     using FlatSharp.Unsafe;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
     /// <summary>
     /// Tests for the FlatBufferVector class that implements IList.
     /// </summary>
-    [TestClass]
+    
     public class InputBufferTests
     {
         private const string StringData = "how now brown cow";
@@ -57,7 +57,7 @@ namespace FlatSharpTests
             StringInput = stringData;
         }
 
-        [TestMethod]
+        [Fact]
         public void SafeMemoryInputBuffer()
         {
             this.InputBufferTest(new MemoryInputBuffer(Input));
@@ -69,7 +69,7 @@ namespace FlatSharpTests
                 (s, b) => s.Parse<PrimitiveTypesTable>(b.AsMemory()));
         }
 
-        [TestMethod]
+        [Fact]
         public void SafeReadOnlyMemoryInputBuffer()
         {
             this.InputBufferTest(new ReadOnlyMemoryInputBuffer(Input));
@@ -77,16 +77,16 @@ namespace FlatSharpTests
 
             this.TestDeserialize<ReadOnlyMemoryInputBuffer, ReadOnlyMemoryTable>(b => new ReadOnlyMemoryInputBuffer(b));
             this.TestReadByteArray(b => new ReadOnlyMemoryInputBuffer(b));
-            var ex = Assert.ThrowsException<InvalidOperationException>(
+            var ex = Assert.Throws<InvalidOperationException>(
                 () => this.TestDeserialize<ReadOnlyMemoryInputBuffer, MemoryTable>(b => new ReadOnlyMemoryInputBuffer(b)));
-            Assert.AreEqual("ReadOnlyMemory inputs may not deserialize writable memory.", ex.Message);
+            Assert.Equal("ReadOnlyMemory inputs may not deserialize writable memory.", ex.Message);
 
             this.TableSerializationTest(
                 SpanWriter.Instance,
                 (s, b) => s.Parse<PrimitiveTypesTable>((ReadOnlyMemory<byte>)b.AsMemory()));
         }
 
-        [TestMethod]
+        [Fact]
         public void ArrayInputBuffer()
         {
             this.InputBufferTest(new ArrayInputBuffer(Input));
@@ -98,7 +98,7 @@ namespace FlatSharpTests
                 (s, b) => s.Parse<PrimitiveTypesTable>(b));
         }
 
-        [TestMethod]
+        [Fact]
         public void UnsafeArrayInputBuffer()
         {
             this.InputBufferTest(new UnsafeArrayInputBuffer(Input));
@@ -110,7 +110,7 @@ namespace FlatSharpTests
                 (s, b) => s.Parse<PrimitiveTypesTable>(new UnsafeArrayInputBuffer(b)));
         }
 
-        [TestMethod]
+        [Fact]
         public void UnsafeMemoryInputBuffer()
         {
             using (var buffer = new UnsafeMemoryInputBuffer(new Memory<byte>(Input)))
@@ -126,7 +126,7 @@ namespace FlatSharpTests
             this.TestDeserializeBoth(b => new UnsafeMemoryInputBuffer(b));
         }
 
-        [TestMethod]
+        [Fact]
         public void InitializeVTable_EmptyTable()
         {
             byte[] buffer =
@@ -137,11 +137,11 @@ namespace FlatSharpTests
             };
 
             new ArrayInputBuffer(buffer).InitializeVTable(4, out int vtableOffset, out int maxVtableIndex);
-            Assert.AreEqual(0, vtableOffset);
-            Assert.AreEqual(-1, maxVtableIndex);
+            Assert.Equal(0, vtableOffset);
+            Assert.Equal(-1, maxVtableIndex);
         }
 
-        [TestMethod]
+        [Fact]
         public void InitializeVTable_InvalidLength()
         {
             byte[] buffer =
@@ -151,15 +151,15 @@ namespace FlatSharpTests
                 4, 0, 0, 0 // soffset to vtable.
             };
 
-            var ex = Assert.ThrowsException<InvalidDataException>(() => 
+            var ex = Assert.Throws<InvalidDataException>(() => 
                 new ArrayInputBuffer(buffer).InitializeVTable(4, out _, out _));
 
-            Assert.AreEqual(
+            Assert.Equal(
                 "FlatBuffer was in an invalid format: VTable was not long enough to be valid.",
                 ex.Message);
         }
 
-        [TestMethod]
+        [Fact]
         public void InitializeVTable_NormalTable()
         {
             byte[] buffer =
@@ -174,19 +174,19 @@ namespace FlatSharpTests
             };
 
             new ArrayInputBuffer(buffer).InitializeVTable(8, out int vtableOffset, out int maxVtableIndex);
-            Assert.AreEqual(0, vtableOffset);
-            Assert.AreEqual(1, maxVtableIndex);
+            Assert.Equal(0, vtableOffset);
+            Assert.Equal(1, maxVtableIndex);
         }
 
-        [TestMethod]
+        [Fact]
         public void ReadUOffset()
         {
             byte[] buffer = { 4, 0, 0, 0 };
-            Assert.AreEqual(4, new ArrayInputBuffer(buffer).ReadUOffset(0));
+            Assert.Equal(4, new ArrayInputBuffer(buffer).ReadUOffset(0));
 
             buffer = new byte[] { 3, 0, 0, 0 };
-            var ex = Assert.ThrowsException<InvalidDataException>(() => new ArrayInputBuffer(buffer).ReadUOffset(0));
-            Assert.AreEqual(
+            var ex = Assert.Throws<InvalidDataException>(() => new ArrayInputBuffer(buffer).ReadUOffset(0));
+            Assert.Equal(
                 "FlatBuffer was in an invalid format: Decoded uoffset_t had value less than 4. Value = 3",
                 ex.Message);
         }
@@ -216,27 +216,27 @@ namespace FlatSharpTests
             FlatBufferSerializer.Default.Serialize(original, data, writer);
             PrimitiveTypesTable parsed = parse(FlatBufferSerializer.Default, data);
 
-            Assert.AreEqual(original.A, parsed.A);
-            Assert.AreEqual(original.B, parsed.B);
-            Assert.AreEqual(original.C, parsed.C);
-            Assert.AreEqual(original.D, parsed.D);
-            Assert.AreEqual(original.E, parsed.E);
-            Assert.AreEqual(original.F, parsed.F);
-            Assert.AreEqual(original.G, parsed.G);
-            Assert.AreEqual(original.H, parsed.H);
-            Assert.AreEqual(original.I, parsed.I);
-            Assert.AreEqual(original.J, parsed.J);
-            Assert.AreEqual(original.K, parsed.K);
-            Assert.AreEqual(original.L, parsed.L);
-            Assert.AreEqual(original.M, parsed.M);
+            Assert.Equal(original.A, parsed.A);
+            Assert.Equal(original.B, parsed.B);
+            Assert.Equal(original.C, parsed.C);
+            Assert.Equal(original.D, parsed.D);
+            Assert.Equal(original.E, parsed.E);
+            Assert.Equal(original.F, parsed.F);
+            Assert.Equal(original.G, parsed.G);
+            Assert.Equal(original.H, parsed.H);
+            Assert.Equal(original.I, parsed.I);
+            Assert.Equal(original.J, parsed.J);
+            Assert.Equal(original.K, parsed.K);
+            Assert.Equal(original.L, parsed.L);
+            Assert.Equal(original.M, parsed.M);
         }
 
         private void InputBufferTest(IInputBuffer ib)
         {
             var mem = new Memory<byte>(Input);
 
-            Assert.IsFalse(ib.ReadBool(0));
-            Assert.IsTrue(ib.ReadBool(1));
+            Assert.False(ib.ReadBool(0));
+            Assert.True(ib.ReadBool(1));
 
             this.CompareEqual<byte>(sizeof(byte), i => mem.Span[i], i => ib.ReadByte(i));
             this.CompareEqual<sbyte>(sizeof(sbyte), i => (sbyte)mem.Span[i], i => ib.ReadSByte(i));
@@ -258,7 +258,7 @@ namespace FlatSharpTests
 
         private void StringInputBufferTest(IInputBuffer ib)
         {
-            Assert.AreEqual(StringData, ib.ReadString(0));
+            Assert.Equal(StringData, ib.ReadString(0));
         }
 
         private void CompareEqual<T>(
@@ -270,7 +270,7 @@ namespace FlatSharpTests
             {
                 var memory = readMemoryAtIndex(i);
                 var bufferValue = readAtIndex(i);
-                Assert.AreEqual(memory, bufferValue);
+                Assert.Equal(memory, bufferValue);
             }
         }
 
@@ -287,7 +287,7 @@ namespace FlatSharpTests
 
             byte[] expected = new byte[] { 1, 2, 3, 4, 5, 6, 7, };
 
-            Assert.IsTrue(inputBuffer.ReadByteReadOnlyMemoryBlock(0).Span.SequenceEqual(expected));
+            Assert.True(inputBuffer.ReadByteReadOnlyMemoryBlock(0).Span.SequenceEqual(expected));
         }
 
         private void TestDeserialize<TBuffer, TType>(Func<byte[], TBuffer> bufferBuilder) 
@@ -306,7 +306,7 @@ namespace FlatSharpTests
             var parsed = FlatBufferSerializer.Default.Parse<TType>(buffer);
             for (int i = 1; i <= 5; ++i)
             {
-                Assert.AreEqual(i + 5, parsed.Memory.Span[i - 1]);
+                Assert.Equal(i + 5, parsed.Memory.Span[i - 1]);
             }
         }
 

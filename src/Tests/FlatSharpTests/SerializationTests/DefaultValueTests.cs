@@ -18,7 +18,7 @@ namespace FlatSharpTests
 {
     using FlatSharp;
     using FlatSharp.Attributes;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
     using System;
     using System.Collections.Generic;
     using System.ComponentModel;
@@ -27,7 +27,7 @@ namespace FlatSharpTests
     /// <summary>
     /// Tests default values on a table.
     /// </summary>
-    [TestClass]
+    
     public class DefaultValueTests
     {
         private static byte[] EmptyTable =
@@ -38,37 +38,37 @@ namespace FlatSharpTests
             4, 0,                 // table length
         };
 
-        [TestMethod]
+        [Fact]
         public void Read_AllDefaultValues()
         {
             var parsed = FlatBufferSerializer.Default.Parse<AllDefaultValueTypes>(EmptyTable);
 
-            Assert.IsTrue(parsed.Bool);
-            Assert.AreEqual((byte)1, parsed.Byte);
-            Assert.AreEqual((sbyte)-1, parsed.SByte);
-            Assert.AreEqual(ushort.MaxValue, parsed.UShort);
-            Assert.AreEqual(short.MinValue, parsed.Short);
-            Assert.AreEqual(uint.MaxValue, parsed.UInt);
-            Assert.AreEqual(int.MinValue, parsed.Int);
-            Assert.AreEqual(3.14f, parsed.Float);
-            Assert.AreEqual(ulong.MaxValue, parsed.ULong);
-            Assert.AreEqual(long.MinValue, parsed.Long);
-            Assert.AreEqual(3.14159d, parsed.Double);
-            Assert.AreEqual(SimpleEnum.B, parsed.Enum);
+            Assert.True(parsed.Bool);
+            Assert.Equal((byte)1, parsed.Byte);
+            Assert.Equal((sbyte)-1, parsed.SByte);
+            Assert.Equal(ushort.MaxValue, parsed.UShort);
+            Assert.Equal(short.MinValue, parsed.Short);
+            Assert.Equal(uint.MaxValue, parsed.UInt);
+            Assert.Equal(int.MinValue, parsed.Int);
+            Assert.Equal(3.14f, parsed.Float);
+            Assert.Equal(ulong.MaxValue, parsed.ULong);
+            Assert.Equal(long.MinValue, parsed.Long);
+            Assert.Equal(3.14159d, parsed.Double);
+            Assert.Equal(SimpleEnum.B, parsed.Enum);
 
-            Assert.AreEqual(null, parsed.OptBool);
-            Assert.AreEqual(null, parsed.OptShort);
-            Assert.AreEqual(null, parsed.OptUShort);
-            Assert.AreEqual(null, parsed.OptInt);
-            Assert.AreEqual(null, parsed.OptUInt);
-            Assert.AreEqual(null, parsed.OptLong);
-            Assert.AreEqual(null, parsed.OptULong);
-            Assert.AreEqual(null, parsed.OptDouble);
-            Assert.AreEqual(null, parsed.OptFloat);
-            Assert.AreEqual(null, parsed.OptEnum);
+            Assert.Null(parsed.OptBool);
+            Assert.Null(parsed.OptShort);
+            Assert.Null(parsed.OptUShort);
+            Assert.Null(parsed.OptInt);
+            Assert.Null(parsed.OptUInt);
+            Assert.Null(parsed.OptLong);
+            Assert.Null(parsed.OptULong);
+            Assert.Null(parsed.OptDouble);
+            Assert.Null(parsed.OptFloat);
+            Assert.Null(parsed.OptEnum);
         }
 
-        [TestMethod]
+        [Fact]
         public void Write_AllDefaultValues()
         {
             var all = new AllDefaultValueTypes()
@@ -92,7 +92,7 @@ namespace FlatSharpTests
 
             buffer = buffer.Slice(0, count);
 
-            Assert.IsTrue(buffer.SequenceEqual(EmptyTable));
+            Assert.True(buffer.SequenceEqual(EmptyTable));
         }
 
         [FlatBufferEnum(typeof(sbyte))]
