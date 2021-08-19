@@ -210,34 +210,25 @@ namespace FlatSharp.Compiler
             CompileContext context,
             FlatBufferDeserializationOption deserializationOption)
         {
+            Type? type = context.PreviousAssembly?.GetType(this.FullName);
+            FlatSharpInternal.Assert(type is not null, $"Flatsharp failed to find expected type '{this.FullName}' in assembly.");
+
+            var options = new FlatBufferSerializerOptions(deserializationOption) { ConvertProtectedInternalToProtected = false };
+            var generator = new RoslynSerializerGenerator(options, context.TypeModelContainer);
+
+            MethodInfo method = generator.GetType()
+                                         .GetMethod(nameof(RoslynSerializerGenerator.GenerateCSharp), BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)!
+                                         .MakeGenericMethod(type);
+
             try
             {
-                CSharpHelpers.ConvertProtectedInternalToProtected = false;
-
-                Type? type = context.PreviousAssembly?.GetType(this.FullName);
-                FlatSharpInternal.Assert(type is not null, $"Flatsharp failed to find expected type '{this.FullName}' in assembly.");
-
-                var options = new FlatBufferSerializerOptions(deserializationOption);
-                var generator = new RoslynSerializerGenerator(options, context.TypeModelContainer);
-
-                MethodInfo method = generator.GetType()
-                                             .GetMethod(nameof(RoslynSerializerGenerator.GenerateCSharp), BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)!
-                                             .MakeGenericMethod(type);
-
-                try
-                {
-                    string code = (string)method.Invoke(generator, new[] { "private" })!;
-                    return code;
-                }
-                catch (TargetInvocationException ex)
-                {
-                    ExceptionDispatchInfo.Capture(ex.InnerException!).Throw();
-                    throw;
-                }
+                string code = (string)method.Invoke(generator, new[] { "private" })!;
+                return code;
             }
-            finally
+            catch (TargetInvocationException ex)
             {
-                CSharpHelpers.ConvertProtectedInternalToProtected = true;
+                ExceptionDispatchInfo.Capture(ex.InnerException!).Throw();
+                throw;
             }
         }
 

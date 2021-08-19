@@ -106,5 +106,10 @@ namespace FlatSharp
         /// Mostly useful for FlatSharp unit tests.
         /// </summary>
         public bool EnableAppDomainInterceptOnAssemblyLoad { get; set; }
+
+        /// <summary>
+        /// Indicates if "protected internal" modifiers should be converted to protected.
+        /// </summary>
+        internal bool ConvertProtectedInternalToProtected { get; set; } = true;
     }
 }
