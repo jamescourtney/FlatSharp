@@ -32,6 +32,8 @@ namespace FlatSharp
 
         private readonly Dictionary<Type, object> serializerCache = new Dictionary<Type, object>();
 
+        private readonly object syncRoot = new();
+
         private TypeModelContainer container;
 
         /// <summary>
@@ -188,7 +190,7 @@ namespace FlatSharp
         {
             if (!this.serializerCache.TryGetValue(typeof(TRoot), out object? serializer))
             {
-                lock (SharedLock.Instance)
+                lock (this.syncRoot)
                 {
                     if (!this.serializerCache.TryGetValue(typeof(TRoot), out serializer))
                     {

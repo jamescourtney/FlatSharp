@@ -131,12 +131,12 @@ namespace FlatSharp.TypeModel
             {
                 throw new InvalidFlatBufferDefinitionException($"Type '{CSharpHelpers.GetCompilableTypeName(type)}' is declared as both [FlatBufferTable] and [FlatBufferStruct].");
             }
-            else if (tableAttribute != null)
+            else if (tableAttribute is not null)
             {
                 typeModel = new TableTypeModel(type, container);
                 return true;
             }
-            else if (structAttribute != null)
+            else if (structAttribute is not null)
             {
                 if (!type.IsValueType)
                 {
@@ -153,11 +153,9 @@ namespace FlatSharp.TypeModel
                     return true;
                 }
             }
-            else
-            {
-                typeModel = null;
-                return false;
-            }
+
+            typeModel = null;
+            return false;
         }
     }
 }
