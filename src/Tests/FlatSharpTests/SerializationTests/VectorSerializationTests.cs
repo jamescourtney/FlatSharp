@@ -254,7 +254,7 @@ namespace FlatSharpTests
             Assert.True(expectedResult.AsSpan().SequenceEqual(target));
         }
 
-        [TestMethod]
+        [Fact]
         public void UnalignedStruct_Value5Byte()
         {
             var root = new RootTable<ValueFiveByteStruct[]>
@@ -292,10 +292,10 @@ namespace FlatSharpTests
                 0, 0, 0,             // padding
             };
 
-            Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(target));
+            Assert.True(expectedResult.AsSpan().SequenceEqual(target));
         }
 
-        [TestMethod]
+        [Fact]
         public void UnalignedStruct_9Byte()
         {
             var root = new RootTable2<NineByteStruct[]>
@@ -336,7 +336,7 @@ namespace FlatSharpTests
             Assert.True(expectedResult.AsSpan().SequenceEqual(target));
         }
 
-        [TestMethod]
+        [Fact]
         public void UnalignedStruct_Value9Byte()
         {
             var root = new RootTable2<ValueNineByteStruct[]>
@@ -355,17 +355,16 @@ namespace FlatSharpTests
             byte[] expectedResult =
             {
                 4, 0, 0, 0,                     // offset to table start
-                244, 255, 255, 255,             // soffset to vtable (-12)
+                246, 255, 255, 255,             // soffset to vtable (-10)
+                20, 0, 0, 0,                    // uoffset_t to vector
                 0,                              // alignment imp
-                0, 0, 0,                        // padding
-                16, 0, 0, 0,                    // uoffset_t to vector
-
+                0,                              // padding
                 8, 0,                           // vtable length
-                12, 0,                          // table length
-                4, 0,                           // offset to index 0 field
-                8, 0,                           // offset of index 1 field
+                9, 0,                           // table length
+                8, 0,                           // offset to index 0 field
+                4, 0,                           // offset of index 1 field
 
-                0, 0, 0, 0,                     // padding
+                0, 0, 0, 0, 0, 0,               // padding to 8 byte alignment for struct.
                 2, 0, 0, 0,                     // vector length
                 1, 0, 0, 0, 0, 0, 0, 0,         // index 0.Long
                 1,                              // index 0.Byte
@@ -375,10 +374,10 @@ namespace FlatSharpTests
                 0, 0, 0, 0, 0, 0, 0,            // padding
             };
 
-            Assert.IsTrue(expectedResult.AsSpan().SequenceEqual(target));
+            Assert.True(expectedResult.AsSpan().SequenceEqual(target));
         }
 
-        [TestMethod]
+        [Fact]
         public void NullStringInVector()
         {
             var root = new RootTable<IList<string>>

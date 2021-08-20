@@ -85,28 +85,17 @@
         /// </summary>
         public override bool SerializesInline => true;
 
-        public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
+        public override IEnumerable<ITypeModel> Children => this.members.Select(x => x.model);
+
+        public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
         {
-            return new CodeGeneratedMethod
-            {
-                MethodBody = $"return {this.MaxInlineSize};",
-            };
+            // Value types are pretty easy to clone!
+            return new CodeGeneratedMethod($"return {context.ItemVariableName};") { IsMethodInline = true };
         }
 
-        public override string GetIsEqualToDefaultValueExpression(string variableName, string defaultValue)
+        public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
         {
-            // Value structs are never null, but can be considered default when all members are default.
-            List<string> components = new List<string>();
-            foreach (var member in this.members)
-            {
-                string innerComparison = member.model.GetIsEqualToDefaultValueExpression(
-                    $"{variableName}.{member.field.Name}", 
-                    $"default({CSharpHelpers.GetCompilableTypeName(member.field.FieldType)})");
-
-                components.Add($"({innerComparison})");
-            }
-
-            return string.Join(" && ", components);
+            return new CodeGeneratedMethod($"return {this.MaxInlineSize};");
         }
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
@@ -137,7 +126,7 @@
             }}
 ";
 
-            return new CodeGeneratedMethod { MethodBody = body };
+            return new CodeGeneratedMethod(body);
         }
 
         public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
@@ -146,13 +135,13 @@
             for (int i = 0; i < this.members.Count; ++i)
             {
                 var member = this.members[i];
-                propertyStatements.Add($@"
-                    {context.MethodNameMap[member.field.FieldType]}(
-                        {context.SpanWriterVariableName}, 
-                        {context.SpanVariableName},
-                        {context.ValueVariableName}.{member.field.Name},
-                        {context.OffsetVariableName} + {member.offset},
-                        {context.SerializationContextVariableName});");
+                var fieldContext = context with 
+                { 
+                    OffsetVariableName = $"({context.OffsetVariableName} + {member.offset})",
+                    ValueVariableName = $"{context.ValueVariableName}.{member.field.Name}",
+                };
+
+                propertyStatements.Add(fieldContext.GetSerializeInvocation(member.field.FieldType) + ";");
             }
 
             // For little endian architectures, we can do the equivalent of a reinterpret_cast operation.
@@ -168,17 +157,7 @@
             }}
 ";
 
-            return new CodeGeneratedMethod { MethodBody = body };
-        }
-
-        public override string GetThrowIfNullInvocation(string itemVariableName)
-        {
-            return string.Empty;
-        }
-
-        public override string GetNonNullConditionExpression(string itemVariableName)
-        {
-            return string.Empty;
+            return new CodeGeneratedMethod(body);
         }
 
         public override void Initialize()
@@ -189,7 +168,7 @@
                 throw new InvalidFlatBufferDefinitionException($"Can't create struct type model from type {this.ClrType.Name} because it does not have a [FlatBufferStruct] attribute.");
             }
 
-            var properties = this.ClrType
+            var fields = this.ClrType
                 .GetFields(BindingFlags.Public | BindingFlags.Instance)
                 .Select(x => new
                 {
@@ -200,13 +179,13 @@
                 .ToList();
 
 
-            if (properties.Count == 0)
+            if (fields.Count == 0)
             {
-                throw new InvalidFlatBufferDefinitionException($"Struct '{this.ClrType.Name}' is empty or has no public properties with '[FieldOffset]' attributes.");
+                throw new InvalidFlatBufferDefinitionException($"Struct '{this.GetCompilableTypeName()}' is empty or has no public properties with '[FieldOffset]' attributes.");
             }
 
             this.inlineSize = 0;
-            foreach (var item in properties)
+            foreach (var item in fields)
             {
                 var offsetAttribute = item.OffsetAttribute;
                 var field = item.Field;
@@ -249,18 +228,6 @@
                 this.ClrType.StructLayoutAttribute?.Size != this.inlineSize)
             {
                 throw new InvalidFlatBufferDefinitionException($"Can't create struct type model from type {this.ClrType.Name} because it does not have a [StructLayout(LayoutKind.Explicit, Size = {this.inlineSize})] attribute.");
-            }
-        }
-
-        public override void TraverseObjectGraph(HashSet<Type> seenTypes)
-        {
-            seenTypes.Add(this.ClrType);
-            foreach (var member in this.members)
-            {
-                if (seenTypes.Add(member.field.FieldType))
-                {
-                    member.model.TraverseObjectGraph(seenTypes);
-                }
             }
         }
     }

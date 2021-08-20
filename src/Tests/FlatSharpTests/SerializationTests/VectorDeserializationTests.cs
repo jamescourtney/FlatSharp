@@ -362,6 +362,40 @@ namespace FlatSharpTests
         }
 
         [Fact]
+        public void UnalignedStruct_Value5Byte()
+        {
+            byte[] data =
+            {
+                4, 0, 0, 0,          // offset to table start
+                248, 255, 255, 255,  // soffset to vtable (-8)
+                12, 0, 0, 0,         // uoffset_t to vector
+                6, 0,                // vtable length
+                8, 0,                // table length
+                4, 0,                // offset of index 0 field
+                0, 0,                // padding to 4-byte alignment
+                3, 0, 0, 0,          // vector length
+                1, 0, 0, 0,          // index 0.Int
+                1,                   // index 0.Byte
+                0, 0, 0,             // padding
+                2, 0, 0, 0,          // index 1.Int
+                2,                   // index 1.Byte
+                0, 0, 0,             // padding
+                3, 0, 0, 0,          // index2.Int
+                3,                   // Index2.byte
+                0, 0, 0,             // padding
+            };
+
+            var item = FlatBufferSerializer.Default.Parse<RootTable<ValueFiveByteStruct[]>>(data);
+
+            Assert.Equal(3, item.Vector.Length);
+            for (int i = 0; i < 3; ++i)
+            {
+                Assert.Equal(i + 1, item.Vector[i].Int);
+                Assert.Equal((byte)(i + 1), item.Vector[i].Byte);
+            }
+        }
+
+        [Fact]
         public void VectorOfUnion_List() => this.VectorOfUnionTest<RootTable<IList<FlatBufferUnion<string, Struct, TableWithKey<int>>>>>(
             v => v.Vector.ToArray());
 
