@@ -967,7 +967,7 @@ namespace FlatSharpTests
             [FlatBufferItem(1)]
             public virtual byte Byte { get; set; }
         }
-
+      
         [FlatBufferStruct, StructLayout(LayoutKind.Explicit, Size = 9)]
         public struct ValueNineByteStruct
         {

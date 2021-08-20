@@ -153,9 +153,11 @@ namespace FlatSharp.TypeModel
                     return true;
                 }
             }
-
-            typeModel = null;
-            return false;
+            else
+            {
+                typeModel = null;
+                return false;
+            }
         }
     }
 }
