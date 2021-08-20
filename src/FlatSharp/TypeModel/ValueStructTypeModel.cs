@@ -218,7 +218,7 @@
 
                 if (!propertyModel.IsValidStructMember || propertyModel.PhysicalLayout.Length > 1)
                 {
-                    throw new InvalidFlatBufferDefinitionException($"Struct property {field.Name} with type {field.FieldType.GetCompilableTypeName()} cannot be part of a flatbuffer struct.");
+                    throw new InvalidFlatBufferDefinitionException($"Struct '{this.GetCompilableTypeName()}' property {field.Name} cannot be part of a flatbuffer struct. Structs may only contain scalars and other structs.");
                 }
 
                 if (!propertyModel.ClrType.IsValueType)

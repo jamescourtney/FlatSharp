@@ -69,6 +69,8 @@ namespace FlatSharpTests
             [InlineData(typeof(InvalidStruct_Empty), "Value struct 'FlatSharpTests.ValueStructTests.TypeModel.InvalidStruct_Empty' is empty or has no public fields.")]
             [InlineData(typeof(InvalidStruct_NoPublicFields), "Value struct 'FlatSharpTests.ValueStructTests.TypeModel.InvalidStruct_NoPublicFields' is empty or has no public fields.")]
             [InlineData(typeof(InvalidStruct_ContainsReferenceType), "Struct 'FlatSharpTests.ValueStructTests.TypeModel.InvalidStruct_ContainsReferenceType' property Foo must be a value type if the struct is a value type.")]
+            [InlineData(typeof(InvalidStruct_WrongFieldOffset), "Struct 'FlatSharpTests.ValueStructTests.TypeModel.InvalidStruct_WrongFieldOffset' property 'B' defines invalid [FieldOffset] attribute. Expected: [FieldOffset(8)].")]
+            [InlineData(typeof(InvalidStruct_NotValidStructMember), "Struct 'FlatSharpTests.ValueStructTests.TypeModel.InvalidStruct_NotValidStructMember' property A cannot be part of a flatbuffer struct. Structs may only contain scalars and other structs.")]
             public void InvalidStructs(Type structType, string expectedError)
             {
                 var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(structType));
@@ -92,24 +94,31 @@ namespace FlatSharpTests
 
             [FlatBufferStruct, StructLayout(LayoutKind.Explicit)]
             public struct InvalidStruct_ContainsReferenceType {[FieldOffset(0)] public ReferenceStruct Foo; }
+
+            [FlatBufferStruct, StructLayout(LayoutKind.Explicit)]
+            public struct InvalidStruct_WrongFieldOffset { [FieldOffset(0)] public long A; [FieldOffset(1)] public byte B; }
+
+            [FlatBufferStruct, StructLayout(LayoutKind.Explicit)]
+            public struct InvalidStruct_NotValidStructMember {[FieldOffset(0)] public string A; }
         }
 
         public class Serialization
         {
             [Theory]
-            [InlineData(typeof(ValidStruct_Marshallable), true)]
-            [InlineData(typeof(ValidStruct_Marshallable), false)]
-            [InlineData(typeof(ValidStruct_Marshallable_HiddenField), true)]
-            [InlineData(typeof(ValidStruct_Marshallable_HiddenField), false)]
-            [InlineData(typeof(ValidStruct_NotMarshallable_DueToPrivateMember), true)]
-            [InlineData(typeof(ValidStruct_NotMarshallable_DueToPrivateMember), false)]
-            [InlineData(typeof(ValidStruct_NotMarshallable_DueToSize), true)]
-            [InlineData(typeof(ValidStruct_NotMarshallable_DueToSize), false)]
-            [InlineData(typeof(ValidStruct_NotMarshallable_MissingSizeHint), true)]
-            [InlineData(typeof(ValidStruct_NotMarshallable_MissingSizeHint), false)]
-            public void SerializeType(Type type, bool enableMarshal)
+            [InlineData(typeof(ValidStruct_Marshallable), true, true)]
+            [InlineData(typeof(ValidStruct_Marshallable), false, false)]
+            [InlineData(typeof(ValidStruct_Marshallable_HiddenField), true, true)]
+            [InlineData(typeof(ValidStruct_Marshallable_HiddenField), false, false)]
+            [InlineData(typeof(ValidStruct_NotMarshallable_DueToPrivateMember), true, false)]
+            [InlineData(typeof(ValidStruct_NotMarshallable_DueToPrivateMember), false, false)]
+            [InlineData(typeof(ValidStruct_NotMarshallable_DueToSize), true, false)]
+            [InlineData(typeof(ValidStruct_NotMarshallable_DueToSize), false, false)]
+            [InlineData(typeof(ValidStruct_NotMarshallable_MissingSizeHint), true, false)]
+            [InlineData(typeof(ValidStruct_NotMarshallable_MissingSizeHint), false, false)]
+            public void SerializeType(Type type, bool enableMarshal, bool expectMarshal)
             {
                 Type tableType = typeof(SimpleTable<>).MakeGenericType(type);
+
                 ISimpleTable simpleTable = (ISimpleTable)Activator.CreateInstance(tableType);
 
                 IValidStruct s = (IValidStruct)Activator.CreateInstance(type);
@@ -121,7 +130,7 @@ namespace FlatSharpTests
 
                 simpleTable.Item = s;
 
-                var fbs = new FlatBufferSerializer(new FlatBufferSerializerOptions {EnableValueStructMemoryMarshalDeserialization = enableMarshal });
+                var fbs = new FlatBufferSerializer(new FlatBufferSerializerOptions { EnableValueStructMemoryMarshalDeserialization = enableMarshal });
 
                 ISerializer serializer = fbs.Compile(simpleTable);
                 byte[] data = new byte[1024];
@@ -143,7 +152,10 @@ namespace FlatSharpTests
 
                 Assert.Equal(expectedData.Length, bytesWritten);
                 Assert.True(expectedData.AsSpan().SequenceEqual(data.AsSpan().Slice(0, bytesWritten)));
-                Assert.Equal(enableMarshal, serializer.CSharp.Contains("MemoryMarshal.Cast"));
+
+                Assert.Equal(
+                    expectMarshal,
+                    serializer.CSharp.Contains($"MemoryMarshal.Cast<byte, {type.GetCompilableTypeName()}>"));
             }
         }
 
@@ -166,7 +178,7 @@ namespace FlatSharpTests
             where T : struct, IValidStruct
         {
             [FlatBufferItem(0)]
-            public virtual Nullable<T> Item { get; set; }
+            public virtual T? Item { get; set; }
 
             IValidStruct? ISimpleTable.Item { get => this.Item; set => this.Item = (T?)value; }
         }
