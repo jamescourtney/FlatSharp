@@ -138,20 +138,16 @@ namespace FlatSharp.TypeModel
             }
             else if (structAttribute is not null)
             {
-                if (!type.IsValueType)
-                {
-                    typeModel = new StructTypeModel(type, container);
-                    return true;
-                }
-                else if (
-                    type.IsValueType &&
-                    type.Attributes.HasFlag(TypeAttributes.ExplicitLayout) &&
-                    type.IsExplicitLayout &&
-                    type.StructLayoutAttribute?.Value == LayoutKind.Explicit)
+                if (type.IsValueType)
                 {
                     typeModel = new ValueStructTypeModel(type, container);
-                    return true;
                 }
+                else
+                {
+                    typeModel = new StructTypeModel(type, container);
+                }
+
+                return true;
             }
 
             typeModel = null;

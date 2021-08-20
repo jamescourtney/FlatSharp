@@ -108,6 +108,12 @@ namespace FlatSharp
         public bool EnableAppDomainInterceptOnAssemblyLoad { get; set; }
 
         /// <summary>
+        /// Allows FlatSharp to deserialize value structs with MemoryMarshal calls when on Little Endian
+        /// architectures.
+        /// </summary>
+        public bool EnableValueStructMemoryMarshalDeserialization { get; set; } = true;
+
+        /// <summary>
         /// Indicates if "protected internal" modifiers should be converted to protected.
         /// </summary>
         internal bool ConvertProtectedInternalToProtected { get; set; } = true;

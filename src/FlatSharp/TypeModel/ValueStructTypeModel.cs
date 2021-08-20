@@ -87,6 +87,8 @@
 
         public override IEnumerable<ITypeModel> Children => this.members.Select(x => x.model);
 
+        public bool CanMarshalWhenLittleEndian { get; private set; }
+
         public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
         {
             // Value types are pretty easy to clone!
@@ -110,6 +112,17 @@
                         {context.OffsetVariableName} + {member.offset});");
             }
 
+            string nonMarshalBody = $@"
+                var item = default({CSharpHelpers.GetCompilableTypeName(this.ClrType)});
+                {string.Join("\r\n", propertyStatements)}
+                return item;
+            ";
+
+            if (!this.CanMarshalWhenLittleEndian || !context.Options.EnableValueStructMemoryMarshalDeserialization)
+            {
+                return new CodeGeneratedMethod(nonMarshalBody);
+            }
+
             // For little endian architectures, we can do the equivalent of a reinterpret_cast operation. This will be
             // generally faster than reading fields individually, since we will read entire words.
             string body = $@"
@@ -120,11 +133,9 @@
             }}
             else
             {{
-                var item = default({CSharpHelpers.GetCompilableTypeName(this.ClrType)});
-                {string.Join("\r\n", propertyStatements)}
-                return item;
+                {nonMarshalBody}
             }}
-";
+            ";
 
             return new CodeGeneratedMethod(body);
         }
@@ -144,18 +155,26 @@
                 propertyStatements.Add(fieldContext.GetSerializeInvocation(member.field.FieldType) + ";");
             }
 
-            // For little endian architectures, we can do the equivalent of a reinterpret_cast operation.
-            string body = $@"
-            if (BitConverter.IsLittleEndian)
-            {{
-                var tempSpan = {typeof(MemoryMarshal).FullName}.{nameof(MemoryMarshal.Cast)}<byte, {CSharpHelpers.GetCompilableTypeName(this.ClrType)}>({context.SpanVariableName}.Slice({context.OffsetVariableName}, {this.inlineSize}));
-                tempSpan[0] = {context.ValueVariableName};
-            }}
+            string body;
+            if (this.CanMarshalWhenLittleEndian && 
+                context.Options.EnableValueStructMemoryMarshalDeserialization)
+            {
+                body = $@"
+                if (BitConverter.IsLittleEndian)
+                {{
+                    var tempSpan = {typeof(MemoryMarshal).FullName}.{nameof(MemoryMarshal.Cast)}<byte, {CSharpHelpers.GetCompilableTypeName(this.ClrType)}>({context.SpanVariableName}.Slice({context.OffsetVariableName}, {this.inlineSize}));
+                    tempSpan[0] = {context.ValueVariableName};
+                }}
+                else
+                {{
+                    {string.Join("\r\n", propertyStatements)}
+                }}
+                ";
+            }
             else
-            {{
-                {string.Join("\r\n", propertyStatements)}
-            }}
-";
+            {
+                body = string.Join("\r\n", propertyStatements);
+            }
 
             return new CodeGeneratedMethod(body);
         }
@@ -163,9 +182,14 @@
         public override void Initialize()
         {
             var structAttribute = this.ClrType.GetCustomAttribute<FlatBufferStructAttribute>();
-            if (structAttribute == null)
+            FlatSharpInternal.Assert(structAttribute is not null, "Struct attribute was null");
+            FlatSharpInternal.Assert(this.ClrType.IsValueType, "Struct was not a value type");
+
+            if (this.ClrType.StructLayoutAttribute is null ||
+                this.ClrType.StructLayoutAttribute.Value != LayoutKind.Explicit ||
+                !this.ClrType.IsExplicitLayout)
             {
-                throw new InvalidFlatBufferDefinitionException($"Can't create struct type model from type {this.ClrType.Name} because it does not have a [FlatBufferStruct] attribute.");
+                throw new InvalidFlatBufferDefinitionException($"Value struct '{this.GetCompilableTypeName()}' must have [StructLayout(LayoutKind.Explicit)] specified.");
             }
 
             var fields = this.ClrType
@@ -181,7 +205,7 @@
 
             if (fields.Count == 0)
             {
-                throw new InvalidFlatBufferDefinitionException($"Struct '{this.GetCompilableTypeName()}' is empty or has no public properties with '[FieldOffset]' attributes.");
+                throw new InvalidFlatBufferDefinitionException($"Value struct '{this.GetCompilableTypeName()}' is empty or has no public fields.");
             }
 
             this.inlineSize = 0;
@@ -194,12 +218,12 @@
 
                 if (!propertyModel.IsValidStructMember || propertyModel.PhysicalLayout.Length > 1)
                 {
-                    throw new InvalidFlatBufferDefinitionException($"Struct property {field.Name} with type {field.FieldType.Name} cannot be part of a flatbuffer struct.");
+                    throw new InvalidFlatBufferDefinitionException($"Struct property {field.Name} with type {field.FieldType.GetCompilableTypeName()} cannot be part of a flatbuffer struct.");
                 }
 
-                if (this.ClrType.IsValueType && !propertyModel.ClrType.IsValueType)
+                if (!propertyModel.ClrType.IsValueType)
                 {
-                    throw new InvalidFlatBufferDefinitionException($"Struct {this.ClrType.Name} property {field.Name} must be a value type if the struct is a value type.");
+                    throw new InvalidFlatBufferDefinitionException($"Struct '{this.GetCompilableTypeName()}' property {field.Name} must be a value type if the struct is a value type.");
                 }
 
                 int propertySize = propertyModel.PhysicalLayout[0].InlineSize;
@@ -212,7 +236,7 @@
                 this.members.Add((this.inlineSize, field, propertyModel));
                 if (offsetAttribute?.Value != this.inlineSize)
                 {
-                    throw new InvalidFlatBufferDefinitionException($"Struct '{this.ClrType.Name}' property '{field.Name}' defines invalid [FieldOffset] attribute. Expected: [FieldOffset({this.inlineSize})].");
+                    throw new InvalidFlatBufferDefinitionException($"Struct '{this.ClrType.GetCompilableTypeName()}' property '{field.Name}' defines invalid [FieldOffset] attribute. Expected: [FieldOffset({this.inlineSize})].");
                 }
 
                 this.inlineSize += propertyModel.PhysicalLayout[0].InlineSize;
@@ -220,15 +244,10 @@
 
             if (!this.ClrType.IsPublic && !this.ClrType.IsNestedPublic)
             {
-                throw new InvalidFlatBufferDefinitionException($"Can't create type model from type {this.ClrType.Name} because it is not public.");
+                throw new InvalidFlatBufferDefinitionException($"Can't create type model from type {this.ClrType.GetCompilableTypeName()} because it is not public.");
             }
 
-            if (!this.ClrType.Attributes.HasFlag(TypeAttributes.ExplicitLayout) ||
-                this.ClrType.StructLayoutAttribute?.Value != LayoutKind.Explicit ||
-                this.ClrType.StructLayoutAttribute?.Size != this.inlineSize)
-            {
-                throw new InvalidFlatBufferDefinitionException($"Can't create struct type model from type {this.ClrType.Name} because it does not have a [StructLayout(LayoutKind.Explicit, Size = {this.inlineSize})] attribute.");
-            }
+            this.CanMarshalWhenLittleEndian = Marshal.SizeOf(this.ClrType) == this.inlineSize;
         }
     }
 }
