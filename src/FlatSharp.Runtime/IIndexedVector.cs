@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-#nullable enable
 namespace FlatSharp
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
+    using System.Diagnostics.CodeAnalysis;
 
     /// <summary>
     /// An indexed vector -- suitable for accessing values by their keys.
     /// </summary>
     public interface IIndexedVector<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>>
         where TValue : class
+        where TKey : notnull
     {
         /// <summary>
         /// Looks up the value by key.
@@ -45,7 +45,7 @@ namespace FlatSharp
         /// <summary>
         /// Tries to get the value of the given key.
         /// </summary>
-        bool TryGetValue(TKey key, out TValue? value);
+        bool TryGetValue(TKey key, [NotNullWhen(true)] out TValue? value);
 
         /// <summary>
         /// Returns true if the vector contains the given key.
@@ -76,21 +76,5 @@ namespace FlatSharp
         /// Removes the item identified by the key. This method returns false if the key is not present.
         /// </summary>
         bool Remove(TKey key);
-    }
-
-    /// <summary>
-    /// Extensions for the IIndexedVector interface.
-    /// </summary>
-    public static class IIndexedVectorExtensions
-    {
-        /// <summary>
-        /// Clones the given indexed vector.
-        /// </summary>
-        public static IIndexedVector<TKey, TValue> Clone<TKey, TValue>(
-            this IIndexedVector<TKey, TValue> source,
-            Func<TValue, TValue> valueClone) where TValue : class
-        {
-            return new IndexedVector<TKey, TValue>(source.Select(x => valueClone(x.Value)), source.Count, mutable: false);
-        }
     }
 }

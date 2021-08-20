@@ -15,6 +15,10 @@
             Unions.UnionsExample.Run();
             SharedStrings.SharedStringsExample.Run();
             IndexedVectors.IndexedVectorsExample.Run();
+            TypeFacades.TypeFacadesExample.Run();
+            StructVectors.StructVectorsSample.Run();
+            WriteThrough.WriteThroughSample.Run();
+            StructMarshalling.StructMarshallingSample.Run();
         }
     }
 }

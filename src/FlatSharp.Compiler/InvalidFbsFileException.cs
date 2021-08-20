@@ -30,6 +30,10 @@ namespace FlatSharp.Compiler
             this.Errors = errors.ToArray();
         }
 
+        public InvalidFbsFileException(string error) : this(new[] { error })
+        {
+        }
+
         public string[] Errors { get; }
     }
 }

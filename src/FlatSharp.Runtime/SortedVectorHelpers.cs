@@ -32,6 +32,7 @@ furnished to do so, subject to the following conditions:
 namespace FlatSharp
 {
     using System;
+    using System.Buffers;
     using System.Buffers.Binary;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
@@ -40,8 +41,6 @@ namespace FlatSharp
     using System.Reflection;
 
     using FlatSharp.Attributes;
-
-#nullable enable
 
     /// <summary>
     /// Helper methods for dealing with sorted vectors. This class provides functionality for both sorting vectors and
@@ -76,12 +75,14 @@ namespace FlatSharp
                 int vectorLength = (int)ScalarSpanReader.ReadUInt(buffer.Slice(vectorStartOffset));
                 int index0Position = vectorStartOffset + sizeof(int);
 
+                (int, int, int)[]? pooledArray = null;
+
                 // Traverse the vector and figure out the offsets of all the keys.
                 // Store that in some local data, hopefully on the stack. 512 is somewhat arbitrary, but we want to avoid stack overflows.
                 Span<(int offset, int length, int tableOffset)> keyOffsets =
                     vectorLength < 512
                     ? stackalloc (int, int, int)[vectorLength]
-                    : new (int, int, int)[vectorLength];
+                    : (pooledArray = ArrayPool<(int, int, int)>.Shared.Rent(vectorLength)).AsSpan().Slice(0, vectorLength);
 
                 for (int i = 0; i < keyOffsets.Length; ++i)
                 {
@@ -100,6 +101,11 @@ namespace FlatSharp
                     (_, _, int tableOffset) = keyOffsets[i];
                     BinaryPrimitives.WriteUInt32LittleEndian(boundedVector.Slice(sizeof(uint) * i), (uint)(tableOffset - nextPosition));
                     nextPosition += sizeof(uint);
+                }
+
+                if (pooledArray is not null)
+                {
+                    ArrayPool<(int, int, int)>.Shared.Return(pooledArray);
                 }
             }
         }
@@ -219,7 +225,12 @@ namespace FlatSharp
                 }
 
                 PropertyInfo keyProperty = keys[0];
-                var keyGetterDelegate = (Func<TTable, TKey>)Delegate.CreateDelegate(typeof(Func<TTable, TKey>), keyProperty.GetMethod ?? keyProperty.GetGetMethod());
+                if (keyProperty.GetMethod is null)
+                {
+                    throw new InvalidOperationException($"Table '{typeof(TTable).Name}' declares key property '{keyProperty.Name}' without a get method.");
+                }
+
+                var keyGetterDelegate = (Func<TTable, TKey>)Delegate.CreateDelegate(typeof(Func<TTable, TKey>), keyProperty.GetMethod);
                 value = (keyProperty.PropertyType, keyGetterDelegate);
                 KeyGetterCallbacks[typeof(TTable)] = value;
             }

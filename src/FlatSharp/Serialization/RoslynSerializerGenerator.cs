@@ -18,11 +18,14 @@ namespace FlatSharp
 {
     using System;
     using System.Buffers;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
+    using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using System.Runtime.CompilerServices;
     using FlatSharp.Attributes;
     using FlatSharp.TypeModel;
     using Microsoft.CodeAnalysis;
@@ -41,8 +44,8 @@ namespace FlatSharp
     {
         public const string GeneratedSerializerClassName = "GeneratedSerializer";
 
-        private static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(LanguageVersion.Latest);
-        private static readonly Dictionary<string, (Assembly, byte[])> AssemblyNameReferenceMapping = new Dictionary<string, (Assembly, byte[])>();
+        private static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(LanguageVersion.CSharp8);
+        private static readonly ConcurrentDictionary<string, (Assembly, byte[])> AssemblyNameReferenceMapping = new ConcurrentDictionary<string, (Assembly, byte[])>();
 
         private readonly Dictionary<Type, string> maxSizeMethods = new Dictionary<Type, string>();
         private readonly Dictionary<Type, string> writeMethods = new Dictionary<Type, string>();
@@ -57,25 +60,50 @@ namespace FlatSharp
 
         static RoslynSerializerGenerator()
         {
+            [ExcludeFromCodeCoverage]
+            static Assembly TryLoadFromFile(string assemblyName)
+            {
+                try
+                {
+                    return Assembly.Load(assemblyName);
+                }
+                catch (FileNotFoundException)
+                {
+                    try
+                    {
+                        // For .NET 47, NetStandard may not be present in the GAC. Try to expand to see if we can grab it locally.
+                        return Assembly.LoadFile(Path.Combine(typeof(RoslynSerializerGenerator).Assembly.Location, $"{assemblyName}.dll"));
+                    }
+                    catch (FileNotFoundException)
+                    {
+                        // Method of last resort: Load our embedded resource.
+                        var embeddedResourceName = typeof(RoslynSerializerGenerator).Assembly.GetManifestResourceNames().Single(
+                            x => x.IndexOf(assemblyName, StringComparison.OrdinalIgnoreCase) >= 0);
+
+                        using var resourceStream = typeof(RoslynSerializerGenerator).Assembly.GetManifestResourceStream(embeddedResourceName);
+                        using var memoryStream = new MemoryStream();
+
+                        resourceStream!.CopyTo(memoryStream);
+                        return Assembly.Load(memoryStream.ToArray());
+                    }
+                }
+            }
+
             commonReferences = new List<MetadataReference>();
 
             foreach (string name in new[] { "netstandard", "System.Collections", "System.Runtime" })
             {
-                Assembly assembly;
-                try
-                {
-                    assembly = Assembly.Load(name);
-                }
-                catch (FileNotFoundException)
-                {
-                    // For .NET 47, NetStandard may not be present in the GAC. Try to expand to see if we can grab it locally.
-                    assembly = Assembly.LoadFile(Path.Combine(typeof(RoslynSerializerGenerator).Assembly.Location, $"{name}.dll"));
-                }
-
+                Assembly assembly = TryLoadFromFile(name);
                 var reference = MetadataReference.CreateFromFile(assembly.Location);
                 commonReferences.Add(reference);
             }
         }
+
+        /// <summary>
+        /// Enables "treat warnings as errors" functionality. This is great for unit test contexts, but 
+        /// less great for real-life scenarios. 
+        /// </summary>
+        internal static bool EnableStrictValidation { get; set; }
 
         public RoslynSerializerGenerator(FlatBufferSerializerOptions options, TypeModelContainer typeModelContainer)
         {
@@ -101,16 +129,30 @@ $@"
                 {code}
             }}";
 
-            (Assembly assembly, Func<string> formattedTextFactory, byte[] assemblyData) = CompileAssembly(template, this.options.EnableAppDomainInterceptOnAssemblyLoad, typeof(TRoot).Assembly);
+            var externalRefs = this.TraverseAssemblyReferenceGraph<TRoot>();
 
-            object item = Activator.CreateInstance(assembly.GetTypes()[0]);
-            var serializer = (IGeneratedSerializer<TRoot>)item;
+            (Assembly assembly, Func<string> formattedTextFactory, byte[] assemblyData) =
+                CompileAssembly(
+                    template,
+                    this.options.EnableAppDomainInterceptOnAssemblyLoad,
+                    externalRefs.ToArray());
 
-            return new GeneratedSerializerWrapper<TRoot>(
-                serializer,
-                assembly,
-                formattedTextFactory,
-                assemblyData);
+            Type? type = assembly.GetType($"Generated.{GeneratedSerializerClassName}");
+            FlatSharpInternal.Assert(type is not null, "Generated assembly did not contain serializer type.");
+
+            object? item = Activator.CreateInstance(type);
+            if (item is IGeneratedSerializer<TRoot> serializer)
+            {
+                return new GeneratedSerializerWrapper<TRoot>(
+                    serializer,
+                    assembly,
+                    formattedTextFactory,
+                    assemblyData);
+            }
+
+            FlatSharpInternal.Assert(false, $"Compilation succeeded, but created instance {item}, Type = {assembly.GetTypes()[0]}");
+
+            return null; // won't ever hit.
         }
 
         internal string GenerateCSharp<TRoot>(string visibility = "public")
@@ -118,7 +160,7 @@ $@"
             ITypeModel rootModel = this.typeModelContainer.CreateTypeModel(typeof(TRoot));
             if (rootModel.SchemaType != FlatBufferSchemaType.Table)
             {
-                throw new InvalidFlatBufferDefinitionException($"Can only compile [FlatBufferTable] elements as root types. Type '{typeof(TRoot).Name}' is a '{rootModel.GetType().Name}'.");
+                throw new InvalidFlatBufferDefinitionException($"Can only compile [FlatBufferTable] elements as root types. Type '{CSharpHelpers.GetCompilableTypeName(typeof(TRoot))}' is a {rootModel.SchemaType}.");
             }
 
             this.DefineMethods(rootModel);
@@ -128,7 +170,33 @@ $@"
             string code = $@"
                 [{nameof(FlatSharpGeneratedSerializerAttribute)}({nameof(FlatBufferDeserializationOption)}.{this.options.DeserializationOption})]
                 {visibility} sealed class {GeneratedSerializerClassName} : {nameof(IGeneratedSerializer<byte>)}<{CSharpHelpers.GetCompilableTypeName(typeof(TRoot))}>
-                {{
+                {{    
+                    // Method generated to help AOT compilers make good decisions about generics.
+                    public void __AotHelper()
+                    {{
+                        this.Write<ISpanWriter>(default!, new byte[10], default!, default!, default!);
+                        this.Write<SpanWriter>(default!, new byte[10], default!, default!, default!);
+
+                        this.Parse<IInputBuffer>(default!, 0);
+                        this.Parse<MemoryInputBuffer.Wrapper>(default!, 0);
+                        this.Parse<MemoryInputBuffer>(default!, 0);
+                        this.Parse<ReadOnlyMemoryInputBuffer.Wrapper>(default!, 0);
+                        this.Parse<ReadOnlyMemoryInputBuffer>(default!, 0);
+                        this.Parse<ArrayInputBuffer.Wrapper>(default!, 0);
+                        this.Parse<ArrayInputBuffer>(default!, 0);
+                        
+                #if FLATSHARP_UNSAFE
+                        this.Parse<FlatSharp.Unsafe.UnsafeArrayInputBuffer>(default!, 0);
+                        this.Parse<FlatSharp.Unsafe.UnsafeArrayInputBuffer.Wrapper>(default!, 0);
+                        this.Parse<FlatSharp.Unsafe.UnsafeMemoryInputBuffer>(default!, 0);
+                        this.Parse<FlatSharp.Unsafe.UnsafeMemoryInputBuffer.Wrapper>(default!, 0);
+                        this.Write<FlatSharp.Unsafe.UnsafeSpanWriter>(default!, new byte[10], default!, default!, default!);
+                        this.Write<FlatSharp.Unsafe.UnsafeSpanWriter.Wrapper>(default!, new byte[10], default!, default!, default!);
+                #endif
+
+                        throw new InvalidOperationException(""__AotHelper is not intended to be invoked"");
+                    }}
+
                     {string.Join("\r\n", this.methodDeclarations.Select(x => x.ToFullString()))}
                 }}
 ";
@@ -162,10 +230,95 @@ $@"
             bool enableAppDomainIntercept,
             params Assembly[] additionalReferences)
         {
+            var rootNode = ApplySyntaxTransformations(CSharpSyntaxTree.ParseText(sourceCode, ParseOptions).GetRoot());
+            SyntaxTree tree = SyntaxFactory.SyntaxTree(rootNode);
+            Func<string> formattedTextFactory = GetFormattedTextFactory(tree);
+
+#if DEBUG
+            string actualCSharp = tree.ToString();
+            var debugCSharp = formattedTextFactory();
+
+            rootNode = ApplySyntaxTransformations(CSharpSyntaxTree.ParseText(debugCSharp, ParseOptions).GetRoot());
+            tree = SyntaxFactory.SyntaxTree(rootNode);
+            formattedTextFactory = GetFormattedTextFactory(tree);
+#endif
+
+            string name = $"FlatSharpDynamicAssembly_{Guid.NewGuid():n}";
+            var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+                .WithModuleName(name)
+                .WithAllowUnsafe(false)
+                .WithOptimizationLevel(OptimizationLevel.Release)
+                .WithNullableContextOptions(NullableContextOptions.Enable);
+
+            CSharpCompilation compilation = CSharpCompilation.Create(
+                name,
+                new[] { tree },
+                GetMetadataReferences(additionalReferences),
+                options);
+
+            using (var ms = new MemoryStream())
+            {
+                EmitResult result = compilation.Emit(ms);
+
+                ThrowOnEmitFailure(
+                    result, 
+                    tree,
+#if DEBUG
+                    debugCSharp
+#else
+                    formattedTextFactory
+#endif
+                );
+
+                var metadataRef = compilation.ToMetadataReference();
+                ms.Position = 0;
+                byte[] assemblyData = ms.ToArray();
+
+                ResolveEventHandler? handler = null;
+                if (enableAppDomainIntercept)
+                {
+                    handler = (s, e) =>
+                    {
+                        AssemblyName requestedName = new AssemblyName(e.Name);
+                        if (requestedName.Name is not null && AssemblyNameReferenceMapping.TryGetValue(requestedName.Name, out var value))
+                        {
+                            return value.Item1;
+                        }
+
+                        return null;
+                    };
+
+                    AppDomain.CurrentDomain.AssemblyResolve += handler;
+                }
+
+                Assembly assembly;
+                try
+                {
+                    assembly = Assembly.Load(assemblyData);
+                    assembly.GetTypes();
+                }
+                finally
+                {
+                    if (handler is not null)
+                    {
+                        AppDomain.CurrentDomain.AssemblyResolve -= handler;
+                    }
+                }
+
+                AssemblyNameReferenceMapping[name] = (assembly, assemblyData);
+
+                return (assembly, formattedTextFactory, assemblyData);
+            }
+        }
+
+        private static List<MetadataReference> GetMetadataReferences(Assembly[] additionalReferences)
+        {
             List<MetadataReference> references = new List<MetadataReference>(commonReferences);
             foreach (Assembly additionalReference in additionalReferences)
             {
-                if (AssemblyNameReferenceMapping.TryGetValue(additionalReference.GetName().Name, out var compilationRef))
+                var referenceName = additionalReference.GetName().Name;
+
+                if (referenceName is not null && AssemblyNameReferenceMapping.TryGetValue(referenceName, out var compilationRef))
                 {
                     references.Add(MetadataReference.CreateFromImage(compilationRef.Item2));
                 }
@@ -191,89 +344,58 @@ $@"
                 MetadataReference.CreateFromFile(typeof(ReadOnlyDictionary<,>).Assembly.Location),
             });
 
-            var rootNode = ApplySyntaxTransformations(CSharpSyntaxTree.ParseText(sourceCode, ParseOptions).GetRoot());
-            SyntaxTree tree = SyntaxFactory.SyntaxTree(rootNode);
-            Func<string> formattedTextFactory = GetFormattedTextFactory(tree);
+            return references;
+        }
 
+        private static void ThrowOnEmitFailure(
+            EmitResult result,
+            SyntaxTree syntaxTree,
 #if DEBUG
-            string actualCSharp = tree.ToString();
-            var debugCSharp = formattedTextFactory();
+            string cSharp
+#else
+            Func<string> cSharpFactory
+#endif
+            )
+        {
+            if (!result.Success || EnableStrictValidation)
+            {
+                var failures = result.Diagnostics
+                    .Where(d => d.Id != "CS8019") // unnecessary using directive.
+                    .Where(d => d.Id != "CS1701") // DLL version mismatch
+                    .ToArray();
+
+                if (failures.Length > 0)
+                {
+                    using var workspace = new AdhocWorkspace();
+                    List<string> errors = new List<string>();
+
+                    foreach (var failure in failures)
+                    {
+                        string error = failure.ToString();
+                        SyntaxNode node = syntaxTree.GetRoot().FindNode(failure.Location.SourceSpan);
+                        var formattedNode = Formatter.Format(node, workspace);
+                        string formatted = formattedNode.ToFullString();
+                        formatted = formatted.Trim().Replace('\r', ' ').Replace('\n', ' ');
+
+                        errors.Add($"FlatSharp compilation error: {error}, Context = \"{formatted}\"");
+                    }
+
+#if !DEBUG
+                    string cSharp = cSharpFactory();
 #endif
 
-            string name = $"FlatSharpDynamicAssembly_{Guid.NewGuid():n}";
-            var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
-                .WithModuleName(name)
-                .WithAllowUnsafe(false)
-                .WithOptimizationLevel(OptimizationLevel.Release);
-
-            CSharpCompilation compilation = CSharpCompilation.Create(
-                name,
-                new[] { tree },
-                references,
-                options);
-
-            using (var ms = new MemoryStream())
-            {
-                EmitResult result = compilation.Emit(ms);
-
-                if (!result.Success)
-                {
-                    string[] failures = result.Diagnostics
-                        .Where(diagnostic => diagnostic.IsWarningAsError || diagnostic.Severity == DiagnosticSeverity.Error)
-                        .Select(d => d.ToString())
-                        .ToArray();
-
-                    throw new FlatSharpCompilationException(failures, formattedTextFactory());
+                    throw new FlatSharpCompilationException(errors.ToArray(), cSharp);
                 }
-
-                var metadataRef = compilation.ToMetadataReference();
-                ms.Position = 0;
-                byte[] assemblyData = ms.ToArray();
-
-                ResolveEventHandler handler = null;
-                if (enableAppDomainIntercept)
-                {
-                    handler = (s, e) =>
-                    {
-                        AssemblyName requestedName = new AssemblyName(e.Name);
-                        if (AssemblyNameReferenceMapping.TryGetValue(requestedName.Name, out var value))
-                        {
-                            return value.Item1;
-                        }
-
-                        return null;
-                    };
-
-                    AppDomain.CurrentDomain.AssemblyResolve += handler;
-                }
-
-                Assembly assembly;
-                try
-                {
-                    assembly = Assembly.Load(assemblyData);
-                    assembly.GetTypes();
-                }
-                finally
-                {
-                    if (handler != null)
-                    {
-                        AppDomain.CurrentDomain.AssemblyResolve -= handler;
-                    }
-                }
-
-                AssemblyNameReferenceMapping[name] = (assembly, assemblyData);
-
-                return (assembly, formattedTextFactory, assemblyData);
             }
         }
 
         /// <summary>
         /// Recursively crawls through the object graph and looks for methods to define.
         /// </summary>
-        private void DefineMethods(ITypeModel model)
+        private void DefineMethods(ITypeModel rootModel)
         {
             HashSet<Type> types = new HashSet<Type>();
-            model.TraverseObjectGraph(types);
+            rootModel.TraverseObjectGraph(types);
 
             foreach (var type in types)
             {
@@ -282,6 +404,45 @@ $@"
                 this.maxSizeMethods[type] = $"GetMaxSizeOf_{nameBase}";
                 this.readMethods[type] = $"Read_{nameBase}";
             }
+        }
+
+        private HashSet<Assembly> TraverseAssemblyReferenceGraph<TRoot>()
+        {
+            var rootModel = this.typeModelContainer.CreateTypeModel(typeof(TRoot));
+
+            // all type model types.
+            HashSet<Type> types = new HashSet<Type>();
+            rootModel.TraverseObjectGraph(types);
+
+            foreach (var type in types.ToArray())
+            {
+                ITypeModel typeModel = this.typeModelContainer.CreateTypeModel(type);
+                types.UnionWith(typeModel.GetReferencedTypes());
+            }
+
+            Queue<Assembly> pendingAssemblies = new Queue<Assembly>(types.Select(x => x.Assembly));
+            HashSet<Assembly> seenAssemblies = new HashSet<Assembly>();
+
+            while (pendingAssemblies.Count > 0)
+            {
+                var assembly = pendingAssemblies.Dequeue();
+
+                if (seenAssemblies.Add(assembly))
+                {
+                    foreach (var assemblyName in assembly.GetReferencedAssemblies())
+                    {
+                        try
+                        {
+                            pendingAssemblies.Enqueue(Assembly.Load(assemblyName));
+                        }
+                        catch
+                        {
+                        }
+                    }
+                }
+            }
+
+            return seenAssemblies;
         }
 
         private void ImplementInterfaceMethod(Type rootType)
@@ -327,9 +488,11 @@ $@"
             foreach (var type in this.writeMethods.Keys)
             {
                 ITypeModel typeModel = this.typeModelContainer.CreateTypeModel(type);
+                bool isOffsetByRef = typeModel.PhysicalLayout.Length > 1;
+
                 var maxSizeContext = new GetMaxSizeCodeGenContext("value", this.maxSizeMethods, this.options);
-                var parseContext = new ParserCodeGenContext("buffer", "offset", "TInputBuffer", this.readMethods, this.options);
-                var serializeContext = new SerializationCodeGenContext("context", "span", "spanWriter", "value", "offset", this.writeMethods, this.options);
+                var parseContext = new ParserCodeGenContext("buffer", "offset", "TInputBuffer", isOffsetByRef, this.readMethods, this.writeMethods, this.options);
+                var serializeContext = new SerializationCodeGenContext("context", "span", "spanWriter", "value", "offset", isOffsetByRef, this.writeMethods, this.typeModelContainer, this.options);
 
                 var maxSizeMethod = typeModel.CreateGetMaxSizeMethodBody(maxSizeContext);
                 var parseMethod = typeModel.CreateParseMethodBody(parseContext);
@@ -346,6 +509,7 @@ $@"
         /// </summary>
         private static SyntaxNode ApplySyntaxTransformations(SyntaxNode rootNode)
         {
+            // Add checked{} to methods.
             rootNode = rootNode.ReplaceNodes(
                rootNode.DescendantNodes().OfType<MethodDeclarationSyntax>(),
                (a, b) =>
@@ -358,6 +522,7 @@ $@"
                    return a;
                });
 
+            // Add checked{} to constructors.
             rootNode = rootNode.ReplaceNodes(
                 rootNode.DescendantNodes().OfType<ConstructorDeclarationSyntax>(),
                 (a, b) =>
@@ -365,6 +530,7 @@ $@"
                     return b.WithBody(SyntaxFactory.Block(SyntaxFactory.CheckedStatement(SyntaxKind.CheckedStatement, a.Body)));
                 });
 
+            // Add checked{} to property accessors.
             rootNode = rootNode.ReplaceNodes(
                 rootNode.DescendantNodes().OfType<AccessorDeclarationSyntax>(),
                 (a, b) =>
@@ -385,79 +551,61 @@ $@"
         /// </summary>
         private void GenerateGetMaxSizeMethod(Type type, CodeGeneratedMethod method, GetMaxSizeCodeGenContext context)
         {
-            string inlineDeclaration = "[MethodImpl(MethodImplOptions.AggressiveInlining)]";
-            if (!method.IsMethodInline)
-            {
-                inlineDeclaration = string.Empty;
-            }
-
             string declaration =
 $@"
-            {inlineDeclaration}
+            {method.GetMethodImplAttribute()}
             private static int {this.maxSizeMethods[type]}({CSharpHelpers.GetCompilableTypeName(type)} {context.ValueVariableName})
             {{
                 {method.MethodBody}
             }}";
 
-            var node = CSharpSyntaxTree.ParseText(declaration, ParseOptions);
-            this.methodDeclarations.Add(node.GetRoot());
-            
-            if (!string.IsNullOrEmpty(method.ClassDefinition))
-            {
-                node = CSharpSyntaxTree.ParseText(method.ClassDefinition, ParseOptions);
-                this.methodDeclarations.Add(node.GetRoot());
-            }
+            this.AddMethod(method, declaration);
         }
 
         private void GenerateParseMethod(ITypeModel typeModel, CodeGeneratedMethod method, ParserCodeGenContext context)
         {
-            string inlineDeclaration = "[MethodImpl(MethodImplOptions.AggressiveInlining)]";
-            if (!method.IsMethodInline)
-            {
-                inlineDeclaration = string.Empty;
-            }
+            string clrType = typeModel.GetCompilableTypeName();
+
             string declaration =
-$@"
-            {inlineDeclaration}
-            private static {CSharpHelpers.GetCompilableTypeName(typeModel.ClrType)} {this.readMethods[typeModel.ClrType]}<TInputBuffer>(
+            $@"
+            {method.GetMethodImplAttribute()}
+            private static {clrType} {this.readMethods[typeModel.ClrType]}<TInputBuffer>(
                 TInputBuffer {context.InputBufferVariableName}, 
                 {GetVTableOffsetVariableType(typeModel.PhysicalLayout.Length)} {context.OffsetVariableName}) where TInputBuffer : IInputBuffer
             {{
                 {method.MethodBody}
             }}";
 
-            var node = CSharpSyntaxTree.ParseText(declaration, ParseOptions);
-            this.methodDeclarations.Add(node.GetRoot());
-
-            if (!string.IsNullOrEmpty(method.ClassDefinition))
-            {
-                node = CSharpSyntaxTree.ParseText(method.ClassDefinition, ParseOptions);
-                this.methodDeclarations.Add(node.GetRoot());
-            }
+            this.AddMethod(method, declaration);
         }
 
         private void GenerateSerializeMethod(ITypeModel typeModel, CodeGeneratedMethod method, SerializationCodeGenContext context)
         {
-            string inlineDeclaration = "[MethodImpl(MethodImplOptions.AggressiveInlining)]";
-            if (!method.IsMethodInline)
+            string contextParameter = string.Empty;
+            if (typeModel.SerializeMethodRequiresContext)
             {
-                inlineDeclaration = string.Empty;
+                contextParameter = $", {nameof(SerializationContext)} {context.SerializationContextVariableName}";
             }
 
             string declaration =
 $@"
-            {inlineDeclaration}
+            {method.GetMethodImplAttribute()}
             private static void {this.writeMethods[typeModel.ClrType]}<TSpanWriter>(
                 TSpanWriter {context.SpanWriterVariableName}, 
                 Span<byte> {context.SpanVariableName}, 
                 {CSharpHelpers.GetCompilableTypeName(typeModel.ClrType)} {context.ValueVariableName}, 
-                {GetVTableOffsetVariableType(typeModel.PhysicalLayout.Length)} {context.OffsetVariableName}, 
-                {nameof(SerializationContext)} {context.SerializationContextVariableName}) where TSpanWriter : ISpanWriter
+                {GetVTableOffsetVariableType(typeModel.PhysicalLayout.Length)} {context.OffsetVariableName} 
+                {contextParameter}) where TSpanWriter : ISpanWriter
             {{
                 {method.MethodBody}
             }}";
 
-            var node = CSharpSyntaxTree.ParseText(declaration, ParseOptions);
+            this.AddMethod(method, declaration);
+        }
+
+        private void AddMethod(CodeGeneratedMethod method, string fullText)
+        {
+            var node = CSharpSyntaxTree.ParseText(fullText, ParseOptions);
             this.methodDeclarations.Add(node.GetRoot());
 
             if (!string.IsNullOrEmpty(method.ClassDefinition))

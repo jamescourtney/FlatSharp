@@ -17,6 +17,7 @@
 namespace FlatSharp.Attributes
 {
     using System;
+    using System.ComponentModel;
 
     /// <summary>
     /// Defines a member of a FlatBuffer struct or table.
@@ -57,6 +58,31 @@ namespace FlatSharp.Attributes
         /// For table items, gets or sets the default value. The type of the object must match the
         /// type of the property.
         /// </summary>
-        public object DefaultValue { get; set; }
+        public object? DefaultValue { get; set; }
+
+        /// <summary>
+        /// When set, indicates that this item should always be written to tables,
+        /// even if it matches the default value. An exception is raised if this
+        /// is set in a context where Force-Writing is not allowed.
+        /// </summary>
+        public bool ForceWrite { get; set; }
+
+        /// <summary>
+        /// When set, indicates that this property is write-through to the underlying vector.
+        /// Only supported on scalars, structs, and enums in addition to vectors of those types.
+        /// </summary>
+        public bool WriteThrough { get; set; }
+
+        /// <summary>
+        /// When set, indicates that the field is required. Only applies to non-scalar fields on tables.
+        /// </summary>
+        public bool Required { get; set; }
+
+        /// <summary>
+        /// A C# expression that gets the value of the current property from the enclosing object.
+        /// This is a very advanced feature and is only intended to be used by the FlatSharp compiler.
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public string? CustomGetter { get; set; }
     }
 }

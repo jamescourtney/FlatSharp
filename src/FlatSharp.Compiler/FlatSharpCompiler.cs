@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2020 James Courtney
+ * Copyright 2021 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ namespace FlatSharp.Compiler
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Linq;
     using System.Reflection;
@@ -25,33 +26,72 @@ namespace FlatSharp.Compiler
     using System.Security.Cryptography;
     using System.Text;
     using System.Threading;
+
     using Antlr4.Runtime;
-    using Antlr4.Runtime.Misc;
+    using CommandLine;
     using FlatSharp.TypeModel;
 
-    public static class FlatSharpCompiler
+    public class FlatSharpCompiler
     {
+        [ExcludeFromCodeCoverage]
         static int Main(string[] args)
+        {
+            int exitCode = -1;
+
+            try
+            {
+                CommandLine.Parser.Default.ParseArguments<CompilerOptions>(args)
+                    .WithParsed(x =>
+                    {
+                        exitCode = RunCompiler(x);
+                    });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                throw;
+            }
+
+            return exitCode;
+        }
+
+        [ExcludeFromCodeCoverage]
+        private static int RunCompiler(CompilerOptions options)
         {
             using (var context = ErrorContext.Current)
             {
+                if (string.IsNullOrEmpty(options.InputFile))
+                {
+                    Console.Error.WriteLine($"FlatSharp Compiler: No input file specified.");
+                    return -1;
+                }
+
+                if (string.IsNullOrEmpty(options.OutputDirectory))
+                {
+                    Console.Error.WriteLine("FlatSharp compiler: No output directory specified.");
+                    return -1;
+                }
+
+                // Read existing file to see if we even need to do any work.
+                string fbsFileName = Path.GetFileName(options.InputFile);
+                string outputFileName = fbsFileName + ".generated.cs";
+                string outputFullPath = Path.Combine(options.OutputDirectory, outputFileName);
+
                 try
                 {
                     context.PushScope("$");
-
-                    // Read existing file to see if we even need to do any work.
-                    string fbsFileName = Path.GetFileName(args[0]);
-                    string outputFileName = fbsFileName + ".generated.cs";
-                    string outputPath = args.Length < 2 || string.IsNullOrEmpty(args[1]) ? Path.GetDirectoryName(args[0]) : args[1];
-                    string outputFullPath = Path.Combine(outputPath, outputFileName);
-                    // string fbsText = File.ReadAllText(args[0]);
 
                     int attemptCount = 0;
                     while (attemptCount++ <= 5)
                     {
                         try
                         {
-                            RootNodeDefinition rootNode = ParseSyntax(args[0], new IncludeFileLoader());
+                            RootNodeDefinition rootNode = ParseSyntax(options.InputFile, new IncludeFileLoader());
+
+                            if (string.IsNullOrEmpty(rootNode.InputHash))
+                            {
+                                throw new InvalidFbsFileException("Failed to compute input hash");
+                            }
 
                             if (File.Exists(outputFullPath))
                             {
@@ -63,8 +103,18 @@ namespace FlatSharp.Compiler
                                 }
                             }
 
-                            string cSharp = CreateCSharp(rootNode);
-                            File.WriteAllText(outputFullPath, cSharp);
+                            string cSharp = string.Empty;
+                            try
+                            {
+                                CreateCSharp(rootNode, options, out cSharp);
+                            }
+                            finally
+                            {
+                                if (cSharp is not null)
+                                {
+                                    File.WriteAllText(outputFullPath, cSharp);
+                                }
+                            }
                         }
                         catch (IOException)
                         {
@@ -85,18 +135,20 @@ namespace FlatSharp.Compiler
 
                     return -1;
                 }
-                catch (FlatSharpCompilationException ex)
+                catch (FlatSharpCompilationException)
                 {
-                    foreach (var message in ex.CompilerErrors)
-                    {
-                        Console.Error.WriteLine(message);
-                    }
+                    Console.Error.WriteLine(
+                        $"FlatSharp failed to generate valid C# output. \r\n" + 
+                        $"This is commonly caused by the fbs schema using a C# keyword, for example: \r\n" + 
+                        $"\ttable SomeTable {{\r\n\t\tclass : string\r\n\t}}\r\n" +
+                        "\r\n" +
+                        $"The output can be viewed in: '{Path.GetFullPath(outputFullPath)}'.");
 
                     return -1;
                 }
                 catch (FileNotFoundException)
                 {
-                    Console.Error.WriteLine($"File '{args[0]}' was not found");
+                    Console.Error.WriteLine($"File '{options.InputFile}' was not found");
                     return -1;
                 }
                 catch (IndexOutOfRangeException)
@@ -115,8 +167,9 @@ namespace FlatSharp.Compiler
 
         internal static Assembly CompileAndLoadAssembly(
             string fbsSchema,
-            IEnumerable<Assembly> additionalReferences = null,
-            Dictionary<string, string> additionalIncludes = null)
+            CompilerOptions options,
+            IEnumerable<Assembly>? additionalReferences = null,
+            Dictionary<string, string>? additionalIncludes = null)
         {
             InMemoryIncludeLoader includeLoader = new InMemoryIncludeLoader
             {
@@ -138,7 +191,7 @@ namespace FlatSharp.Compiler
                 {
                     Assembly[] additionalRefs = additionalReferences?.ToArray() ?? Array.Empty<Assembly>();
                     var rootNode = ParseSyntax("root.fbs", includeLoader);
-                    string cSharp = CreateCSharp(rootNode);
+                    CreateCSharp(rootNode, options, out string cSharp);
                     var (assembly, formattedText, _) = RoslynSerializerGenerator.CompileAssembly(cSharp, true, additionalRefs);
                     string debugText = formattedText();
                     return assembly;
@@ -150,7 +203,7 @@ namespace FlatSharp.Compiler
             }
         }
 
-        internal static RootNodeDefinition TestHookParseSyntax(string fbsSchema, Dictionary<string, string> includes = null)
+        internal static RootNodeDefinition TestHookParseSyntax(string fbsSchema, Dictionary<string, string>? includes = null)
         {
             InMemoryIncludeLoader includeLoader = new InMemoryIncludeLoader
             {
@@ -209,8 +262,18 @@ namespace FlatSharp.Compiler
 
                 // Traverse the graph of includes.
                 var includeVisitor = new IncludeVisitor(next, includes, visitOrder);
-                includeVisitor.Visit(GetParser(fbs).schema());
-                schemaVisitor.Visit(GetParser(fbs).schema());
+
+                ErrorContext.Current.WithScope(next, () =>
+                {
+                    var schema = GetParser(fbs).schema();
+                    ErrorContext.Current.ThrowIfHasErrors();
+
+                    includeVisitor.Visit(schema); 
+                    ErrorContext.Current.ThrowIfHasErrors();
+
+                    schemaVisitor.Visit(schema); 
+                    ErrorContext.Current.ThrowIfHasErrors();
+                });
             }
 
             rootNode.InputHash = $"{asmVersion}.{Convert.ToBase64String(hash)}";
@@ -223,12 +286,15 @@ namespace FlatSharp.Compiler
             FlatBuffersLexer lexer = new FlatBuffersLexer(input);
             CommonTokenStream tokenStream = new CommonTokenStream(lexer);
             FlatBuffersParser parser = new FlatBuffersParser(tokenStream);
-            parser.AddErrorListener(new CustomErrorListener());
 
+            parser.AddErrorListener(new CustomErrorListener());
             return parser;
         }
 
-        internal static string TestHookCreateCSharp(string fbsSchema, Dictionary<string, string> includes = null)
+        internal static string TestHookCreateCSharp(
+            string fbsSchema,
+            CompilerOptions options,
+            Dictionary<string, string>? includes = null)
         {
             InMemoryIncludeLoader includeLoader = new InMemoryIncludeLoader
             {
@@ -245,128 +311,74 @@ namespace FlatSharp.Compiler
 
             using (ErrorContext.Current)
             {
-                return CreateCSharp(ParseSyntax("root.fbs", includeLoader));
+                CreateCSharp(ParseSyntax("root.fbs", includeLoader), options, out string csharp);
+                return csharp;
             }
         }
 
-        private static string CreateCSharp(BaseSchemaMember rootNode)
+        private static void CreateCSharp(
+            BaseSchemaMember rootNode,
+            CompilerOptions options,
+            out string csharp)
         {
-            if (ErrorContext.Current.Errors.Any())
-            {
-                throw new InvalidFbsFileException(ErrorContext.Current.Errors);
-            }
-
-            var tablesNeedingSerializers = new List<TableOrStructDefinition>();
-            var rpcDefinitions = new List<RpcDefinition>();
-            FindItemsRequiringSecondCodePass(rootNode, tablesNeedingSerializers, rpcDefinitions);
-
-            if (tablesNeedingSerializers.Count == 0 && rpcDefinitions.Count == 0)
-            {
-                // Hey, no serializers or RPCs. We're all done. Go ahead and return the code we already generated.
-                CodeWriter tempWriter = new CodeWriter();
-                rootNode.WriteCode(tempWriter, CodeWritingPass.SecondPass, rootNode.DeclaringFile, new Dictionary<string, string>());
-
-                if (ErrorContext.Current.Errors.Any())
-                {
-                    throw new InvalidFbsFileException(ErrorContext.Current.Errors);
-                }
-
-                return tempWriter.ToString();
-            }
-
-            // Compile the assembly so that we may generate serializers for the data contracts defined in this FBS file.;
-            // Compile with firstpass here to include all data (even stuff from includes).
-            CodeWriter writer = new CodeWriter();
-            rootNode.WriteCode(writer, CodeWritingPass.FirstPass, rootNode.DeclaringFile, new Dictionary<string, string>());
-            if (ErrorContext.Current.Errors.Any())
-            {
-                throw new InvalidFbsFileException(ErrorContext.Current.Errors);
-            }
-
-            string code = writer.ToString();
-            var (assembly, _, _) = RoslynSerializerGenerator.CompileAssembly(code, true);
-
-            Dictionary<string, string> generatedSerializers = new Dictionary<string, string>();
-            foreach (var definition in tablesNeedingSerializers)
-            {
-                generatedSerializers[definition.FullName] = GenerateSerializerForType(assembly, definition);
-            }
-
-            writer = new CodeWriter();
-            rootNode.WriteCode(writer, CodeWritingPass.SecondPass, rootNode.DeclaringFile, generatedSerializers);
-
-            if (ErrorContext.Current.Errors.Any())
-            {
-                throw new InvalidFbsFileException(ErrorContext.Current.Errors);
-            }
-
-            string rawCode = writer.ToString();
-            string formattedCode = RoslynSerializerGenerator.GetFormattedText(rawCode);
-            return formattedCode;
-        }
-
-        // TODO: consider moving to TableOrStructDefinition.
-        private static string GenerateSerializerForType(Assembly assembly, TableOrStructDefinition tableOrStruct)
-        {
-            Type type = assembly.GetType(tableOrStruct.FullName);
-            var options = new FlatBufferSerializerOptions(tableOrStruct.RequestedSerializer.Value);
-            var generator = new RoslynSerializerGenerator(options, TypeModelContainer.CreateDefault());
-
-            var method = generator
-                .GetType()
-                .GetMethod(nameof(RoslynSerializerGenerator.GenerateCSharp), BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
-                .MakeGenericMethod(type);
+            csharp = string.Empty;
 
             try
             {
-                string code = (string)method.Invoke(generator, new[] { "private" });
-                return code;
-            }
-            catch (TargetInvocationException ex)
-            {
-                ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
-                throw;
-            }
-        }
+                ErrorContext.Current.ThrowIfHasErrors();
+                FlatSharpInternal.Assert(!string.IsNullOrEmpty(rootNode.DeclaringFile), "RootNode missing declaring file");
 
-        /// <summary>
-        /// Recursively find tables for which the schema has asked for us to generate serializers.
-        /// </summary>
-        private static void FindItemsRequiringSecondCodePass(
-            BaseSchemaMember node,
-            List<TableOrStructDefinition> tables,
-            List<RpcDefinition> rpcs)
-        {
-            if (node is TableOrStructDefinition tableOrStruct)
-            {
-                if (tableOrStruct.RequestedSerializer != null)
+                Assembly? assembly = null;
+                CodeWriter writer = new CodeWriter();
+                var steps = new[]
                 {
-                    tables.Add(tableOrStruct);
+                CodeWritingPass.Initialization,
+                CodeWritingPass.PropertyModeling,
+                CodeWritingPass.SerializerGeneration,
+                CodeWritingPass.RpcGeneration,
+            };
+
+                foreach (var step in steps)
+                {
+                    var localOptions = options;
+
+                    if (step <= CodeWritingPass.PropertyModeling)
+                    {
+                        localOptions = localOptions with { NullableWarnings = false };
+                    }
+
+                    if (step > CodeWritingPass.Initialization)
+                    {
+                        csharp = writer.ToString();
+                        (assembly, _, _) = RoslynSerializerGenerator.CompileAssembly(csharp, true);
+                    }
+
+                    writer = new CodeWriter();
+
+                    rootNode.WriteCode(
+                        writer,
+                        new CompileContext
+                        {
+                            CompilePass = step,
+                            Options = localOptions,
+                            RootFile = rootNode.DeclaringFile,
+                            PreviousAssembly = assembly,
+                            TypeModelContainer = TypeModelContainer.CreateDefault(),
+                        });
+
+                    ErrorContext.Current.ThrowIfHasErrors();
+                }
+
+                csharp = writer.ToString();
+
+            }
+            finally
+            {
+                if (csharp is not null)
+                {
+                    csharp = RoslynSerializerGenerator.GetFormattedText(csharp);
                 }
             }
-            else if (node is RpcDefinition rpc)
-            {
-                rpcs.Add(rpc);
-            }
-
-            foreach (var childNode in node.Children.Values)
-            {
-                FindItemsRequiringSecondCodePass(childNode, tables, rpcs);
-            }
-        }
-    }
-
-    internal class CustomErrorListener : IAntlrErrorListener<IToken>
-    {
-        public void SyntaxError(
-            [NotNull] IRecognizer recognizer,
-            [Nullable] IToken offendingSymbol,
-            int line,
-            int charPositionInLine,
-            [NotNull] string msg,
-            [Nullable] RecognitionException e)
-        {
-            ErrorContext.Current?.RegisterError($"Syntax error FBS file: Token='{offendingSymbol.Text}', Msg='{msg}' Line='{line}:{charPositionInLine}");
         }
     }
 }

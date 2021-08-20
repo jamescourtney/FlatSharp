@@ -40,6 +40,13 @@ namespace FlatSharp.Compiler
             this.builder.AppendLine(line);
         }
 
+        public void AppendMethodSummaryComment(string comment)
+        {
+            this.AppendLine("/// <summary>");
+            this.AppendLine($"/// {comment}");
+            this.AppendLine("/// </summary>");
+        }
+
         public void AppendLine()
         {
             for (int i = 0; i < this.indent; ++i)

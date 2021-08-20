@@ -18,28 +18,24 @@ namespace FlatSharp
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
+    using System.Diagnostics;
     using System.Reflection;
     using FlatSharp.TypeModel;
-    using Microsoft.CodeAnalysis.CSharp;
 
     /// <summary>
-    /// Generates a collection of methods to help serialize the given root type.
-    /// Does recursive traversal of the object graph and builds a set of methods to assist with populating vtables and writing values.
-    /// 
-    /// Eventually, everything must reduce to a built in type of string / scalar, which this will then call out to.
+    /// Some C# codegen helpers.
     /// </summary>
     internal static class CSharpHelpers
     {
-        internal static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(LanguageVersion.Latest);
+        internal const string GeneratedClassInputBufferFieldName = "__buffer";
+        internal const string GeneratedClassOffsetFieldName = "__offset";
+        internal const string GeneratedClassMaxVtableIndexFieldName = "__maxVTableIndex";
+        internal const string GeneratedClassVTableOffsetFieldName = "__vtableOffset";
 
-        internal static string GetFullMethodName(MethodInfo info)
+        internal static string GetCompilableTypeName(this Type t)
         {
-            return $"{info.DeclaringType.FullName}.{info.Name}";
-        }
+            FlatSharpInternal.Assert(!string.IsNullOrEmpty(t.FullName), $"{t} has null/empty full name.");
 
-        internal static string GetCompilableTypeName(Type t)
-        {
             string name;
             if (t.IsGenericType)
             {
@@ -53,7 +49,7 @@ namespace FlatSharp
             }
             else if (t.IsArray)
             {
-                name = $"{GetCompilableTypeName(t.GetElementType())}[]";
+                name = $"{GetCompilableTypeName(t.GetElementType()!)}[]";
             }
             else
             {
@@ -64,55 +60,82 @@ namespace FlatSharp
             return name;
         }
 
-        internal static string GetAccessModifier(PropertyInfo property)
+        internal static (AccessModifier propertyModifier, AccessModifier? getModifer, AccessModifier? setModifier) GetPropertyAccessModifiers(
+            AccessModifier getModifier,
+            AccessModifier? setModifier)
         {
-            var method = property.GetGetMethod() ?? property.GetMethod;
+            if (setModifier is null || getModifier == setModifier.Value)
+            {
+                return (getModifier, null, null);
+            }
 
+            FlatSharpInternal.Assert(
+                getModifier < setModifier.Value,
+                "Getter expected to be more visible than setter");
+
+            return (getModifier, null, setModifier);
+        }
+
+        internal static (AccessModifier propertyModifier, AccessModifier? getModifer, AccessModifier? setModifier) GetPropertyAccessModifiers(
+            PropertyInfo property,
+            bool convertProtectedInternalToProtected)
+        {
+            FlatSharpInternal.Assert(property.GetMethod is not null, $"Property {property.DeclaringType?.Name}.{property.Name} has null get method.");
+            var getModifier = GetAccessModifier(property.GetMethod, convertProtectedInternalToProtected);
+
+            if (property.SetMethod is null)
+            {
+                return (getModifier, null, null);
+            }
+
+            var setModifier = GetAccessModifier(property.SetMethod, convertProtectedInternalToProtected);
+
+            return GetPropertyAccessModifiers(getModifier, setModifier);
+        }
+
+        internal static string ToCSharpString(this AccessModifier? modifier)
+        {
+            return modifier switch
+            {
+                null => string.Empty,
+                _ => modifier.Value.ToCSharpString(),
+            };
+        }
+
+        internal static string ToCSharpString(this AccessModifier modifier)
+        {
+            return modifier switch
+            {
+                AccessModifier.Public => "public",
+                AccessModifier.Protected => "protected",
+                AccessModifier.ProtectedInternal => "protected internal",
+                _ => throw new InvalidOperationException($"Unexpected access modifier: '{modifier}'.")
+            };
+        }
+
+        internal static AccessModifier GetAccessModifier(this MethodInfo method, bool convertProtectedInternalToProtected)
+        {
             if (method.IsPublic)
             {
-                return "public";
+                return AccessModifier.Public;
+            }
+
+            if (method.IsFamilyOrAssembly)
+            {
+                if (convertProtectedInternalToProtected)
+                {
+                    return AccessModifier.Protected;
+                }
+
+                return AccessModifier.ProtectedInternal;
+            }
+
+            if (method.IsFamily)
+            {
+                return AccessModifier.Protected;
             }
 
             throw new InvalidOperationException("Unexpected method visibility: " + method.Name);
-        }
-
-        internal static string CreateDeserializeClass(
-            string className, 
-            Type baseType, 
-            IEnumerable<GeneratedProperty> propertyOverrides,
-            FlatBufferSerializerOptions options)
-        {
-            string inputBufferFieldDef = "private readonly TInputBuffer buffer;";
-            string offsetFieldDef = "private readonly int offset;";
-
-            string ctorBody =
-$@"
-                this.buffer = buffer;
-                this.offset = offset;
-";
-
-            if (options.GreedyDeserialize)
-            {
-                inputBufferFieldDef = string.Empty;
-                offsetFieldDef = string.Empty;
-                ctorBody = string.Join("\r\n", propertyOverrides.Select(x => $"this.{x.BackingFieldName} = {x.ReadValueMethodName}(buffer, offset);"));
-            }
-
-            return
-$@"
-                private sealed class {className}<TInputBuffer> : {CSharpHelpers.GetCompilableTypeName(baseType)} where TInputBuffer : IInputBuffer
-                {{
-                    {inputBufferFieldDef}
-                    {offsetFieldDef}
-        
-                    public {className}(TInputBuffer buffer, int offset)
-                    {{
-                        {ctorBody}
-                    }}
-
-                    {string.Join("\r\n", propertyOverrides)}
-                }}
-";
         }
     }
 }

@@ -17,6 +17,7 @@
 namespace FlatSharp
 {
     using System;
+    using System.ComponentModel;
     using System.Runtime.CompilerServices;
     using System.Text;
 
@@ -38,7 +39,7 @@ namespace FlatSharp
 
         public int Length => this.memory.Count;
 
-        public ISharedStringReader SharedStringReader { get; set; }
+        public ISharedStringReader? SharedStringReader { get; set; }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte ReadByte(int offset)
@@ -131,13 +132,19 @@ namespace FlatSharp
             return serializer.Parse(new Wrapper(this), offset);
         }
 
-        private readonly struct Wrapper : IInputBuffer
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public readonly struct Wrapper : IInputBuffer
         {
             private readonly ArrayInputBuffer buffer;
 
-            public Wrapper(ArrayInputBuffer buffer) => this.buffer = buffer;
+            internal Wrapper(ArrayInputBuffer buffer) => this.buffer = buffer;
 
-            public ISharedStringReader SharedStringReader { get => this.buffer.SharedStringReader; set => this.buffer.SharedStringReader = value; }
+            public ISharedStringReader? SharedStringReader 
+            { 
+                get => this.buffer.SharedStringReader; 
+                set => this.buffer.SharedStringReader = value; 
+            }
+
             public int Length
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]

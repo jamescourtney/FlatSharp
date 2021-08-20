@@ -16,25 +16,24 @@
  
  namespace FlatSharp.TypeModel
 {
-    using Microsoft.CodeAnalysis.CSharp.Syntax;
     using System;
     using System.Collections.Generic;
     using System.Collections.Immutable;
+    using System.Diagnostics.CodeAnalysis;
 
     /// <summary>
     /// Defines a scalar FlatSharp type model.
     /// </summary>
     public abstract class ScalarTypeModel : RuntimeTypeModel
     {
-        protected readonly bool isNullable;
         private readonly int size;
 
         internal ScalarTypeModel(
+            TypeModelContainer container,
             Type type,
-            int size) : base(type, null)
+            int size) : base(type, container)
         {
             this.size = size;
-            this.isNullable = Nullable.GetUnderlyingType(type) != null;
         }
 
         /// <summary>
@@ -55,7 +54,7 @@
         /// <summary>
         /// Scalars can be part of Structs.
         /// </summary>
-        public override bool IsValidStructMember => !this.isNullable;
+        public override bool IsValidStructMember => true;
 
         /// <summary>
         /// Scalars can be part of Tables.
@@ -70,17 +69,27 @@
         /// <summary>
         /// Scalars can be part of Vectors.
         /// </summary>
-        public override bool IsValidVectorMember => !this.isNullable;
+        public override bool IsValidVectorMember => true;
 
         /// <summary>
         /// Scalars can be sorted vector keys.
         /// </summary>
-        public override bool IsValidSortedVectorKey => !this.isNullable;
+        public override bool IsValidSortedVectorKey => true;
 
         /// <summary>
         /// Scalars are written inline.
         /// </summary>
         public override bool SerializesInline => true;
+
+        /// <summary>
+        /// We don't care about serialization context.
+        /// </summary>
+        public override bool SerializeMethodRequiresContext => false;
+
+        /// <summary>
+        /// Scalars are leaf nodes.
+        /// </summary>
+        public override IEnumerable<ITypeModel> Children => new ITypeModel[0];
 
         /// <summary>
         /// The name of the read method for an input buffer.
@@ -95,98 +104,57 @@
         /// <summary>
         /// Force children to reimplement.
         /// </summary>
-        public abstract override bool TryGetSpanComparerType(out Type comparerType);
+        public abstract override bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType);
 
         /// <summary>
         /// Validates a default value.
         /// </summary>
         public override bool ValidateDefaultValue(object defaultValue)
         {
-            if (this.isNullable)
-            {
-                return false;
-            }
-
             return defaultValue.GetType() == this.ClrType;
         }
 
         public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
         {
-            return new CodeGeneratedMethod
+            return new CodeGeneratedMethod($"return {this.MaxInlineSize};")
             {
                 IsMethodInline = true,
-                MethodBody = $"return {this.MaxInlineSize};"
             };
         }
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
-            return new CodeGeneratedMethod
+            return new CodeGeneratedMethod($"return {context.InputBufferVariableName}.{this.InputBufferReadMethodName}({context.OffsetVariableName});")
             {
                 IsMethodInline = true,
-                MethodBody = $"return {context.InputBufferVariableName}.{this.InputBufferReadMethodName}({context.OffsetVariableName});"
             };
         }
 
         public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
         {
             string variableName = context.ValueVariableName;
-            if (this.isNullable)
+            return new CodeGeneratedMethod($"{context.SpanWriterVariableName}.{this.SpanWriterWriteMethodName}({context.SpanVariableName}, {variableName}, {context.OffsetVariableName});")
             {
-                variableName += ".Value";
-            }
-
-            return new CodeGeneratedMethod 
-            {
-                MethodBody = $"{context.SpanWriterVariableName}.{this.SpanWriterWriteMethodName}({context.SpanVariableName}, {variableName}, {context.OffsetVariableName}, {context.SerializationContextVariableName});",
                 IsMethodInline = true,
             };
         }
 
-        public override string GetThrowIfNullInvocation(string itemVariableName)
+        public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
         {
-            if (this.isNullable)
+            return new CodeGeneratedMethod($"return {context.ItemVariableName};")
             {
-                return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
-            }
-            else
-            {
-                return string.Empty;
-            }
+                IsMethodInline = true,
+            };
         }
 
-        public override string GetNonNullConditionExpression(string itemVariableName)
+        public override string FormatDefaultValueAsLiteral(object? defaultValue)
         {
-            if (this.isNullable)
+            if (defaultValue is not null)
             {
-                return $"{itemVariableName}.HasValue";
-            }
-            else
-            {
-                return "true";
-            }
-        }
-
-        public override void TraverseObjectGraph(HashSet<Type> seenTypes)
-        {
-            seenTypes.Add(this.ClrType);
-            if (this.isNullable)
-            {
-                seenTypes.Add(Nullable.GetUnderlyingType(this.ClrType));
-            }
-        }
-
-        public override bool TryFormatDefaultValueAsLiteral(object defaultValue, out string literal)
-        {
-            literal = null;
-
-            if (defaultValue.GetType() == this.ClrType)
-            {
-                literal = $"({CSharpHelpers.GetCompilableTypeName(this.ClrType)})({defaultValue})";
-                return true;
+                return $"({this.GetCompilableTypeName()})({defaultValue})";
             }
 
-            return false;
+            return base.FormatDefaultValueAsLiteral(defaultValue);
         }
     }
 }

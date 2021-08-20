@@ -1,18 +1,42 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Project>
-  <Target Name="FlatSharpFbsCompile" BeforeTargets="ResolveAssemblyReferences">
-    <PropertyGroup Condition=" '$(TargetFrameworkIdentifier)' != '.NETFramework' ">
-      <CompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\tools\netcoreapp2.1\FlatSharp.Compiler.dll'))</CompilerPath>
-      <CompilerInvocation>dotnet $(CompilerPath)</CompilerInvocation>
-    </PropertyGroup>
+  
+  <!-- Tell Visual Studio that fbs files can result in build changes. 
+       https://github.com/dotnet/project-system/blob/cd275918ef9f181f6efab96715a91db7aabec832/docs/up-to-date-check.md -->
+  <ItemGroup>
+    <UpToDateCheckInput Include="@(FlatSharpSchema)" />
+  </ItemGroup>
 
+  <Target Name="FlatSharpFbsCompile" BeforeTargets="ResolveAssemblyReferences">
+    <PropertyGroup Condition=" '$(FlatSharpNullable)' == '' ">
+      <FlatSharpNullable>false</FlatSharpNullable>
+      <FlatSharpNullable Condition=" '$(Nullable)' == 'enable' ">true</FlatSharpNullable>
+    </PropertyGroup>
+    
+    <!-- Try legacy .net framework-->
     <PropertyGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
       <CompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\tools\net47\FlatSharp.Compiler.exe'))</CompilerPath>
       <CompilerInvocation>$(CompilerPath)</CompilerInvocation>
     </PropertyGroup>
 
-    <Message Text="$(CompilerInvocation) %(FlatSharpSchema.fullpath)" Importance="high" />
-    <Exec Command="$(CompilerInvocation) %(FlatSharpSchema.fullpath) $(IntermediateOutputPath)" CustomErrorRegularExpression=".*" Condition=" '%(FlatSharpSchema.fullpath)' != '' " />
+    <!-- next try .net5.0. Note that this can have various prefixes (net5.0-windows, etc) -->
+    <PropertyGroup Condition="$(TargetFramework.StartsWith('net5.0'))">
+      <CompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\tools\net5.0\FlatSharp.Compiler.dll'))</CompilerPath>
+      <CompilerInvocation>dotnet $(CompilerPath)</CompilerInvocation>
+    </PropertyGroup>
+
+    <!-- finally assume it's netcore2.1 -->
+    <PropertyGroup Condition=" '$(CompilerInvocation)' == '' ">
+      <CompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\tools\netcoreapp2.1\FlatSharp.Compiler.dll'))</CompilerPath>
+      <CompilerInvocation>dotnet $(CompilerPath)</CompilerInvocation>
+    </PropertyGroup>
+
+    <Message Text="$(TargetFramework) $(TargetFrameworkIdentifier): $(CompilerInvocation) --nullable-annotations $(FlatSharpNullable) --input &quot;%(FlatSharpSchema.fullpath)&quot; --output $(IntermediateOutputPath)" Importance="high" />
+    <Exec 
+        Command="$(CompilerInvocation) --nullable-warnings $(FlatSharpNullable) --input &quot;%(FlatSharpSchema.fullpath)&quot; --output $(IntermediateOutputPath) "
+        CustomErrorRegularExpression=".*" 
+        Condition=" '%(FlatSharpSchema.fullpath)' != '' " />
+    
     <ItemGroup>
       <GeneratedFbs Include="$(IntermediateOutputPath)*.generated.cs" />
       <Compile Include="@(GeneratedFbs)" />

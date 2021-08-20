@@ -25,7 +25,7 @@ namespace FlatSharp.TypeModel
     /// </summary>
     public class SharedStringTypeModel : RuntimeTypeModel, ITypeModel
     {
-        internal SharedStringTypeModel() : base(typeof(SharedString), null)
+        internal SharedStringTypeModel(TypeModelContainer container) : base(typeof(SharedString), container)
         {
         }
 
@@ -75,42 +75,41 @@ namespace FlatSharp.TypeModel
         public override bool SerializesInline => false;
 
         /// <summary>
+        /// Shared strings are leaf nodes.
+        /// </summary>
+        public override IEnumerable<ITypeModel> Children => new ITypeModel[0];
+
+        /// <summary>
         /// Gets the type of span comparer for this type.
         /// </summary>
         public Type SpanComparerType => typeof(StringSpanComparer);
 
         public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
         {
-            return new CodeGeneratedMethod
-            {
-                MethodBody = $"return {nameof(SerializationHelpers)}.{nameof(SerializationHelpers.GetMaxSize)}({context.ValueVariableName});",
-            };
+            return new CodeGeneratedMethod($"return {nameof(SerializationHelpers)}.{nameof(SerializationHelpers.GetMaxSize)}({context.ValueVariableName});");
         }
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
-            return new CodeGeneratedMethod
-            {
-                MethodBody = $"return {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadSharedString)}({context.OffsetVariableName});",
-            };
+            return new CodeGeneratedMethod($"return {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadSharedString)}({context.OffsetVariableName});");
         }
 
         public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
         {
-            return new CodeGeneratedMethod
+            string body = $"{context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteSharedString)}({context.SpanVariableName}, {context.ValueVariableName}, {context.OffsetVariableName}, {context.SerializationContextVariableName});";
+            return new CodeGeneratedMethod(body)
             {
-                MethodBody = $"{context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteSharedString)}({context.SpanVariableName}, {context.ValueVariableName}, {context.OffsetVariableName}, {context.SerializationContextVariableName});",
+                IsMethodInline = true,
             };
         }
 
-        public override string GetThrowIfNullInvocation(string itemVariableName)
+        public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
         {
-            return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
-        }
-
-        public override void TraverseObjectGraph(HashSet<Type> seenTypes)
-        {
-            seenTypes.Add(this.ClrType);
+            // shared string is immutable.
+            return new CodeGeneratedMethod($"return {context.ItemVariableName};")
+            {
+                IsMethodInline = true,
+            };
         }
 
         public override bool TryGetSpanComparerType(out Type comparerType)

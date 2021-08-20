@@ -16,26 +16,73 @@
  
  namespace FlatSharp.TypeModel
 {
+    using FlatSharp.Attributes;
     using System;
     using System.Reflection;
 
     /// <summary>
-    /// Describes a member of a FlatBuffer table or struct.
+    /// Describes a member of a FlatBuffer struct.
     /// </summary>
     public class StructMemberModel : ItemMemberModel
     {
-        internal StructMemberModel(
+        public StructMemberModel(
             ITypeModel propertyModel,
             PropertyInfo propertyInfo,
-            ushort index,
-            int offset) : base(propertyModel, propertyInfo, index)
+            FlatBufferItemAttribute attribute,
+            int offset,
+            int length) : base(propertyModel, propertyInfo, attribute)
         {
             this.Offset = offset;
+            this.Length = length;
+
+            if (!this.IsVirtual && this.IsWriteThrough)
+            {
+                throw new InvalidFlatBufferDefinitionException($"Struct member '{this.FriendlyName}' declared the WriteThrough attribute, but WriteThrough is only supported on virtual fields.");
+            }
+
+            if (propertyModel.SerializeMethodRequiresContext)
+            {
+                throw new InvalidFlatBufferDefinitionException($"The type model for struct member '{this.FriendlyName}' requires a serialization context, but Structs do not have one.");
+            }
+
+            if (attribute.Required)
+            {
+                throw new InvalidFlatBufferDefinitionException($"Struct member '{this.FriendlyName}' declared the Required attribute. Required is not valid inside structs.");
+            }
         }
 
         /// <summary>
         /// When the item is stored in a struct, this is defines the relative offset of this field within the struct.
         /// </summary>
         public int Offset { get; }
+
+        /// <summary>
+        /// The length of the item when stored in a struct. Does not include padding.
+        /// </summary>
+        public int Length { get; }
+
+        public override string CreateReadItemBody(
+            string parseItemMethodName, 
+            string bufferVariableName, 
+            string offsetVariableName, 
+            string vtableLocationVariableName, 
+            string vtableMaxIndexVariableName)
+        {
+            return $"return {parseItemMethodName}({bufferVariableName}, {offsetVariableName} + {this.Offset});";
+        }
+
+        public override string CreateWriteThroughBody(
+            string writeValueMethodName,
+            string bufferVariableName,
+            string offsetVariableName,
+            string valueVariableName)
+        {
+            return $@"
+                {writeValueMethodName}(
+                    default(SpanWriter), 
+                    {bufferVariableName}.{nameof(IInputBuffer.GetByteMemory)}(0, {bufferVariableName}.{nameof(IInputBuffer.Length)}).Span, 
+                    {valueVariableName}, 
+                    {offsetVariableName} + {this.Offset});";
+        }
     }
 }

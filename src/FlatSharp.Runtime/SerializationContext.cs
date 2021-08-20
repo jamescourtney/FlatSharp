@@ -20,6 +20,7 @@ namespace FlatSharp
     using System.Buffers.Binary;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Runtime.CompilerServices;
     using System.Threading;
 
     /// <summary>
@@ -61,11 +62,7 @@ namespace FlatSharp
         /// <summary>
         /// The shared string writer used for this serialization operation.
         /// </summary>
-        public ISharedStringWriter SharedStringWriter
-        {
-            get;
-            set;
-        }
+        public ISharedStringWriter? SharedStringWriter { get; set; }
 
         /// <summary>
         /// Resets the context.
@@ -131,7 +128,6 @@ namespace FlatSharp
 
                 Debug.Assert(offset % 4 == 0);
                 Debug.Assert((offset + 4) % itemAlignment == 0);
-                Debug.WriteLine($"Allocating vector! NItems={numberOfItems}, SizePerItem={sizePerItem}, Offset={offset}, Length={bytesNeeded}");
 
                 return offset;
             }
@@ -160,30 +156,63 @@ namespace FlatSharp
             }
         }
 
-        public int FinishVTable(Span<byte> buffer, Span<byte> vtable)
+        public int FinishVTable(
+            Span<byte> buffer,
+            Span<byte> vtable)
         {
-            var offsets = this.vtableOffsets;
-            int offsetCount = offsets.Count;
-
-            for (int i = 0; i < offsetCount; ++i)
+            checked
             {
-                int offset = offsets[i];
-                ReadOnlySpan<byte> existingVTable = buffer.Slice(offset);
-                existingVTable = existingVTable.Slice(0, BinaryPrimitives.ReadUInt16LittleEndian(existingVTable));
+                var offsets = this.vtableOffsets;
+                int count = offsets.Count;
 
-                if (existingVTable.SequenceEqual(vtable))
+                for (int i = 0; i < count; ++i)
                 {
-                    // We already have a vtable that matches this specification. Return that offset.
-                    return offset;
+                    int offset = offsets[i];
+
+                    ReadOnlySpan<byte> existingVTable = buffer.Slice(offset);
+                    existingVTable = existingVTable.Slice(0, ScalarSpanReader.ReadUShort(existingVTable));
+
+                    if (existingVTable.Length == vtable.Length && existingVTable.SequenceEqual(vtable))
+                    //if (CompareEquality(existingVTable, vtable))
+                    {
+                        // Slowly bubble used things towards the front of the list.
+                        // This is not exact, but should keep frequently used
+                        // items towards the front.
+                        if (i != 0)
+                        {
+                            Promote(i, offsets);
+                        }
+
+                        return offset;
+                    }
                 }
+
+                // Oh, well. Write the new table.
+                int newVTableOffset = this.AllocateSpace(vtable.Length, sizeof(ushort));
+                vtable.CopyTo(buffer.Slice(newVTableOffset));
+                offsets.Add(newVTableOffset);
+
+                // "Insert" this item in the middle of the list.
+                int maxIndex = offsets.Count - 1;
+                Promote(maxIndex, offsets);
+
+                return newVTableOffset;
             }
+        }
 
-            // Oh, well. Write the new table.
-            int newVTableOffset = this.AllocateSpace(vtable.Length, sizeof(ushort));
-            vtable.CopyTo(buffer.Slice(newVTableOffset));
-            offsets.Add(newVTableOffset);
+        /// <summary>
+        /// Promote frequently-used items to be closer to the front of the list.
+        /// This is done with a swap to avoid shuffling the whole list by inserting
+        /// at a given index. An alternative might be an unrolled linked list data structure.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void Promote(int i, List<int> offsets)
+        {
+            int swapIndex = i / 2;
 
-            return newVTableOffset;
+            int temp = offsets[i];
+            offsets[i] = offsets[swapIndex];
+            offsets[swapIndex] = temp;
         }
     }
 }

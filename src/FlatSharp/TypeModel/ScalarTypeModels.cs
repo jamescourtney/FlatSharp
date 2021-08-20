@@ -20,6 +20,7 @@ namespace FlatSharp.TypeModel
 {
 	using System;
 	using System.ComponentModel;
+	using System.Diagnostics.CodeAnalysis;
 
 		
     /// <summary>
@@ -28,44 +29,28 @@ namespace FlatSharp.TypeModel
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public partial class BoolTypeModel : ScalarTypeModel
     {
-        public BoolTypeModel() : base(typeof(bool), sizeof(bool)) 
+        public BoolTypeModel(TypeModelContainer container) : base(container, typeof(bool), sizeof(bool)) 
         {
         }
 		
-        public override bool TryFormatStringAsLiteral(string value, out string literal)
+        public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
 		{
+			if (!bool.TryParse(value, out _))
+			{
+			     literal = null;
+				 return false;
+			}
+
 			literal = $"(bool)({value})";
 			return true;
 		}
 
-        public override bool TryGetSpanComparerType(out Type comparerType)
+        public override bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType)
         {
-            comparerType = typeof(BoolSpanComparer);;
+            comparerType = typeof(BoolSpanComparer);
             return true;
         }
 
-        protected override string InputBufferReadMethodName => nameof(InputBufferExtensions.ReadBool);
-
-        protected override string SpanWriterWriteMethodName => nameof(SpanWriterExtensions.WriteBool);
-    }
-
-	
-    /// <summary>
-    /// Type Model for <see cref="bool?"/>.
-    /// </summary>
-	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class NullableBoolTypeModel : ScalarTypeModel
-    {
-        public NullableBoolTypeModel() : base(typeof(bool?), sizeof(bool)) 
-        {
-        }
-
-        public override bool TryGetSpanComparerType(out Type comparerType)
-        {
-            comparerType = null;
-            return false;
-        }
-		
         protected override string InputBufferReadMethodName => nameof(InputBufferExtensions.ReadBool);
 
         protected override string SpanWriterWriteMethodName => nameof(SpanWriterExtensions.WriteBool);
@@ -78,44 +63,28 @@ namespace FlatSharp.TypeModel
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public partial class ByteTypeModel : ScalarTypeModel
     {
-        public ByteTypeModel() : base(typeof(byte), sizeof(byte)) 
+        public ByteTypeModel(TypeModelContainer container) : base(container, typeof(byte), sizeof(byte)) 
         {
         }
 		
-        public override bool TryFormatStringAsLiteral(string value, out string literal)
+        public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
 		{
+			if (!byte.TryParse(value, out _))
+			{
+			     literal = null;
+				 return false;
+			}
+
 			literal = $"(byte)({value})";
 			return true;
 		}
 
-        public override bool TryGetSpanComparerType(out Type comparerType)
+        public override bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType)
         {
-            comparerType = typeof(ByteSpanComparer);;
+            comparerType = typeof(ByteSpanComparer);
             return true;
         }
 
-        protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadByte);
-
-        protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteByte);
-    }
-
-	
-    /// <summary>
-    /// Type Model for <see cref="byte?"/>.
-    /// </summary>
-	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class NullableByteTypeModel : ScalarTypeModel
-    {
-        public NullableByteTypeModel() : base(typeof(byte?), sizeof(byte)) 
-        {
-        }
-
-        public override bool TryGetSpanComparerType(out Type comparerType)
-        {
-            comparerType = null;
-            return false;
-        }
-		
         protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadByte);
 
         protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteByte);
@@ -128,44 +97,28 @@ namespace FlatSharp.TypeModel
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public partial class SByteTypeModel : ScalarTypeModel
     {
-        public SByteTypeModel() : base(typeof(sbyte), sizeof(sbyte)) 
+        public SByteTypeModel(TypeModelContainer container) : base(container, typeof(sbyte), sizeof(sbyte)) 
         {
         }
 		
-        public override bool TryFormatStringAsLiteral(string value, out string literal)
+        public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
 		{
+			if (!sbyte.TryParse(value, out _))
+			{
+			     literal = null;
+				 return false;
+			}
+
 			literal = $"(sbyte)({value})";
 			return true;
 		}
 
-        public override bool TryGetSpanComparerType(out Type comparerType)
+        public override bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType)
         {
-            comparerType = typeof(SByteSpanComparer);;
+            comparerType = typeof(SByteSpanComparer);
             return true;
         }
 
-        protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadSByte);
-
-        protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteSByte);
-    }
-
-	
-    /// <summary>
-    /// Type Model for <see cref="sbyte?"/>.
-    /// </summary>
-	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class NullableSByteTypeModel : ScalarTypeModel
-    {
-        public NullableSByteTypeModel() : base(typeof(sbyte?), sizeof(sbyte)) 
-        {
-        }
-
-        public override bool TryGetSpanComparerType(out Type comparerType)
-        {
-            comparerType = null;
-            return false;
-        }
-		
         protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadSByte);
 
         protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteSByte);
@@ -178,44 +131,28 @@ namespace FlatSharp.TypeModel
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public partial class UShortTypeModel : ScalarTypeModel
     {
-        public UShortTypeModel() : base(typeof(ushort), sizeof(ushort)) 
+        public UShortTypeModel(TypeModelContainer container) : base(container, typeof(ushort), sizeof(ushort)) 
         {
         }
 		
-        public override bool TryFormatStringAsLiteral(string value, out string literal)
+        public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
 		{
+			if (!ushort.TryParse(value, out _))
+			{
+			     literal = null;
+				 return false;
+			}
+
 			literal = $"(ushort)({value})";
 			return true;
 		}
 
-        public override bool TryGetSpanComparerType(out Type comparerType)
+        public override bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType)
         {
-            comparerType = typeof(UShortSpanComparer);;
+            comparerType = typeof(UShortSpanComparer);
             return true;
         }
 
-        protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadUShort);
-
-        protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteUShort);
-    }
-
-	
-    /// <summary>
-    /// Type Model for <see cref="ushort?"/>.
-    /// </summary>
-	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class NullableUShortTypeModel : ScalarTypeModel
-    {
-        public NullableUShortTypeModel() : base(typeof(ushort?), sizeof(ushort)) 
-        {
-        }
-
-        public override bool TryGetSpanComparerType(out Type comparerType)
-        {
-            comparerType = null;
-            return false;
-        }
-		
         protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadUShort);
 
         protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteUShort);
@@ -228,44 +165,28 @@ namespace FlatSharp.TypeModel
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public partial class ShortTypeModel : ScalarTypeModel
     {
-        public ShortTypeModel() : base(typeof(short), sizeof(short)) 
+        public ShortTypeModel(TypeModelContainer container) : base(container, typeof(short), sizeof(short)) 
         {
         }
 		
-        public override bool TryFormatStringAsLiteral(string value, out string literal)
+        public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
 		{
+			if (!short.TryParse(value, out _))
+			{
+			     literal = null;
+				 return false;
+			}
+
 			literal = $"(short)({value})";
 			return true;
 		}
 
-        public override bool TryGetSpanComparerType(out Type comparerType)
+        public override bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType)
         {
-            comparerType = typeof(ShortSpanComparer);;
+            comparerType = typeof(ShortSpanComparer);
             return true;
         }
 
-        protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadShort);
-
-        protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteShort);
-    }
-
-	
-    /// <summary>
-    /// Type Model for <see cref="short?"/>.
-    /// </summary>
-	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class NullableShortTypeModel : ScalarTypeModel
-    {
-        public NullableShortTypeModel() : base(typeof(short?), sizeof(short)) 
-        {
-        }
-
-        public override bool TryGetSpanComparerType(out Type comparerType)
-        {
-            comparerType = null;
-            return false;
-        }
-		
         protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadShort);
 
         protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteShort);
@@ -278,44 +199,28 @@ namespace FlatSharp.TypeModel
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public partial class IntTypeModel : ScalarTypeModel
     {
-        public IntTypeModel() : base(typeof(int), sizeof(int)) 
+        public IntTypeModel(TypeModelContainer container) : base(container, typeof(int), sizeof(int)) 
         {
         }
 		
-        public override bool TryFormatStringAsLiteral(string value, out string literal)
+        public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
 		{
+			if (!int.TryParse(value, out _))
+			{
+			     literal = null;
+				 return false;
+			}
+
 			literal = $"(int)({value})";
 			return true;
 		}
 
-        public override bool TryGetSpanComparerType(out Type comparerType)
+        public override bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType)
         {
-            comparerType = typeof(IntSpanComparer);;
+            comparerType = typeof(IntSpanComparer);
             return true;
         }
 
-        protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadInt);
-
-        protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteInt);
-    }
-
-	
-    /// <summary>
-    /// Type Model for <see cref="int?"/>.
-    /// </summary>
-	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class NullableIntTypeModel : ScalarTypeModel
-    {
-        public NullableIntTypeModel() : base(typeof(int?), sizeof(int)) 
-        {
-        }
-
-        public override bool TryGetSpanComparerType(out Type comparerType)
-        {
-            comparerType = null;
-            return false;
-        }
-		
         protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadInt);
 
         protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteInt);
@@ -328,44 +233,28 @@ namespace FlatSharp.TypeModel
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public partial class UIntTypeModel : ScalarTypeModel
     {
-        public UIntTypeModel() : base(typeof(uint), sizeof(uint)) 
+        public UIntTypeModel(TypeModelContainer container) : base(container, typeof(uint), sizeof(uint)) 
         {
         }
 		
-        public override bool TryFormatStringAsLiteral(string value, out string literal)
+        public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
 		{
+			if (!uint.TryParse(value, out _))
+			{
+			     literal = null;
+				 return false;
+			}
+
 			literal = $"(uint)({value}u)";
 			return true;
 		}
 
-        public override bool TryGetSpanComparerType(out Type comparerType)
+        public override bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType)
         {
-            comparerType = typeof(UIntSpanComparer);;
+            comparerType = typeof(UIntSpanComparer);
             return true;
         }
 
-        protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadUInt);
-
-        protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteUInt);
-    }
-
-	
-    /// <summary>
-    /// Type Model for <see cref="uint?"/>.
-    /// </summary>
-	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class NullableUIntTypeModel : ScalarTypeModel
-    {
-        public NullableUIntTypeModel() : base(typeof(uint?), sizeof(uint)) 
-        {
-        }
-
-        public override bool TryGetSpanComparerType(out Type comparerType)
-        {
-            comparerType = null;
-            return false;
-        }
-		
         protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadUInt);
 
         protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteUInt);
@@ -378,44 +267,28 @@ namespace FlatSharp.TypeModel
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public partial class LongTypeModel : ScalarTypeModel
     {
-        public LongTypeModel() : base(typeof(long), sizeof(long)) 
+        public LongTypeModel(TypeModelContainer container) : base(container, typeof(long), sizeof(long)) 
         {
         }
 		
-        public override bool TryFormatStringAsLiteral(string value, out string literal)
+        public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
 		{
+			if (!long.TryParse(value, out _))
+			{
+			     literal = null;
+				 return false;
+			}
+
 			literal = $"(long)({value}L)";
 			return true;
 		}
 
-        public override bool TryGetSpanComparerType(out Type comparerType)
+        public override bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType)
         {
-            comparerType = typeof(LongSpanComparer);;
+            comparerType = typeof(LongSpanComparer);
             return true;
         }
 
-        protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadLong);
-
-        protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteLong);
-    }
-
-	
-    /// <summary>
-    /// Type Model for <see cref="long?"/>.
-    /// </summary>
-	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class NullableLongTypeModel : ScalarTypeModel
-    {
-        public NullableLongTypeModel() : base(typeof(long?), sizeof(long)) 
-        {
-        }
-
-        public override bool TryGetSpanComparerType(out Type comparerType)
-        {
-            comparerType = null;
-            return false;
-        }
-		
         protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadLong);
 
         protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteLong);
@@ -428,44 +301,28 @@ namespace FlatSharp.TypeModel
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public partial class ULongTypeModel : ScalarTypeModel
     {
-        public ULongTypeModel() : base(typeof(ulong), sizeof(ulong)) 
+        public ULongTypeModel(TypeModelContainer container) : base(container, typeof(ulong), sizeof(ulong)) 
         {
         }
 		
-        public override bool TryFormatStringAsLiteral(string value, out string literal)
+        public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
 		{
+			if (!ulong.TryParse(value, out _))
+			{
+			     literal = null;
+				 return false;
+			}
+
 			literal = $"(ulong)({value}ul)";
 			return true;
 		}
 
-        public override bool TryGetSpanComparerType(out Type comparerType)
+        public override bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType)
         {
-            comparerType = typeof(ULongSpanComparer);;
+            comparerType = typeof(ULongSpanComparer);
             return true;
         }
 
-        protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadULong);
-
-        protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteULong);
-    }
-
-	
-    /// <summary>
-    /// Type Model for <see cref="ulong?"/>.
-    /// </summary>
-	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class NullableULongTypeModel : ScalarTypeModel
-    {
-        public NullableULongTypeModel() : base(typeof(ulong?), sizeof(ulong)) 
-        {
-        }
-
-        public override bool TryGetSpanComparerType(out Type comparerType)
-        {
-            comparerType = null;
-            return false;
-        }
-		
         protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadULong);
 
         protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteULong);
@@ -478,44 +335,28 @@ namespace FlatSharp.TypeModel
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public partial class FloatTypeModel : ScalarTypeModel
     {
-        public FloatTypeModel() : base(typeof(float), sizeof(float)) 
+        public FloatTypeModel(TypeModelContainer container) : base(container, typeof(float), sizeof(float)) 
         {
         }
 		
-        public override bool TryFormatStringAsLiteral(string value, out string literal)
+        public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
 		{
+			if (!float.TryParse(value, out _))
+			{
+			     literal = null;
+				 return false;
+			}
+
 			literal = $"(float)({value}f)";
 			return true;
 		}
 
-        public override bool TryGetSpanComparerType(out Type comparerType)
+        public override bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType)
         {
-            comparerType = typeof(FloatSpanComparer);;
+            comparerType = typeof(FloatSpanComparer);
             return true;
         }
 
-        protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadFloat);
-
-        protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteFloat);
-    }
-
-	
-    /// <summary>
-    /// Type Model for <see cref="float?"/>.
-    /// </summary>
-	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class NullableFloatTypeModel : ScalarTypeModel
-    {
-        public NullableFloatTypeModel() : base(typeof(float?), sizeof(float)) 
-        {
-        }
-
-        public override bool TryGetSpanComparerType(out Type comparerType)
-        {
-            comparerType = null;
-            return false;
-        }
-		
         protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadFloat);
 
         protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteFloat);
@@ -528,19 +369,25 @@ namespace FlatSharp.TypeModel
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public partial class DoubleTypeModel : ScalarTypeModel
     {
-        public DoubleTypeModel() : base(typeof(double), sizeof(double)) 
+        public DoubleTypeModel(TypeModelContainer container) : base(container, typeof(double), sizeof(double)) 
         {
         }
 		
-        public override bool TryFormatStringAsLiteral(string value, out string literal)
+        public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
 		{
+			if (!double.TryParse(value, out _))
+			{
+			     literal = null;
+				 return false;
+			}
+
 			literal = $"(double)({value}d)";
 			return true;
 		}
 
-        public override bool TryGetSpanComparerType(out Type comparerType)
+        public override bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType)
         {
-            comparerType = typeof(DoubleSpanComparer);;
+            comparerType = typeof(DoubleSpanComparer);
             return true;
         }
 
@@ -550,173 +397,88 @@ namespace FlatSharp.TypeModel
     }
 
 	
-    /// <summary>
-    /// Type Model for <see cref="double?"/>.
-    /// </summary>
-	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class NullableDoubleTypeModel : ScalarTypeModel
-    {
-        public NullableDoubleTypeModel() : base(typeof(double?), sizeof(double)) 
-        {
-        }
-
-        public override bool TryGetSpanComparerType(out Type comparerType)
-        {
-            comparerType = null;
-            return false;
-        }
-		
-        protected override string InputBufferReadMethodName => nameof(IInputBuffer.ReadDouble);
-
-        protected override string SpanWriterWriteMethodName => nameof(ISpanWriter.WriteDouble);
-    }
-
-	
 	public class ScalarTypeModelProvider : ITypeModelProvider
 	{
-        public bool TryCreateTypeModel(TypeModelContainer container, Type type, out ITypeModel typeModel)
+        public bool TryCreateTypeModel(
+			TypeModelContainer container, 
+			Type type, 
+            [NotNullWhen(true)] out ITypeModel? typeModel)
 		{
 			typeModel = null;
 		
 			if (type == typeof(bool))
 			{
-				typeModel = new BoolTypeModel(); 
-				return true;
-			}
-
-			if (type == typeof(bool?))
-			{
-				typeModel = new NullableBoolTypeModel(); 
+				typeModel = new BoolTypeModel(container); 
 				return true;
 			}
 
 		
 			if (type == typeof(byte))
 			{
-				typeModel = new ByteTypeModel(); 
-				return true;
-			}
-
-			if (type == typeof(byte?))
-			{
-				typeModel = new NullableByteTypeModel(); 
+				typeModel = new ByteTypeModel(container); 
 				return true;
 			}
 
 		
 			if (type == typeof(sbyte))
 			{
-				typeModel = new SByteTypeModel(); 
-				return true;
-			}
-
-			if (type == typeof(sbyte?))
-			{
-				typeModel = new NullableSByteTypeModel(); 
+				typeModel = new SByteTypeModel(container); 
 				return true;
 			}
 
 		
 			if (type == typeof(ushort))
 			{
-				typeModel = new UShortTypeModel(); 
-				return true;
-			}
-
-			if (type == typeof(ushort?))
-			{
-				typeModel = new NullableUShortTypeModel(); 
+				typeModel = new UShortTypeModel(container); 
 				return true;
 			}
 
 		
 			if (type == typeof(short))
 			{
-				typeModel = new ShortTypeModel(); 
-				return true;
-			}
-
-			if (type == typeof(short?))
-			{
-				typeModel = new NullableShortTypeModel(); 
+				typeModel = new ShortTypeModel(container); 
 				return true;
 			}
 
 		
 			if (type == typeof(int))
 			{
-				typeModel = new IntTypeModel(); 
-				return true;
-			}
-
-			if (type == typeof(int?))
-			{
-				typeModel = new NullableIntTypeModel(); 
+				typeModel = new IntTypeModel(container); 
 				return true;
 			}
 
 		
 			if (type == typeof(uint))
 			{
-				typeModel = new UIntTypeModel(); 
-				return true;
-			}
-
-			if (type == typeof(uint?))
-			{
-				typeModel = new NullableUIntTypeModel(); 
+				typeModel = new UIntTypeModel(container); 
 				return true;
 			}
 
 		
 			if (type == typeof(long))
 			{
-				typeModel = new LongTypeModel(); 
-				return true;
-			}
-
-			if (type == typeof(long?))
-			{
-				typeModel = new NullableLongTypeModel(); 
+				typeModel = new LongTypeModel(container); 
 				return true;
 			}
 
 		
 			if (type == typeof(ulong))
 			{
-				typeModel = new ULongTypeModel(); 
-				return true;
-			}
-
-			if (type == typeof(ulong?))
-			{
-				typeModel = new NullableULongTypeModel(); 
+				typeModel = new ULongTypeModel(container); 
 				return true;
 			}
 
 		
 			if (type == typeof(float))
 			{
-				typeModel = new FloatTypeModel(); 
-				return true;
-			}
-
-			if (type == typeof(float?))
-			{
-				typeModel = new NullableFloatTypeModel(); 
+				typeModel = new FloatTypeModel(container); 
 				return true;
 			}
 
 		
 			if (type == typeof(double))
 			{
-				typeModel = new DoubleTypeModel(); 
-				return true;
-			}
-
-			if (type == typeof(double?))
-			{
-				typeModel = new NullableDoubleTypeModel(); 
+				typeModel = new DoubleTypeModel(container); 
 				return true;
 			}
 
@@ -724,68 +486,71 @@ namespace FlatSharp.TypeModel
 			return false;
 		}
 		
-        public bool TryResolveFbsAlias(TypeModelContainer container, string alias, out ITypeModel typeModel)
+        public bool TryResolveFbsAlias(
+			TypeModelContainer container, 
+			string alias, 
+            [NotNullWhen(true)] out ITypeModel? typeModel)
 		{
 			typeModel = null;
 			switch (alias)
 			{
 						case "bool":
-							typeModel = new BoolTypeModel();
+							typeModel = new BoolTypeModel(container);
 					break;
 
 						case "ubyte":
 						case "uint8":
-							typeModel = new ByteTypeModel();
+							typeModel = new ByteTypeModel(container);
 					break;
 
 						case "byte":
 						case "int8":
-							typeModel = new SByteTypeModel();
+							typeModel = new SByteTypeModel(container);
 					break;
 
 						case "ushort":
 						case "uint16":
-							typeModel = new UShortTypeModel();
+							typeModel = new UShortTypeModel(container);
 					break;
 
 						case "short":
 						case "int16":
-							typeModel = new ShortTypeModel();
+							typeModel = new ShortTypeModel(container);
 					break;
 
 						case "int":
 						case "int32":
-							typeModel = new IntTypeModel();
+							typeModel = new IntTypeModel(container);
 					break;
 
 						case "uint":
 						case "uint32":
-							typeModel = new UIntTypeModel();
+							typeModel = new UIntTypeModel(container);
 					break;
 
 						case "long":
 						case "int64":
-							typeModel = new LongTypeModel();
+							typeModel = new LongTypeModel(container);
 					break;
 
 						case "ulong":
 						case "uint64":
-							typeModel = new ULongTypeModel();
+							typeModel = new ULongTypeModel(container);
 					break;
 
 						case "float":
 						case "float32":
-							typeModel = new FloatTypeModel();
+							typeModel = new FloatTypeModel(container);
 					break;
 
 						case "double":
 						case "float64":
-							typeModel = new DoubleTypeModel();
+							typeModel = new DoubleTypeModel(container);
 					break;
 
 					}
 
-			return typeModel != null;
+			return typeModel is not null;
 		}
 	}
 }

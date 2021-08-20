@@ -16,14 +16,16 @@
 
 namespace FlatSharp.Compiler
 {
+    using FlatSharp.TypeModel;
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
 
     internal abstract class BaseSchemaMember
     {
         private readonly Dictionary<string, BaseSchemaMember> children;
 
-        protected BaseSchemaMember(string name, BaseSchemaMember parent)
+        protected BaseSchemaMember(string name, BaseSchemaMember? parent)
         {
             this.children = new Dictionary<string, BaseSchemaMember>();
             this.Parent = parent;
@@ -36,9 +38,7 @@ namespace FlatSharp.Compiler
             }
         }
 
-        public BaseSchemaMember Parent { get; }
-
-        public virtual HashSet<AttributeOption> Options => this.Parent.Options;
+        public BaseSchemaMember? Parent { get; }
 
         public string Name { get; }
 
@@ -47,41 +47,31 @@ namespace FlatSharp.Compiler
         public string GlobalName => $"global::{this.FullName}";
 
         // File that declared this type.
-        public string DeclaringFile { get; set; }
+        public string? DeclaringFile { get; set; }
 
         public IReadOnlyDictionary<string, BaseSchemaMember> Children => this.children;
 
         protected abstract bool SupportsChildren { get; }
         
-        public void WriteCode(
-            CodeWriter writer, 
-            CodeWritingPass pass, 
-            string forFile,
-            IReadOnlyDictionary<string, string> precompiledSerailizers)
+        public void WriteCode(CodeWriter writer, CompileContext context)
         {
-            // First pass: write all definitions (even from other files)
-            //  the first pass is internal and is intended to produce a large
-            //  file full of type definitions that FlatSharp can use to build serializers.
-            // Second pass: only write things for the target file.
-            //   the second pass generates only files in the root fbs file.
-            if (pass == CodeWritingPass.FirstPass || forFile == this.DeclaringFile)
+            // Prior to last pass: 
+            //      Write all definitions (even from other files)
+            //      These passes are internal are are intended to produce a bunch of type definitions 
+            //      that FlatSharp can use to build serializers.
+            // Last Pass: 
+            //      Only write things for the target file. This pass consumes the output
+            //      of previous passes but doesn't generate all types.
+            if (context.CompilePass < CodeWritingPass.LastPass || context.RootFile == this.DeclaringFile)
             {
                 ErrorContext.Current.WithScope(
-                    this.Name, () => this.OnWriteCode(writer, pass, forFile, precompiledSerailizers));
+                    this.Name, () => this.OnWriteCode(writer, context));
             }
         }
 
-        public string GetCopyExpression(string source)
-        {
-            return ErrorContext.Current.WithScope(
-                this.Name, () => this.OnGetCopyExpression(source));
-        }
-
-        protected virtual void OnWriteCode(CodeWriter writer, CodeWritingPass pass, string forFile, IReadOnlyDictionary<string, string> precompiledSerializer)
+        protected virtual void OnWriteCode(CodeWriter writer, CompileContext context)
         {
         }
-
-        protected abstract string OnGetCopyExpression(string source);
 
         public void AddChild(BaseSchemaMember child)
         {           
@@ -89,12 +79,12 @@ namespace FlatSharp.Compiler
             {
                 if (!this.SupportsChildren)
                 {
-                    ErrorContext.Current?.RegisterError($"Unable to add child to current context.");
+                    ErrorContext.Current.RegisterError($"Unable to add child to current context.");
                 }
 
                 if (this.children.ContainsKey(child.Name))
                 {
-                    ErrorContext.Current?.RegisterError($"Duplicate member name '{child.Name}'.");
+                    ErrorContext.Current.RegisterError($"Duplicate member name '{child.Name}'.");
                 }
 
                 this.children[child.Name] = child;
@@ -104,31 +94,40 @@ namespace FlatSharp.Compiler
         /// <summary>
         /// Resolves a name according to the relative namespace path.
         /// </summary>
-        public bool TryResolveName(string name, out BaseSchemaMember node)
+        public bool TryResolveName(string name, [NotNullWhen(true)] out BaseSchemaMember? node)
         {
             Span<string> parts = name.Split('.');
 
             // Go up to the first namespace node in the tree.
-            BaseSchemaMember rootNode = this;
-            while (!(rootNode is NamespaceDefinition) && !(rootNode is RootNodeDefinition))
+            BaseSchemaMember? firstNsOrRoot = this;
+            while (!(firstNsOrRoot is NamespaceDefinition) && !(firstNsOrRoot is RootNodeDefinition))
             {
-                rootNode = rootNode.Parent;
+                firstNsOrRoot = firstNsOrRoot!.Parent;
             }
 
-            if (this.TryResolveDescendentsFromNode(rootNode, parts, out node))
-            {
-                return true;
-            }
+            FlatSharpInternal.Assert(firstNsOrRoot is not null, "Root not should not be null");
 
-            while (rootNode.Parent != null)
-            {
-                rootNode = rootNode.Parent;
-            }
-
-            return this.TryResolveDescendentsFromNode(rootNode, parts, out node);
+            return Search(parts, firstNsOrRoot, out node);
         }
 
-        private bool TryResolveDescendentsFromNode(BaseSchemaMember startNode, Span<string> parts, out BaseSchemaMember node)
+        private static bool Search(Span<string> parts, BaseSchemaMember? fromNode, [NotNullWhen(true)] out BaseSchemaMember? node)
+        {
+            while (fromNode is not null)
+            {
+                // Try to find recursively from each namespace.
+                if (TryResolveDescendentsFromNode(fromNode, parts, out node))
+                {
+                    return true;
+                }
+
+                fromNode = fromNode.Parent;
+            }
+
+            node = null;
+            return false;
+        }
+
+        private static bool TryResolveDescendentsFromNode(BaseSchemaMember startNode, Span<string> parts, [NotNullWhen(true)] out BaseSchemaMember? node)
         {
             node = startNode;
             while (node.Children.TryGetValue(parts[0], out node))

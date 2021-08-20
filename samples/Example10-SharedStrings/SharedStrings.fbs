@@ -16,7 +16,7 @@
 
 namespace Samples.SharedStrings;
 
-table Matrix (PrecompiledSerializer) {
+table Matrix (fs_serializer) {
 	Rows:[Row];
 }
 
@@ -28,7 +28,7 @@ table Cell {
 	// the shared string metadata is necessary to enable shared strings. Specifying it in the schema
 	// allows you to choose which strings should be shared and which should not, rather than a global
 	// setting one way or the other. This metadata also works with vectors of strings, shown below.
-	ColumnName:string (sharedstring); 
+	ColumnName:string (fs_sharedString); 
 	Value:string;
-	Vector:[string] (sharedstring);
+	Vector:[string] (fs_sharedString);
 }

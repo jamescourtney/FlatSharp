@@ -27,84 +27,156 @@ namespace FlatSharp.Compiler
     /// </summary>
     internal class EnumDefinition : BaseSchemaMember
     {
-        private BigInteger nextValue = 0;
-        private readonly Dictionary<string, string> nameValuePairs = new Dictionary<string, string>();
-
         public EnumDefinition(string typeName, string underlyingTypeName, BaseSchemaMember parent)
             : base(typeName, parent)
         {
             this.FbsUnderlyingType = underlyingTypeName;
-            this.UnderlyingType = SchemaDefinition.ResolveBuiltInScalarType(underlyingTypeName);
         }
 
         protected override bool SupportsChildren => false;
 
         public string FbsUnderlyingType { get; }
 
-        public ITypeModel UnderlyingType { get; }
+        public bool IsFlags { get; set; }
 
-        public IReadOnlyDictionary<string, string> NameValuePairs => this.nameValuePairs;
+        public List<(string name, string? value)> NameValuePairs { get; } = new List<(string, string?)>();
 
-        public void AddNameValuePair(string name, string value)
+        protected override void OnWriteCode(CodeWriter writer, CompileContext context)
         {
-            if (!string.IsNullOrEmpty(value))
-            {
-                BigInteger bigInt = ParseInteger(value) ?? this.nextValue;
+            // Grammar guarantees we have a known type alias.
+            FlatSharpInternal.Assert(
+                context.TypeModelContainer.TryResolveFbsAlias(this.FbsUnderlyingType, out ITypeModel? typeModel),
+                "Unable to resolve type model");
 
-                // If the value got set backwards.
-                if (bigInt < this.nextValue && this.nameValuePairs.Count > 0)
-                {
-                    ErrorContext.Current?.RegisterError($"Enum '{this.Name}' must declare values sorted in ascending order.");
-                }
-
-                if (!this.UnderlyingType.TryFormatStringAsLiteral(bigInt.ToString(), out string standardizedString))
-                {
-                    ErrorContext.Current?.RegisterError($"Could not format value for enum '{this.Name}'. Value = {bigInt}.");
-                }
-
-                // C# compiler won't complain about duplicate values.
-                if (this.nameValuePairs.Values.Any(x => x == standardizedString))
-                {
-                    ErrorContext.Current?.RegisterError($"Enum '{this.Name}' contains duplicate value '{value}'.");
-                }
-
-                this.nameValuePairs[name] = standardizedString;
-                this.nextValue = bigInt + 1;
-            }
-            else
-            {
-                value = this.nextValue.ToString();
-
-                if (!this.UnderlyingType.TryFormatStringAsLiteral(value, out string standardizedString))
-                {
-                    ErrorContext.Current?.RegisterError($"Could not format value for enum '{this.Name}'. Value = {value}.");
-                }
-
-                this.nameValuePairs[name] = standardizedString;
-                this.nextValue++;
-            }
-        }
-
-        protected override void OnWriteCode(CodeWriter writer, CodeWritingPass pass, string forFile, IReadOnlyDictionary<string, string> precompiledSerailizers)
-        {
-            writer.AppendLine($"[FlatBufferEnum(typeof({this.UnderlyingType.ClrType.FullName}))]");
+            writer.AppendLine($"[FlatBufferEnum(typeof({typeModel.ClrType.FullName}))]");
             writer.AppendLine("[System.Runtime.CompilerServices.CompilerGenerated]");
-            writer.AppendLine($"public enum {this.Name} : {this.UnderlyingType.ClrType.FullName}");
+
+            if (this.IsFlags)
+            {
+                writer.AppendLine("[System.Flags]");
+            }
+
+            writer.AppendLine($"public enum {this.Name} : {typeModel.ClrType.FullName}");
             writer.AppendLine($"{{");
             using (writer.IncreaseIndent())
             {
-                foreach (var item in this.nameValuePairs)
+                Dictionary<string, string> standardizedPairs = this.IsFlags 
+                    ? this.GetFormattedNameValueBitFlagsPairs(typeModel) 
+                    : this.GetFormattedNameValuePairs(typeModel);
+
+                foreach (var item in standardizedPairs)
                 {
                     writer.AppendLine($"{item.Key} = {item.Value},");
                 }
             }
+
             writer.AppendLine($"}}");
             writer.AppendLine(string.Empty);
         }
 
-        protected override string OnGetCopyExpression(string source)
+        private Dictionary<string, string> GetFormattedNameValueBitFlagsPairs(ITypeModel model)
         {
-            return source;
+            Dictionary<string, string> results = new Dictionary<string, string>();
+            BigInteger nextValue = 1;
+            BigInteger allFlags = 0;
+
+            foreach (var kvp in this.NameValuePairs)
+            {
+                if (results.ContainsKey(kvp.name))
+                {
+                    ErrorContext.Current.RegisterError($"Enum '{this.Name}' may not have duplicate names. Duplicate = '{kvp.name}'");
+                    continue;
+                }
+
+                if (!string.IsNullOrEmpty(kvp.value))
+                {
+                    ErrorContext.Current.RegisterError($"Enum '{this.Name}' declares the '{MetadataKeys.BitFlags}' attribute. FlatSharp does not support specifying explicit values when used in conjunction with bit flags.");
+                    continue;
+                }
+
+                if (!model.TryFormatStringAsLiteral(nextValue.ToString(), out string? literal))
+                {
+                    ErrorContext.Current.RegisterError($"Could not format value for enum '{this.Name}'. Value = {nextValue}. Make sure that the enum type has enough space for this many flags.");
+                    continue;
+                }
+
+                allFlags |= nextValue;
+                nextValue *= 2;
+
+                results[kvp.name] = literal;
+            }
+
+            FlatSharpInternal.Assert(
+                model.TryFormatStringAsLiteral(allFlags.ToString(), out string? all),
+                "Failed to format all flags.");
+
+            FlatSharpInternal.Assert(
+                model.TryFormatStringAsLiteral("0", out string? zero),
+                "Failed to generate none flags.");
+
+            results["None"] = zero;
+            results["All"] = all;
+
+            return results;
+        }
+
+        private Dictionary<string, string> GetFormattedNameValuePairs(ITypeModel model)
+        {
+            Dictionary<string, string> results = new Dictionary<string, string>();
+            BigInteger nextValue = 0;
+
+            foreach (var kvp in this.NameValuePairs)
+            {
+                string key = kvp.name;
+                string? value = kvp.value;
+
+                if (results.ContainsKey(key))
+                {
+                    ErrorContext.Current.RegisterError($"Enum '{this.Name}' may not have duplicate names. Duplicate = '{key}'");
+                    continue;
+                }
+
+                if (!string.IsNullOrEmpty(value))
+                {
+                    BigInteger bigInt = ParseInteger(value) ?? nextValue;
+
+                    // If the value got set backwards.
+                    if (bigInt < nextValue && results.Count > 0)
+                    {
+                        ErrorContext.Current.RegisterError($"Enum '{this.Name}' must declare values sorted in ascending order.");
+                    }
+
+                    if (!model.TryFormatStringAsLiteral(bigInt.ToString(), out string? standardizedString))
+                    {
+                        ErrorContext.Current.RegisterError($"Could not format value '{bigInt}' as a {model.GetCompilableTypeName()} for enum '{this.Name}'. Make sure the value is expressable as '{model.GetCompilableTypeName()}'");
+                        continue;
+                    }
+
+                    // C# compiler won't complain about duplicate values.
+                    if (results.Values.Any(x => x == standardizedString))
+                    {
+                        ErrorContext.Current.RegisterError($"Enum '{this.Name}' contains duplicate value '{value}'.");
+                    }
+
+                    results[key] = standardizedString;
+                    nextValue = bigInt + 1;
+                }
+                else
+                {
+                    value = nextValue.ToString();
+
+                    if (!model.TryFormatStringAsLiteral(value, out string? standardizedString))
+                    {
+                        ErrorContext.Current.RegisterError($"Could not format value for enum '{this.Name}'. Value = {value}.");
+                        continue;
+                    }
+
+                    results[key] = standardizedString;
+                    nextValue++;
+                }
+            }
+
+            return results;
         }
 
         private static BigInteger? ParseInteger(string value)
@@ -138,7 +210,7 @@ namespace FlatSharp.Compiler
                 }
             }
 
-            ErrorContext.Current?.RegisterError($"Unable to parse enum value '{bigInt}' as an integer.");
+            ErrorContext.Current.RegisterError($"Unable to parse enum value '{value}' as an integer.");
             return null;
         }
     }

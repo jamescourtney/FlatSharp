@@ -16,6 +16,7 @@
 
 using FlatSharp;
 using FlatSharp.Attributes;
+using System;
 using System.Diagnostics;
 
 namespace Samples.IndexedVectors
@@ -49,18 +50,18 @@ namespace Samples.IndexedVectors
             {
                 Users = new IndexedVector<string, User>
                 {
-                    { new User { UserId = "1", FirstName = "Charlie", LastName = "Kelly" } },
-                    { new User { UserId = "2", FirstName = "Dennis", LastName = "Reynolds" } },
-                    { new User { UserId = "3", FirstName = "Ronald", LastName = "McDonald" } },
-                    { new User { UserId = "4", FirstName = "Frank", LastName = "Reynolds" } },
-                    { new User { UserId = "5", FirstName = "Deeandra", LastName = "Reynolds" } },
+                    { new User("1") { FirstName = "Charlie", LastName = "Kelly" } },
+                    { new User("2") { FirstName = "Dennis", LastName = "Reynolds" } },
+                    { new User("3") { FirstName = "Ronald", LastName = "McDonald" } },
+                    { new User("4") { FirstName = "Frank", LastName = "Reynolds" } },
+                    { new User("5") { FirstName = "Deeandra", LastName = "Reynolds" } },
                 }
             };
 
             // Indexed vectors look and act like dictionaries. The main difference
             // is that adding arbitrary keys is not supported.
-            Debug.Assert(table.Users.TryGetValue("5", out var dee));
-            Debug.Assert(dee.UserId == "5");
+            Debug.Assert(table.Users.TryGetValue("5", out var bird));
+            Debug.Assert(bird.UserId == "5");
             Debug.Assert(table.Users["5"].FirstName == "Deeandra");
 
             byte[] data = new byte[1024];
@@ -68,11 +69,13 @@ namespace Samples.IndexedVectors
 
             IndexedVectorTable parsedTable = FlatBufferSerializer.Default.Parse<IndexedVectorTable>(data);
 
+            Debug.Assert(parsedTable.Users is not null);
+
             // Performs binary search
             Debug.Assert(parsedTable.Users.TryGetValue("2", out var dennis));
             Debug.Assert(parsedTable.Users.TryGetValue("3", out var mac));
             Debug.Assert(parsedTable.Users.TryGetValue("1", out var charlie));
-            Debug.Assert(parsedTable.Users.TryGetValue("5", out dee));
+            Debug.Assert(parsedTable.Users.TryGetValue("5", out bird));
             Debug.Assert(parsedTable.Users.TryGetValue("4", out var frank));
         }
 
@@ -84,23 +87,38 @@ namespace Samples.IndexedVectors
             /// the "key" in the value.
             /// </summary>
             [FlatBufferItem(0)]
-            public virtual IIndexedVector<string, User> Users { get; set; }
+            public virtual IIndexedVector<string, User>? Users { get; set; }
         }
 
         [FlatBufferTable]
         public class User
         {
+            public User (string id)
+            {
+                this.UserId = id;
+            }
+
+            /// <summary>
+            /// This constructor is used by Flatsharp when it is defined.
+            /// The context parameter gives a little information about the deserialization,
+            /// but it is not required to do anything with it.
+            /// </summary>
+            protected User(FlatBufferDeserializationContext context)
+            {
+            }
+
             /// <summary>
             /// This is the key. The type here (string) matches the key in the IIndexedVector up above.
+            /// It is recommended to keep key properties immutable when using Indexed Vectors.
             /// </summary>
             [FlatBufferItem(0, Key = true)]
-            public virtual string UserId { get; set; }
+            public virtual string? UserId { get; init; }
 
             [FlatBufferItem(1)]
-            public virtual string FirstName { get; set; }
+            public virtual string? FirstName { get; set; }
 
             [FlatBufferItem(2)]
-            public virtual string LastName { get; set; }
+            public virtual string? LastName { get; set; }
         }
     }
 }

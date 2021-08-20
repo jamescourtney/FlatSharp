@@ -17,6 +17,7 @@
 namespace FlatSharp.Compiler
 {
     using Antlr4.Runtime.Misc;
+    using FlatSharp.Attributes;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -24,60 +25,95 @@ namespace FlatSharp.Compiler
     internal class TypeVisitor : FlatBuffersBaseVisitor<TableOrStructDefinition>
     {
         private readonly BaseSchemaMember parent;
+        private readonly string declaringFileName;
 
-        public TypeVisitor(BaseSchemaMember parent)
+        public TypeVisitor(BaseSchemaMember parent, string declaringFileName)
         {
             this.parent = parent;
+            this.declaringFileName = declaringFileName;
         }
 
         public override TableOrStructDefinition VisitType_decl([NotNull] FlatBuffersParser.Type_declContext context)
         {
-            Dictionary<string, string> metadata = new MetadataVisitor().Visit(context.metadata());
+            Dictionary<string, string?> metadata = new MetadataVisitor().Visit(context.metadata());
 
             TableOrStructDefinition definition = new TableOrStructDefinition(
-                context.IDENT().GetText(), 
-                ParseSerailizerFlags(metadata),
+                context.IDENT().GetText(),
                 this.parent);
+
+            definition.DeclaringFile = this.declaringFileName;
+            this.parent.AddChild(definition);
 
             ErrorContext.Current.WithScope(definition.Name, () =>
             {
                 definition.IsTable = context.GetChild(0).GetText() == "table";
 
-                if (!definition.IsTable && definition.RequestedSerializer != null)
+                definition.NonVirtual = metadata.ParseNullableBooleanMetadata(MetadataKeys.NonVirtualProperty, MetadataKeys.NonVirtualPropertyLegacy);
+                definition.ForceWrite = metadata.ParseNullableBooleanMetadata(MetadataKeys.ForceWrite);
+                definition.WriteThrough = metadata.ParseNullableBooleanMetadata(MetadataKeys.WriteThrough);
+
+                definition.DefaultConstructorKind = metadata.ParseMetadata<DefaultConstructorKind?>(
+                    new[] { MetadataKeys.DefaultConstructorKind },
+                    ParseDefaultConstructorKind,
+                    DefaultConstructorKind.Public,
+                    DefaultConstructorKind.Public);
+
+                definition.RequestedSerializer = metadata.ParseMetadata<FlatBufferDeserializationOption?>(
+                    new[] { MetadataKeys.SerializerKind, MetadataKeys.PrecompiledSerializerLegacy },
+                    ParseSerializerKind,
+                    FlatBufferDeserializationOption.Default,
+                    null);
+
+                if (!definition.IsTable && definition.RequestedSerializer is not null)
                 {
-                    ErrorContext.Current.RegisterError("Structs may not have precompiled serializers.");
+                    ErrorContext.Current.RegisterError("Structs may not have serializers.");
+                }
+
+                if (!definition.IsTable && definition.ForceWrite is not null)
+                {
+                    ErrorContext.Current.RegisterError($"Structs may not use the '{MetadataKeys.ForceWrite}' attribute.");
+                }
+
+                if (metadata.ContainsKey(MetadataKeys.ObsoleteDefaultConstructorLegacy))
+                {
+                    ErrorContext.Current.RegisterError($"The '{MetadataKeys.ObsoleteDefaultConstructorLegacy}' metadata attribute has been deprecated. Please use the '{MetadataKeys.DefaultConstructorKind}' attribute instead.");
+                }
+
+                if (metadata.TryGetValue(MetadataKeys.FileIdentifier, out var fileId))
+                {
+                    if (!definition.IsTable)
+                    {
+                        ErrorContext.Current.RegisterError("Structs may not have file identifiers.");
+                    }
+
+                    definition.FileIdentifier = fileId;
                 }
 
                 var fields = context.field_decl();
                 if (fields != null)
                 {
-                    definition.Fields = fields.Select(x => new FieldVisitor().VisitField_decl(x)).ToList();
+                    foreach (var f in fields)
+                    {
+                        new FieldVisitor(definition).VisitField_decl(f);
+                    }
                 }
             });
 
             return definition;
         }
 
-        private static FlatBufferDeserializationOption? ParseSerailizerFlags(Dictionary<string, string> metadata)
+        private static bool ParseSerializerKind(string value, out FlatBufferDeserializationOption? result)
         {
-            if (metadata == null || !metadata.TryGetValue("PrecompiledSerializer", out string value))
-            {
-                return null;
-            }
+            var success = Enum.TryParse<FlatBufferDeserializationOption>(value, true, out var tempResult);
+            result = tempResult;
+            return success;
+        }
 
-            if (string.IsNullOrEmpty(value))
-            {
-                return FlatBufferDeserializationOption.Default;
-            }
-
-            // Cover all of the real names.
-            if (Enum.TryParse(value, true, out FlatBufferDeserializationOption flag))
-            {
-                return flag;
-            }
-
-            ErrorContext.Current.RegisterError($"Value '{value}' is not understood as a valid value for precompiled serializer flags. Value must be one of '{string.Join(",", Enum.GetNames(typeof(FlatBufferDeserializationOption)))}'");
-            return null;
+        private static bool ParseDefaultConstructorKind(string value, out DefaultConstructorKind? result)
+        {
+            var success = Enum.TryParse<DefaultConstructorKind>(value, true, out var tempResult);
+            result = tempResult;
+            return success;
         }
     }
 }

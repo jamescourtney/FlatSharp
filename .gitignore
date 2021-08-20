@@ -7,11 +7,10 @@
 **/bin/*
 **/*.csproj.user
 **/*.fbs.generated.cs
-/src/FlatSharpTests/coverage.netstandard2.0.xml
-/src/FlatSharpTests/coverage.netcoreapp2.1.xml
-/src/FlatSharpTests/coverage.net47.xml
-/src/FlatSharpTests/coverage
-/src/FlatSharpTests/.coverage
+**/*.DotSettings*
+**/.coverage/**
 /src/Grpc/NativeGrpc/Debug
 /src/Debug
 /src/Grpc/NativeGrpc/NativeGrpc.vcxproj.user
+**/coverage.net5.0.xml
+/src/Tests/Coverage/coverage.xml

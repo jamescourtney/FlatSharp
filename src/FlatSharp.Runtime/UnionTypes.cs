@@ -18,30 +18,29 @@
 
 namespace FlatSharp
 {
-	internal interface IUnion
+	public interface IFlatBufferUnion
 	{
 	}
 
 
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-			public class FlatBufferUnion<T1> : IUnion
-			{
+			public class FlatBufferUnion<T1> : IFlatBufferUnion
+
+							where T1 : notnull
+						{
 				private readonly byte discriminator;
+				private readonly object value;
 				
-				
-				protected readonly T1 item1;
-				
-								
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 1;
-					this.item1 = item;
+					this.value = item;
 				}
 				
 							
@@ -54,7 +53,7 @@ namespace FlatSharp
 					{
 						if (this.discriminator == 1)
 						{
-							return this.item1;
+							return (T1)this.value;
 						}
 						else
 						{
@@ -63,32 +62,21 @@ namespace FlatSharp
 					}
 				}
 
-				public bool TryGet(out T1 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
-					item = default;
 					if (this.discriminator == 1)
 					{
-						item = this.item1;
+						item = (T1)this.value;
 						return true;
 					}
-
-					return false;
-				}
-				
-				
-				public FlatBufferUnion<T1> Clone(
-				System.Func<T1, T1> cloneT1
-				)
-				{
-					switch (this.discriminator)
+					else
 					{
-											case 1:
-							return new FlatBufferUnion<T1>(cloneT1(this.item1));
-										}
-
-					throw new System.InvalidOperationException();
+						item = default;
+						return false;
+					}
 				}
-
+				
+				
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1)
@@ -97,7 +85,7 @@ namespace FlatSharp
 					{
 											case 1:
 						{
-							case1(this.item1);
+							case1((T1)this.value);
 							break;
 						}
 											default:
@@ -115,7 +103,7 @@ namespace FlatSharp
 					{
 											case 1:
 						{
-							case1(state, this.item1);
+							case1(state, (T1)this.value);
 							break;
 						}
 											default:
@@ -133,7 +121,7 @@ namespace FlatSharp
 					{
 											case 1:
 						{
-							return case1(this.item1);
+							return case1((T1)this.value);
 						}
 											default:
 							return defaultCase();
@@ -149,47 +137,62 @@ namespace FlatSharp
 					{
 											case 1:
 						{
-							return case1(state, this.item1);
+							return case1(state, (T1)this.value);
 						}
 											default:
 							return defaultCase(state);
 					}
 				}
+
+				public override bool Equals(object? other)
+				{
+					if (other is FlatBufferUnion<T1> otherUnion)
+					{
+						return this.discriminator == otherUnion.Discriminator &&
+						       this.value.Equals(otherUnion.value);
+					}
+					else
+					{
+						return false;
+					}
+				}
+
+				public override int GetHashCode()
+				{
+					return this.value.GetHashCode() ^ this.discriminator;
+				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-			public class FlatBufferUnion<T1, T2> : IUnion
-			{
+			public class FlatBufferUnion<T1, T2> : IFlatBufferUnion
+
+							where T1 : notnull
+							where T2 : notnull
+						{
 				private readonly byte discriminator;
+				private readonly object value;
 				
-				
-				protected readonly T1 item1;
-				
-				
-				protected readonly T2 item2;
-				
-								
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 1;
-					this.item1 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 2;
-					this.item2 = item;
+					this.value = item;
 				}
 				
 							
@@ -202,7 +205,7 @@ namespace FlatSharp
 					{
 						if (this.discriminator == 1)
 						{
-							return this.item1;
+							return (T1)this.value;
 						}
 						else
 						{
@@ -211,16 +214,18 @@ namespace FlatSharp
 					}
 				}
 
-				public bool TryGet(out T1 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
-					item = default;
 					if (this.discriminator == 1)
 					{
-						item = this.item1;
+						item = (T1)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -230,7 +235,7 @@ namespace FlatSharp
 					{
 						if (this.discriminator == 2)
 						{
-							return this.item2;
+							return (T2)this.value;
 						}
 						else
 						{
@@ -239,35 +244,21 @@ namespace FlatSharp
 					}
 				}
 
-				public bool TryGet(out T2 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
-					item = default;
 					if (this.discriminator == 2)
 					{
-						item = this.item2;
+						item = (T2)this.value;
 						return true;
 					}
-
-					return false;
-				}
-				
-				
-				public FlatBufferUnion<T1, T2> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2
-				)
-				{
-					switch (this.discriminator)
+					else
 					{
-											case 1:
-							return new FlatBufferUnion<T1, T2>(cloneT1(this.item1));
-											case 2:
-							return new FlatBufferUnion<T1, T2>(cloneT2(this.item2));
-										}
-
-					throw new System.InvalidOperationException();
+						item = default;
+						return false;
+					}
 				}
-
+				
+				
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -277,12 +268,12 @@ System.Action<T2> case2)
 					{
 											case 1:
 						{
-							case1(this.item1);
+							case1((T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(this.item2);
+							case2((T2)this.value);
 							break;
 						}
 											default:
@@ -301,12 +292,12 @@ System.Action<TState, T2> case2)
 					{
 											case 1:
 						{
-							case1(state, this.item1);
+							case1(state, (T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(state, this.item2);
+							case2(state, (T2)this.value);
 							break;
 						}
 											default:
@@ -325,11 +316,11 @@ System.Func<T2, TResult> case2)
 					{
 											case 1:
 						{
-							return case1(this.item1);
+							return case1((T1)this.value);
 						}
 											case 2:
 						{
-							return case2(this.item2);
+							return case2((T2)this.value);
 						}
 											default:
 							return defaultCase();
@@ -346,66 +337,79 @@ System.Func<TState, T2, TResult> case2)
 					{
 											case 1:
 						{
-							return case1(state, this.item1);
+							return case1(state, (T1)this.value);
 						}
 											case 2:
 						{
-							return case2(state, this.item2);
+							return case2(state, (T2)this.value);
 						}
 											default:
 							return defaultCase(state);
 					}
 				}
+
+				public override bool Equals(object? other)
+				{
+					if (other is FlatBufferUnion<T1, T2> otherUnion)
+					{
+						return this.discriminator == otherUnion.Discriminator &&
+						       this.value.Equals(otherUnion.value);
+					}
+					else
+					{
+						return false;
+					}
+				}
+
+				public override int GetHashCode()
+				{
+					return this.value.GetHashCode() ^ this.discriminator;
+				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-			public class FlatBufferUnion<T1, T2, T3> : IUnion
-			{
+			public class FlatBufferUnion<T1, T2, T3> : IFlatBufferUnion
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+						{
 				private readonly byte discriminator;
+				private readonly object value;
 				
-				
-				protected readonly T1 item1;
-				
-				
-				protected readonly T2 item2;
-				
-				
-				protected readonly T3 item3;
-				
-								
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 1;
-					this.item1 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 2;
-					this.item2 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 3;
-					this.item3 = item;
+					this.value = item;
 				}
 				
 							
@@ -418,7 +422,7 @@ System.Func<TState, T2, TResult> case2)
 					{
 						if (this.discriminator == 1)
 						{
-							return this.item1;
+							return (T1)this.value;
 						}
 						else
 						{
@@ -427,16 +431,18 @@ System.Func<TState, T2, TResult> case2)
 					}
 				}
 
-				public bool TryGet(out T1 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
-					item = default;
 					if (this.discriminator == 1)
 					{
-						item = this.item1;
+						item = (T1)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -446,7 +452,7 @@ System.Func<TState, T2, TResult> case2)
 					{
 						if (this.discriminator == 2)
 						{
-							return this.item2;
+							return (T2)this.value;
 						}
 						else
 						{
@@ -455,16 +461,18 @@ System.Func<TState, T2, TResult> case2)
 					}
 				}
 
-				public bool TryGet(out T2 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
-					item = default;
 					if (this.discriminator == 2)
 					{
-						item = this.item2;
+						item = (T2)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -474,7 +482,7 @@ System.Func<TState, T2, TResult> case2)
 					{
 						if (this.discriminator == 3)
 						{
-							return this.item3;
+							return (T3)this.value;
 						}
 						else
 						{
@@ -483,38 +491,21 @@ System.Func<TState, T2, TResult> case2)
 					}
 				}
 
-				public bool TryGet(out T3 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
-					item = default;
 					if (this.discriminator == 3)
 					{
-						item = this.item3;
+						item = (T3)this.value;
 						return true;
 					}
-
-					return false;
-				}
-				
-				
-				public FlatBufferUnion<T1, T2, T3> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3
-				)
-				{
-					switch (this.discriminator)
+					else
 					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3>(cloneT1(this.item1));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3>(cloneT2(this.item2));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3>(cloneT3(this.item3));
-										}
-
-					throw new System.InvalidOperationException();
+						item = default;
+						return false;
+					}
 				}
-
+				
+				
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -525,17 +516,17 @@ System.Action<T3> case3)
 					{
 											case 1:
 						{
-							case1(this.item1);
+							case1((T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(this.item2);
+							case2((T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(this.item3);
+							case3((T3)this.value);
 							break;
 						}
 											default:
@@ -555,17 +546,17 @@ System.Action<TState, T3> case3)
 					{
 											case 1:
 						{
-							case1(state, this.item1);
+							case1(state, (T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(state, this.item2);
+							case2(state, (T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(state, this.item3);
+							case3(state, (T3)this.value);
 							break;
 						}
 											default:
@@ -585,15 +576,15 @@ System.Func<T3, TResult> case3)
 					{
 											case 1:
 						{
-							return case1(this.item1);
+							return case1((T1)this.value);
 						}
 											case 2:
 						{
-							return case2(this.item2);
+							return case2((T2)this.value);
 						}
 											case 3:
 						{
-							return case3(this.item3);
+							return case3((T3)this.value);
 						}
 											default:
 							return defaultCase();
@@ -611,85 +602,96 @@ System.Func<TState, T3, TResult> case3)
 					{
 											case 1:
 						{
-							return case1(state, this.item1);
+							return case1(state, (T1)this.value);
 						}
 											case 2:
 						{
-							return case2(state, this.item2);
+							return case2(state, (T2)this.value);
 						}
 											case 3:
 						{
-							return case3(state, this.item3);
+							return case3(state, (T3)this.value);
 						}
 											default:
 							return defaultCase(state);
 					}
 				}
+
+				public override bool Equals(object? other)
+				{
+					if (other is FlatBufferUnion<T1, T2, T3> otherUnion)
+					{
+						return this.discriminator == otherUnion.Discriminator &&
+						       this.value.Equals(otherUnion.value);
+					}
+					else
+					{
+						return false;
+					}
+				}
+
+				public override int GetHashCode()
+				{
+					return this.value.GetHashCode() ^ this.discriminator;
+				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-			public class FlatBufferUnion<T1, T2, T3, T4> : IUnion
-			{
+			public class FlatBufferUnion<T1, T2, T3, T4> : IFlatBufferUnion
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+						{
 				private readonly byte discriminator;
+				private readonly object value;
 				
-				
-				protected readonly T1 item1;
-				
-				
-				protected readonly T2 item2;
-				
-				
-				protected readonly T3 item3;
-				
-				
-				protected readonly T4 item4;
-				
-								
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 1;
-					this.item1 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 2;
-					this.item2 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 3;
-					this.item3 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 4;
-					this.item4 = item;
+					this.value = item;
 				}
 				
 							
@@ -702,7 +704,7 @@ System.Func<TState, T3, TResult> case3)
 					{
 						if (this.discriminator == 1)
 						{
-							return this.item1;
+							return (T1)this.value;
 						}
 						else
 						{
@@ -711,16 +713,18 @@ System.Func<TState, T3, TResult> case3)
 					}
 				}
 
-				public bool TryGet(out T1 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
-					item = default;
 					if (this.discriminator == 1)
 					{
-						item = this.item1;
+						item = (T1)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -730,7 +734,7 @@ System.Func<TState, T3, TResult> case3)
 					{
 						if (this.discriminator == 2)
 						{
-							return this.item2;
+							return (T2)this.value;
 						}
 						else
 						{
@@ -739,16 +743,18 @@ System.Func<TState, T3, TResult> case3)
 					}
 				}
 
-				public bool TryGet(out T2 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
-					item = default;
 					if (this.discriminator == 2)
 					{
-						item = this.item2;
+						item = (T2)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -758,7 +764,7 @@ System.Func<TState, T3, TResult> case3)
 					{
 						if (this.discriminator == 3)
 						{
-							return this.item3;
+							return (T3)this.value;
 						}
 						else
 						{
@@ -767,16 +773,18 @@ System.Func<TState, T3, TResult> case3)
 					}
 				}
 
-				public bool TryGet(out T3 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
-					item = default;
 					if (this.discriminator == 3)
 					{
-						item = this.item3;
+						item = (T3)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -786,7 +794,7 @@ System.Func<TState, T3, TResult> case3)
 					{
 						if (this.discriminator == 4)
 						{
-							return this.item4;
+							return (T4)this.value;
 						}
 						else
 						{
@@ -795,41 +803,21 @@ System.Func<TState, T3, TResult> case3)
 					}
 				}
 
-				public bool TryGet(out T4 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
-					item = default;
 					if (this.discriminator == 4)
 					{
-						item = this.item4;
+						item = (T4)this.value;
 						return true;
 					}
-
-					return false;
-				}
-				
-				
-				public FlatBufferUnion<T1, T2, T3, T4> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4
-				)
-				{
-					switch (this.discriminator)
+					else
 					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4>(cloneT1(this.item1));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4>(cloneT2(this.item2));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4>(cloneT3(this.item3));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4>(cloneT4(this.item4));
-										}
-
-					throw new System.InvalidOperationException();
+						item = default;
+						return false;
+					}
 				}
-
+				
+				
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -841,22 +829,22 @@ System.Action<T4> case4)
 					{
 											case 1:
 						{
-							case1(this.item1);
+							case1((T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(this.item2);
+							case2((T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(this.item3);
+							case3((T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(this.item4);
+							case4((T4)this.value);
 							break;
 						}
 											default:
@@ -877,22 +865,22 @@ System.Action<TState, T4> case4)
 					{
 											case 1:
 						{
-							case1(state, this.item1);
+							case1(state, (T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(state, this.item2);
+							case2(state, (T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(state, this.item3);
+							case3(state, (T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(state, this.item4);
+							case4(state, (T4)this.value);
 							break;
 						}
 											default:
@@ -913,19 +901,19 @@ System.Func<T4, TResult> case4)
 					{
 											case 1:
 						{
-							return case1(this.item1);
+							return case1((T1)this.value);
 						}
 											case 2:
 						{
-							return case2(this.item2);
+							return case2((T2)this.value);
 						}
 											case 3:
 						{
-							return case3(this.item3);
+							return case3((T3)this.value);
 						}
 											case 4:
 						{
-							return case4(this.item4);
+							return case4((T4)this.value);
 						}
 											default:
 							return defaultCase();
@@ -944,104 +932,113 @@ System.Func<TState, T4, TResult> case4)
 					{
 											case 1:
 						{
-							return case1(state, this.item1);
+							return case1(state, (T1)this.value);
 						}
 											case 2:
 						{
-							return case2(state, this.item2);
+							return case2(state, (T2)this.value);
 						}
 											case 3:
 						{
-							return case3(state, this.item3);
+							return case3(state, (T3)this.value);
 						}
 											case 4:
 						{
-							return case4(state, this.item4);
+							return case4(state, (T4)this.value);
 						}
 											default:
 							return defaultCase(state);
 					}
 				}
+
+				public override bool Equals(object? other)
+				{
+					if (other is FlatBufferUnion<T1, T2, T3, T4> otherUnion)
+					{
+						return this.discriminator == otherUnion.Discriminator &&
+						       this.value.Equals(otherUnion.value);
+					}
+					else
+					{
+						return false;
+					}
+				}
+
+				public override int GetHashCode()
+				{
+					return this.value.GetHashCode() ^ this.discriminator;
+				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-			public class FlatBufferUnion<T1, T2, T3, T4, T5> : IUnion
-			{
+			public class FlatBufferUnion<T1, T2, T3, T4, T5> : IFlatBufferUnion
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+						{
 				private readonly byte discriminator;
+				private readonly object value;
 				
-				
-				protected readonly T1 item1;
-				
-				
-				protected readonly T2 item2;
-				
-				
-				protected readonly T3 item3;
-				
-				
-				protected readonly T4 item4;
-				
-				
-				protected readonly T5 item5;
-				
-								
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 1;
-					this.item1 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 2;
-					this.item2 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 3;
-					this.item3 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 4;
-					this.item4 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 5;
-					this.item5 = item;
+					this.value = item;
 				}
 				
 							
@@ -1054,7 +1051,7 @@ System.Func<TState, T4, TResult> case4)
 					{
 						if (this.discriminator == 1)
 						{
-							return this.item1;
+							return (T1)this.value;
 						}
 						else
 						{
@@ -1063,16 +1060,18 @@ System.Func<TState, T4, TResult> case4)
 					}
 				}
 
-				public bool TryGet(out T1 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
-					item = default;
 					if (this.discriminator == 1)
 					{
-						item = this.item1;
+						item = (T1)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -1082,7 +1081,7 @@ System.Func<TState, T4, TResult> case4)
 					{
 						if (this.discriminator == 2)
 						{
-							return this.item2;
+							return (T2)this.value;
 						}
 						else
 						{
@@ -1091,16 +1090,18 @@ System.Func<TState, T4, TResult> case4)
 					}
 				}
 
-				public bool TryGet(out T2 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
-					item = default;
 					if (this.discriminator == 2)
 					{
-						item = this.item2;
+						item = (T2)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -1110,7 +1111,7 @@ System.Func<TState, T4, TResult> case4)
 					{
 						if (this.discriminator == 3)
 						{
-							return this.item3;
+							return (T3)this.value;
 						}
 						else
 						{
@@ -1119,16 +1120,18 @@ System.Func<TState, T4, TResult> case4)
 					}
 				}
 
-				public bool TryGet(out T3 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
-					item = default;
 					if (this.discriminator == 3)
 					{
-						item = this.item3;
+						item = (T3)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -1138,7 +1141,7 @@ System.Func<TState, T4, TResult> case4)
 					{
 						if (this.discriminator == 4)
 						{
-							return this.item4;
+							return (T4)this.value;
 						}
 						else
 						{
@@ -1147,16 +1150,18 @@ System.Func<TState, T4, TResult> case4)
 					}
 				}
 
-				public bool TryGet(out T4 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
-					item = default;
 					if (this.discriminator == 4)
 					{
-						item = this.item4;
+						item = (T4)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -1166,7 +1171,7 @@ System.Func<TState, T4, TResult> case4)
 					{
 						if (this.discriminator == 5)
 						{
-							return this.item5;
+							return (T5)this.value;
 						}
 						else
 						{
@@ -1175,44 +1180,21 @@ System.Func<TState, T4, TResult> case4)
 					}
 				}
 
-				public bool TryGet(out T5 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
-					item = default;
 					if (this.discriminator == 5)
 					{
-						item = this.item5;
+						item = (T5)this.value;
 						return true;
 					}
-
-					return false;
-				}
-				
-				
-				public FlatBufferUnion<T1, T2, T3, T4, T5> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5
-				)
-				{
-					switch (this.discriminator)
+					else
 					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5>(cloneT1(this.item1));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5>(cloneT2(this.item2));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5>(cloneT3(this.item3));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5>(cloneT4(this.item4));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5>(cloneT5(this.item5));
-										}
-
-					throw new System.InvalidOperationException();
+						item = default;
+						return false;
+					}
 				}
-
+				
+				
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -1225,27 +1207,27 @@ System.Action<T5> case5)
 					{
 											case 1:
 						{
-							case1(this.item1);
+							case1((T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(this.item2);
+							case2((T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(this.item3);
+							case3((T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(this.item4);
+							case4((T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(this.item5);
+							case5((T5)this.value);
 							break;
 						}
 											default:
@@ -1267,27 +1249,27 @@ System.Action<TState, T5> case5)
 					{
 											case 1:
 						{
-							case1(state, this.item1);
+							case1(state, (T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(state, this.item2);
+							case2(state, (T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(state, this.item3);
+							case3(state, (T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(state, this.item4);
+							case4(state, (T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(state, this.item5);
+							case5(state, (T5)this.value);
 							break;
 						}
 											default:
@@ -1309,23 +1291,23 @@ System.Func<T5, TResult> case5)
 					{
 											case 1:
 						{
-							return case1(this.item1);
+							return case1((T1)this.value);
 						}
 											case 2:
 						{
-							return case2(this.item2);
+							return case2((T2)this.value);
 						}
 											case 3:
 						{
-							return case3(this.item3);
+							return case3((T3)this.value);
 						}
 											case 4:
 						{
-							return case4(this.item4);
+							return case4((T4)this.value);
 						}
 											case 5:
 						{
-							return case5(this.item5);
+							return case5((T5)this.value);
 						}
 											default:
 							return defaultCase();
@@ -1345,123 +1327,130 @@ System.Func<TState, T5, TResult> case5)
 					{
 											case 1:
 						{
-							return case1(state, this.item1);
+							return case1(state, (T1)this.value);
 						}
 											case 2:
 						{
-							return case2(state, this.item2);
+							return case2(state, (T2)this.value);
 						}
 											case 3:
 						{
-							return case3(state, this.item3);
+							return case3(state, (T3)this.value);
 						}
 											case 4:
 						{
-							return case4(state, this.item4);
+							return case4(state, (T4)this.value);
 						}
 											case 5:
 						{
-							return case5(state, this.item5);
+							return case5(state, (T5)this.value);
 						}
 											default:
 							return defaultCase(state);
 					}
 				}
+
+				public override bool Equals(object? other)
+				{
+					if (other is FlatBufferUnion<T1, T2, T3, T4, T5> otherUnion)
+					{
+						return this.discriminator == otherUnion.Discriminator &&
+						       this.value.Equals(otherUnion.value);
+					}
+					else
+					{
+						return false;
+					}
+				}
+
+				public override int GetHashCode()
+				{
+					return this.value.GetHashCode() ^ this.discriminator;
+				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6> : IUnion
-			{
+			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6> : IFlatBufferUnion
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+						{
 				private readonly byte discriminator;
+				private readonly object value;
 				
-				
-				protected readonly T1 item1;
-				
-				
-				protected readonly T2 item2;
-				
-				
-				protected readonly T3 item3;
-				
-				
-				protected readonly T4 item4;
-				
-				
-				protected readonly T5 item5;
-				
-				
-				protected readonly T6 item6;
-				
-								
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 1;
-					this.item1 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 2;
-					this.item2 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 3;
-					this.item3 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 4;
-					this.item4 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 5;
-					this.item5 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 6;
-					this.item6 = item;
+					this.value = item;
 				}
 				
 							
@@ -1474,7 +1463,7 @@ System.Func<TState, T5, TResult> case5)
 					{
 						if (this.discriminator == 1)
 						{
-							return this.item1;
+							return (T1)this.value;
 						}
 						else
 						{
@@ -1483,16 +1472,18 @@ System.Func<TState, T5, TResult> case5)
 					}
 				}
 
-				public bool TryGet(out T1 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
-					item = default;
 					if (this.discriminator == 1)
 					{
-						item = this.item1;
+						item = (T1)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -1502,7 +1493,7 @@ System.Func<TState, T5, TResult> case5)
 					{
 						if (this.discriminator == 2)
 						{
-							return this.item2;
+							return (T2)this.value;
 						}
 						else
 						{
@@ -1511,16 +1502,18 @@ System.Func<TState, T5, TResult> case5)
 					}
 				}
 
-				public bool TryGet(out T2 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
-					item = default;
 					if (this.discriminator == 2)
 					{
-						item = this.item2;
+						item = (T2)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -1530,7 +1523,7 @@ System.Func<TState, T5, TResult> case5)
 					{
 						if (this.discriminator == 3)
 						{
-							return this.item3;
+							return (T3)this.value;
 						}
 						else
 						{
@@ -1539,16 +1532,18 @@ System.Func<TState, T5, TResult> case5)
 					}
 				}
 
-				public bool TryGet(out T3 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
-					item = default;
 					if (this.discriminator == 3)
 					{
-						item = this.item3;
+						item = (T3)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -1558,7 +1553,7 @@ System.Func<TState, T5, TResult> case5)
 					{
 						if (this.discriminator == 4)
 						{
-							return this.item4;
+							return (T4)this.value;
 						}
 						else
 						{
@@ -1567,16 +1562,18 @@ System.Func<TState, T5, TResult> case5)
 					}
 				}
 
-				public bool TryGet(out T4 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
-					item = default;
 					if (this.discriminator == 4)
 					{
-						item = this.item4;
+						item = (T4)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -1586,7 +1583,7 @@ System.Func<TState, T5, TResult> case5)
 					{
 						if (this.discriminator == 5)
 						{
-							return this.item5;
+							return (T5)this.value;
 						}
 						else
 						{
@@ -1595,16 +1592,18 @@ System.Func<TState, T5, TResult> case5)
 					}
 				}
 
-				public bool TryGet(out T5 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
-					item = default;
 					if (this.discriminator == 5)
 					{
-						item = this.item5;
+						item = (T5)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -1614,7 +1613,7 @@ System.Func<TState, T5, TResult> case5)
 					{
 						if (this.discriminator == 6)
 						{
-							return this.item6;
+							return (T6)this.value;
 						}
 						else
 						{
@@ -1623,47 +1622,21 @@ System.Func<TState, T5, TResult> case5)
 					}
 				}
 
-				public bool TryGet(out T6 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
-					item = default;
 					if (this.discriminator == 6)
 					{
-						item = this.item6;
+						item = (T6)this.value;
 						return true;
 					}
-
-					return false;
-				}
-				
-				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6
-				)
-				{
-					switch (this.discriminator)
+					else
 					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6>(cloneT1(this.item1));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6>(cloneT2(this.item2));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6>(cloneT3(this.item3));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6>(cloneT4(this.item4));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6>(cloneT5(this.item5));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6>(cloneT6(this.item6));
-										}
-
-					throw new System.InvalidOperationException();
+						item = default;
+						return false;
+					}
 				}
-
+				
+				
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -1677,32 +1650,32 @@ System.Action<T6> case6)
 					{
 											case 1:
 						{
-							case1(this.item1);
+							case1((T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(this.item2);
+							case2((T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(this.item3);
+							case3((T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(this.item4);
+							case4((T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(this.item5);
+							case5((T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(this.item6);
+							case6((T6)this.value);
 							break;
 						}
 											default:
@@ -1725,32 +1698,32 @@ System.Action<TState, T6> case6)
 					{
 											case 1:
 						{
-							case1(state, this.item1);
+							case1(state, (T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(state, this.item2);
+							case2(state, (T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(state, this.item3);
+							case3(state, (T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(state, this.item4);
+							case4(state, (T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(state, this.item5);
+							case5(state, (T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(state, this.item6);
+							case6(state, (T6)this.value);
 							break;
 						}
 											default:
@@ -1773,27 +1746,27 @@ System.Func<T6, TResult> case6)
 					{
 											case 1:
 						{
-							return case1(this.item1);
+							return case1((T1)this.value);
 						}
 											case 2:
 						{
-							return case2(this.item2);
+							return case2((T2)this.value);
 						}
 											case 3:
 						{
-							return case3(this.item3);
+							return case3((T3)this.value);
 						}
 											case 4:
 						{
-							return case4(this.item4);
+							return case4((T4)this.value);
 						}
 											case 5:
 						{
-							return case5(this.item5);
+							return case5((T5)this.value);
 						}
 											case 6:
 						{
-							return case6(this.item6);
+							return case6((T6)this.value);
 						}
 											default:
 							return defaultCase();
@@ -1814,142 +1787,147 @@ System.Func<TState, T6, TResult> case6)
 					{
 											case 1:
 						{
-							return case1(state, this.item1);
+							return case1(state, (T1)this.value);
 						}
 											case 2:
 						{
-							return case2(state, this.item2);
+							return case2(state, (T2)this.value);
 						}
 											case 3:
 						{
-							return case3(state, this.item3);
+							return case3(state, (T3)this.value);
 						}
 											case 4:
 						{
-							return case4(state, this.item4);
+							return case4(state, (T4)this.value);
 						}
 											case 5:
 						{
-							return case5(state, this.item5);
+							return case5(state, (T5)this.value);
 						}
 											case 6:
 						{
-							return case6(state, this.item6);
+							return case6(state, (T6)this.value);
 						}
 											default:
 							return defaultCase(state);
 					}
 				}
+
+				public override bool Equals(object? other)
+				{
+					if (other is FlatBufferUnion<T1, T2, T3, T4, T5, T6> otherUnion)
+					{
+						return this.discriminator == otherUnion.Discriminator &&
+						       this.value.Equals(otherUnion.value);
+					}
+					else
+					{
+						return false;
+					}
+				}
+
+				public override int GetHashCode()
+				{
+					return this.value.GetHashCode() ^ this.discriminator;
+				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7> : IUnion
-			{
+			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7> : IFlatBufferUnion
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+						{
 				private readonly byte discriminator;
+				private readonly object value;
 				
-				
-				protected readonly T1 item1;
-				
-				
-				protected readonly T2 item2;
-				
-				
-				protected readonly T3 item3;
-				
-				
-				protected readonly T4 item4;
-				
-				
-				protected readonly T5 item5;
-				
-				
-				protected readonly T6 item6;
-				
-				
-				protected readonly T7 item7;
-				
-								
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 1;
-					this.item1 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 2;
-					this.item2 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 3;
-					this.item3 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 4;
-					this.item4 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 5;
-					this.item5 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 6;
-					this.item6 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 7;
-					this.item7 = item;
+					this.value = item;
 				}
 				
 							
@@ -1962,7 +1940,7 @@ System.Func<TState, T6, TResult> case6)
 					{
 						if (this.discriminator == 1)
 						{
-							return this.item1;
+							return (T1)this.value;
 						}
 						else
 						{
@@ -1971,16 +1949,18 @@ System.Func<TState, T6, TResult> case6)
 					}
 				}
 
-				public bool TryGet(out T1 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
-					item = default;
 					if (this.discriminator == 1)
 					{
-						item = this.item1;
+						item = (T1)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -1990,7 +1970,7 @@ System.Func<TState, T6, TResult> case6)
 					{
 						if (this.discriminator == 2)
 						{
-							return this.item2;
+							return (T2)this.value;
 						}
 						else
 						{
@@ -1999,16 +1979,18 @@ System.Func<TState, T6, TResult> case6)
 					}
 				}
 
-				public bool TryGet(out T2 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
-					item = default;
 					if (this.discriminator == 2)
 					{
-						item = this.item2;
+						item = (T2)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -2018,7 +2000,7 @@ System.Func<TState, T6, TResult> case6)
 					{
 						if (this.discriminator == 3)
 						{
-							return this.item3;
+							return (T3)this.value;
 						}
 						else
 						{
@@ -2027,16 +2009,18 @@ System.Func<TState, T6, TResult> case6)
 					}
 				}
 
-				public bool TryGet(out T3 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
-					item = default;
 					if (this.discriminator == 3)
 					{
-						item = this.item3;
+						item = (T3)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -2046,7 +2030,7 @@ System.Func<TState, T6, TResult> case6)
 					{
 						if (this.discriminator == 4)
 						{
-							return this.item4;
+							return (T4)this.value;
 						}
 						else
 						{
@@ -2055,16 +2039,18 @@ System.Func<TState, T6, TResult> case6)
 					}
 				}
 
-				public bool TryGet(out T4 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
-					item = default;
 					if (this.discriminator == 4)
 					{
-						item = this.item4;
+						item = (T4)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -2074,7 +2060,7 @@ System.Func<TState, T6, TResult> case6)
 					{
 						if (this.discriminator == 5)
 						{
-							return this.item5;
+							return (T5)this.value;
 						}
 						else
 						{
@@ -2083,16 +2069,18 @@ System.Func<TState, T6, TResult> case6)
 					}
 				}
 
-				public bool TryGet(out T5 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
-					item = default;
 					if (this.discriminator == 5)
 					{
-						item = this.item5;
+						item = (T5)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -2102,7 +2090,7 @@ System.Func<TState, T6, TResult> case6)
 					{
 						if (this.discriminator == 6)
 						{
-							return this.item6;
+							return (T6)this.value;
 						}
 						else
 						{
@@ -2111,16 +2099,18 @@ System.Func<TState, T6, TResult> case6)
 					}
 				}
 
-				public bool TryGet(out T6 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
-					item = default;
 					if (this.discriminator == 6)
 					{
-						item = this.item6;
+						item = (T6)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -2130,7 +2120,7 @@ System.Func<TState, T6, TResult> case6)
 					{
 						if (this.discriminator == 7)
 						{
-							return this.item7;
+							return (T7)this.value;
 						}
 						else
 						{
@@ -2139,50 +2129,21 @@ System.Func<TState, T6, TResult> case6)
 					}
 				}
 
-				public bool TryGet(out T7 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
-					item = default;
 					if (this.discriminator == 7)
 					{
-						item = this.item7;
+						item = (T7)this.value;
 						return true;
 					}
-
-					return false;
-				}
-				
-				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7
-				)
-				{
-					switch (this.discriminator)
+					else
 					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7>(cloneT1(this.item1));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7>(cloneT2(this.item2));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7>(cloneT3(this.item3));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7>(cloneT4(this.item4));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7>(cloneT5(this.item5));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7>(cloneT6(this.item6));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7>(cloneT7(this.item7));
-										}
-
-					throw new System.InvalidOperationException();
+						item = default;
+						return false;
+					}
 				}
-
+				
+				
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -2197,37 +2158,37 @@ System.Action<T7> case7)
 					{
 											case 1:
 						{
-							case1(this.item1);
+							case1((T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(this.item2);
+							case2((T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(this.item3);
+							case3((T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(this.item4);
+							case4((T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(this.item5);
+							case5((T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(this.item6);
+							case6((T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(this.item7);
+							case7((T7)this.value);
 							break;
 						}
 											default:
@@ -2251,37 +2212,37 @@ System.Action<TState, T7> case7)
 					{
 											case 1:
 						{
-							case1(state, this.item1);
+							case1(state, (T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(state, this.item2);
+							case2(state, (T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(state, this.item3);
+							case3(state, (T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(state, this.item4);
+							case4(state, (T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(state, this.item5);
+							case5(state, (T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(state, this.item6);
+							case6(state, (T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(state, this.item7);
+							case7(state, (T7)this.value);
 							break;
 						}
 											default:
@@ -2305,31 +2266,31 @@ System.Func<T7, TResult> case7)
 					{
 											case 1:
 						{
-							return case1(this.item1);
+							return case1((T1)this.value);
 						}
 											case 2:
 						{
-							return case2(this.item2);
+							return case2((T2)this.value);
 						}
 											case 3:
 						{
-							return case3(this.item3);
+							return case3((T3)this.value);
 						}
 											case 4:
 						{
-							return case4(this.item4);
+							return case4((T4)this.value);
 						}
 											case 5:
 						{
-							return case5(this.item5);
+							return case5((T5)this.value);
 						}
 											case 6:
 						{
-							return case6(this.item6);
+							return case6((T6)this.value);
 						}
 											case 7:
 						{
-							return case7(this.item7);
+							return case7((T7)this.value);
 						}
 											default:
 							return defaultCase();
@@ -2351,161 +2312,164 @@ System.Func<TState, T7, TResult> case7)
 					{
 											case 1:
 						{
-							return case1(state, this.item1);
+							return case1(state, (T1)this.value);
 						}
 											case 2:
 						{
-							return case2(state, this.item2);
+							return case2(state, (T2)this.value);
 						}
 											case 3:
 						{
-							return case3(state, this.item3);
+							return case3(state, (T3)this.value);
 						}
 											case 4:
 						{
-							return case4(state, this.item4);
+							return case4(state, (T4)this.value);
 						}
 											case 5:
 						{
-							return case5(state, this.item5);
+							return case5(state, (T5)this.value);
 						}
 											case 6:
 						{
-							return case6(state, this.item6);
+							return case6(state, (T6)this.value);
 						}
 											case 7:
 						{
-							return case7(state, this.item7);
+							return case7(state, (T7)this.value);
 						}
 											default:
 							return defaultCase(state);
 					}
 				}
+
+				public override bool Equals(object? other)
+				{
+					if (other is FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7> otherUnion)
+					{
+						return this.discriminator == otherUnion.Discriminator &&
+						       this.value.Equals(otherUnion.value);
+					}
+					else
+					{
+						return false;
+					}
+				}
+
+				public override int GetHashCode()
+				{
+					return this.value.GetHashCode() ^ this.discriminator;
+				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8> : IUnion
-			{
+			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8> : IFlatBufferUnion
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+						{
 				private readonly byte discriminator;
+				private readonly object value;
 				
-				
-				protected readonly T1 item1;
-				
-				
-				protected readonly T2 item2;
-				
-				
-				protected readonly T3 item3;
-				
-				
-				protected readonly T4 item4;
-				
-				
-				protected readonly T5 item5;
-				
-				
-				protected readonly T6 item6;
-				
-				
-				protected readonly T7 item7;
-				
-				
-				protected readonly T8 item8;
-				
-								
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 1;
-					this.item1 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 2;
-					this.item2 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 3;
-					this.item3 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 4;
-					this.item4 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 5;
-					this.item5 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 6;
-					this.item6 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 7;
-					this.item7 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 8;
-					this.item8 = item;
+					this.value = item;
 				}
 				
 							
@@ -2518,7 +2482,7 @@ System.Func<TState, T7, TResult> case7)
 					{
 						if (this.discriminator == 1)
 						{
-							return this.item1;
+							return (T1)this.value;
 						}
 						else
 						{
@@ -2527,16 +2491,18 @@ System.Func<TState, T7, TResult> case7)
 					}
 				}
 
-				public bool TryGet(out T1 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
-					item = default;
 					if (this.discriminator == 1)
 					{
-						item = this.item1;
+						item = (T1)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -2546,7 +2512,7 @@ System.Func<TState, T7, TResult> case7)
 					{
 						if (this.discriminator == 2)
 						{
-							return this.item2;
+							return (T2)this.value;
 						}
 						else
 						{
@@ -2555,16 +2521,18 @@ System.Func<TState, T7, TResult> case7)
 					}
 				}
 
-				public bool TryGet(out T2 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
-					item = default;
 					if (this.discriminator == 2)
 					{
-						item = this.item2;
+						item = (T2)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -2574,7 +2542,7 @@ System.Func<TState, T7, TResult> case7)
 					{
 						if (this.discriminator == 3)
 						{
-							return this.item3;
+							return (T3)this.value;
 						}
 						else
 						{
@@ -2583,16 +2551,18 @@ System.Func<TState, T7, TResult> case7)
 					}
 				}
 
-				public bool TryGet(out T3 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
-					item = default;
 					if (this.discriminator == 3)
 					{
-						item = this.item3;
+						item = (T3)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -2602,7 +2572,7 @@ System.Func<TState, T7, TResult> case7)
 					{
 						if (this.discriminator == 4)
 						{
-							return this.item4;
+							return (T4)this.value;
 						}
 						else
 						{
@@ -2611,16 +2581,18 @@ System.Func<TState, T7, TResult> case7)
 					}
 				}
 
-				public bool TryGet(out T4 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
-					item = default;
 					if (this.discriminator == 4)
 					{
-						item = this.item4;
+						item = (T4)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -2630,7 +2602,7 @@ System.Func<TState, T7, TResult> case7)
 					{
 						if (this.discriminator == 5)
 						{
-							return this.item5;
+							return (T5)this.value;
 						}
 						else
 						{
@@ -2639,16 +2611,18 @@ System.Func<TState, T7, TResult> case7)
 					}
 				}
 
-				public bool TryGet(out T5 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
-					item = default;
 					if (this.discriminator == 5)
 					{
-						item = this.item5;
+						item = (T5)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -2658,7 +2632,7 @@ System.Func<TState, T7, TResult> case7)
 					{
 						if (this.discriminator == 6)
 						{
-							return this.item6;
+							return (T6)this.value;
 						}
 						else
 						{
@@ -2667,16 +2641,18 @@ System.Func<TState, T7, TResult> case7)
 					}
 				}
 
-				public bool TryGet(out T6 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
-					item = default;
 					if (this.discriminator == 6)
 					{
-						item = this.item6;
+						item = (T6)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -2686,7 +2662,7 @@ System.Func<TState, T7, TResult> case7)
 					{
 						if (this.discriminator == 7)
 						{
-							return this.item7;
+							return (T7)this.value;
 						}
 						else
 						{
@@ -2695,16 +2671,18 @@ System.Func<TState, T7, TResult> case7)
 					}
 				}
 
-				public bool TryGet(out T7 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
-					item = default;
 					if (this.discriminator == 7)
 					{
-						item = this.item7;
+						item = (T7)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -2714,7 +2692,7 @@ System.Func<TState, T7, TResult> case7)
 					{
 						if (this.discriminator == 8)
 						{
-							return this.item8;
+							return (T8)this.value;
 						}
 						else
 						{
@@ -2723,53 +2701,21 @@ System.Func<TState, T7, TResult> case7)
 					}
 				}
 
-				public bool TryGet(out T8 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
-					item = default;
 					if (this.discriminator == 8)
 					{
-						item = this.item8;
+						item = (T8)this.value;
 						return true;
 					}
-
-					return false;
-				}
-				
-				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8
-				)
-				{
-					switch (this.discriminator)
+					else
 					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8>(cloneT1(this.item1));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8>(cloneT2(this.item2));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8>(cloneT3(this.item3));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8>(cloneT4(this.item4));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8>(cloneT5(this.item5));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8>(cloneT6(this.item6));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8>(cloneT7(this.item7));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8>(cloneT8(this.item8));
-										}
-
-					throw new System.InvalidOperationException();
+						item = default;
+						return false;
+					}
 				}
-
+				
+				
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -2785,42 +2731,42 @@ System.Action<T8> case8)
 					{
 											case 1:
 						{
-							case1(this.item1);
+							case1((T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(this.item2);
+							case2((T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(this.item3);
+							case3((T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(this.item4);
+							case4((T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(this.item5);
+							case5((T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(this.item6);
+							case6((T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(this.item7);
+							case7((T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(this.item8);
+							case8((T8)this.value);
 							break;
 						}
 											default:
@@ -2845,42 +2791,42 @@ System.Action<TState, T8> case8)
 					{
 											case 1:
 						{
-							case1(state, this.item1);
+							case1(state, (T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(state, this.item2);
+							case2(state, (T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(state, this.item3);
+							case3(state, (T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(state, this.item4);
+							case4(state, (T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(state, this.item5);
+							case5(state, (T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(state, this.item6);
+							case6(state, (T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(state, this.item7);
+							case7(state, (T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(state, this.item8);
+							case8(state, (T8)this.value);
 							break;
 						}
 											default:
@@ -2905,35 +2851,35 @@ System.Func<T8, TResult> case8)
 					{
 											case 1:
 						{
-							return case1(this.item1);
+							return case1((T1)this.value);
 						}
 											case 2:
 						{
-							return case2(this.item2);
+							return case2((T2)this.value);
 						}
 											case 3:
 						{
-							return case3(this.item3);
+							return case3((T3)this.value);
 						}
 											case 4:
 						{
-							return case4(this.item4);
+							return case4((T4)this.value);
 						}
 											case 5:
 						{
-							return case5(this.item5);
+							return case5((T5)this.value);
 						}
 											case 6:
 						{
-							return case6(this.item6);
+							return case6((T6)this.value);
 						}
 											case 7:
 						{
-							return case7(this.item7);
+							return case7((T7)this.value);
 						}
 											case 8:
 						{
-							return case8(this.item8);
+							return case8((T8)this.value);
 						}
 											default:
 							return defaultCase();
@@ -2956,180 +2902,181 @@ System.Func<TState, T8, TResult> case8)
 					{
 											case 1:
 						{
-							return case1(state, this.item1);
+							return case1(state, (T1)this.value);
 						}
 											case 2:
 						{
-							return case2(state, this.item2);
+							return case2(state, (T2)this.value);
 						}
 											case 3:
 						{
-							return case3(state, this.item3);
+							return case3(state, (T3)this.value);
 						}
 											case 4:
 						{
-							return case4(state, this.item4);
+							return case4(state, (T4)this.value);
 						}
 											case 5:
 						{
-							return case5(state, this.item5);
+							return case5(state, (T5)this.value);
 						}
 											case 6:
 						{
-							return case6(state, this.item6);
+							return case6(state, (T6)this.value);
 						}
 											case 7:
 						{
-							return case7(state, this.item7);
+							return case7(state, (T7)this.value);
 						}
 											case 8:
 						{
-							return case8(state, this.item8);
+							return case8(state, (T8)this.value);
 						}
 											default:
 							return defaultCase(state);
 					}
 				}
+
+				public override bool Equals(object? other)
+				{
+					if (other is FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8> otherUnion)
+					{
+						return this.discriminator == otherUnion.Discriminator &&
+						       this.value.Equals(otherUnion.value);
+					}
+					else
+					{
+						return false;
+					}
+				}
+
+				public override int GetHashCode()
+				{
+					return this.value.GetHashCode() ^ this.discriminator;
+				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9> : IUnion
-			{
+			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9> : IFlatBufferUnion
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+						{
 				private readonly byte discriminator;
+				private readonly object value;
 				
-				
-				protected readonly T1 item1;
-				
-				
-				protected readonly T2 item2;
-				
-				
-				protected readonly T3 item3;
-				
-				
-				protected readonly T4 item4;
-				
-				
-				protected readonly T5 item5;
-				
-				
-				protected readonly T6 item6;
-				
-				
-				protected readonly T7 item7;
-				
-				
-				protected readonly T8 item8;
-				
-				
-				protected readonly T9 item9;
-				
-								
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 1;
-					this.item1 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 2;
-					this.item2 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 3;
-					this.item3 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 4;
-					this.item4 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 5;
-					this.item5 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 6;
-					this.item6 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 7;
-					this.item7 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 8;
-					this.item8 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 9;
-					this.item9 = item;
+					this.value = item;
 				}
 				
 							
@@ -3142,7 +3089,7 @@ System.Func<TState, T8, TResult> case8)
 					{
 						if (this.discriminator == 1)
 						{
-							return this.item1;
+							return (T1)this.value;
 						}
 						else
 						{
@@ -3151,16 +3098,18 @@ System.Func<TState, T8, TResult> case8)
 					}
 				}
 
-				public bool TryGet(out T1 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
-					item = default;
 					if (this.discriminator == 1)
 					{
-						item = this.item1;
+						item = (T1)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -3170,7 +3119,7 @@ System.Func<TState, T8, TResult> case8)
 					{
 						if (this.discriminator == 2)
 						{
-							return this.item2;
+							return (T2)this.value;
 						}
 						else
 						{
@@ -3179,16 +3128,18 @@ System.Func<TState, T8, TResult> case8)
 					}
 				}
 
-				public bool TryGet(out T2 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
-					item = default;
 					if (this.discriminator == 2)
 					{
-						item = this.item2;
+						item = (T2)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -3198,7 +3149,7 @@ System.Func<TState, T8, TResult> case8)
 					{
 						if (this.discriminator == 3)
 						{
-							return this.item3;
+							return (T3)this.value;
 						}
 						else
 						{
@@ -3207,16 +3158,18 @@ System.Func<TState, T8, TResult> case8)
 					}
 				}
 
-				public bool TryGet(out T3 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
-					item = default;
 					if (this.discriminator == 3)
 					{
-						item = this.item3;
+						item = (T3)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -3226,7 +3179,7 @@ System.Func<TState, T8, TResult> case8)
 					{
 						if (this.discriminator == 4)
 						{
-							return this.item4;
+							return (T4)this.value;
 						}
 						else
 						{
@@ -3235,16 +3188,18 @@ System.Func<TState, T8, TResult> case8)
 					}
 				}
 
-				public bool TryGet(out T4 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
-					item = default;
 					if (this.discriminator == 4)
 					{
-						item = this.item4;
+						item = (T4)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -3254,7 +3209,7 @@ System.Func<TState, T8, TResult> case8)
 					{
 						if (this.discriminator == 5)
 						{
-							return this.item5;
+							return (T5)this.value;
 						}
 						else
 						{
@@ -3263,16 +3218,18 @@ System.Func<TState, T8, TResult> case8)
 					}
 				}
 
-				public bool TryGet(out T5 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
-					item = default;
 					if (this.discriminator == 5)
 					{
-						item = this.item5;
+						item = (T5)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -3282,7 +3239,7 @@ System.Func<TState, T8, TResult> case8)
 					{
 						if (this.discriminator == 6)
 						{
-							return this.item6;
+							return (T6)this.value;
 						}
 						else
 						{
@@ -3291,16 +3248,18 @@ System.Func<TState, T8, TResult> case8)
 					}
 				}
 
-				public bool TryGet(out T6 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
-					item = default;
 					if (this.discriminator == 6)
 					{
-						item = this.item6;
+						item = (T6)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -3310,7 +3269,7 @@ System.Func<TState, T8, TResult> case8)
 					{
 						if (this.discriminator == 7)
 						{
-							return this.item7;
+							return (T7)this.value;
 						}
 						else
 						{
@@ -3319,16 +3278,18 @@ System.Func<TState, T8, TResult> case8)
 					}
 				}
 
-				public bool TryGet(out T7 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
-					item = default;
 					if (this.discriminator == 7)
 					{
-						item = this.item7;
+						item = (T7)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -3338,7 +3299,7 @@ System.Func<TState, T8, TResult> case8)
 					{
 						if (this.discriminator == 8)
 						{
-							return this.item8;
+							return (T8)this.value;
 						}
 						else
 						{
@@ -3347,16 +3308,18 @@ System.Func<TState, T8, TResult> case8)
 					}
 				}
 
-				public bool TryGet(out T8 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
-					item = default;
 					if (this.discriminator == 8)
 					{
-						item = this.item8;
+						item = (T8)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -3366,7 +3329,7 @@ System.Func<TState, T8, TResult> case8)
 					{
 						if (this.discriminator == 9)
 						{
-							return this.item9;
+							return (T9)this.value;
 						}
 						else
 						{
@@ -3375,56 +3338,21 @@ System.Func<TState, T8, TResult> case8)
 					}
 				}
 
-				public bool TryGet(out T9 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
-					item = default;
 					if (this.discriminator == 9)
 					{
-						item = this.item9;
+						item = (T9)this.value;
 						return true;
 					}
-
-					return false;
-				}
-				
-				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9
-				)
-				{
-					switch (this.discriminator)
+					else
 					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9>(cloneT1(this.item1));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9>(cloneT2(this.item2));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9>(cloneT3(this.item3));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9>(cloneT4(this.item4));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9>(cloneT5(this.item5));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9>(cloneT6(this.item6));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9>(cloneT7(this.item7));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9>(cloneT8(this.item8));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9>(cloneT9(this.item9));
-										}
-
-					throw new System.InvalidOperationException();
+						item = default;
+						return false;
+					}
 				}
-
+				
+				
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -3441,47 +3369,47 @@ System.Action<T9> case9)
 					{
 											case 1:
 						{
-							case1(this.item1);
+							case1((T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(this.item2);
+							case2((T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(this.item3);
+							case3((T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(this.item4);
+							case4((T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(this.item5);
+							case5((T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(this.item6);
+							case6((T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(this.item7);
+							case7((T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(this.item8);
+							case8((T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(this.item9);
+							case9((T9)this.value);
 							break;
 						}
 											default:
@@ -3507,47 +3435,47 @@ System.Action<TState, T9> case9)
 					{
 											case 1:
 						{
-							case1(state, this.item1);
+							case1(state, (T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(state, this.item2);
+							case2(state, (T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(state, this.item3);
+							case3(state, (T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(state, this.item4);
+							case4(state, (T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(state, this.item5);
+							case5(state, (T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(state, this.item6);
+							case6(state, (T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(state, this.item7);
+							case7(state, (T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(state, this.item8);
+							case8(state, (T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(state, this.item9);
+							case9(state, (T9)this.value);
 							break;
 						}
 											default:
@@ -3573,39 +3501,39 @@ System.Func<T9, TResult> case9)
 					{
 											case 1:
 						{
-							return case1(this.item1);
+							return case1((T1)this.value);
 						}
 											case 2:
 						{
-							return case2(this.item2);
+							return case2((T2)this.value);
 						}
 											case 3:
 						{
-							return case3(this.item3);
+							return case3((T3)this.value);
 						}
 											case 4:
 						{
-							return case4(this.item4);
+							return case4((T4)this.value);
 						}
 											case 5:
 						{
-							return case5(this.item5);
+							return case5((T5)this.value);
 						}
 											case 6:
 						{
-							return case6(this.item6);
+							return case6((T6)this.value);
 						}
 											case 7:
 						{
-							return case7(this.item7);
+							return case7((T7)this.value);
 						}
 											case 8:
 						{
-							return case8(this.item8);
+							return case8((T8)this.value);
 						}
 											case 9:
 						{
-							return case9(this.item9);
+							return case9((T9)this.value);
 						}
 											default:
 							return defaultCase();
@@ -3629,199 +3557,198 @@ System.Func<TState, T9, TResult> case9)
 					{
 											case 1:
 						{
-							return case1(state, this.item1);
+							return case1(state, (T1)this.value);
 						}
 											case 2:
 						{
-							return case2(state, this.item2);
+							return case2(state, (T2)this.value);
 						}
 											case 3:
 						{
-							return case3(state, this.item3);
+							return case3(state, (T3)this.value);
 						}
 											case 4:
 						{
-							return case4(state, this.item4);
+							return case4(state, (T4)this.value);
 						}
 											case 5:
 						{
-							return case5(state, this.item5);
+							return case5(state, (T5)this.value);
 						}
 											case 6:
 						{
-							return case6(state, this.item6);
+							return case6(state, (T6)this.value);
 						}
 											case 7:
 						{
-							return case7(state, this.item7);
+							return case7(state, (T7)this.value);
 						}
 											case 8:
 						{
-							return case8(state, this.item8);
+							return case8(state, (T8)this.value);
 						}
 											case 9:
 						{
-							return case9(state, this.item9);
+							return case9(state, (T9)this.value);
 						}
 											default:
 							return defaultCase(state);
 					}
 				}
+
+				public override bool Equals(object? other)
+				{
+					if (other is FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9> otherUnion)
+					{
+						return this.discriminator == otherUnion.Discriminator &&
+						       this.value.Equals(otherUnion.value);
+					}
+					else
+					{
+						return false;
+					}
+				}
+
+				public override int GetHashCode()
+				{
+					return this.value.GetHashCode() ^ this.discriminator;
+				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> : IUnion
-			{
+			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> : IFlatBufferUnion
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+						{
 				private readonly byte discriminator;
+				private readonly object value;
 				
-				
-				protected readonly T1 item1;
-				
-				
-				protected readonly T2 item2;
-				
-				
-				protected readonly T3 item3;
-				
-				
-				protected readonly T4 item4;
-				
-				
-				protected readonly T5 item5;
-				
-				
-				protected readonly T6 item6;
-				
-				
-				protected readonly T7 item7;
-				
-				
-				protected readonly T8 item8;
-				
-				
-				protected readonly T9 item9;
-				
-				
-				protected readonly T10 item10;
-				
-								
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 1;
-					this.item1 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 2;
-					this.item2 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 3;
-					this.item3 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 4;
-					this.item4 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 5;
-					this.item5 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 6;
-					this.item6 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 7;
-					this.item7 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 8;
-					this.item8 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 9;
-					this.item9 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 10;
-					this.item10 = item;
+					this.value = item;
 				}
 				
 							
@@ -3834,7 +3761,7 @@ System.Func<TState, T9, TResult> case9)
 					{
 						if (this.discriminator == 1)
 						{
-							return this.item1;
+							return (T1)this.value;
 						}
 						else
 						{
@@ -3843,16 +3770,18 @@ System.Func<TState, T9, TResult> case9)
 					}
 				}
 
-				public bool TryGet(out T1 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
-					item = default;
 					if (this.discriminator == 1)
 					{
-						item = this.item1;
+						item = (T1)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -3862,7 +3791,7 @@ System.Func<TState, T9, TResult> case9)
 					{
 						if (this.discriminator == 2)
 						{
-							return this.item2;
+							return (T2)this.value;
 						}
 						else
 						{
@@ -3871,16 +3800,18 @@ System.Func<TState, T9, TResult> case9)
 					}
 				}
 
-				public bool TryGet(out T2 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
-					item = default;
 					if (this.discriminator == 2)
 					{
-						item = this.item2;
+						item = (T2)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -3890,7 +3821,7 @@ System.Func<TState, T9, TResult> case9)
 					{
 						if (this.discriminator == 3)
 						{
-							return this.item3;
+							return (T3)this.value;
 						}
 						else
 						{
@@ -3899,16 +3830,18 @@ System.Func<TState, T9, TResult> case9)
 					}
 				}
 
-				public bool TryGet(out T3 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
-					item = default;
 					if (this.discriminator == 3)
 					{
-						item = this.item3;
+						item = (T3)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -3918,7 +3851,7 @@ System.Func<TState, T9, TResult> case9)
 					{
 						if (this.discriminator == 4)
 						{
-							return this.item4;
+							return (T4)this.value;
 						}
 						else
 						{
@@ -3927,16 +3860,18 @@ System.Func<TState, T9, TResult> case9)
 					}
 				}
 
-				public bool TryGet(out T4 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
-					item = default;
 					if (this.discriminator == 4)
 					{
-						item = this.item4;
+						item = (T4)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -3946,7 +3881,7 @@ System.Func<TState, T9, TResult> case9)
 					{
 						if (this.discriminator == 5)
 						{
-							return this.item5;
+							return (T5)this.value;
 						}
 						else
 						{
@@ -3955,16 +3890,18 @@ System.Func<TState, T9, TResult> case9)
 					}
 				}
 
-				public bool TryGet(out T5 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
-					item = default;
 					if (this.discriminator == 5)
 					{
-						item = this.item5;
+						item = (T5)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -3974,7 +3911,7 @@ System.Func<TState, T9, TResult> case9)
 					{
 						if (this.discriminator == 6)
 						{
-							return this.item6;
+							return (T6)this.value;
 						}
 						else
 						{
@@ -3983,16 +3920,18 @@ System.Func<TState, T9, TResult> case9)
 					}
 				}
 
-				public bool TryGet(out T6 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
-					item = default;
 					if (this.discriminator == 6)
 					{
-						item = this.item6;
+						item = (T6)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -4002,7 +3941,7 @@ System.Func<TState, T9, TResult> case9)
 					{
 						if (this.discriminator == 7)
 						{
-							return this.item7;
+							return (T7)this.value;
 						}
 						else
 						{
@@ -4011,16 +3950,18 @@ System.Func<TState, T9, TResult> case9)
 					}
 				}
 
-				public bool TryGet(out T7 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
-					item = default;
 					if (this.discriminator == 7)
 					{
-						item = this.item7;
+						item = (T7)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -4030,7 +3971,7 @@ System.Func<TState, T9, TResult> case9)
 					{
 						if (this.discriminator == 8)
 						{
-							return this.item8;
+							return (T8)this.value;
 						}
 						else
 						{
@@ -4039,16 +3980,18 @@ System.Func<TState, T9, TResult> case9)
 					}
 				}
 
-				public bool TryGet(out T8 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
-					item = default;
 					if (this.discriminator == 8)
 					{
-						item = this.item8;
+						item = (T8)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -4058,7 +4001,7 @@ System.Func<TState, T9, TResult> case9)
 					{
 						if (this.discriminator == 9)
 						{
-							return this.item9;
+							return (T9)this.value;
 						}
 						else
 						{
@@ -4067,16 +4010,18 @@ System.Func<TState, T9, TResult> case9)
 					}
 				}
 
-				public bool TryGet(out T9 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
-					item = default;
 					if (this.discriminator == 9)
 					{
-						item = this.item9;
+						item = (T9)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -4086,7 +4031,7 @@ System.Func<TState, T9, TResult> case9)
 					{
 						if (this.discriminator == 10)
 						{
-							return this.item10;
+							return (T10)this.value;
 						}
 						else
 						{
@@ -4095,59 +4040,21 @@ System.Func<TState, T9, TResult> case9)
 					}
 				}
 
-				public bool TryGet(out T10 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
-					item = default;
 					if (this.discriminator == 10)
 					{
-						item = this.item10;
+						item = (T10)this.value;
 						return true;
 					}
-
-					return false;
-				}
-				
-				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10
-				)
-				{
-					switch (this.discriminator)
+					else
 					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(cloneT1(this.item1));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(cloneT2(this.item2));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(cloneT3(this.item3));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(cloneT4(this.item4));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(cloneT5(this.item5));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(cloneT6(this.item6));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(cloneT7(this.item7));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(cloneT8(this.item8));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(cloneT9(this.item9));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(cloneT10(this.item10));
-										}
-
-					throw new System.InvalidOperationException();
+						item = default;
+						return false;
+					}
 				}
-
+				
+				
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -4165,52 +4072,52 @@ System.Action<T10> case10)
 					{
 											case 1:
 						{
-							case1(this.item1);
+							case1((T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(this.item2);
+							case2((T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(this.item3);
+							case3((T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(this.item4);
+							case4((T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(this.item5);
+							case5((T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(this.item6);
+							case6((T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(this.item7);
+							case7((T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(this.item8);
+							case8((T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(this.item9);
+							case9((T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(this.item10);
+							case10((T10)this.value);
 							break;
 						}
 											default:
@@ -4237,52 +4144,52 @@ System.Action<TState, T10> case10)
 					{
 											case 1:
 						{
-							case1(state, this.item1);
+							case1(state, (T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(state, this.item2);
+							case2(state, (T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(state, this.item3);
+							case3(state, (T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(state, this.item4);
+							case4(state, (T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(state, this.item5);
+							case5(state, (T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(state, this.item6);
+							case6(state, (T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(state, this.item7);
+							case7(state, (T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(state, this.item8);
+							case8(state, (T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(state, this.item9);
+							case9(state, (T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(state, this.item10);
+							case10(state, (T10)this.value);
 							break;
 						}
 											default:
@@ -4309,43 +4216,43 @@ System.Func<T10, TResult> case10)
 					{
 											case 1:
 						{
-							return case1(this.item1);
+							return case1((T1)this.value);
 						}
 											case 2:
 						{
-							return case2(this.item2);
+							return case2((T2)this.value);
 						}
 											case 3:
 						{
-							return case3(this.item3);
+							return case3((T3)this.value);
 						}
 											case 4:
 						{
-							return case4(this.item4);
+							return case4((T4)this.value);
 						}
 											case 5:
 						{
-							return case5(this.item5);
+							return case5((T5)this.value);
 						}
 											case 6:
 						{
-							return case6(this.item6);
+							return case6((T6)this.value);
 						}
 											case 7:
 						{
-							return case7(this.item7);
+							return case7((T7)this.value);
 						}
 											case 8:
 						{
-							return case8(this.item8);
+							return case8((T8)this.value);
 						}
 											case 9:
 						{
-							return case9(this.item9);
+							return case9((T9)this.value);
 						}
 											case 10:
 						{
-							return case10(this.item10);
+							return case10((T10)this.value);
 						}
 											default:
 							return defaultCase();
@@ -4370,218 +4277,215 @@ System.Func<TState, T10, TResult> case10)
 					{
 											case 1:
 						{
-							return case1(state, this.item1);
+							return case1(state, (T1)this.value);
 						}
 											case 2:
 						{
-							return case2(state, this.item2);
+							return case2(state, (T2)this.value);
 						}
 											case 3:
 						{
-							return case3(state, this.item3);
+							return case3(state, (T3)this.value);
 						}
 											case 4:
 						{
-							return case4(state, this.item4);
+							return case4(state, (T4)this.value);
 						}
 											case 5:
 						{
-							return case5(state, this.item5);
+							return case5(state, (T5)this.value);
 						}
 											case 6:
 						{
-							return case6(state, this.item6);
+							return case6(state, (T6)this.value);
 						}
 											case 7:
 						{
-							return case7(state, this.item7);
+							return case7(state, (T7)this.value);
 						}
 											case 8:
 						{
-							return case8(state, this.item8);
+							return case8(state, (T8)this.value);
 						}
 											case 9:
 						{
-							return case9(state, this.item9);
+							return case9(state, (T9)this.value);
 						}
 											case 10:
 						{
-							return case10(state, this.item10);
+							return case10(state, (T10)this.value);
 						}
 											default:
 							return defaultCase(state);
 					}
 				}
+
+				public override bool Equals(object? other)
+				{
+					if (other is FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> otherUnion)
+					{
+						return this.discriminator == otherUnion.Discriminator &&
+						       this.value.Equals(otherUnion.value);
+					}
+					else
+					{
+						return false;
+					}
+				}
+
+				public override int GetHashCode()
+				{
+					return this.value.GetHashCode() ^ this.discriminator;
+				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> : IUnion
-			{
+			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> : IFlatBufferUnion
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+						{
 				private readonly byte discriminator;
+				private readonly object value;
 				
-				
-				protected readonly T1 item1;
-				
-				
-				protected readonly T2 item2;
-				
-				
-				protected readonly T3 item3;
-				
-				
-				protected readonly T4 item4;
-				
-				
-				protected readonly T5 item5;
-				
-				
-				protected readonly T6 item6;
-				
-				
-				protected readonly T7 item7;
-				
-				
-				protected readonly T8 item8;
-				
-				
-				protected readonly T9 item9;
-				
-				
-				protected readonly T10 item10;
-				
-				
-				protected readonly T11 item11;
-				
-								
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 1;
-					this.item1 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 2;
-					this.item2 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 3;
-					this.item3 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 4;
-					this.item4 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 5;
-					this.item5 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 6;
-					this.item6 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 7;
-					this.item7 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 8;
-					this.item8 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 9;
-					this.item9 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 10;
-					this.item10 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 11;
-					this.item11 = item;
+					this.value = item;
 				}
 				
 							
@@ -4594,7 +4498,7 @@ System.Func<TState, T10, TResult> case10)
 					{
 						if (this.discriminator == 1)
 						{
-							return this.item1;
+							return (T1)this.value;
 						}
 						else
 						{
@@ -4603,16 +4507,18 @@ System.Func<TState, T10, TResult> case10)
 					}
 				}
 
-				public bool TryGet(out T1 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
-					item = default;
 					if (this.discriminator == 1)
 					{
-						item = this.item1;
+						item = (T1)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -4622,7 +4528,7 @@ System.Func<TState, T10, TResult> case10)
 					{
 						if (this.discriminator == 2)
 						{
-							return this.item2;
+							return (T2)this.value;
 						}
 						else
 						{
@@ -4631,16 +4537,18 @@ System.Func<TState, T10, TResult> case10)
 					}
 				}
 
-				public bool TryGet(out T2 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
-					item = default;
 					if (this.discriminator == 2)
 					{
-						item = this.item2;
+						item = (T2)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -4650,7 +4558,7 @@ System.Func<TState, T10, TResult> case10)
 					{
 						if (this.discriminator == 3)
 						{
-							return this.item3;
+							return (T3)this.value;
 						}
 						else
 						{
@@ -4659,16 +4567,18 @@ System.Func<TState, T10, TResult> case10)
 					}
 				}
 
-				public bool TryGet(out T3 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
-					item = default;
 					if (this.discriminator == 3)
 					{
-						item = this.item3;
+						item = (T3)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -4678,7 +4588,7 @@ System.Func<TState, T10, TResult> case10)
 					{
 						if (this.discriminator == 4)
 						{
-							return this.item4;
+							return (T4)this.value;
 						}
 						else
 						{
@@ -4687,16 +4597,18 @@ System.Func<TState, T10, TResult> case10)
 					}
 				}
 
-				public bool TryGet(out T4 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
-					item = default;
 					if (this.discriminator == 4)
 					{
-						item = this.item4;
+						item = (T4)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -4706,7 +4618,7 @@ System.Func<TState, T10, TResult> case10)
 					{
 						if (this.discriminator == 5)
 						{
-							return this.item5;
+							return (T5)this.value;
 						}
 						else
 						{
@@ -4715,16 +4627,18 @@ System.Func<TState, T10, TResult> case10)
 					}
 				}
 
-				public bool TryGet(out T5 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
-					item = default;
 					if (this.discriminator == 5)
 					{
-						item = this.item5;
+						item = (T5)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -4734,7 +4648,7 @@ System.Func<TState, T10, TResult> case10)
 					{
 						if (this.discriminator == 6)
 						{
-							return this.item6;
+							return (T6)this.value;
 						}
 						else
 						{
@@ -4743,16 +4657,18 @@ System.Func<TState, T10, TResult> case10)
 					}
 				}
 
-				public bool TryGet(out T6 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
-					item = default;
 					if (this.discriminator == 6)
 					{
-						item = this.item6;
+						item = (T6)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -4762,7 +4678,7 @@ System.Func<TState, T10, TResult> case10)
 					{
 						if (this.discriminator == 7)
 						{
-							return this.item7;
+							return (T7)this.value;
 						}
 						else
 						{
@@ -4771,16 +4687,18 @@ System.Func<TState, T10, TResult> case10)
 					}
 				}
 
-				public bool TryGet(out T7 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
-					item = default;
 					if (this.discriminator == 7)
 					{
-						item = this.item7;
+						item = (T7)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -4790,7 +4708,7 @@ System.Func<TState, T10, TResult> case10)
 					{
 						if (this.discriminator == 8)
 						{
-							return this.item8;
+							return (T8)this.value;
 						}
 						else
 						{
@@ -4799,16 +4717,18 @@ System.Func<TState, T10, TResult> case10)
 					}
 				}
 
-				public bool TryGet(out T8 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
-					item = default;
 					if (this.discriminator == 8)
 					{
-						item = this.item8;
+						item = (T8)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -4818,7 +4738,7 @@ System.Func<TState, T10, TResult> case10)
 					{
 						if (this.discriminator == 9)
 						{
-							return this.item9;
+							return (T9)this.value;
 						}
 						else
 						{
@@ -4827,16 +4747,18 @@ System.Func<TState, T10, TResult> case10)
 					}
 				}
 
-				public bool TryGet(out T9 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
-					item = default;
 					if (this.discriminator == 9)
 					{
-						item = this.item9;
+						item = (T9)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -4846,7 +4768,7 @@ System.Func<TState, T10, TResult> case10)
 					{
 						if (this.discriminator == 10)
 						{
-							return this.item10;
+							return (T10)this.value;
 						}
 						else
 						{
@@ -4855,16 +4777,18 @@ System.Func<TState, T10, TResult> case10)
 					}
 				}
 
-				public bool TryGet(out T10 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
-					item = default;
 					if (this.discriminator == 10)
 					{
-						item = this.item10;
+						item = (T10)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -4874,7 +4798,7 @@ System.Func<TState, T10, TResult> case10)
 					{
 						if (this.discriminator == 11)
 						{
-							return this.item11;
+							return (T11)this.value;
 						}
 						else
 						{
@@ -4883,62 +4807,21 @@ System.Func<TState, T10, TResult> case10)
 					}
 				}
 
-				public bool TryGet(out T11 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
-					item = default;
 					if (this.discriminator == 11)
 					{
-						item = this.item11;
+						item = (T11)this.value;
 						return true;
 					}
-
-					return false;
-				}
-				
-				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11
-				)
-				{
-					switch (this.discriminator)
+					else
 					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(cloneT1(this.item1));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(cloneT2(this.item2));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(cloneT3(this.item3));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(cloneT4(this.item4));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(cloneT5(this.item5));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(cloneT6(this.item6));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(cloneT7(this.item7));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(cloneT8(this.item8));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(cloneT9(this.item9));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(cloneT10(this.item10));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(cloneT11(this.item11));
-										}
-
-					throw new System.InvalidOperationException();
+						item = default;
+						return false;
+					}
 				}
-
+				
+				
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -4957,57 +4840,57 @@ System.Action<T11> case11)
 					{
 											case 1:
 						{
-							case1(this.item1);
+							case1((T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(this.item2);
+							case2((T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(this.item3);
+							case3((T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(this.item4);
+							case4((T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(this.item5);
+							case5((T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(this.item6);
+							case6((T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(this.item7);
+							case7((T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(this.item8);
+							case8((T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(this.item9);
+							case9((T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(this.item10);
+							case10((T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(this.item11);
+							case11((T11)this.value);
 							break;
 						}
 											default:
@@ -5035,57 +4918,57 @@ System.Action<TState, T11> case11)
 					{
 											case 1:
 						{
-							case1(state, this.item1);
+							case1(state, (T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(state, this.item2);
+							case2(state, (T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(state, this.item3);
+							case3(state, (T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(state, this.item4);
+							case4(state, (T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(state, this.item5);
+							case5(state, (T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(state, this.item6);
+							case6(state, (T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(state, this.item7);
+							case7(state, (T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(state, this.item8);
+							case8(state, (T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(state, this.item9);
+							case9(state, (T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(state, this.item10);
+							case10(state, (T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(state, this.item11);
+							case11(state, (T11)this.value);
 							break;
 						}
 											default:
@@ -5113,47 +4996,47 @@ System.Func<T11, TResult> case11)
 					{
 											case 1:
 						{
-							return case1(this.item1);
+							return case1((T1)this.value);
 						}
 											case 2:
 						{
-							return case2(this.item2);
+							return case2((T2)this.value);
 						}
 											case 3:
 						{
-							return case3(this.item3);
+							return case3((T3)this.value);
 						}
 											case 4:
 						{
-							return case4(this.item4);
+							return case4((T4)this.value);
 						}
 											case 5:
 						{
-							return case5(this.item5);
+							return case5((T5)this.value);
 						}
 											case 6:
 						{
-							return case6(this.item6);
+							return case6((T6)this.value);
 						}
 											case 7:
 						{
-							return case7(this.item7);
+							return case7((T7)this.value);
 						}
 											case 8:
 						{
-							return case8(this.item8);
+							return case8((T8)this.value);
 						}
 											case 9:
 						{
-							return case9(this.item9);
+							return case9((T9)this.value);
 						}
 											case 10:
 						{
-							return case10(this.item10);
+							return case10((T10)this.value);
 						}
 											case 11:
 						{
-							return case11(this.item11);
+							return case11((T11)this.value);
 						}
 											default:
 							return defaultCase();
@@ -5179,237 +5062,232 @@ System.Func<TState, T11, TResult> case11)
 					{
 											case 1:
 						{
-							return case1(state, this.item1);
+							return case1(state, (T1)this.value);
 						}
 											case 2:
 						{
-							return case2(state, this.item2);
+							return case2(state, (T2)this.value);
 						}
 											case 3:
 						{
-							return case3(state, this.item3);
+							return case3(state, (T3)this.value);
 						}
 											case 4:
 						{
-							return case4(state, this.item4);
+							return case4(state, (T4)this.value);
 						}
 											case 5:
 						{
-							return case5(state, this.item5);
+							return case5(state, (T5)this.value);
 						}
 											case 6:
 						{
-							return case6(state, this.item6);
+							return case6(state, (T6)this.value);
 						}
 											case 7:
 						{
-							return case7(state, this.item7);
+							return case7(state, (T7)this.value);
 						}
 											case 8:
 						{
-							return case8(state, this.item8);
+							return case8(state, (T8)this.value);
 						}
 											case 9:
 						{
-							return case9(state, this.item9);
+							return case9(state, (T9)this.value);
 						}
 											case 10:
 						{
-							return case10(state, this.item10);
+							return case10(state, (T10)this.value);
 						}
 											case 11:
 						{
-							return case11(state, this.item11);
+							return case11(state, (T11)this.value);
 						}
 											default:
 							return defaultCase(state);
 					}
 				}
+
+				public override bool Equals(object? other)
+				{
+					if (other is FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> otherUnion)
+					{
+						return this.discriminator == otherUnion.Discriminator &&
+						       this.value.Equals(otherUnion.value);
+					}
+					else
+					{
+						return false;
+					}
+				}
+
+				public override int GetHashCode()
+				{
+					return this.value.GetHashCode() ^ this.discriminator;
+				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> : IUnion
-			{
+			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> : IFlatBufferUnion
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+							where T12 : notnull
+						{
 				private readonly byte discriminator;
+				private readonly object value;
 				
-				
-				protected readonly T1 item1;
-				
-				
-				protected readonly T2 item2;
-				
-				
-				protected readonly T3 item3;
-				
-				
-				protected readonly T4 item4;
-				
-				
-				protected readonly T5 item5;
-				
-				
-				protected readonly T6 item6;
-				
-				
-				protected readonly T7 item7;
-				
-				
-				protected readonly T8 item8;
-				
-				
-				protected readonly T9 item9;
-				
-				
-				protected readonly T10 item10;
-				
-				
-				protected readonly T11 item11;
-				
-				
-				protected readonly T12 item12;
-				
-								
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 1;
-					this.item1 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 2;
-					this.item2 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 3;
-					this.item3 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 4;
-					this.item4 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 5;
-					this.item5 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 6;
-					this.item6 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 7;
-					this.item7 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 8;
-					this.item8 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 9;
-					this.item9 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 10;
-					this.item10 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 11;
-					this.item11 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T12 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 12;
-					this.item12 = item;
+					this.value = item;
 				}
 				
 							
@@ -5422,7 +5300,7 @@ System.Func<TState, T11, TResult> case11)
 					{
 						if (this.discriminator == 1)
 						{
-							return this.item1;
+							return (T1)this.value;
 						}
 						else
 						{
@@ -5431,16 +5309,18 @@ System.Func<TState, T11, TResult> case11)
 					}
 				}
 
-				public bool TryGet(out T1 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
-					item = default;
 					if (this.discriminator == 1)
 					{
-						item = this.item1;
+						item = (T1)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -5450,7 +5330,7 @@ System.Func<TState, T11, TResult> case11)
 					{
 						if (this.discriminator == 2)
 						{
-							return this.item2;
+							return (T2)this.value;
 						}
 						else
 						{
@@ -5459,16 +5339,18 @@ System.Func<TState, T11, TResult> case11)
 					}
 				}
 
-				public bool TryGet(out T2 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
-					item = default;
 					if (this.discriminator == 2)
 					{
-						item = this.item2;
+						item = (T2)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -5478,7 +5360,7 @@ System.Func<TState, T11, TResult> case11)
 					{
 						if (this.discriminator == 3)
 						{
-							return this.item3;
+							return (T3)this.value;
 						}
 						else
 						{
@@ -5487,16 +5369,18 @@ System.Func<TState, T11, TResult> case11)
 					}
 				}
 
-				public bool TryGet(out T3 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
-					item = default;
 					if (this.discriminator == 3)
 					{
-						item = this.item3;
+						item = (T3)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -5506,7 +5390,7 @@ System.Func<TState, T11, TResult> case11)
 					{
 						if (this.discriminator == 4)
 						{
-							return this.item4;
+							return (T4)this.value;
 						}
 						else
 						{
@@ -5515,16 +5399,18 @@ System.Func<TState, T11, TResult> case11)
 					}
 				}
 
-				public bool TryGet(out T4 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
-					item = default;
 					if (this.discriminator == 4)
 					{
-						item = this.item4;
+						item = (T4)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -5534,7 +5420,7 @@ System.Func<TState, T11, TResult> case11)
 					{
 						if (this.discriminator == 5)
 						{
-							return this.item5;
+							return (T5)this.value;
 						}
 						else
 						{
@@ -5543,16 +5429,18 @@ System.Func<TState, T11, TResult> case11)
 					}
 				}
 
-				public bool TryGet(out T5 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
-					item = default;
 					if (this.discriminator == 5)
 					{
-						item = this.item5;
+						item = (T5)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -5562,7 +5450,7 @@ System.Func<TState, T11, TResult> case11)
 					{
 						if (this.discriminator == 6)
 						{
-							return this.item6;
+							return (T6)this.value;
 						}
 						else
 						{
@@ -5571,16 +5459,18 @@ System.Func<TState, T11, TResult> case11)
 					}
 				}
 
-				public bool TryGet(out T6 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
-					item = default;
 					if (this.discriminator == 6)
 					{
-						item = this.item6;
+						item = (T6)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -5590,7 +5480,7 @@ System.Func<TState, T11, TResult> case11)
 					{
 						if (this.discriminator == 7)
 						{
-							return this.item7;
+							return (T7)this.value;
 						}
 						else
 						{
@@ -5599,16 +5489,18 @@ System.Func<TState, T11, TResult> case11)
 					}
 				}
 
-				public bool TryGet(out T7 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
-					item = default;
 					if (this.discriminator == 7)
 					{
-						item = this.item7;
+						item = (T7)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -5618,7 +5510,7 @@ System.Func<TState, T11, TResult> case11)
 					{
 						if (this.discriminator == 8)
 						{
-							return this.item8;
+							return (T8)this.value;
 						}
 						else
 						{
@@ -5627,16 +5519,18 @@ System.Func<TState, T11, TResult> case11)
 					}
 				}
 
-				public bool TryGet(out T8 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
-					item = default;
 					if (this.discriminator == 8)
 					{
-						item = this.item8;
+						item = (T8)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -5646,7 +5540,7 @@ System.Func<TState, T11, TResult> case11)
 					{
 						if (this.discriminator == 9)
 						{
-							return this.item9;
+							return (T9)this.value;
 						}
 						else
 						{
@@ -5655,16 +5549,18 @@ System.Func<TState, T11, TResult> case11)
 					}
 				}
 
-				public bool TryGet(out T9 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
-					item = default;
 					if (this.discriminator == 9)
 					{
-						item = this.item9;
+						item = (T9)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -5674,7 +5570,7 @@ System.Func<TState, T11, TResult> case11)
 					{
 						if (this.discriminator == 10)
 						{
-							return this.item10;
+							return (T10)this.value;
 						}
 						else
 						{
@@ -5683,16 +5579,18 @@ System.Func<TState, T11, TResult> case11)
 					}
 				}
 
-				public bool TryGet(out T10 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
-					item = default;
 					if (this.discriminator == 10)
 					{
-						item = this.item10;
+						item = (T10)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -5702,7 +5600,7 @@ System.Func<TState, T11, TResult> case11)
 					{
 						if (this.discriminator == 11)
 						{
-							return this.item11;
+							return (T11)this.value;
 						}
 						else
 						{
@@ -5711,16 +5609,18 @@ System.Func<TState, T11, TResult> case11)
 					}
 				}
 
-				public bool TryGet(out T11 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
-					item = default;
 					if (this.discriminator == 11)
 					{
-						item = this.item11;
+						item = (T11)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -5730,7 +5630,7 @@ System.Func<TState, T11, TResult> case11)
 					{
 						if (this.discriminator == 12)
 						{
-							return this.item12;
+							return (T12)this.value;
 						}
 						else
 						{
@@ -5739,65 +5639,21 @@ System.Func<TState, T11, TResult> case11)
 					}
 				}
 
-				public bool TryGet(out T12 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T12? item)
 				{
-					item = default;
 					if (this.discriminator == 12)
 					{
-						item = this.item12;
+						item = (T12)this.value;
 						return true;
 					}
-
-					return false;
-				}
-				
-				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11,
-System.Func<T12, T12> cloneT12
-				)
-				{
-					switch (this.discriminator)
+					else
 					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(cloneT1(this.item1));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(cloneT2(this.item2));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(cloneT3(this.item3));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(cloneT4(this.item4));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(cloneT5(this.item5));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(cloneT6(this.item6));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(cloneT7(this.item7));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(cloneT8(this.item8));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(cloneT9(this.item9));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(cloneT10(this.item10));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(cloneT11(this.item11));
-											case 12:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(cloneT12(this.item12));
-										}
-
-					throw new System.InvalidOperationException();
+						item = default;
+						return false;
+					}
 				}
-
+				
+				
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -5817,62 +5673,62 @@ System.Action<T12> case12)
 					{
 											case 1:
 						{
-							case1(this.item1);
+							case1((T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(this.item2);
+							case2((T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(this.item3);
+							case3((T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(this.item4);
+							case4((T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(this.item5);
+							case5((T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(this.item6);
+							case6((T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(this.item7);
+							case7((T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(this.item8);
+							case8((T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(this.item9);
+							case9((T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(this.item10);
+							case10((T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(this.item11);
+							case11((T11)this.value);
 							break;
 						}
 											case 12:
 						{
-							case12(this.item12);
+							case12((T12)this.value);
 							break;
 						}
 											default:
@@ -5901,62 +5757,62 @@ System.Action<TState, T12> case12)
 					{
 											case 1:
 						{
-							case1(state, this.item1);
+							case1(state, (T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(state, this.item2);
+							case2(state, (T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(state, this.item3);
+							case3(state, (T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(state, this.item4);
+							case4(state, (T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(state, this.item5);
+							case5(state, (T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(state, this.item6);
+							case6(state, (T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(state, this.item7);
+							case7(state, (T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(state, this.item8);
+							case8(state, (T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(state, this.item9);
+							case9(state, (T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(state, this.item10);
+							case10(state, (T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(state, this.item11);
+							case11(state, (T11)this.value);
 							break;
 						}
 											case 12:
 						{
-							case12(state, this.item12);
+							case12(state, (T12)this.value);
 							break;
 						}
 											default:
@@ -5985,51 +5841,51 @@ System.Func<T12, TResult> case12)
 					{
 											case 1:
 						{
-							return case1(this.item1);
+							return case1((T1)this.value);
 						}
 											case 2:
 						{
-							return case2(this.item2);
+							return case2((T2)this.value);
 						}
 											case 3:
 						{
-							return case3(this.item3);
+							return case3((T3)this.value);
 						}
 											case 4:
 						{
-							return case4(this.item4);
+							return case4((T4)this.value);
 						}
 											case 5:
 						{
-							return case5(this.item5);
+							return case5((T5)this.value);
 						}
 											case 6:
 						{
-							return case6(this.item6);
+							return case6((T6)this.value);
 						}
 											case 7:
 						{
-							return case7(this.item7);
+							return case7((T7)this.value);
 						}
 											case 8:
 						{
-							return case8(this.item8);
+							return case8((T8)this.value);
 						}
 											case 9:
 						{
-							return case9(this.item9);
+							return case9((T9)this.value);
 						}
 											case 10:
 						{
-							return case10(this.item10);
+							return case10((T10)this.value);
 						}
 											case 11:
 						{
-							return case11(this.item11);
+							return case11((T11)this.value);
 						}
 											case 12:
 						{
-							return case12(this.item12);
+							return case12((T12)this.value);
 						}
 											default:
 							return defaultCase();
@@ -6056,256 +5912,249 @@ System.Func<TState, T12, TResult> case12)
 					{
 											case 1:
 						{
-							return case1(state, this.item1);
+							return case1(state, (T1)this.value);
 						}
 											case 2:
 						{
-							return case2(state, this.item2);
+							return case2(state, (T2)this.value);
 						}
 											case 3:
 						{
-							return case3(state, this.item3);
+							return case3(state, (T3)this.value);
 						}
 											case 4:
 						{
-							return case4(state, this.item4);
+							return case4(state, (T4)this.value);
 						}
 											case 5:
 						{
-							return case5(state, this.item5);
+							return case5(state, (T5)this.value);
 						}
 											case 6:
 						{
-							return case6(state, this.item6);
+							return case6(state, (T6)this.value);
 						}
 											case 7:
 						{
-							return case7(state, this.item7);
+							return case7(state, (T7)this.value);
 						}
 											case 8:
 						{
-							return case8(state, this.item8);
+							return case8(state, (T8)this.value);
 						}
 											case 9:
 						{
-							return case9(state, this.item9);
+							return case9(state, (T9)this.value);
 						}
 											case 10:
 						{
-							return case10(state, this.item10);
+							return case10(state, (T10)this.value);
 						}
 											case 11:
 						{
-							return case11(state, this.item11);
+							return case11(state, (T11)this.value);
 						}
 											case 12:
 						{
-							return case12(state, this.item12);
+							return case12(state, (T12)this.value);
 						}
 											default:
 							return defaultCase(state);
 					}
 				}
+
+				public override bool Equals(object? other)
+				{
+					if (other is FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> otherUnion)
+					{
+						return this.discriminator == otherUnion.Discriminator &&
+						       this.value.Equals(otherUnion.value);
+					}
+					else
+					{
+						return false;
+					}
+				}
+
+				public override int GetHashCode()
+				{
+					return this.value.GetHashCode() ^ this.discriminator;
+				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> : IUnion
-			{
+			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> : IFlatBufferUnion
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+							where T12 : notnull
+							where T13 : notnull
+						{
 				private readonly byte discriminator;
+				private readonly object value;
 				
-				
-				protected readonly T1 item1;
-				
-				
-				protected readonly T2 item2;
-				
-				
-				protected readonly T3 item3;
-				
-				
-				protected readonly T4 item4;
-				
-				
-				protected readonly T5 item5;
-				
-				
-				protected readonly T6 item6;
-				
-				
-				protected readonly T7 item7;
-				
-				
-				protected readonly T8 item8;
-				
-				
-				protected readonly T9 item9;
-				
-				
-				protected readonly T10 item10;
-				
-				
-				protected readonly T11 item11;
-				
-				
-				protected readonly T12 item12;
-				
-				
-				protected readonly T13 item13;
-				
-								
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 1;
-					this.item1 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 2;
-					this.item2 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 3;
-					this.item3 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 4;
-					this.item4 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 5;
-					this.item5 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 6;
-					this.item6 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 7;
-					this.item7 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 8;
-					this.item8 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 9;
-					this.item9 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 10;
-					this.item10 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 11;
-					this.item11 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T12 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 12;
-					this.item12 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T13 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 13;
-					this.item13 = item;
+					this.value = item;
 				}
 				
 							
@@ -6318,7 +6167,7 @@ System.Func<TState, T12, TResult> case12)
 					{
 						if (this.discriminator == 1)
 						{
-							return this.item1;
+							return (T1)this.value;
 						}
 						else
 						{
@@ -6327,16 +6176,18 @@ System.Func<TState, T12, TResult> case12)
 					}
 				}
 
-				public bool TryGet(out T1 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
-					item = default;
 					if (this.discriminator == 1)
 					{
-						item = this.item1;
+						item = (T1)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -6346,7 +6197,7 @@ System.Func<TState, T12, TResult> case12)
 					{
 						if (this.discriminator == 2)
 						{
-							return this.item2;
+							return (T2)this.value;
 						}
 						else
 						{
@@ -6355,16 +6206,18 @@ System.Func<TState, T12, TResult> case12)
 					}
 				}
 
-				public bool TryGet(out T2 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
-					item = default;
 					if (this.discriminator == 2)
 					{
-						item = this.item2;
+						item = (T2)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -6374,7 +6227,7 @@ System.Func<TState, T12, TResult> case12)
 					{
 						if (this.discriminator == 3)
 						{
-							return this.item3;
+							return (T3)this.value;
 						}
 						else
 						{
@@ -6383,16 +6236,18 @@ System.Func<TState, T12, TResult> case12)
 					}
 				}
 
-				public bool TryGet(out T3 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
-					item = default;
 					if (this.discriminator == 3)
 					{
-						item = this.item3;
+						item = (T3)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -6402,7 +6257,7 @@ System.Func<TState, T12, TResult> case12)
 					{
 						if (this.discriminator == 4)
 						{
-							return this.item4;
+							return (T4)this.value;
 						}
 						else
 						{
@@ -6411,16 +6266,18 @@ System.Func<TState, T12, TResult> case12)
 					}
 				}
 
-				public bool TryGet(out T4 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
-					item = default;
 					if (this.discriminator == 4)
 					{
-						item = this.item4;
+						item = (T4)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -6430,7 +6287,7 @@ System.Func<TState, T12, TResult> case12)
 					{
 						if (this.discriminator == 5)
 						{
-							return this.item5;
+							return (T5)this.value;
 						}
 						else
 						{
@@ -6439,16 +6296,18 @@ System.Func<TState, T12, TResult> case12)
 					}
 				}
 
-				public bool TryGet(out T5 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
-					item = default;
 					if (this.discriminator == 5)
 					{
-						item = this.item5;
+						item = (T5)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -6458,7 +6317,7 @@ System.Func<TState, T12, TResult> case12)
 					{
 						if (this.discriminator == 6)
 						{
-							return this.item6;
+							return (T6)this.value;
 						}
 						else
 						{
@@ -6467,16 +6326,18 @@ System.Func<TState, T12, TResult> case12)
 					}
 				}
 
-				public bool TryGet(out T6 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
-					item = default;
 					if (this.discriminator == 6)
 					{
-						item = this.item6;
+						item = (T6)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -6486,7 +6347,7 @@ System.Func<TState, T12, TResult> case12)
 					{
 						if (this.discriminator == 7)
 						{
-							return this.item7;
+							return (T7)this.value;
 						}
 						else
 						{
@@ -6495,16 +6356,18 @@ System.Func<TState, T12, TResult> case12)
 					}
 				}
 
-				public bool TryGet(out T7 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
-					item = default;
 					if (this.discriminator == 7)
 					{
-						item = this.item7;
+						item = (T7)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -6514,7 +6377,7 @@ System.Func<TState, T12, TResult> case12)
 					{
 						if (this.discriminator == 8)
 						{
-							return this.item8;
+							return (T8)this.value;
 						}
 						else
 						{
@@ -6523,16 +6386,18 @@ System.Func<TState, T12, TResult> case12)
 					}
 				}
 
-				public bool TryGet(out T8 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
-					item = default;
 					if (this.discriminator == 8)
 					{
-						item = this.item8;
+						item = (T8)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -6542,7 +6407,7 @@ System.Func<TState, T12, TResult> case12)
 					{
 						if (this.discriminator == 9)
 						{
-							return this.item9;
+							return (T9)this.value;
 						}
 						else
 						{
@@ -6551,16 +6416,18 @@ System.Func<TState, T12, TResult> case12)
 					}
 				}
 
-				public bool TryGet(out T9 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
-					item = default;
 					if (this.discriminator == 9)
 					{
-						item = this.item9;
+						item = (T9)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -6570,7 +6437,7 @@ System.Func<TState, T12, TResult> case12)
 					{
 						if (this.discriminator == 10)
 						{
-							return this.item10;
+							return (T10)this.value;
 						}
 						else
 						{
@@ -6579,16 +6446,18 @@ System.Func<TState, T12, TResult> case12)
 					}
 				}
 
-				public bool TryGet(out T10 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
-					item = default;
 					if (this.discriminator == 10)
 					{
-						item = this.item10;
+						item = (T10)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -6598,7 +6467,7 @@ System.Func<TState, T12, TResult> case12)
 					{
 						if (this.discriminator == 11)
 						{
-							return this.item11;
+							return (T11)this.value;
 						}
 						else
 						{
@@ -6607,16 +6476,18 @@ System.Func<TState, T12, TResult> case12)
 					}
 				}
 
-				public bool TryGet(out T11 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
-					item = default;
 					if (this.discriminator == 11)
 					{
-						item = this.item11;
+						item = (T11)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -6626,7 +6497,7 @@ System.Func<TState, T12, TResult> case12)
 					{
 						if (this.discriminator == 12)
 						{
-							return this.item12;
+							return (T12)this.value;
 						}
 						else
 						{
@@ -6635,16 +6506,18 @@ System.Func<TState, T12, TResult> case12)
 					}
 				}
 
-				public bool TryGet(out T12 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T12? item)
 				{
-					item = default;
 					if (this.discriminator == 12)
 					{
-						item = this.item12;
+						item = (T12)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -6654,7 +6527,7 @@ System.Func<TState, T12, TResult> case12)
 					{
 						if (this.discriminator == 13)
 						{
-							return this.item13;
+							return (T13)this.value;
 						}
 						else
 						{
@@ -6663,68 +6536,21 @@ System.Func<TState, T12, TResult> case12)
 					}
 				}
 
-				public bool TryGet(out T13 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T13? item)
 				{
-					item = default;
 					if (this.discriminator == 13)
 					{
-						item = this.item13;
+						item = (T13)this.value;
 						return true;
 					}
-
-					return false;
-				}
-				
-				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11,
-System.Func<T12, T12> cloneT12,
-System.Func<T13, T13> cloneT13
-				)
-				{
-					switch (this.discriminator)
+					else
 					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(cloneT1(this.item1));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(cloneT2(this.item2));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(cloneT3(this.item3));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(cloneT4(this.item4));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(cloneT5(this.item5));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(cloneT6(this.item6));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(cloneT7(this.item7));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(cloneT8(this.item8));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(cloneT9(this.item9));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(cloneT10(this.item10));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(cloneT11(this.item11));
-											case 12:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(cloneT12(this.item12));
-											case 13:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(cloneT13(this.item13));
-										}
-
-					throw new System.InvalidOperationException();
+						item = default;
+						return false;
+					}
 				}
-
+				
+				
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -6745,67 +6571,67 @@ System.Action<T13> case13)
 					{
 											case 1:
 						{
-							case1(this.item1);
+							case1((T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(this.item2);
+							case2((T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(this.item3);
+							case3((T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(this.item4);
+							case4((T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(this.item5);
+							case5((T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(this.item6);
+							case6((T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(this.item7);
+							case7((T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(this.item8);
+							case8((T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(this.item9);
+							case9((T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(this.item10);
+							case10((T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(this.item11);
+							case11((T11)this.value);
 							break;
 						}
 											case 12:
 						{
-							case12(this.item12);
+							case12((T12)this.value);
 							break;
 						}
 											case 13:
 						{
-							case13(this.item13);
+							case13((T13)this.value);
 							break;
 						}
 											default:
@@ -6835,67 +6661,67 @@ System.Action<TState, T13> case13)
 					{
 											case 1:
 						{
-							case1(state, this.item1);
+							case1(state, (T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(state, this.item2);
+							case2(state, (T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(state, this.item3);
+							case3(state, (T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(state, this.item4);
+							case4(state, (T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(state, this.item5);
+							case5(state, (T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(state, this.item6);
+							case6(state, (T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(state, this.item7);
+							case7(state, (T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(state, this.item8);
+							case8(state, (T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(state, this.item9);
+							case9(state, (T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(state, this.item10);
+							case10(state, (T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(state, this.item11);
+							case11(state, (T11)this.value);
 							break;
 						}
 											case 12:
 						{
-							case12(state, this.item12);
+							case12(state, (T12)this.value);
 							break;
 						}
 											case 13:
 						{
-							case13(state, this.item13);
+							case13(state, (T13)this.value);
 							break;
 						}
 											default:
@@ -6925,55 +6751,55 @@ System.Func<T13, TResult> case13)
 					{
 											case 1:
 						{
-							return case1(this.item1);
+							return case1((T1)this.value);
 						}
 											case 2:
 						{
-							return case2(this.item2);
+							return case2((T2)this.value);
 						}
 											case 3:
 						{
-							return case3(this.item3);
+							return case3((T3)this.value);
 						}
 											case 4:
 						{
-							return case4(this.item4);
+							return case4((T4)this.value);
 						}
 											case 5:
 						{
-							return case5(this.item5);
+							return case5((T5)this.value);
 						}
 											case 6:
 						{
-							return case6(this.item6);
+							return case6((T6)this.value);
 						}
 											case 7:
 						{
-							return case7(this.item7);
+							return case7((T7)this.value);
 						}
 											case 8:
 						{
-							return case8(this.item8);
+							return case8((T8)this.value);
 						}
 											case 9:
 						{
-							return case9(this.item9);
+							return case9((T9)this.value);
 						}
 											case 10:
 						{
-							return case10(this.item10);
+							return case10((T10)this.value);
 						}
 											case 11:
 						{
-							return case11(this.item11);
+							return case11((T11)this.value);
 						}
 											case 12:
 						{
-							return case12(this.item12);
+							return case12((T12)this.value);
 						}
 											case 13:
 						{
-							return case13(this.item13);
+							return case13((T13)this.value);
 						}
 											default:
 							return defaultCase();
@@ -7001,275 +6827,266 @@ System.Func<TState, T13, TResult> case13)
 					{
 											case 1:
 						{
-							return case1(state, this.item1);
+							return case1(state, (T1)this.value);
 						}
 											case 2:
 						{
-							return case2(state, this.item2);
+							return case2(state, (T2)this.value);
 						}
 											case 3:
 						{
-							return case3(state, this.item3);
+							return case3(state, (T3)this.value);
 						}
 											case 4:
 						{
-							return case4(state, this.item4);
+							return case4(state, (T4)this.value);
 						}
 											case 5:
 						{
-							return case5(state, this.item5);
+							return case5(state, (T5)this.value);
 						}
 											case 6:
 						{
-							return case6(state, this.item6);
+							return case6(state, (T6)this.value);
 						}
 											case 7:
 						{
-							return case7(state, this.item7);
+							return case7(state, (T7)this.value);
 						}
 											case 8:
 						{
-							return case8(state, this.item8);
+							return case8(state, (T8)this.value);
 						}
 											case 9:
 						{
-							return case9(state, this.item9);
+							return case9(state, (T9)this.value);
 						}
 											case 10:
 						{
-							return case10(state, this.item10);
+							return case10(state, (T10)this.value);
 						}
 											case 11:
 						{
-							return case11(state, this.item11);
+							return case11(state, (T11)this.value);
 						}
 											case 12:
 						{
-							return case12(state, this.item12);
+							return case12(state, (T12)this.value);
 						}
 											case 13:
 						{
-							return case13(state, this.item13);
+							return case13(state, (T13)this.value);
 						}
 											default:
 							return defaultCase(state);
 					}
 				}
+
+				public override bool Equals(object? other)
+				{
+					if (other is FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> otherUnion)
+					{
+						return this.discriminator == otherUnion.Discriminator &&
+						       this.value.Equals(otherUnion.value);
+					}
+					else
+					{
+						return false;
+					}
+				}
+
+				public override int GetHashCode()
+				{
+					return this.value.GetHashCode() ^ this.discriminator;
+				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> : IUnion
-			{
+			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> : IFlatBufferUnion
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+							where T12 : notnull
+							where T13 : notnull
+							where T14 : notnull
+						{
 				private readonly byte discriminator;
+				private readonly object value;
 				
-				
-				protected readonly T1 item1;
-				
-				
-				protected readonly T2 item2;
-				
-				
-				protected readonly T3 item3;
-				
-				
-				protected readonly T4 item4;
-				
-				
-				protected readonly T5 item5;
-				
-				
-				protected readonly T6 item6;
-				
-				
-				protected readonly T7 item7;
-				
-				
-				protected readonly T8 item8;
-				
-				
-				protected readonly T9 item9;
-				
-				
-				protected readonly T10 item10;
-				
-				
-				protected readonly T11 item11;
-				
-				
-				protected readonly T12 item12;
-				
-				
-				protected readonly T13 item13;
-				
-				
-				protected readonly T14 item14;
-				
-								
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 1;
-					this.item1 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 2;
-					this.item2 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 3;
-					this.item3 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 4;
-					this.item4 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 5;
-					this.item5 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 6;
-					this.item6 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 7;
-					this.item7 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 8;
-					this.item8 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 9;
-					this.item9 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 10;
-					this.item10 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 11;
-					this.item11 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T12 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 12;
-					this.item12 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T13 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 13;
-					this.item13 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T14 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 14;
-					this.item14 = item;
+					this.value = item;
 				}
 				
 							
@@ -7282,7 +7099,7 @@ System.Func<TState, T13, TResult> case13)
 					{
 						if (this.discriminator == 1)
 						{
-							return this.item1;
+							return (T1)this.value;
 						}
 						else
 						{
@@ -7291,16 +7108,18 @@ System.Func<TState, T13, TResult> case13)
 					}
 				}
 
-				public bool TryGet(out T1 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
-					item = default;
 					if (this.discriminator == 1)
 					{
-						item = this.item1;
+						item = (T1)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -7310,7 +7129,7 @@ System.Func<TState, T13, TResult> case13)
 					{
 						if (this.discriminator == 2)
 						{
-							return this.item2;
+							return (T2)this.value;
 						}
 						else
 						{
@@ -7319,16 +7138,18 @@ System.Func<TState, T13, TResult> case13)
 					}
 				}
 
-				public bool TryGet(out T2 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
-					item = default;
 					if (this.discriminator == 2)
 					{
-						item = this.item2;
+						item = (T2)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -7338,7 +7159,7 @@ System.Func<TState, T13, TResult> case13)
 					{
 						if (this.discriminator == 3)
 						{
-							return this.item3;
+							return (T3)this.value;
 						}
 						else
 						{
@@ -7347,16 +7168,18 @@ System.Func<TState, T13, TResult> case13)
 					}
 				}
 
-				public bool TryGet(out T3 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
-					item = default;
 					if (this.discriminator == 3)
 					{
-						item = this.item3;
+						item = (T3)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -7366,7 +7189,7 @@ System.Func<TState, T13, TResult> case13)
 					{
 						if (this.discriminator == 4)
 						{
-							return this.item4;
+							return (T4)this.value;
 						}
 						else
 						{
@@ -7375,16 +7198,18 @@ System.Func<TState, T13, TResult> case13)
 					}
 				}
 
-				public bool TryGet(out T4 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
-					item = default;
 					if (this.discriminator == 4)
 					{
-						item = this.item4;
+						item = (T4)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -7394,7 +7219,7 @@ System.Func<TState, T13, TResult> case13)
 					{
 						if (this.discriminator == 5)
 						{
-							return this.item5;
+							return (T5)this.value;
 						}
 						else
 						{
@@ -7403,16 +7228,18 @@ System.Func<TState, T13, TResult> case13)
 					}
 				}
 
-				public bool TryGet(out T5 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
-					item = default;
 					if (this.discriminator == 5)
 					{
-						item = this.item5;
+						item = (T5)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -7422,7 +7249,7 @@ System.Func<TState, T13, TResult> case13)
 					{
 						if (this.discriminator == 6)
 						{
-							return this.item6;
+							return (T6)this.value;
 						}
 						else
 						{
@@ -7431,16 +7258,18 @@ System.Func<TState, T13, TResult> case13)
 					}
 				}
 
-				public bool TryGet(out T6 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
-					item = default;
 					if (this.discriminator == 6)
 					{
-						item = this.item6;
+						item = (T6)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -7450,7 +7279,7 @@ System.Func<TState, T13, TResult> case13)
 					{
 						if (this.discriminator == 7)
 						{
-							return this.item7;
+							return (T7)this.value;
 						}
 						else
 						{
@@ -7459,16 +7288,18 @@ System.Func<TState, T13, TResult> case13)
 					}
 				}
 
-				public bool TryGet(out T7 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
-					item = default;
 					if (this.discriminator == 7)
 					{
-						item = this.item7;
+						item = (T7)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -7478,7 +7309,7 @@ System.Func<TState, T13, TResult> case13)
 					{
 						if (this.discriminator == 8)
 						{
-							return this.item8;
+							return (T8)this.value;
 						}
 						else
 						{
@@ -7487,16 +7318,18 @@ System.Func<TState, T13, TResult> case13)
 					}
 				}
 
-				public bool TryGet(out T8 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
-					item = default;
 					if (this.discriminator == 8)
 					{
-						item = this.item8;
+						item = (T8)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -7506,7 +7339,7 @@ System.Func<TState, T13, TResult> case13)
 					{
 						if (this.discriminator == 9)
 						{
-							return this.item9;
+							return (T9)this.value;
 						}
 						else
 						{
@@ -7515,16 +7348,18 @@ System.Func<TState, T13, TResult> case13)
 					}
 				}
 
-				public bool TryGet(out T9 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
-					item = default;
 					if (this.discriminator == 9)
 					{
-						item = this.item9;
+						item = (T9)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -7534,7 +7369,7 @@ System.Func<TState, T13, TResult> case13)
 					{
 						if (this.discriminator == 10)
 						{
-							return this.item10;
+							return (T10)this.value;
 						}
 						else
 						{
@@ -7543,16 +7378,18 @@ System.Func<TState, T13, TResult> case13)
 					}
 				}
 
-				public bool TryGet(out T10 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
-					item = default;
 					if (this.discriminator == 10)
 					{
-						item = this.item10;
+						item = (T10)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -7562,7 +7399,7 @@ System.Func<TState, T13, TResult> case13)
 					{
 						if (this.discriminator == 11)
 						{
-							return this.item11;
+							return (T11)this.value;
 						}
 						else
 						{
@@ -7571,16 +7408,18 @@ System.Func<TState, T13, TResult> case13)
 					}
 				}
 
-				public bool TryGet(out T11 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
-					item = default;
 					if (this.discriminator == 11)
 					{
-						item = this.item11;
+						item = (T11)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -7590,7 +7429,7 @@ System.Func<TState, T13, TResult> case13)
 					{
 						if (this.discriminator == 12)
 						{
-							return this.item12;
+							return (T12)this.value;
 						}
 						else
 						{
@@ -7599,16 +7438,18 @@ System.Func<TState, T13, TResult> case13)
 					}
 				}
 
-				public bool TryGet(out T12 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T12? item)
 				{
-					item = default;
 					if (this.discriminator == 12)
 					{
-						item = this.item12;
+						item = (T12)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -7618,7 +7459,7 @@ System.Func<TState, T13, TResult> case13)
 					{
 						if (this.discriminator == 13)
 						{
-							return this.item13;
+							return (T13)this.value;
 						}
 						else
 						{
@@ -7627,16 +7468,18 @@ System.Func<TState, T13, TResult> case13)
 					}
 				}
 
-				public bool TryGet(out T13 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T13? item)
 				{
-					item = default;
 					if (this.discriminator == 13)
 					{
-						item = this.item13;
+						item = (T13)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -7646,7 +7489,7 @@ System.Func<TState, T13, TResult> case13)
 					{
 						if (this.discriminator == 14)
 						{
-							return this.item14;
+							return (T14)this.value;
 						}
 						else
 						{
@@ -7655,71 +7498,21 @@ System.Func<TState, T13, TResult> case13)
 					}
 				}
 
-				public bool TryGet(out T14 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T14? item)
 				{
-					item = default;
 					if (this.discriminator == 14)
 					{
-						item = this.item14;
+						item = (T14)this.value;
 						return true;
 					}
-
-					return false;
-				}
-				
-				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11,
-System.Func<T12, T12> cloneT12,
-System.Func<T13, T13> cloneT13,
-System.Func<T14, T14> cloneT14
-				)
-				{
-					switch (this.discriminator)
+					else
 					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(cloneT1(this.item1));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(cloneT2(this.item2));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(cloneT3(this.item3));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(cloneT4(this.item4));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(cloneT5(this.item5));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(cloneT6(this.item6));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(cloneT7(this.item7));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(cloneT8(this.item8));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(cloneT9(this.item9));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(cloneT10(this.item10));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(cloneT11(this.item11));
-											case 12:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(cloneT12(this.item12));
-											case 13:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(cloneT13(this.item13));
-											case 14:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(cloneT14(this.item14));
-										}
-
-					throw new System.InvalidOperationException();
+						item = default;
+						return false;
+					}
 				}
-
+				
+				
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -7741,72 +7534,72 @@ System.Action<T14> case14)
 					{
 											case 1:
 						{
-							case1(this.item1);
+							case1((T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(this.item2);
+							case2((T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(this.item3);
+							case3((T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(this.item4);
+							case4((T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(this.item5);
+							case5((T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(this.item6);
+							case6((T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(this.item7);
+							case7((T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(this.item8);
+							case8((T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(this.item9);
+							case9((T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(this.item10);
+							case10((T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(this.item11);
+							case11((T11)this.value);
 							break;
 						}
 											case 12:
 						{
-							case12(this.item12);
+							case12((T12)this.value);
 							break;
 						}
 											case 13:
 						{
-							case13(this.item13);
+							case13((T13)this.value);
 							break;
 						}
 											case 14:
 						{
-							case14(this.item14);
+							case14((T14)this.value);
 							break;
 						}
 											default:
@@ -7837,72 +7630,72 @@ System.Action<TState, T14> case14)
 					{
 											case 1:
 						{
-							case1(state, this.item1);
+							case1(state, (T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(state, this.item2);
+							case2(state, (T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(state, this.item3);
+							case3(state, (T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(state, this.item4);
+							case4(state, (T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(state, this.item5);
+							case5(state, (T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(state, this.item6);
+							case6(state, (T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(state, this.item7);
+							case7(state, (T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(state, this.item8);
+							case8(state, (T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(state, this.item9);
+							case9(state, (T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(state, this.item10);
+							case10(state, (T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(state, this.item11);
+							case11(state, (T11)this.value);
 							break;
 						}
 											case 12:
 						{
-							case12(state, this.item12);
+							case12(state, (T12)this.value);
 							break;
 						}
 											case 13:
 						{
-							case13(state, this.item13);
+							case13(state, (T13)this.value);
 							break;
 						}
 											case 14:
 						{
-							case14(state, this.item14);
+							case14(state, (T14)this.value);
 							break;
 						}
 											default:
@@ -7933,59 +7726,59 @@ System.Func<T14, TResult> case14)
 					{
 											case 1:
 						{
-							return case1(this.item1);
+							return case1((T1)this.value);
 						}
 											case 2:
 						{
-							return case2(this.item2);
+							return case2((T2)this.value);
 						}
 											case 3:
 						{
-							return case3(this.item3);
+							return case3((T3)this.value);
 						}
 											case 4:
 						{
-							return case4(this.item4);
+							return case4((T4)this.value);
 						}
 											case 5:
 						{
-							return case5(this.item5);
+							return case5((T5)this.value);
 						}
 											case 6:
 						{
-							return case6(this.item6);
+							return case6((T6)this.value);
 						}
 											case 7:
 						{
-							return case7(this.item7);
+							return case7((T7)this.value);
 						}
 											case 8:
 						{
-							return case8(this.item8);
+							return case8((T8)this.value);
 						}
 											case 9:
 						{
-							return case9(this.item9);
+							return case9((T9)this.value);
 						}
 											case 10:
 						{
-							return case10(this.item10);
+							return case10((T10)this.value);
 						}
 											case 11:
 						{
-							return case11(this.item11);
+							return case11((T11)this.value);
 						}
 											case 12:
 						{
-							return case12(this.item12);
+							return case12((T12)this.value);
 						}
 											case 13:
 						{
-							return case13(this.item13);
+							return case13((T13)this.value);
 						}
 											case 14:
 						{
-							return case14(this.item14);
+							return case14((T14)this.value);
 						}
 											default:
 							return defaultCase();
@@ -8014,294 +7807,283 @@ System.Func<TState, T14, TResult> case14)
 					{
 											case 1:
 						{
-							return case1(state, this.item1);
+							return case1(state, (T1)this.value);
 						}
 											case 2:
 						{
-							return case2(state, this.item2);
+							return case2(state, (T2)this.value);
 						}
 											case 3:
 						{
-							return case3(state, this.item3);
+							return case3(state, (T3)this.value);
 						}
 											case 4:
 						{
-							return case4(state, this.item4);
+							return case4(state, (T4)this.value);
 						}
 											case 5:
 						{
-							return case5(state, this.item5);
+							return case5(state, (T5)this.value);
 						}
 											case 6:
 						{
-							return case6(state, this.item6);
+							return case6(state, (T6)this.value);
 						}
 											case 7:
 						{
-							return case7(state, this.item7);
+							return case7(state, (T7)this.value);
 						}
 											case 8:
 						{
-							return case8(state, this.item8);
+							return case8(state, (T8)this.value);
 						}
 											case 9:
 						{
-							return case9(state, this.item9);
+							return case9(state, (T9)this.value);
 						}
 											case 10:
 						{
-							return case10(state, this.item10);
+							return case10(state, (T10)this.value);
 						}
 											case 11:
 						{
-							return case11(state, this.item11);
+							return case11(state, (T11)this.value);
 						}
 											case 12:
 						{
-							return case12(state, this.item12);
+							return case12(state, (T12)this.value);
 						}
 											case 13:
 						{
-							return case13(state, this.item13);
+							return case13(state, (T13)this.value);
 						}
 											case 14:
 						{
-							return case14(state, this.item14);
+							return case14(state, (T14)this.value);
 						}
 											default:
 							return defaultCase(state);
 					}
 				}
+
+				public override bool Equals(object? other)
+				{
+					if (other is FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> otherUnion)
+					{
+						return this.discriminator == otherUnion.Discriminator &&
+						       this.value.Equals(otherUnion.value);
+					}
+					else
+					{
+						return false;
+					}
+				}
+
+				public override int GetHashCode()
+				{
+					return this.value.GetHashCode() ^ this.discriminator;
+				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> : IUnion
-			{
+			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> : IFlatBufferUnion
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+							where T12 : notnull
+							where T13 : notnull
+							where T14 : notnull
+							where T15 : notnull
+						{
 				private readonly byte discriminator;
+				private readonly object value;
 				
-				
-				protected readonly T1 item1;
-				
-				
-				protected readonly T2 item2;
-				
-				
-				protected readonly T3 item3;
-				
-				
-				protected readonly T4 item4;
-				
-				
-				protected readonly T5 item5;
-				
-				
-				protected readonly T6 item6;
-				
-				
-				protected readonly T7 item7;
-				
-				
-				protected readonly T8 item8;
-				
-				
-				protected readonly T9 item9;
-				
-				
-				protected readonly T10 item10;
-				
-				
-				protected readonly T11 item11;
-				
-				
-				protected readonly T12 item12;
-				
-				
-				protected readonly T13 item13;
-				
-				
-				protected readonly T14 item14;
-				
-				
-				protected readonly T15 item15;
-				
-								
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 1;
-					this.item1 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 2;
-					this.item2 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 3;
-					this.item3 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 4;
-					this.item4 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 5;
-					this.item5 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 6;
-					this.item6 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 7;
-					this.item7 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 8;
-					this.item8 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 9;
-					this.item9 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 10;
-					this.item10 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 11;
-					this.item11 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T12 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 12;
-					this.item12 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T13 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 13;
-					this.item13 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T14 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 14;
-					this.item14 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T15 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 15;
-					this.item15 = item;
+					this.value = item;
 				}
 				
 							
@@ -8314,7 +8096,7 @@ System.Func<TState, T14, TResult> case14)
 					{
 						if (this.discriminator == 1)
 						{
-							return this.item1;
+							return (T1)this.value;
 						}
 						else
 						{
@@ -8323,16 +8105,18 @@ System.Func<TState, T14, TResult> case14)
 					}
 				}
 
-				public bool TryGet(out T1 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
-					item = default;
 					if (this.discriminator == 1)
 					{
-						item = this.item1;
+						item = (T1)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -8342,7 +8126,7 @@ System.Func<TState, T14, TResult> case14)
 					{
 						if (this.discriminator == 2)
 						{
-							return this.item2;
+							return (T2)this.value;
 						}
 						else
 						{
@@ -8351,16 +8135,18 @@ System.Func<TState, T14, TResult> case14)
 					}
 				}
 
-				public bool TryGet(out T2 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
-					item = default;
 					if (this.discriminator == 2)
 					{
-						item = this.item2;
+						item = (T2)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -8370,7 +8156,7 @@ System.Func<TState, T14, TResult> case14)
 					{
 						if (this.discriminator == 3)
 						{
-							return this.item3;
+							return (T3)this.value;
 						}
 						else
 						{
@@ -8379,16 +8165,18 @@ System.Func<TState, T14, TResult> case14)
 					}
 				}
 
-				public bool TryGet(out T3 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
-					item = default;
 					if (this.discriminator == 3)
 					{
-						item = this.item3;
+						item = (T3)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -8398,7 +8186,7 @@ System.Func<TState, T14, TResult> case14)
 					{
 						if (this.discriminator == 4)
 						{
-							return this.item4;
+							return (T4)this.value;
 						}
 						else
 						{
@@ -8407,16 +8195,18 @@ System.Func<TState, T14, TResult> case14)
 					}
 				}
 
-				public bool TryGet(out T4 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
-					item = default;
 					if (this.discriminator == 4)
 					{
-						item = this.item4;
+						item = (T4)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -8426,7 +8216,7 @@ System.Func<TState, T14, TResult> case14)
 					{
 						if (this.discriminator == 5)
 						{
-							return this.item5;
+							return (T5)this.value;
 						}
 						else
 						{
@@ -8435,16 +8225,18 @@ System.Func<TState, T14, TResult> case14)
 					}
 				}
 
-				public bool TryGet(out T5 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
-					item = default;
 					if (this.discriminator == 5)
 					{
-						item = this.item5;
+						item = (T5)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -8454,7 +8246,7 @@ System.Func<TState, T14, TResult> case14)
 					{
 						if (this.discriminator == 6)
 						{
-							return this.item6;
+							return (T6)this.value;
 						}
 						else
 						{
@@ -8463,16 +8255,18 @@ System.Func<TState, T14, TResult> case14)
 					}
 				}
 
-				public bool TryGet(out T6 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
-					item = default;
 					if (this.discriminator == 6)
 					{
-						item = this.item6;
+						item = (T6)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -8482,7 +8276,7 @@ System.Func<TState, T14, TResult> case14)
 					{
 						if (this.discriminator == 7)
 						{
-							return this.item7;
+							return (T7)this.value;
 						}
 						else
 						{
@@ -8491,16 +8285,18 @@ System.Func<TState, T14, TResult> case14)
 					}
 				}
 
-				public bool TryGet(out T7 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
-					item = default;
 					if (this.discriminator == 7)
 					{
-						item = this.item7;
+						item = (T7)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -8510,7 +8306,7 @@ System.Func<TState, T14, TResult> case14)
 					{
 						if (this.discriminator == 8)
 						{
-							return this.item8;
+							return (T8)this.value;
 						}
 						else
 						{
@@ -8519,16 +8315,18 @@ System.Func<TState, T14, TResult> case14)
 					}
 				}
 
-				public bool TryGet(out T8 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
-					item = default;
 					if (this.discriminator == 8)
 					{
-						item = this.item8;
+						item = (T8)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -8538,7 +8336,7 @@ System.Func<TState, T14, TResult> case14)
 					{
 						if (this.discriminator == 9)
 						{
-							return this.item9;
+							return (T9)this.value;
 						}
 						else
 						{
@@ -8547,16 +8345,18 @@ System.Func<TState, T14, TResult> case14)
 					}
 				}
 
-				public bool TryGet(out T9 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
-					item = default;
 					if (this.discriminator == 9)
 					{
-						item = this.item9;
+						item = (T9)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -8566,7 +8366,7 @@ System.Func<TState, T14, TResult> case14)
 					{
 						if (this.discriminator == 10)
 						{
-							return this.item10;
+							return (T10)this.value;
 						}
 						else
 						{
@@ -8575,16 +8375,18 @@ System.Func<TState, T14, TResult> case14)
 					}
 				}
 
-				public bool TryGet(out T10 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
-					item = default;
 					if (this.discriminator == 10)
 					{
-						item = this.item10;
+						item = (T10)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -8594,7 +8396,7 @@ System.Func<TState, T14, TResult> case14)
 					{
 						if (this.discriminator == 11)
 						{
-							return this.item11;
+							return (T11)this.value;
 						}
 						else
 						{
@@ -8603,16 +8405,18 @@ System.Func<TState, T14, TResult> case14)
 					}
 				}
 
-				public bool TryGet(out T11 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
-					item = default;
 					if (this.discriminator == 11)
 					{
-						item = this.item11;
+						item = (T11)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -8622,7 +8426,7 @@ System.Func<TState, T14, TResult> case14)
 					{
 						if (this.discriminator == 12)
 						{
-							return this.item12;
+							return (T12)this.value;
 						}
 						else
 						{
@@ -8631,16 +8435,18 @@ System.Func<TState, T14, TResult> case14)
 					}
 				}
 
-				public bool TryGet(out T12 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T12? item)
 				{
-					item = default;
 					if (this.discriminator == 12)
 					{
-						item = this.item12;
+						item = (T12)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -8650,7 +8456,7 @@ System.Func<TState, T14, TResult> case14)
 					{
 						if (this.discriminator == 13)
 						{
-							return this.item13;
+							return (T13)this.value;
 						}
 						else
 						{
@@ -8659,16 +8465,18 @@ System.Func<TState, T14, TResult> case14)
 					}
 				}
 
-				public bool TryGet(out T13 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T13? item)
 				{
-					item = default;
 					if (this.discriminator == 13)
 					{
-						item = this.item13;
+						item = (T13)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -8678,7 +8486,7 @@ System.Func<TState, T14, TResult> case14)
 					{
 						if (this.discriminator == 14)
 						{
-							return this.item14;
+							return (T14)this.value;
 						}
 						else
 						{
@@ -8687,16 +8495,18 @@ System.Func<TState, T14, TResult> case14)
 					}
 				}
 
-				public bool TryGet(out T14 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T14? item)
 				{
-					item = default;
 					if (this.discriminator == 14)
 					{
-						item = this.item14;
+						item = (T14)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -8706,7 +8516,7 @@ System.Func<TState, T14, TResult> case14)
 					{
 						if (this.discriminator == 15)
 						{
-							return this.item15;
+							return (T15)this.value;
 						}
 						else
 						{
@@ -8715,74 +8525,21 @@ System.Func<TState, T14, TResult> case14)
 					}
 				}
 
-				public bool TryGet(out T15 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T15? item)
 				{
-					item = default;
 					if (this.discriminator == 15)
 					{
-						item = this.item15;
+						item = (T15)this.value;
 						return true;
 					}
-
-					return false;
-				}
-				
-				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11,
-System.Func<T12, T12> cloneT12,
-System.Func<T13, T13> cloneT13,
-System.Func<T14, T14> cloneT14,
-System.Func<T15, T15> cloneT15
-				)
-				{
-					switch (this.discriminator)
+					else
 					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(cloneT1(this.item1));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(cloneT2(this.item2));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(cloneT3(this.item3));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(cloneT4(this.item4));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(cloneT5(this.item5));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(cloneT6(this.item6));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(cloneT7(this.item7));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(cloneT8(this.item8));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(cloneT9(this.item9));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(cloneT10(this.item10));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(cloneT11(this.item11));
-											case 12:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(cloneT12(this.item12));
-											case 13:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(cloneT13(this.item13));
-											case 14:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(cloneT14(this.item14));
-											case 15:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(cloneT15(this.item15));
-										}
-
-					throw new System.InvalidOperationException();
+						item = default;
+						return false;
+					}
 				}
-
+				
+				
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -8805,77 +8562,77 @@ System.Action<T15> case15)
 					{
 											case 1:
 						{
-							case1(this.item1);
+							case1((T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(this.item2);
+							case2((T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(this.item3);
+							case3((T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(this.item4);
+							case4((T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(this.item5);
+							case5((T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(this.item6);
+							case6((T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(this.item7);
+							case7((T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(this.item8);
+							case8((T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(this.item9);
+							case9((T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(this.item10);
+							case10((T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(this.item11);
+							case11((T11)this.value);
 							break;
 						}
 											case 12:
 						{
-							case12(this.item12);
+							case12((T12)this.value);
 							break;
 						}
 											case 13:
 						{
-							case13(this.item13);
+							case13((T13)this.value);
 							break;
 						}
 											case 14:
 						{
-							case14(this.item14);
+							case14((T14)this.value);
 							break;
 						}
 											case 15:
 						{
-							case15(this.item15);
+							case15((T15)this.value);
 							break;
 						}
 											default:
@@ -8907,77 +8664,77 @@ System.Action<TState, T15> case15)
 					{
 											case 1:
 						{
-							case1(state, this.item1);
+							case1(state, (T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(state, this.item2);
+							case2(state, (T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(state, this.item3);
+							case3(state, (T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(state, this.item4);
+							case4(state, (T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(state, this.item5);
+							case5(state, (T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(state, this.item6);
+							case6(state, (T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(state, this.item7);
+							case7(state, (T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(state, this.item8);
+							case8(state, (T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(state, this.item9);
+							case9(state, (T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(state, this.item10);
+							case10(state, (T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(state, this.item11);
+							case11(state, (T11)this.value);
 							break;
 						}
 											case 12:
 						{
-							case12(state, this.item12);
+							case12(state, (T12)this.value);
 							break;
 						}
 											case 13:
 						{
-							case13(state, this.item13);
+							case13(state, (T13)this.value);
 							break;
 						}
 											case 14:
 						{
-							case14(state, this.item14);
+							case14(state, (T14)this.value);
 							break;
 						}
 											case 15:
 						{
-							case15(state, this.item15);
+							case15(state, (T15)this.value);
 							break;
 						}
 											default:
@@ -9009,63 +8766,63 @@ System.Func<T15, TResult> case15)
 					{
 											case 1:
 						{
-							return case1(this.item1);
+							return case1((T1)this.value);
 						}
 											case 2:
 						{
-							return case2(this.item2);
+							return case2((T2)this.value);
 						}
 											case 3:
 						{
-							return case3(this.item3);
+							return case3((T3)this.value);
 						}
 											case 4:
 						{
-							return case4(this.item4);
+							return case4((T4)this.value);
 						}
 											case 5:
 						{
-							return case5(this.item5);
+							return case5((T5)this.value);
 						}
 											case 6:
 						{
-							return case6(this.item6);
+							return case6((T6)this.value);
 						}
 											case 7:
 						{
-							return case7(this.item7);
+							return case7((T7)this.value);
 						}
 											case 8:
 						{
-							return case8(this.item8);
+							return case8((T8)this.value);
 						}
 											case 9:
 						{
-							return case9(this.item9);
+							return case9((T9)this.value);
 						}
 											case 10:
 						{
-							return case10(this.item10);
+							return case10((T10)this.value);
 						}
 											case 11:
 						{
-							return case11(this.item11);
+							return case11((T11)this.value);
 						}
 											case 12:
 						{
-							return case12(this.item12);
+							return case12((T12)this.value);
 						}
 											case 13:
 						{
-							return case13(this.item13);
+							return case13((T13)this.value);
 						}
 											case 14:
 						{
-							return case14(this.item14);
+							return case14((T14)this.value);
 						}
 											case 15:
 						{
-							return case15(this.item15);
+							return case15((T15)this.value);
 						}
 											default:
 							return defaultCase();
@@ -9095,313 +8852,300 @@ System.Func<TState, T15, TResult> case15)
 					{
 											case 1:
 						{
-							return case1(state, this.item1);
+							return case1(state, (T1)this.value);
 						}
 											case 2:
 						{
-							return case2(state, this.item2);
+							return case2(state, (T2)this.value);
 						}
 											case 3:
 						{
-							return case3(state, this.item3);
+							return case3(state, (T3)this.value);
 						}
 											case 4:
 						{
-							return case4(state, this.item4);
+							return case4(state, (T4)this.value);
 						}
 											case 5:
 						{
-							return case5(state, this.item5);
+							return case5(state, (T5)this.value);
 						}
 											case 6:
 						{
-							return case6(state, this.item6);
+							return case6(state, (T6)this.value);
 						}
 											case 7:
 						{
-							return case7(state, this.item7);
+							return case7(state, (T7)this.value);
 						}
 											case 8:
 						{
-							return case8(state, this.item8);
+							return case8(state, (T8)this.value);
 						}
 											case 9:
 						{
-							return case9(state, this.item9);
+							return case9(state, (T9)this.value);
 						}
 											case 10:
 						{
-							return case10(state, this.item10);
+							return case10(state, (T10)this.value);
 						}
 											case 11:
 						{
-							return case11(state, this.item11);
+							return case11(state, (T11)this.value);
 						}
 											case 12:
 						{
-							return case12(state, this.item12);
+							return case12(state, (T12)this.value);
 						}
 											case 13:
 						{
-							return case13(state, this.item13);
+							return case13(state, (T13)this.value);
 						}
 											case 14:
 						{
-							return case14(state, this.item14);
+							return case14(state, (T14)this.value);
 						}
 											case 15:
 						{
-							return case15(state, this.item15);
+							return case15(state, (T15)this.value);
 						}
 											default:
 							return defaultCase(state);
 					}
 				}
+
+				public override bool Equals(object? other)
+				{
+					if (other is FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> otherUnion)
+					{
+						return this.discriminator == otherUnion.Discriminator &&
+						       this.value.Equals(otherUnion.value);
+					}
+					else
+					{
+						return false;
+					}
+				}
+
+				public override int GetHashCode()
+				{
+					return this.value.GetHashCode() ^ this.discriminator;
+				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> : IUnion
-			{
+			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> : IFlatBufferUnion
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+							where T12 : notnull
+							where T13 : notnull
+							where T14 : notnull
+							where T15 : notnull
+							where T16 : notnull
+						{
 				private readonly byte discriminator;
+				private readonly object value;
 				
-				
-				protected readonly T1 item1;
-				
-				
-				protected readonly T2 item2;
-				
-				
-				protected readonly T3 item3;
-				
-				
-				protected readonly T4 item4;
-				
-				
-				protected readonly T5 item5;
-				
-				
-				protected readonly T6 item6;
-				
-				
-				protected readonly T7 item7;
-				
-				
-				protected readonly T8 item8;
-				
-				
-				protected readonly T9 item9;
-				
-				
-				protected readonly T10 item10;
-				
-				
-				protected readonly T11 item11;
-				
-				
-				protected readonly T12 item12;
-				
-				
-				protected readonly T13 item13;
-				
-				
-				protected readonly T14 item14;
-				
-				
-				protected readonly T15 item15;
-				
-				
-				protected readonly T16 item16;
-				
-								
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 1;
-					this.item1 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 2;
-					this.item2 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 3;
-					this.item3 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 4;
-					this.item4 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 5;
-					this.item5 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 6;
-					this.item6 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 7;
-					this.item7 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 8;
-					this.item8 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 9;
-					this.item9 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 10;
-					this.item10 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 11;
-					this.item11 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T12 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 12;
-					this.item12 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T13 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 13;
-					this.item13 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T14 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 14;
-					this.item14 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T15 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 15;
-					this.item15 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T16 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 16;
-					this.item16 = item;
+					this.value = item;
 				}
 				
 							
@@ -9414,7 +9158,7 @@ System.Func<TState, T15, TResult> case15)
 					{
 						if (this.discriminator == 1)
 						{
-							return this.item1;
+							return (T1)this.value;
 						}
 						else
 						{
@@ -9423,16 +9167,18 @@ System.Func<TState, T15, TResult> case15)
 					}
 				}
 
-				public bool TryGet(out T1 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
-					item = default;
 					if (this.discriminator == 1)
 					{
-						item = this.item1;
+						item = (T1)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -9442,7 +9188,7 @@ System.Func<TState, T15, TResult> case15)
 					{
 						if (this.discriminator == 2)
 						{
-							return this.item2;
+							return (T2)this.value;
 						}
 						else
 						{
@@ -9451,16 +9197,18 @@ System.Func<TState, T15, TResult> case15)
 					}
 				}
 
-				public bool TryGet(out T2 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
-					item = default;
 					if (this.discriminator == 2)
 					{
-						item = this.item2;
+						item = (T2)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -9470,7 +9218,7 @@ System.Func<TState, T15, TResult> case15)
 					{
 						if (this.discriminator == 3)
 						{
-							return this.item3;
+							return (T3)this.value;
 						}
 						else
 						{
@@ -9479,16 +9227,18 @@ System.Func<TState, T15, TResult> case15)
 					}
 				}
 
-				public bool TryGet(out T3 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
-					item = default;
 					if (this.discriminator == 3)
 					{
-						item = this.item3;
+						item = (T3)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -9498,7 +9248,7 @@ System.Func<TState, T15, TResult> case15)
 					{
 						if (this.discriminator == 4)
 						{
-							return this.item4;
+							return (T4)this.value;
 						}
 						else
 						{
@@ -9507,16 +9257,18 @@ System.Func<TState, T15, TResult> case15)
 					}
 				}
 
-				public bool TryGet(out T4 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
-					item = default;
 					if (this.discriminator == 4)
 					{
-						item = this.item4;
+						item = (T4)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -9526,7 +9278,7 @@ System.Func<TState, T15, TResult> case15)
 					{
 						if (this.discriminator == 5)
 						{
-							return this.item5;
+							return (T5)this.value;
 						}
 						else
 						{
@@ -9535,16 +9287,18 @@ System.Func<TState, T15, TResult> case15)
 					}
 				}
 
-				public bool TryGet(out T5 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
-					item = default;
 					if (this.discriminator == 5)
 					{
-						item = this.item5;
+						item = (T5)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -9554,7 +9308,7 @@ System.Func<TState, T15, TResult> case15)
 					{
 						if (this.discriminator == 6)
 						{
-							return this.item6;
+							return (T6)this.value;
 						}
 						else
 						{
@@ -9563,16 +9317,18 @@ System.Func<TState, T15, TResult> case15)
 					}
 				}
 
-				public bool TryGet(out T6 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
-					item = default;
 					if (this.discriminator == 6)
 					{
-						item = this.item6;
+						item = (T6)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -9582,7 +9338,7 @@ System.Func<TState, T15, TResult> case15)
 					{
 						if (this.discriminator == 7)
 						{
-							return this.item7;
+							return (T7)this.value;
 						}
 						else
 						{
@@ -9591,16 +9347,18 @@ System.Func<TState, T15, TResult> case15)
 					}
 				}
 
-				public bool TryGet(out T7 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
-					item = default;
 					if (this.discriminator == 7)
 					{
-						item = this.item7;
+						item = (T7)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -9610,7 +9368,7 @@ System.Func<TState, T15, TResult> case15)
 					{
 						if (this.discriminator == 8)
 						{
-							return this.item8;
+							return (T8)this.value;
 						}
 						else
 						{
@@ -9619,16 +9377,18 @@ System.Func<TState, T15, TResult> case15)
 					}
 				}
 
-				public bool TryGet(out T8 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
-					item = default;
 					if (this.discriminator == 8)
 					{
-						item = this.item8;
+						item = (T8)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -9638,7 +9398,7 @@ System.Func<TState, T15, TResult> case15)
 					{
 						if (this.discriminator == 9)
 						{
-							return this.item9;
+							return (T9)this.value;
 						}
 						else
 						{
@@ -9647,16 +9407,18 @@ System.Func<TState, T15, TResult> case15)
 					}
 				}
 
-				public bool TryGet(out T9 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
-					item = default;
 					if (this.discriminator == 9)
 					{
-						item = this.item9;
+						item = (T9)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -9666,7 +9428,7 @@ System.Func<TState, T15, TResult> case15)
 					{
 						if (this.discriminator == 10)
 						{
-							return this.item10;
+							return (T10)this.value;
 						}
 						else
 						{
@@ -9675,16 +9437,18 @@ System.Func<TState, T15, TResult> case15)
 					}
 				}
 
-				public bool TryGet(out T10 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
-					item = default;
 					if (this.discriminator == 10)
 					{
-						item = this.item10;
+						item = (T10)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -9694,7 +9458,7 @@ System.Func<TState, T15, TResult> case15)
 					{
 						if (this.discriminator == 11)
 						{
-							return this.item11;
+							return (T11)this.value;
 						}
 						else
 						{
@@ -9703,16 +9467,18 @@ System.Func<TState, T15, TResult> case15)
 					}
 				}
 
-				public bool TryGet(out T11 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
-					item = default;
 					if (this.discriminator == 11)
 					{
-						item = this.item11;
+						item = (T11)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -9722,7 +9488,7 @@ System.Func<TState, T15, TResult> case15)
 					{
 						if (this.discriminator == 12)
 						{
-							return this.item12;
+							return (T12)this.value;
 						}
 						else
 						{
@@ -9731,16 +9497,18 @@ System.Func<TState, T15, TResult> case15)
 					}
 				}
 
-				public bool TryGet(out T12 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T12? item)
 				{
-					item = default;
 					if (this.discriminator == 12)
 					{
-						item = this.item12;
+						item = (T12)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -9750,7 +9518,7 @@ System.Func<TState, T15, TResult> case15)
 					{
 						if (this.discriminator == 13)
 						{
-							return this.item13;
+							return (T13)this.value;
 						}
 						else
 						{
@@ -9759,16 +9527,18 @@ System.Func<TState, T15, TResult> case15)
 					}
 				}
 
-				public bool TryGet(out T13 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T13? item)
 				{
-					item = default;
 					if (this.discriminator == 13)
 					{
-						item = this.item13;
+						item = (T13)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -9778,7 +9548,7 @@ System.Func<TState, T15, TResult> case15)
 					{
 						if (this.discriminator == 14)
 						{
-							return this.item14;
+							return (T14)this.value;
 						}
 						else
 						{
@@ -9787,16 +9557,18 @@ System.Func<TState, T15, TResult> case15)
 					}
 				}
 
-				public bool TryGet(out T14 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T14? item)
 				{
-					item = default;
 					if (this.discriminator == 14)
 					{
-						item = this.item14;
+						item = (T14)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -9806,7 +9578,7 @@ System.Func<TState, T15, TResult> case15)
 					{
 						if (this.discriminator == 15)
 						{
-							return this.item15;
+							return (T15)this.value;
 						}
 						else
 						{
@@ -9815,16 +9587,18 @@ System.Func<TState, T15, TResult> case15)
 					}
 				}
 
-				public bool TryGet(out T15 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T15? item)
 				{
-					item = default;
 					if (this.discriminator == 15)
 					{
-						item = this.item15;
+						item = (T15)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -9834,7 +9608,7 @@ System.Func<TState, T15, TResult> case15)
 					{
 						if (this.discriminator == 16)
 						{
-							return this.item16;
+							return (T16)this.value;
 						}
 						else
 						{
@@ -9843,77 +9617,21 @@ System.Func<TState, T15, TResult> case15)
 					}
 				}
 
-				public bool TryGet(out T16 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T16? item)
 				{
-					item = default;
 					if (this.discriminator == 16)
 					{
-						item = this.item16;
+						item = (T16)this.value;
 						return true;
 					}
-
-					return false;
-				}
-				
-				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11,
-System.Func<T12, T12> cloneT12,
-System.Func<T13, T13> cloneT13,
-System.Func<T14, T14> cloneT14,
-System.Func<T15, T15> cloneT15,
-System.Func<T16, T16> cloneT16
-				)
-				{
-					switch (this.discriminator)
+					else
 					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(cloneT1(this.item1));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(cloneT2(this.item2));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(cloneT3(this.item3));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(cloneT4(this.item4));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(cloneT5(this.item5));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(cloneT6(this.item6));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(cloneT7(this.item7));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(cloneT8(this.item8));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(cloneT9(this.item9));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(cloneT10(this.item10));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(cloneT11(this.item11));
-											case 12:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(cloneT12(this.item12));
-											case 13:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(cloneT13(this.item13));
-											case 14:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(cloneT14(this.item14));
-											case 15:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(cloneT15(this.item15));
-											case 16:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(cloneT16(this.item16));
-										}
-
-					throw new System.InvalidOperationException();
+						item = default;
+						return false;
+					}
 				}
-
+				
+				
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -9937,82 +9655,82 @@ System.Action<T16> case16)
 					{
 											case 1:
 						{
-							case1(this.item1);
+							case1((T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(this.item2);
+							case2((T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(this.item3);
+							case3((T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(this.item4);
+							case4((T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(this.item5);
+							case5((T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(this.item6);
+							case6((T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(this.item7);
+							case7((T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(this.item8);
+							case8((T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(this.item9);
+							case9((T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(this.item10);
+							case10((T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(this.item11);
+							case11((T11)this.value);
 							break;
 						}
 											case 12:
 						{
-							case12(this.item12);
+							case12((T12)this.value);
 							break;
 						}
 											case 13:
 						{
-							case13(this.item13);
+							case13((T13)this.value);
 							break;
 						}
 											case 14:
 						{
-							case14(this.item14);
+							case14((T14)this.value);
 							break;
 						}
 											case 15:
 						{
-							case15(this.item15);
+							case15((T15)this.value);
 							break;
 						}
 											case 16:
 						{
-							case16(this.item16);
+							case16((T16)this.value);
 							break;
 						}
 											default:
@@ -10045,82 +9763,82 @@ System.Action<TState, T16> case16)
 					{
 											case 1:
 						{
-							case1(state, this.item1);
+							case1(state, (T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(state, this.item2);
+							case2(state, (T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(state, this.item3);
+							case3(state, (T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(state, this.item4);
+							case4(state, (T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(state, this.item5);
+							case5(state, (T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(state, this.item6);
+							case6(state, (T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(state, this.item7);
+							case7(state, (T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(state, this.item8);
+							case8(state, (T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(state, this.item9);
+							case9(state, (T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(state, this.item10);
+							case10(state, (T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(state, this.item11);
+							case11(state, (T11)this.value);
 							break;
 						}
 											case 12:
 						{
-							case12(state, this.item12);
+							case12(state, (T12)this.value);
 							break;
 						}
 											case 13:
 						{
-							case13(state, this.item13);
+							case13(state, (T13)this.value);
 							break;
 						}
 											case 14:
 						{
-							case14(state, this.item14);
+							case14(state, (T14)this.value);
 							break;
 						}
 											case 15:
 						{
-							case15(state, this.item15);
+							case15(state, (T15)this.value);
 							break;
 						}
 											case 16:
 						{
-							case16(state, this.item16);
+							case16(state, (T16)this.value);
 							break;
 						}
 											default:
@@ -10153,67 +9871,67 @@ System.Func<T16, TResult> case16)
 					{
 											case 1:
 						{
-							return case1(this.item1);
+							return case1((T1)this.value);
 						}
 											case 2:
 						{
-							return case2(this.item2);
+							return case2((T2)this.value);
 						}
 											case 3:
 						{
-							return case3(this.item3);
+							return case3((T3)this.value);
 						}
 											case 4:
 						{
-							return case4(this.item4);
+							return case4((T4)this.value);
 						}
 											case 5:
 						{
-							return case5(this.item5);
+							return case5((T5)this.value);
 						}
 											case 6:
 						{
-							return case6(this.item6);
+							return case6((T6)this.value);
 						}
 											case 7:
 						{
-							return case7(this.item7);
+							return case7((T7)this.value);
 						}
 											case 8:
 						{
-							return case8(this.item8);
+							return case8((T8)this.value);
 						}
 											case 9:
 						{
-							return case9(this.item9);
+							return case9((T9)this.value);
 						}
 											case 10:
 						{
-							return case10(this.item10);
+							return case10((T10)this.value);
 						}
 											case 11:
 						{
-							return case11(this.item11);
+							return case11((T11)this.value);
 						}
 											case 12:
 						{
-							return case12(this.item12);
+							return case12((T12)this.value);
 						}
 											case 13:
 						{
-							return case13(this.item13);
+							return case13((T13)this.value);
 						}
 											case 14:
 						{
-							return case14(this.item14);
+							return case14((T14)this.value);
 						}
 											case 15:
 						{
-							return case15(this.item15);
+							return case15((T15)this.value);
 						}
 											case 16:
 						{
-							return case16(this.item16);
+							return case16((T16)this.value);
 						}
 											default:
 							return defaultCase();
@@ -10244,332 +9962,317 @@ System.Func<TState, T16, TResult> case16)
 					{
 											case 1:
 						{
-							return case1(state, this.item1);
+							return case1(state, (T1)this.value);
 						}
 											case 2:
 						{
-							return case2(state, this.item2);
+							return case2(state, (T2)this.value);
 						}
 											case 3:
 						{
-							return case3(state, this.item3);
+							return case3(state, (T3)this.value);
 						}
 											case 4:
 						{
-							return case4(state, this.item4);
+							return case4(state, (T4)this.value);
 						}
 											case 5:
 						{
-							return case5(state, this.item5);
+							return case5(state, (T5)this.value);
 						}
 											case 6:
 						{
-							return case6(state, this.item6);
+							return case6(state, (T6)this.value);
 						}
 											case 7:
 						{
-							return case7(state, this.item7);
+							return case7(state, (T7)this.value);
 						}
 											case 8:
 						{
-							return case8(state, this.item8);
+							return case8(state, (T8)this.value);
 						}
 											case 9:
 						{
-							return case9(state, this.item9);
+							return case9(state, (T9)this.value);
 						}
 											case 10:
 						{
-							return case10(state, this.item10);
+							return case10(state, (T10)this.value);
 						}
 											case 11:
 						{
-							return case11(state, this.item11);
+							return case11(state, (T11)this.value);
 						}
 											case 12:
 						{
-							return case12(state, this.item12);
+							return case12(state, (T12)this.value);
 						}
 											case 13:
 						{
-							return case13(state, this.item13);
+							return case13(state, (T13)this.value);
 						}
 											case 14:
 						{
-							return case14(state, this.item14);
+							return case14(state, (T14)this.value);
 						}
 											case 15:
 						{
-							return case15(state, this.item15);
+							return case15(state, (T15)this.value);
 						}
 											case 16:
 						{
-							return case16(state, this.item16);
+							return case16(state, (T16)this.value);
 						}
 											default:
 							return defaultCase(state);
 					}
 				}
+
+				public override bool Equals(object? other)
+				{
+					if (other is FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> otherUnion)
+					{
+						return this.discriminator == otherUnion.Discriminator &&
+						       this.value.Equals(otherUnion.value);
+					}
+					else
+					{
+						return false;
+					}
+				}
+
+				public override int GetHashCode()
+				{
+					return this.value.GetHashCode() ^ this.discriminator;
+				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17> : IUnion
-			{
+			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17> : IFlatBufferUnion
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+							where T12 : notnull
+							where T13 : notnull
+							where T14 : notnull
+							where T15 : notnull
+							where T16 : notnull
+							where T17 : notnull
+						{
 				private readonly byte discriminator;
+				private readonly object value;
 				
-				
-				protected readonly T1 item1;
-				
-				
-				protected readonly T2 item2;
-				
-				
-				protected readonly T3 item3;
-				
-				
-				protected readonly T4 item4;
-				
-				
-				protected readonly T5 item5;
-				
-				
-				protected readonly T6 item6;
-				
-				
-				protected readonly T7 item7;
-				
-				
-				protected readonly T8 item8;
-				
-				
-				protected readonly T9 item9;
-				
-				
-				protected readonly T10 item10;
-				
-				
-				protected readonly T11 item11;
-				
-				
-				protected readonly T12 item12;
-				
-				
-				protected readonly T13 item13;
-				
-				
-				protected readonly T14 item14;
-				
-				
-				protected readonly T15 item15;
-				
-				
-				protected readonly T16 item16;
-				
-				
-				protected readonly T17 item17;
-				
-								
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 1;
-					this.item1 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 2;
-					this.item2 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 3;
-					this.item3 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 4;
-					this.item4 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 5;
-					this.item5 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 6;
-					this.item6 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 7;
-					this.item7 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 8;
-					this.item8 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 9;
-					this.item9 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 10;
-					this.item10 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 11;
-					this.item11 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T12 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 12;
-					this.item12 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T13 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 13;
-					this.item13 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T14 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 14;
-					this.item14 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T15 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 15;
-					this.item15 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T16 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 16;
-					this.item16 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T17 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 17;
-					this.item17 = item;
+					this.value = item;
 				}
 				
 							
@@ -10582,7 +10285,7 @@ System.Func<TState, T16, TResult> case16)
 					{
 						if (this.discriminator == 1)
 						{
-							return this.item1;
+							return (T1)this.value;
 						}
 						else
 						{
@@ -10591,16 +10294,18 @@ System.Func<TState, T16, TResult> case16)
 					}
 				}
 
-				public bool TryGet(out T1 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
-					item = default;
 					if (this.discriminator == 1)
 					{
-						item = this.item1;
+						item = (T1)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -10610,7 +10315,7 @@ System.Func<TState, T16, TResult> case16)
 					{
 						if (this.discriminator == 2)
 						{
-							return this.item2;
+							return (T2)this.value;
 						}
 						else
 						{
@@ -10619,16 +10324,18 @@ System.Func<TState, T16, TResult> case16)
 					}
 				}
 
-				public bool TryGet(out T2 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
-					item = default;
 					if (this.discriminator == 2)
 					{
-						item = this.item2;
+						item = (T2)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -10638,7 +10345,7 @@ System.Func<TState, T16, TResult> case16)
 					{
 						if (this.discriminator == 3)
 						{
-							return this.item3;
+							return (T3)this.value;
 						}
 						else
 						{
@@ -10647,16 +10354,18 @@ System.Func<TState, T16, TResult> case16)
 					}
 				}
 
-				public bool TryGet(out T3 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
-					item = default;
 					if (this.discriminator == 3)
 					{
-						item = this.item3;
+						item = (T3)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -10666,7 +10375,7 @@ System.Func<TState, T16, TResult> case16)
 					{
 						if (this.discriminator == 4)
 						{
-							return this.item4;
+							return (T4)this.value;
 						}
 						else
 						{
@@ -10675,16 +10384,18 @@ System.Func<TState, T16, TResult> case16)
 					}
 				}
 
-				public bool TryGet(out T4 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
-					item = default;
 					if (this.discriminator == 4)
 					{
-						item = this.item4;
+						item = (T4)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -10694,7 +10405,7 @@ System.Func<TState, T16, TResult> case16)
 					{
 						if (this.discriminator == 5)
 						{
-							return this.item5;
+							return (T5)this.value;
 						}
 						else
 						{
@@ -10703,16 +10414,18 @@ System.Func<TState, T16, TResult> case16)
 					}
 				}
 
-				public bool TryGet(out T5 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
-					item = default;
 					if (this.discriminator == 5)
 					{
-						item = this.item5;
+						item = (T5)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -10722,7 +10435,7 @@ System.Func<TState, T16, TResult> case16)
 					{
 						if (this.discriminator == 6)
 						{
-							return this.item6;
+							return (T6)this.value;
 						}
 						else
 						{
@@ -10731,16 +10444,18 @@ System.Func<TState, T16, TResult> case16)
 					}
 				}
 
-				public bool TryGet(out T6 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
-					item = default;
 					if (this.discriminator == 6)
 					{
-						item = this.item6;
+						item = (T6)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -10750,7 +10465,7 @@ System.Func<TState, T16, TResult> case16)
 					{
 						if (this.discriminator == 7)
 						{
-							return this.item7;
+							return (T7)this.value;
 						}
 						else
 						{
@@ -10759,16 +10474,18 @@ System.Func<TState, T16, TResult> case16)
 					}
 				}
 
-				public bool TryGet(out T7 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
-					item = default;
 					if (this.discriminator == 7)
 					{
-						item = this.item7;
+						item = (T7)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -10778,7 +10495,7 @@ System.Func<TState, T16, TResult> case16)
 					{
 						if (this.discriminator == 8)
 						{
-							return this.item8;
+							return (T8)this.value;
 						}
 						else
 						{
@@ -10787,16 +10504,18 @@ System.Func<TState, T16, TResult> case16)
 					}
 				}
 
-				public bool TryGet(out T8 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
-					item = default;
 					if (this.discriminator == 8)
 					{
-						item = this.item8;
+						item = (T8)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -10806,7 +10525,7 @@ System.Func<TState, T16, TResult> case16)
 					{
 						if (this.discriminator == 9)
 						{
-							return this.item9;
+							return (T9)this.value;
 						}
 						else
 						{
@@ -10815,16 +10534,18 @@ System.Func<TState, T16, TResult> case16)
 					}
 				}
 
-				public bool TryGet(out T9 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
-					item = default;
 					if (this.discriminator == 9)
 					{
-						item = this.item9;
+						item = (T9)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -10834,7 +10555,7 @@ System.Func<TState, T16, TResult> case16)
 					{
 						if (this.discriminator == 10)
 						{
-							return this.item10;
+							return (T10)this.value;
 						}
 						else
 						{
@@ -10843,16 +10564,18 @@ System.Func<TState, T16, TResult> case16)
 					}
 				}
 
-				public bool TryGet(out T10 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
-					item = default;
 					if (this.discriminator == 10)
 					{
-						item = this.item10;
+						item = (T10)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -10862,7 +10585,7 @@ System.Func<TState, T16, TResult> case16)
 					{
 						if (this.discriminator == 11)
 						{
-							return this.item11;
+							return (T11)this.value;
 						}
 						else
 						{
@@ -10871,16 +10594,18 @@ System.Func<TState, T16, TResult> case16)
 					}
 				}
 
-				public bool TryGet(out T11 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
-					item = default;
 					if (this.discriminator == 11)
 					{
-						item = this.item11;
+						item = (T11)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -10890,7 +10615,7 @@ System.Func<TState, T16, TResult> case16)
 					{
 						if (this.discriminator == 12)
 						{
-							return this.item12;
+							return (T12)this.value;
 						}
 						else
 						{
@@ -10899,16 +10624,18 @@ System.Func<TState, T16, TResult> case16)
 					}
 				}
 
-				public bool TryGet(out T12 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T12? item)
 				{
-					item = default;
 					if (this.discriminator == 12)
 					{
-						item = this.item12;
+						item = (T12)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -10918,7 +10645,7 @@ System.Func<TState, T16, TResult> case16)
 					{
 						if (this.discriminator == 13)
 						{
-							return this.item13;
+							return (T13)this.value;
 						}
 						else
 						{
@@ -10927,16 +10654,18 @@ System.Func<TState, T16, TResult> case16)
 					}
 				}
 
-				public bool TryGet(out T13 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T13? item)
 				{
-					item = default;
 					if (this.discriminator == 13)
 					{
-						item = this.item13;
+						item = (T13)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -10946,7 +10675,7 @@ System.Func<TState, T16, TResult> case16)
 					{
 						if (this.discriminator == 14)
 						{
-							return this.item14;
+							return (T14)this.value;
 						}
 						else
 						{
@@ -10955,16 +10684,18 @@ System.Func<TState, T16, TResult> case16)
 					}
 				}
 
-				public bool TryGet(out T14 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T14? item)
 				{
-					item = default;
 					if (this.discriminator == 14)
 					{
-						item = this.item14;
+						item = (T14)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -10974,7 +10705,7 @@ System.Func<TState, T16, TResult> case16)
 					{
 						if (this.discriminator == 15)
 						{
-							return this.item15;
+							return (T15)this.value;
 						}
 						else
 						{
@@ -10983,16 +10714,18 @@ System.Func<TState, T16, TResult> case16)
 					}
 				}
 
-				public bool TryGet(out T15 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T15? item)
 				{
-					item = default;
 					if (this.discriminator == 15)
 					{
-						item = this.item15;
+						item = (T15)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -11002,7 +10735,7 @@ System.Func<TState, T16, TResult> case16)
 					{
 						if (this.discriminator == 16)
 						{
-							return this.item16;
+							return (T16)this.value;
 						}
 						else
 						{
@@ -11011,16 +10744,18 @@ System.Func<TState, T16, TResult> case16)
 					}
 				}
 
-				public bool TryGet(out T16 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T16? item)
 				{
-					item = default;
 					if (this.discriminator == 16)
 					{
-						item = this.item16;
+						item = (T16)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -11030,7 +10765,7 @@ System.Func<TState, T16, TResult> case16)
 					{
 						if (this.discriminator == 17)
 						{
-							return this.item17;
+							return (T17)this.value;
 						}
 						else
 						{
@@ -11039,80 +10774,21 @@ System.Func<TState, T16, TResult> case16)
 					}
 				}
 
-				public bool TryGet(out T17 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T17? item)
 				{
-					item = default;
 					if (this.discriminator == 17)
 					{
-						item = this.item17;
+						item = (T17)this.value;
 						return true;
 					}
-
-					return false;
-				}
-				
-				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11,
-System.Func<T12, T12> cloneT12,
-System.Func<T13, T13> cloneT13,
-System.Func<T14, T14> cloneT14,
-System.Func<T15, T15> cloneT15,
-System.Func<T16, T16> cloneT16,
-System.Func<T17, T17> cloneT17
-				)
-				{
-					switch (this.discriminator)
+					else
 					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(cloneT1(this.item1));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(cloneT2(this.item2));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(cloneT3(this.item3));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(cloneT4(this.item4));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(cloneT5(this.item5));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(cloneT6(this.item6));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(cloneT7(this.item7));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(cloneT8(this.item8));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(cloneT9(this.item9));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(cloneT10(this.item10));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(cloneT11(this.item11));
-											case 12:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(cloneT12(this.item12));
-											case 13:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(cloneT13(this.item13));
-											case 14:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(cloneT14(this.item14));
-											case 15:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(cloneT15(this.item15));
-											case 16:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(cloneT16(this.item16));
-											case 17:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(cloneT17(this.item17));
-										}
-
-					throw new System.InvalidOperationException();
+						item = default;
+						return false;
+					}
 				}
-
+				
+				
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -11137,87 +10813,87 @@ System.Action<T17> case17)
 					{
 											case 1:
 						{
-							case1(this.item1);
+							case1((T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(this.item2);
+							case2((T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(this.item3);
+							case3((T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(this.item4);
+							case4((T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(this.item5);
+							case5((T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(this.item6);
+							case6((T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(this.item7);
+							case7((T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(this.item8);
+							case8((T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(this.item9);
+							case9((T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(this.item10);
+							case10((T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(this.item11);
+							case11((T11)this.value);
 							break;
 						}
 											case 12:
 						{
-							case12(this.item12);
+							case12((T12)this.value);
 							break;
 						}
 											case 13:
 						{
-							case13(this.item13);
+							case13((T13)this.value);
 							break;
 						}
 											case 14:
 						{
-							case14(this.item14);
+							case14((T14)this.value);
 							break;
 						}
 											case 15:
 						{
-							case15(this.item15);
+							case15((T15)this.value);
 							break;
 						}
 											case 16:
 						{
-							case16(this.item16);
+							case16((T16)this.value);
 							break;
 						}
 											case 17:
 						{
-							case17(this.item17);
+							case17((T17)this.value);
 							break;
 						}
 											default:
@@ -11251,87 +10927,87 @@ System.Action<TState, T17> case17)
 					{
 											case 1:
 						{
-							case1(state, this.item1);
+							case1(state, (T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(state, this.item2);
+							case2(state, (T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(state, this.item3);
+							case3(state, (T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(state, this.item4);
+							case4(state, (T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(state, this.item5);
+							case5(state, (T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(state, this.item6);
+							case6(state, (T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(state, this.item7);
+							case7(state, (T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(state, this.item8);
+							case8(state, (T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(state, this.item9);
+							case9(state, (T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(state, this.item10);
+							case10(state, (T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(state, this.item11);
+							case11(state, (T11)this.value);
 							break;
 						}
 											case 12:
 						{
-							case12(state, this.item12);
+							case12(state, (T12)this.value);
 							break;
 						}
 											case 13:
 						{
-							case13(state, this.item13);
+							case13(state, (T13)this.value);
 							break;
 						}
 											case 14:
 						{
-							case14(state, this.item14);
+							case14(state, (T14)this.value);
 							break;
 						}
 											case 15:
 						{
-							case15(state, this.item15);
+							case15(state, (T15)this.value);
 							break;
 						}
 											case 16:
 						{
-							case16(state, this.item16);
+							case16(state, (T16)this.value);
 							break;
 						}
 											case 17:
 						{
-							case17(state, this.item17);
+							case17(state, (T17)this.value);
 							break;
 						}
 											default:
@@ -11365,71 +11041,71 @@ System.Func<T17, TResult> case17)
 					{
 											case 1:
 						{
-							return case1(this.item1);
+							return case1((T1)this.value);
 						}
 											case 2:
 						{
-							return case2(this.item2);
+							return case2((T2)this.value);
 						}
 											case 3:
 						{
-							return case3(this.item3);
+							return case3((T3)this.value);
 						}
 											case 4:
 						{
-							return case4(this.item4);
+							return case4((T4)this.value);
 						}
 											case 5:
 						{
-							return case5(this.item5);
+							return case5((T5)this.value);
 						}
 											case 6:
 						{
-							return case6(this.item6);
+							return case6((T6)this.value);
 						}
 											case 7:
 						{
-							return case7(this.item7);
+							return case7((T7)this.value);
 						}
 											case 8:
 						{
-							return case8(this.item8);
+							return case8((T8)this.value);
 						}
 											case 9:
 						{
-							return case9(this.item9);
+							return case9((T9)this.value);
 						}
 											case 10:
 						{
-							return case10(this.item10);
+							return case10((T10)this.value);
 						}
 											case 11:
 						{
-							return case11(this.item11);
+							return case11((T11)this.value);
 						}
 											case 12:
 						{
-							return case12(this.item12);
+							return case12((T12)this.value);
 						}
 											case 13:
 						{
-							return case13(this.item13);
+							return case13((T13)this.value);
 						}
 											case 14:
 						{
-							return case14(this.item14);
+							return case14((T14)this.value);
 						}
 											case 15:
 						{
-							return case15(this.item15);
+							return case15((T15)this.value);
 						}
 											case 16:
 						{
-							return case16(this.item16);
+							return case16((T16)this.value);
 						}
 											case 17:
 						{
-							return case17(this.item17);
+							return case17((T17)this.value);
 						}
 											default:
 							return defaultCase();
@@ -11461,351 +11137,334 @@ System.Func<TState, T17, TResult> case17)
 					{
 											case 1:
 						{
-							return case1(state, this.item1);
+							return case1(state, (T1)this.value);
 						}
 											case 2:
 						{
-							return case2(state, this.item2);
+							return case2(state, (T2)this.value);
 						}
 											case 3:
 						{
-							return case3(state, this.item3);
+							return case3(state, (T3)this.value);
 						}
 											case 4:
 						{
-							return case4(state, this.item4);
+							return case4(state, (T4)this.value);
 						}
 											case 5:
 						{
-							return case5(state, this.item5);
+							return case5(state, (T5)this.value);
 						}
 											case 6:
 						{
-							return case6(state, this.item6);
+							return case6(state, (T6)this.value);
 						}
 											case 7:
 						{
-							return case7(state, this.item7);
+							return case7(state, (T7)this.value);
 						}
 											case 8:
 						{
-							return case8(state, this.item8);
+							return case8(state, (T8)this.value);
 						}
 											case 9:
 						{
-							return case9(state, this.item9);
+							return case9(state, (T9)this.value);
 						}
 											case 10:
 						{
-							return case10(state, this.item10);
+							return case10(state, (T10)this.value);
 						}
 											case 11:
 						{
-							return case11(state, this.item11);
+							return case11(state, (T11)this.value);
 						}
 											case 12:
 						{
-							return case12(state, this.item12);
+							return case12(state, (T12)this.value);
 						}
 											case 13:
 						{
-							return case13(state, this.item13);
+							return case13(state, (T13)this.value);
 						}
 											case 14:
 						{
-							return case14(state, this.item14);
+							return case14(state, (T14)this.value);
 						}
 											case 15:
 						{
-							return case15(state, this.item15);
+							return case15(state, (T15)this.value);
 						}
 											case 16:
 						{
-							return case16(state, this.item16);
+							return case16(state, (T16)this.value);
 						}
 											case 17:
 						{
-							return case17(state, this.item17);
+							return case17(state, (T17)this.value);
 						}
 											default:
 							return defaultCase(state);
 					}
 				}
+
+				public override bool Equals(object? other)
+				{
+					if (other is FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17> otherUnion)
+					{
+						return this.discriminator == otherUnion.Discriminator &&
+						       this.value.Equals(otherUnion.value);
+					}
+					else
+					{
+						return false;
+					}
+				}
+
+				public override int GetHashCode()
+				{
+					return this.value.GetHashCode() ^ this.discriminator;
+				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18> : IUnion
-			{
+			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18> : IFlatBufferUnion
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+							where T12 : notnull
+							where T13 : notnull
+							where T14 : notnull
+							where T15 : notnull
+							where T16 : notnull
+							where T17 : notnull
+							where T18 : notnull
+						{
 				private readonly byte discriminator;
+				private readonly object value;
 				
-				
-				protected readonly T1 item1;
-				
-				
-				protected readonly T2 item2;
-				
-				
-				protected readonly T3 item3;
-				
-				
-				protected readonly T4 item4;
-				
-				
-				protected readonly T5 item5;
-				
-				
-				protected readonly T6 item6;
-				
-				
-				protected readonly T7 item7;
-				
-				
-				protected readonly T8 item8;
-				
-				
-				protected readonly T9 item9;
-				
-				
-				protected readonly T10 item10;
-				
-				
-				protected readonly T11 item11;
-				
-				
-				protected readonly T12 item12;
-				
-				
-				protected readonly T13 item13;
-				
-				
-				protected readonly T14 item14;
-				
-				
-				protected readonly T15 item15;
-				
-				
-				protected readonly T16 item16;
-				
-				
-				protected readonly T17 item17;
-				
-				
-				protected readonly T18 item18;
-				
-								
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 1;
-					this.item1 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 2;
-					this.item2 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 3;
-					this.item3 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 4;
-					this.item4 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 5;
-					this.item5 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 6;
-					this.item6 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 7;
-					this.item7 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 8;
-					this.item8 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 9;
-					this.item9 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 10;
-					this.item10 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 11;
-					this.item11 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T12 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 12;
-					this.item12 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T13 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 13;
-					this.item13 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T14 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 14;
-					this.item14 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T15 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 15;
-					this.item15 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T16 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 16;
-					this.item16 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T17 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 17;
-					this.item17 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T18 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 18;
-					this.item18 = item;
+					this.value = item;
 				}
 				
 							
@@ -11818,7 +11477,7 @@ System.Func<TState, T17, TResult> case17)
 					{
 						if (this.discriminator == 1)
 						{
-							return this.item1;
+							return (T1)this.value;
 						}
 						else
 						{
@@ -11827,16 +11486,18 @@ System.Func<TState, T17, TResult> case17)
 					}
 				}
 
-				public bool TryGet(out T1 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
-					item = default;
 					if (this.discriminator == 1)
 					{
-						item = this.item1;
+						item = (T1)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -11846,7 +11507,7 @@ System.Func<TState, T17, TResult> case17)
 					{
 						if (this.discriminator == 2)
 						{
-							return this.item2;
+							return (T2)this.value;
 						}
 						else
 						{
@@ -11855,16 +11516,18 @@ System.Func<TState, T17, TResult> case17)
 					}
 				}
 
-				public bool TryGet(out T2 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
-					item = default;
 					if (this.discriminator == 2)
 					{
-						item = this.item2;
+						item = (T2)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -11874,7 +11537,7 @@ System.Func<TState, T17, TResult> case17)
 					{
 						if (this.discriminator == 3)
 						{
-							return this.item3;
+							return (T3)this.value;
 						}
 						else
 						{
@@ -11883,16 +11546,18 @@ System.Func<TState, T17, TResult> case17)
 					}
 				}
 
-				public bool TryGet(out T3 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
-					item = default;
 					if (this.discriminator == 3)
 					{
-						item = this.item3;
+						item = (T3)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -11902,7 +11567,7 @@ System.Func<TState, T17, TResult> case17)
 					{
 						if (this.discriminator == 4)
 						{
-							return this.item4;
+							return (T4)this.value;
 						}
 						else
 						{
@@ -11911,16 +11576,18 @@ System.Func<TState, T17, TResult> case17)
 					}
 				}
 
-				public bool TryGet(out T4 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
-					item = default;
 					if (this.discriminator == 4)
 					{
-						item = this.item4;
+						item = (T4)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -11930,7 +11597,7 @@ System.Func<TState, T17, TResult> case17)
 					{
 						if (this.discriminator == 5)
 						{
-							return this.item5;
+							return (T5)this.value;
 						}
 						else
 						{
@@ -11939,16 +11606,18 @@ System.Func<TState, T17, TResult> case17)
 					}
 				}
 
-				public bool TryGet(out T5 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
-					item = default;
 					if (this.discriminator == 5)
 					{
-						item = this.item5;
+						item = (T5)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -11958,7 +11627,7 @@ System.Func<TState, T17, TResult> case17)
 					{
 						if (this.discriminator == 6)
 						{
-							return this.item6;
+							return (T6)this.value;
 						}
 						else
 						{
@@ -11967,16 +11636,18 @@ System.Func<TState, T17, TResult> case17)
 					}
 				}
 
-				public bool TryGet(out T6 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
-					item = default;
 					if (this.discriminator == 6)
 					{
-						item = this.item6;
+						item = (T6)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -11986,7 +11657,7 @@ System.Func<TState, T17, TResult> case17)
 					{
 						if (this.discriminator == 7)
 						{
-							return this.item7;
+							return (T7)this.value;
 						}
 						else
 						{
@@ -11995,16 +11666,18 @@ System.Func<TState, T17, TResult> case17)
 					}
 				}
 
-				public bool TryGet(out T7 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
-					item = default;
 					if (this.discriminator == 7)
 					{
-						item = this.item7;
+						item = (T7)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -12014,7 +11687,7 @@ System.Func<TState, T17, TResult> case17)
 					{
 						if (this.discriminator == 8)
 						{
-							return this.item8;
+							return (T8)this.value;
 						}
 						else
 						{
@@ -12023,16 +11696,18 @@ System.Func<TState, T17, TResult> case17)
 					}
 				}
 
-				public bool TryGet(out T8 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
-					item = default;
 					if (this.discriminator == 8)
 					{
-						item = this.item8;
+						item = (T8)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -12042,7 +11717,7 @@ System.Func<TState, T17, TResult> case17)
 					{
 						if (this.discriminator == 9)
 						{
-							return this.item9;
+							return (T9)this.value;
 						}
 						else
 						{
@@ -12051,16 +11726,18 @@ System.Func<TState, T17, TResult> case17)
 					}
 				}
 
-				public bool TryGet(out T9 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
-					item = default;
 					if (this.discriminator == 9)
 					{
-						item = this.item9;
+						item = (T9)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -12070,7 +11747,7 @@ System.Func<TState, T17, TResult> case17)
 					{
 						if (this.discriminator == 10)
 						{
-							return this.item10;
+							return (T10)this.value;
 						}
 						else
 						{
@@ -12079,16 +11756,18 @@ System.Func<TState, T17, TResult> case17)
 					}
 				}
 
-				public bool TryGet(out T10 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
-					item = default;
 					if (this.discriminator == 10)
 					{
-						item = this.item10;
+						item = (T10)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -12098,7 +11777,7 @@ System.Func<TState, T17, TResult> case17)
 					{
 						if (this.discriminator == 11)
 						{
-							return this.item11;
+							return (T11)this.value;
 						}
 						else
 						{
@@ -12107,16 +11786,18 @@ System.Func<TState, T17, TResult> case17)
 					}
 				}
 
-				public bool TryGet(out T11 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
-					item = default;
 					if (this.discriminator == 11)
 					{
-						item = this.item11;
+						item = (T11)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -12126,7 +11807,7 @@ System.Func<TState, T17, TResult> case17)
 					{
 						if (this.discriminator == 12)
 						{
-							return this.item12;
+							return (T12)this.value;
 						}
 						else
 						{
@@ -12135,16 +11816,18 @@ System.Func<TState, T17, TResult> case17)
 					}
 				}
 
-				public bool TryGet(out T12 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T12? item)
 				{
-					item = default;
 					if (this.discriminator == 12)
 					{
-						item = this.item12;
+						item = (T12)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -12154,7 +11837,7 @@ System.Func<TState, T17, TResult> case17)
 					{
 						if (this.discriminator == 13)
 						{
-							return this.item13;
+							return (T13)this.value;
 						}
 						else
 						{
@@ -12163,16 +11846,18 @@ System.Func<TState, T17, TResult> case17)
 					}
 				}
 
-				public bool TryGet(out T13 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T13? item)
 				{
-					item = default;
 					if (this.discriminator == 13)
 					{
-						item = this.item13;
+						item = (T13)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -12182,7 +11867,7 @@ System.Func<TState, T17, TResult> case17)
 					{
 						if (this.discriminator == 14)
 						{
-							return this.item14;
+							return (T14)this.value;
 						}
 						else
 						{
@@ -12191,16 +11876,18 @@ System.Func<TState, T17, TResult> case17)
 					}
 				}
 
-				public bool TryGet(out T14 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T14? item)
 				{
-					item = default;
 					if (this.discriminator == 14)
 					{
-						item = this.item14;
+						item = (T14)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -12210,7 +11897,7 @@ System.Func<TState, T17, TResult> case17)
 					{
 						if (this.discriminator == 15)
 						{
-							return this.item15;
+							return (T15)this.value;
 						}
 						else
 						{
@@ -12219,16 +11906,18 @@ System.Func<TState, T17, TResult> case17)
 					}
 				}
 
-				public bool TryGet(out T15 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T15? item)
 				{
-					item = default;
 					if (this.discriminator == 15)
 					{
-						item = this.item15;
+						item = (T15)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -12238,7 +11927,7 @@ System.Func<TState, T17, TResult> case17)
 					{
 						if (this.discriminator == 16)
 						{
-							return this.item16;
+							return (T16)this.value;
 						}
 						else
 						{
@@ -12247,16 +11936,18 @@ System.Func<TState, T17, TResult> case17)
 					}
 				}
 
-				public bool TryGet(out T16 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T16? item)
 				{
-					item = default;
 					if (this.discriminator == 16)
 					{
-						item = this.item16;
+						item = (T16)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -12266,7 +11957,7 @@ System.Func<TState, T17, TResult> case17)
 					{
 						if (this.discriminator == 17)
 						{
-							return this.item17;
+							return (T17)this.value;
 						}
 						else
 						{
@@ -12275,16 +11966,18 @@ System.Func<TState, T17, TResult> case17)
 					}
 				}
 
-				public bool TryGet(out T17 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T17? item)
 				{
-					item = default;
 					if (this.discriminator == 17)
 					{
-						item = this.item17;
+						item = (T17)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -12294,7 +11987,7 @@ System.Func<TState, T17, TResult> case17)
 					{
 						if (this.discriminator == 18)
 						{
-							return this.item18;
+							return (T18)this.value;
 						}
 						else
 						{
@@ -12303,83 +11996,21 @@ System.Func<TState, T17, TResult> case17)
 					}
 				}
 
-				public bool TryGet(out T18 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T18? item)
 				{
-					item = default;
 					if (this.discriminator == 18)
 					{
-						item = this.item18;
+						item = (T18)this.value;
 						return true;
 					}
-
-					return false;
-				}
-				
-				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11,
-System.Func<T12, T12> cloneT12,
-System.Func<T13, T13> cloneT13,
-System.Func<T14, T14> cloneT14,
-System.Func<T15, T15> cloneT15,
-System.Func<T16, T16> cloneT16,
-System.Func<T17, T17> cloneT17,
-System.Func<T18, T18> cloneT18
-				)
-				{
-					switch (this.discriminator)
+					else
 					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(cloneT1(this.item1));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(cloneT2(this.item2));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(cloneT3(this.item3));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(cloneT4(this.item4));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(cloneT5(this.item5));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(cloneT6(this.item6));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(cloneT7(this.item7));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(cloneT8(this.item8));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(cloneT9(this.item9));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(cloneT10(this.item10));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(cloneT11(this.item11));
-											case 12:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(cloneT12(this.item12));
-											case 13:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(cloneT13(this.item13));
-											case 14:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(cloneT14(this.item14));
-											case 15:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(cloneT15(this.item15));
-											case 16:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(cloneT16(this.item16));
-											case 17:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(cloneT17(this.item17));
-											case 18:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(cloneT18(this.item18));
-										}
-
-					throw new System.InvalidOperationException();
+						item = default;
+						return false;
+					}
 				}
-
+				
+				
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -12405,92 +12036,92 @@ System.Action<T18> case18)
 					{
 											case 1:
 						{
-							case1(this.item1);
+							case1((T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(this.item2);
+							case2((T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(this.item3);
+							case3((T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(this.item4);
+							case4((T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(this.item5);
+							case5((T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(this.item6);
+							case6((T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(this.item7);
+							case7((T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(this.item8);
+							case8((T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(this.item9);
+							case9((T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(this.item10);
+							case10((T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(this.item11);
+							case11((T11)this.value);
 							break;
 						}
 											case 12:
 						{
-							case12(this.item12);
+							case12((T12)this.value);
 							break;
 						}
 											case 13:
 						{
-							case13(this.item13);
+							case13((T13)this.value);
 							break;
 						}
 											case 14:
 						{
-							case14(this.item14);
+							case14((T14)this.value);
 							break;
 						}
 											case 15:
 						{
-							case15(this.item15);
+							case15((T15)this.value);
 							break;
 						}
 											case 16:
 						{
-							case16(this.item16);
+							case16((T16)this.value);
 							break;
 						}
 											case 17:
 						{
-							case17(this.item17);
+							case17((T17)this.value);
 							break;
 						}
 											case 18:
 						{
-							case18(this.item18);
+							case18((T18)this.value);
 							break;
 						}
 											default:
@@ -12525,92 +12156,92 @@ System.Action<TState, T18> case18)
 					{
 											case 1:
 						{
-							case1(state, this.item1);
+							case1(state, (T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(state, this.item2);
+							case2(state, (T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(state, this.item3);
+							case3(state, (T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(state, this.item4);
+							case4(state, (T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(state, this.item5);
+							case5(state, (T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(state, this.item6);
+							case6(state, (T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(state, this.item7);
+							case7(state, (T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(state, this.item8);
+							case8(state, (T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(state, this.item9);
+							case9(state, (T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(state, this.item10);
+							case10(state, (T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(state, this.item11);
+							case11(state, (T11)this.value);
 							break;
 						}
 											case 12:
 						{
-							case12(state, this.item12);
+							case12(state, (T12)this.value);
 							break;
 						}
 											case 13:
 						{
-							case13(state, this.item13);
+							case13(state, (T13)this.value);
 							break;
 						}
 											case 14:
 						{
-							case14(state, this.item14);
+							case14(state, (T14)this.value);
 							break;
 						}
 											case 15:
 						{
-							case15(state, this.item15);
+							case15(state, (T15)this.value);
 							break;
 						}
 											case 16:
 						{
-							case16(state, this.item16);
+							case16(state, (T16)this.value);
 							break;
 						}
 											case 17:
 						{
-							case17(state, this.item17);
+							case17(state, (T17)this.value);
 							break;
 						}
 											case 18:
 						{
-							case18(state, this.item18);
+							case18(state, (T18)this.value);
 							break;
 						}
 											default:
@@ -12645,75 +12276,75 @@ System.Func<T18, TResult> case18)
 					{
 											case 1:
 						{
-							return case1(this.item1);
+							return case1((T1)this.value);
 						}
 											case 2:
 						{
-							return case2(this.item2);
+							return case2((T2)this.value);
 						}
 											case 3:
 						{
-							return case3(this.item3);
+							return case3((T3)this.value);
 						}
 											case 4:
 						{
-							return case4(this.item4);
+							return case4((T4)this.value);
 						}
 											case 5:
 						{
-							return case5(this.item5);
+							return case5((T5)this.value);
 						}
 											case 6:
 						{
-							return case6(this.item6);
+							return case6((T6)this.value);
 						}
 											case 7:
 						{
-							return case7(this.item7);
+							return case7((T7)this.value);
 						}
 											case 8:
 						{
-							return case8(this.item8);
+							return case8((T8)this.value);
 						}
 											case 9:
 						{
-							return case9(this.item9);
+							return case9((T9)this.value);
 						}
 											case 10:
 						{
-							return case10(this.item10);
+							return case10((T10)this.value);
 						}
 											case 11:
 						{
-							return case11(this.item11);
+							return case11((T11)this.value);
 						}
 											case 12:
 						{
-							return case12(this.item12);
+							return case12((T12)this.value);
 						}
 											case 13:
 						{
-							return case13(this.item13);
+							return case13((T13)this.value);
 						}
 											case 14:
 						{
-							return case14(this.item14);
+							return case14((T14)this.value);
 						}
 											case 15:
 						{
-							return case15(this.item15);
+							return case15((T15)this.value);
 						}
 											case 16:
 						{
-							return case16(this.item16);
+							return case16((T16)this.value);
 						}
 											case 17:
 						{
-							return case17(this.item17);
+							return case17((T17)this.value);
 						}
 											case 18:
 						{
-							return case18(this.item18);
+							return case18((T18)this.value);
 						}
 											default:
 							return defaultCase();
@@ -12746,370 +12377,351 @@ System.Func<TState, T18, TResult> case18)
 					{
 											case 1:
 						{
-							return case1(state, this.item1);
+							return case1(state, (T1)this.value);
 						}
 											case 2:
 						{
-							return case2(state, this.item2);
+							return case2(state, (T2)this.value);
 						}
 											case 3:
 						{
-							return case3(state, this.item3);
+							return case3(state, (T3)this.value);
 						}
 											case 4:
 						{
-							return case4(state, this.item4);
+							return case4(state, (T4)this.value);
 						}
 											case 5:
 						{
-							return case5(state, this.item5);
+							return case5(state, (T5)this.value);
 						}
 											case 6:
 						{
-							return case6(state, this.item6);
+							return case6(state, (T6)this.value);
 						}
 											case 7:
 						{
-							return case7(state, this.item7);
+							return case7(state, (T7)this.value);
 						}
 											case 8:
 						{
-							return case8(state, this.item8);
+							return case8(state, (T8)this.value);
 						}
 											case 9:
 						{
-							return case9(state, this.item9);
+							return case9(state, (T9)this.value);
 						}
 											case 10:
 						{
-							return case10(state, this.item10);
+							return case10(state, (T10)this.value);
 						}
 											case 11:
 						{
-							return case11(state, this.item11);
+							return case11(state, (T11)this.value);
 						}
 											case 12:
 						{
-							return case12(state, this.item12);
+							return case12(state, (T12)this.value);
 						}
 											case 13:
 						{
-							return case13(state, this.item13);
+							return case13(state, (T13)this.value);
 						}
 											case 14:
 						{
-							return case14(state, this.item14);
+							return case14(state, (T14)this.value);
 						}
 											case 15:
 						{
-							return case15(state, this.item15);
+							return case15(state, (T15)this.value);
 						}
 											case 16:
 						{
-							return case16(state, this.item16);
+							return case16(state, (T16)this.value);
 						}
 											case 17:
 						{
-							return case17(state, this.item17);
+							return case17(state, (T17)this.value);
 						}
 											case 18:
 						{
-							return case18(state, this.item18);
+							return case18(state, (T18)this.value);
 						}
 											default:
 							return defaultCase(state);
 					}
 				}
+
+				public override bool Equals(object? other)
+				{
+					if (other is FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18> otherUnion)
+					{
+						return this.discriminator == otherUnion.Discriminator &&
+						       this.value.Equals(otherUnion.value);
+					}
+					else
+					{
+						return false;
+					}
+				}
+
+				public override int GetHashCode()
+				{
+					return this.value.GetHashCode() ^ this.discriminator;
+				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19> : IUnion
-			{
+			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19> : IFlatBufferUnion
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+							where T12 : notnull
+							where T13 : notnull
+							where T14 : notnull
+							where T15 : notnull
+							where T16 : notnull
+							where T17 : notnull
+							where T18 : notnull
+							where T19 : notnull
+						{
 				private readonly byte discriminator;
+				private readonly object value;
 				
-				
-				protected readonly T1 item1;
-				
-				
-				protected readonly T2 item2;
-				
-				
-				protected readonly T3 item3;
-				
-				
-				protected readonly T4 item4;
-				
-				
-				protected readonly T5 item5;
-				
-				
-				protected readonly T6 item6;
-				
-				
-				protected readonly T7 item7;
-				
-				
-				protected readonly T8 item8;
-				
-				
-				protected readonly T9 item9;
-				
-				
-				protected readonly T10 item10;
-				
-				
-				protected readonly T11 item11;
-				
-				
-				protected readonly T12 item12;
-				
-				
-				protected readonly T13 item13;
-				
-				
-				protected readonly T14 item14;
-				
-				
-				protected readonly T15 item15;
-				
-				
-				protected readonly T16 item16;
-				
-				
-				protected readonly T17 item17;
-				
-				
-				protected readonly T18 item18;
-				
-				
-				protected readonly T19 item19;
-				
-								
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 1;
-					this.item1 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 2;
-					this.item2 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 3;
-					this.item3 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 4;
-					this.item4 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 5;
-					this.item5 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 6;
-					this.item6 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 7;
-					this.item7 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 8;
-					this.item8 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 9;
-					this.item9 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 10;
-					this.item10 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 11;
-					this.item11 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T12 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 12;
-					this.item12 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T13 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 13;
-					this.item13 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T14 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 14;
-					this.item14 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T15 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 15;
-					this.item15 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T16 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 16;
-					this.item16 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T17 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 17;
-					this.item17 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T18 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 18;
-					this.item18 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T19 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 19;
-					this.item19 = item;
+					this.value = item;
 				}
 				
 							
@@ -13122,7 +12734,7 @@ System.Func<TState, T18, TResult> case18)
 					{
 						if (this.discriminator == 1)
 						{
-							return this.item1;
+							return (T1)this.value;
 						}
 						else
 						{
@@ -13131,16 +12743,18 @@ System.Func<TState, T18, TResult> case18)
 					}
 				}
 
-				public bool TryGet(out T1 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
-					item = default;
 					if (this.discriminator == 1)
 					{
-						item = this.item1;
+						item = (T1)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -13150,7 +12764,7 @@ System.Func<TState, T18, TResult> case18)
 					{
 						if (this.discriminator == 2)
 						{
-							return this.item2;
+							return (T2)this.value;
 						}
 						else
 						{
@@ -13159,16 +12773,18 @@ System.Func<TState, T18, TResult> case18)
 					}
 				}
 
-				public bool TryGet(out T2 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
-					item = default;
 					if (this.discriminator == 2)
 					{
-						item = this.item2;
+						item = (T2)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -13178,7 +12794,7 @@ System.Func<TState, T18, TResult> case18)
 					{
 						if (this.discriminator == 3)
 						{
-							return this.item3;
+							return (T3)this.value;
 						}
 						else
 						{
@@ -13187,16 +12803,18 @@ System.Func<TState, T18, TResult> case18)
 					}
 				}
 
-				public bool TryGet(out T3 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
-					item = default;
 					if (this.discriminator == 3)
 					{
-						item = this.item3;
+						item = (T3)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -13206,7 +12824,7 @@ System.Func<TState, T18, TResult> case18)
 					{
 						if (this.discriminator == 4)
 						{
-							return this.item4;
+							return (T4)this.value;
 						}
 						else
 						{
@@ -13215,16 +12833,18 @@ System.Func<TState, T18, TResult> case18)
 					}
 				}
 
-				public bool TryGet(out T4 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
-					item = default;
 					if (this.discriminator == 4)
 					{
-						item = this.item4;
+						item = (T4)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -13234,7 +12854,7 @@ System.Func<TState, T18, TResult> case18)
 					{
 						if (this.discriminator == 5)
 						{
-							return this.item5;
+							return (T5)this.value;
 						}
 						else
 						{
@@ -13243,16 +12863,18 @@ System.Func<TState, T18, TResult> case18)
 					}
 				}
 
-				public bool TryGet(out T5 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
-					item = default;
 					if (this.discriminator == 5)
 					{
-						item = this.item5;
+						item = (T5)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -13262,7 +12884,7 @@ System.Func<TState, T18, TResult> case18)
 					{
 						if (this.discriminator == 6)
 						{
-							return this.item6;
+							return (T6)this.value;
 						}
 						else
 						{
@@ -13271,16 +12893,18 @@ System.Func<TState, T18, TResult> case18)
 					}
 				}
 
-				public bool TryGet(out T6 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
-					item = default;
 					if (this.discriminator == 6)
 					{
-						item = this.item6;
+						item = (T6)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -13290,7 +12914,7 @@ System.Func<TState, T18, TResult> case18)
 					{
 						if (this.discriminator == 7)
 						{
-							return this.item7;
+							return (T7)this.value;
 						}
 						else
 						{
@@ -13299,16 +12923,18 @@ System.Func<TState, T18, TResult> case18)
 					}
 				}
 
-				public bool TryGet(out T7 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
-					item = default;
 					if (this.discriminator == 7)
 					{
-						item = this.item7;
+						item = (T7)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -13318,7 +12944,7 @@ System.Func<TState, T18, TResult> case18)
 					{
 						if (this.discriminator == 8)
 						{
-							return this.item8;
+							return (T8)this.value;
 						}
 						else
 						{
@@ -13327,16 +12953,18 @@ System.Func<TState, T18, TResult> case18)
 					}
 				}
 
-				public bool TryGet(out T8 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
-					item = default;
 					if (this.discriminator == 8)
 					{
-						item = this.item8;
+						item = (T8)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -13346,7 +12974,7 @@ System.Func<TState, T18, TResult> case18)
 					{
 						if (this.discriminator == 9)
 						{
-							return this.item9;
+							return (T9)this.value;
 						}
 						else
 						{
@@ -13355,16 +12983,18 @@ System.Func<TState, T18, TResult> case18)
 					}
 				}
 
-				public bool TryGet(out T9 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
-					item = default;
 					if (this.discriminator == 9)
 					{
-						item = this.item9;
+						item = (T9)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -13374,7 +13004,7 @@ System.Func<TState, T18, TResult> case18)
 					{
 						if (this.discriminator == 10)
 						{
-							return this.item10;
+							return (T10)this.value;
 						}
 						else
 						{
@@ -13383,16 +13013,18 @@ System.Func<TState, T18, TResult> case18)
 					}
 				}
 
-				public bool TryGet(out T10 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
-					item = default;
 					if (this.discriminator == 10)
 					{
-						item = this.item10;
+						item = (T10)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -13402,7 +13034,7 @@ System.Func<TState, T18, TResult> case18)
 					{
 						if (this.discriminator == 11)
 						{
-							return this.item11;
+							return (T11)this.value;
 						}
 						else
 						{
@@ -13411,16 +13043,18 @@ System.Func<TState, T18, TResult> case18)
 					}
 				}
 
-				public bool TryGet(out T11 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
-					item = default;
 					if (this.discriminator == 11)
 					{
-						item = this.item11;
+						item = (T11)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -13430,7 +13064,7 @@ System.Func<TState, T18, TResult> case18)
 					{
 						if (this.discriminator == 12)
 						{
-							return this.item12;
+							return (T12)this.value;
 						}
 						else
 						{
@@ -13439,16 +13073,18 @@ System.Func<TState, T18, TResult> case18)
 					}
 				}
 
-				public bool TryGet(out T12 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T12? item)
 				{
-					item = default;
 					if (this.discriminator == 12)
 					{
-						item = this.item12;
+						item = (T12)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -13458,7 +13094,7 @@ System.Func<TState, T18, TResult> case18)
 					{
 						if (this.discriminator == 13)
 						{
-							return this.item13;
+							return (T13)this.value;
 						}
 						else
 						{
@@ -13467,16 +13103,18 @@ System.Func<TState, T18, TResult> case18)
 					}
 				}
 
-				public bool TryGet(out T13 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T13? item)
 				{
-					item = default;
 					if (this.discriminator == 13)
 					{
-						item = this.item13;
+						item = (T13)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -13486,7 +13124,7 @@ System.Func<TState, T18, TResult> case18)
 					{
 						if (this.discriminator == 14)
 						{
-							return this.item14;
+							return (T14)this.value;
 						}
 						else
 						{
@@ -13495,16 +13133,18 @@ System.Func<TState, T18, TResult> case18)
 					}
 				}
 
-				public bool TryGet(out T14 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T14? item)
 				{
-					item = default;
 					if (this.discriminator == 14)
 					{
-						item = this.item14;
+						item = (T14)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -13514,7 +13154,7 @@ System.Func<TState, T18, TResult> case18)
 					{
 						if (this.discriminator == 15)
 						{
-							return this.item15;
+							return (T15)this.value;
 						}
 						else
 						{
@@ -13523,16 +13163,18 @@ System.Func<TState, T18, TResult> case18)
 					}
 				}
 
-				public bool TryGet(out T15 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T15? item)
 				{
-					item = default;
 					if (this.discriminator == 15)
 					{
-						item = this.item15;
+						item = (T15)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -13542,7 +13184,7 @@ System.Func<TState, T18, TResult> case18)
 					{
 						if (this.discriminator == 16)
 						{
-							return this.item16;
+							return (T16)this.value;
 						}
 						else
 						{
@@ -13551,16 +13193,18 @@ System.Func<TState, T18, TResult> case18)
 					}
 				}
 
-				public bool TryGet(out T16 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T16? item)
 				{
-					item = default;
 					if (this.discriminator == 16)
 					{
-						item = this.item16;
+						item = (T16)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -13570,7 +13214,7 @@ System.Func<TState, T18, TResult> case18)
 					{
 						if (this.discriminator == 17)
 						{
-							return this.item17;
+							return (T17)this.value;
 						}
 						else
 						{
@@ -13579,16 +13223,18 @@ System.Func<TState, T18, TResult> case18)
 					}
 				}
 
-				public bool TryGet(out T17 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T17? item)
 				{
-					item = default;
 					if (this.discriminator == 17)
 					{
-						item = this.item17;
+						item = (T17)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -13598,7 +13244,7 @@ System.Func<TState, T18, TResult> case18)
 					{
 						if (this.discriminator == 18)
 						{
-							return this.item18;
+							return (T18)this.value;
 						}
 						else
 						{
@@ -13607,16 +13253,18 @@ System.Func<TState, T18, TResult> case18)
 					}
 				}
 
-				public bool TryGet(out T18 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T18? item)
 				{
-					item = default;
 					if (this.discriminator == 18)
 					{
-						item = this.item18;
+						item = (T18)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -13626,7 +13274,7 @@ System.Func<TState, T18, TResult> case18)
 					{
 						if (this.discriminator == 19)
 						{
-							return this.item19;
+							return (T19)this.value;
 						}
 						else
 						{
@@ -13635,86 +13283,21 @@ System.Func<TState, T18, TResult> case18)
 					}
 				}
 
-				public bool TryGet(out T19 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T19? item)
 				{
-					item = default;
 					if (this.discriminator == 19)
 					{
-						item = this.item19;
+						item = (T19)this.value;
 						return true;
 					}
-
-					return false;
-				}
-				
-				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11,
-System.Func<T12, T12> cloneT12,
-System.Func<T13, T13> cloneT13,
-System.Func<T14, T14> cloneT14,
-System.Func<T15, T15> cloneT15,
-System.Func<T16, T16> cloneT16,
-System.Func<T17, T17> cloneT17,
-System.Func<T18, T18> cloneT18,
-System.Func<T19, T19> cloneT19
-				)
-				{
-					switch (this.discriminator)
+					else
 					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(cloneT1(this.item1));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(cloneT2(this.item2));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(cloneT3(this.item3));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(cloneT4(this.item4));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(cloneT5(this.item5));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(cloneT6(this.item6));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(cloneT7(this.item7));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(cloneT8(this.item8));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(cloneT9(this.item9));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(cloneT10(this.item10));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(cloneT11(this.item11));
-											case 12:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(cloneT12(this.item12));
-											case 13:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(cloneT13(this.item13));
-											case 14:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(cloneT14(this.item14));
-											case 15:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(cloneT15(this.item15));
-											case 16:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(cloneT16(this.item16));
-											case 17:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(cloneT17(this.item17));
-											case 18:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(cloneT18(this.item18));
-											case 19:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(cloneT19(this.item19));
-										}
-
-					throw new System.InvalidOperationException();
+						item = default;
+						return false;
+					}
 				}
-
+				
+				
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -13741,97 +13324,97 @@ System.Action<T19> case19)
 					{
 											case 1:
 						{
-							case1(this.item1);
+							case1((T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(this.item2);
+							case2((T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(this.item3);
+							case3((T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(this.item4);
+							case4((T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(this.item5);
+							case5((T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(this.item6);
+							case6((T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(this.item7);
+							case7((T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(this.item8);
+							case8((T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(this.item9);
+							case9((T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(this.item10);
+							case10((T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(this.item11);
+							case11((T11)this.value);
 							break;
 						}
 											case 12:
 						{
-							case12(this.item12);
+							case12((T12)this.value);
 							break;
 						}
 											case 13:
 						{
-							case13(this.item13);
+							case13((T13)this.value);
 							break;
 						}
 											case 14:
 						{
-							case14(this.item14);
+							case14((T14)this.value);
 							break;
 						}
 											case 15:
 						{
-							case15(this.item15);
+							case15((T15)this.value);
 							break;
 						}
 											case 16:
 						{
-							case16(this.item16);
+							case16((T16)this.value);
 							break;
 						}
 											case 17:
 						{
-							case17(this.item17);
+							case17((T17)this.value);
 							break;
 						}
 											case 18:
 						{
-							case18(this.item18);
+							case18((T18)this.value);
 							break;
 						}
 											case 19:
 						{
-							case19(this.item19);
+							case19((T19)this.value);
 							break;
 						}
 											default:
@@ -13867,97 +13450,97 @@ System.Action<TState, T19> case19)
 					{
 											case 1:
 						{
-							case1(state, this.item1);
+							case1(state, (T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(state, this.item2);
+							case2(state, (T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(state, this.item3);
+							case3(state, (T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(state, this.item4);
+							case4(state, (T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(state, this.item5);
+							case5(state, (T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(state, this.item6);
+							case6(state, (T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(state, this.item7);
+							case7(state, (T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(state, this.item8);
+							case8(state, (T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(state, this.item9);
+							case9(state, (T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(state, this.item10);
+							case10(state, (T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(state, this.item11);
+							case11(state, (T11)this.value);
 							break;
 						}
 											case 12:
 						{
-							case12(state, this.item12);
+							case12(state, (T12)this.value);
 							break;
 						}
 											case 13:
 						{
-							case13(state, this.item13);
+							case13(state, (T13)this.value);
 							break;
 						}
 											case 14:
 						{
-							case14(state, this.item14);
+							case14(state, (T14)this.value);
 							break;
 						}
 											case 15:
 						{
-							case15(state, this.item15);
+							case15(state, (T15)this.value);
 							break;
 						}
 											case 16:
 						{
-							case16(state, this.item16);
+							case16(state, (T16)this.value);
 							break;
 						}
 											case 17:
 						{
-							case17(state, this.item17);
+							case17(state, (T17)this.value);
 							break;
 						}
 											case 18:
 						{
-							case18(state, this.item18);
+							case18(state, (T18)this.value);
 							break;
 						}
 											case 19:
 						{
-							case19(state, this.item19);
+							case19(state, (T19)this.value);
 							break;
 						}
 											default:
@@ -13993,79 +13576,79 @@ System.Func<T19, TResult> case19)
 					{
 											case 1:
 						{
-							return case1(this.item1);
+							return case1((T1)this.value);
 						}
 											case 2:
 						{
-							return case2(this.item2);
+							return case2((T2)this.value);
 						}
 											case 3:
 						{
-							return case3(this.item3);
+							return case3((T3)this.value);
 						}
 											case 4:
 						{
-							return case4(this.item4);
+							return case4((T4)this.value);
 						}
 											case 5:
 						{
-							return case5(this.item5);
+							return case5((T5)this.value);
 						}
 											case 6:
 						{
-							return case6(this.item6);
+							return case6((T6)this.value);
 						}
 											case 7:
 						{
-							return case7(this.item7);
+							return case7((T7)this.value);
 						}
 											case 8:
 						{
-							return case8(this.item8);
+							return case8((T8)this.value);
 						}
 											case 9:
 						{
-							return case9(this.item9);
+							return case9((T9)this.value);
 						}
 											case 10:
 						{
-							return case10(this.item10);
+							return case10((T10)this.value);
 						}
 											case 11:
 						{
-							return case11(this.item11);
+							return case11((T11)this.value);
 						}
 											case 12:
 						{
-							return case12(this.item12);
+							return case12((T12)this.value);
 						}
 											case 13:
 						{
-							return case13(this.item13);
+							return case13((T13)this.value);
 						}
 											case 14:
 						{
-							return case14(this.item14);
+							return case14((T14)this.value);
 						}
 											case 15:
 						{
-							return case15(this.item15);
+							return case15((T15)this.value);
 						}
 											case 16:
 						{
-							return case16(this.item16);
+							return case16((T16)this.value);
 						}
 											case 17:
 						{
-							return case17(this.item17);
+							return case17((T17)this.value);
 						}
 											case 18:
 						{
-							return case18(this.item18);
+							return case18((T18)this.value);
 						}
 											case 19:
 						{
-							return case19(this.item19);
+							return case19((T19)this.value);
 						}
 											default:
 							return defaultCase();
@@ -14099,389 +13682,368 @@ System.Func<TState, T19, TResult> case19)
 					{
 											case 1:
 						{
-							return case1(state, this.item1);
+							return case1(state, (T1)this.value);
 						}
 											case 2:
 						{
-							return case2(state, this.item2);
+							return case2(state, (T2)this.value);
 						}
 											case 3:
 						{
-							return case3(state, this.item3);
+							return case3(state, (T3)this.value);
 						}
 											case 4:
 						{
-							return case4(state, this.item4);
+							return case4(state, (T4)this.value);
 						}
 											case 5:
 						{
-							return case5(state, this.item5);
+							return case5(state, (T5)this.value);
 						}
 											case 6:
 						{
-							return case6(state, this.item6);
+							return case6(state, (T6)this.value);
 						}
 											case 7:
 						{
-							return case7(state, this.item7);
+							return case7(state, (T7)this.value);
 						}
 											case 8:
 						{
-							return case8(state, this.item8);
+							return case8(state, (T8)this.value);
 						}
 											case 9:
 						{
-							return case9(state, this.item9);
+							return case9(state, (T9)this.value);
 						}
 											case 10:
 						{
-							return case10(state, this.item10);
+							return case10(state, (T10)this.value);
 						}
 											case 11:
 						{
-							return case11(state, this.item11);
+							return case11(state, (T11)this.value);
 						}
 											case 12:
 						{
-							return case12(state, this.item12);
+							return case12(state, (T12)this.value);
 						}
 											case 13:
 						{
-							return case13(state, this.item13);
+							return case13(state, (T13)this.value);
 						}
 											case 14:
 						{
-							return case14(state, this.item14);
+							return case14(state, (T14)this.value);
 						}
 											case 15:
 						{
-							return case15(state, this.item15);
+							return case15(state, (T15)this.value);
 						}
 											case 16:
 						{
-							return case16(state, this.item16);
+							return case16(state, (T16)this.value);
 						}
 											case 17:
 						{
-							return case17(state, this.item17);
+							return case17(state, (T17)this.value);
 						}
 											case 18:
 						{
-							return case18(state, this.item18);
+							return case18(state, (T18)this.value);
 						}
 											case 19:
 						{
-							return case19(state, this.item19);
+							return case19(state, (T19)this.value);
 						}
 											default:
 							return defaultCase(state);
 					}
 				}
+
+				public override bool Equals(object? other)
+				{
+					if (other is FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19> otherUnion)
+					{
+						return this.discriminator == otherUnion.Discriminator &&
+						       this.value.Equals(otherUnion.value);
+					}
+					else
+					{
+						return false;
+					}
+				}
+
+				public override int GetHashCode()
+				{
+					return this.value.GetHashCode() ^ this.discriminator;
+				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20> : IUnion
-			{
+			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20> : IFlatBufferUnion
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+							where T12 : notnull
+							where T13 : notnull
+							where T14 : notnull
+							where T15 : notnull
+							where T16 : notnull
+							where T17 : notnull
+							where T18 : notnull
+							where T19 : notnull
+							where T20 : notnull
+						{
 				private readonly byte discriminator;
+				private readonly object value;
 				
-				
-				protected readonly T1 item1;
-				
-				
-				protected readonly T2 item2;
-				
-				
-				protected readonly T3 item3;
-				
-				
-				protected readonly T4 item4;
-				
-				
-				protected readonly T5 item5;
-				
-				
-				protected readonly T6 item6;
-				
-				
-				protected readonly T7 item7;
-				
-				
-				protected readonly T8 item8;
-				
-				
-				protected readonly T9 item9;
-				
-				
-				protected readonly T10 item10;
-				
-				
-				protected readonly T11 item11;
-				
-				
-				protected readonly T12 item12;
-				
-				
-				protected readonly T13 item13;
-				
-				
-				protected readonly T14 item14;
-				
-				
-				protected readonly T15 item15;
-				
-				
-				protected readonly T16 item16;
-				
-				
-				protected readonly T17 item17;
-				
-				
-				protected readonly T18 item18;
-				
-				
-				protected readonly T19 item19;
-				
-				
-				protected readonly T20 item20;
-				
-								
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 1;
-					this.item1 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 2;
-					this.item2 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 3;
-					this.item3 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 4;
-					this.item4 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 5;
-					this.item5 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 6;
-					this.item6 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 7;
-					this.item7 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 8;
-					this.item8 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 9;
-					this.item9 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 10;
-					this.item10 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 11;
-					this.item11 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T12 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 12;
-					this.item12 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T13 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 13;
-					this.item13 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T14 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 14;
-					this.item14 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T15 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 15;
-					this.item15 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T16 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 16;
-					this.item16 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T17 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 17;
-					this.item17 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T18 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 18;
-					this.item18 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T19 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 19;
-					this.item19 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T20 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 20;
-					this.item20 = item;
+					this.value = item;
 				}
 				
 							
@@ -14494,7 +14056,7 @@ System.Func<TState, T19, TResult> case19)
 					{
 						if (this.discriminator == 1)
 						{
-							return this.item1;
+							return (T1)this.value;
 						}
 						else
 						{
@@ -14503,16 +14065,18 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(out T1 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
-					item = default;
 					if (this.discriminator == 1)
 					{
-						item = this.item1;
+						item = (T1)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -14522,7 +14086,7 @@ System.Func<TState, T19, TResult> case19)
 					{
 						if (this.discriminator == 2)
 						{
-							return this.item2;
+							return (T2)this.value;
 						}
 						else
 						{
@@ -14531,16 +14095,18 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(out T2 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
-					item = default;
 					if (this.discriminator == 2)
 					{
-						item = this.item2;
+						item = (T2)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -14550,7 +14116,7 @@ System.Func<TState, T19, TResult> case19)
 					{
 						if (this.discriminator == 3)
 						{
-							return this.item3;
+							return (T3)this.value;
 						}
 						else
 						{
@@ -14559,16 +14125,18 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(out T3 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
-					item = default;
 					if (this.discriminator == 3)
 					{
-						item = this.item3;
+						item = (T3)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -14578,7 +14146,7 @@ System.Func<TState, T19, TResult> case19)
 					{
 						if (this.discriminator == 4)
 						{
-							return this.item4;
+							return (T4)this.value;
 						}
 						else
 						{
@@ -14587,16 +14155,18 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(out T4 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
-					item = default;
 					if (this.discriminator == 4)
 					{
-						item = this.item4;
+						item = (T4)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -14606,7 +14176,7 @@ System.Func<TState, T19, TResult> case19)
 					{
 						if (this.discriminator == 5)
 						{
-							return this.item5;
+							return (T5)this.value;
 						}
 						else
 						{
@@ -14615,16 +14185,18 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(out T5 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
-					item = default;
 					if (this.discriminator == 5)
 					{
-						item = this.item5;
+						item = (T5)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -14634,7 +14206,7 @@ System.Func<TState, T19, TResult> case19)
 					{
 						if (this.discriminator == 6)
 						{
-							return this.item6;
+							return (T6)this.value;
 						}
 						else
 						{
@@ -14643,16 +14215,18 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(out T6 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
-					item = default;
 					if (this.discriminator == 6)
 					{
-						item = this.item6;
+						item = (T6)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -14662,7 +14236,7 @@ System.Func<TState, T19, TResult> case19)
 					{
 						if (this.discriminator == 7)
 						{
-							return this.item7;
+							return (T7)this.value;
 						}
 						else
 						{
@@ -14671,16 +14245,18 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(out T7 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
-					item = default;
 					if (this.discriminator == 7)
 					{
-						item = this.item7;
+						item = (T7)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -14690,7 +14266,7 @@ System.Func<TState, T19, TResult> case19)
 					{
 						if (this.discriminator == 8)
 						{
-							return this.item8;
+							return (T8)this.value;
 						}
 						else
 						{
@@ -14699,16 +14275,18 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(out T8 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
-					item = default;
 					if (this.discriminator == 8)
 					{
-						item = this.item8;
+						item = (T8)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -14718,7 +14296,7 @@ System.Func<TState, T19, TResult> case19)
 					{
 						if (this.discriminator == 9)
 						{
-							return this.item9;
+							return (T9)this.value;
 						}
 						else
 						{
@@ -14727,16 +14305,18 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(out T9 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
-					item = default;
 					if (this.discriminator == 9)
 					{
-						item = this.item9;
+						item = (T9)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -14746,7 +14326,7 @@ System.Func<TState, T19, TResult> case19)
 					{
 						if (this.discriminator == 10)
 						{
-							return this.item10;
+							return (T10)this.value;
 						}
 						else
 						{
@@ -14755,16 +14335,18 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(out T10 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
-					item = default;
 					if (this.discriminator == 10)
 					{
-						item = this.item10;
+						item = (T10)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -14774,7 +14356,7 @@ System.Func<TState, T19, TResult> case19)
 					{
 						if (this.discriminator == 11)
 						{
-							return this.item11;
+							return (T11)this.value;
 						}
 						else
 						{
@@ -14783,16 +14365,18 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(out T11 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
-					item = default;
 					if (this.discriminator == 11)
 					{
-						item = this.item11;
+						item = (T11)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -14802,7 +14386,7 @@ System.Func<TState, T19, TResult> case19)
 					{
 						if (this.discriminator == 12)
 						{
-							return this.item12;
+							return (T12)this.value;
 						}
 						else
 						{
@@ -14811,16 +14395,18 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(out T12 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T12? item)
 				{
-					item = default;
 					if (this.discriminator == 12)
 					{
-						item = this.item12;
+						item = (T12)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -14830,7 +14416,7 @@ System.Func<TState, T19, TResult> case19)
 					{
 						if (this.discriminator == 13)
 						{
-							return this.item13;
+							return (T13)this.value;
 						}
 						else
 						{
@@ -14839,16 +14425,18 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(out T13 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T13? item)
 				{
-					item = default;
 					if (this.discriminator == 13)
 					{
-						item = this.item13;
+						item = (T13)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -14858,7 +14446,7 @@ System.Func<TState, T19, TResult> case19)
 					{
 						if (this.discriminator == 14)
 						{
-							return this.item14;
+							return (T14)this.value;
 						}
 						else
 						{
@@ -14867,16 +14455,18 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(out T14 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T14? item)
 				{
-					item = default;
 					if (this.discriminator == 14)
 					{
-						item = this.item14;
+						item = (T14)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -14886,7 +14476,7 @@ System.Func<TState, T19, TResult> case19)
 					{
 						if (this.discriminator == 15)
 						{
-							return this.item15;
+							return (T15)this.value;
 						}
 						else
 						{
@@ -14895,16 +14485,18 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(out T15 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T15? item)
 				{
-					item = default;
 					if (this.discriminator == 15)
 					{
-						item = this.item15;
+						item = (T15)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -14914,7 +14506,7 @@ System.Func<TState, T19, TResult> case19)
 					{
 						if (this.discriminator == 16)
 						{
-							return this.item16;
+							return (T16)this.value;
 						}
 						else
 						{
@@ -14923,16 +14515,18 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(out T16 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T16? item)
 				{
-					item = default;
 					if (this.discriminator == 16)
 					{
-						item = this.item16;
+						item = (T16)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -14942,7 +14536,7 @@ System.Func<TState, T19, TResult> case19)
 					{
 						if (this.discriminator == 17)
 						{
-							return this.item17;
+							return (T17)this.value;
 						}
 						else
 						{
@@ -14951,16 +14545,18 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(out T17 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T17? item)
 				{
-					item = default;
 					if (this.discriminator == 17)
 					{
-						item = this.item17;
+						item = (T17)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -14970,7 +14566,7 @@ System.Func<TState, T19, TResult> case19)
 					{
 						if (this.discriminator == 18)
 						{
-							return this.item18;
+							return (T18)this.value;
 						}
 						else
 						{
@@ -14979,16 +14575,18 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(out T18 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T18? item)
 				{
-					item = default;
 					if (this.discriminator == 18)
 					{
-						item = this.item18;
+						item = (T18)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -14998,7 +14596,7 @@ System.Func<TState, T19, TResult> case19)
 					{
 						if (this.discriminator == 19)
 						{
-							return this.item19;
+							return (T19)this.value;
 						}
 						else
 						{
@@ -15007,16 +14605,18 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(out T19 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T19? item)
 				{
-					item = default;
 					if (this.discriminator == 19)
 					{
-						item = this.item19;
+						item = (T19)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -15026,7 +14626,7 @@ System.Func<TState, T19, TResult> case19)
 					{
 						if (this.discriminator == 20)
 						{
-							return this.item20;
+							return (T20)this.value;
 						}
 						else
 						{
@@ -15035,89 +14635,21 @@ System.Func<TState, T19, TResult> case19)
 					}
 				}
 
-				public bool TryGet(out T20 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T20? item)
 				{
-					item = default;
 					if (this.discriminator == 20)
 					{
-						item = this.item20;
+						item = (T20)this.value;
 						return true;
 					}
-
-					return false;
-				}
-				
-				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11,
-System.Func<T12, T12> cloneT12,
-System.Func<T13, T13> cloneT13,
-System.Func<T14, T14> cloneT14,
-System.Func<T15, T15> cloneT15,
-System.Func<T16, T16> cloneT16,
-System.Func<T17, T17> cloneT17,
-System.Func<T18, T18> cloneT18,
-System.Func<T19, T19> cloneT19,
-System.Func<T20, T20> cloneT20
-				)
-				{
-					switch (this.discriminator)
+					else
 					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT1(this.item1));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT2(this.item2));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT3(this.item3));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT4(this.item4));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT5(this.item5));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT6(this.item6));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT7(this.item7));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT8(this.item8));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT9(this.item9));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT10(this.item10));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT11(this.item11));
-											case 12:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT12(this.item12));
-											case 13:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT13(this.item13));
-											case 14:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT14(this.item14));
-											case 15:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT15(this.item15));
-											case 16:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT16(this.item16));
-											case 17:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT17(this.item17));
-											case 18:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT18(this.item18));
-											case 19:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT19(this.item19));
-											case 20:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(cloneT20(this.item20));
-										}
-
-					throw new System.InvalidOperationException();
+						item = default;
+						return false;
+					}
 				}
-
+				
+				
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -15145,102 +14677,102 @@ System.Action<T20> case20)
 					{
 											case 1:
 						{
-							case1(this.item1);
+							case1((T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(this.item2);
+							case2((T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(this.item3);
+							case3((T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(this.item4);
+							case4((T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(this.item5);
+							case5((T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(this.item6);
+							case6((T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(this.item7);
+							case7((T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(this.item8);
+							case8((T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(this.item9);
+							case9((T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(this.item10);
+							case10((T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(this.item11);
+							case11((T11)this.value);
 							break;
 						}
 											case 12:
 						{
-							case12(this.item12);
+							case12((T12)this.value);
 							break;
 						}
 											case 13:
 						{
-							case13(this.item13);
+							case13((T13)this.value);
 							break;
 						}
 											case 14:
 						{
-							case14(this.item14);
+							case14((T14)this.value);
 							break;
 						}
 											case 15:
 						{
-							case15(this.item15);
+							case15((T15)this.value);
 							break;
 						}
 											case 16:
 						{
-							case16(this.item16);
+							case16((T16)this.value);
 							break;
 						}
 											case 17:
 						{
-							case17(this.item17);
+							case17((T17)this.value);
 							break;
 						}
 											case 18:
 						{
-							case18(this.item18);
+							case18((T18)this.value);
 							break;
 						}
 											case 19:
 						{
-							case19(this.item19);
+							case19((T19)this.value);
 							break;
 						}
 											case 20:
 						{
-							case20(this.item20);
+							case20((T20)this.value);
 							break;
 						}
 											default:
@@ -15277,102 +14809,102 @@ System.Action<TState, T20> case20)
 					{
 											case 1:
 						{
-							case1(state, this.item1);
+							case1(state, (T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(state, this.item2);
+							case2(state, (T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(state, this.item3);
+							case3(state, (T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(state, this.item4);
+							case4(state, (T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(state, this.item5);
+							case5(state, (T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(state, this.item6);
+							case6(state, (T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(state, this.item7);
+							case7(state, (T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(state, this.item8);
+							case8(state, (T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(state, this.item9);
+							case9(state, (T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(state, this.item10);
+							case10(state, (T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(state, this.item11);
+							case11(state, (T11)this.value);
 							break;
 						}
 											case 12:
 						{
-							case12(state, this.item12);
+							case12(state, (T12)this.value);
 							break;
 						}
 											case 13:
 						{
-							case13(state, this.item13);
+							case13(state, (T13)this.value);
 							break;
 						}
 											case 14:
 						{
-							case14(state, this.item14);
+							case14(state, (T14)this.value);
 							break;
 						}
 											case 15:
 						{
-							case15(state, this.item15);
+							case15(state, (T15)this.value);
 							break;
 						}
 											case 16:
 						{
-							case16(state, this.item16);
+							case16(state, (T16)this.value);
 							break;
 						}
 											case 17:
 						{
-							case17(state, this.item17);
+							case17(state, (T17)this.value);
 							break;
 						}
 											case 18:
 						{
-							case18(state, this.item18);
+							case18(state, (T18)this.value);
 							break;
 						}
 											case 19:
 						{
-							case19(state, this.item19);
+							case19(state, (T19)this.value);
 							break;
 						}
 											case 20:
 						{
-							case20(state, this.item20);
+							case20(state, (T20)this.value);
 							break;
 						}
 											default:
@@ -15409,83 +14941,83 @@ System.Func<T20, TResult> case20)
 					{
 											case 1:
 						{
-							return case1(this.item1);
+							return case1((T1)this.value);
 						}
 											case 2:
 						{
-							return case2(this.item2);
+							return case2((T2)this.value);
 						}
 											case 3:
 						{
-							return case3(this.item3);
+							return case3((T3)this.value);
 						}
 											case 4:
 						{
-							return case4(this.item4);
+							return case4((T4)this.value);
 						}
 											case 5:
 						{
-							return case5(this.item5);
+							return case5((T5)this.value);
 						}
 											case 6:
 						{
-							return case6(this.item6);
+							return case6((T6)this.value);
 						}
 											case 7:
 						{
-							return case7(this.item7);
+							return case7((T7)this.value);
 						}
 											case 8:
 						{
-							return case8(this.item8);
+							return case8((T8)this.value);
 						}
 											case 9:
 						{
-							return case9(this.item9);
+							return case9((T9)this.value);
 						}
 											case 10:
 						{
-							return case10(this.item10);
+							return case10((T10)this.value);
 						}
 											case 11:
 						{
-							return case11(this.item11);
+							return case11((T11)this.value);
 						}
 											case 12:
 						{
-							return case12(this.item12);
+							return case12((T12)this.value);
 						}
 											case 13:
 						{
-							return case13(this.item13);
+							return case13((T13)this.value);
 						}
 											case 14:
 						{
-							return case14(this.item14);
+							return case14((T14)this.value);
 						}
 											case 15:
 						{
-							return case15(this.item15);
+							return case15((T15)this.value);
 						}
 											case 16:
 						{
-							return case16(this.item16);
+							return case16((T16)this.value);
 						}
 											case 17:
 						{
-							return case17(this.item17);
+							return case17((T17)this.value);
 						}
 											case 18:
 						{
-							return case18(this.item18);
+							return case18((T18)this.value);
 						}
 											case 19:
 						{
-							return case19(this.item19);
+							return case19((T19)this.value);
 						}
 											case 20:
 						{
-							return case20(this.item20);
+							return case20((T20)this.value);
 						}
 											default:
 							return defaultCase();
@@ -15520,408 +15052,385 @@ System.Func<TState, T20, TResult> case20)
 					{
 											case 1:
 						{
-							return case1(state, this.item1);
+							return case1(state, (T1)this.value);
 						}
 											case 2:
 						{
-							return case2(state, this.item2);
+							return case2(state, (T2)this.value);
 						}
 											case 3:
 						{
-							return case3(state, this.item3);
+							return case3(state, (T3)this.value);
 						}
 											case 4:
 						{
-							return case4(state, this.item4);
+							return case4(state, (T4)this.value);
 						}
 											case 5:
 						{
-							return case5(state, this.item5);
+							return case5(state, (T5)this.value);
 						}
 											case 6:
 						{
-							return case6(state, this.item6);
+							return case6(state, (T6)this.value);
 						}
 											case 7:
 						{
-							return case7(state, this.item7);
+							return case7(state, (T7)this.value);
 						}
 											case 8:
 						{
-							return case8(state, this.item8);
+							return case8(state, (T8)this.value);
 						}
 											case 9:
 						{
-							return case9(state, this.item9);
+							return case9(state, (T9)this.value);
 						}
 											case 10:
 						{
-							return case10(state, this.item10);
+							return case10(state, (T10)this.value);
 						}
 											case 11:
 						{
-							return case11(state, this.item11);
+							return case11(state, (T11)this.value);
 						}
 											case 12:
 						{
-							return case12(state, this.item12);
+							return case12(state, (T12)this.value);
 						}
 											case 13:
 						{
-							return case13(state, this.item13);
+							return case13(state, (T13)this.value);
 						}
 											case 14:
 						{
-							return case14(state, this.item14);
+							return case14(state, (T14)this.value);
 						}
 											case 15:
 						{
-							return case15(state, this.item15);
+							return case15(state, (T15)this.value);
 						}
 											case 16:
 						{
-							return case16(state, this.item16);
+							return case16(state, (T16)this.value);
 						}
 											case 17:
 						{
-							return case17(state, this.item17);
+							return case17(state, (T17)this.value);
 						}
 											case 18:
 						{
-							return case18(state, this.item18);
+							return case18(state, (T18)this.value);
 						}
 											case 19:
 						{
-							return case19(state, this.item19);
+							return case19(state, (T19)this.value);
 						}
 											case 20:
 						{
-							return case20(state, this.item20);
+							return case20(state, (T20)this.value);
 						}
 											default:
 							return defaultCase(state);
 					}
 				}
+
+				public override bool Equals(object? other)
+				{
+					if (other is FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20> otherUnion)
+					{
+						return this.discriminator == otherUnion.Discriminator &&
+						       this.value.Equals(otherUnion.value);
+					}
+					else
+					{
+						return false;
+					}
+				}
+
+				public override int GetHashCode()
+				{
+					return this.value.GetHashCode() ^ this.discriminator;
+				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21> : IUnion
-			{
+			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21> : IFlatBufferUnion
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+							where T12 : notnull
+							where T13 : notnull
+							where T14 : notnull
+							where T15 : notnull
+							where T16 : notnull
+							where T17 : notnull
+							where T18 : notnull
+							where T19 : notnull
+							where T20 : notnull
+							where T21 : notnull
+						{
 				private readonly byte discriminator;
+				private readonly object value;
 				
-				
-				protected readonly T1 item1;
-				
-				
-				protected readonly T2 item2;
-				
-				
-				protected readonly T3 item3;
-				
-				
-				protected readonly T4 item4;
-				
-				
-				protected readonly T5 item5;
-				
-				
-				protected readonly T6 item6;
-				
-				
-				protected readonly T7 item7;
-				
-				
-				protected readonly T8 item8;
-				
-				
-				protected readonly T9 item9;
-				
-				
-				protected readonly T10 item10;
-				
-				
-				protected readonly T11 item11;
-				
-				
-				protected readonly T12 item12;
-				
-				
-				protected readonly T13 item13;
-				
-				
-				protected readonly T14 item14;
-				
-				
-				protected readonly T15 item15;
-				
-				
-				protected readonly T16 item16;
-				
-				
-				protected readonly T17 item17;
-				
-				
-				protected readonly T18 item18;
-				
-				
-				protected readonly T19 item19;
-				
-				
-				protected readonly T20 item20;
-				
-				
-				protected readonly T21 item21;
-				
-								
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 1;
-					this.item1 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 2;
-					this.item2 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 3;
-					this.item3 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 4;
-					this.item4 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 5;
-					this.item5 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 6;
-					this.item6 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 7;
-					this.item7 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 8;
-					this.item8 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 9;
-					this.item9 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 10;
-					this.item10 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 11;
-					this.item11 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T12 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 12;
-					this.item12 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T13 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 13;
-					this.item13 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T14 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 14;
-					this.item14 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T15 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 15;
-					this.item15 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T16 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 16;
-					this.item16 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T17 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 17;
-					this.item17 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T18 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 18;
-					this.item18 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T19 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 19;
-					this.item19 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T20 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 20;
-					this.item20 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T21 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 21;
-					this.item21 = item;
+					this.value = item;
 				}
 				
 							
@@ -15934,7 +15443,7 @@ System.Func<TState, T20, TResult> case20)
 					{
 						if (this.discriminator == 1)
 						{
-							return this.item1;
+							return (T1)this.value;
 						}
 						else
 						{
@@ -15943,16 +15452,18 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(out T1 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
-					item = default;
 					if (this.discriminator == 1)
 					{
-						item = this.item1;
+						item = (T1)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -15962,7 +15473,7 @@ System.Func<TState, T20, TResult> case20)
 					{
 						if (this.discriminator == 2)
 						{
-							return this.item2;
+							return (T2)this.value;
 						}
 						else
 						{
@@ -15971,16 +15482,18 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(out T2 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
-					item = default;
 					if (this.discriminator == 2)
 					{
-						item = this.item2;
+						item = (T2)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -15990,7 +15503,7 @@ System.Func<TState, T20, TResult> case20)
 					{
 						if (this.discriminator == 3)
 						{
-							return this.item3;
+							return (T3)this.value;
 						}
 						else
 						{
@@ -15999,16 +15512,18 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(out T3 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
-					item = default;
 					if (this.discriminator == 3)
 					{
-						item = this.item3;
+						item = (T3)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -16018,7 +15533,7 @@ System.Func<TState, T20, TResult> case20)
 					{
 						if (this.discriminator == 4)
 						{
-							return this.item4;
+							return (T4)this.value;
 						}
 						else
 						{
@@ -16027,16 +15542,18 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(out T4 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
-					item = default;
 					if (this.discriminator == 4)
 					{
-						item = this.item4;
+						item = (T4)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -16046,7 +15563,7 @@ System.Func<TState, T20, TResult> case20)
 					{
 						if (this.discriminator == 5)
 						{
-							return this.item5;
+							return (T5)this.value;
 						}
 						else
 						{
@@ -16055,16 +15572,18 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(out T5 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
-					item = default;
 					if (this.discriminator == 5)
 					{
-						item = this.item5;
+						item = (T5)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -16074,7 +15593,7 @@ System.Func<TState, T20, TResult> case20)
 					{
 						if (this.discriminator == 6)
 						{
-							return this.item6;
+							return (T6)this.value;
 						}
 						else
 						{
@@ -16083,16 +15602,18 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(out T6 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
-					item = default;
 					if (this.discriminator == 6)
 					{
-						item = this.item6;
+						item = (T6)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -16102,7 +15623,7 @@ System.Func<TState, T20, TResult> case20)
 					{
 						if (this.discriminator == 7)
 						{
-							return this.item7;
+							return (T7)this.value;
 						}
 						else
 						{
@@ -16111,16 +15632,18 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(out T7 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
-					item = default;
 					if (this.discriminator == 7)
 					{
-						item = this.item7;
+						item = (T7)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -16130,7 +15653,7 @@ System.Func<TState, T20, TResult> case20)
 					{
 						if (this.discriminator == 8)
 						{
-							return this.item8;
+							return (T8)this.value;
 						}
 						else
 						{
@@ -16139,16 +15662,18 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(out T8 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
-					item = default;
 					if (this.discriminator == 8)
 					{
-						item = this.item8;
+						item = (T8)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -16158,7 +15683,7 @@ System.Func<TState, T20, TResult> case20)
 					{
 						if (this.discriminator == 9)
 						{
-							return this.item9;
+							return (T9)this.value;
 						}
 						else
 						{
@@ -16167,16 +15692,18 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(out T9 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
-					item = default;
 					if (this.discriminator == 9)
 					{
-						item = this.item9;
+						item = (T9)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -16186,7 +15713,7 @@ System.Func<TState, T20, TResult> case20)
 					{
 						if (this.discriminator == 10)
 						{
-							return this.item10;
+							return (T10)this.value;
 						}
 						else
 						{
@@ -16195,16 +15722,18 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(out T10 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
-					item = default;
 					if (this.discriminator == 10)
 					{
-						item = this.item10;
+						item = (T10)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -16214,7 +15743,7 @@ System.Func<TState, T20, TResult> case20)
 					{
 						if (this.discriminator == 11)
 						{
-							return this.item11;
+							return (T11)this.value;
 						}
 						else
 						{
@@ -16223,16 +15752,18 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(out T11 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
-					item = default;
 					if (this.discriminator == 11)
 					{
-						item = this.item11;
+						item = (T11)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -16242,7 +15773,7 @@ System.Func<TState, T20, TResult> case20)
 					{
 						if (this.discriminator == 12)
 						{
-							return this.item12;
+							return (T12)this.value;
 						}
 						else
 						{
@@ -16251,16 +15782,18 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(out T12 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T12? item)
 				{
-					item = default;
 					if (this.discriminator == 12)
 					{
-						item = this.item12;
+						item = (T12)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -16270,7 +15803,7 @@ System.Func<TState, T20, TResult> case20)
 					{
 						if (this.discriminator == 13)
 						{
-							return this.item13;
+							return (T13)this.value;
 						}
 						else
 						{
@@ -16279,16 +15812,18 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(out T13 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T13? item)
 				{
-					item = default;
 					if (this.discriminator == 13)
 					{
-						item = this.item13;
+						item = (T13)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -16298,7 +15833,7 @@ System.Func<TState, T20, TResult> case20)
 					{
 						if (this.discriminator == 14)
 						{
-							return this.item14;
+							return (T14)this.value;
 						}
 						else
 						{
@@ -16307,16 +15842,18 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(out T14 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T14? item)
 				{
-					item = default;
 					if (this.discriminator == 14)
 					{
-						item = this.item14;
+						item = (T14)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -16326,7 +15863,7 @@ System.Func<TState, T20, TResult> case20)
 					{
 						if (this.discriminator == 15)
 						{
-							return this.item15;
+							return (T15)this.value;
 						}
 						else
 						{
@@ -16335,16 +15872,18 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(out T15 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T15? item)
 				{
-					item = default;
 					if (this.discriminator == 15)
 					{
-						item = this.item15;
+						item = (T15)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -16354,7 +15893,7 @@ System.Func<TState, T20, TResult> case20)
 					{
 						if (this.discriminator == 16)
 						{
-							return this.item16;
+							return (T16)this.value;
 						}
 						else
 						{
@@ -16363,16 +15902,18 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(out T16 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T16? item)
 				{
-					item = default;
 					if (this.discriminator == 16)
 					{
-						item = this.item16;
+						item = (T16)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -16382,7 +15923,7 @@ System.Func<TState, T20, TResult> case20)
 					{
 						if (this.discriminator == 17)
 						{
-							return this.item17;
+							return (T17)this.value;
 						}
 						else
 						{
@@ -16391,16 +15932,18 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(out T17 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T17? item)
 				{
-					item = default;
 					if (this.discriminator == 17)
 					{
-						item = this.item17;
+						item = (T17)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -16410,7 +15953,7 @@ System.Func<TState, T20, TResult> case20)
 					{
 						if (this.discriminator == 18)
 						{
-							return this.item18;
+							return (T18)this.value;
 						}
 						else
 						{
@@ -16419,16 +15962,18 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(out T18 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T18? item)
 				{
-					item = default;
 					if (this.discriminator == 18)
 					{
-						item = this.item18;
+						item = (T18)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -16438,7 +15983,7 @@ System.Func<TState, T20, TResult> case20)
 					{
 						if (this.discriminator == 19)
 						{
-							return this.item19;
+							return (T19)this.value;
 						}
 						else
 						{
@@ -16447,16 +15992,18 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(out T19 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T19? item)
 				{
-					item = default;
 					if (this.discriminator == 19)
 					{
-						item = this.item19;
+						item = (T19)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -16466,7 +16013,7 @@ System.Func<TState, T20, TResult> case20)
 					{
 						if (this.discriminator == 20)
 						{
-							return this.item20;
+							return (T20)this.value;
 						}
 						else
 						{
@@ -16475,16 +16022,18 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(out T20 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T20? item)
 				{
-					item = default;
 					if (this.discriminator == 20)
 					{
-						item = this.item20;
+						item = (T20)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -16494,7 +16043,7 @@ System.Func<TState, T20, TResult> case20)
 					{
 						if (this.discriminator == 21)
 						{
-							return this.item21;
+							return (T21)this.value;
 						}
 						else
 						{
@@ -16503,92 +16052,21 @@ System.Func<TState, T20, TResult> case20)
 					}
 				}
 
-				public bool TryGet(out T21 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T21? item)
 				{
-					item = default;
 					if (this.discriminator == 21)
 					{
-						item = this.item21;
+						item = (T21)this.value;
 						return true;
 					}
-
-					return false;
-				}
-				
-				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11,
-System.Func<T12, T12> cloneT12,
-System.Func<T13, T13> cloneT13,
-System.Func<T14, T14> cloneT14,
-System.Func<T15, T15> cloneT15,
-System.Func<T16, T16> cloneT16,
-System.Func<T17, T17> cloneT17,
-System.Func<T18, T18> cloneT18,
-System.Func<T19, T19> cloneT19,
-System.Func<T20, T20> cloneT20,
-System.Func<T21, T21> cloneT21
-				)
-				{
-					switch (this.discriminator)
+					else
 					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT1(this.item1));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT2(this.item2));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT3(this.item3));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT4(this.item4));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT5(this.item5));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT6(this.item6));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT7(this.item7));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT8(this.item8));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT9(this.item9));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT10(this.item10));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT11(this.item11));
-											case 12:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT12(this.item12));
-											case 13:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT13(this.item13));
-											case 14:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT14(this.item14));
-											case 15:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT15(this.item15));
-											case 16:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT16(this.item16));
-											case 17:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT17(this.item17));
-											case 18:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT18(this.item18));
-											case 19:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT19(this.item19));
-											case 20:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT20(this.item20));
-											case 21:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(cloneT21(this.item21));
-										}
-
-					throw new System.InvalidOperationException();
+						item = default;
+						return false;
+					}
 				}
-
+				
+				
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -16617,107 +16095,107 @@ System.Action<T21> case21)
 					{
 											case 1:
 						{
-							case1(this.item1);
+							case1((T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(this.item2);
+							case2((T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(this.item3);
+							case3((T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(this.item4);
+							case4((T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(this.item5);
+							case5((T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(this.item6);
+							case6((T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(this.item7);
+							case7((T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(this.item8);
+							case8((T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(this.item9);
+							case9((T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(this.item10);
+							case10((T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(this.item11);
+							case11((T11)this.value);
 							break;
 						}
 											case 12:
 						{
-							case12(this.item12);
+							case12((T12)this.value);
 							break;
 						}
 											case 13:
 						{
-							case13(this.item13);
+							case13((T13)this.value);
 							break;
 						}
 											case 14:
 						{
-							case14(this.item14);
+							case14((T14)this.value);
 							break;
 						}
 											case 15:
 						{
-							case15(this.item15);
+							case15((T15)this.value);
 							break;
 						}
 											case 16:
 						{
-							case16(this.item16);
+							case16((T16)this.value);
 							break;
 						}
 											case 17:
 						{
-							case17(this.item17);
+							case17((T17)this.value);
 							break;
 						}
 											case 18:
 						{
-							case18(this.item18);
+							case18((T18)this.value);
 							break;
 						}
 											case 19:
 						{
-							case19(this.item19);
+							case19((T19)this.value);
 							break;
 						}
 											case 20:
 						{
-							case20(this.item20);
+							case20((T20)this.value);
 							break;
 						}
 											case 21:
 						{
-							case21(this.item21);
+							case21((T21)this.value);
 							break;
 						}
 											default:
@@ -16755,107 +16233,107 @@ System.Action<TState, T21> case21)
 					{
 											case 1:
 						{
-							case1(state, this.item1);
+							case1(state, (T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(state, this.item2);
+							case2(state, (T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(state, this.item3);
+							case3(state, (T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(state, this.item4);
+							case4(state, (T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(state, this.item5);
+							case5(state, (T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(state, this.item6);
+							case6(state, (T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(state, this.item7);
+							case7(state, (T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(state, this.item8);
+							case8(state, (T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(state, this.item9);
+							case9(state, (T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(state, this.item10);
+							case10(state, (T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(state, this.item11);
+							case11(state, (T11)this.value);
 							break;
 						}
 											case 12:
 						{
-							case12(state, this.item12);
+							case12(state, (T12)this.value);
 							break;
 						}
 											case 13:
 						{
-							case13(state, this.item13);
+							case13(state, (T13)this.value);
 							break;
 						}
 											case 14:
 						{
-							case14(state, this.item14);
+							case14(state, (T14)this.value);
 							break;
 						}
 											case 15:
 						{
-							case15(state, this.item15);
+							case15(state, (T15)this.value);
 							break;
 						}
 											case 16:
 						{
-							case16(state, this.item16);
+							case16(state, (T16)this.value);
 							break;
 						}
 											case 17:
 						{
-							case17(state, this.item17);
+							case17(state, (T17)this.value);
 							break;
 						}
 											case 18:
 						{
-							case18(state, this.item18);
+							case18(state, (T18)this.value);
 							break;
 						}
 											case 19:
 						{
-							case19(state, this.item19);
+							case19(state, (T19)this.value);
 							break;
 						}
 											case 20:
 						{
-							case20(state, this.item20);
+							case20(state, (T20)this.value);
 							break;
 						}
 											case 21:
 						{
-							case21(state, this.item21);
+							case21(state, (T21)this.value);
 							break;
 						}
 											default:
@@ -16893,87 +16371,87 @@ System.Func<T21, TResult> case21)
 					{
 											case 1:
 						{
-							return case1(this.item1);
+							return case1((T1)this.value);
 						}
 											case 2:
 						{
-							return case2(this.item2);
+							return case2((T2)this.value);
 						}
 											case 3:
 						{
-							return case3(this.item3);
+							return case3((T3)this.value);
 						}
 											case 4:
 						{
-							return case4(this.item4);
+							return case4((T4)this.value);
 						}
 											case 5:
 						{
-							return case5(this.item5);
+							return case5((T5)this.value);
 						}
 											case 6:
 						{
-							return case6(this.item6);
+							return case6((T6)this.value);
 						}
 											case 7:
 						{
-							return case7(this.item7);
+							return case7((T7)this.value);
 						}
 											case 8:
 						{
-							return case8(this.item8);
+							return case8((T8)this.value);
 						}
 											case 9:
 						{
-							return case9(this.item9);
+							return case9((T9)this.value);
 						}
 											case 10:
 						{
-							return case10(this.item10);
+							return case10((T10)this.value);
 						}
 											case 11:
 						{
-							return case11(this.item11);
+							return case11((T11)this.value);
 						}
 											case 12:
 						{
-							return case12(this.item12);
+							return case12((T12)this.value);
 						}
 											case 13:
 						{
-							return case13(this.item13);
+							return case13((T13)this.value);
 						}
 											case 14:
 						{
-							return case14(this.item14);
+							return case14((T14)this.value);
 						}
 											case 15:
 						{
-							return case15(this.item15);
+							return case15((T15)this.value);
 						}
 											case 16:
 						{
-							return case16(this.item16);
+							return case16((T16)this.value);
 						}
 											case 17:
 						{
-							return case17(this.item17);
+							return case17((T17)this.value);
 						}
 											case 18:
 						{
-							return case18(this.item18);
+							return case18((T18)this.value);
 						}
 											case 19:
 						{
-							return case19(this.item19);
+							return case19((T19)this.value);
 						}
 											case 20:
 						{
-							return case20(this.item20);
+							return case20((T20)this.value);
 						}
 											case 21:
 						{
-							return case21(this.item21);
+							return case21((T21)this.value);
 						}
 											default:
 							return defaultCase();
@@ -17009,427 +16487,402 @@ System.Func<TState, T21, TResult> case21)
 					{
 											case 1:
 						{
-							return case1(state, this.item1);
+							return case1(state, (T1)this.value);
 						}
 											case 2:
 						{
-							return case2(state, this.item2);
+							return case2(state, (T2)this.value);
 						}
 											case 3:
 						{
-							return case3(state, this.item3);
+							return case3(state, (T3)this.value);
 						}
 											case 4:
 						{
-							return case4(state, this.item4);
+							return case4(state, (T4)this.value);
 						}
 											case 5:
 						{
-							return case5(state, this.item5);
+							return case5(state, (T5)this.value);
 						}
 											case 6:
 						{
-							return case6(state, this.item6);
+							return case6(state, (T6)this.value);
 						}
 											case 7:
 						{
-							return case7(state, this.item7);
+							return case7(state, (T7)this.value);
 						}
 											case 8:
 						{
-							return case8(state, this.item8);
+							return case8(state, (T8)this.value);
 						}
 											case 9:
 						{
-							return case9(state, this.item9);
+							return case9(state, (T9)this.value);
 						}
 											case 10:
 						{
-							return case10(state, this.item10);
+							return case10(state, (T10)this.value);
 						}
 											case 11:
 						{
-							return case11(state, this.item11);
+							return case11(state, (T11)this.value);
 						}
 											case 12:
 						{
-							return case12(state, this.item12);
+							return case12(state, (T12)this.value);
 						}
 											case 13:
 						{
-							return case13(state, this.item13);
+							return case13(state, (T13)this.value);
 						}
 											case 14:
 						{
-							return case14(state, this.item14);
+							return case14(state, (T14)this.value);
 						}
 											case 15:
 						{
-							return case15(state, this.item15);
+							return case15(state, (T15)this.value);
 						}
 											case 16:
 						{
-							return case16(state, this.item16);
+							return case16(state, (T16)this.value);
 						}
 											case 17:
 						{
-							return case17(state, this.item17);
+							return case17(state, (T17)this.value);
 						}
 											case 18:
 						{
-							return case18(state, this.item18);
+							return case18(state, (T18)this.value);
 						}
 											case 19:
 						{
-							return case19(state, this.item19);
+							return case19(state, (T19)this.value);
 						}
 											case 20:
 						{
-							return case20(state, this.item20);
+							return case20(state, (T20)this.value);
 						}
 											case 21:
 						{
-							return case21(state, this.item21);
+							return case21(state, (T21)this.value);
 						}
 											default:
 							return defaultCase(state);
 					}
 				}
+
+				public override bool Equals(object? other)
+				{
+					if (other is FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21> otherUnion)
+					{
+						return this.discriminator == otherUnion.Discriminator &&
+						       this.value.Equals(otherUnion.value);
+					}
+					else
+					{
+						return false;
+					}
+				}
+
+				public override int GetHashCode()
+				{
+					return this.value.GetHashCode() ^ this.discriminator;
+				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22> : IUnion
-			{
+			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22> : IFlatBufferUnion
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+							where T12 : notnull
+							where T13 : notnull
+							where T14 : notnull
+							where T15 : notnull
+							where T16 : notnull
+							where T17 : notnull
+							where T18 : notnull
+							where T19 : notnull
+							where T20 : notnull
+							where T21 : notnull
+							where T22 : notnull
+						{
 				private readonly byte discriminator;
+				private readonly object value;
 				
-				
-				protected readonly T1 item1;
-				
-				
-				protected readonly T2 item2;
-				
-				
-				protected readonly T3 item3;
-				
-				
-				protected readonly T4 item4;
-				
-				
-				protected readonly T5 item5;
-				
-				
-				protected readonly T6 item6;
-				
-				
-				protected readonly T7 item7;
-				
-				
-				protected readonly T8 item8;
-				
-				
-				protected readonly T9 item9;
-				
-				
-				protected readonly T10 item10;
-				
-				
-				protected readonly T11 item11;
-				
-				
-				protected readonly T12 item12;
-				
-				
-				protected readonly T13 item13;
-				
-				
-				protected readonly T14 item14;
-				
-				
-				protected readonly T15 item15;
-				
-				
-				protected readonly T16 item16;
-				
-				
-				protected readonly T17 item17;
-				
-				
-				protected readonly T18 item18;
-				
-				
-				protected readonly T19 item19;
-				
-				
-				protected readonly T20 item20;
-				
-				
-				protected readonly T21 item21;
-				
-				
-				protected readonly T22 item22;
-				
-								
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 1;
-					this.item1 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 2;
-					this.item2 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 3;
-					this.item3 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 4;
-					this.item4 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 5;
-					this.item5 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 6;
-					this.item6 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 7;
-					this.item7 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 8;
-					this.item8 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 9;
-					this.item9 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 10;
-					this.item10 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 11;
-					this.item11 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T12 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 12;
-					this.item12 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T13 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 13;
-					this.item13 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T14 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 14;
-					this.item14 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T15 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 15;
-					this.item15 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T16 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 16;
-					this.item16 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T17 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 17;
-					this.item17 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T18 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 18;
-					this.item18 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T19 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 19;
-					this.item19 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T20 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 20;
-					this.item20 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T21 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 21;
-					this.item21 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T22 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 22;
-					this.item22 = item;
+					this.value = item;
 				}
 				
 							
@@ -17442,7 +16895,7 @@ System.Func<TState, T21, TResult> case21)
 					{
 						if (this.discriminator == 1)
 						{
-							return this.item1;
+							return (T1)this.value;
 						}
 						else
 						{
@@ -17451,16 +16904,18 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(out T1 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
-					item = default;
 					if (this.discriminator == 1)
 					{
-						item = this.item1;
+						item = (T1)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -17470,7 +16925,7 @@ System.Func<TState, T21, TResult> case21)
 					{
 						if (this.discriminator == 2)
 						{
-							return this.item2;
+							return (T2)this.value;
 						}
 						else
 						{
@@ -17479,16 +16934,18 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(out T2 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
-					item = default;
 					if (this.discriminator == 2)
 					{
-						item = this.item2;
+						item = (T2)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -17498,7 +16955,7 @@ System.Func<TState, T21, TResult> case21)
 					{
 						if (this.discriminator == 3)
 						{
-							return this.item3;
+							return (T3)this.value;
 						}
 						else
 						{
@@ -17507,16 +16964,18 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(out T3 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
-					item = default;
 					if (this.discriminator == 3)
 					{
-						item = this.item3;
+						item = (T3)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -17526,7 +16985,7 @@ System.Func<TState, T21, TResult> case21)
 					{
 						if (this.discriminator == 4)
 						{
-							return this.item4;
+							return (T4)this.value;
 						}
 						else
 						{
@@ -17535,16 +16994,18 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(out T4 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
-					item = default;
 					if (this.discriminator == 4)
 					{
-						item = this.item4;
+						item = (T4)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -17554,7 +17015,7 @@ System.Func<TState, T21, TResult> case21)
 					{
 						if (this.discriminator == 5)
 						{
-							return this.item5;
+							return (T5)this.value;
 						}
 						else
 						{
@@ -17563,16 +17024,18 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(out T5 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
-					item = default;
 					if (this.discriminator == 5)
 					{
-						item = this.item5;
+						item = (T5)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -17582,7 +17045,7 @@ System.Func<TState, T21, TResult> case21)
 					{
 						if (this.discriminator == 6)
 						{
-							return this.item6;
+							return (T6)this.value;
 						}
 						else
 						{
@@ -17591,16 +17054,18 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(out T6 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
-					item = default;
 					if (this.discriminator == 6)
 					{
-						item = this.item6;
+						item = (T6)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -17610,7 +17075,7 @@ System.Func<TState, T21, TResult> case21)
 					{
 						if (this.discriminator == 7)
 						{
-							return this.item7;
+							return (T7)this.value;
 						}
 						else
 						{
@@ -17619,16 +17084,18 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(out T7 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
-					item = default;
 					if (this.discriminator == 7)
 					{
-						item = this.item7;
+						item = (T7)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -17638,7 +17105,7 @@ System.Func<TState, T21, TResult> case21)
 					{
 						if (this.discriminator == 8)
 						{
-							return this.item8;
+							return (T8)this.value;
 						}
 						else
 						{
@@ -17647,16 +17114,18 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(out T8 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
-					item = default;
 					if (this.discriminator == 8)
 					{
-						item = this.item8;
+						item = (T8)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -17666,7 +17135,7 @@ System.Func<TState, T21, TResult> case21)
 					{
 						if (this.discriminator == 9)
 						{
-							return this.item9;
+							return (T9)this.value;
 						}
 						else
 						{
@@ -17675,16 +17144,18 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(out T9 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
-					item = default;
 					if (this.discriminator == 9)
 					{
-						item = this.item9;
+						item = (T9)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -17694,7 +17165,7 @@ System.Func<TState, T21, TResult> case21)
 					{
 						if (this.discriminator == 10)
 						{
-							return this.item10;
+							return (T10)this.value;
 						}
 						else
 						{
@@ -17703,16 +17174,18 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(out T10 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
-					item = default;
 					if (this.discriminator == 10)
 					{
-						item = this.item10;
+						item = (T10)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -17722,7 +17195,7 @@ System.Func<TState, T21, TResult> case21)
 					{
 						if (this.discriminator == 11)
 						{
-							return this.item11;
+							return (T11)this.value;
 						}
 						else
 						{
@@ -17731,16 +17204,18 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(out T11 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
-					item = default;
 					if (this.discriminator == 11)
 					{
-						item = this.item11;
+						item = (T11)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -17750,7 +17225,7 @@ System.Func<TState, T21, TResult> case21)
 					{
 						if (this.discriminator == 12)
 						{
-							return this.item12;
+							return (T12)this.value;
 						}
 						else
 						{
@@ -17759,16 +17234,18 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(out T12 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T12? item)
 				{
-					item = default;
 					if (this.discriminator == 12)
 					{
-						item = this.item12;
+						item = (T12)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -17778,7 +17255,7 @@ System.Func<TState, T21, TResult> case21)
 					{
 						if (this.discriminator == 13)
 						{
-							return this.item13;
+							return (T13)this.value;
 						}
 						else
 						{
@@ -17787,16 +17264,18 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(out T13 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T13? item)
 				{
-					item = default;
 					if (this.discriminator == 13)
 					{
-						item = this.item13;
+						item = (T13)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -17806,7 +17285,7 @@ System.Func<TState, T21, TResult> case21)
 					{
 						if (this.discriminator == 14)
 						{
-							return this.item14;
+							return (T14)this.value;
 						}
 						else
 						{
@@ -17815,16 +17294,18 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(out T14 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T14? item)
 				{
-					item = default;
 					if (this.discriminator == 14)
 					{
-						item = this.item14;
+						item = (T14)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -17834,7 +17315,7 @@ System.Func<TState, T21, TResult> case21)
 					{
 						if (this.discriminator == 15)
 						{
-							return this.item15;
+							return (T15)this.value;
 						}
 						else
 						{
@@ -17843,16 +17324,18 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(out T15 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T15? item)
 				{
-					item = default;
 					if (this.discriminator == 15)
 					{
-						item = this.item15;
+						item = (T15)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -17862,7 +17345,7 @@ System.Func<TState, T21, TResult> case21)
 					{
 						if (this.discriminator == 16)
 						{
-							return this.item16;
+							return (T16)this.value;
 						}
 						else
 						{
@@ -17871,16 +17354,18 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(out T16 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T16? item)
 				{
-					item = default;
 					if (this.discriminator == 16)
 					{
-						item = this.item16;
+						item = (T16)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -17890,7 +17375,7 @@ System.Func<TState, T21, TResult> case21)
 					{
 						if (this.discriminator == 17)
 						{
-							return this.item17;
+							return (T17)this.value;
 						}
 						else
 						{
@@ -17899,16 +17384,18 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(out T17 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T17? item)
 				{
-					item = default;
 					if (this.discriminator == 17)
 					{
-						item = this.item17;
+						item = (T17)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -17918,7 +17405,7 @@ System.Func<TState, T21, TResult> case21)
 					{
 						if (this.discriminator == 18)
 						{
-							return this.item18;
+							return (T18)this.value;
 						}
 						else
 						{
@@ -17927,16 +17414,18 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(out T18 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T18? item)
 				{
-					item = default;
 					if (this.discriminator == 18)
 					{
-						item = this.item18;
+						item = (T18)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -17946,7 +17435,7 @@ System.Func<TState, T21, TResult> case21)
 					{
 						if (this.discriminator == 19)
 						{
-							return this.item19;
+							return (T19)this.value;
 						}
 						else
 						{
@@ -17955,16 +17444,18 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(out T19 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T19? item)
 				{
-					item = default;
 					if (this.discriminator == 19)
 					{
-						item = this.item19;
+						item = (T19)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -17974,7 +17465,7 @@ System.Func<TState, T21, TResult> case21)
 					{
 						if (this.discriminator == 20)
 						{
-							return this.item20;
+							return (T20)this.value;
 						}
 						else
 						{
@@ -17983,16 +17474,18 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(out T20 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T20? item)
 				{
-					item = default;
 					if (this.discriminator == 20)
 					{
-						item = this.item20;
+						item = (T20)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -18002,7 +17495,7 @@ System.Func<TState, T21, TResult> case21)
 					{
 						if (this.discriminator == 21)
 						{
-							return this.item21;
+							return (T21)this.value;
 						}
 						else
 						{
@@ -18011,16 +17504,18 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(out T21 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T21? item)
 				{
-					item = default;
 					if (this.discriminator == 21)
 					{
-						item = this.item21;
+						item = (T21)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -18030,7 +17525,7 @@ System.Func<TState, T21, TResult> case21)
 					{
 						if (this.discriminator == 22)
 						{
-							return this.item22;
+							return (T22)this.value;
 						}
 						else
 						{
@@ -18039,95 +17534,21 @@ System.Func<TState, T21, TResult> case21)
 					}
 				}
 
-				public bool TryGet(out T22 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T22? item)
 				{
-					item = default;
 					if (this.discriminator == 22)
 					{
-						item = this.item22;
+						item = (T22)this.value;
 						return true;
 					}
-
-					return false;
-				}
-				
-				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11,
-System.Func<T12, T12> cloneT12,
-System.Func<T13, T13> cloneT13,
-System.Func<T14, T14> cloneT14,
-System.Func<T15, T15> cloneT15,
-System.Func<T16, T16> cloneT16,
-System.Func<T17, T17> cloneT17,
-System.Func<T18, T18> cloneT18,
-System.Func<T19, T19> cloneT19,
-System.Func<T20, T20> cloneT20,
-System.Func<T21, T21> cloneT21,
-System.Func<T22, T22> cloneT22
-				)
-				{
-					switch (this.discriminator)
+					else
 					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT1(this.item1));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT2(this.item2));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT3(this.item3));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT4(this.item4));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT5(this.item5));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT6(this.item6));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT7(this.item7));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT8(this.item8));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT9(this.item9));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT10(this.item10));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT11(this.item11));
-											case 12:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT12(this.item12));
-											case 13:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT13(this.item13));
-											case 14:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT14(this.item14));
-											case 15:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT15(this.item15));
-											case 16:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT16(this.item16));
-											case 17:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT17(this.item17));
-											case 18:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT18(this.item18));
-											case 19:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT19(this.item19));
-											case 20:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT20(this.item20));
-											case 21:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT21(this.item21));
-											case 22:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(cloneT22(this.item22));
-										}
-
-					throw new System.InvalidOperationException();
+						item = default;
+						return false;
+					}
 				}
-
+				
+				
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -18157,112 +17578,112 @@ System.Action<T22> case22)
 					{
 											case 1:
 						{
-							case1(this.item1);
+							case1((T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(this.item2);
+							case2((T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(this.item3);
+							case3((T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(this.item4);
+							case4((T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(this.item5);
+							case5((T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(this.item6);
+							case6((T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(this.item7);
+							case7((T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(this.item8);
+							case8((T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(this.item9);
+							case9((T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(this.item10);
+							case10((T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(this.item11);
+							case11((T11)this.value);
 							break;
 						}
 											case 12:
 						{
-							case12(this.item12);
+							case12((T12)this.value);
 							break;
 						}
 											case 13:
 						{
-							case13(this.item13);
+							case13((T13)this.value);
 							break;
 						}
 											case 14:
 						{
-							case14(this.item14);
+							case14((T14)this.value);
 							break;
 						}
 											case 15:
 						{
-							case15(this.item15);
+							case15((T15)this.value);
 							break;
 						}
 											case 16:
 						{
-							case16(this.item16);
+							case16((T16)this.value);
 							break;
 						}
 											case 17:
 						{
-							case17(this.item17);
+							case17((T17)this.value);
 							break;
 						}
 											case 18:
 						{
-							case18(this.item18);
+							case18((T18)this.value);
 							break;
 						}
 											case 19:
 						{
-							case19(this.item19);
+							case19((T19)this.value);
 							break;
 						}
 											case 20:
 						{
-							case20(this.item20);
+							case20((T20)this.value);
 							break;
 						}
 											case 21:
 						{
-							case21(this.item21);
+							case21((T21)this.value);
 							break;
 						}
 											case 22:
 						{
-							case22(this.item22);
+							case22((T22)this.value);
 							break;
 						}
 											default:
@@ -18301,112 +17722,112 @@ System.Action<TState, T22> case22)
 					{
 											case 1:
 						{
-							case1(state, this.item1);
+							case1(state, (T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(state, this.item2);
+							case2(state, (T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(state, this.item3);
+							case3(state, (T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(state, this.item4);
+							case4(state, (T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(state, this.item5);
+							case5(state, (T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(state, this.item6);
+							case6(state, (T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(state, this.item7);
+							case7(state, (T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(state, this.item8);
+							case8(state, (T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(state, this.item9);
+							case9(state, (T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(state, this.item10);
+							case10(state, (T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(state, this.item11);
+							case11(state, (T11)this.value);
 							break;
 						}
 											case 12:
 						{
-							case12(state, this.item12);
+							case12(state, (T12)this.value);
 							break;
 						}
 											case 13:
 						{
-							case13(state, this.item13);
+							case13(state, (T13)this.value);
 							break;
 						}
 											case 14:
 						{
-							case14(state, this.item14);
+							case14(state, (T14)this.value);
 							break;
 						}
 											case 15:
 						{
-							case15(state, this.item15);
+							case15(state, (T15)this.value);
 							break;
 						}
 											case 16:
 						{
-							case16(state, this.item16);
+							case16(state, (T16)this.value);
 							break;
 						}
 											case 17:
 						{
-							case17(state, this.item17);
+							case17(state, (T17)this.value);
 							break;
 						}
 											case 18:
 						{
-							case18(state, this.item18);
+							case18(state, (T18)this.value);
 							break;
 						}
 											case 19:
 						{
-							case19(state, this.item19);
+							case19(state, (T19)this.value);
 							break;
 						}
 											case 20:
 						{
-							case20(state, this.item20);
+							case20(state, (T20)this.value);
 							break;
 						}
 											case 21:
 						{
-							case21(state, this.item21);
+							case21(state, (T21)this.value);
 							break;
 						}
 											case 22:
 						{
-							case22(state, this.item22);
+							case22(state, (T22)this.value);
 							break;
 						}
 											default:
@@ -18445,91 +17866,91 @@ System.Func<T22, TResult> case22)
 					{
 											case 1:
 						{
-							return case1(this.item1);
+							return case1((T1)this.value);
 						}
 											case 2:
 						{
-							return case2(this.item2);
+							return case2((T2)this.value);
 						}
 											case 3:
 						{
-							return case3(this.item3);
+							return case3((T3)this.value);
 						}
 											case 4:
 						{
-							return case4(this.item4);
+							return case4((T4)this.value);
 						}
 											case 5:
 						{
-							return case5(this.item5);
+							return case5((T5)this.value);
 						}
 											case 6:
 						{
-							return case6(this.item6);
+							return case6((T6)this.value);
 						}
 											case 7:
 						{
-							return case7(this.item7);
+							return case7((T7)this.value);
 						}
 											case 8:
 						{
-							return case8(this.item8);
+							return case8((T8)this.value);
 						}
 											case 9:
 						{
-							return case9(this.item9);
+							return case9((T9)this.value);
 						}
 											case 10:
 						{
-							return case10(this.item10);
+							return case10((T10)this.value);
 						}
 											case 11:
 						{
-							return case11(this.item11);
+							return case11((T11)this.value);
 						}
 											case 12:
 						{
-							return case12(this.item12);
+							return case12((T12)this.value);
 						}
 											case 13:
 						{
-							return case13(this.item13);
+							return case13((T13)this.value);
 						}
 											case 14:
 						{
-							return case14(this.item14);
+							return case14((T14)this.value);
 						}
 											case 15:
 						{
-							return case15(this.item15);
+							return case15((T15)this.value);
 						}
 											case 16:
 						{
-							return case16(this.item16);
+							return case16((T16)this.value);
 						}
 											case 17:
 						{
-							return case17(this.item17);
+							return case17((T17)this.value);
 						}
 											case 18:
 						{
-							return case18(this.item18);
+							return case18((T18)this.value);
 						}
 											case 19:
 						{
-							return case19(this.item19);
+							return case19((T19)this.value);
 						}
 											case 20:
 						{
-							return case20(this.item20);
+							return case20((T20)this.value);
 						}
 											case 21:
 						{
-							return case21(this.item21);
+							return case21((T21)this.value);
 						}
 											case 22:
 						{
-							return case22(this.item22);
+							return case22((T22)this.value);
 						}
 											default:
 							return defaultCase();
@@ -18566,446 +17987,419 @@ System.Func<TState, T22, TResult> case22)
 					{
 											case 1:
 						{
-							return case1(state, this.item1);
+							return case1(state, (T1)this.value);
 						}
 											case 2:
 						{
-							return case2(state, this.item2);
+							return case2(state, (T2)this.value);
 						}
 											case 3:
 						{
-							return case3(state, this.item3);
+							return case3(state, (T3)this.value);
 						}
 											case 4:
 						{
-							return case4(state, this.item4);
+							return case4(state, (T4)this.value);
 						}
 											case 5:
 						{
-							return case5(state, this.item5);
+							return case5(state, (T5)this.value);
 						}
 											case 6:
 						{
-							return case6(state, this.item6);
+							return case6(state, (T6)this.value);
 						}
 											case 7:
 						{
-							return case7(state, this.item7);
+							return case7(state, (T7)this.value);
 						}
 											case 8:
 						{
-							return case8(state, this.item8);
+							return case8(state, (T8)this.value);
 						}
 											case 9:
 						{
-							return case9(state, this.item9);
+							return case9(state, (T9)this.value);
 						}
 											case 10:
 						{
-							return case10(state, this.item10);
+							return case10(state, (T10)this.value);
 						}
 											case 11:
 						{
-							return case11(state, this.item11);
+							return case11(state, (T11)this.value);
 						}
 											case 12:
 						{
-							return case12(state, this.item12);
+							return case12(state, (T12)this.value);
 						}
 											case 13:
 						{
-							return case13(state, this.item13);
+							return case13(state, (T13)this.value);
 						}
 											case 14:
 						{
-							return case14(state, this.item14);
+							return case14(state, (T14)this.value);
 						}
 											case 15:
 						{
-							return case15(state, this.item15);
+							return case15(state, (T15)this.value);
 						}
 											case 16:
 						{
-							return case16(state, this.item16);
+							return case16(state, (T16)this.value);
 						}
 											case 17:
 						{
-							return case17(state, this.item17);
+							return case17(state, (T17)this.value);
 						}
 											case 18:
 						{
-							return case18(state, this.item18);
+							return case18(state, (T18)this.value);
 						}
 											case 19:
 						{
-							return case19(state, this.item19);
+							return case19(state, (T19)this.value);
 						}
 											case 20:
 						{
-							return case20(state, this.item20);
+							return case20(state, (T20)this.value);
 						}
 											case 21:
 						{
-							return case21(state, this.item21);
+							return case21(state, (T21)this.value);
 						}
 											case 22:
 						{
-							return case22(state, this.item22);
+							return case22(state, (T22)this.value);
 						}
 											default:
 							return defaultCase(state);
 					}
 				}
+
+				public override bool Equals(object? other)
+				{
+					if (other is FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22> otherUnion)
+					{
+						return this.discriminator == otherUnion.Discriminator &&
+						       this.value.Equals(otherUnion.value);
+					}
+					else
+					{
+						return false;
+					}
+				}
+
+				public override int GetHashCode()
+				{
+					return this.value.GetHashCode() ^ this.discriminator;
+				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23> : IUnion
-			{
+			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23> : IFlatBufferUnion
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+							where T12 : notnull
+							where T13 : notnull
+							where T14 : notnull
+							where T15 : notnull
+							where T16 : notnull
+							where T17 : notnull
+							where T18 : notnull
+							where T19 : notnull
+							where T20 : notnull
+							where T21 : notnull
+							where T22 : notnull
+							where T23 : notnull
+						{
 				private readonly byte discriminator;
+				private readonly object value;
 				
-				
-				protected readonly T1 item1;
-				
-				
-				protected readonly T2 item2;
-				
-				
-				protected readonly T3 item3;
-				
-				
-				protected readonly T4 item4;
-				
-				
-				protected readonly T5 item5;
-				
-				
-				protected readonly T6 item6;
-				
-				
-				protected readonly T7 item7;
-				
-				
-				protected readonly T8 item8;
-				
-				
-				protected readonly T9 item9;
-				
-				
-				protected readonly T10 item10;
-				
-				
-				protected readonly T11 item11;
-				
-				
-				protected readonly T12 item12;
-				
-				
-				protected readonly T13 item13;
-				
-				
-				protected readonly T14 item14;
-				
-				
-				protected readonly T15 item15;
-				
-				
-				protected readonly T16 item16;
-				
-				
-				protected readonly T17 item17;
-				
-				
-				protected readonly T18 item18;
-				
-				
-				protected readonly T19 item19;
-				
-				
-				protected readonly T20 item20;
-				
-				
-				protected readonly T21 item21;
-				
-				
-				protected readonly T22 item22;
-				
-				
-				protected readonly T23 item23;
-				
-								
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 1;
-					this.item1 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 2;
-					this.item2 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 3;
-					this.item3 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 4;
-					this.item4 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 5;
-					this.item5 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 6;
-					this.item6 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 7;
-					this.item7 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 8;
-					this.item8 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 9;
-					this.item9 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 10;
-					this.item10 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 11;
-					this.item11 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T12 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 12;
-					this.item12 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T13 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 13;
-					this.item13 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T14 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 14;
-					this.item14 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T15 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 15;
-					this.item15 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T16 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 16;
-					this.item16 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T17 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 17;
-					this.item17 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T18 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 18;
-					this.item18 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T19 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 19;
-					this.item19 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T20 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 20;
-					this.item20 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T21 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 21;
-					this.item21 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T22 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 22;
-					this.item22 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T23 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 23;
-					this.item23 = item;
+					this.value = item;
 				}
 				
 							
@@ -19018,7 +18412,7 @@ System.Func<TState, T22, TResult> case22)
 					{
 						if (this.discriminator == 1)
 						{
-							return this.item1;
+							return (T1)this.value;
 						}
 						else
 						{
@@ -19027,16 +18421,18 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(out T1 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
-					item = default;
 					if (this.discriminator == 1)
 					{
-						item = this.item1;
+						item = (T1)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -19046,7 +18442,7 @@ System.Func<TState, T22, TResult> case22)
 					{
 						if (this.discriminator == 2)
 						{
-							return this.item2;
+							return (T2)this.value;
 						}
 						else
 						{
@@ -19055,16 +18451,18 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(out T2 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
-					item = default;
 					if (this.discriminator == 2)
 					{
-						item = this.item2;
+						item = (T2)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -19074,7 +18472,7 @@ System.Func<TState, T22, TResult> case22)
 					{
 						if (this.discriminator == 3)
 						{
-							return this.item3;
+							return (T3)this.value;
 						}
 						else
 						{
@@ -19083,16 +18481,18 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(out T3 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
-					item = default;
 					if (this.discriminator == 3)
 					{
-						item = this.item3;
+						item = (T3)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -19102,7 +18502,7 @@ System.Func<TState, T22, TResult> case22)
 					{
 						if (this.discriminator == 4)
 						{
-							return this.item4;
+							return (T4)this.value;
 						}
 						else
 						{
@@ -19111,16 +18511,18 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(out T4 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
-					item = default;
 					if (this.discriminator == 4)
 					{
-						item = this.item4;
+						item = (T4)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -19130,7 +18532,7 @@ System.Func<TState, T22, TResult> case22)
 					{
 						if (this.discriminator == 5)
 						{
-							return this.item5;
+							return (T5)this.value;
 						}
 						else
 						{
@@ -19139,16 +18541,18 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(out T5 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
-					item = default;
 					if (this.discriminator == 5)
 					{
-						item = this.item5;
+						item = (T5)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -19158,7 +18562,7 @@ System.Func<TState, T22, TResult> case22)
 					{
 						if (this.discriminator == 6)
 						{
-							return this.item6;
+							return (T6)this.value;
 						}
 						else
 						{
@@ -19167,16 +18571,18 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(out T6 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
-					item = default;
 					if (this.discriminator == 6)
 					{
-						item = this.item6;
+						item = (T6)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -19186,7 +18592,7 @@ System.Func<TState, T22, TResult> case22)
 					{
 						if (this.discriminator == 7)
 						{
-							return this.item7;
+							return (T7)this.value;
 						}
 						else
 						{
@@ -19195,16 +18601,18 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(out T7 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
-					item = default;
 					if (this.discriminator == 7)
 					{
-						item = this.item7;
+						item = (T7)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -19214,7 +18622,7 @@ System.Func<TState, T22, TResult> case22)
 					{
 						if (this.discriminator == 8)
 						{
-							return this.item8;
+							return (T8)this.value;
 						}
 						else
 						{
@@ -19223,16 +18631,18 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(out T8 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
-					item = default;
 					if (this.discriminator == 8)
 					{
-						item = this.item8;
+						item = (T8)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -19242,7 +18652,7 @@ System.Func<TState, T22, TResult> case22)
 					{
 						if (this.discriminator == 9)
 						{
-							return this.item9;
+							return (T9)this.value;
 						}
 						else
 						{
@@ -19251,16 +18661,18 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(out T9 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
-					item = default;
 					if (this.discriminator == 9)
 					{
-						item = this.item9;
+						item = (T9)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -19270,7 +18682,7 @@ System.Func<TState, T22, TResult> case22)
 					{
 						if (this.discriminator == 10)
 						{
-							return this.item10;
+							return (T10)this.value;
 						}
 						else
 						{
@@ -19279,16 +18691,18 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(out T10 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
-					item = default;
 					if (this.discriminator == 10)
 					{
-						item = this.item10;
+						item = (T10)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -19298,7 +18712,7 @@ System.Func<TState, T22, TResult> case22)
 					{
 						if (this.discriminator == 11)
 						{
-							return this.item11;
+							return (T11)this.value;
 						}
 						else
 						{
@@ -19307,16 +18721,18 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(out T11 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
-					item = default;
 					if (this.discriminator == 11)
 					{
-						item = this.item11;
+						item = (T11)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -19326,7 +18742,7 @@ System.Func<TState, T22, TResult> case22)
 					{
 						if (this.discriminator == 12)
 						{
-							return this.item12;
+							return (T12)this.value;
 						}
 						else
 						{
@@ -19335,16 +18751,18 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(out T12 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T12? item)
 				{
-					item = default;
 					if (this.discriminator == 12)
 					{
-						item = this.item12;
+						item = (T12)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -19354,7 +18772,7 @@ System.Func<TState, T22, TResult> case22)
 					{
 						if (this.discriminator == 13)
 						{
-							return this.item13;
+							return (T13)this.value;
 						}
 						else
 						{
@@ -19363,16 +18781,18 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(out T13 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T13? item)
 				{
-					item = default;
 					if (this.discriminator == 13)
 					{
-						item = this.item13;
+						item = (T13)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -19382,7 +18802,7 @@ System.Func<TState, T22, TResult> case22)
 					{
 						if (this.discriminator == 14)
 						{
-							return this.item14;
+							return (T14)this.value;
 						}
 						else
 						{
@@ -19391,16 +18811,18 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(out T14 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T14? item)
 				{
-					item = default;
 					if (this.discriminator == 14)
 					{
-						item = this.item14;
+						item = (T14)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -19410,7 +18832,7 @@ System.Func<TState, T22, TResult> case22)
 					{
 						if (this.discriminator == 15)
 						{
-							return this.item15;
+							return (T15)this.value;
 						}
 						else
 						{
@@ -19419,16 +18841,18 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(out T15 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T15? item)
 				{
-					item = default;
 					if (this.discriminator == 15)
 					{
-						item = this.item15;
+						item = (T15)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -19438,7 +18862,7 @@ System.Func<TState, T22, TResult> case22)
 					{
 						if (this.discriminator == 16)
 						{
-							return this.item16;
+							return (T16)this.value;
 						}
 						else
 						{
@@ -19447,16 +18871,18 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(out T16 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T16? item)
 				{
-					item = default;
 					if (this.discriminator == 16)
 					{
-						item = this.item16;
+						item = (T16)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -19466,7 +18892,7 @@ System.Func<TState, T22, TResult> case22)
 					{
 						if (this.discriminator == 17)
 						{
-							return this.item17;
+							return (T17)this.value;
 						}
 						else
 						{
@@ -19475,16 +18901,18 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(out T17 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T17? item)
 				{
-					item = default;
 					if (this.discriminator == 17)
 					{
-						item = this.item17;
+						item = (T17)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -19494,7 +18922,7 @@ System.Func<TState, T22, TResult> case22)
 					{
 						if (this.discriminator == 18)
 						{
-							return this.item18;
+							return (T18)this.value;
 						}
 						else
 						{
@@ -19503,16 +18931,18 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(out T18 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T18? item)
 				{
-					item = default;
 					if (this.discriminator == 18)
 					{
-						item = this.item18;
+						item = (T18)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -19522,7 +18952,7 @@ System.Func<TState, T22, TResult> case22)
 					{
 						if (this.discriminator == 19)
 						{
-							return this.item19;
+							return (T19)this.value;
 						}
 						else
 						{
@@ -19531,16 +18961,18 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(out T19 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T19? item)
 				{
-					item = default;
 					if (this.discriminator == 19)
 					{
-						item = this.item19;
+						item = (T19)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -19550,7 +18982,7 @@ System.Func<TState, T22, TResult> case22)
 					{
 						if (this.discriminator == 20)
 						{
-							return this.item20;
+							return (T20)this.value;
 						}
 						else
 						{
@@ -19559,16 +18991,18 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(out T20 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T20? item)
 				{
-					item = default;
 					if (this.discriminator == 20)
 					{
-						item = this.item20;
+						item = (T20)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -19578,7 +19012,7 @@ System.Func<TState, T22, TResult> case22)
 					{
 						if (this.discriminator == 21)
 						{
-							return this.item21;
+							return (T21)this.value;
 						}
 						else
 						{
@@ -19587,16 +19021,18 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(out T21 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T21? item)
 				{
-					item = default;
 					if (this.discriminator == 21)
 					{
-						item = this.item21;
+						item = (T21)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -19606,7 +19042,7 @@ System.Func<TState, T22, TResult> case22)
 					{
 						if (this.discriminator == 22)
 						{
-							return this.item22;
+							return (T22)this.value;
 						}
 						else
 						{
@@ -19615,16 +19051,18 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(out T22 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T22? item)
 				{
-					item = default;
 					if (this.discriminator == 22)
 					{
-						item = this.item22;
+						item = (T22)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -19634,7 +19072,7 @@ System.Func<TState, T22, TResult> case22)
 					{
 						if (this.discriminator == 23)
 						{
-							return this.item23;
+							return (T23)this.value;
 						}
 						else
 						{
@@ -19643,98 +19081,21 @@ System.Func<TState, T22, TResult> case22)
 					}
 				}
 
-				public bool TryGet(out T23 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T23? item)
 				{
-					item = default;
 					if (this.discriminator == 23)
 					{
-						item = this.item23;
+						item = (T23)this.value;
 						return true;
 					}
-
-					return false;
-				}
-				
-				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11,
-System.Func<T12, T12> cloneT12,
-System.Func<T13, T13> cloneT13,
-System.Func<T14, T14> cloneT14,
-System.Func<T15, T15> cloneT15,
-System.Func<T16, T16> cloneT16,
-System.Func<T17, T17> cloneT17,
-System.Func<T18, T18> cloneT18,
-System.Func<T19, T19> cloneT19,
-System.Func<T20, T20> cloneT20,
-System.Func<T21, T21> cloneT21,
-System.Func<T22, T22> cloneT22,
-System.Func<T23, T23> cloneT23
-				)
-				{
-					switch (this.discriminator)
+					else
 					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT1(this.item1));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT2(this.item2));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT3(this.item3));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT4(this.item4));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT5(this.item5));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT6(this.item6));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT7(this.item7));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT8(this.item8));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT9(this.item9));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT10(this.item10));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT11(this.item11));
-											case 12:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT12(this.item12));
-											case 13:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT13(this.item13));
-											case 14:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT14(this.item14));
-											case 15:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT15(this.item15));
-											case 16:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT16(this.item16));
-											case 17:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT17(this.item17));
-											case 18:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT18(this.item18));
-											case 19:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT19(this.item19));
-											case 20:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT20(this.item20));
-											case 21:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT21(this.item21));
-											case 22:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT22(this.item22));
-											case 23:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(cloneT23(this.item23));
-										}
-
-					throw new System.InvalidOperationException();
+						item = default;
+						return false;
+					}
 				}
-
+				
+				
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -19765,117 +19126,117 @@ System.Action<T23> case23)
 					{
 											case 1:
 						{
-							case1(this.item1);
+							case1((T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(this.item2);
+							case2((T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(this.item3);
+							case3((T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(this.item4);
+							case4((T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(this.item5);
+							case5((T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(this.item6);
+							case6((T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(this.item7);
+							case7((T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(this.item8);
+							case8((T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(this.item9);
+							case9((T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(this.item10);
+							case10((T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(this.item11);
+							case11((T11)this.value);
 							break;
 						}
 											case 12:
 						{
-							case12(this.item12);
+							case12((T12)this.value);
 							break;
 						}
 											case 13:
 						{
-							case13(this.item13);
+							case13((T13)this.value);
 							break;
 						}
 											case 14:
 						{
-							case14(this.item14);
+							case14((T14)this.value);
 							break;
 						}
 											case 15:
 						{
-							case15(this.item15);
+							case15((T15)this.value);
 							break;
 						}
 											case 16:
 						{
-							case16(this.item16);
+							case16((T16)this.value);
 							break;
 						}
 											case 17:
 						{
-							case17(this.item17);
+							case17((T17)this.value);
 							break;
 						}
 											case 18:
 						{
-							case18(this.item18);
+							case18((T18)this.value);
 							break;
 						}
 											case 19:
 						{
-							case19(this.item19);
+							case19((T19)this.value);
 							break;
 						}
 											case 20:
 						{
-							case20(this.item20);
+							case20((T20)this.value);
 							break;
 						}
 											case 21:
 						{
-							case21(this.item21);
+							case21((T21)this.value);
 							break;
 						}
 											case 22:
 						{
-							case22(this.item22);
+							case22((T22)this.value);
 							break;
 						}
 											case 23:
 						{
-							case23(this.item23);
+							case23((T23)this.value);
 							break;
 						}
 											default:
@@ -19915,117 +19276,117 @@ System.Action<TState, T23> case23)
 					{
 											case 1:
 						{
-							case1(state, this.item1);
+							case1(state, (T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(state, this.item2);
+							case2(state, (T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(state, this.item3);
+							case3(state, (T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(state, this.item4);
+							case4(state, (T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(state, this.item5);
+							case5(state, (T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(state, this.item6);
+							case6(state, (T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(state, this.item7);
+							case7(state, (T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(state, this.item8);
+							case8(state, (T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(state, this.item9);
+							case9(state, (T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(state, this.item10);
+							case10(state, (T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(state, this.item11);
+							case11(state, (T11)this.value);
 							break;
 						}
 											case 12:
 						{
-							case12(state, this.item12);
+							case12(state, (T12)this.value);
 							break;
 						}
 											case 13:
 						{
-							case13(state, this.item13);
+							case13(state, (T13)this.value);
 							break;
 						}
 											case 14:
 						{
-							case14(state, this.item14);
+							case14(state, (T14)this.value);
 							break;
 						}
 											case 15:
 						{
-							case15(state, this.item15);
+							case15(state, (T15)this.value);
 							break;
 						}
 											case 16:
 						{
-							case16(state, this.item16);
+							case16(state, (T16)this.value);
 							break;
 						}
 											case 17:
 						{
-							case17(state, this.item17);
+							case17(state, (T17)this.value);
 							break;
 						}
 											case 18:
 						{
-							case18(state, this.item18);
+							case18(state, (T18)this.value);
 							break;
 						}
 											case 19:
 						{
-							case19(state, this.item19);
+							case19(state, (T19)this.value);
 							break;
 						}
 											case 20:
 						{
-							case20(state, this.item20);
+							case20(state, (T20)this.value);
 							break;
 						}
 											case 21:
 						{
-							case21(state, this.item21);
+							case21(state, (T21)this.value);
 							break;
 						}
 											case 22:
 						{
-							case22(state, this.item22);
+							case22(state, (T22)this.value);
 							break;
 						}
 											case 23:
 						{
-							case23(state, this.item23);
+							case23(state, (T23)this.value);
 							break;
 						}
 											default:
@@ -20065,95 +19426,95 @@ System.Func<T23, TResult> case23)
 					{
 											case 1:
 						{
-							return case1(this.item1);
+							return case1((T1)this.value);
 						}
 											case 2:
 						{
-							return case2(this.item2);
+							return case2((T2)this.value);
 						}
 											case 3:
 						{
-							return case3(this.item3);
+							return case3((T3)this.value);
 						}
 											case 4:
 						{
-							return case4(this.item4);
+							return case4((T4)this.value);
 						}
 											case 5:
 						{
-							return case5(this.item5);
+							return case5((T5)this.value);
 						}
 											case 6:
 						{
-							return case6(this.item6);
+							return case6((T6)this.value);
 						}
 											case 7:
 						{
-							return case7(this.item7);
+							return case7((T7)this.value);
 						}
 											case 8:
 						{
-							return case8(this.item8);
+							return case8((T8)this.value);
 						}
 											case 9:
 						{
-							return case9(this.item9);
+							return case9((T9)this.value);
 						}
 											case 10:
 						{
-							return case10(this.item10);
+							return case10((T10)this.value);
 						}
 											case 11:
 						{
-							return case11(this.item11);
+							return case11((T11)this.value);
 						}
 											case 12:
 						{
-							return case12(this.item12);
+							return case12((T12)this.value);
 						}
 											case 13:
 						{
-							return case13(this.item13);
+							return case13((T13)this.value);
 						}
 											case 14:
 						{
-							return case14(this.item14);
+							return case14((T14)this.value);
 						}
 											case 15:
 						{
-							return case15(this.item15);
+							return case15((T15)this.value);
 						}
 											case 16:
 						{
-							return case16(this.item16);
+							return case16((T16)this.value);
 						}
 											case 17:
 						{
-							return case17(this.item17);
+							return case17((T17)this.value);
 						}
 											case 18:
 						{
-							return case18(this.item18);
+							return case18((T18)this.value);
 						}
 											case 19:
 						{
-							return case19(this.item19);
+							return case19((T19)this.value);
 						}
 											case 20:
 						{
-							return case20(this.item20);
+							return case20((T20)this.value);
 						}
 											case 21:
 						{
-							return case21(this.item21);
+							return case21((T21)this.value);
 						}
 											case 22:
 						{
-							return case22(this.item22);
+							return case22((T22)this.value);
 						}
 											case 23:
 						{
-							return case23(this.item23);
+							return case23((T23)this.value);
 						}
 											default:
 							return defaultCase();
@@ -20191,465 +19552,436 @@ System.Func<TState, T23, TResult> case23)
 					{
 											case 1:
 						{
-							return case1(state, this.item1);
+							return case1(state, (T1)this.value);
 						}
 											case 2:
 						{
-							return case2(state, this.item2);
+							return case2(state, (T2)this.value);
 						}
 											case 3:
 						{
-							return case3(state, this.item3);
+							return case3(state, (T3)this.value);
 						}
 											case 4:
 						{
-							return case4(state, this.item4);
+							return case4(state, (T4)this.value);
 						}
 											case 5:
 						{
-							return case5(state, this.item5);
+							return case5(state, (T5)this.value);
 						}
 											case 6:
 						{
-							return case6(state, this.item6);
+							return case6(state, (T6)this.value);
 						}
 											case 7:
 						{
-							return case7(state, this.item7);
+							return case7(state, (T7)this.value);
 						}
 											case 8:
 						{
-							return case8(state, this.item8);
+							return case8(state, (T8)this.value);
 						}
 											case 9:
 						{
-							return case9(state, this.item9);
+							return case9(state, (T9)this.value);
 						}
 											case 10:
 						{
-							return case10(state, this.item10);
+							return case10(state, (T10)this.value);
 						}
 											case 11:
 						{
-							return case11(state, this.item11);
+							return case11(state, (T11)this.value);
 						}
 											case 12:
 						{
-							return case12(state, this.item12);
+							return case12(state, (T12)this.value);
 						}
 											case 13:
 						{
-							return case13(state, this.item13);
+							return case13(state, (T13)this.value);
 						}
 											case 14:
 						{
-							return case14(state, this.item14);
+							return case14(state, (T14)this.value);
 						}
 											case 15:
 						{
-							return case15(state, this.item15);
+							return case15(state, (T15)this.value);
 						}
 											case 16:
 						{
-							return case16(state, this.item16);
+							return case16(state, (T16)this.value);
 						}
 											case 17:
 						{
-							return case17(state, this.item17);
+							return case17(state, (T17)this.value);
 						}
 											case 18:
 						{
-							return case18(state, this.item18);
+							return case18(state, (T18)this.value);
 						}
 											case 19:
 						{
-							return case19(state, this.item19);
+							return case19(state, (T19)this.value);
 						}
 											case 20:
 						{
-							return case20(state, this.item20);
+							return case20(state, (T20)this.value);
 						}
 											case 21:
 						{
-							return case21(state, this.item21);
+							return case21(state, (T21)this.value);
 						}
 											case 22:
 						{
-							return case22(state, this.item22);
+							return case22(state, (T22)this.value);
 						}
 											case 23:
 						{
-							return case23(state, this.item23);
+							return case23(state, (T23)this.value);
 						}
 											default:
 							return defaultCase(state);
 					}
 				}
+
+				public override bool Equals(object? other)
+				{
+					if (other is FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23> otherUnion)
+					{
+						return this.discriminator == otherUnion.Discriminator &&
+						       this.value.Equals(otherUnion.value);
+					}
+					else
+					{
+						return false;
+					}
+				}
+
+				public override int GetHashCode()
+				{
+					return this.value.GetHashCode() ^ this.discriminator;
+				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24> : IUnion
-			{
+			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24> : IFlatBufferUnion
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+							where T12 : notnull
+							where T13 : notnull
+							where T14 : notnull
+							where T15 : notnull
+							where T16 : notnull
+							where T17 : notnull
+							where T18 : notnull
+							where T19 : notnull
+							where T20 : notnull
+							where T21 : notnull
+							where T22 : notnull
+							where T23 : notnull
+							where T24 : notnull
+						{
 				private readonly byte discriminator;
+				private readonly object value;
 				
-				
-				protected readonly T1 item1;
-				
-				
-				protected readonly T2 item2;
-				
-				
-				protected readonly T3 item3;
-				
-				
-				protected readonly T4 item4;
-				
-				
-				protected readonly T5 item5;
-				
-				
-				protected readonly T6 item6;
-				
-				
-				protected readonly T7 item7;
-				
-				
-				protected readonly T8 item8;
-				
-				
-				protected readonly T9 item9;
-				
-				
-				protected readonly T10 item10;
-				
-				
-				protected readonly T11 item11;
-				
-				
-				protected readonly T12 item12;
-				
-				
-				protected readonly T13 item13;
-				
-				
-				protected readonly T14 item14;
-				
-				
-				protected readonly T15 item15;
-				
-				
-				protected readonly T16 item16;
-				
-				
-				protected readonly T17 item17;
-				
-				
-				protected readonly T18 item18;
-				
-				
-				protected readonly T19 item19;
-				
-				
-				protected readonly T20 item20;
-				
-				
-				protected readonly T21 item21;
-				
-				
-				protected readonly T22 item22;
-				
-				
-				protected readonly T23 item23;
-				
-				
-				protected readonly T24 item24;
-				
-								
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 1;
-					this.item1 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 2;
-					this.item2 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 3;
-					this.item3 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 4;
-					this.item4 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 5;
-					this.item5 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 6;
-					this.item6 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 7;
-					this.item7 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 8;
-					this.item8 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 9;
-					this.item9 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 10;
-					this.item10 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 11;
-					this.item11 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T12 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 12;
-					this.item12 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T13 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 13;
-					this.item13 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T14 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 14;
-					this.item14 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T15 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 15;
-					this.item15 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T16 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 16;
-					this.item16 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T17 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 17;
-					this.item17 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T18 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 18;
-					this.item18 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T19 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 19;
-					this.item19 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T20 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 20;
-					this.item20 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T21 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 21;
-					this.item21 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T22 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 22;
-					this.item22 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T23 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 23;
-					this.item23 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T24 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 24;
-					this.item24 = item;
+					this.value = item;
 				}
 				
 							
@@ -20662,7 +19994,7 @@ System.Func<TState, T23, TResult> case23)
 					{
 						if (this.discriminator == 1)
 						{
-							return this.item1;
+							return (T1)this.value;
 						}
 						else
 						{
@@ -20671,16 +20003,18 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(out T1 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
-					item = default;
 					if (this.discriminator == 1)
 					{
-						item = this.item1;
+						item = (T1)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -20690,7 +20024,7 @@ System.Func<TState, T23, TResult> case23)
 					{
 						if (this.discriminator == 2)
 						{
-							return this.item2;
+							return (T2)this.value;
 						}
 						else
 						{
@@ -20699,16 +20033,18 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(out T2 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
-					item = default;
 					if (this.discriminator == 2)
 					{
-						item = this.item2;
+						item = (T2)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -20718,7 +20054,7 @@ System.Func<TState, T23, TResult> case23)
 					{
 						if (this.discriminator == 3)
 						{
-							return this.item3;
+							return (T3)this.value;
 						}
 						else
 						{
@@ -20727,16 +20063,18 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(out T3 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
-					item = default;
 					if (this.discriminator == 3)
 					{
-						item = this.item3;
+						item = (T3)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -20746,7 +20084,7 @@ System.Func<TState, T23, TResult> case23)
 					{
 						if (this.discriminator == 4)
 						{
-							return this.item4;
+							return (T4)this.value;
 						}
 						else
 						{
@@ -20755,16 +20093,18 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(out T4 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
-					item = default;
 					if (this.discriminator == 4)
 					{
-						item = this.item4;
+						item = (T4)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -20774,7 +20114,7 @@ System.Func<TState, T23, TResult> case23)
 					{
 						if (this.discriminator == 5)
 						{
-							return this.item5;
+							return (T5)this.value;
 						}
 						else
 						{
@@ -20783,16 +20123,18 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(out T5 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
-					item = default;
 					if (this.discriminator == 5)
 					{
-						item = this.item5;
+						item = (T5)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -20802,7 +20144,7 @@ System.Func<TState, T23, TResult> case23)
 					{
 						if (this.discriminator == 6)
 						{
-							return this.item6;
+							return (T6)this.value;
 						}
 						else
 						{
@@ -20811,16 +20153,18 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(out T6 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
-					item = default;
 					if (this.discriminator == 6)
 					{
-						item = this.item6;
+						item = (T6)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -20830,7 +20174,7 @@ System.Func<TState, T23, TResult> case23)
 					{
 						if (this.discriminator == 7)
 						{
-							return this.item7;
+							return (T7)this.value;
 						}
 						else
 						{
@@ -20839,16 +20183,18 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(out T7 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
-					item = default;
 					if (this.discriminator == 7)
 					{
-						item = this.item7;
+						item = (T7)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -20858,7 +20204,7 @@ System.Func<TState, T23, TResult> case23)
 					{
 						if (this.discriminator == 8)
 						{
-							return this.item8;
+							return (T8)this.value;
 						}
 						else
 						{
@@ -20867,16 +20213,18 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(out T8 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
-					item = default;
 					if (this.discriminator == 8)
 					{
-						item = this.item8;
+						item = (T8)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -20886,7 +20234,7 @@ System.Func<TState, T23, TResult> case23)
 					{
 						if (this.discriminator == 9)
 						{
-							return this.item9;
+							return (T9)this.value;
 						}
 						else
 						{
@@ -20895,16 +20243,18 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(out T9 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
-					item = default;
 					if (this.discriminator == 9)
 					{
-						item = this.item9;
+						item = (T9)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -20914,7 +20264,7 @@ System.Func<TState, T23, TResult> case23)
 					{
 						if (this.discriminator == 10)
 						{
-							return this.item10;
+							return (T10)this.value;
 						}
 						else
 						{
@@ -20923,16 +20273,18 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(out T10 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
-					item = default;
 					if (this.discriminator == 10)
 					{
-						item = this.item10;
+						item = (T10)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -20942,7 +20294,7 @@ System.Func<TState, T23, TResult> case23)
 					{
 						if (this.discriminator == 11)
 						{
-							return this.item11;
+							return (T11)this.value;
 						}
 						else
 						{
@@ -20951,16 +20303,18 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(out T11 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
-					item = default;
 					if (this.discriminator == 11)
 					{
-						item = this.item11;
+						item = (T11)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -20970,7 +20324,7 @@ System.Func<TState, T23, TResult> case23)
 					{
 						if (this.discriminator == 12)
 						{
-							return this.item12;
+							return (T12)this.value;
 						}
 						else
 						{
@@ -20979,16 +20333,18 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(out T12 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T12? item)
 				{
-					item = default;
 					if (this.discriminator == 12)
 					{
-						item = this.item12;
+						item = (T12)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -20998,7 +20354,7 @@ System.Func<TState, T23, TResult> case23)
 					{
 						if (this.discriminator == 13)
 						{
-							return this.item13;
+							return (T13)this.value;
 						}
 						else
 						{
@@ -21007,16 +20363,18 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(out T13 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T13? item)
 				{
-					item = default;
 					if (this.discriminator == 13)
 					{
-						item = this.item13;
+						item = (T13)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -21026,7 +20384,7 @@ System.Func<TState, T23, TResult> case23)
 					{
 						if (this.discriminator == 14)
 						{
-							return this.item14;
+							return (T14)this.value;
 						}
 						else
 						{
@@ -21035,16 +20393,18 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(out T14 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T14? item)
 				{
-					item = default;
 					if (this.discriminator == 14)
 					{
-						item = this.item14;
+						item = (T14)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -21054,7 +20414,7 @@ System.Func<TState, T23, TResult> case23)
 					{
 						if (this.discriminator == 15)
 						{
-							return this.item15;
+							return (T15)this.value;
 						}
 						else
 						{
@@ -21063,16 +20423,18 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(out T15 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T15? item)
 				{
-					item = default;
 					if (this.discriminator == 15)
 					{
-						item = this.item15;
+						item = (T15)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -21082,7 +20444,7 @@ System.Func<TState, T23, TResult> case23)
 					{
 						if (this.discriminator == 16)
 						{
-							return this.item16;
+							return (T16)this.value;
 						}
 						else
 						{
@@ -21091,16 +20453,18 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(out T16 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T16? item)
 				{
-					item = default;
 					if (this.discriminator == 16)
 					{
-						item = this.item16;
+						item = (T16)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -21110,7 +20474,7 @@ System.Func<TState, T23, TResult> case23)
 					{
 						if (this.discriminator == 17)
 						{
-							return this.item17;
+							return (T17)this.value;
 						}
 						else
 						{
@@ -21119,16 +20483,18 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(out T17 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T17? item)
 				{
-					item = default;
 					if (this.discriminator == 17)
 					{
-						item = this.item17;
+						item = (T17)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -21138,7 +20504,7 @@ System.Func<TState, T23, TResult> case23)
 					{
 						if (this.discriminator == 18)
 						{
-							return this.item18;
+							return (T18)this.value;
 						}
 						else
 						{
@@ -21147,16 +20513,18 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(out T18 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T18? item)
 				{
-					item = default;
 					if (this.discriminator == 18)
 					{
-						item = this.item18;
+						item = (T18)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -21166,7 +20534,7 @@ System.Func<TState, T23, TResult> case23)
 					{
 						if (this.discriminator == 19)
 						{
-							return this.item19;
+							return (T19)this.value;
 						}
 						else
 						{
@@ -21175,16 +20543,18 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(out T19 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T19? item)
 				{
-					item = default;
 					if (this.discriminator == 19)
 					{
-						item = this.item19;
+						item = (T19)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -21194,7 +20564,7 @@ System.Func<TState, T23, TResult> case23)
 					{
 						if (this.discriminator == 20)
 						{
-							return this.item20;
+							return (T20)this.value;
 						}
 						else
 						{
@@ -21203,16 +20573,18 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(out T20 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T20? item)
 				{
-					item = default;
 					if (this.discriminator == 20)
 					{
-						item = this.item20;
+						item = (T20)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -21222,7 +20594,7 @@ System.Func<TState, T23, TResult> case23)
 					{
 						if (this.discriminator == 21)
 						{
-							return this.item21;
+							return (T21)this.value;
 						}
 						else
 						{
@@ -21231,16 +20603,18 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(out T21 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T21? item)
 				{
-					item = default;
 					if (this.discriminator == 21)
 					{
-						item = this.item21;
+						item = (T21)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -21250,7 +20624,7 @@ System.Func<TState, T23, TResult> case23)
 					{
 						if (this.discriminator == 22)
 						{
-							return this.item22;
+							return (T22)this.value;
 						}
 						else
 						{
@@ -21259,16 +20633,18 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(out T22 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T22? item)
 				{
-					item = default;
 					if (this.discriminator == 22)
 					{
-						item = this.item22;
+						item = (T22)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -21278,7 +20654,7 @@ System.Func<TState, T23, TResult> case23)
 					{
 						if (this.discriminator == 23)
 						{
-							return this.item23;
+							return (T23)this.value;
 						}
 						else
 						{
@@ -21287,16 +20663,18 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(out T23 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T23? item)
 				{
-					item = default;
 					if (this.discriminator == 23)
 					{
-						item = this.item23;
+						item = (T23)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -21306,7 +20684,7 @@ System.Func<TState, T23, TResult> case23)
 					{
 						if (this.discriminator == 24)
 						{
-							return this.item24;
+							return (T24)this.value;
 						}
 						else
 						{
@@ -21315,101 +20693,21 @@ System.Func<TState, T23, TResult> case23)
 					}
 				}
 
-				public bool TryGet(out T24 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T24? item)
 				{
-					item = default;
 					if (this.discriminator == 24)
 					{
-						item = this.item24;
+						item = (T24)this.value;
 						return true;
 					}
-
-					return false;
-				}
-				
-				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11,
-System.Func<T12, T12> cloneT12,
-System.Func<T13, T13> cloneT13,
-System.Func<T14, T14> cloneT14,
-System.Func<T15, T15> cloneT15,
-System.Func<T16, T16> cloneT16,
-System.Func<T17, T17> cloneT17,
-System.Func<T18, T18> cloneT18,
-System.Func<T19, T19> cloneT19,
-System.Func<T20, T20> cloneT20,
-System.Func<T21, T21> cloneT21,
-System.Func<T22, T22> cloneT22,
-System.Func<T23, T23> cloneT23,
-System.Func<T24, T24> cloneT24
-				)
-				{
-					switch (this.discriminator)
+					else
 					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT1(this.item1));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT2(this.item2));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT3(this.item3));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT4(this.item4));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT5(this.item5));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT6(this.item6));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT7(this.item7));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT8(this.item8));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT9(this.item9));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT10(this.item10));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT11(this.item11));
-											case 12:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT12(this.item12));
-											case 13:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT13(this.item13));
-											case 14:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT14(this.item14));
-											case 15:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT15(this.item15));
-											case 16:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT16(this.item16));
-											case 17:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT17(this.item17));
-											case 18:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT18(this.item18));
-											case 19:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT19(this.item19));
-											case 20:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT20(this.item20));
-											case 21:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT21(this.item21));
-											case 22:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT22(this.item22));
-											case 23:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT23(this.item23));
-											case 24:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(cloneT24(this.item24));
-										}
-
-					throw new System.InvalidOperationException();
+						item = default;
+						return false;
+					}
 				}
-
+				
+				
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -21441,122 +20739,122 @@ System.Action<T24> case24)
 					{
 											case 1:
 						{
-							case1(this.item1);
+							case1((T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(this.item2);
+							case2((T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(this.item3);
+							case3((T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(this.item4);
+							case4((T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(this.item5);
+							case5((T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(this.item6);
+							case6((T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(this.item7);
+							case7((T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(this.item8);
+							case8((T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(this.item9);
+							case9((T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(this.item10);
+							case10((T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(this.item11);
+							case11((T11)this.value);
 							break;
 						}
 											case 12:
 						{
-							case12(this.item12);
+							case12((T12)this.value);
 							break;
 						}
 											case 13:
 						{
-							case13(this.item13);
+							case13((T13)this.value);
 							break;
 						}
 											case 14:
 						{
-							case14(this.item14);
+							case14((T14)this.value);
 							break;
 						}
 											case 15:
 						{
-							case15(this.item15);
+							case15((T15)this.value);
 							break;
 						}
 											case 16:
 						{
-							case16(this.item16);
+							case16((T16)this.value);
 							break;
 						}
 											case 17:
 						{
-							case17(this.item17);
+							case17((T17)this.value);
 							break;
 						}
 											case 18:
 						{
-							case18(this.item18);
+							case18((T18)this.value);
 							break;
 						}
 											case 19:
 						{
-							case19(this.item19);
+							case19((T19)this.value);
 							break;
 						}
 											case 20:
 						{
-							case20(this.item20);
+							case20((T20)this.value);
 							break;
 						}
 											case 21:
 						{
-							case21(this.item21);
+							case21((T21)this.value);
 							break;
 						}
 											case 22:
 						{
-							case22(this.item22);
+							case22((T22)this.value);
 							break;
 						}
 											case 23:
 						{
-							case23(this.item23);
+							case23((T23)this.value);
 							break;
 						}
 											case 24:
 						{
-							case24(this.item24);
+							case24((T24)this.value);
 							break;
 						}
 											default:
@@ -21597,122 +20895,122 @@ System.Action<TState, T24> case24)
 					{
 											case 1:
 						{
-							case1(state, this.item1);
+							case1(state, (T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(state, this.item2);
+							case2(state, (T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(state, this.item3);
+							case3(state, (T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(state, this.item4);
+							case4(state, (T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(state, this.item5);
+							case5(state, (T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(state, this.item6);
+							case6(state, (T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(state, this.item7);
+							case7(state, (T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(state, this.item8);
+							case8(state, (T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(state, this.item9);
+							case9(state, (T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(state, this.item10);
+							case10(state, (T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(state, this.item11);
+							case11(state, (T11)this.value);
 							break;
 						}
 											case 12:
 						{
-							case12(state, this.item12);
+							case12(state, (T12)this.value);
 							break;
 						}
 											case 13:
 						{
-							case13(state, this.item13);
+							case13(state, (T13)this.value);
 							break;
 						}
 											case 14:
 						{
-							case14(state, this.item14);
+							case14(state, (T14)this.value);
 							break;
 						}
 											case 15:
 						{
-							case15(state, this.item15);
+							case15(state, (T15)this.value);
 							break;
 						}
 											case 16:
 						{
-							case16(state, this.item16);
+							case16(state, (T16)this.value);
 							break;
 						}
 											case 17:
 						{
-							case17(state, this.item17);
+							case17(state, (T17)this.value);
 							break;
 						}
 											case 18:
 						{
-							case18(state, this.item18);
+							case18(state, (T18)this.value);
 							break;
 						}
 											case 19:
 						{
-							case19(state, this.item19);
+							case19(state, (T19)this.value);
 							break;
 						}
 											case 20:
 						{
-							case20(state, this.item20);
+							case20(state, (T20)this.value);
 							break;
 						}
 											case 21:
 						{
-							case21(state, this.item21);
+							case21(state, (T21)this.value);
 							break;
 						}
 											case 22:
 						{
-							case22(state, this.item22);
+							case22(state, (T22)this.value);
 							break;
 						}
 											case 23:
 						{
-							case23(state, this.item23);
+							case23(state, (T23)this.value);
 							break;
 						}
 											case 24:
 						{
-							case24(state, this.item24);
+							case24(state, (T24)this.value);
 							break;
 						}
 											default:
@@ -21753,99 +21051,99 @@ System.Func<T24, TResult> case24)
 					{
 											case 1:
 						{
-							return case1(this.item1);
+							return case1((T1)this.value);
 						}
 											case 2:
 						{
-							return case2(this.item2);
+							return case2((T2)this.value);
 						}
 											case 3:
 						{
-							return case3(this.item3);
+							return case3((T3)this.value);
 						}
 											case 4:
 						{
-							return case4(this.item4);
+							return case4((T4)this.value);
 						}
 											case 5:
 						{
-							return case5(this.item5);
+							return case5((T5)this.value);
 						}
 											case 6:
 						{
-							return case6(this.item6);
+							return case6((T6)this.value);
 						}
 											case 7:
 						{
-							return case7(this.item7);
+							return case7((T7)this.value);
 						}
 											case 8:
 						{
-							return case8(this.item8);
+							return case8((T8)this.value);
 						}
 											case 9:
 						{
-							return case9(this.item9);
+							return case9((T9)this.value);
 						}
 											case 10:
 						{
-							return case10(this.item10);
+							return case10((T10)this.value);
 						}
 											case 11:
 						{
-							return case11(this.item11);
+							return case11((T11)this.value);
 						}
 											case 12:
 						{
-							return case12(this.item12);
+							return case12((T12)this.value);
 						}
 											case 13:
 						{
-							return case13(this.item13);
+							return case13((T13)this.value);
 						}
 											case 14:
 						{
-							return case14(this.item14);
+							return case14((T14)this.value);
 						}
 											case 15:
 						{
-							return case15(this.item15);
+							return case15((T15)this.value);
 						}
 											case 16:
 						{
-							return case16(this.item16);
+							return case16((T16)this.value);
 						}
 											case 17:
 						{
-							return case17(this.item17);
+							return case17((T17)this.value);
 						}
 											case 18:
 						{
-							return case18(this.item18);
+							return case18((T18)this.value);
 						}
 											case 19:
 						{
-							return case19(this.item19);
+							return case19((T19)this.value);
 						}
 											case 20:
 						{
-							return case20(this.item20);
+							return case20((T20)this.value);
 						}
 											case 21:
 						{
-							return case21(this.item21);
+							return case21((T21)this.value);
 						}
 											case 22:
 						{
-							return case22(this.item22);
+							return case22((T22)this.value);
 						}
 											case 23:
 						{
-							return case23(this.item23);
+							return case23((T23)this.value);
 						}
 											case 24:
 						{
-							return case24(this.item24);
+							return case24((T24)this.value);
 						}
 											default:
 							return defaultCase();
@@ -21884,484 +21182,453 @@ System.Func<TState, T24, TResult> case24)
 					{
 											case 1:
 						{
-							return case1(state, this.item1);
+							return case1(state, (T1)this.value);
 						}
 											case 2:
 						{
-							return case2(state, this.item2);
+							return case2(state, (T2)this.value);
 						}
 											case 3:
 						{
-							return case3(state, this.item3);
+							return case3(state, (T3)this.value);
 						}
 											case 4:
 						{
-							return case4(state, this.item4);
+							return case4(state, (T4)this.value);
 						}
 											case 5:
 						{
-							return case5(state, this.item5);
+							return case5(state, (T5)this.value);
 						}
 											case 6:
 						{
-							return case6(state, this.item6);
+							return case6(state, (T6)this.value);
 						}
 											case 7:
 						{
-							return case7(state, this.item7);
+							return case7(state, (T7)this.value);
 						}
 											case 8:
 						{
-							return case8(state, this.item8);
+							return case8(state, (T8)this.value);
 						}
 											case 9:
 						{
-							return case9(state, this.item9);
+							return case9(state, (T9)this.value);
 						}
 											case 10:
 						{
-							return case10(state, this.item10);
+							return case10(state, (T10)this.value);
 						}
 											case 11:
 						{
-							return case11(state, this.item11);
+							return case11(state, (T11)this.value);
 						}
 											case 12:
 						{
-							return case12(state, this.item12);
+							return case12(state, (T12)this.value);
 						}
 											case 13:
 						{
-							return case13(state, this.item13);
+							return case13(state, (T13)this.value);
 						}
 											case 14:
 						{
-							return case14(state, this.item14);
+							return case14(state, (T14)this.value);
 						}
 											case 15:
 						{
-							return case15(state, this.item15);
+							return case15(state, (T15)this.value);
 						}
 											case 16:
 						{
-							return case16(state, this.item16);
+							return case16(state, (T16)this.value);
 						}
 											case 17:
 						{
-							return case17(state, this.item17);
+							return case17(state, (T17)this.value);
 						}
 											case 18:
 						{
-							return case18(state, this.item18);
+							return case18(state, (T18)this.value);
 						}
 											case 19:
 						{
-							return case19(state, this.item19);
+							return case19(state, (T19)this.value);
 						}
 											case 20:
 						{
-							return case20(state, this.item20);
+							return case20(state, (T20)this.value);
 						}
 											case 21:
 						{
-							return case21(state, this.item21);
+							return case21(state, (T21)this.value);
 						}
 											case 22:
 						{
-							return case22(state, this.item22);
+							return case22(state, (T22)this.value);
 						}
 											case 23:
 						{
-							return case23(state, this.item23);
+							return case23(state, (T23)this.value);
 						}
 											case 24:
 						{
-							return case24(state, this.item24);
+							return case24(state, (T24)this.value);
 						}
 											default:
 							return defaultCase(state);
 					}
 				}
+
+				public override bool Equals(object? other)
+				{
+					if (other is FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24> otherUnion)
+					{
+						return this.discriminator == otherUnion.Discriminator &&
+						       this.value.Equals(otherUnion.value);
+					}
+					else
+					{
+						return false;
+					}
+				}
+
+				public override int GetHashCode()
+				{
+					return this.value.GetHashCode() ^ this.discriminator;
+				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25> : IUnion
-			{
+			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25> : IFlatBufferUnion
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+							where T12 : notnull
+							where T13 : notnull
+							where T14 : notnull
+							where T15 : notnull
+							where T16 : notnull
+							where T17 : notnull
+							where T18 : notnull
+							where T19 : notnull
+							where T20 : notnull
+							where T21 : notnull
+							where T22 : notnull
+							where T23 : notnull
+							where T24 : notnull
+							where T25 : notnull
+						{
 				private readonly byte discriminator;
+				private readonly object value;
 				
-				
-				protected readonly T1 item1;
-				
-				
-				protected readonly T2 item2;
-				
-				
-				protected readonly T3 item3;
-				
-				
-				protected readonly T4 item4;
-				
-				
-				protected readonly T5 item5;
-				
-				
-				protected readonly T6 item6;
-				
-				
-				protected readonly T7 item7;
-				
-				
-				protected readonly T8 item8;
-				
-				
-				protected readonly T9 item9;
-				
-				
-				protected readonly T10 item10;
-				
-				
-				protected readonly T11 item11;
-				
-				
-				protected readonly T12 item12;
-				
-				
-				protected readonly T13 item13;
-				
-				
-				protected readonly T14 item14;
-				
-				
-				protected readonly T15 item15;
-				
-				
-				protected readonly T16 item16;
-				
-				
-				protected readonly T17 item17;
-				
-				
-				protected readonly T18 item18;
-				
-				
-				protected readonly T19 item19;
-				
-				
-				protected readonly T20 item20;
-				
-				
-				protected readonly T21 item21;
-				
-				
-				protected readonly T22 item22;
-				
-				
-				protected readonly T23 item23;
-				
-				
-				protected readonly T24 item24;
-				
-				
-				protected readonly T25 item25;
-				
-								
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 1;
-					this.item1 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 2;
-					this.item2 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 3;
-					this.item3 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 4;
-					this.item4 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 5;
-					this.item5 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 6;
-					this.item6 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 7;
-					this.item7 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 8;
-					this.item8 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 9;
-					this.item9 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 10;
-					this.item10 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 11;
-					this.item11 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T12 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 12;
-					this.item12 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T13 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 13;
-					this.item13 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T14 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 14;
-					this.item14 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T15 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 15;
-					this.item15 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T16 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 16;
-					this.item16 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T17 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 17;
-					this.item17 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T18 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 18;
-					this.item18 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T19 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 19;
-					this.item19 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T20 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 20;
-					this.item20 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T21 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 21;
-					this.item21 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T22 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 22;
-					this.item22 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T23 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 23;
-					this.item23 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T24 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 24;
-					this.item24 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T25 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 25;
-					this.item25 = item;
+					this.value = item;
 				}
 				
 							
@@ -22374,7 +21641,7 @@ System.Func<TState, T24, TResult> case24)
 					{
 						if (this.discriminator == 1)
 						{
-							return this.item1;
+							return (T1)this.value;
 						}
 						else
 						{
@@ -22383,16 +21650,18 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(out T1 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
-					item = default;
 					if (this.discriminator == 1)
 					{
-						item = this.item1;
+						item = (T1)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -22402,7 +21671,7 @@ System.Func<TState, T24, TResult> case24)
 					{
 						if (this.discriminator == 2)
 						{
-							return this.item2;
+							return (T2)this.value;
 						}
 						else
 						{
@@ -22411,16 +21680,18 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(out T2 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
-					item = default;
 					if (this.discriminator == 2)
 					{
-						item = this.item2;
+						item = (T2)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -22430,7 +21701,7 @@ System.Func<TState, T24, TResult> case24)
 					{
 						if (this.discriminator == 3)
 						{
-							return this.item3;
+							return (T3)this.value;
 						}
 						else
 						{
@@ -22439,16 +21710,18 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(out T3 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
-					item = default;
 					if (this.discriminator == 3)
 					{
-						item = this.item3;
+						item = (T3)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -22458,7 +21731,7 @@ System.Func<TState, T24, TResult> case24)
 					{
 						if (this.discriminator == 4)
 						{
-							return this.item4;
+							return (T4)this.value;
 						}
 						else
 						{
@@ -22467,16 +21740,18 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(out T4 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
-					item = default;
 					if (this.discriminator == 4)
 					{
-						item = this.item4;
+						item = (T4)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -22486,7 +21761,7 @@ System.Func<TState, T24, TResult> case24)
 					{
 						if (this.discriminator == 5)
 						{
-							return this.item5;
+							return (T5)this.value;
 						}
 						else
 						{
@@ -22495,16 +21770,18 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(out T5 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
-					item = default;
 					if (this.discriminator == 5)
 					{
-						item = this.item5;
+						item = (T5)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -22514,7 +21791,7 @@ System.Func<TState, T24, TResult> case24)
 					{
 						if (this.discriminator == 6)
 						{
-							return this.item6;
+							return (T6)this.value;
 						}
 						else
 						{
@@ -22523,16 +21800,18 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(out T6 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
-					item = default;
 					if (this.discriminator == 6)
 					{
-						item = this.item6;
+						item = (T6)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -22542,7 +21821,7 @@ System.Func<TState, T24, TResult> case24)
 					{
 						if (this.discriminator == 7)
 						{
-							return this.item7;
+							return (T7)this.value;
 						}
 						else
 						{
@@ -22551,16 +21830,18 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(out T7 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
-					item = default;
 					if (this.discriminator == 7)
 					{
-						item = this.item7;
+						item = (T7)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -22570,7 +21851,7 @@ System.Func<TState, T24, TResult> case24)
 					{
 						if (this.discriminator == 8)
 						{
-							return this.item8;
+							return (T8)this.value;
 						}
 						else
 						{
@@ -22579,16 +21860,18 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(out T8 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
-					item = default;
 					if (this.discriminator == 8)
 					{
-						item = this.item8;
+						item = (T8)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -22598,7 +21881,7 @@ System.Func<TState, T24, TResult> case24)
 					{
 						if (this.discriminator == 9)
 						{
-							return this.item9;
+							return (T9)this.value;
 						}
 						else
 						{
@@ -22607,16 +21890,18 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(out T9 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
-					item = default;
 					if (this.discriminator == 9)
 					{
-						item = this.item9;
+						item = (T9)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -22626,7 +21911,7 @@ System.Func<TState, T24, TResult> case24)
 					{
 						if (this.discriminator == 10)
 						{
-							return this.item10;
+							return (T10)this.value;
 						}
 						else
 						{
@@ -22635,16 +21920,18 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(out T10 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
-					item = default;
 					if (this.discriminator == 10)
 					{
-						item = this.item10;
+						item = (T10)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -22654,7 +21941,7 @@ System.Func<TState, T24, TResult> case24)
 					{
 						if (this.discriminator == 11)
 						{
-							return this.item11;
+							return (T11)this.value;
 						}
 						else
 						{
@@ -22663,16 +21950,18 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(out T11 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
-					item = default;
 					if (this.discriminator == 11)
 					{
-						item = this.item11;
+						item = (T11)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -22682,7 +21971,7 @@ System.Func<TState, T24, TResult> case24)
 					{
 						if (this.discriminator == 12)
 						{
-							return this.item12;
+							return (T12)this.value;
 						}
 						else
 						{
@@ -22691,16 +21980,18 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(out T12 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T12? item)
 				{
-					item = default;
 					if (this.discriminator == 12)
 					{
-						item = this.item12;
+						item = (T12)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -22710,7 +22001,7 @@ System.Func<TState, T24, TResult> case24)
 					{
 						if (this.discriminator == 13)
 						{
-							return this.item13;
+							return (T13)this.value;
 						}
 						else
 						{
@@ -22719,16 +22010,18 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(out T13 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T13? item)
 				{
-					item = default;
 					if (this.discriminator == 13)
 					{
-						item = this.item13;
+						item = (T13)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -22738,7 +22031,7 @@ System.Func<TState, T24, TResult> case24)
 					{
 						if (this.discriminator == 14)
 						{
-							return this.item14;
+							return (T14)this.value;
 						}
 						else
 						{
@@ -22747,16 +22040,18 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(out T14 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T14? item)
 				{
-					item = default;
 					if (this.discriminator == 14)
 					{
-						item = this.item14;
+						item = (T14)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -22766,7 +22061,7 @@ System.Func<TState, T24, TResult> case24)
 					{
 						if (this.discriminator == 15)
 						{
-							return this.item15;
+							return (T15)this.value;
 						}
 						else
 						{
@@ -22775,16 +22070,18 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(out T15 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T15? item)
 				{
-					item = default;
 					if (this.discriminator == 15)
 					{
-						item = this.item15;
+						item = (T15)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -22794,7 +22091,7 @@ System.Func<TState, T24, TResult> case24)
 					{
 						if (this.discriminator == 16)
 						{
-							return this.item16;
+							return (T16)this.value;
 						}
 						else
 						{
@@ -22803,16 +22100,18 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(out T16 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T16? item)
 				{
-					item = default;
 					if (this.discriminator == 16)
 					{
-						item = this.item16;
+						item = (T16)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -22822,7 +22121,7 @@ System.Func<TState, T24, TResult> case24)
 					{
 						if (this.discriminator == 17)
 						{
-							return this.item17;
+							return (T17)this.value;
 						}
 						else
 						{
@@ -22831,16 +22130,18 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(out T17 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T17? item)
 				{
-					item = default;
 					if (this.discriminator == 17)
 					{
-						item = this.item17;
+						item = (T17)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -22850,7 +22151,7 @@ System.Func<TState, T24, TResult> case24)
 					{
 						if (this.discriminator == 18)
 						{
-							return this.item18;
+							return (T18)this.value;
 						}
 						else
 						{
@@ -22859,16 +22160,18 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(out T18 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T18? item)
 				{
-					item = default;
 					if (this.discriminator == 18)
 					{
-						item = this.item18;
+						item = (T18)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -22878,7 +22181,7 @@ System.Func<TState, T24, TResult> case24)
 					{
 						if (this.discriminator == 19)
 						{
-							return this.item19;
+							return (T19)this.value;
 						}
 						else
 						{
@@ -22887,16 +22190,18 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(out T19 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T19? item)
 				{
-					item = default;
 					if (this.discriminator == 19)
 					{
-						item = this.item19;
+						item = (T19)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -22906,7 +22211,7 @@ System.Func<TState, T24, TResult> case24)
 					{
 						if (this.discriminator == 20)
 						{
-							return this.item20;
+							return (T20)this.value;
 						}
 						else
 						{
@@ -22915,16 +22220,18 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(out T20 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T20? item)
 				{
-					item = default;
 					if (this.discriminator == 20)
 					{
-						item = this.item20;
+						item = (T20)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -22934,7 +22241,7 @@ System.Func<TState, T24, TResult> case24)
 					{
 						if (this.discriminator == 21)
 						{
-							return this.item21;
+							return (T21)this.value;
 						}
 						else
 						{
@@ -22943,16 +22250,18 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(out T21 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T21? item)
 				{
-					item = default;
 					if (this.discriminator == 21)
 					{
-						item = this.item21;
+						item = (T21)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -22962,7 +22271,7 @@ System.Func<TState, T24, TResult> case24)
 					{
 						if (this.discriminator == 22)
 						{
-							return this.item22;
+							return (T22)this.value;
 						}
 						else
 						{
@@ -22971,16 +22280,18 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(out T22 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T22? item)
 				{
-					item = default;
 					if (this.discriminator == 22)
 					{
-						item = this.item22;
+						item = (T22)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -22990,7 +22301,7 @@ System.Func<TState, T24, TResult> case24)
 					{
 						if (this.discriminator == 23)
 						{
-							return this.item23;
+							return (T23)this.value;
 						}
 						else
 						{
@@ -22999,16 +22310,18 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(out T23 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T23? item)
 				{
-					item = default;
 					if (this.discriminator == 23)
 					{
-						item = this.item23;
+						item = (T23)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -23018,7 +22331,7 @@ System.Func<TState, T24, TResult> case24)
 					{
 						if (this.discriminator == 24)
 						{
-							return this.item24;
+							return (T24)this.value;
 						}
 						else
 						{
@@ -23027,16 +22340,18 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(out T24 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T24? item)
 				{
-					item = default;
 					if (this.discriminator == 24)
 					{
-						item = this.item24;
+						item = (T24)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -23046,7 +22361,7 @@ System.Func<TState, T24, TResult> case24)
 					{
 						if (this.discriminator == 25)
 						{
-							return this.item25;
+							return (T25)this.value;
 						}
 						else
 						{
@@ -23055,104 +22370,21 @@ System.Func<TState, T24, TResult> case24)
 					}
 				}
 
-				public bool TryGet(out T25 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T25? item)
 				{
-					item = default;
 					if (this.discriminator == 25)
 					{
-						item = this.item25;
+						item = (T25)this.value;
 						return true;
 					}
-
-					return false;
-				}
-				
-				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11,
-System.Func<T12, T12> cloneT12,
-System.Func<T13, T13> cloneT13,
-System.Func<T14, T14> cloneT14,
-System.Func<T15, T15> cloneT15,
-System.Func<T16, T16> cloneT16,
-System.Func<T17, T17> cloneT17,
-System.Func<T18, T18> cloneT18,
-System.Func<T19, T19> cloneT19,
-System.Func<T20, T20> cloneT20,
-System.Func<T21, T21> cloneT21,
-System.Func<T22, T22> cloneT22,
-System.Func<T23, T23> cloneT23,
-System.Func<T24, T24> cloneT24,
-System.Func<T25, T25> cloneT25
-				)
-				{
-					switch (this.discriminator)
+					else
 					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT1(this.item1));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT2(this.item2));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT3(this.item3));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT4(this.item4));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT5(this.item5));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT6(this.item6));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT7(this.item7));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT8(this.item8));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT9(this.item9));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT10(this.item10));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT11(this.item11));
-											case 12:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT12(this.item12));
-											case 13:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT13(this.item13));
-											case 14:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT14(this.item14));
-											case 15:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT15(this.item15));
-											case 16:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT16(this.item16));
-											case 17:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT17(this.item17));
-											case 18:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT18(this.item18));
-											case 19:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT19(this.item19));
-											case 20:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT20(this.item20));
-											case 21:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT21(this.item21));
-											case 22:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT22(this.item22));
-											case 23:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT23(this.item23));
-											case 24:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT24(this.item24));
-											case 25:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>(cloneT25(this.item25));
-										}
-
-					throw new System.InvalidOperationException();
+						item = default;
+						return false;
+					}
 				}
-
+				
+				
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -23185,127 +22417,127 @@ System.Action<T25> case25)
 					{
 											case 1:
 						{
-							case1(this.item1);
+							case1((T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(this.item2);
+							case2((T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(this.item3);
+							case3((T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(this.item4);
+							case4((T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(this.item5);
+							case5((T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(this.item6);
+							case6((T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(this.item7);
+							case7((T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(this.item8);
+							case8((T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(this.item9);
+							case9((T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(this.item10);
+							case10((T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(this.item11);
+							case11((T11)this.value);
 							break;
 						}
 											case 12:
 						{
-							case12(this.item12);
+							case12((T12)this.value);
 							break;
 						}
 											case 13:
 						{
-							case13(this.item13);
+							case13((T13)this.value);
 							break;
 						}
 											case 14:
 						{
-							case14(this.item14);
+							case14((T14)this.value);
 							break;
 						}
 											case 15:
 						{
-							case15(this.item15);
+							case15((T15)this.value);
 							break;
 						}
 											case 16:
 						{
-							case16(this.item16);
+							case16((T16)this.value);
 							break;
 						}
 											case 17:
 						{
-							case17(this.item17);
+							case17((T17)this.value);
 							break;
 						}
 											case 18:
 						{
-							case18(this.item18);
+							case18((T18)this.value);
 							break;
 						}
 											case 19:
 						{
-							case19(this.item19);
+							case19((T19)this.value);
 							break;
 						}
 											case 20:
 						{
-							case20(this.item20);
+							case20((T20)this.value);
 							break;
 						}
 											case 21:
 						{
-							case21(this.item21);
+							case21((T21)this.value);
 							break;
 						}
 											case 22:
 						{
-							case22(this.item22);
+							case22((T22)this.value);
 							break;
 						}
 											case 23:
 						{
-							case23(this.item23);
+							case23((T23)this.value);
 							break;
 						}
 											case 24:
 						{
-							case24(this.item24);
+							case24((T24)this.value);
 							break;
 						}
 											case 25:
 						{
-							case25(this.item25);
+							case25((T25)this.value);
 							break;
 						}
 											default:
@@ -23347,127 +22579,127 @@ System.Action<TState, T25> case25)
 					{
 											case 1:
 						{
-							case1(state, this.item1);
+							case1(state, (T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(state, this.item2);
+							case2(state, (T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(state, this.item3);
+							case3(state, (T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(state, this.item4);
+							case4(state, (T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(state, this.item5);
+							case5(state, (T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(state, this.item6);
+							case6(state, (T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(state, this.item7);
+							case7(state, (T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(state, this.item8);
+							case8(state, (T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(state, this.item9);
+							case9(state, (T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(state, this.item10);
+							case10(state, (T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(state, this.item11);
+							case11(state, (T11)this.value);
 							break;
 						}
 											case 12:
 						{
-							case12(state, this.item12);
+							case12(state, (T12)this.value);
 							break;
 						}
 											case 13:
 						{
-							case13(state, this.item13);
+							case13(state, (T13)this.value);
 							break;
 						}
 											case 14:
 						{
-							case14(state, this.item14);
+							case14(state, (T14)this.value);
 							break;
 						}
 											case 15:
 						{
-							case15(state, this.item15);
+							case15(state, (T15)this.value);
 							break;
 						}
 											case 16:
 						{
-							case16(state, this.item16);
+							case16(state, (T16)this.value);
 							break;
 						}
 											case 17:
 						{
-							case17(state, this.item17);
+							case17(state, (T17)this.value);
 							break;
 						}
 											case 18:
 						{
-							case18(state, this.item18);
+							case18(state, (T18)this.value);
 							break;
 						}
 											case 19:
 						{
-							case19(state, this.item19);
+							case19(state, (T19)this.value);
 							break;
 						}
 											case 20:
 						{
-							case20(state, this.item20);
+							case20(state, (T20)this.value);
 							break;
 						}
 											case 21:
 						{
-							case21(state, this.item21);
+							case21(state, (T21)this.value);
 							break;
 						}
 											case 22:
 						{
-							case22(state, this.item22);
+							case22(state, (T22)this.value);
 							break;
 						}
 											case 23:
 						{
-							case23(state, this.item23);
+							case23(state, (T23)this.value);
 							break;
 						}
 											case 24:
 						{
-							case24(state, this.item24);
+							case24(state, (T24)this.value);
 							break;
 						}
 											case 25:
 						{
-							case25(state, this.item25);
+							case25(state, (T25)this.value);
 							break;
 						}
 											default:
@@ -23509,103 +22741,103 @@ System.Func<T25, TResult> case25)
 					{
 											case 1:
 						{
-							return case1(this.item1);
+							return case1((T1)this.value);
 						}
 											case 2:
 						{
-							return case2(this.item2);
+							return case2((T2)this.value);
 						}
 											case 3:
 						{
-							return case3(this.item3);
+							return case3((T3)this.value);
 						}
 											case 4:
 						{
-							return case4(this.item4);
+							return case4((T4)this.value);
 						}
 											case 5:
 						{
-							return case5(this.item5);
+							return case5((T5)this.value);
 						}
 											case 6:
 						{
-							return case6(this.item6);
+							return case6((T6)this.value);
 						}
 											case 7:
 						{
-							return case7(this.item7);
+							return case7((T7)this.value);
 						}
 											case 8:
 						{
-							return case8(this.item8);
+							return case8((T8)this.value);
 						}
 											case 9:
 						{
-							return case9(this.item9);
+							return case9((T9)this.value);
 						}
 											case 10:
 						{
-							return case10(this.item10);
+							return case10((T10)this.value);
 						}
 											case 11:
 						{
-							return case11(this.item11);
+							return case11((T11)this.value);
 						}
 											case 12:
 						{
-							return case12(this.item12);
+							return case12((T12)this.value);
 						}
 											case 13:
 						{
-							return case13(this.item13);
+							return case13((T13)this.value);
 						}
 											case 14:
 						{
-							return case14(this.item14);
+							return case14((T14)this.value);
 						}
 											case 15:
 						{
-							return case15(this.item15);
+							return case15((T15)this.value);
 						}
 											case 16:
 						{
-							return case16(this.item16);
+							return case16((T16)this.value);
 						}
 											case 17:
 						{
-							return case17(this.item17);
+							return case17((T17)this.value);
 						}
 											case 18:
 						{
-							return case18(this.item18);
+							return case18((T18)this.value);
 						}
 											case 19:
 						{
-							return case19(this.item19);
+							return case19((T19)this.value);
 						}
 											case 20:
 						{
-							return case20(this.item20);
+							return case20((T20)this.value);
 						}
 											case 21:
 						{
-							return case21(this.item21);
+							return case21((T21)this.value);
 						}
 											case 22:
 						{
-							return case22(this.item22);
+							return case22((T22)this.value);
 						}
 											case 23:
 						{
-							return case23(this.item23);
+							return case23((T23)this.value);
 						}
 											case 24:
 						{
-							return case24(this.item24);
+							return case24((T24)this.value);
 						}
 											case 25:
 						{
-							return case25(this.item25);
+							return case25((T25)this.value);
 						}
 											default:
 							return defaultCase();
@@ -23645,503 +22877,470 @@ System.Func<TState, T25, TResult> case25)
 					{
 											case 1:
 						{
-							return case1(state, this.item1);
+							return case1(state, (T1)this.value);
 						}
 											case 2:
 						{
-							return case2(state, this.item2);
+							return case2(state, (T2)this.value);
 						}
 											case 3:
 						{
-							return case3(state, this.item3);
+							return case3(state, (T3)this.value);
 						}
 											case 4:
 						{
-							return case4(state, this.item4);
+							return case4(state, (T4)this.value);
 						}
 											case 5:
 						{
-							return case5(state, this.item5);
+							return case5(state, (T5)this.value);
 						}
 											case 6:
 						{
-							return case6(state, this.item6);
+							return case6(state, (T6)this.value);
 						}
 											case 7:
 						{
-							return case7(state, this.item7);
+							return case7(state, (T7)this.value);
 						}
 											case 8:
 						{
-							return case8(state, this.item8);
+							return case8(state, (T8)this.value);
 						}
 											case 9:
 						{
-							return case9(state, this.item9);
+							return case9(state, (T9)this.value);
 						}
 											case 10:
 						{
-							return case10(state, this.item10);
+							return case10(state, (T10)this.value);
 						}
 											case 11:
 						{
-							return case11(state, this.item11);
+							return case11(state, (T11)this.value);
 						}
 											case 12:
 						{
-							return case12(state, this.item12);
+							return case12(state, (T12)this.value);
 						}
 											case 13:
 						{
-							return case13(state, this.item13);
+							return case13(state, (T13)this.value);
 						}
 											case 14:
 						{
-							return case14(state, this.item14);
+							return case14(state, (T14)this.value);
 						}
 											case 15:
 						{
-							return case15(state, this.item15);
+							return case15(state, (T15)this.value);
 						}
 											case 16:
 						{
-							return case16(state, this.item16);
+							return case16(state, (T16)this.value);
 						}
 											case 17:
 						{
-							return case17(state, this.item17);
+							return case17(state, (T17)this.value);
 						}
 											case 18:
 						{
-							return case18(state, this.item18);
+							return case18(state, (T18)this.value);
 						}
 											case 19:
 						{
-							return case19(state, this.item19);
+							return case19(state, (T19)this.value);
 						}
 											case 20:
 						{
-							return case20(state, this.item20);
+							return case20(state, (T20)this.value);
 						}
 											case 21:
 						{
-							return case21(state, this.item21);
+							return case21(state, (T21)this.value);
 						}
 											case 22:
 						{
-							return case22(state, this.item22);
+							return case22(state, (T22)this.value);
 						}
 											case 23:
 						{
-							return case23(state, this.item23);
+							return case23(state, (T23)this.value);
 						}
 											case 24:
 						{
-							return case24(state, this.item24);
+							return case24(state, (T24)this.value);
 						}
 											case 25:
 						{
-							return case25(state, this.item25);
+							return case25(state, (T25)this.value);
 						}
 											default:
 							return defaultCase(state);
 					}
 				}
+
+				public override bool Equals(object? other)
+				{
+					if (other is FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25> otherUnion)
+					{
+						return this.discriminator == otherUnion.Discriminator &&
+						       this.value.Equals(otherUnion.value);
+					}
+					else
+					{
+						return false;
+					}
+				}
+
+				public override int GetHashCode()
+				{
+					return this.value.GetHashCode() ^ this.discriminator;
+				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26> : IUnion
-			{
+			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26> : IFlatBufferUnion
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+							where T12 : notnull
+							where T13 : notnull
+							where T14 : notnull
+							where T15 : notnull
+							where T16 : notnull
+							where T17 : notnull
+							where T18 : notnull
+							where T19 : notnull
+							where T20 : notnull
+							where T21 : notnull
+							where T22 : notnull
+							where T23 : notnull
+							where T24 : notnull
+							where T25 : notnull
+							where T26 : notnull
+						{
 				private readonly byte discriminator;
+				private readonly object value;
 				
-				
-				protected readonly T1 item1;
-				
-				
-				protected readonly T2 item2;
-				
-				
-				protected readonly T3 item3;
-				
-				
-				protected readonly T4 item4;
-				
-				
-				protected readonly T5 item5;
-				
-				
-				protected readonly T6 item6;
-				
-				
-				protected readonly T7 item7;
-				
-				
-				protected readonly T8 item8;
-				
-				
-				protected readonly T9 item9;
-				
-				
-				protected readonly T10 item10;
-				
-				
-				protected readonly T11 item11;
-				
-				
-				protected readonly T12 item12;
-				
-				
-				protected readonly T13 item13;
-				
-				
-				protected readonly T14 item14;
-				
-				
-				protected readonly T15 item15;
-				
-				
-				protected readonly T16 item16;
-				
-				
-				protected readonly T17 item17;
-				
-				
-				protected readonly T18 item18;
-				
-				
-				protected readonly T19 item19;
-				
-				
-				protected readonly T20 item20;
-				
-				
-				protected readonly T21 item21;
-				
-				
-				protected readonly T22 item22;
-				
-				
-				protected readonly T23 item23;
-				
-				
-				protected readonly T24 item24;
-				
-				
-				protected readonly T25 item25;
-				
-				
-				protected readonly T26 item26;
-				
-								
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 1;
-					this.item1 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 2;
-					this.item2 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 3;
-					this.item3 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 4;
-					this.item4 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 5;
-					this.item5 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 6;
-					this.item6 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 7;
-					this.item7 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 8;
-					this.item8 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 9;
-					this.item9 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 10;
-					this.item10 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 11;
-					this.item11 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T12 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 12;
-					this.item12 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T13 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 13;
-					this.item13 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T14 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 14;
-					this.item14 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T15 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 15;
-					this.item15 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T16 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 16;
-					this.item16 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T17 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 17;
-					this.item17 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T18 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 18;
-					this.item18 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T19 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 19;
-					this.item19 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T20 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 20;
-					this.item20 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T21 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 21;
-					this.item21 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T22 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 22;
-					this.item22 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T23 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 23;
-					this.item23 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T24 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 24;
-					this.item24 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T25 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 25;
-					this.item25 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T26 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 26;
-					this.item26 = item;
+					this.value = item;
 				}
 				
 							
@@ -24154,7 +23353,7 @@ System.Func<TState, T25, TResult> case25)
 					{
 						if (this.discriminator == 1)
 						{
-							return this.item1;
+							return (T1)this.value;
 						}
 						else
 						{
@@ -24163,16 +23362,18 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(out T1 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
-					item = default;
 					if (this.discriminator == 1)
 					{
-						item = this.item1;
+						item = (T1)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -24182,7 +23383,7 @@ System.Func<TState, T25, TResult> case25)
 					{
 						if (this.discriminator == 2)
 						{
-							return this.item2;
+							return (T2)this.value;
 						}
 						else
 						{
@@ -24191,16 +23392,18 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(out T2 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
-					item = default;
 					if (this.discriminator == 2)
 					{
-						item = this.item2;
+						item = (T2)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -24210,7 +23413,7 @@ System.Func<TState, T25, TResult> case25)
 					{
 						if (this.discriminator == 3)
 						{
-							return this.item3;
+							return (T3)this.value;
 						}
 						else
 						{
@@ -24219,16 +23422,18 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(out T3 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
-					item = default;
 					if (this.discriminator == 3)
 					{
-						item = this.item3;
+						item = (T3)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -24238,7 +23443,7 @@ System.Func<TState, T25, TResult> case25)
 					{
 						if (this.discriminator == 4)
 						{
-							return this.item4;
+							return (T4)this.value;
 						}
 						else
 						{
@@ -24247,16 +23452,18 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(out T4 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
-					item = default;
 					if (this.discriminator == 4)
 					{
-						item = this.item4;
+						item = (T4)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -24266,7 +23473,7 @@ System.Func<TState, T25, TResult> case25)
 					{
 						if (this.discriminator == 5)
 						{
-							return this.item5;
+							return (T5)this.value;
 						}
 						else
 						{
@@ -24275,16 +23482,18 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(out T5 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
-					item = default;
 					if (this.discriminator == 5)
 					{
-						item = this.item5;
+						item = (T5)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -24294,7 +23503,7 @@ System.Func<TState, T25, TResult> case25)
 					{
 						if (this.discriminator == 6)
 						{
-							return this.item6;
+							return (T6)this.value;
 						}
 						else
 						{
@@ -24303,16 +23512,18 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(out T6 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
-					item = default;
 					if (this.discriminator == 6)
 					{
-						item = this.item6;
+						item = (T6)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -24322,7 +23533,7 @@ System.Func<TState, T25, TResult> case25)
 					{
 						if (this.discriminator == 7)
 						{
-							return this.item7;
+							return (T7)this.value;
 						}
 						else
 						{
@@ -24331,16 +23542,18 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(out T7 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
-					item = default;
 					if (this.discriminator == 7)
 					{
-						item = this.item7;
+						item = (T7)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -24350,7 +23563,7 @@ System.Func<TState, T25, TResult> case25)
 					{
 						if (this.discriminator == 8)
 						{
-							return this.item8;
+							return (T8)this.value;
 						}
 						else
 						{
@@ -24359,16 +23572,18 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(out T8 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
-					item = default;
 					if (this.discriminator == 8)
 					{
-						item = this.item8;
+						item = (T8)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -24378,7 +23593,7 @@ System.Func<TState, T25, TResult> case25)
 					{
 						if (this.discriminator == 9)
 						{
-							return this.item9;
+							return (T9)this.value;
 						}
 						else
 						{
@@ -24387,16 +23602,18 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(out T9 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
-					item = default;
 					if (this.discriminator == 9)
 					{
-						item = this.item9;
+						item = (T9)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -24406,7 +23623,7 @@ System.Func<TState, T25, TResult> case25)
 					{
 						if (this.discriminator == 10)
 						{
-							return this.item10;
+							return (T10)this.value;
 						}
 						else
 						{
@@ -24415,16 +23632,18 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(out T10 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
-					item = default;
 					if (this.discriminator == 10)
 					{
-						item = this.item10;
+						item = (T10)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -24434,7 +23653,7 @@ System.Func<TState, T25, TResult> case25)
 					{
 						if (this.discriminator == 11)
 						{
-							return this.item11;
+							return (T11)this.value;
 						}
 						else
 						{
@@ -24443,16 +23662,18 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(out T11 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
-					item = default;
 					if (this.discriminator == 11)
 					{
-						item = this.item11;
+						item = (T11)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -24462,7 +23683,7 @@ System.Func<TState, T25, TResult> case25)
 					{
 						if (this.discriminator == 12)
 						{
-							return this.item12;
+							return (T12)this.value;
 						}
 						else
 						{
@@ -24471,16 +23692,18 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(out T12 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T12? item)
 				{
-					item = default;
 					if (this.discriminator == 12)
 					{
-						item = this.item12;
+						item = (T12)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -24490,7 +23713,7 @@ System.Func<TState, T25, TResult> case25)
 					{
 						if (this.discriminator == 13)
 						{
-							return this.item13;
+							return (T13)this.value;
 						}
 						else
 						{
@@ -24499,16 +23722,18 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(out T13 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T13? item)
 				{
-					item = default;
 					if (this.discriminator == 13)
 					{
-						item = this.item13;
+						item = (T13)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -24518,7 +23743,7 @@ System.Func<TState, T25, TResult> case25)
 					{
 						if (this.discriminator == 14)
 						{
-							return this.item14;
+							return (T14)this.value;
 						}
 						else
 						{
@@ -24527,16 +23752,18 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(out T14 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T14? item)
 				{
-					item = default;
 					if (this.discriminator == 14)
 					{
-						item = this.item14;
+						item = (T14)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -24546,7 +23773,7 @@ System.Func<TState, T25, TResult> case25)
 					{
 						if (this.discriminator == 15)
 						{
-							return this.item15;
+							return (T15)this.value;
 						}
 						else
 						{
@@ -24555,16 +23782,18 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(out T15 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T15? item)
 				{
-					item = default;
 					if (this.discriminator == 15)
 					{
-						item = this.item15;
+						item = (T15)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -24574,7 +23803,7 @@ System.Func<TState, T25, TResult> case25)
 					{
 						if (this.discriminator == 16)
 						{
-							return this.item16;
+							return (T16)this.value;
 						}
 						else
 						{
@@ -24583,16 +23812,18 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(out T16 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T16? item)
 				{
-					item = default;
 					if (this.discriminator == 16)
 					{
-						item = this.item16;
+						item = (T16)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -24602,7 +23833,7 @@ System.Func<TState, T25, TResult> case25)
 					{
 						if (this.discriminator == 17)
 						{
-							return this.item17;
+							return (T17)this.value;
 						}
 						else
 						{
@@ -24611,16 +23842,18 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(out T17 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T17? item)
 				{
-					item = default;
 					if (this.discriminator == 17)
 					{
-						item = this.item17;
+						item = (T17)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -24630,7 +23863,7 @@ System.Func<TState, T25, TResult> case25)
 					{
 						if (this.discriminator == 18)
 						{
-							return this.item18;
+							return (T18)this.value;
 						}
 						else
 						{
@@ -24639,16 +23872,18 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(out T18 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T18? item)
 				{
-					item = default;
 					if (this.discriminator == 18)
 					{
-						item = this.item18;
+						item = (T18)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -24658,7 +23893,7 @@ System.Func<TState, T25, TResult> case25)
 					{
 						if (this.discriminator == 19)
 						{
-							return this.item19;
+							return (T19)this.value;
 						}
 						else
 						{
@@ -24667,16 +23902,18 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(out T19 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T19? item)
 				{
-					item = default;
 					if (this.discriminator == 19)
 					{
-						item = this.item19;
+						item = (T19)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -24686,7 +23923,7 @@ System.Func<TState, T25, TResult> case25)
 					{
 						if (this.discriminator == 20)
 						{
-							return this.item20;
+							return (T20)this.value;
 						}
 						else
 						{
@@ -24695,16 +23932,18 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(out T20 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T20? item)
 				{
-					item = default;
 					if (this.discriminator == 20)
 					{
-						item = this.item20;
+						item = (T20)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -24714,7 +23953,7 @@ System.Func<TState, T25, TResult> case25)
 					{
 						if (this.discriminator == 21)
 						{
-							return this.item21;
+							return (T21)this.value;
 						}
 						else
 						{
@@ -24723,16 +23962,18 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(out T21 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T21? item)
 				{
-					item = default;
 					if (this.discriminator == 21)
 					{
-						item = this.item21;
+						item = (T21)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -24742,7 +23983,7 @@ System.Func<TState, T25, TResult> case25)
 					{
 						if (this.discriminator == 22)
 						{
-							return this.item22;
+							return (T22)this.value;
 						}
 						else
 						{
@@ -24751,16 +23992,18 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(out T22 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T22? item)
 				{
-					item = default;
 					if (this.discriminator == 22)
 					{
-						item = this.item22;
+						item = (T22)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -24770,7 +24013,7 @@ System.Func<TState, T25, TResult> case25)
 					{
 						if (this.discriminator == 23)
 						{
-							return this.item23;
+							return (T23)this.value;
 						}
 						else
 						{
@@ -24779,16 +24022,18 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(out T23 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T23? item)
 				{
-					item = default;
 					if (this.discriminator == 23)
 					{
-						item = this.item23;
+						item = (T23)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -24798,7 +24043,7 @@ System.Func<TState, T25, TResult> case25)
 					{
 						if (this.discriminator == 24)
 						{
-							return this.item24;
+							return (T24)this.value;
 						}
 						else
 						{
@@ -24807,16 +24052,18 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(out T24 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T24? item)
 				{
-					item = default;
 					if (this.discriminator == 24)
 					{
-						item = this.item24;
+						item = (T24)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -24826,7 +24073,7 @@ System.Func<TState, T25, TResult> case25)
 					{
 						if (this.discriminator == 25)
 						{
-							return this.item25;
+							return (T25)this.value;
 						}
 						else
 						{
@@ -24835,16 +24082,18 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(out T25 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T25? item)
 				{
-					item = default;
 					if (this.discriminator == 25)
 					{
-						item = this.item25;
+						item = (T25)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -24854,7 +24103,7 @@ System.Func<TState, T25, TResult> case25)
 					{
 						if (this.discriminator == 26)
 						{
-							return this.item26;
+							return (T26)this.value;
 						}
 						else
 						{
@@ -24863,107 +24112,21 @@ System.Func<TState, T25, TResult> case25)
 					}
 				}
 
-				public bool TryGet(out T26 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T26? item)
 				{
-					item = default;
 					if (this.discriminator == 26)
 					{
-						item = this.item26;
+						item = (T26)this.value;
 						return true;
 					}
-
-					return false;
-				}
-				
-				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11,
-System.Func<T12, T12> cloneT12,
-System.Func<T13, T13> cloneT13,
-System.Func<T14, T14> cloneT14,
-System.Func<T15, T15> cloneT15,
-System.Func<T16, T16> cloneT16,
-System.Func<T17, T17> cloneT17,
-System.Func<T18, T18> cloneT18,
-System.Func<T19, T19> cloneT19,
-System.Func<T20, T20> cloneT20,
-System.Func<T21, T21> cloneT21,
-System.Func<T22, T22> cloneT22,
-System.Func<T23, T23> cloneT23,
-System.Func<T24, T24> cloneT24,
-System.Func<T25, T25> cloneT25,
-System.Func<T26, T26> cloneT26
-				)
-				{
-					switch (this.discriminator)
+					else
 					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT1(this.item1));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT2(this.item2));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT3(this.item3));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT4(this.item4));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT5(this.item5));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT6(this.item6));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT7(this.item7));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT8(this.item8));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT9(this.item9));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT10(this.item10));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT11(this.item11));
-											case 12:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT12(this.item12));
-											case 13:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT13(this.item13));
-											case 14:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT14(this.item14));
-											case 15:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT15(this.item15));
-											case 16:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT16(this.item16));
-											case 17:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT17(this.item17));
-											case 18:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT18(this.item18));
-											case 19:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT19(this.item19));
-											case 20:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT20(this.item20));
-											case 21:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT21(this.item21));
-											case 22:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT22(this.item22));
-											case 23:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT23(this.item23));
-											case 24:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT24(this.item24));
-											case 25:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT25(this.item25));
-											case 26:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>(cloneT26(this.item26));
-										}
-
-					throw new System.InvalidOperationException();
+						item = default;
+						return false;
+					}
 				}
-
+				
+				
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -24997,132 +24160,132 @@ System.Action<T26> case26)
 					{
 											case 1:
 						{
-							case1(this.item1);
+							case1((T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(this.item2);
+							case2((T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(this.item3);
+							case3((T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(this.item4);
+							case4((T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(this.item5);
+							case5((T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(this.item6);
+							case6((T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(this.item7);
+							case7((T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(this.item8);
+							case8((T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(this.item9);
+							case9((T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(this.item10);
+							case10((T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(this.item11);
+							case11((T11)this.value);
 							break;
 						}
 											case 12:
 						{
-							case12(this.item12);
+							case12((T12)this.value);
 							break;
 						}
 											case 13:
 						{
-							case13(this.item13);
+							case13((T13)this.value);
 							break;
 						}
 											case 14:
 						{
-							case14(this.item14);
+							case14((T14)this.value);
 							break;
 						}
 											case 15:
 						{
-							case15(this.item15);
+							case15((T15)this.value);
 							break;
 						}
 											case 16:
 						{
-							case16(this.item16);
+							case16((T16)this.value);
 							break;
 						}
 											case 17:
 						{
-							case17(this.item17);
+							case17((T17)this.value);
 							break;
 						}
 											case 18:
 						{
-							case18(this.item18);
+							case18((T18)this.value);
 							break;
 						}
 											case 19:
 						{
-							case19(this.item19);
+							case19((T19)this.value);
 							break;
 						}
 											case 20:
 						{
-							case20(this.item20);
+							case20((T20)this.value);
 							break;
 						}
 											case 21:
 						{
-							case21(this.item21);
+							case21((T21)this.value);
 							break;
 						}
 											case 22:
 						{
-							case22(this.item22);
+							case22((T22)this.value);
 							break;
 						}
 											case 23:
 						{
-							case23(this.item23);
+							case23((T23)this.value);
 							break;
 						}
 											case 24:
 						{
-							case24(this.item24);
+							case24((T24)this.value);
 							break;
 						}
 											case 25:
 						{
-							case25(this.item25);
+							case25((T25)this.value);
 							break;
 						}
 											case 26:
 						{
-							case26(this.item26);
+							case26((T26)this.value);
 							break;
 						}
 											default:
@@ -25165,132 +24328,132 @@ System.Action<TState, T26> case26)
 					{
 											case 1:
 						{
-							case1(state, this.item1);
+							case1(state, (T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(state, this.item2);
+							case2(state, (T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(state, this.item3);
+							case3(state, (T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(state, this.item4);
+							case4(state, (T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(state, this.item5);
+							case5(state, (T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(state, this.item6);
+							case6(state, (T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(state, this.item7);
+							case7(state, (T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(state, this.item8);
+							case8(state, (T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(state, this.item9);
+							case9(state, (T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(state, this.item10);
+							case10(state, (T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(state, this.item11);
+							case11(state, (T11)this.value);
 							break;
 						}
 											case 12:
 						{
-							case12(state, this.item12);
+							case12(state, (T12)this.value);
 							break;
 						}
 											case 13:
 						{
-							case13(state, this.item13);
+							case13(state, (T13)this.value);
 							break;
 						}
 											case 14:
 						{
-							case14(state, this.item14);
+							case14(state, (T14)this.value);
 							break;
 						}
 											case 15:
 						{
-							case15(state, this.item15);
+							case15(state, (T15)this.value);
 							break;
 						}
 											case 16:
 						{
-							case16(state, this.item16);
+							case16(state, (T16)this.value);
 							break;
 						}
 											case 17:
 						{
-							case17(state, this.item17);
+							case17(state, (T17)this.value);
 							break;
 						}
 											case 18:
 						{
-							case18(state, this.item18);
+							case18(state, (T18)this.value);
 							break;
 						}
 											case 19:
 						{
-							case19(state, this.item19);
+							case19(state, (T19)this.value);
 							break;
 						}
 											case 20:
 						{
-							case20(state, this.item20);
+							case20(state, (T20)this.value);
 							break;
 						}
 											case 21:
 						{
-							case21(state, this.item21);
+							case21(state, (T21)this.value);
 							break;
 						}
 											case 22:
 						{
-							case22(state, this.item22);
+							case22(state, (T22)this.value);
 							break;
 						}
 											case 23:
 						{
-							case23(state, this.item23);
+							case23(state, (T23)this.value);
 							break;
 						}
 											case 24:
 						{
-							case24(state, this.item24);
+							case24(state, (T24)this.value);
 							break;
 						}
 											case 25:
 						{
-							case25(state, this.item25);
+							case25(state, (T25)this.value);
 							break;
 						}
 											case 26:
 						{
-							case26(state, this.item26);
+							case26(state, (T26)this.value);
 							break;
 						}
 											default:
@@ -25333,107 +24496,107 @@ System.Func<T26, TResult> case26)
 					{
 											case 1:
 						{
-							return case1(this.item1);
+							return case1((T1)this.value);
 						}
 											case 2:
 						{
-							return case2(this.item2);
+							return case2((T2)this.value);
 						}
 											case 3:
 						{
-							return case3(this.item3);
+							return case3((T3)this.value);
 						}
 											case 4:
 						{
-							return case4(this.item4);
+							return case4((T4)this.value);
 						}
 											case 5:
 						{
-							return case5(this.item5);
+							return case5((T5)this.value);
 						}
 											case 6:
 						{
-							return case6(this.item6);
+							return case6((T6)this.value);
 						}
 											case 7:
 						{
-							return case7(this.item7);
+							return case7((T7)this.value);
 						}
 											case 8:
 						{
-							return case8(this.item8);
+							return case8((T8)this.value);
 						}
 											case 9:
 						{
-							return case9(this.item9);
+							return case9((T9)this.value);
 						}
 											case 10:
 						{
-							return case10(this.item10);
+							return case10((T10)this.value);
 						}
 											case 11:
 						{
-							return case11(this.item11);
+							return case11((T11)this.value);
 						}
 											case 12:
 						{
-							return case12(this.item12);
+							return case12((T12)this.value);
 						}
 											case 13:
 						{
-							return case13(this.item13);
+							return case13((T13)this.value);
 						}
 											case 14:
 						{
-							return case14(this.item14);
+							return case14((T14)this.value);
 						}
 											case 15:
 						{
-							return case15(this.item15);
+							return case15((T15)this.value);
 						}
 											case 16:
 						{
-							return case16(this.item16);
+							return case16((T16)this.value);
 						}
 											case 17:
 						{
-							return case17(this.item17);
+							return case17((T17)this.value);
 						}
 											case 18:
 						{
-							return case18(this.item18);
+							return case18((T18)this.value);
 						}
 											case 19:
 						{
-							return case19(this.item19);
+							return case19((T19)this.value);
 						}
 											case 20:
 						{
-							return case20(this.item20);
+							return case20((T20)this.value);
 						}
 											case 21:
 						{
-							return case21(this.item21);
+							return case21((T21)this.value);
 						}
 											case 22:
 						{
-							return case22(this.item22);
+							return case22((T22)this.value);
 						}
 											case 23:
 						{
-							return case23(this.item23);
+							return case23((T23)this.value);
 						}
 											case 24:
 						{
-							return case24(this.item24);
+							return case24((T24)this.value);
 						}
 											case 25:
 						{
-							return case25(this.item25);
+							return case25((T25)this.value);
 						}
 											case 26:
 						{
-							return case26(this.item26);
+							return case26((T26)this.value);
 						}
 											default:
 							return defaultCase();
@@ -25474,522 +24637,487 @@ System.Func<TState, T26, TResult> case26)
 					{
 											case 1:
 						{
-							return case1(state, this.item1);
+							return case1(state, (T1)this.value);
 						}
 											case 2:
 						{
-							return case2(state, this.item2);
+							return case2(state, (T2)this.value);
 						}
 											case 3:
 						{
-							return case3(state, this.item3);
+							return case3(state, (T3)this.value);
 						}
 											case 4:
 						{
-							return case4(state, this.item4);
+							return case4(state, (T4)this.value);
 						}
 											case 5:
 						{
-							return case5(state, this.item5);
+							return case5(state, (T5)this.value);
 						}
 											case 6:
 						{
-							return case6(state, this.item6);
+							return case6(state, (T6)this.value);
 						}
 											case 7:
 						{
-							return case7(state, this.item7);
+							return case7(state, (T7)this.value);
 						}
 											case 8:
 						{
-							return case8(state, this.item8);
+							return case8(state, (T8)this.value);
 						}
 											case 9:
 						{
-							return case9(state, this.item9);
+							return case9(state, (T9)this.value);
 						}
 											case 10:
 						{
-							return case10(state, this.item10);
+							return case10(state, (T10)this.value);
 						}
 											case 11:
 						{
-							return case11(state, this.item11);
+							return case11(state, (T11)this.value);
 						}
 											case 12:
 						{
-							return case12(state, this.item12);
+							return case12(state, (T12)this.value);
 						}
 											case 13:
 						{
-							return case13(state, this.item13);
+							return case13(state, (T13)this.value);
 						}
 											case 14:
 						{
-							return case14(state, this.item14);
+							return case14(state, (T14)this.value);
 						}
 											case 15:
 						{
-							return case15(state, this.item15);
+							return case15(state, (T15)this.value);
 						}
 											case 16:
 						{
-							return case16(state, this.item16);
+							return case16(state, (T16)this.value);
 						}
 											case 17:
 						{
-							return case17(state, this.item17);
+							return case17(state, (T17)this.value);
 						}
 											case 18:
 						{
-							return case18(state, this.item18);
+							return case18(state, (T18)this.value);
 						}
 											case 19:
 						{
-							return case19(state, this.item19);
+							return case19(state, (T19)this.value);
 						}
 											case 20:
 						{
-							return case20(state, this.item20);
+							return case20(state, (T20)this.value);
 						}
 											case 21:
 						{
-							return case21(state, this.item21);
+							return case21(state, (T21)this.value);
 						}
 											case 22:
 						{
-							return case22(state, this.item22);
+							return case22(state, (T22)this.value);
 						}
 											case 23:
 						{
-							return case23(state, this.item23);
+							return case23(state, (T23)this.value);
 						}
 											case 24:
 						{
-							return case24(state, this.item24);
+							return case24(state, (T24)this.value);
 						}
 											case 25:
 						{
-							return case25(state, this.item25);
+							return case25(state, (T25)this.value);
 						}
 											case 26:
 						{
-							return case26(state, this.item26);
+							return case26(state, (T26)this.value);
 						}
 											default:
 							return defaultCase(state);
 					}
 				}
+
+				public override bool Equals(object? other)
+				{
+					if (other is FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26> otherUnion)
+					{
+						return this.discriminator == otherUnion.Discriminator &&
+						       this.value.Equals(otherUnion.value);
+					}
+					else
+					{
+						return false;
+					}
+				}
+
+				public override int GetHashCode()
+				{
+					return this.value.GetHashCode() ^ this.discriminator;
+				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27> : IUnion
-			{
+			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27> : IFlatBufferUnion
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+							where T12 : notnull
+							where T13 : notnull
+							where T14 : notnull
+							where T15 : notnull
+							where T16 : notnull
+							where T17 : notnull
+							where T18 : notnull
+							where T19 : notnull
+							where T20 : notnull
+							where T21 : notnull
+							where T22 : notnull
+							where T23 : notnull
+							where T24 : notnull
+							where T25 : notnull
+							where T26 : notnull
+							where T27 : notnull
+						{
 				private readonly byte discriminator;
+				private readonly object value;
 				
-				
-				protected readonly T1 item1;
-				
-				
-				protected readonly T2 item2;
-				
-				
-				protected readonly T3 item3;
-				
-				
-				protected readonly T4 item4;
-				
-				
-				protected readonly T5 item5;
-				
-				
-				protected readonly T6 item6;
-				
-				
-				protected readonly T7 item7;
-				
-				
-				protected readonly T8 item8;
-				
-				
-				protected readonly T9 item9;
-				
-				
-				protected readonly T10 item10;
-				
-				
-				protected readonly T11 item11;
-				
-				
-				protected readonly T12 item12;
-				
-				
-				protected readonly T13 item13;
-				
-				
-				protected readonly T14 item14;
-				
-				
-				protected readonly T15 item15;
-				
-				
-				protected readonly T16 item16;
-				
-				
-				protected readonly T17 item17;
-				
-				
-				protected readonly T18 item18;
-				
-				
-				protected readonly T19 item19;
-				
-				
-				protected readonly T20 item20;
-				
-				
-				protected readonly T21 item21;
-				
-				
-				protected readonly T22 item22;
-				
-				
-				protected readonly T23 item23;
-				
-				
-				protected readonly T24 item24;
-				
-				
-				protected readonly T25 item25;
-				
-				
-				protected readonly T26 item26;
-				
-				
-				protected readonly T27 item27;
-				
-								
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 1;
-					this.item1 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 2;
-					this.item2 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 3;
-					this.item3 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 4;
-					this.item4 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 5;
-					this.item5 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 6;
-					this.item6 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 7;
-					this.item7 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 8;
-					this.item8 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 9;
-					this.item9 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 10;
-					this.item10 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 11;
-					this.item11 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T12 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 12;
-					this.item12 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T13 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 13;
-					this.item13 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T14 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 14;
-					this.item14 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T15 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 15;
-					this.item15 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T16 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 16;
-					this.item16 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T17 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 17;
-					this.item17 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T18 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 18;
-					this.item18 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T19 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 19;
-					this.item19 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T20 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 20;
-					this.item20 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T21 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 21;
-					this.item21 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T22 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 22;
-					this.item22 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T23 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 23;
-					this.item23 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T24 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 24;
-					this.item24 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T25 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 25;
-					this.item25 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T26 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 26;
-					this.item26 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T27 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 27;
-					this.item27 = item;
+					this.value = item;
 				}
 				
 							
@@ -26002,7 +25130,7 @@ System.Func<TState, T26, TResult> case26)
 					{
 						if (this.discriminator == 1)
 						{
-							return this.item1;
+							return (T1)this.value;
 						}
 						else
 						{
@@ -26011,16 +25139,18 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(out T1 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
-					item = default;
 					if (this.discriminator == 1)
 					{
-						item = this.item1;
+						item = (T1)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -26030,7 +25160,7 @@ System.Func<TState, T26, TResult> case26)
 					{
 						if (this.discriminator == 2)
 						{
-							return this.item2;
+							return (T2)this.value;
 						}
 						else
 						{
@@ -26039,16 +25169,18 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(out T2 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
-					item = default;
 					if (this.discriminator == 2)
 					{
-						item = this.item2;
+						item = (T2)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -26058,7 +25190,7 @@ System.Func<TState, T26, TResult> case26)
 					{
 						if (this.discriminator == 3)
 						{
-							return this.item3;
+							return (T3)this.value;
 						}
 						else
 						{
@@ -26067,16 +25199,18 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(out T3 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
-					item = default;
 					if (this.discriminator == 3)
 					{
-						item = this.item3;
+						item = (T3)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -26086,7 +25220,7 @@ System.Func<TState, T26, TResult> case26)
 					{
 						if (this.discriminator == 4)
 						{
-							return this.item4;
+							return (T4)this.value;
 						}
 						else
 						{
@@ -26095,16 +25229,18 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(out T4 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
-					item = default;
 					if (this.discriminator == 4)
 					{
-						item = this.item4;
+						item = (T4)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -26114,7 +25250,7 @@ System.Func<TState, T26, TResult> case26)
 					{
 						if (this.discriminator == 5)
 						{
-							return this.item5;
+							return (T5)this.value;
 						}
 						else
 						{
@@ -26123,16 +25259,18 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(out T5 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
-					item = default;
 					if (this.discriminator == 5)
 					{
-						item = this.item5;
+						item = (T5)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -26142,7 +25280,7 @@ System.Func<TState, T26, TResult> case26)
 					{
 						if (this.discriminator == 6)
 						{
-							return this.item6;
+							return (T6)this.value;
 						}
 						else
 						{
@@ -26151,16 +25289,18 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(out T6 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
-					item = default;
 					if (this.discriminator == 6)
 					{
-						item = this.item6;
+						item = (T6)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -26170,7 +25310,7 @@ System.Func<TState, T26, TResult> case26)
 					{
 						if (this.discriminator == 7)
 						{
-							return this.item7;
+							return (T7)this.value;
 						}
 						else
 						{
@@ -26179,16 +25319,18 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(out T7 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
-					item = default;
 					if (this.discriminator == 7)
 					{
-						item = this.item7;
+						item = (T7)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -26198,7 +25340,7 @@ System.Func<TState, T26, TResult> case26)
 					{
 						if (this.discriminator == 8)
 						{
-							return this.item8;
+							return (T8)this.value;
 						}
 						else
 						{
@@ -26207,16 +25349,18 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(out T8 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
-					item = default;
 					if (this.discriminator == 8)
 					{
-						item = this.item8;
+						item = (T8)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -26226,7 +25370,7 @@ System.Func<TState, T26, TResult> case26)
 					{
 						if (this.discriminator == 9)
 						{
-							return this.item9;
+							return (T9)this.value;
 						}
 						else
 						{
@@ -26235,16 +25379,18 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(out T9 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
-					item = default;
 					if (this.discriminator == 9)
 					{
-						item = this.item9;
+						item = (T9)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -26254,7 +25400,7 @@ System.Func<TState, T26, TResult> case26)
 					{
 						if (this.discriminator == 10)
 						{
-							return this.item10;
+							return (T10)this.value;
 						}
 						else
 						{
@@ -26263,16 +25409,18 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(out T10 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
-					item = default;
 					if (this.discriminator == 10)
 					{
-						item = this.item10;
+						item = (T10)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -26282,7 +25430,7 @@ System.Func<TState, T26, TResult> case26)
 					{
 						if (this.discriminator == 11)
 						{
-							return this.item11;
+							return (T11)this.value;
 						}
 						else
 						{
@@ -26291,16 +25439,18 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(out T11 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
-					item = default;
 					if (this.discriminator == 11)
 					{
-						item = this.item11;
+						item = (T11)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -26310,7 +25460,7 @@ System.Func<TState, T26, TResult> case26)
 					{
 						if (this.discriminator == 12)
 						{
-							return this.item12;
+							return (T12)this.value;
 						}
 						else
 						{
@@ -26319,16 +25469,18 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(out T12 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T12? item)
 				{
-					item = default;
 					if (this.discriminator == 12)
 					{
-						item = this.item12;
+						item = (T12)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -26338,7 +25490,7 @@ System.Func<TState, T26, TResult> case26)
 					{
 						if (this.discriminator == 13)
 						{
-							return this.item13;
+							return (T13)this.value;
 						}
 						else
 						{
@@ -26347,16 +25499,18 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(out T13 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T13? item)
 				{
-					item = default;
 					if (this.discriminator == 13)
 					{
-						item = this.item13;
+						item = (T13)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -26366,7 +25520,7 @@ System.Func<TState, T26, TResult> case26)
 					{
 						if (this.discriminator == 14)
 						{
-							return this.item14;
+							return (T14)this.value;
 						}
 						else
 						{
@@ -26375,16 +25529,18 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(out T14 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T14? item)
 				{
-					item = default;
 					if (this.discriminator == 14)
 					{
-						item = this.item14;
+						item = (T14)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -26394,7 +25550,7 @@ System.Func<TState, T26, TResult> case26)
 					{
 						if (this.discriminator == 15)
 						{
-							return this.item15;
+							return (T15)this.value;
 						}
 						else
 						{
@@ -26403,16 +25559,18 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(out T15 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T15? item)
 				{
-					item = default;
 					if (this.discriminator == 15)
 					{
-						item = this.item15;
+						item = (T15)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -26422,7 +25580,7 @@ System.Func<TState, T26, TResult> case26)
 					{
 						if (this.discriminator == 16)
 						{
-							return this.item16;
+							return (T16)this.value;
 						}
 						else
 						{
@@ -26431,16 +25589,18 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(out T16 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T16? item)
 				{
-					item = default;
 					if (this.discriminator == 16)
 					{
-						item = this.item16;
+						item = (T16)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -26450,7 +25610,7 @@ System.Func<TState, T26, TResult> case26)
 					{
 						if (this.discriminator == 17)
 						{
-							return this.item17;
+							return (T17)this.value;
 						}
 						else
 						{
@@ -26459,16 +25619,18 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(out T17 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T17? item)
 				{
-					item = default;
 					if (this.discriminator == 17)
 					{
-						item = this.item17;
+						item = (T17)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -26478,7 +25640,7 @@ System.Func<TState, T26, TResult> case26)
 					{
 						if (this.discriminator == 18)
 						{
-							return this.item18;
+							return (T18)this.value;
 						}
 						else
 						{
@@ -26487,16 +25649,18 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(out T18 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T18? item)
 				{
-					item = default;
 					if (this.discriminator == 18)
 					{
-						item = this.item18;
+						item = (T18)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -26506,7 +25670,7 @@ System.Func<TState, T26, TResult> case26)
 					{
 						if (this.discriminator == 19)
 						{
-							return this.item19;
+							return (T19)this.value;
 						}
 						else
 						{
@@ -26515,16 +25679,18 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(out T19 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T19? item)
 				{
-					item = default;
 					if (this.discriminator == 19)
 					{
-						item = this.item19;
+						item = (T19)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -26534,7 +25700,7 @@ System.Func<TState, T26, TResult> case26)
 					{
 						if (this.discriminator == 20)
 						{
-							return this.item20;
+							return (T20)this.value;
 						}
 						else
 						{
@@ -26543,16 +25709,18 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(out T20 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T20? item)
 				{
-					item = default;
 					if (this.discriminator == 20)
 					{
-						item = this.item20;
+						item = (T20)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -26562,7 +25730,7 @@ System.Func<TState, T26, TResult> case26)
 					{
 						if (this.discriminator == 21)
 						{
-							return this.item21;
+							return (T21)this.value;
 						}
 						else
 						{
@@ -26571,16 +25739,18 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(out T21 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T21? item)
 				{
-					item = default;
 					if (this.discriminator == 21)
 					{
-						item = this.item21;
+						item = (T21)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -26590,7 +25760,7 @@ System.Func<TState, T26, TResult> case26)
 					{
 						if (this.discriminator == 22)
 						{
-							return this.item22;
+							return (T22)this.value;
 						}
 						else
 						{
@@ -26599,16 +25769,18 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(out T22 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T22? item)
 				{
-					item = default;
 					if (this.discriminator == 22)
 					{
-						item = this.item22;
+						item = (T22)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -26618,7 +25790,7 @@ System.Func<TState, T26, TResult> case26)
 					{
 						if (this.discriminator == 23)
 						{
-							return this.item23;
+							return (T23)this.value;
 						}
 						else
 						{
@@ -26627,16 +25799,18 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(out T23 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T23? item)
 				{
-					item = default;
 					if (this.discriminator == 23)
 					{
-						item = this.item23;
+						item = (T23)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -26646,7 +25820,7 @@ System.Func<TState, T26, TResult> case26)
 					{
 						if (this.discriminator == 24)
 						{
-							return this.item24;
+							return (T24)this.value;
 						}
 						else
 						{
@@ -26655,16 +25829,18 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(out T24 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T24? item)
 				{
-					item = default;
 					if (this.discriminator == 24)
 					{
-						item = this.item24;
+						item = (T24)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -26674,7 +25850,7 @@ System.Func<TState, T26, TResult> case26)
 					{
 						if (this.discriminator == 25)
 						{
-							return this.item25;
+							return (T25)this.value;
 						}
 						else
 						{
@@ -26683,16 +25859,18 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(out T25 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T25? item)
 				{
-					item = default;
 					if (this.discriminator == 25)
 					{
-						item = this.item25;
+						item = (T25)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -26702,7 +25880,7 @@ System.Func<TState, T26, TResult> case26)
 					{
 						if (this.discriminator == 26)
 						{
-							return this.item26;
+							return (T26)this.value;
 						}
 						else
 						{
@@ -26711,16 +25889,18 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(out T26 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T26? item)
 				{
-					item = default;
 					if (this.discriminator == 26)
 					{
-						item = this.item26;
+						item = (T26)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -26730,7 +25910,7 @@ System.Func<TState, T26, TResult> case26)
 					{
 						if (this.discriminator == 27)
 						{
-							return this.item27;
+							return (T27)this.value;
 						}
 						else
 						{
@@ -26739,110 +25919,21 @@ System.Func<TState, T26, TResult> case26)
 					}
 				}
 
-				public bool TryGet(out T27 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T27? item)
 				{
-					item = default;
 					if (this.discriminator == 27)
 					{
-						item = this.item27;
+						item = (T27)this.value;
 						return true;
 					}
-
-					return false;
-				}
-				
-				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11,
-System.Func<T12, T12> cloneT12,
-System.Func<T13, T13> cloneT13,
-System.Func<T14, T14> cloneT14,
-System.Func<T15, T15> cloneT15,
-System.Func<T16, T16> cloneT16,
-System.Func<T17, T17> cloneT17,
-System.Func<T18, T18> cloneT18,
-System.Func<T19, T19> cloneT19,
-System.Func<T20, T20> cloneT20,
-System.Func<T21, T21> cloneT21,
-System.Func<T22, T22> cloneT22,
-System.Func<T23, T23> cloneT23,
-System.Func<T24, T24> cloneT24,
-System.Func<T25, T25> cloneT25,
-System.Func<T26, T26> cloneT26,
-System.Func<T27, T27> cloneT27
-				)
-				{
-					switch (this.discriminator)
+					else
 					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT1(this.item1));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT2(this.item2));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT3(this.item3));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT4(this.item4));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT5(this.item5));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT6(this.item6));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT7(this.item7));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT8(this.item8));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT9(this.item9));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT10(this.item10));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT11(this.item11));
-											case 12:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT12(this.item12));
-											case 13:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT13(this.item13));
-											case 14:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT14(this.item14));
-											case 15:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT15(this.item15));
-											case 16:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT16(this.item16));
-											case 17:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT17(this.item17));
-											case 18:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT18(this.item18));
-											case 19:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT19(this.item19));
-											case 20:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT20(this.item20));
-											case 21:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT21(this.item21));
-											case 22:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT22(this.item22));
-											case 23:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT23(this.item23));
-											case 24:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT24(this.item24));
-											case 25:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT25(this.item25));
-											case 26:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT26(this.item26));
-											case 27:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>(cloneT27(this.item27));
-										}
-
-					throw new System.InvalidOperationException();
+						item = default;
+						return false;
+					}
 				}
-
+				
+				
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -26877,137 +25968,137 @@ System.Action<T27> case27)
 					{
 											case 1:
 						{
-							case1(this.item1);
+							case1((T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(this.item2);
+							case2((T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(this.item3);
+							case3((T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(this.item4);
+							case4((T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(this.item5);
+							case5((T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(this.item6);
+							case6((T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(this.item7);
+							case7((T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(this.item8);
+							case8((T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(this.item9);
+							case9((T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(this.item10);
+							case10((T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(this.item11);
+							case11((T11)this.value);
 							break;
 						}
 											case 12:
 						{
-							case12(this.item12);
+							case12((T12)this.value);
 							break;
 						}
 											case 13:
 						{
-							case13(this.item13);
+							case13((T13)this.value);
 							break;
 						}
 											case 14:
 						{
-							case14(this.item14);
+							case14((T14)this.value);
 							break;
 						}
 											case 15:
 						{
-							case15(this.item15);
+							case15((T15)this.value);
 							break;
 						}
 											case 16:
 						{
-							case16(this.item16);
+							case16((T16)this.value);
 							break;
 						}
 											case 17:
 						{
-							case17(this.item17);
+							case17((T17)this.value);
 							break;
 						}
 											case 18:
 						{
-							case18(this.item18);
+							case18((T18)this.value);
 							break;
 						}
 											case 19:
 						{
-							case19(this.item19);
+							case19((T19)this.value);
 							break;
 						}
 											case 20:
 						{
-							case20(this.item20);
+							case20((T20)this.value);
 							break;
 						}
 											case 21:
 						{
-							case21(this.item21);
+							case21((T21)this.value);
 							break;
 						}
 											case 22:
 						{
-							case22(this.item22);
+							case22((T22)this.value);
 							break;
 						}
 											case 23:
 						{
-							case23(this.item23);
+							case23((T23)this.value);
 							break;
 						}
 											case 24:
 						{
-							case24(this.item24);
+							case24((T24)this.value);
 							break;
 						}
 											case 25:
 						{
-							case25(this.item25);
+							case25((T25)this.value);
 							break;
 						}
 											case 26:
 						{
-							case26(this.item26);
+							case26((T26)this.value);
 							break;
 						}
 											case 27:
 						{
-							case27(this.item27);
+							case27((T27)this.value);
 							break;
 						}
 											default:
@@ -27051,137 +26142,137 @@ System.Action<TState, T27> case27)
 					{
 											case 1:
 						{
-							case1(state, this.item1);
+							case1(state, (T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(state, this.item2);
+							case2(state, (T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(state, this.item3);
+							case3(state, (T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(state, this.item4);
+							case4(state, (T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(state, this.item5);
+							case5(state, (T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(state, this.item6);
+							case6(state, (T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(state, this.item7);
+							case7(state, (T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(state, this.item8);
+							case8(state, (T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(state, this.item9);
+							case9(state, (T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(state, this.item10);
+							case10(state, (T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(state, this.item11);
+							case11(state, (T11)this.value);
 							break;
 						}
 											case 12:
 						{
-							case12(state, this.item12);
+							case12(state, (T12)this.value);
 							break;
 						}
 											case 13:
 						{
-							case13(state, this.item13);
+							case13(state, (T13)this.value);
 							break;
 						}
 											case 14:
 						{
-							case14(state, this.item14);
+							case14(state, (T14)this.value);
 							break;
 						}
 											case 15:
 						{
-							case15(state, this.item15);
+							case15(state, (T15)this.value);
 							break;
 						}
 											case 16:
 						{
-							case16(state, this.item16);
+							case16(state, (T16)this.value);
 							break;
 						}
 											case 17:
 						{
-							case17(state, this.item17);
+							case17(state, (T17)this.value);
 							break;
 						}
 											case 18:
 						{
-							case18(state, this.item18);
+							case18(state, (T18)this.value);
 							break;
 						}
 											case 19:
 						{
-							case19(state, this.item19);
+							case19(state, (T19)this.value);
 							break;
 						}
 											case 20:
 						{
-							case20(state, this.item20);
+							case20(state, (T20)this.value);
 							break;
 						}
 											case 21:
 						{
-							case21(state, this.item21);
+							case21(state, (T21)this.value);
 							break;
 						}
 											case 22:
 						{
-							case22(state, this.item22);
+							case22(state, (T22)this.value);
 							break;
 						}
 											case 23:
 						{
-							case23(state, this.item23);
+							case23(state, (T23)this.value);
 							break;
 						}
 											case 24:
 						{
-							case24(state, this.item24);
+							case24(state, (T24)this.value);
 							break;
 						}
 											case 25:
 						{
-							case25(state, this.item25);
+							case25(state, (T25)this.value);
 							break;
 						}
 											case 26:
 						{
-							case26(state, this.item26);
+							case26(state, (T26)this.value);
 							break;
 						}
 											case 27:
 						{
-							case27(state, this.item27);
+							case27(state, (T27)this.value);
 							break;
 						}
 											default:
@@ -27225,111 +26316,111 @@ System.Func<T27, TResult> case27)
 					{
 											case 1:
 						{
-							return case1(this.item1);
+							return case1((T1)this.value);
 						}
 											case 2:
 						{
-							return case2(this.item2);
+							return case2((T2)this.value);
 						}
 											case 3:
 						{
-							return case3(this.item3);
+							return case3((T3)this.value);
 						}
 											case 4:
 						{
-							return case4(this.item4);
+							return case4((T4)this.value);
 						}
 											case 5:
 						{
-							return case5(this.item5);
+							return case5((T5)this.value);
 						}
 											case 6:
 						{
-							return case6(this.item6);
+							return case6((T6)this.value);
 						}
 											case 7:
 						{
-							return case7(this.item7);
+							return case7((T7)this.value);
 						}
 											case 8:
 						{
-							return case8(this.item8);
+							return case8((T8)this.value);
 						}
 											case 9:
 						{
-							return case9(this.item9);
+							return case9((T9)this.value);
 						}
 											case 10:
 						{
-							return case10(this.item10);
+							return case10((T10)this.value);
 						}
 											case 11:
 						{
-							return case11(this.item11);
+							return case11((T11)this.value);
 						}
 											case 12:
 						{
-							return case12(this.item12);
+							return case12((T12)this.value);
 						}
 											case 13:
 						{
-							return case13(this.item13);
+							return case13((T13)this.value);
 						}
 											case 14:
 						{
-							return case14(this.item14);
+							return case14((T14)this.value);
 						}
 											case 15:
 						{
-							return case15(this.item15);
+							return case15((T15)this.value);
 						}
 											case 16:
 						{
-							return case16(this.item16);
+							return case16((T16)this.value);
 						}
 											case 17:
 						{
-							return case17(this.item17);
+							return case17((T17)this.value);
 						}
 											case 18:
 						{
-							return case18(this.item18);
+							return case18((T18)this.value);
 						}
 											case 19:
 						{
-							return case19(this.item19);
+							return case19((T19)this.value);
 						}
 											case 20:
 						{
-							return case20(this.item20);
+							return case20((T20)this.value);
 						}
 											case 21:
 						{
-							return case21(this.item21);
+							return case21((T21)this.value);
 						}
 											case 22:
 						{
-							return case22(this.item22);
+							return case22((T22)this.value);
 						}
 											case 23:
 						{
-							return case23(this.item23);
+							return case23((T23)this.value);
 						}
 											case 24:
 						{
-							return case24(this.item24);
+							return case24((T24)this.value);
 						}
 											case 25:
 						{
-							return case25(this.item25);
+							return case25((T25)this.value);
 						}
 											case 26:
 						{
-							return case26(this.item26);
+							return case26((T26)this.value);
 						}
 											case 27:
 						{
-							return case27(this.item27);
+							return case27((T27)this.value);
 						}
 											default:
 							return defaultCase();
@@ -27371,541 +26462,504 @@ System.Func<TState, T27, TResult> case27)
 					{
 											case 1:
 						{
-							return case1(state, this.item1);
+							return case1(state, (T1)this.value);
 						}
 											case 2:
 						{
-							return case2(state, this.item2);
+							return case2(state, (T2)this.value);
 						}
 											case 3:
 						{
-							return case3(state, this.item3);
+							return case3(state, (T3)this.value);
 						}
 											case 4:
 						{
-							return case4(state, this.item4);
+							return case4(state, (T4)this.value);
 						}
 											case 5:
 						{
-							return case5(state, this.item5);
+							return case5(state, (T5)this.value);
 						}
 											case 6:
 						{
-							return case6(state, this.item6);
+							return case6(state, (T6)this.value);
 						}
 											case 7:
 						{
-							return case7(state, this.item7);
+							return case7(state, (T7)this.value);
 						}
 											case 8:
 						{
-							return case8(state, this.item8);
+							return case8(state, (T8)this.value);
 						}
 											case 9:
 						{
-							return case9(state, this.item9);
+							return case9(state, (T9)this.value);
 						}
 											case 10:
 						{
-							return case10(state, this.item10);
+							return case10(state, (T10)this.value);
 						}
 											case 11:
 						{
-							return case11(state, this.item11);
+							return case11(state, (T11)this.value);
 						}
 											case 12:
 						{
-							return case12(state, this.item12);
+							return case12(state, (T12)this.value);
 						}
 											case 13:
 						{
-							return case13(state, this.item13);
+							return case13(state, (T13)this.value);
 						}
 											case 14:
 						{
-							return case14(state, this.item14);
+							return case14(state, (T14)this.value);
 						}
 											case 15:
 						{
-							return case15(state, this.item15);
+							return case15(state, (T15)this.value);
 						}
 											case 16:
 						{
-							return case16(state, this.item16);
+							return case16(state, (T16)this.value);
 						}
 											case 17:
 						{
-							return case17(state, this.item17);
+							return case17(state, (T17)this.value);
 						}
 											case 18:
 						{
-							return case18(state, this.item18);
+							return case18(state, (T18)this.value);
 						}
 											case 19:
 						{
-							return case19(state, this.item19);
+							return case19(state, (T19)this.value);
 						}
 											case 20:
 						{
-							return case20(state, this.item20);
+							return case20(state, (T20)this.value);
 						}
 											case 21:
 						{
-							return case21(state, this.item21);
+							return case21(state, (T21)this.value);
 						}
 											case 22:
 						{
-							return case22(state, this.item22);
+							return case22(state, (T22)this.value);
 						}
 											case 23:
 						{
-							return case23(state, this.item23);
+							return case23(state, (T23)this.value);
 						}
 											case 24:
 						{
-							return case24(state, this.item24);
+							return case24(state, (T24)this.value);
 						}
 											case 25:
 						{
-							return case25(state, this.item25);
+							return case25(state, (T25)this.value);
 						}
 											case 26:
 						{
-							return case26(state, this.item26);
+							return case26(state, (T26)this.value);
 						}
 											case 27:
 						{
-							return case27(state, this.item27);
+							return case27(state, (T27)this.value);
 						}
 											default:
 							return defaultCase(state);
 					}
 				}
+
+				public override bool Equals(object? other)
+				{
+					if (other is FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27> otherUnion)
+					{
+						return this.discriminator == otherUnion.Discriminator &&
+						       this.value.Equals(otherUnion.value);
+					}
+					else
+					{
+						return false;
+					}
+				}
+
+				public override int GetHashCode()
+				{
+					return this.value.GetHashCode() ^ this.discriminator;
+				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28> : IUnion
-			{
+			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28> : IFlatBufferUnion
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+							where T12 : notnull
+							where T13 : notnull
+							where T14 : notnull
+							where T15 : notnull
+							where T16 : notnull
+							where T17 : notnull
+							where T18 : notnull
+							where T19 : notnull
+							where T20 : notnull
+							where T21 : notnull
+							where T22 : notnull
+							where T23 : notnull
+							where T24 : notnull
+							where T25 : notnull
+							where T26 : notnull
+							where T27 : notnull
+							where T28 : notnull
+						{
 				private readonly byte discriminator;
+				private readonly object value;
 				
-				
-				protected readonly T1 item1;
-				
-				
-				protected readonly T2 item2;
-				
-				
-				protected readonly T3 item3;
-				
-				
-				protected readonly T4 item4;
-				
-				
-				protected readonly T5 item5;
-				
-				
-				protected readonly T6 item6;
-				
-				
-				protected readonly T7 item7;
-				
-				
-				protected readonly T8 item8;
-				
-				
-				protected readonly T9 item9;
-				
-				
-				protected readonly T10 item10;
-				
-				
-				protected readonly T11 item11;
-				
-				
-				protected readonly T12 item12;
-				
-				
-				protected readonly T13 item13;
-				
-				
-				protected readonly T14 item14;
-				
-				
-				protected readonly T15 item15;
-				
-				
-				protected readonly T16 item16;
-				
-				
-				protected readonly T17 item17;
-				
-				
-				protected readonly T18 item18;
-				
-				
-				protected readonly T19 item19;
-				
-				
-				protected readonly T20 item20;
-				
-				
-				protected readonly T21 item21;
-				
-				
-				protected readonly T22 item22;
-				
-				
-				protected readonly T23 item23;
-				
-				
-				protected readonly T24 item24;
-				
-				
-				protected readonly T25 item25;
-				
-				
-				protected readonly T26 item26;
-				
-				
-				protected readonly T27 item27;
-				
-				
-				protected readonly T28 item28;
-				
-								
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 1;
-					this.item1 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 2;
-					this.item2 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 3;
-					this.item3 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 4;
-					this.item4 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 5;
-					this.item5 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 6;
-					this.item6 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 7;
-					this.item7 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 8;
-					this.item8 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 9;
-					this.item9 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 10;
-					this.item10 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 11;
-					this.item11 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T12 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 12;
-					this.item12 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T13 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 13;
-					this.item13 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T14 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 14;
-					this.item14 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T15 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 15;
-					this.item15 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T16 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 16;
-					this.item16 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T17 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 17;
-					this.item17 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T18 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 18;
-					this.item18 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T19 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 19;
-					this.item19 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T20 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 20;
-					this.item20 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T21 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 21;
-					this.item21 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T22 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 22;
-					this.item22 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T23 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 23;
-					this.item23 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T24 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 24;
-					this.item24 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T25 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 25;
-					this.item25 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T26 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 26;
-					this.item26 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T27 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 27;
-					this.item27 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T28 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 28;
-					this.item28 = item;
+					this.value = item;
 				}
 				
 							
@@ -27918,7 +26972,7 @@ System.Func<TState, T27, TResult> case27)
 					{
 						if (this.discriminator == 1)
 						{
-							return this.item1;
+							return (T1)this.value;
 						}
 						else
 						{
@@ -27927,16 +26981,18 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(out T1 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
-					item = default;
 					if (this.discriminator == 1)
 					{
-						item = this.item1;
+						item = (T1)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -27946,7 +27002,7 @@ System.Func<TState, T27, TResult> case27)
 					{
 						if (this.discriminator == 2)
 						{
-							return this.item2;
+							return (T2)this.value;
 						}
 						else
 						{
@@ -27955,16 +27011,18 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(out T2 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
-					item = default;
 					if (this.discriminator == 2)
 					{
-						item = this.item2;
+						item = (T2)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -27974,7 +27032,7 @@ System.Func<TState, T27, TResult> case27)
 					{
 						if (this.discriminator == 3)
 						{
-							return this.item3;
+							return (T3)this.value;
 						}
 						else
 						{
@@ -27983,16 +27041,18 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(out T3 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
-					item = default;
 					if (this.discriminator == 3)
 					{
-						item = this.item3;
+						item = (T3)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -28002,7 +27062,7 @@ System.Func<TState, T27, TResult> case27)
 					{
 						if (this.discriminator == 4)
 						{
-							return this.item4;
+							return (T4)this.value;
 						}
 						else
 						{
@@ -28011,16 +27071,18 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(out T4 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
-					item = default;
 					if (this.discriminator == 4)
 					{
-						item = this.item4;
+						item = (T4)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -28030,7 +27092,7 @@ System.Func<TState, T27, TResult> case27)
 					{
 						if (this.discriminator == 5)
 						{
-							return this.item5;
+							return (T5)this.value;
 						}
 						else
 						{
@@ -28039,16 +27101,18 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(out T5 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
-					item = default;
 					if (this.discriminator == 5)
 					{
-						item = this.item5;
+						item = (T5)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -28058,7 +27122,7 @@ System.Func<TState, T27, TResult> case27)
 					{
 						if (this.discriminator == 6)
 						{
-							return this.item6;
+							return (T6)this.value;
 						}
 						else
 						{
@@ -28067,16 +27131,18 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(out T6 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
-					item = default;
 					if (this.discriminator == 6)
 					{
-						item = this.item6;
+						item = (T6)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -28086,7 +27152,7 @@ System.Func<TState, T27, TResult> case27)
 					{
 						if (this.discriminator == 7)
 						{
-							return this.item7;
+							return (T7)this.value;
 						}
 						else
 						{
@@ -28095,16 +27161,18 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(out T7 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
-					item = default;
 					if (this.discriminator == 7)
 					{
-						item = this.item7;
+						item = (T7)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -28114,7 +27182,7 @@ System.Func<TState, T27, TResult> case27)
 					{
 						if (this.discriminator == 8)
 						{
-							return this.item8;
+							return (T8)this.value;
 						}
 						else
 						{
@@ -28123,16 +27191,18 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(out T8 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
-					item = default;
 					if (this.discriminator == 8)
 					{
-						item = this.item8;
+						item = (T8)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -28142,7 +27212,7 @@ System.Func<TState, T27, TResult> case27)
 					{
 						if (this.discriminator == 9)
 						{
-							return this.item9;
+							return (T9)this.value;
 						}
 						else
 						{
@@ -28151,16 +27221,18 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(out T9 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
-					item = default;
 					if (this.discriminator == 9)
 					{
-						item = this.item9;
+						item = (T9)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -28170,7 +27242,7 @@ System.Func<TState, T27, TResult> case27)
 					{
 						if (this.discriminator == 10)
 						{
-							return this.item10;
+							return (T10)this.value;
 						}
 						else
 						{
@@ -28179,16 +27251,18 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(out T10 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
-					item = default;
 					if (this.discriminator == 10)
 					{
-						item = this.item10;
+						item = (T10)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -28198,7 +27272,7 @@ System.Func<TState, T27, TResult> case27)
 					{
 						if (this.discriminator == 11)
 						{
-							return this.item11;
+							return (T11)this.value;
 						}
 						else
 						{
@@ -28207,16 +27281,18 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(out T11 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
-					item = default;
 					if (this.discriminator == 11)
 					{
-						item = this.item11;
+						item = (T11)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -28226,7 +27302,7 @@ System.Func<TState, T27, TResult> case27)
 					{
 						if (this.discriminator == 12)
 						{
-							return this.item12;
+							return (T12)this.value;
 						}
 						else
 						{
@@ -28235,16 +27311,18 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(out T12 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T12? item)
 				{
-					item = default;
 					if (this.discriminator == 12)
 					{
-						item = this.item12;
+						item = (T12)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -28254,7 +27332,7 @@ System.Func<TState, T27, TResult> case27)
 					{
 						if (this.discriminator == 13)
 						{
-							return this.item13;
+							return (T13)this.value;
 						}
 						else
 						{
@@ -28263,16 +27341,18 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(out T13 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T13? item)
 				{
-					item = default;
 					if (this.discriminator == 13)
 					{
-						item = this.item13;
+						item = (T13)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -28282,7 +27362,7 @@ System.Func<TState, T27, TResult> case27)
 					{
 						if (this.discriminator == 14)
 						{
-							return this.item14;
+							return (T14)this.value;
 						}
 						else
 						{
@@ -28291,16 +27371,18 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(out T14 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T14? item)
 				{
-					item = default;
 					if (this.discriminator == 14)
 					{
-						item = this.item14;
+						item = (T14)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -28310,7 +27392,7 @@ System.Func<TState, T27, TResult> case27)
 					{
 						if (this.discriminator == 15)
 						{
-							return this.item15;
+							return (T15)this.value;
 						}
 						else
 						{
@@ -28319,16 +27401,18 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(out T15 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T15? item)
 				{
-					item = default;
 					if (this.discriminator == 15)
 					{
-						item = this.item15;
+						item = (T15)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -28338,7 +27422,7 @@ System.Func<TState, T27, TResult> case27)
 					{
 						if (this.discriminator == 16)
 						{
-							return this.item16;
+							return (T16)this.value;
 						}
 						else
 						{
@@ -28347,16 +27431,18 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(out T16 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T16? item)
 				{
-					item = default;
 					if (this.discriminator == 16)
 					{
-						item = this.item16;
+						item = (T16)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -28366,7 +27452,7 @@ System.Func<TState, T27, TResult> case27)
 					{
 						if (this.discriminator == 17)
 						{
-							return this.item17;
+							return (T17)this.value;
 						}
 						else
 						{
@@ -28375,16 +27461,18 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(out T17 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T17? item)
 				{
-					item = default;
 					if (this.discriminator == 17)
 					{
-						item = this.item17;
+						item = (T17)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -28394,7 +27482,7 @@ System.Func<TState, T27, TResult> case27)
 					{
 						if (this.discriminator == 18)
 						{
-							return this.item18;
+							return (T18)this.value;
 						}
 						else
 						{
@@ -28403,16 +27491,18 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(out T18 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T18? item)
 				{
-					item = default;
 					if (this.discriminator == 18)
 					{
-						item = this.item18;
+						item = (T18)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -28422,7 +27512,7 @@ System.Func<TState, T27, TResult> case27)
 					{
 						if (this.discriminator == 19)
 						{
-							return this.item19;
+							return (T19)this.value;
 						}
 						else
 						{
@@ -28431,16 +27521,18 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(out T19 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T19? item)
 				{
-					item = default;
 					if (this.discriminator == 19)
 					{
-						item = this.item19;
+						item = (T19)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -28450,7 +27542,7 @@ System.Func<TState, T27, TResult> case27)
 					{
 						if (this.discriminator == 20)
 						{
-							return this.item20;
+							return (T20)this.value;
 						}
 						else
 						{
@@ -28459,16 +27551,18 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(out T20 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T20? item)
 				{
-					item = default;
 					if (this.discriminator == 20)
 					{
-						item = this.item20;
+						item = (T20)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -28478,7 +27572,7 @@ System.Func<TState, T27, TResult> case27)
 					{
 						if (this.discriminator == 21)
 						{
-							return this.item21;
+							return (T21)this.value;
 						}
 						else
 						{
@@ -28487,16 +27581,18 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(out T21 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T21? item)
 				{
-					item = default;
 					if (this.discriminator == 21)
 					{
-						item = this.item21;
+						item = (T21)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -28506,7 +27602,7 @@ System.Func<TState, T27, TResult> case27)
 					{
 						if (this.discriminator == 22)
 						{
-							return this.item22;
+							return (T22)this.value;
 						}
 						else
 						{
@@ -28515,16 +27611,18 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(out T22 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T22? item)
 				{
-					item = default;
 					if (this.discriminator == 22)
 					{
-						item = this.item22;
+						item = (T22)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -28534,7 +27632,7 @@ System.Func<TState, T27, TResult> case27)
 					{
 						if (this.discriminator == 23)
 						{
-							return this.item23;
+							return (T23)this.value;
 						}
 						else
 						{
@@ -28543,16 +27641,18 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(out T23 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T23? item)
 				{
-					item = default;
 					if (this.discriminator == 23)
 					{
-						item = this.item23;
+						item = (T23)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -28562,7 +27662,7 @@ System.Func<TState, T27, TResult> case27)
 					{
 						if (this.discriminator == 24)
 						{
-							return this.item24;
+							return (T24)this.value;
 						}
 						else
 						{
@@ -28571,16 +27671,18 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(out T24 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T24? item)
 				{
-					item = default;
 					if (this.discriminator == 24)
 					{
-						item = this.item24;
+						item = (T24)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -28590,7 +27692,7 @@ System.Func<TState, T27, TResult> case27)
 					{
 						if (this.discriminator == 25)
 						{
-							return this.item25;
+							return (T25)this.value;
 						}
 						else
 						{
@@ -28599,16 +27701,18 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(out T25 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T25? item)
 				{
-					item = default;
 					if (this.discriminator == 25)
 					{
-						item = this.item25;
+						item = (T25)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -28618,7 +27722,7 @@ System.Func<TState, T27, TResult> case27)
 					{
 						if (this.discriminator == 26)
 						{
-							return this.item26;
+							return (T26)this.value;
 						}
 						else
 						{
@@ -28627,16 +27731,18 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(out T26 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T26? item)
 				{
-					item = default;
 					if (this.discriminator == 26)
 					{
-						item = this.item26;
+						item = (T26)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -28646,7 +27752,7 @@ System.Func<TState, T27, TResult> case27)
 					{
 						if (this.discriminator == 27)
 						{
-							return this.item27;
+							return (T27)this.value;
 						}
 						else
 						{
@@ -28655,16 +27761,18 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(out T27 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T27? item)
 				{
-					item = default;
 					if (this.discriminator == 27)
 					{
-						item = this.item27;
+						item = (T27)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -28674,7 +27782,7 @@ System.Func<TState, T27, TResult> case27)
 					{
 						if (this.discriminator == 28)
 						{
-							return this.item28;
+							return (T28)this.value;
 						}
 						else
 						{
@@ -28683,113 +27791,21 @@ System.Func<TState, T27, TResult> case27)
 					}
 				}
 
-				public bool TryGet(out T28 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T28? item)
 				{
-					item = default;
 					if (this.discriminator == 28)
 					{
-						item = this.item28;
+						item = (T28)this.value;
 						return true;
 					}
-
-					return false;
-				}
-				
-				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11,
-System.Func<T12, T12> cloneT12,
-System.Func<T13, T13> cloneT13,
-System.Func<T14, T14> cloneT14,
-System.Func<T15, T15> cloneT15,
-System.Func<T16, T16> cloneT16,
-System.Func<T17, T17> cloneT17,
-System.Func<T18, T18> cloneT18,
-System.Func<T19, T19> cloneT19,
-System.Func<T20, T20> cloneT20,
-System.Func<T21, T21> cloneT21,
-System.Func<T22, T22> cloneT22,
-System.Func<T23, T23> cloneT23,
-System.Func<T24, T24> cloneT24,
-System.Func<T25, T25> cloneT25,
-System.Func<T26, T26> cloneT26,
-System.Func<T27, T27> cloneT27,
-System.Func<T28, T28> cloneT28
-				)
-				{
-					switch (this.discriminator)
+					else
 					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT1(this.item1));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT2(this.item2));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT3(this.item3));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT4(this.item4));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT5(this.item5));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT6(this.item6));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT7(this.item7));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT8(this.item8));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT9(this.item9));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT10(this.item10));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT11(this.item11));
-											case 12:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT12(this.item12));
-											case 13:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT13(this.item13));
-											case 14:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT14(this.item14));
-											case 15:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT15(this.item15));
-											case 16:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT16(this.item16));
-											case 17:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT17(this.item17));
-											case 18:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT18(this.item18));
-											case 19:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT19(this.item19));
-											case 20:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT20(this.item20));
-											case 21:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT21(this.item21));
-											case 22:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT22(this.item22));
-											case 23:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT23(this.item23));
-											case 24:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT24(this.item24));
-											case 25:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT25(this.item25));
-											case 26:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT26(this.item26));
-											case 27:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT27(this.item27));
-											case 28:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>(cloneT28(this.item28));
-										}
-
-					throw new System.InvalidOperationException();
+						item = default;
+						return false;
+					}
 				}
-
+				
+				
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -28825,142 +27841,142 @@ System.Action<T28> case28)
 					{
 											case 1:
 						{
-							case1(this.item1);
+							case1((T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(this.item2);
+							case2((T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(this.item3);
+							case3((T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(this.item4);
+							case4((T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(this.item5);
+							case5((T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(this.item6);
+							case6((T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(this.item7);
+							case7((T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(this.item8);
+							case8((T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(this.item9);
+							case9((T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(this.item10);
+							case10((T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(this.item11);
+							case11((T11)this.value);
 							break;
 						}
 											case 12:
 						{
-							case12(this.item12);
+							case12((T12)this.value);
 							break;
 						}
 											case 13:
 						{
-							case13(this.item13);
+							case13((T13)this.value);
 							break;
 						}
 											case 14:
 						{
-							case14(this.item14);
+							case14((T14)this.value);
 							break;
 						}
 											case 15:
 						{
-							case15(this.item15);
+							case15((T15)this.value);
 							break;
 						}
 											case 16:
 						{
-							case16(this.item16);
+							case16((T16)this.value);
 							break;
 						}
 											case 17:
 						{
-							case17(this.item17);
+							case17((T17)this.value);
 							break;
 						}
 											case 18:
 						{
-							case18(this.item18);
+							case18((T18)this.value);
 							break;
 						}
 											case 19:
 						{
-							case19(this.item19);
+							case19((T19)this.value);
 							break;
 						}
 											case 20:
 						{
-							case20(this.item20);
+							case20((T20)this.value);
 							break;
 						}
 											case 21:
 						{
-							case21(this.item21);
+							case21((T21)this.value);
 							break;
 						}
 											case 22:
 						{
-							case22(this.item22);
+							case22((T22)this.value);
 							break;
 						}
 											case 23:
 						{
-							case23(this.item23);
+							case23((T23)this.value);
 							break;
 						}
 											case 24:
 						{
-							case24(this.item24);
+							case24((T24)this.value);
 							break;
 						}
 											case 25:
 						{
-							case25(this.item25);
+							case25((T25)this.value);
 							break;
 						}
 											case 26:
 						{
-							case26(this.item26);
+							case26((T26)this.value);
 							break;
 						}
 											case 27:
 						{
-							case27(this.item27);
+							case27((T27)this.value);
 							break;
 						}
 											case 28:
 						{
-							case28(this.item28);
+							case28((T28)this.value);
 							break;
 						}
 											default:
@@ -29005,142 +28021,142 @@ System.Action<TState, T28> case28)
 					{
 											case 1:
 						{
-							case1(state, this.item1);
+							case1(state, (T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(state, this.item2);
+							case2(state, (T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(state, this.item3);
+							case3(state, (T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(state, this.item4);
+							case4(state, (T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(state, this.item5);
+							case5(state, (T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(state, this.item6);
+							case6(state, (T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(state, this.item7);
+							case7(state, (T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(state, this.item8);
+							case8(state, (T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(state, this.item9);
+							case9(state, (T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(state, this.item10);
+							case10(state, (T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(state, this.item11);
+							case11(state, (T11)this.value);
 							break;
 						}
 											case 12:
 						{
-							case12(state, this.item12);
+							case12(state, (T12)this.value);
 							break;
 						}
 											case 13:
 						{
-							case13(state, this.item13);
+							case13(state, (T13)this.value);
 							break;
 						}
 											case 14:
 						{
-							case14(state, this.item14);
+							case14(state, (T14)this.value);
 							break;
 						}
 											case 15:
 						{
-							case15(state, this.item15);
+							case15(state, (T15)this.value);
 							break;
 						}
 											case 16:
 						{
-							case16(state, this.item16);
+							case16(state, (T16)this.value);
 							break;
 						}
 											case 17:
 						{
-							case17(state, this.item17);
+							case17(state, (T17)this.value);
 							break;
 						}
 											case 18:
 						{
-							case18(state, this.item18);
+							case18(state, (T18)this.value);
 							break;
 						}
 											case 19:
 						{
-							case19(state, this.item19);
+							case19(state, (T19)this.value);
 							break;
 						}
 											case 20:
 						{
-							case20(state, this.item20);
+							case20(state, (T20)this.value);
 							break;
 						}
 											case 21:
 						{
-							case21(state, this.item21);
+							case21(state, (T21)this.value);
 							break;
 						}
 											case 22:
 						{
-							case22(state, this.item22);
+							case22(state, (T22)this.value);
 							break;
 						}
 											case 23:
 						{
-							case23(state, this.item23);
+							case23(state, (T23)this.value);
 							break;
 						}
 											case 24:
 						{
-							case24(state, this.item24);
+							case24(state, (T24)this.value);
 							break;
 						}
 											case 25:
 						{
-							case25(state, this.item25);
+							case25(state, (T25)this.value);
 							break;
 						}
 											case 26:
 						{
-							case26(state, this.item26);
+							case26(state, (T26)this.value);
 							break;
 						}
 											case 27:
 						{
-							case27(state, this.item27);
+							case27(state, (T27)this.value);
 							break;
 						}
 											case 28:
 						{
-							case28(state, this.item28);
+							case28(state, (T28)this.value);
 							break;
 						}
 											default:
@@ -29185,115 +28201,115 @@ System.Func<T28, TResult> case28)
 					{
 											case 1:
 						{
-							return case1(this.item1);
+							return case1((T1)this.value);
 						}
 											case 2:
 						{
-							return case2(this.item2);
+							return case2((T2)this.value);
 						}
 											case 3:
 						{
-							return case3(this.item3);
+							return case3((T3)this.value);
 						}
 											case 4:
 						{
-							return case4(this.item4);
+							return case4((T4)this.value);
 						}
 											case 5:
 						{
-							return case5(this.item5);
+							return case5((T5)this.value);
 						}
 											case 6:
 						{
-							return case6(this.item6);
+							return case6((T6)this.value);
 						}
 											case 7:
 						{
-							return case7(this.item7);
+							return case7((T7)this.value);
 						}
 											case 8:
 						{
-							return case8(this.item8);
+							return case8((T8)this.value);
 						}
 											case 9:
 						{
-							return case9(this.item9);
+							return case9((T9)this.value);
 						}
 											case 10:
 						{
-							return case10(this.item10);
+							return case10((T10)this.value);
 						}
 											case 11:
 						{
-							return case11(this.item11);
+							return case11((T11)this.value);
 						}
 											case 12:
 						{
-							return case12(this.item12);
+							return case12((T12)this.value);
 						}
 											case 13:
 						{
-							return case13(this.item13);
+							return case13((T13)this.value);
 						}
 											case 14:
 						{
-							return case14(this.item14);
+							return case14((T14)this.value);
 						}
 											case 15:
 						{
-							return case15(this.item15);
+							return case15((T15)this.value);
 						}
 											case 16:
 						{
-							return case16(this.item16);
+							return case16((T16)this.value);
 						}
 											case 17:
 						{
-							return case17(this.item17);
+							return case17((T17)this.value);
 						}
 											case 18:
 						{
-							return case18(this.item18);
+							return case18((T18)this.value);
 						}
 											case 19:
 						{
-							return case19(this.item19);
+							return case19((T19)this.value);
 						}
 											case 20:
 						{
-							return case20(this.item20);
+							return case20((T20)this.value);
 						}
 											case 21:
 						{
-							return case21(this.item21);
+							return case21((T21)this.value);
 						}
 											case 22:
 						{
-							return case22(this.item22);
+							return case22((T22)this.value);
 						}
 											case 23:
 						{
-							return case23(this.item23);
+							return case23((T23)this.value);
 						}
 											case 24:
 						{
-							return case24(this.item24);
+							return case24((T24)this.value);
 						}
 											case 25:
 						{
-							return case25(this.item25);
+							return case25((T25)this.value);
 						}
 											case 26:
 						{
-							return case26(this.item26);
+							return case26((T26)this.value);
 						}
 											case 27:
 						{
-							return case27(this.item27);
+							return case27((T27)this.value);
 						}
 											case 28:
 						{
-							return case28(this.item28);
+							return case28((T28)this.value);
 						}
 											default:
 							return defaultCase();
@@ -29336,560 +28352,521 @@ System.Func<TState, T28, TResult> case28)
 					{
 											case 1:
 						{
-							return case1(state, this.item1);
+							return case1(state, (T1)this.value);
 						}
 											case 2:
 						{
-							return case2(state, this.item2);
+							return case2(state, (T2)this.value);
 						}
 											case 3:
 						{
-							return case3(state, this.item3);
+							return case3(state, (T3)this.value);
 						}
 											case 4:
 						{
-							return case4(state, this.item4);
+							return case4(state, (T4)this.value);
 						}
 											case 5:
 						{
-							return case5(state, this.item5);
+							return case5(state, (T5)this.value);
 						}
 											case 6:
 						{
-							return case6(state, this.item6);
+							return case6(state, (T6)this.value);
 						}
 											case 7:
 						{
-							return case7(state, this.item7);
+							return case7(state, (T7)this.value);
 						}
 											case 8:
 						{
-							return case8(state, this.item8);
+							return case8(state, (T8)this.value);
 						}
 											case 9:
 						{
-							return case9(state, this.item9);
+							return case9(state, (T9)this.value);
 						}
 											case 10:
 						{
-							return case10(state, this.item10);
+							return case10(state, (T10)this.value);
 						}
 											case 11:
 						{
-							return case11(state, this.item11);
+							return case11(state, (T11)this.value);
 						}
 											case 12:
 						{
-							return case12(state, this.item12);
+							return case12(state, (T12)this.value);
 						}
 											case 13:
 						{
-							return case13(state, this.item13);
+							return case13(state, (T13)this.value);
 						}
 											case 14:
 						{
-							return case14(state, this.item14);
+							return case14(state, (T14)this.value);
 						}
 											case 15:
 						{
-							return case15(state, this.item15);
+							return case15(state, (T15)this.value);
 						}
 											case 16:
 						{
-							return case16(state, this.item16);
+							return case16(state, (T16)this.value);
 						}
 											case 17:
 						{
-							return case17(state, this.item17);
+							return case17(state, (T17)this.value);
 						}
 											case 18:
 						{
-							return case18(state, this.item18);
+							return case18(state, (T18)this.value);
 						}
 											case 19:
 						{
-							return case19(state, this.item19);
+							return case19(state, (T19)this.value);
 						}
 											case 20:
 						{
-							return case20(state, this.item20);
+							return case20(state, (T20)this.value);
 						}
 											case 21:
 						{
-							return case21(state, this.item21);
+							return case21(state, (T21)this.value);
 						}
 											case 22:
 						{
-							return case22(state, this.item22);
+							return case22(state, (T22)this.value);
 						}
 											case 23:
 						{
-							return case23(state, this.item23);
+							return case23(state, (T23)this.value);
 						}
 											case 24:
 						{
-							return case24(state, this.item24);
+							return case24(state, (T24)this.value);
 						}
 											case 25:
 						{
-							return case25(state, this.item25);
+							return case25(state, (T25)this.value);
 						}
 											case 26:
 						{
-							return case26(state, this.item26);
+							return case26(state, (T26)this.value);
 						}
 											case 27:
 						{
-							return case27(state, this.item27);
+							return case27(state, (T27)this.value);
 						}
 											case 28:
 						{
-							return case28(state, this.item28);
+							return case28(state, (T28)this.value);
 						}
 											default:
 							return defaultCase(state);
 					}
 				}
+
+				public override bool Equals(object? other)
+				{
+					if (other is FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28> otherUnion)
+					{
+						return this.discriminator == otherUnion.Discriminator &&
+						       this.value.Equals(otherUnion.value);
+					}
+					else
+					{
+						return false;
+					}
+				}
+
+				public override int GetHashCode()
+				{
+					return this.value.GetHashCode() ^ this.discriminator;
+				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29> : IUnion
-			{
+			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29> : IFlatBufferUnion
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+							where T12 : notnull
+							where T13 : notnull
+							where T14 : notnull
+							where T15 : notnull
+							where T16 : notnull
+							where T17 : notnull
+							where T18 : notnull
+							where T19 : notnull
+							where T20 : notnull
+							where T21 : notnull
+							where T22 : notnull
+							where T23 : notnull
+							where T24 : notnull
+							where T25 : notnull
+							where T26 : notnull
+							where T27 : notnull
+							where T28 : notnull
+							where T29 : notnull
+						{
 				private readonly byte discriminator;
+				private readonly object value;
 				
-				
-				protected readonly T1 item1;
-				
-				
-				protected readonly T2 item2;
-				
-				
-				protected readonly T3 item3;
-				
-				
-				protected readonly T4 item4;
-				
-				
-				protected readonly T5 item5;
-				
-				
-				protected readonly T6 item6;
-				
-				
-				protected readonly T7 item7;
-				
-				
-				protected readonly T8 item8;
-				
-				
-				protected readonly T9 item9;
-				
-				
-				protected readonly T10 item10;
-				
-				
-				protected readonly T11 item11;
-				
-				
-				protected readonly T12 item12;
-				
-				
-				protected readonly T13 item13;
-				
-				
-				protected readonly T14 item14;
-				
-				
-				protected readonly T15 item15;
-				
-				
-				protected readonly T16 item16;
-				
-				
-				protected readonly T17 item17;
-				
-				
-				protected readonly T18 item18;
-				
-				
-				protected readonly T19 item19;
-				
-				
-				protected readonly T20 item20;
-				
-				
-				protected readonly T21 item21;
-				
-				
-				protected readonly T22 item22;
-				
-				
-				protected readonly T23 item23;
-				
-				
-				protected readonly T24 item24;
-				
-				
-				protected readonly T25 item25;
-				
-				
-				protected readonly T26 item26;
-				
-				
-				protected readonly T27 item27;
-				
-				
-				protected readonly T28 item28;
-				
-				
-				protected readonly T29 item29;
-				
-								
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 1;
-					this.item1 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 2;
-					this.item2 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 3;
-					this.item3 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 4;
-					this.item4 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 5;
-					this.item5 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 6;
-					this.item6 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 7;
-					this.item7 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 8;
-					this.item8 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 9;
-					this.item9 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 10;
-					this.item10 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 11;
-					this.item11 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T12 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 12;
-					this.item12 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T13 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 13;
-					this.item13 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T14 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 14;
-					this.item14 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T15 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 15;
-					this.item15 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T16 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 16;
-					this.item16 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T17 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 17;
-					this.item17 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T18 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 18;
-					this.item18 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T19 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 19;
-					this.item19 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T20 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 20;
-					this.item20 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T21 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 21;
-					this.item21 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T22 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 22;
-					this.item22 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T23 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 23;
-					this.item23 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T24 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 24;
-					this.item24 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T25 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 25;
-					this.item25 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T26 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 26;
-					this.item26 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T27 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 27;
-					this.item27 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T28 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 28;
-					this.item28 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T29 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 29;
-					this.item29 = item;
+					this.value = item;
 				}
 				
 							
@@ -29902,7 +28879,7 @@ System.Func<TState, T28, TResult> case28)
 					{
 						if (this.discriminator == 1)
 						{
-							return this.item1;
+							return (T1)this.value;
 						}
 						else
 						{
@@ -29911,16 +28888,18 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(out T1 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
-					item = default;
 					if (this.discriminator == 1)
 					{
-						item = this.item1;
+						item = (T1)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -29930,7 +28909,7 @@ System.Func<TState, T28, TResult> case28)
 					{
 						if (this.discriminator == 2)
 						{
-							return this.item2;
+							return (T2)this.value;
 						}
 						else
 						{
@@ -29939,16 +28918,18 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(out T2 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
-					item = default;
 					if (this.discriminator == 2)
 					{
-						item = this.item2;
+						item = (T2)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -29958,7 +28939,7 @@ System.Func<TState, T28, TResult> case28)
 					{
 						if (this.discriminator == 3)
 						{
-							return this.item3;
+							return (T3)this.value;
 						}
 						else
 						{
@@ -29967,16 +28948,18 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(out T3 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
-					item = default;
 					if (this.discriminator == 3)
 					{
-						item = this.item3;
+						item = (T3)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -29986,7 +28969,7 @@ System.Func<TState, T28, TResult> case28)
 					{
 						if (this.discriminator == 4)
 						{
-							return this.item4;
+							return (T4)this.value;
 						}
 						else
 						{
@@ -29995,16 +28978,18 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(out T4 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
-					item = default;
 					if (this.discriminator == 4)
 					{
-						item = this.item4;
+						item = (T4)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -30014,7 +28999,7 @@ System.Func<TState, T28, TResult> case28)
 					{
 						if (this.discriminator == 5)
 						{
-							return this.item5;
+							return (T5)this.value;
 						}
 						else
 						{
@@ -30023,16 +29008,18 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(out T5 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
-					item = default;
 					if (this.discriminator == 5)
 					{
-						item = this.item5;
+						item = (T5)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -30042,7 +29029,7 @@ System.Func<TState, T28, TResult> case28)
 					{
 						if (this.discriminator == 6)
 						{
-							return this.item6;
+							return (T6)this.value;
 						}
 						else
 						{
@@ -30051,16 +29038,18 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(out T6 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
-					item = default;
 					if (this.discriminator == 6)
 					{
-						item = this.item6;
+						item = (T6)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -30070,7 +29059,7 @@ System.Func<TState, T28, TResult> case28)
 					{
 						if (this.discriminator == 7)
 						{
-							return this.item7;
+							return (T7)this.value;
 						}
 						else
 						{
@@ -30079,16 +29068,18 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(out T7 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
-					item = default;
 					if (this.discriminator == 7)
 					{
-						item = this.item7;
+						item = (T7)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -30098,7 +29089,7 @@ System.Func<TState, T28, TResult> case28)
 					{
 						if (this.discriminator == 8)
 						{
-							return this.item8;
+							return (T8)this.value;
 						}
 						else
 						{
@@ -30107,16 +29098,18 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(out T8 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
-					item = default;
 					if (this.discriminator == 8)
 					{
-						item = this.item8;
+						item = (T8)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -30126,7 +29119,7 @@ System.Func<TState, T28, TResult> case28)
 					{
 						if (this.discriminator == 9)
 						{
-							return this.item9;
+							return (T9)this.value;
 						}
 						else
 						{
@@ -30135,16 +29128,18 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(out T9 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
-					item = default;
 					if (this.discriminator == 9)
 					{
-						item = this.item9;
+						item = (T9)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -30154,7 +29149,7 @@ System.Func<TState, T28, TResult> case28)
 					{
 						if (this.discriminator == 10)
 						{
-							return this.item10;
+							return (T10)this.value;
 						}
 						else
 						{
@@ -30163,16 +29158,18 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(out T10 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
-					item = default;
 					if (this.discriminator == 10)
 					{
-						item = this.item10;
+						item = (T10)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -30182,7 +29179,7 @@ System.Func<TState, T28, TResult> case28)
 					{
 						if (this.discriminator == 11)
 						{
-							return this.item11;
+							return (T11)this.value;
 						}
 						else
 						{
@@ -30191,16 +29188,18 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(out T11 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
-					item = default;
 					if (this.discriminator == 11)
 					{
-						item = this.item11;
+						item = (T11)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -30210,7 +29209,7 @@ System.Func<TState, T28, TResult> case28)
 					{
 						if (this.discriminator == 12)
 						{
-							return this.item12;
+							return (T12)this.value;
 						}
 						else
 						{
@@ -30219,16 +29218,18 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(out T12 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T12? item)
 				{
-					item = default;
 					if (this.discriminator == 12)
 					{
-						item = this.item12;
+						item = (T12)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -30238,7 +29239,7 @@ System.Func<TState, T28, TResult> case28)
 					{
 						if (this.discriminator == 13)
 						{
-							return this.item13;
+							return (T13)this.value;
 						}
 						else
 						{
@@ -30247,16 +29248,18 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(out T13 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T13? item)
 				{
-					item = default;
 					if (this.discriminator == 13)
 					{
-						item = this.item13;
+						item = (T13)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -30266,7 +29269,7 @@ System.Func<TState, T28, TResult> case28)
 					{
 						if (this.discriminator == 14)
 						{
-							return this.item14;
+							return (T14)this.value;
 						}
 						else
 						{
@@ -30275,16 +29278,18 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(out T14 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T14? item)
 				{
-					item = default;
 					if (this.discriminator == 14)
 					{
-						item = this.item14;
+						item = (T14)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -30294,7 +29299,7 @@ System.Func<TState, T28, TResult> case28)
 					{
 						if (this.discriminator == 15)
 						{
-							return this.item15;
+							return (T15)this.value;
 						}
 						else
 						{
@@ -30303,16 +29308,18 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(out T15 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T15? item)
 				{
-					item = default;
 					if (this.discriminator == 15)
 					{
-						item = this.item15;
+						item = (T15)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -30322,7 +29329,7 @@ System.Func<TState, T28, TResult> case28)
 					{
 						if (this.discriminator == 16)
 						{
-							return this.item16;
+							return (T16)this.value;
 						}
 						else
 						{
@@ -30331,16 +29338,18 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(out T16 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T16? item)
 				{
-					item = default;
 					if (this.discriminator == 16)
 					{
-						item = this.item16;
+						item = (T16)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -30350,7 +29359,7 @@ System.Func<TState, T28, TResult> case28)
 					{
 						if (this.discriminator == 17)
 						{
-							return this.item17;
+							return (T17)this.value;
 						}
 						else
 						{
@@ -30359,16 +29368,18 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(out T17 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T17? item)
 				{
-					item = default;
 					if (this.discriminator == 17)
 					{
-						item = this.item17;
+						item = (T17)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -30378,7 +29389,7 @@ System.Func<TState, T28, TResult> case28)
 					{
 						if (this.discriminator == 18)
 						{
-							return this.item18;
+							return (T18)this.value;
 						}
 						else
 						{
@@ -30387,16 +29398,18 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(out T18 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T18? item)
 				{
-					item = default;
 					if (this.discriminator == 18)
 					{
-						item = this.item18;
+						item = (T18)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -30406,7 +29419,7 @@ System.Func<TState, T28, TResult> case28)
 					{
 						if (this.discriminator == 19)
 						{
-							return this.item19;
+							return (T19)this.value;
 						}
 						else
 						{
@@ -30415,16 +29428,18 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(out T19 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T19? item)
 				{
-					item = default;
 					if (this.discriminator == 19)
 					{
-						item = this.item19;
+						item = (T19)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -30434,7 +29449,7 @@ System.Func<TState, T28, TResult> case28)
 					{
 						if (this.discriminator == 20)
 						{
-							return this.item20;
+							return (T20)this.value;
 						}
 						else
 						{
@@ -30443,16 +29458,18 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(out T20 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T20? item)
 				{
-					item = default;
 					if (this.discriminator == 20)
 					{
-						item = this.item20;
+						item = (T20)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -30462,7 +29479,7 @@ System.Func<TState, T28, TResult> case28)
 					{
 						if (this.discriminator == 21)
 						{
-							return this.item21;
+							return (T21)this.value;
 						}
 						else
 						{
@@ -30471,16 +29488,18 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(out T21 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T21? item)
 				{
-					item = default;
 					if (this.discriminator == 21)
 					{
-						item = this.item21;
+						item = (T21)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -30490,7 +29509,7 @@ System.Func<TState, T28, TResult> case28)
 					{
 						if (this.discriminator == 22)
 						{
-							return this.item22;
+							return (T22)this.value;
 						}
 						else
 						{
@@ -30499,16 +29518,18 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(out T22 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T22? item)
 				{
-					item = default;
 					if (this.discriminator == 22)
 					{
-						item = this.item22;
+						item = (T22)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -30518,7 +29539,7 @@ System.Func<TState, T28, TResult> case28)
 					{
 						if (this.discriminator == 23)
 						{
-							return this.item23;
+							return (T23)this.value;
 						}
 						else
 						{
@@ -30527,16 +29548,18 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(out T23 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T23? item)
 				{
-					item = default;
 					if (this.discriminator == 23)
 					{
-						item = this.item23;
+						item = (T23)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -30546,7 +29569,7 @@ System.Func<TState, T28, TResult> case28)
 					{
 						if (this.discriminator == 24)
 						{
-							return this.item24;
+							return (T24)this.value;
 						}
 						else
 						{
@@ -30555,16 +29578,18 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(out T24 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T24? item)
 				{
-					item = default;
 					if (this.discriminator == 24)
 					{
-						item = this.item24;
+						item = (T24)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -30574,7 +29599,7 @@ System.Func<TState, T28, TResult> case28)
 					{
 						if (this.discriminator == 25)
 						{
-							return this.item25;
+							return (T25)this.value;
 						}
 						else
 						{
@@ -30583,16 +29608,18 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(out T25 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T25? item)
 				{
-					item = default;
 					if (this.discriminator == 25)
 					{
-						item = this.item25;
+						item = (T25)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -30602,7 +29629,7 @@ System.Func<TState, T28, TResult> case28)
 					{
 						if (this.discriminator == 26)
 						{
-							return this.item26;
+							return (T26)this.value;
 						}
 						else
 						{
@@ -30611,16 +29638,18 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(out T26 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T26? item)
 				{
-					item = default;
 					if (this.discriminator == 26)
 					{
-						item = this.item26;
+						item = (T26)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -30630,7 +29659,7 @@ System.Func<TState, T28, TResult> case28)
 					{
 						if (this.discriminator == 27)
 						{
-							return this.item27;
+							return (T27)this.value;
 						}
 						else
 						{
@@ -30639,16 +29668,18 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(out T27 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T27? item)
 				{
-					item = default;
 					if (this.discriminator == 27)
 					{
-						item = this.item27;
+						item = (T27)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -30658,7 +29689,7 @@ System.Func<TState, T28, TResult> case28)
 					{
 						if (this.discriminator == 28)
 						{
-							return this.item28;
+							return (T28)this.value;
 						}
 						else
 						{
@@ -30667,16 +29698,18 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(out T28 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T28? item)
 				{
-					item = default;
 					if (this.discriminator == 28)
 					{
-						item = this.item28;
+						item = (T28)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -30686,7 +29719,7 @@ System.Func<TState, T28, TResult> case28)
 					{
 						if (this.discriminator == 29)
 						{
-							return this.item29;
+							return (T29)this.value;
 						}
 						else
 						{
@@ -30695,116 +29728,21 @@ System.Func<TState, T28, TResult> case28)
 					}
 				}
 
-				public bool TryGet(out T29 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T29? item)
 				{
-					item = default;
 					if (this.discriminator == 29)
 					{
-						item = this.item29;
+						item = (T29)this.value;
 						return true;
 					}
-
-					return false;
-				}
-				
-				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11,
-System.Func<T12, T12> cloneT12,
-System.Func<T13, T13> cloneT13,
-System.Func<T14, T14> cloneT14,
-System.Func<T15, T15> cloneT15,
-System.Func<T16, T16> cloneT16,
-System.Func<T17, T17> cloneT17,
-System.Func<T18, T18> cloneT18,
-System.Func<T19, T19> cloneT19,
-System.Func<T20, T20> cloneT20,
-System.Func<T21, T21> cloneT21,
-System.Func<T22, T22> cloneT22,
-System.Func<T23, T23> cloneT23,
-System.Func<T24, T24> cloneT24,
-System.Func<T25, T25> cloneT25,
-System.Func<T26, T26> cloneT26,
-System.Func<T27, T27> cloneT27,
-System.Func<T28, T28> cloneT28,
-System.Func<T29, T29> cloneT29
-				)
-				{
-					switch (this.discriminator)
+					else
 					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT1(this.item1));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT2(this.item2));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT3(this.item3));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT4(this.item4));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT5(this.item5));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT6(this.item6));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT7(this.item7));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT8(this.item8));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT9(this.item9));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT10(this.item10));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT11(this.item11));
-											case 12:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT12(this.item12));
-											case 13:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT13(this.item13));
-											case 14:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT14(this.item14));
-											case 15:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT15(this.item15));
-											case 16:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT16(this.item16));
-											case 17:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT17(this.item17));
-											case 18:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT18(this.item18));
-											case 19:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT19(this.item19));
-											case 20:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT20(this.item20));
-											case 21:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT21(this.item21));
-											case 22:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT22(this.item22));
-											case 23:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT23(this.item23));
-											case 24:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT24(this.item24));
-											case 25:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT25(this.item25));
-											case 26:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT26(this.item26));
-											case 27:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT27(this.item27));
-											case 28:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT28(this.item28));
-											case 29:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>(cloneT29(this.item29));
-										}
-
-					throw new System.InvalidOperationException();
+						item = default;
+						return false;
+					}
 				}
-
+				
+				
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -30841,147 +29779,147 @@ System.Action<T29> case29)
 					{
 											case 1:
 						{
-							case1(this.item1);
+							case1((T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(this.item2);
+							case2((T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(this.item3);
+							case3((T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(this.item4);
+							case4((T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(this.item5);
+							case5((T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(this.item6);
+							case6((T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(this.item7);
+							case7((T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(this.item8);
+							case8((T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(this.item9);
+							case9((T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(this.item10);
+							case10((T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(this.item11);
+							case11((T11)this.value);
 							break;
 						}
 											case 12:
 						{
-							case12(this.item12);
+							case12((T12)this.value);
 							break;
 						}
 											case 13:
 						{
-							case13(this.item13);
+							case13((T13)this.value);
 							break;
 						}
 											case 14:
 						{
-							case14(this.item14);
+							case14((T14)this.value);
 							break;
 						}
 											case 15:
 						{
-							case15(this.item15);
+							case15((T15)this.value);
 							break;
 						}
 											case 16:
 						{
-							case16(this.item16);
+							case16((T16)this.value);
 							break;
 						}
 											case 17:
 						{
-							case17(this.item17);
+							case17((T17)this.value);
 							break;
 						}
 											case 18:
 						{
-							case18(this.item18);
+							case18((T18)this.value);
 							break;
 						}
 											case 19:
 						{
-							case19(this.item19);
+							case19((T19)this.value);
 							break;
 						}
 											case 20:
 						{
-							case20(this.item20);
+							case20((T20)this.value);
 							break;
 						}
 											case 21:
 						{
-							case21(this.item21);
+							case21((T21)this.value);
 							break;
 						}
 											case 22:
 						{
-							case22(this.item22);
+							case22((T22)this.value);
 							break;
 						}
 											case 23:
 						{
-							case23(this.item23);
+							case23((T23)this.value);
 							break;
 						}
 											case 24:
 						{
-							case24(this.item24);
+							case24((T24)this.value);
 							break;
 						}
 											case 25:
 						{
-							case25(this.item25);
+							case25((T25)this.value);
 							break;
 						}
 											case 26:
 						{
-							case26(this.item26);
+							case26((T26)this.value);
 							break;
 						}
 											case 27:
 						{
-							case27(this.item27);
+							case27((T27)this.value);
 							break;
 						}
 											case 28:
 						{
-							case28(this.item28);
+							case28((T28)this.value);
 							break;
 						}
 											case 29:
 						{
-							case29(this.item29);
+							case29((T29)this.value);
 							break;
 						}
 											default:
@@ -31027,147 +29965,147 @@ System.Action<TState, T29> case29)
 					{
 											case 1:
 						{
-							case1(state, this.item1);
+							case1(state, (T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(state, this.item2);
+							case2(state, (T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(state, this.item3);
+							case3(state, (T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(state, this.item4);
+							case4(state, (T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(state, this.item5);
+							case5(state, (T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(state, this.item6);
+							case6(state, (T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(state, this.item7);
+							case7(state, (T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(state, this.item8);
+							case8(state, (T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(state, this.item9);
+							case9(state, (T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(state, this.item10);
+							case10(state, (T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(state, this.item11);
+							case11(state, (T11)this.value);
 							break;
 						}
 											case 12:
 						{
-							case12(state, this.item12);
+							case12(state, (T12)this.value);
 							break;
 						}
 											case 13:
 						{
-							case13(state, this.item13);
+							case13(state, (T13)this.value);
 							break;
 						}
 											case 14:
 						{
-							case14(state, this.item14);
+							case14(state, (T14)this.value);
 							break;
 						}
 											case 15:
 						{
-							case15(state, this.item15);
+							case15(state, (T15)this.value);
 							break;
 						}
 											case 16:
 						{
-							case16(state, this.item16);
+							case16(state, (T16)this.value);
 							break;
 						}
 											case 17:
 						{
-							case17(state, this.item17);
+							case17(state, (T17)this.value);
 							break;
 						}
 											case 18:
 						{
-							case18(state, this.item18);
+							case18(state, (T18)this.value);
 							break;
 						}
 											case 19:
 						{
-							case19(state, this.item19);
+							case19(state, (T19)this.value);
 							break;
 						}
 											case 20:
 						{
-							case20(state, this.item20);
+							case20(state, (T20)this.value);
 							break;
 						}
 											case 21:
 						{
-							case21(state, this.item21);
+							case21(state, (T21)this.value);
 							break;
 						}
 											case 22:
 						{
-							case22(state, this.item22);
+							case22(state, (T22)this.value);
 							break;
 						}
 											case 23:
 						{
-							case23(state, this.item23);
+							case23(state, (T23)this.value);
 							break;
 						}
 											case 24:
 						{
-							case24(state, this.item24);
+							case24(state, (T24)this.value);
 							break;
 						}
 											case 25:
 						{
-							case25(state, this.item25);
+							case25(state, (T25)this.value);
 							break;
 						}
 											case 26:
 						{
-							case26(state, this.item26);
+							case26(state, (T26)this.value);
 							break;
 						}
 											case 27:
 						{
-							case27(state, this.item27);
+							case27(state, (T27)this.value);
 							break;
 						}
 											case 28:
 						{
-							case28(state, this.item28);
+							case28(state, (T28)this.value);
 							break;
 						}
 											case 29:
 						{
-							case29(state, this.item29);
+							case29(state, (T29)this.value);
 							break;
 						}
 											default:
@@ -31213,119 +30151,119 @@ System.Func<T29, TResult> case29)
 					{
 											case 1:
 						{
-							return case1(this.item1);
+							return case1((T1)this.value);
 						}
 											case 2:
 						{
-							return case2(this.item2);
+							return case2((T2)this.value);
 						}
 											case 3:
 						{
-							return case3(this.item3);
+							return case3((T3)this.value);
 						}
 											case 4:
 						{
-							return case4(this.item4);
+							return case4((T4)this.value);
 						}
 											case 5:
 						{
-							return case5(this.item5);
+							return case5((T5)this.value);
 						}
 											case 6:
 						{
-							return case6(this.item6);
+							return case6((T6)this.value);
 						}
 											case 7:
 						{
-							return case7(this.item7);
+							return case7((T7)this.value);
 						}
 											case 8:
 						{
-							return case8(this.item8);
+							return case8((T8)this.value);
 						}
 											case 9:
 						{
-							return case9(this.item9);
+							return case9((T9)this.value);
 						}
 											case 10:
 						{
-							return case10(this.item10);
+							return case10((T10)this.value);
 						}
 											case 11:
 						{
-							return case11(this.item11);
+							return case11((T11)this.value);
 						}
 											case 12:
 						{
-							return case12(this.item12);
+							return case12((T12)this.value);
 						}
 											case 13:
 						{
-							return case13(this.item13);
+							return case13((T13)this.value);
 						}
 											case 14:
 						{
-							return case14(this.item14);
+							return case14((T14)this.value);
 						}
 											case 15:
 						{
-							return case15(this.item15);
+							return case15((T15)this.value);
 						}
 											case 16:
 						{
-							return case16(this.item16);
+							return case16((T16)this.value);
 						}
 											case 17:
 						{
-							return case17(this.item17);
+							return case17((T17)this.value);
 						}
 											case 18:
 						{
-							return case18(this.item18);
+							return case18((T18)this.value);
 						}
 											case 19:
 						{
-							return case19(this.item19);
+							return case19((T19)this.value);
 						}
 											case 20:
 						{
-							return case20(this.item20);
+							return case20((T20)this.value);
 						}
 											case 21:
 						{
-							return case21(this.item21);
+							return case21((T21)this.value);
 						}
 											case 22:
 						{
-							return case22(this.item22);
+							return case22((T22)this.value);
 						}
 											case 23:
 						{
-							return case23(this.item23);
+							return case23((T23)this.value);
 						}
 											case 24:
 						{
-							return case24(this.item24);
+							return case24((T24)this.value);
 						}
 											case 25:
 						{
-							return case25(this.item25);
+							return case25((T25)this.value);
 						}
 											case 26:
 						{
-							return case26(this.item26);
+							return case26((T26)this.value);
 						}
 											case 27:
 						{
-							return case27(this.item27);
+							return case27((T27)this.value);
 						}
 											case 28:
 						{
-							return case28(this.item28);
+							return case28((T28)this.value);
 						}
 											case 29:
 						{
-							return case29(this.item29);
+							return case29((T29)this.value);
 						}
 											default:
 							return defaultCase();
@@ -31369,579 +30307,538 @@ System.Func<TState, T29, TResult> case29)
 					{
 											case 1:
 						{
-							return case1(state, this.item1);
+							return case1(state, (T1)this.value);
 						}
 											case 2:
 						{
-							return case2(state, this.item2);
+							return case2(state, (T2)this.value);
 						}
 											case 3:
 						{
-							return case3(state, this.item3);
+							return case3(state, (T3)this.value);
 						}
 											case 4:
 						{
-							return case4(state, this.item4);
+							return case4(state, (T4)this.value);
 						}
 											case 5:
 						{
-							return case5(state, this.item5);
+							return case5(state, (T5)this.value);
 						}
 											case 6:
 						{
-							return case6(state, this.item6);
+							return case6(state, (T6)this.value);
 						}
 											case 7:
 						{
-							return case7(state, this.item7);
+							return case7(state, (T7)this.value);
 						}
 											case 8:
 						{
-							return case8(state, this.item8);
+							return case8(state, (T8)this.value);
 						}
 											case 9:
 						{
-							return case9(state, this.item9);
+							return case9(state, (T9)this.value);
 						}
 											case 10:
 						{
-							return case10(state, this.item10);
+							return case10(state, (T10)this.value);
 						}
 											case 11:
 						{
-							return case11(state, this.item11);
+							return case11(state, (T11)this.value);
 						}
 											case 12:
 						{
-							return case12(state, this.item12);
+							return case12(state, (T12)this.value);
 						}
 											case 13:
 						{
-							return case13(state, this.item13);
+							return case13(state, (T13)this.value);
 						}
 											case 14:
 						{
-							return case14(state, this.item14);
+							return case14(state, (T14)this.value);
 						}
 											case 15:
 						{
-							return case15(state, this.item15);
+							return case15(state, (T15)this.value);
 						}
 											case 16:
 						{
-							return case16(state, this.item16);
+							return case16(state, (T16)this.value);
 						}
 											case 17:
 						{
-							return case17(state, this.item17);
+							return case17(state, (T17)this.value);
 						}
 											case 18:
 						{
-							return case18(state, this.item18);
+							return case18(state, (T18)this.value);
 						}
 											case 19:
 						{
-							return case19(state, this.item19);
+							return case19(state, (T19)this.value);
 						}
 											case 20:
 						{
-							return case20(state, this.item20);
+							return case20(state, (T20)this.value);
 						}
 											case 21:
 						{
-							return case21(state, this.item21);
+							return case21(state, (T21)this.value);
 						}
 											case 22:
 						{
-							return case22(state, this.item22);
+							return case22(state, (T22)this.value);
 						}
 											case 23:
 						{
-							return case23(state, this.item23);
+							return case23(state, (T23)this.value);
 						}
 											case 24:
 						{
-							return case24(state, this.item24);
+							return case24(state, (T24)this.value);
 						}
 											case 25:
 						{
-							return case25(state, this.item25);
+							return case25(state, (T25)this.value);
 						}
 											case 26:
 						{
-							return case26(state, this.item26);
+							return case26(state, (T26)this.value);
 						}
 											case 27:
 						{
-							return case27(state, this.item27);
+							return case27(state, (T27)this.value);
 						}
 											case 28:
 						{
-							return case28(state, this.item28);
+							return case28(state, (T28)this.value);
 						}
 											case 29:
 						{
-							return case29(state, this.item29);
+							return case29(state, (T29)this.value);
 						}
 											default:
 							return defaultCase(state);
 					}
 				}
+
+				public override bool Equals(object? other)
+				{
+					if (other is FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29> otherUnion)
+					{
+						return this.discriminator == otherUnion.Discriminator &&
+						       this.value.Equals(otherUnion.value);
+					}
+					else
+					{
+						return false;
+					}
+				}
+
+				public override int GetHashCode()
+				{
+					return this.value.GetHashCode() ^ this.discriminator;
+				}
 			}
 				[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30> : IUnion
-			{
+			public class FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30> : IFlatBufferUnion
+
+							where T1 : notnull
+							where T2 : notnull
+							where T3 : notnull
+							where T4 : notnull
+							where T5 : notnull
+							where T6 : notnull
+							where T7 : notnull
+							where T8 : notnull
+							where T9 : notnull
+							where T10 : notnull
+							where T11 : notnull
+							where T12 : notnull
+							where T13 : notnull
+							where T14 : notnull
+							where T15 : notnull
+							where T16 : notnull
+							where T17 : notnull
+							where T18 : notnull
+							where T19 : notnull
+							where T20 : notnull
+							where T21 : notnull
+							where T22 : notnull
+							where T23 : notnull
+							where T24 : notnull
+							where T25 : notnull
+							where T26 : notnull
+							where T27 : notnull
+							where T28 : notnull
+							where T29 : notnull
+							where T30 : notnull
+						{
 				private readonly byte discriminator;
+				private readonly object value;
 				
-				
-				protected readonly T1 item1;
-				
-				
-				protected readonly T2 item2;
-				
-				
-				protected readonly T3 item3;
-				
-				
-				protected readonly T4 item4;
-				
-				
-				protected readonly T5 item5;
-				
-				
-				protected readonly T6 item6;
-				
-				
-				protected readonly T7 item7;
-				
-				
-				protected readonly T8 item8;
-				
-				
-				protected readonly T9 item9;
-				
-				
-				protected readonly T10 item10;
-				
-				
-				protected readonly T11 item11;
-				
-				
-				protected readonly T12 item12;
-				
-				
-				protected readonly T13 item13;
-				
-				
-				protected readonly T14 item14;
-				
-				
-				protected readonly T15 item15;
-				
-				
-				protected readonly T16 item16;
-				
-				
-				protected readonly T17 item17;
-				
-				
-				protected readonly T18 item18;
-				
-				
-				protected readonly T19 item19;
-				
-				
-				protected readonly T20 item20;
-				
-				
-				protected readonly T21 item21;
-				
-				
-				protected readonly T22 item22;
-				
-				
-				protected readonly T23 item23;
-				
-				
-				protected readonly T24 item24;
-				
-				
-				protected readonly T25 item25;
-				
-				
-				protected readonly T26 item26;
-				
-				
-				protected readonly T27 item27;
-				
-				
-				protected readonly T28 item28;
-				
-				
-				protected readonly T29 item29;
-				
-				
-				protected readonly T30 item30;
-				
-								
 				
 				public FlatBufferUnion(T1 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 1;
-					this.item1 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T2 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 2;
-					this.item2 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T3 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 3;
-					this.item3 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T4 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 4;
-					this.item4 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T5 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 5;
-					this.item5 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T6 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 6;
-					this.item6 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T7 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 7;
-					this.item7 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T8 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 8;
-					this.item8 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T9 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 9;
-					this.item9 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T10 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 10;
-					this.item10 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T11 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 11;
-					this.item11 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T12 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 12;
-					this.item12 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T13 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 13;
-					this.item13 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T14 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 14;
-					this.item14 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T15 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 15;
-					this.item15 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T16 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 16;
-					this.item16 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T17 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 17;
-					this.item17 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T18 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 18;
-					this.item18 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T19 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 19;
-					this.item19 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T20 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 20;
-					this.item20 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T21 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 21;
-					this.item21 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T22 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 22;
-					this.item22 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T23 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 23;
-					this.item23 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T24 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 24;
-					this.item24 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T25 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 25;
-					this.item25 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T26 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 26;
-					this.item26 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T27 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 27;
-					this.item27 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T28 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 28;
-					this.item28 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T29 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 29;
-					this.item29 = item;
+					this.value = item;
 				}
 				
 				
 				public FlatBufferUnion(T30 item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = 30;
-					this.item30 = item;
+					this.value = item;
 				}
 				
 							
@@ -31954,7 +30851,7 @@ System.Func<TState, T29, TResult> case29)
 					{
 						if (this.discriminator == 1)
 						{
-							return this.item1;
+							return (T1)this.value;
 						}
 						else
 						{
@@ -31963,16 +30860,18 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(out T1 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T1? item)
 				{
-					item = default;
 					if (this.discriminator == 1)
 					{
-						item = this.item1;
+						item = (T1)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -31982,7 +30881,7 @@ System.Func<TState, T29, TResult> case29)
 					{
 						if (this.discriminator == 2)
 						{
-							return this.item2;
+							return (T2)this.value;
 						}
 						else
 						{
@@ -31991,16 +30890,18 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(out T2 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T2? item)
 				{
-					item = default;
 					if (this.discriminator == 2)
 					{
-						item = this.item2;
+						item = (T2)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -32010,7 +30911,7 @@ System.Func<TState, T29, TResult> case29)
 					{
 						if (this.discriminator == 3)
 						{
-							return this.item3;
+							return (T3)this.value;
 						}
 						else
 						{
@@ -32019,16 +30920,18 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(out T3 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T3? item)
 				{
-					item = default;
 					if (this.discriminator == 3)
 					{
-						item = this.item3;
+						item = (T3)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -32038,7 +30941,7 @@ System.Func<TState, T29, TResult> case29)
 					{
 						if (this.discriminator == 4)
 						{
-							return this.item4;
+							return (T4)this.value;
 						}
 						else
 						{
@@ -32047,16 +30950,18 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(out T4 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T4? item)
 				{
-					item = default;
 					if (this.discriminator == 4)
 					{
-						item = this.item4;
+						item = (T4)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -32066,7 +30971,7 @@ System.Func<TState, T29, TResult> case29)
 					{
 						if (this.discriminator == 5)
 						{
-							return this.item5;
+							return (T5)this.value;
 						}
 						else
 						{
@@ -32075,16 +30980,18 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(out T5 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T5? item)
 				{
-					item = default;
 					if (this.discriminator == 5)
 					{
-						item = this.item5;
+						item = (T5)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -32094,7 +31001,7 @@ System.Func<TState, T29, TResult> case29)
 					{
 						if (this.discriminator == 6)
 						{
-							return this.item6;
+							return (T6)this.value;
 						}
 						else
 						{
@@ -32103,16 +31010,18 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(out T6 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T6? item)
 				{
-					item = default;
 					if (this.discriminator == 6)
 					{
-						item = this.item6;
+						item = (T6)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -32122,7 +31031,7 @@ System.Func<TState, T29, TResult> case29)
 					{
 						if (this.discriminator == 7)
 						{
-							return this.item7;
+							return (T7)this.value;
 						}
 						else
 						{
@@ -32131,16 +31040,18 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(out T7 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T7? item)
 				{
-					item = default;
 					if (this.discriminator == 7)
 					{
-						item = this.item7;
+						item = (T7)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -32150,7 +31061,7 @@ System.Func<TState, T29, TResult> case29)
 					{
 						if (this.discriminator == 8)
 						{
-							return this.item8;
+							return (T8)this.value;
 						}
 						else
 						{
@@ -32159,16 +31070,18 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(out T8 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T8? item)
 				{
-					item = default;
 					if (this.discriminator == 8)
 					{
-						item = this.item8;
+						item = (T8)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -32178,7 +31091,7 @@ System.Func<TState, T29, TResult> case29)
 					{
 						if (this.discriminator == 9)
 						{
-							return this.item9;
+							return (T9)this.value;
 						}
 						else
 						{
@@ -32187,16 +31100,18 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(out T9 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T9? item)
 				{
-					item = default;
 					if (this.discriminator == 9)
 					{
-						item = this.item9;
+						item = (T9)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -32206,7 +31121,7 @@ System.Func<TState, T29, TResult> case29)
 					{
 						if (this.discriminator == 10)
 						{
-							return this.item10;
+							return (T10)this.value;
 						}
 						else
 						{
@@ -32215,16 +31130,18 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(out T10 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T10? item)
 				{
-					item = default;
 					if (this.discriminator == 10)
 					{
-						item = this.item10;
+						item = (T10)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -32234,7 +31151,7 @@ System.Func<TState, T29, TResult> case29)
 					{
 						if (this.discriminator == 11)
 						{
-							return this.item11;
+							return (T11)this.value;
 						}
 						else
 						{
@@ -32243,16 +31160,18 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(out T11 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T11? item)
 				{
-					item = default;
 					if (this.discriminator == 11)
 					{
-						item = this.item11;
+						item = (T11)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -32262,7 +31181,7 @@ System.Func<TState, T29, TResult> case29)
 					{
 						if (this.discriminator == 12)
 						{
-							return this.item12;
+							return (T12)this.value;
 						}
 						else
 						{
@@ -32271,16 +31190,18 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(out T12 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T12? item)
 				{
-					item = default;
 					if (this.discriminator == 12)
 					{
-						item = this.item12;
+						item = (T12)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -32290,7 +31211,7 @@ System.Func<TState, T29, TResult> case29)
 					{
 						if (this.discriminator == 13)
 						{
-							return this.item13;
+							return (T13)this.value;
 						}
 						else
 						{
@@ -32299,16 +31220,18 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(out T13 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T13? item)
 				{
-					item = default;
 					if (this.discriminator == 13)
 					{
-						item = this.item13;
+						item = (T13)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -32318,7 +31241,7 @@ System.Func<TState, T29, TResult> case29)
 					{
 						if (this.discriminator == 14)
 						{
-							return this.item14;
+							return (T14)this.value;
 						}
 						else
 						{
@@ -32327,16 +31250,18 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(out T14 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T14? item)
 				{
-					item = default;
 					if (this.discriminator == 14)
 					{
-						item = this.item14;
+						item = (T14)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -32346,7 +31271,7 @@ System.Func<TState, T29, TResult> case29)
 					{
 						if (this.discriminator == 15)
 						{
-							return this.item15;
+							return (T15)this.value;
 						}
 						else
 						{
@@ -32355,16 +31280,18 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(out T15 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T15? item)
 				{
-					item = default;
 					if (this.discriminator == 15)
 					{
-						item = this.item15;
+						item = (T15)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -32374,7 +31301,7 @@ System.Func<TState, T29, TResult> case29)
 					{
 						if (this.discriminator == 16)
 						{
-							return this.item16;
+							return (T16)this.value;
 						}
 						else
 						{
@@ -32383,16 +31310,18 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(out T16 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T16? item)
 				{
-					item = default;
 					if (this.discriminator == 16)
 					{
-						item = this.item16;
+						item = (T16)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -32402,7 +31331,7 @@ System.Func<TState, T29, TResult> case29)
 					{
 						if (this.discriminator == 17)
 						{
-							return this.item17;
+							return (T17)this.value;
 						}
 						else
 						{
@@ -32411,16 +31340,18 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(out T17 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T17? item)
 				{
-					item = default;
 					if (this.discriminator == 17)
 					{
-						item = this.item17;
+						item = (T17)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -32430,7 +31361,7 @@ System.Func<TState, T29, TResult> case29)
 					{
 						if (this.discriminator == 18)
 						{
-							return this.item18;
+							return (T18)this.value;
 						}
 						else
 						{
@@ -32439,16 +31370,18 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(out T18 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T18? item)
 				{
-					item = default;
 					if (this.discriminator == 18)
 					{
-						item = this.item18;
+						item = (T18)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -32458,7 +31391,7 @@ System.Func<TState, T29, TResult> case29)
 					{
 						if (this.discriminator == 19)
 						{
-							return this.item19;
+							return (T19)this.value;
 						}
 						else
 						{
@@ -32467,16 +31400,18 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(out T19 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T19? item)
 				{
-					item = default;
 					if (this.discriminator == 19)
 					{
-						item = this.item19;
+						item = (T19)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -32486,7 +31421,7 @@ System.Func<TState, T29, TResult> case29)
 					{
 						if (this.discriminator == 20)
 						{
-							return this.item20;
+							return (T20)this.value;
 						}
 						else
 						{
@@ -32495,16 +31430,18 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(out T20 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T20? item)
 				{
-					item = default;
 					if (this.discriminator == 20)
 					{
-						item = this.item20;
+						item = (T20)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -32514,7 +31451,7 @@ System.Func<TState, T29, TResult> case29)
 					{
 						if (this.discriminator == 21)
 						{
-							return this.item21;
+							return (T21)this.value;
 						}
 						else
 						{
@@ -32523,16 +31460,18 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(out T21 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T21? item)
 				{
-					item = default;
 					if (this.discriminator == 21)
 					{
-						item = this.item21;
+						item = (T21)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -32542,7 +31481,7 @@ System.Func<TState, T29, TResult> case29)
 					{
 						if (this.discriminator == 22)
 						{
-							return this.item22;
+							return (T22)this.value;
 						}
 						else
 						{
@@ -32551,16 +31490,18 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(out T22 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T22? item)
 				{
-					item = default;
 					if (this.discriminator == 22)
 					{
-						item = this.item22;
+						item = (T22)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -32570,7 +31511,7 @@ System.Func<TState, T29, TResult> case29)
 					{
 						if (this.discriminator == 23)
 						{
-							return this.item23;
+							return (T23)this.value;
 						}
 						else
 						{
@@ -32579,16 +31520,18 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(out T23 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T23? item)
 				{
-					item = default;
 					if (this.discriminator == 23)
 					{
-						item = this.item23;
+						item = (T23)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -32598,7 +31541,7 @@ System.Func<TState, T29, TResult> case29)
 					{
 						if (this.discriminator == 24)
 						{
-							return this.item24;
+							return (T24)this.value;
 						}
 						else
 						{
@@ -32607,16 +31550,18 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(out T24 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T24? item)
 				{
-					item = default;
 					if (this.discriminator == 24)
 					{
-						item = this.item24;
+						item = (T24)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -32626,7 +31571,7 @@ System.Func<TState, T29, TResult> case29)
 					{
 						if (this.discriminator == 25)
 						{
-							return this.item25;
+							return (T25)this.value;
 						}
 						else
 						{
@@ -32635,16 +31580,18 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(out T25 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T25? item)
 				{
-					item = default;
 					if (this.discriminator == 25)
 					{
-						item = this.item25;
+						item = (T25)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -32654,7 +31601,7 @@ System.Func<TState, T29, TResult> case29)
 					{
 						if (this.discriminator == 26)
 						{
-							return this.item26;
+							return (T26)this.value;
 						}
 						else
 						{
@@ -32663,16 +31610,18 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(out T26 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T26? item)
 				{
-					item = default;
 					if (this.discriminator == 26)
 					{
-						item = this.item26;
+						item = (T26)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -32682,7 +31631,7 @@ System.Func<TState, T29, TResult> case29)
 					{
 						if (this.discriminator == 27)
 						{
-							return this.item27;
+							return (T27)this.value;
 						}
 						else
 						{
@@ -32691,16 +31640,18 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(out T27 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T27? item)
 				{
-					item = default;
 					if (this.discriminator == 27)
 					{
-						item = this.item27;
+						item = (T27)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -32710,7 +31661,7 @@ System.Func<TState, T29, TResult> case29)
 					{
 						if (this.discriminator == 28)
 						{
-							return this.item28;
+							return (T28)this.value;
 						}
 						else
 						{
@@ -32719,16 +31670,18 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(out T28 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T28? item)
 				{
-					item = default;
 					if (this.discriminator == 28)
 					{
-						item = this.item28;
+						item = (T28)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -32738,7 +31691,7 @@ System.Func<TState, T29, TResult> case29)
 					{
 						if (this.discriminator == 29)
 						{
-							return this.item29;
+							return (T29)this.value;
 						}
 						else
 						{
@@ -32747,16 +31700,18 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(out T29 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T29? item)
 				{
-					item = default;
 					if (this.discriminator == 29)
 					{
-						item = this.item29;
+						item = (T29)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				
@@ -32766,7 +31721,7 @@ System.Func<TState, T29, TResult> case29)
 					{
 						if (this.discriminator == 30)
 						{
-							return this.item30;
+							return (T30)this.value;
 						}
 						else
 						{
@@ -32775,119 +31730,21 @@ System.Func<TState, T29, TResult> case29)
 					}
 				}
 
-				public bool TryGet(out T30 item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T30? item)
 				{
-					item = default;
 					if (this.discriminator == 30)
 					{
-						item = this.item30;
+						item = (T30)this.value;
 						return true;
 					}
-
-					return false;
-				}
-				
-				
-				public FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30> Clone(
-				System.Func<T1, T1> cloneT1,
-System.Func<T2, T2> cloneT2,
-System.Func<T3, T3> cloneT3,
-System.Func<T4, T4> cloneT4,
-System.Func<T5, T5> cloneT5,
-System.Func<T6, T6> cloneT6,
-System.Func<T7, T7> cloneT7,
-System.Func<T8, T8> cloneT8,
-System.Func<T9, T9> cloneT9,
-System.Func<T10, T10> cloneT10,
-System.Func<T11, T11> cloneT11,
-System.Func<T12, T12> cloneT12,
-System.Func<T13, T13> cloneT13,
-System.Func<T14, T14> cloneT14,
-System.Func<T15, T15> cloneT15,
-System.Func<T16, T16> cloneT16,
-System.Func<T17, T17> cloneT17,
-System.Func<T18, T18> cloneT18,
-System.Func<T19, T19> cloneT19,
-System.Func<T20, T20> cloneT20,
-System.Func<T21, T21> cloneT21,
-System.Func<T22, T22> cloneT22,
-System.Func<T23, T23> cloneT23,
-System.Func<T24, T24> cloneT24,
-System.Func<T25, T25> cloneT25,
-System.Func<T26, T26> cloneT26,
-System.Func<T27, T27> cloneT27,
-System.Func<T28, T28> cloneT28,
-System.Func<T29, T29> cloneT29,
-System.Func<T30, T30> cloneT30
-				)
-				{
-					switch (this.discriminator)
+					else
 					{
-											case 1:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT1(this.item1));
-											case 2:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT2(this.item2));
-											case 3:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT3(this.item3));
-											case 4:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT4(this.item4));
-											case 5:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT5(this.item5));
-											case 6:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT6(this.item6));
-											case 7:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT7(this.item7));
-											case 8:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT8(this.item8));
-											case 9:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT9(this.item9));
-											case 10:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT10(this.item10));
-											case 11:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT11(this.item11));
-											case 12:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT12(this.item12));
-											case 13:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT13(this.item13));
-											case 14:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT14(this.item14));
-											case 15:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT15(this.item15));
-											case 16:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT16(this.item16));
-											case 17:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT17(this.item17));
-											case 18:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT18(this.item18));
-											case 19:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT19(this.item19));
-											case 20:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT20(this.item20));
-											case 21:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT21(this.item21));
-											case 22:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT22(this.item22));
-											case 23:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT23(this.item23));
-											case 24:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT24(this.item24));
-											case 25:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT25(this.item25));
-											case 26:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT26(this.item26));
-											case 27:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT27(this.item27));
-											case 28:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT28(this.item28));
-											case 29:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT29(this.item29));
-											case 30:
-							return new FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>(cloneT30(this.item30));
-										}
-
-					throw new System.InvalidOperationException();
+						item = default;
+						return false;
+					}
 				}
-
+				
+				
 				public void Switch(
 					System.Action defaultCase,
 					System.Action<T1> case1,
@@ -32925,152 +31782,152 @@ System.Action<T30> case30)
 					{
 											case 1:
 						{
-							case1(this.item1);
+							case1((T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(this.item2);
+							case2((T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(this.item3);
+							case3((T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(this.item4);
+							case4((T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(this.item5);
+							case5((T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(this.item6);
+							case6((T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(this.item7);
+							case7((T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(this.item8);
+							case8((T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(this.item9);
+							case9((T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(this.item10);
+							case10((T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(this.item11);
+							case11((T11)this.value);
 							break;
 						}
 											case 12:
 						{
-							case12(this.item12);
+							case12((T12)this.value);
 							break;
 						}
 											case 13:
 						{
-							case13(this.item13);
+							case13((T13)this.value);
 							break;
 						}
 											case 14:
 						{
-							case14(this.item14);
+							case14((T14)this.value);
 							break;
 						}
 											case 15:
 						{
-							case15(this.item15);
+							case15((T15)this.value);
 							break;
 						}
 											case 16:
 						{
-							case16(this.item16);
+							case16((T16)this.value);
 							break;
 						}
 											case 17:
 						{
-							case17(this.item17);
+							case17((T17)this.value);
 							break;
 						}
 											case 18:
 						{
-							case18(this.item18);
+							case18((T18)this.value);
 							break;
 						}
 											case 19:
 						{
-							case19(this.item19);
+							case19((T19)this.value);
 							break;
 						}
 											case 20:
 						{
-							case20(this.item20);
+							case20((T20)this.value);
 							break;
 						}
 											case 21:
 						{
-							case21(this.item21);
+							case21((T21)this.value);
 							break;
 						}
 											case 22:
 						{
-							case22(this.item22);
+							case22((T22)this.value);
 							break;
 						}
 											case 23:
 						{
-							case23(this.item23);
+							case23((T23)this.value);
 							break;
 						}
 											case 24:
 						{
-							case24(this.item24);
+							case24((T24)this.value);
 							break;
 						}
 											case 25:
 						{
-							case25(this.item25);
+							case25((T25)this.value);
 							break;
 						}
 											case 26:
 						{
-							case26(this.item26);
+							case26((T26)this.value);
 							break;
 						}
 											case 27:
 						{
-							case27(this.item27);
+							case27((T27)this.value);
 							break;
 						}
 											case 28:
 						{
-							case28(this.item28);
+							case28((T28)this.value);
 							break;
 						}
 											case 29:
 						{
-							case29(this.item29);
+							case29((T29)this.value);
 							break;
 						}
 											case 30:
 						{
-							case30(this.item30);
+							case30((T30)this.value);
 							break;
 						}
 											default:
@@ -33117,152 +31974,152 @@ System.Action<TState, T30> case30)
 					{
 											case 1:
 						{
-							case1(state, this.item1);
+							case1(state, (T1)this.value);
 							break;
 						}
 											case 2:
 						{
-							case2(state, this.item2);
+							case2(state, (T2)this.value);
 							break;
 						}
 											case 3:
 						{
-							case3(state, this.item3);
+							case3(state, (T3)this.value);
 							break;
 						}
 											case 4:
 						{
-							case4(state, this.item4);
+							case4(state, (T4)this.value);
 							break;
 						}
 											case 5:
 						{
-							case5(state, this.item5);
+							case5(state, (T5)this.value);
 							break;
 						}
 											case 6:
 						{
-							case6(state, this.item6);
+							case6(state, (T6)this.value);
 							break;
 						}
 											case 7:
 						{
-							case7(state, this.item7);
+							case7(state, (T7)this.value);
 							break;
 						}
 											case 8:
 						{
-							case8(state, this.item8);
+							case8(state, (T8)this.value);
 							break;
 						}
 											case 9:
 						{
-							case9(state, this.item9);
+							case9(state, (T9)this.value);
 							break;
 						}
 											case 10:
 						{
-							case10(state, this.item10);
+							case10(state, (T10)this.value);
 							break;
 						}
 											case 11:
 						{
-							case11(state, this.item11);
+							case11(state, (T11)this.value);
 							break;
 						}
 											case 12:
 						{
-							case12(state, this.item12);
+							case12(state, (T12)this.value);
 							break;
 						}
 											case 13:
 						{
-							case13(state, this.item13);
+							case13(state, (T13)this.value);
 							break;
 						}
 											case 14:
 						{
-							case14(state, this.item14);
+							case14(state, (T14)this.value);
 							break;
 						}
 											case 15:
 						{
-							case15(state, this.item15);
+							case15(state, (T15)this.value);
 							break;
 						}
 											case 16:
 						{
-							case16(state, this.item16);
+							case16(state, (T16)this.value);
 							break;
 						}
 											case 17:
 						{
-							case17(state, this.item17);
+							case17(state, (T17)this.value);
 							break;
 						}
 											case 18:
 						{
-							case18(state, this.item18);
+							case18(state, (T18)this.value);
 							break;
 						}
 											case 19:
 						{
-							case19(state, this.item19);
+							case19(state, (T19)this.value);
 							break;
 						}
 											case 20:
 						{
-							case20(state, this.item20);
+							case20(state, (T20)this.value);
 							break;
 						}
 											case 21:
 						{
-							case21(state, this.item21);
+							case21(state, (T21)this.value);
 							break;
 						}
 											case 22:
 						{
-							case22(state, this.item22);
+							case22(state, (T22)this.value);
 							break;
 						}
 											case 23:
 						{
-							case23(state, this.item23);
+							case23(state, (T23)this.value);
 							break;
 						}
 											case 24:
 						{
-							case24(state, this.item24);
+							case24(state, (T24)this.value);
 							break;
 						}
 											case 25:
 						{
-							case25(state, this.item25);
+							case25(state, (T25)this.value);
 							break;
 						}
 											case 26:
 						{
-							case26(state, this.item26);
+							case26(state, (T26)this.value);
 							break;
 						}
 											case 27:
 						{
-							case27(state, this.item27);
+							case27(state, (T27)this.value);
 							break;
 						}
 											case 28:
 						{
-							case28(state, this.item28);
+							case28(state, (T28)this.value);
 							break;
 						}
 											case 29:
 						{
-							case29(state, this.item29);
+							case29(state, (T29)this.value);
 							break;
 						}
 											case 30:
 						{
-							case30(state, this.item30);
+							case30(state, (T30)this.value);
 							break;
 						}
 											default:
@@ -33309,123 +32166,123 @@ System.Func<T30, TResult> case30)
 					{
 											case 1:
 						{
-							return case1(this.item1);
+							return case1((T1)this.value);
 						}
 											case 2:
 						{
-							return case2(this.item2);
+							return case2((T2)this.value);
 						}
 											case 3:
 						{
-							return case3(this.item3);
+							return case3((T3)this.value);
 						}
 											case 4:
 						{
-							return case4(this.item4);
+							return case4((T4)this.value);
 						}
 											case 5:
 						{
-							return case5(this.item5);
+							return case5((T5)this.value);
 						}
 											case 6:
 						{
-							return case6(this.item6);
+							return case6((T6)this.value);
 						}
 											case 7:
 						{
-							return case7(this.item7);
+							return case7((T7)this.value);
 						}
 											case 8:
 						{
-							return case8(this.item8);
+							return case8((T8)this.value);
 						}
 											case 9:
 						{
-							return case9(this.item9);
+							return case9((T9)this.value);
 						}
 											case 10:
 						{
-							return case10(this.item10);
+							return case10((T10)this.value);
 						}
 											case 11:
 						{
-							return case11(this.item11);
+							return case11((T11)this.value);
 						}
 											case 12:
 						{
-							return case12(this.item12);
+							return case12((T12)this.value);
 						}
 											case 13:
 						{
-							return case13(this.item13);
+							return case13((T13)this.value);
 						}
 											case 14:
 						{
-							return case14(this.item14);
+							return case14((T14)this.value);
 						}
 											case 15:
 						{
-							return case15(this.item15);
+							return case15((T15)this.value);
 						}
 											case 16:
 						{
-							return case16(this.item16);
+							return case16((T16)this.value);
 						}
 											case 17:
 						{
-							return case17(this.item17);
+							return case17((T17)this.value);
 						}
 											case 18:
 						{
-							return case18(this.item18);
+							return case18((T18)this.value);
 						}
 											case 19:
 						{
-							return case19(this.item19);
+							return case19((T19)this.value);
 						}
 											case 20:
 						{
-							return case20(this.item20);
+							return case20((T20)this.value);
 						}
 											case 21:
 						{
-							return case21(this.item21);
+							return case21((T21)this.value);
 						}
 											case 22:
 						{
-							return case22(this.item22);
+							return case22((T22)this.value);
 						}
 											case 23:
 						{
-							return case23(this.item23);
+							return case23((T23)this.value);
 						}
 											case 24:
 						{
-							return case24(this.item24);
+							return case24((T24)this.value);
 						}
 											case 25:
 						{
-							return case25(this.item25);
+							return case25((T25)this.value);
 						}
 											case 26:
 						{
-							return case26(this.item26);
+							return case26((T26)this.value);
 						}
 											case 27:
 						{
-							return case27(this.item27);
+							return case27((T27)this.value);
 						}
 											case 28:
 						{
-							return case28(this.item28);
+							return case28((T28)this.value);
 						}
 											case 29:
 						{
-							return case29(this.item29);
+							return case29((T29)this.value);
 						}
 											case 30:
 						{
-							return case30(this.item30);
+							return case30((T30)this.value);
 						}
 											default:
 							return defaultCase();
@@ -33470,127 +32327,145 @@ System.Func<TState, T30, TResult> case30)
 					{
 											case 1:
 						{
-							return case1(state, this.item1);
+							return case1(state, (T1)this.value);
 						}
 											case 2:
 						{
-							return case2(state, this.item2);
+							return case2(state, (T2)this.value);
 						}
 											case 3:
 						{
-							return case3(state, this.item3);
+							return case3(state, (T3)this.value);
 						}
 											case 4:
 						{
-							return case4(state, this.item4);
+							return case4(state, (T4)this.value);
 						}
 											case 5:
 						{
-							return case5(state, this.item5);
+							return case5(state, (T5)this.value);
 						}
 											case 6:
 						{
-							return case6(state, this.item6);
+							return case6(state, (T6)this.value);
 						}
 											case 7:
 						{
-							return case7(state, this.item7);
+							return case7(state, (T7)this.value);
 						}
 											case 8:
 						{
-							return case8(state, this.item8);
+							return case8(state, (T8)this.value);
 						}
 											case 9:
 						{
-							return case9(state, this.item9);
+							return case9(state, (T9)this.value);
 						}
 											case 10:
 						{
-							return case10(state, this.item10);
+							return case10(state, (T10)this.value);
 						}
 											case 11:
 						{
-							return case11(state, this.item11);
+							return case11(state, (T11)this.value);
 						}
 											case 12:
 						{
-							return case12(state, this.item12);
+							return case12(state, (T12)this.value);
 						}
 											case 13:
 						{
-							return case13(state, this.item13);
+							return case13(state, (T13)this.value);
 						}
 											case 14:
 						{
-							return case14(state, this.item14);
+							return case14(state, (T14)this.value);
 						}
 											case 15:
 						{
-							return case15(state, this.item15);
+							return case15(state, (T15)this.value);
 						}
 											case 16:
 						{
-							return case16(state, this.item16);
+							return case16(state, (T16)this.value);
 						}
 											case 17:
 						{
-							return case17(state, this.item17);
+							return case17(state, (T17)this.value);
 						}
 											case 18:
 						{
-							return case18(state, this.item18);
+							return case18(state, (T18)this.value);
 						}
 											case 19:
 						{
-							return case19(state, this.item19);
+							return case19(state, (T19)this.value);
 						}
 											case 20:
 						{
-							return case20(state, this.item20);
+							return case20(state, (T20)this.value);
 						}
 											case 21:
 						{
-							return case21(state, this.item21);
+							return case21(state, (T21)this.value);
 						}
 											case 22:
 						{
-							return case22(state, this.item22);
+							return case22(state, (T22)this.value);
 						}
 											case 23:
 						{
-							return case23(state, this.item23);
+							return case23(state, (T23)this.value);
 						}
 											case 24:
 						{
-							return case24(state, this.item24);
+							return case24(state, (T24)this.value);
 						}
 											case 25:
 						{
-							return case25(state, this.item25);
+							return case25(state, (T25)this.value);
 						}
 											case 26:
 						{
-							return case26(state, this.item26);
+							return case26(state, (T26)this.value);
 						}
 											case 27:
 						{
-							return case27(state, this.item27);
+							return case27(state, (T27)this.value);
 						}
 											case 28:
 						{
-							return case28(state, this.item28);
+							return case28(state, (T28)this.value);
 						}
 											case 29:
 						{
-							return case29(state, this.item29);
+							return case29(state, (T29)this.value);
 						}
 											case 30:
 						{
-							return case30(state, this.item30);
+							return case30(state, (T30)this.value);
 						}
 											default:
 							return defaultCase(state);
 					}
+				}
+
+				public override bool Equals(object? other)
+				{
+					if (other is FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30> otherUnion)
+					{
+						return this.discriminator == otherUnion.Discriminator &&
+						       this.value.Equals(otherUnion.value);
+					}
+					else
+					{
+						return false;
+					}
+				}
+
+				public override int GetHashCode()
+				{
+					return this.value.GetHashCode() ^ this.discriminator;
 				}
 			}
 	

@@ -72,7 +72,7 @@ namespace FlatSharp
         public static int GetAlignmentError(int offset, int alignment)
         {
             Debug.Assert(alignment == 1 || alignment % 2 == 0);
-            return (~offset + 1) & (alignment - 1);
+            return (-offset) & (alignment - 1);
         }
 
         /// <summary>
@@ -82,29 +82,15 @@ namespace FlatSharp
         /// Add generic constraint to catch errors calling this for value types.
         /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void EnsureNonNull<T>(T item) where T : class
+        public static void EnsureNonNull<T>(T? item) where T : class
         {
-            if (object.ReferenceEquals(item, null))
+            if (item is null)
             {
                 ThrowNonNullException();
             }
         }
 
-        /// <summary>
-        /// Throws an InvalidDataException if the given item is null.
-        /// </summary>
-        /// <remarks>
-        /// Add generic constraint to catch errors calling this for value types.
-        /// </remarks>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void EnsureNonNull<T>(T? item) where T : struct
-        {
-            if (!item.HasValue)
-            {
-                ThrowNonNullException();
-            }
-        }
-
+        // Left as no inlining. Literal strings seem to prevent JIT inlining.
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static void ThrowNonNullException()
         {

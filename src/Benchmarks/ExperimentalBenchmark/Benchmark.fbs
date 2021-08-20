@@ -1,0 +1,32 @@
+﻿
+namespace BenchmarkCore;
+
+enum Normal : ubyte { A, B, C, D }
+enum Flags : ubyte (bit_flags) { A, B , C, D}
+
+table SomeTable (fs_serializer:VectorCache) {
+	Points : [Vec3];
+	Vec : Vec3;
+	Union : Union;
+	UnionVec : [Union];
+}
+
+union Union { Vec3, NotRecycleable }
+
+struct Vec3 {
+    X : float;
+	Y : float;
+	Z : float;
+}
+
+
+struct NotRecycleable { Value : int; }
+
+struct Struct {
+   Other : OtherStruct (fs_writeThrough);
+   Int : int (fs_writeThrough);
+}
+
+struct OtherStruct {
+   Long : long (fs_writeThrough);
+}

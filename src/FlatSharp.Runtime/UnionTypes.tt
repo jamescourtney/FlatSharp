@@ -27,7 +27,7 @@
 
 namespace FlatSharp
 {
-	internal interface IUnion
+	public interface IFlatBufferUnion
 	{
 	}
 
@@ -38,27 +38,26 @@ namespace FlatSharp
 			var range = Enumerable.Range(1, i + 1);
 	#>
 			[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-			public class FlatBufferUnion<<#= string.Join(", ", range.Select(x => "T" + x)) #>> : IUnion
+			public class FlatBufferUnion<<#= string.Join(", ", range.Select(x => "T" + x)) #>> : IFlatBufferUnion
+
+			<# foreach (var genericType in range) { #>
+				where T<#= genericType #> : notnull
+			<# } #>
 			{
 				private readonly byte discriminator;
-				
-				<# foreach (var genericType in range) { #>
-
-				protected readonly T<#= genericType #> item<#= genericType #>;
-				
-				<# } #>
+				private readonly object value;
 				
 				<# foreach (var genericType in range) { #>
 
 				public FlatBufferUnion(<#= "T" + genericType #> item)
 				{
-					if (object.ReferenceEquals(item, null))
+					if (item is null)
 					{
 						throw new System.ArgumentNullException(nameof(item), "FlatBuffer unions do not accept null items. If you wish to use a null value, simply null out the union on the class.");
 					}
 
 					this.discriminator = <#= genericType #>;
-					this.item<#= genericType #> = item;
+					this.value = item;
 				}
 				
 				<# } #>
@@ -73,7 +72,7 @@ namespace FlatSharp
 					{
 						if (this.discriminator == <#= genericType #>)
 						{
-							return this.item<#= genericType #>;
+							return (T<#= genericType #>)this.value;
 						}
 						else
 						{
@@ -82,36 +81,23 @@ namespace FlatSharp
 					}
 				}
 
-				public bool TryGet(out T<#= genericType #> item)
+				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T<#= genericType #>? item)
 				{
-					item = default;
 					if (this.discriminator == <#= genericType #>)
 					{
-						item = this.item<#= genericType #>;
+						item = (T<#= genericType #>)this.value;
 						return true;
 					}
-
-					return false;
+					else
+					{
+						item = default;
+						return false;
+					}
 				}
 				
 				<# 
 				} 
 				#>
-
-				public FlatBufferUnion<<#= string.Join(", ", range.Select(x => "T" + x)) #>> Clone(
-				<#= string.Join(",\r\n", range.Select(x => $"System.Func<T{x}, T{x}> cloneT{x}")) #>
-				)
-				{
-					switch (this.discriminator)
-					{
-					<# foreach (var genericType in range) { #>
-						case <#= genericType #>:
-							return new FlatBufferUnion<<#= string.Join(", ", range.Select(x => "T" + x)) #>>(cloneT<#= genericType #>(this.item<#= genericType #>));
-					<# } #>
-					}
-
-					throw new System.InvalidOperationException();
-				}
 
 				public void Switch(
 					System.Action defaultCase,
@@ -122,7 +108,7 @@ namespace FlatSharp
 					<# foreach (var genericType in range) { #>
 						case <#= genericType #>:
 						{
-							case<#= genericType #>(this.item<#= genericType #>);
+							case<#= genericType #>((T<#= genericType #>)this.value);
 							break;
 						}
 					<# } #>
@@ -142,7 +128,7 @@ namespace FlatSharp
 					<# foreach (var genericType in range) { #>
 						case <#= genericType #>:
 						{
-							case<#= genericType #>(state, this.item<#= genericType #>);
+							case<#= genericType #>(state, (T<#= genericType #>)this.value);
 							break;
 						}
 					<# } #>
@@ -162,7 +148,7 @@ namespace FlatSharp
 					<# foreach (var genericType in range) { #>
 						case <#= genericType #>:
 						{
-							return case<#= genericType #>(this.item<#= genericType #>);
+							return case<#= genericType #>((T<#= genericType #>)this.value);
 						}
 					<# } #>
 						default:
@@ -180,12 +166,30 @@ namespace FlatSharp
 					<# foreach (var genericType in range) { #>
 						case <#= genericType #>:
 						{
-							return case<#= genericType #>(state, this.item<#= genericType #>);
+							return case<#= genericType #>(state, (T<#= genericType #>)this.value);
 						}
 					<# } #>
 						default:
 							return defaultCase(state);
 					}
+				}
+
+				public override bool Equals(object? other)
+				{
+					if (other is FlatBufferUnion<<#= string.Join(", ", range.Select(x => "T" + x)) #>> otherUnion)
+					{
+						return this.discriminator == otherUnion.Discriminator &&
+						       this.value.Equals(otherUnion.value);
+					}
+					else
+					{
+						return false;
+					}
+				}
+
+				public override int GetHashCode()
+				{
+					return this.value.GetHashCode() ^ this.discriminator;
 				}
 			}
 	<#

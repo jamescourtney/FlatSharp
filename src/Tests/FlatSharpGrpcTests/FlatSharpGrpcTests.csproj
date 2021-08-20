@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\common.props" />
+
+  <PropertyGroup>
+    <TargetFrameworks>net5.0</TargetFrameworks>
+    <IsPackable>false</IsPackable>
+    <AssemblyName>FlatSharpGrpcTests</AssemblyName>
+    <RootNamespace>FlatSharpTests</RootNamespace>
+    <DelaySign>false</DelaySign>
+    <SignAssembly>true</SignAssembly>
+    <Nullable>annotations</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Grpc.fbs.generated.cs" />
+    <Compile Include="Grpc.fbs.generated.cs" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Grpc.Core" Version="2.27.0" />
+    <PackageReference Include="Grpc.Core.Api" Version="2.35.0" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
+    <PackageReference Include="System.Threading.Channels" Version="5.0.0" />
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.utility" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference> 
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\FlatSharp.Compiler\FlatSharp.Compiler.csproj" />
+    <ProjectReference Include="..\..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
+    <ProjectReference Include="..\..\FlatSharp.Unsafe\FlatSharp.Unsafe.csproj" />
+    <ProjectReference Include="..\..\FlatSharp\FlatSharp.csproj" />
+  </ItemGroup>
+
+  <Target Name="FBS" BeforeTargets="BeforeBuild">
+    <Exec Command="dotnet ..\..\FlatSharp.Compiler\bin\$(Configuration)\net5.0\FlatSharp.Compiler.dll --nullable-warnings true -i Grpc.fbs -o ." />
+  </Target>
+</Project>

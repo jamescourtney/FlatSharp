@@ -19,14 +19,14 @@ namespace FlatSharp
     using System;
     using System.Collections;
     using System.Collections.Generic;
-
-#nullable enable
+    using System.Diagnostics.CodeAnalysis;
 
     /// <summary>
-    /// An indexed vector.
+    /// An <see cref="IIndexedVector{TKey, TValue}"/> implementation based on a <see cref="Dictionary{TKey, TValue}"/>.
     /// </summary>
     public sealed class IndexedVector<TKey, TValue> : IIndexedVector<TKey, TValue>
         where TValue : class
+        where TKey : notnull
     {
         private static readonly Func<TValue, TKey> KeyGetter;
 
@@ -41,6 +41,12 @@ namespace FlatSharp
         public IndexedVector()
         {
             this.backingDictionary = new Dictionary<TKey, TValue>();
+            this.mutable = true;
+        }
+
+        public IndexedVector(int capacity)
+        {
+            this.backingDictionary = new Dictionary<TKey, TValue>(capacity);
             this.mutable = true;
         }
 
@@ -99,7 +105,7 @@ namespace FlatSharp
         /// <summary>
         /// Tries to get the given value from the backing dictionary.
         /// </summary>
-        public bool TryGetValue(TKey key, out TValue? value)
+        public bool TryGetValue(TKey key, [NotNullWhen(true)] out TValue? value)
         {
             return this.backingDictionary.TryGetValue(key, out value);
         }
@@ -139,7 +145,7 @@ namespace FlatSharp
 
             TKey key = KeyGetter(value);
 
-#if NETCOREAPP
+#if NETCOREAPP || NET5_0
             return this.backingDictionary.TryAdd(key, value);
 #else
             if (this.backingDictionary.ContainsKey(key))

@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\common.props" />
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <AssemblyName>FlatSharpCompilerTests</AssemblyName>
+    <RootNamespace>FlatSharpTests</RootNamespace>
+    <DelaySign>false</DelaySign>
+    <SignAssembly>true</SignAssembly>
+    <Nullable>annotations</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\FlatSharpTests\**\*.cs">
+      <Link>FS\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </Compile>
+    <Compile Include="..\FlatSharpCompilerTests\**\*.cs">
+      <Link>Compiler\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AltCover" Version="6.7.750" />
+    <PackageReference Include="Grpc.Core" Version="2.27.0" />
+    <PackageReference Include="Grpc.Core.Api" Version="2.35.0" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
+    <PackageReference Include="ReportGenerator" Version="4.1.2" />
+    <PackageReference Include="System.Threading.Channels" Version="5.0.0" />
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.utility" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference> 
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\FlatSharp.Compiler\FlatSharp.Compiler.csproj" />
+    <ProjectReference Include="..\..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
+    <ProjectReference Include="..\..\FlatSharp.Unsafe\FlatSharp.Unsafe.csproj" />
+    <ProjectReference Include="..\..\FlatSharp\FlatSharp.csproj" />
+    <ProjectReference Include="..\..\Google.FlatBuffers\Google.FlatBuffers.csproj" />
+  </ItemGroup>
+</Project>

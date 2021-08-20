@@ -20,98 +20,186 @@ namespace FlatSharp.Compiler
     using System.Collections.Generic;
     using Antlr4.Runtime.Misc;
 
-    internal class FieldVisitor : FlatBuffersBaseVisitor<FieldDefinition>
+    internal class FieldVisitor : FlatBuffersBaseVisitor<bool>
     {
-        private readonly FieldDefinition definition;
+        private readonly TableOrStructDefinition parent;
 
-        public FieldVisitor()
+        public FieldVisitor(TableOrStructDefinition parent)
         {
-            this.definition = new FieldDefinition();
+            this.parent = parent;
         }
 
-        public override FieldDefinition VisitField_decl([NotNull] FlatBuffersParser.Field_declContext context)
+        public override bool VisitField_decl([NotNull] FlatBuffersParser.Field_declContext context)
         {
-            this.definition.Name = context.IDENT().GetText();
+            string name = context.IDENT().GetText();
 
-            ErrorContext.Current.WithScope(this.definition.Name, () =>
+            ErrorContext.Current.WithScope(name, () =>
             {
-                Dictionary<string, string> metadata = new MetadataVisitor().VisitMetadata(context.metadata());
-                string fbsFieldType = context.type().GetText();
+                Dictionary<string, string?> metadata = new MetadataVisitor().VisitMetadata(context.metadata());
 
-                this.definition.VectorType = VectorType.None;
+                var (fieldType, vectorType, structVectorLength) = GetFbsFieldType(context, metadata);
 
-                if (fbsFieldType.StartsWith("["))
+                var definition = new FieldDefinition(this.parent, name, fieldType)
                 {
-                    this.definition.VectorType = VectorType.IList;
+                    VectorType = vectorType,
+                };
 
-                    // Trim the starting and ending square brackets.
-                    fbsFieldType = fbsFieldType.Substring(1, fbsFieldType.Length - 2);
-
-                    this.definition.VectorType = VectorType.IList;
-                    if (metadata.TryGetValue("vectortype", out string vectorTypeString))
-                    {
-                        if (!Enum.TryParse<VectorType>(vectorTypeString, true, out var vectorType))
-                        {
-                            ErrorContext.Current?.RegisterError($"Unable to parse '{vectorTypeString}' as a vector type. Valid choices are: {string.Join(", ", Enum.GetNames(typeof(VectorType)))}.");
-                        }
-
-                        this.definition.VectorType = vectorType;
-                    }
-                }
-                else if (metadata.ContainsKey("vectortype"))
-                {
-                    ErrorContext.Current?.RegisterError($"Non-vectors may not have the 'vectortype' attribute. Field = '{this.definition.Name}'");
-                }
-
-                this.definition.FbsFieldType = fbsFieldType;
-
-                string defaultValue = context.defaultValue_decl()?.GetText();
+                string? defaultValue = context.defaultValue_decl()?.GetText();
                 if (defaultValue == "null")
                 {
-                    this.definition.IsOptionalScalar = true;
+                    definition.IsOptionalScalar = true;
                 }
                 else if (!string.IsNullOrEmpty(defaultValue))
                 {
-                    this.definition.DefaultValue = defaultValue;
+                    definition.DefaultValue = defaultValue;
                 }
 
-                if (metadata.ContainsKey("deprecated"))
+                // standard metadata
+                definition.Deprecated = metadata.ParseBooleanMetadata(MetadataKeys.Deprecated);
+                definition.IsKey = metadata.ParseBooleanMetadata(MetadataKeys.Key);
+
+                // Flatsharp custom metadata
+                definition.SortedVector = metadata.ParseBooleanMetadata(MetadataKeys.SortedVector, MetadataKeys.SortedVectorLegacy);
+                definition.SharedString = metadata.ParseBooleanMetadata(MetadataKeys.SharedString, MetadataKeys.SharedStringLegacy);
+                definition.NonVirtual = metadata.ParseNullableBooleanMetadata(MetadataKeys.NonVirtualProperty, MetadataKeys.NonVirtualPropertyLegacy);
+                definition.ForceWrite = metadata.ParseNullableBooleanMetadata(MetadataKeys.ForceWrite);
+                definition.WriteThrough = metadata.ParseNullableBooleanMetadata(MetadataKeys.WriteThrough);
+                definition.IsRequired = metadata.ParseBooleanMetadata(MetadataKeys.Required);
+
+                this.ParseIdMetadata(definition, metadata);
+
+                definition.SetterKind = metadata.ParseMetadata(
+                    new[] { MetadataKeys.Setter, MetadataKeys.SetterLegacy },
+                    ParseSetterKind,
+                    SetterKind.Public,
+                    SetterKind.Public);
+
+                if (structVectorLength == null)
                 {
-                    this.definition.Deprecated = true;
+                    this.parent.Fields.Add(definition);
                 }
-
-                if (metadata.ContainsKey("key"))
+                else if (this.parent.IsTable)
                 {
-                    this.definition.IsKey = true;
+                    ErrorContext.Current.RegisterError("Only structs may contain fixed-length vectors");
                 }
-
-                if (metadata.ContainsKey("sortedvector"))
+                else if (structVectorLength.Value <= 0)
                 {
-                    this.definition.SortedVector = true;
+                    ErrorContext.Current.RegisterError("Struct vector lengths must be non-negative.");
                 }
-
-                // override the given type and use shared string instead.
-                if (metadata.ContainsKey("sharedstring"))
+                else
                 {
-                    this.definition.SharedString = true;
-                }
+                    List<string> groupNames = new List<string>();
 
-                // Attributes from FlatBuffers that we don't support.
-                string[] unsupportedAttributes =
-                {
-                    "id", "required", "force_align", "bit_flags", "flexbuffer", "hash", "original_order"
-                };
-
-                foreach (var unsupportedAttribute in unsupportedAttributes)
-                {
-                    if (metadata.ContainsKey(unsupportedAttribute))
+                    for (int i = 0; i < structVectorLength.Value; ++i)
                     {
-                        ErrorContext.Current?.RegisterError($"FlatSharpCompiler does not support the '{unsupportedAttribute}' attribute in FBS files.");
+                        string name = $"__flatsharp__{definition.Name}_{i}";
+                        this.parent.Fields.Add(definition with
+                        {
+                            Name = name,
+                            SetterKind = SetterKind.Protected,
+                            GetterModifier = AccessModifier.Protected,
+                            CustomGetter = $"{definition.Name}[{i}]"
+                        });
+
+                        groupNames.Add(name);
                     }
+
+                    this.parent.StructVectors.Add(new StructVectorDefinition(definition.Name, definition.FbsFieldType, definition.SetterKind, groupNames));
                 }
             });
 
-            return this.definition;
+            return true;
+        }
+
+        private void ParseIdMetadata(
+            FieldDefinition definition,
+            IDictionary<string, string?> metadata)
+        {
+            const int DefaultIfPresent = -1;
+
+            int? index = metadata.ParseNullableIntegerMetadata(
+                new[] { MetadataKeys.Id },
+                defaultValueIfPresent: DefaultIfPresent,
+                defaultValueIfNotPresent: null);
+
+            if (index == null)
+            {
+                return;
+            }
+
+            if (index == DefaultIfPresent)
+            {
+                ErrorContext.Current.RegisterError($"Value of '{MetadataKeys.Id}' attribute should be set if attribute present.");
+                return;
+            }
+
+            if (index.Value < 0)
+            {
+                ErrorContext.Current.RegisterError($"Value of '{MetadataKeys.Id}' attribute {index} of '{definition.Name}' field is negative.");
+                return;
+            }
+
+            definition.Index = index.Value;
+            definition.IsIndexSetManually = true;
+        }
+
+        private static bool ParseSetterKind(string value, out SetterKind setter)
+        {
+            return Enum.TryParse<SetterKind>(value, true, out setter);
+        }
+
+        private (string fieldType, VectorType vectorType, int? structVectorLength) GetFbsFieldType(FlatBuffersParser.Field_declContext context, Dictionary<string, string?> metadata)
+        {
+            VectorType vectorType = VectorType.None;
+            int? structVectorLength = null;
+            FlatBuffersParser.Core_typeContext? typeContext = null;
+
+            if (context.type().vector_type() is not null)
+            {
+                vectorType = VectorType.IList;
+                typeContext = context.type().vector_type().core_type();
+
+                if (metadata.TryGetValue(MetadataKeys.VectorKind, out string? vectorTypeString) ||
+                    metadata.TryGetValue(MetadataKeys.VectorKindLegacy, out vectorTypeString))
+                {
+                    if (!Enum.TryParse<VectorType>(vectorTypeString, true, out vectorType))
+                    {
+                        ErrorContext.Current.RegisterError(
+                            $"Unable to parse '{vectorTypeString}' as a vector type. Valid choices are: {string.Join(", ", Enum.GetNames(typeof(VectorType)))}.");
+                    }
+                }
+            }
+            else if (metadata.ContainsKey(MetadataKeys.VectorKind) || metadata.ContainsKey(MetadataKeys.VectorKindLegacy))
+            {
+                ErrorContext.Current.RegisterError(
+                    $"Non-vectors may not have the '{MetadataKeys.VectorKind}' or '{MetadataKeys.VectorKindLegacy}' attributes.");
+            }
+
+            if (context.type().structvector_type() is not null)
+            {
+                typeContext = context.type().structvector_type().core_type();
+                string toParse = context.type().structvector_type().INTEGER_CONSTANT().GetText();
+
+                if (!int.TryParse(toParse, out var length) || length <= 0)
+                {
+                    ErrorContext.Current.RegisterError(
+                        $"Unable to parse '{toParse}' as a struct vector length. Lengths should be a postive base 10 integer.");
+                }
+                else
+                {
+                    structVectorLength = length;
+                }
+            }
+
+            if (context.type().core_type() is not null)
+            {
+                typeContext = context.type().core_type();
+            }
+
+            FlatSharpInternal.Assert(typeContext is not null, "Type context was null when parsing");
+
+            string fbsFieldType = typeContext.GetText();
+            return (fbsFieldType, vectorType, structVectorLength);
         }
     }
 }

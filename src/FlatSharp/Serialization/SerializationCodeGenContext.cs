@@ -16,13 +16,14 @@
 
 namespace FlatSharp
 {
+    using FlatSharp.TypeModel;
     using System;
     using System.Collections.Generic;
 
     /// <summary>
     /// Code gen context for serialization methods.
     /// </summary>
-    public class SerializationCodeGenContext
+    public record SerializationCodeGenContext
     {
         public SerializationCodeGenContext(
             string serializationContextVariableName,
@@ -30,7 +31,9 @@ namespace FlatSharp
             string spanWriterVariableName,
             string valueVariableName,
             string offsetVariableName,
+            bool isOffsetByRef,
             IReadOnlyDictionary<Type, string> methodNameMap,
+            TypeModelContainer typeModelContainer,
             FlatBufferSerializerOptions options)
         {
             this.SerializationContextVariableName = serializationContextVariableName;
@@ -39,78 +42,76 @@ namespace FlatSharp
             this.ValueVariableName = valueVariableName;
             this.OffsetVariableName = offsetVariableName;
             this.MethodNameMap = methodNameMap;
+            this.TypeModelContainer = typeModelContainer;
+            this.IsOffsetByRef = isOffsetByRef;
             this.Options = options;
-        }
-
-        public SerializationCodeGenContext(SerializationCodeGenContext other)
-        {
-            this.SerializationContextVariableName = other.SerializationContextVariableName;
-            this.SpanWriterVariableName = other.SpanWriterVariableName;
-            this.SpanVariableName = other.SpanVariableName;
-            this.ValueVariableName = other.ValueVariableName;
-            this.OffsetVariableName = other.OffsetVariableName;
-            this.MethodNameMap = other.MethodNameMap;
-            this.Options = other.Options;
-        }
-
-        public SerializationCodeGenContext With(
-            string serializationContextVariableName = null,
-            string spanWriterVariableName = null,
-            string spanVariableName = null,
-            string valueVariableName = null,
-            string offsetVariableName = null)
-        {
-            var result = new SerializationCodeGenContext(this);
-            result.SerializationContextVariableName = serializationContextVariableName ?? result.SerializationContextVariableName;
-            result.SpanWriterVariableName = spanWriterVariableName ?? result.SpanWriterVariableName;
-            result.SpanVariableName = spanVariableName ?? result.SpanVariableName;
-            result.ValueVariableName = valueVariableName ?? result.ValueVariableName;
-            result.OffsetVariableName = offsetVariableName ?? result.OffsetVariableName;
-
-            return result;
         }
 
         /// <summary>
         /// The variable name of the serialization context. Represents a <see cref="SerializationContext"/> value.
         /// </summary>
-        public string SerializationContextVariableName { get; private set; }
+        public string SerializationContextVariableName { get; init; }
 
         /// <summary>
         /// The variable name of the span. Represents a <see cref="System.Span{System.Byte}"/> value.
         /// </summary>
-        public string SpanVariableName { get; private set; }
+        public string SpanVariableName { get; init; }
 
         /// <summary>
         /// The variable name of the span writer. Represents a <see cref="SpanWriter"/> value.
         /// </summary>
-        public string SpanWriterVariableName { get; private set; }
+        public string SpanWriterVariableName { get; init; }
 
         /// <summary>
         /// The variable name of the current value to serialize.
         /// </summary>
-        public string ValueVariableName { get; private set; }
+        public string ValueVariableName { get; init; }
 
         /// <summary>
         /// The variable name of the offset in the span. Represents a <see cref="Int32"/> value.
         /// </summary>
-        public string OffsetVariableName { get; private set; }
+        public string OffsetVariableName { get; init; }
+
+        /// <summary>
+        /// Indicates if the offset is passed by reference.
+        /// </summary>
+        public bool IsOffsetByRef { get; init; }
 
         /// <summary>
         /// A mapping of type to serialize method name for that type.
         /// </summary>
-        public IReadOnlyDictionary<Type, string> MethodNameMap { get; private set; }
+        public IReadOnlyDictionary<Type, string> MethodNameMap { get; private init; }
+
+        /// <summary>
+        /// Resolves Type -> TypeModel.
+        /// </summary>
+        public TypeModelContainer TypeModelContainer { get; private init; }
 
         /// <summary>
         /// Serialization options.
         /// </summary>
-        public FlatBufferSerializerOptions Options { get; private set; }
+        public FlatBufferSerializerOptions Options { get; private init; }
 
         /// <summary>
         /// Gets a serialization invocation for the given type.
         /// </summary>
         public string GetSerializeInvocation(Type type)
         {
-            return $"{this.MethodNameMap[type]}({this.SpanWriterVariableName}, {this.SpanVariableName}, {this.ValueVariableName}, {this.OffsetVariableName}, {this.SerializationContextVariableName})";
+            ITypeModel typeModel = this.TypeModelContainer.CreateTypeModel(type);
+            string byRef = string.Empty;
+            if (this.IsOffsetByRef)
+            {
+                byRef = "ref ";
+            }
+
+            if (typeModel.SerializeMethodRequiresContext)
+            {
+                return $"{this.MethodNameMap[type]}({this.SpanWriterVariableName}, {this.SpanVariableName}, {this.ValueVariableName}, {byRef}{this.OffsetVariableName}, {this.SerializationContextVariableName})";
+            }
+            else
+            {
+                return $"{this.MethodNameMap[type]}({this.SpanWriterVariableName}, {this.SpanVariableName}, {this.ValueVariableName}, {byRef}{this.OffsetVariableName})";
+            }
         }
     }
 }

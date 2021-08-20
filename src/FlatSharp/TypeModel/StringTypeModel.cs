@@ -23,9 +23,9 @@ namespace FlatSharp.TypeModel
     /// <summary>
     /// Defines a FlatBuffer string type.
     /// </summary>
-    public class StringTypeModel : RuntimeTypeModel, ITypeModel
+    public class StringTypeModel : RuntimeTypeModel
     {
-        internal StringTypeModel() : base(typeof(string), null)
+        internal StringTypeModel(TypeModelContainer container) : base(typeof(string), container)
         {
         }
 
@@ -75,42 +75,36 @@ namespace FlatSharp.TypeModel
         public override bool SerializesInline => false;
 
         /// <summary>
+        /// Strings are leaf nodes.
+        /// </summary>
+        public override IEnumerable<ITypeModel> Children => new ITypeModel[0];
+
+        /// <summary>
         /// Gets the type of span comparer for this type.
         /// </summary>
         public Type SpanComparerType => typeof(StringSpanComparer);
 
         public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
         {
-            return new CodeGeneratedMethod
-            {
-                MethodBody = $"return {nameof(SerializationHelpers)}.{nameof(SerializationHelpers.GetMaxSize)}({context.ValueVariableName});",
-            };
+            return new CodeGeneratedMethod($"return {nameof(SerializationHelpers)}.{nameof(SerializationHelpers.GetMaxSize)}({context.ValueVariableName});");
         }
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
-            return new CodeGeneratedMethod
-            {
-                MethodBody = $"return {context.InputBufferVariableName}.{nameof(IInputBuffer.ReadString)}({context.OffsetVariableName});",
-            };
+            return new CodeGeneratedMethod($"return {context.InputBufferVariableName}.{nameof(IInputBuffer.ReadString)}({context.OffsetVariableName});");
         }
 
         public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
         {
-            return new CodeGeneratedMethod
+            return new CodeGeneratedMethod($"{context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteString)}({context.SpanVariableName}, {context.ValueVariableName}, {context.OffsetVariableName}, {context.SerializationContextVariableName});");
+        }
+
+        public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
+        {
+            return new CodeGeneratedMethod($"return {context.ItemVariableName};")
             {
-                MethodBody = $"{context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteString)}({context.SpanVariableName}, {context.ValueVariableName}, {context.OffsetVariableName}, {context.SerializationContextVariableName});",
+                IsMethodInline = true,
             };
-        }
-
-        public override string GetThrowIfNullInvocation(string itemVariableName)
-        {
-            return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
-        }
-
-        public override void TraverseObjectGraph(HashSet<Type> seenTypes)
-        {
-            seenTypes.Add(this.ClrType);
         }
 
         public override bool TryGetSpanComparerType(out Type comparerType)

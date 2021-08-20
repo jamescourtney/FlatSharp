@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
- namespace FlatSharp.TypeModel
+
+namespace FlatSharp.TypeModel
 {
     using System;
     using System.Collections.Generic;
     using System.Collections.Immutable;
+    using System.Diagnostics;
     using System.Linq;
     using System.Reflection;
-    using System.Runtime.InteropServices;
     using FlatSharp.Attributes;
 
     /// <summary>
@@ -33,6 +33,9 @@
         private readonly List<StructMemberModel> memberTypes = new List<StructMemberModel>();
         private int inlineSize;
         private int maxAlignment = 1;
+        private ConstructorInfo? preferredConstructor;
+        private MethodInfo? onDeserializeMethod;
+        private FlatBufferStructAttribute attribute = null!;
 
         internal StructTypeModel(Type clrType, TypeModelContainer container) : base(clrType, container)
         {
@@ -80,9 +83,18 @@
         public override bool IsValidSortedVectorKey => false;
 
         /// <summary>
+        /// We only need context if one of our children needs it.
+        /// </summary>
+        public override bool SerializeMethodRequiresContext => this.Members.Any(x => x.ItemTypeModel.SerializeMethodRequiresContext);
+
+        /// <summary>
         /// Structs are written inline.
         /// </summary>
         public override bool SerializesInline => true;
+
+        public override IEnumerable<ITypeModel> Children => this.memberTypes.Select(x => x.ItemTypeModel);
+
+        public override ConstructorInfo? PreferredSubclassConstructor => this.preferredConstructor;
 
         /// <summary>
         /// Gets the members of this struct.
@@ -91,9 +103,9 @@
 
         public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
         {
-            return new CodeGeneratedMethod
+            return new CodeGeneratedMethod($"return {this.MaxInlineSize};")
             {
-                MethodBody = $"return {this.MaxInlineSize};",
+                IsMethodInline = true
             };
         }
 
@@ -102,98 +114,103 @@
             // We have to implement two items: The table class and the overall "read" method.
             // Let's start with the read method.
             string className = "structReader_" + Guid.NewGuid().ToString("n");
+            DeserializeClassDefinition classDef = DeserializeClassDefinition.Create(
+                className,
+                this.onDeserializeMethod,
+                this,
+                context.Options);
 
-            string classDefinition;
-            // Implement the class
+            // Build up a list of property overrides.
+            for (int index = 0; index < this.Members.Count; ++index)
             {
-                // Build up a list of property overrides.
-                var propertyOverrides = new List<GeneratedProperty>();
-                for (int index = 0; index < this.Members.Count; ++index)
-                {
-                    var value = this.Members[index];
-                    PropertyInfo propertyInfo = value.PropertyInfo;
-                    Type propertyType = propertyInfo.PropertyType;
-
-                    GeneratedProperty generatedProperty = new GeneratedProperty(context.Options, index, propertyInfo);
-
-                    var propContext = context.With(offset: $"({context.OffsetVariableName} + {value.Offset})", inputBuffer: "buffer");
-
-                    // These are always inline as they are only invoked from one place.
-                    generatedProperty.ReadValueMethodDefinition =
-$@"
-                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    private static {CSharpHelpers.GetCompilableTypeName(propertyType)} {generatedProperty.ReadValueMethodName}({context.InputBufferTypeName} buffer, int offset)
-                    {{
-                        return {propContext.GetParseInvocation(propertyType)};
-                    }}
-";
-
-                    propertyOverrides.Add(generatedProperty);
-                }
-
-                classDefinition = CSharpHelpers.CreateDeserializeClass(
-                    className,
-                    this.ClrType,
-                    propertyOverrides,
-                    context.Options);
+                var value = this.Members[index];
+                PropertyInfo propertyInfo = value.PropertyInfo;
+                Type propertyType = propertyInfo.PropertyType;
+                classDef.AddProperty(value, context.MethodNameMap[propertyType], context.SerializeMethodNameMap[propertyType]);
             }
 
-            return new CodeGeneratedMethod
+            return new CodeGeneratedMethod($"return {className}<{context.InputBufferTypeName}>.GetOrCreate({context.InputBufferVariableName}, {context.OffsetVariableName});")
             {
-                ClassDefinition = classDefinition,
-                MethodBody = $"return new {className}<{context.InputBufferTypeName}>({context.InputBufferVariableName}, {context.OffsetVariableName});",
+                ClassDefinition = classDef.ToString(),
             };
         }
 
         public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
         {
             List<string> body = new List<string>();
+            body.Add($"Span<byte> scopedSpan = {context.SpanVariableName}.Slice({context.OffsetVariableName}, {this.PhysicalLayout[0].InlineSize});");
+
+            FlatSharpInternal.Assert(!this.ClrType.IsValueType, "Value-type struct is unexpected");
+
+            body.Add(
+                $@"
+                    if ({context.ValueVariableName} is null)
+                    {{
+                        scopedSpan.Clear();
+                        return;
+                    }}
+                ");
+
             for (int i = 0; i < this.Members.Count; ++i)
             {
                 var memberInfo = this.Members[i];
 
                 string propertyAccessor = $"{context.ValueVariableName}.{memberInfo.PropertyInfo.Name}";
-                if (!memberInfo.ItemTypeModel.ClrType.IsValueType)
+                if (memberInfo.CustomGetter is not null)
                 {
-                    // Force members of structs to be non-null.
-                    propertyAccessor += $" ?? new {CSharpHelpers.GetCompilableTypeName(memberInfo.ItemTypeModel.ClrType)}()";
+                    propertyAccessor = $"{context.ValueVariableName}.{memberInfo.CustomGetter}";
                 }
 
-                var propContext = context.With(
-                    offsetVariableName: $"({memberInfo.Offset} + {context.OffsetVariableName})",
-                    valueVariableName: $"({propertyAccessor})");
+                var propContext = context with
+                {
+                    SpanVariableName = "scopedSpan",
+                    OffsetVariableName = $"{memberInfo.Offset}",
+                    ValueVariableName = $"{propertyAccessor}"
+                };
 
-                body.Add(propContext.GetSerializeInvocation(memberInfo.ItemTypeModel.ClrType) + ";");
+                string invocation = propContext.GetSerializeInvocation(memberInfo.ItemTypeModel.ClrType) + ";";
+                body.Add(invocation);
             }
 
-            return new CodeGeneratedMethod
-            {
-                MethodBody = string.Join("\r\n", body)
-            };
+            return new CodeGeneratedMethod(string.Join("\r\n", body));
         }
 
-        public override string GetThrowIfNullInvocation(string itemVariableName)
+        public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
         {
-            return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
+            var typeName = this.GetCompilableTypeName();
+            string body = $"return {context.ItemVariableName} is null ? null : new {typeName}({context.ItemVariableName});";
+            return new CodeGeneratedMethod(body)
+            {
+                IsMethodInline = true,
+            };
         }
 
         public override void Initialize()
         {
-            var structAttribute = this.ClrType.GetCustomAttribute<FlatBufferStructAttribute>();
-            if (structAttribute == null)
             {
-                throw new InvalidFlatBufferDefinitionException($"Can't create struct type model from type {this.ClrType.Name} because it does not have a [FlatBufferStruct] attribute.");
+                FlatBufferStructAttribute? attribute = this.ClrType.GetCustomAttribute<FlatBufferStructAttribute>();
+
+                FlatSharpInternal.Assert(attribute != null, "Missing attribute.");
+                this.attribute = attribute!;
             }
+
+            TableTypeModel.EnsureClassCanBeInheritedByOutsideAssembly(this.ClrType, out this.preferredConstructor);
+            this.onDeserializeMethod = TableTypeModel.ValidateOnDeserializedMethod(this);
 
             var properties = this.ClrType
                 .GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
                 .Select(x => new
                 {
                     Property = x,
-                    Attribute = x.GetCustomAttribute<FlatBufferItemAttribute>(),
+                    Attribute = x.GetCustomAttribute<FlatBufferItemAttribute>()! // suppress check here; we filter on the next line.
                 })
-                .Where(x => x.Attribute != null)
+                .Where(x => x.Attribute is not null)
                 .OrderBy(x => x.Attribute.Index);
+
+            if (!properties.Any())
+            {
+                throw new InvalidFlatBufferDefinitionException($"Can't create struct type model from type {this.GetCompilableTypeName()} because it does not have any non-static [FlatBufferItem] properties. Structs cannot be empty.");
+            }
 
             ushort expectedIndex = 0;
             this.inlineSize = 0;
@@ -205,18 +222,23 @@ $@"
 
                 if (propertyAttribute.Deprecated)
                 {
-                    throw new InvalidFlatBufferDefinitionException($"FlatBuffer struct {this.ClrType.Name} may not have deprecated properties");
+                    throw new InvalidFlatBufferDefinitionException($"FlatBuffer struct {this.GetCompilableTypeName()} may not have deprecated properties");
+                }
+
+                if (propertyAttribute.ForceWrite)
+                {
+                    throw new InvalidFlatBufferDefinitionException($"FlatBuffer struct {this.GetCompilableTypeName()} may not have properties with the ForceWrite option set to true.");
                 }
 
                 ushort index = propertyAttribute.Index;
                 if (index != expectedIndex)
                 {
-                    throw new InvalidFlatBufferDefinitionException($"FlatBuffer struct {this.ClrType.Name} does not declare an item with index {expectedIndex}. Structs must have sequenential indexes starting at 0.");
+                    throw new InvalidFlatBufferDefinitionException($"FlatBuffer struct {this.GetCompilableTypeName()} does not declare an item with index {expectedIndex}. Structs must have sequenential indexes starting at 0.");
                 }
-                
-                if (!object.ReferenceEquals(propertyAttribute.DefaultValue, null))
+
+                if (propertyAttribute.DefaultValue is not null)
                 {
-                    throw new InvalidFlatBufferDefinitionException($"FlatBuffer struct {this.ClrType.Name} declares default value on index {expectedIndex}. Structs may not have default values.");
+                    throw new InvalidFlatBufferDefinitionException($"FlatBuffer struct {this.GetCompilableTypeName()} declares default value on index {expectedIndex}. Structs may not have default values.");
                 }
 
                 expectedIndex++;
@@ -224,7 +246,7 @@ $@"
 
                 if (!propertyModel.IsValidStructMember || propertyModel.PhysicalLayout.Length > 1)
                 {
-                    throw new InvalidFlatBufferDefinitionException($"Struct property {property.Name} with type {property.PropertyType.Name} cannot be part of a flatbuffer struct.");
+                    throw new InvalidFlatBufferDefinitionException($"Struct '{this.GetCompilableTypeName()}' property {property.Name} (Index {index}) with type {CSharpHelpers.GetCompilableTypeName(property.PropertyType)} cannot be part of a flatbuffer struct.");
                 }
 
                 int propertySize = propertyModel.PhysicalLayout[0].InlineSize;
@@ -233,29 +255,17 @@ $@"
 
                 // Pad for alignment.
                 this.inlineSize += SerializationHelpers.GetAlignmentError(this.inlineSize, propertyAlignment);
+                int length = propertyModel.PhysicalLayout[0].InlineSize;
 
                 StructMemberModel model = new StructMemberModel(
                     propertyModel,
                     property,
-                    index,
-                    this.inlineSize);
+                    item.Attribute,
+                    this.inlineSize,
+                    length);
 
                 this.memberTypes.Add(model);
-                this.inlineSize += propertyModel.PhysicalLayout[0].InlineSize;
-            }
-
-            TableTypeModel.EnsureClassCanBeInheritedByOutsideAssembly(this.ClrType, out var ctor);
-        }
-
-        public override void TraverseObjectGraph(HashSet<Type> seenTypes)
-        {
-            seenTypes.Add(this.ClrType);
-            foreach (var member in this.memberTypes)
-            {
-                if (seenTypes.Add(member.ItemTypeModel.ClrType))
-                {
-                    member.ItemTypeModel.TraverseObjectGraph(seenTypes);
-                }
+                this.inlineSize += length;
             }
         }
     }

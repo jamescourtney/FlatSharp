@@ -19,6 +19,7 @@ namespace FlatSharp.TypeModel
     using System;
     using System.Collections.Generic;
     using System.Collections.Immutable;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
 
     /// <summary>
@@ -30,6 +31,7 @@ namespace FlatSharp.TypeModel
 
         internal UnionTypeModel(Type unionType, TypeModelContainer provider) : base(unionType, provider)
         {
+            this.memberTypeModels = null!;
         }
 
         /// <summary>
@@ -40,11 +42,12 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// Unions are "double-wide" vtable items.
         /// </summary>
-        public override ImmutableArray<PhysicalLayoutElement> PhysicalLayout => new[]
-        {
-            new PhysicalLayoutElement(sizeof(byte), sizeof(byte)),
-            new PhysicalLayoutElement(sizeof(uint), sizeof(uint))
-        }.ToImmutableArray();
+        public override ImmutableArray<PhysicalLayoutElement> PhysicalLayout => 
+            new[]
+            {
+                new PhysicalLayoutElement(sizeof(byte), sizeof(byte)),
+                new PhysicalLayoutElement(sizeof(uint), sizeof(uint))
+            }.ToImmutableArray();
 
         /// <summary>
         /// Unions are not fixed because they contain tables.
@@ -77,14 +80,19 @@ namespace FlatSharp.TypeModel
         public override bool IsValidSortedVectorKey => false;
 
         /// <summary>
-        /// Unions are written inline (though they are really just a pointer).
+        /// Unions are pointers.
         /// </summary>
-        public override bool SerializesInline => true;
+        public override bool SerializesInline => false;
 
         /// <summary>
         /// Gets the type model for this union's members. Index 0 corresponds to discriminator 1.
         /// </summary>
         public ITypeModel[] UnionElementTypeModel => this.memberTypeModels;
+
+        /// <summary>
+        /// Unions have an implicit dependency on <see cref="byte"/> for the discriminator.
+        /// </summary>
+        public override IEnumerable<ITypeModel> Children => this.memberTypeModels.Concat(new[] { this.typeModelContainer.CreateTypeModel(typeof(byte)) });
 
         public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
         {
@@ -96,7 +104,7 @@ namespace FlatSharp.TypeModel
                 string @case =
 $@"
                     case {unionIndex}:
-                        return {context.MethodNameMap[unionMember.ClrType]}({context.ValueVariableName}.Item{unionIndex});";
+                        return {sizeof(uint) + SerializationHelpers.GetMaxPadding(sizeof(uint))} + {context.MethodNameMap[unionMember.ClrType]}({context.ValueVariableName}.Item{unionIndex});";
 
                 switchCases.Add(@case);
             }
@@ -111,7 +119,7 @@ $@"
                     throw new System.InvalidOperationException(""Exception determining type of union. Discriminator = "" + {context.ValueVariableName}.{discriminatorPropertyName});
             }}
 ";
-            return new CodeGeneratedMethod { MethodBody = body };
+            return new CodeGeneratedMethod(body);
         }
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
@@ -128,11 +136,17 @@ $@"
                     inlineAdjustment = $"offsetLocation += buffer.{nameof(InputBufferExtensions.ReadUOffset)}(offsetLocation);";
                 }
 
+                var itemContext = context with
+                {
+                    OffsetVariableName = "offsetLocation",
+                    IsOffsetByRef = false,
+                };
+
                 string @case =
 $@"
                     case {unionIndex}:
                         {inlineAdjustment}
-                        return new {CSharpHelpers.GetCompilableTypeName(this.ClrType)}({context.MethodNameMap[unionMember.ClrType]}(buffer, offsetLocation));
+                        return new {this.GetCompilableTypeName()}({itemContext.GetParseInvocation(unionMember.ClrType)});
 ";
                 switchCases.Add(@case);
             }
@@ -140,18 +154,18 @@ $@"
             string body = $@"
                 byte discriminator = {context.InputBufferVariableName}.{nameof(IInputBuffer.ReadByte)}({context.OffsetVariableName}.offset0);
                 int offsetLocation = {context.OffsetVariableName}.offset1;
-                if (discriminator == 0 && offsetLocation != 0)
+                if (discriminator != 0 && offsetLocation == 0)
                     throw new System.IO.InvalidDataException(""FlatBuffer union had discriminator set but no offset."");
 
                 switch (discriminator)
                 {{
                     {string.Join("\r\n", switchCases)}
                     default:
-                        return null;
+                        throw new System.InvalidOperationException(""Exception parsing union '{this.GetCompilableTypeName()}'. Discriminator = "" + discriminator);
                 }}
             ";
 
-            return new CodeGeneratedMethod { MethodBody = body };
+            return new CodeGeneratedMethod(body);
         }
 
         public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
@@ -172,19 +186,26 @@ $@"
                     inlineAdjustment =
 $@"
                         var writeOffset = context.{nameof(SerializationContext.AllocateSpace)}({elementModel.PhysicalLayout.Single().InlineSize}, {elementModel.PhysicalLayout.Single().Alignment});
-                        {context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteUOffset)}(span, {context.OffsetVariableName}.offset1, writeOffset, context);";
+                        {context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteUOffset)}(span, {context.OffsetVariableName}.offset1, writeOffset);";
                 }
                 else
                 {
                     inlineAdjustment = $"var writeOffset = {context.OffsetVariableName}.offset1;";
                 }
 
+                var caseContext = context with
+                {
+                    ValueVariableName = $"{context.ValueVariableName}.Item{unionIndex}",
+                    OffsetVariableName = "writeOffset",
+                    IsOffsetByRef = false,
+                };
+
                 string @case =
 $@"
                     case {unionIndex}:
                     {{
                         {inlineAdjustment}
-                        {context.MethodNameMap[elementModel.ClrType]}({context.SpanWriterVariableName}, {context.SpanVariableName}, {context.ValueVariableName}.Item{unionIndex}, writeOffset, {context.SerializationContextVariableName});
+                        {caseContext.GetSerializeInvocation(elementModel.ClrType)};
                     }}
                         break;";
 
@@ -196,8 +217,7 @@ $@"
                 {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteByte)}(
                     {context.SpanVariableName}, 
                     discriminatorValue, 
-                    {context.OffsetVariableName}.offset0, 
-                    {context.SerializationContextVariableName});
+                    {context.OffsetVariableName}.offset0);
 
                 switch (discriminatorValue)
                 {{
@@ -205,12 +225,30 @@ $@"
                     default: throw new InvalidOperationException(""Unexpected"");
                 }}";
 
-            return new CodeGeneratedMethod { MethodBody = serializeBlock };
+            return new CodeGeneratedMethod(serializeBlock);
         }
 
-        public override string GetThrowIfNullInvocation(string itemVariableName)
+        public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
         {
-            return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({itemVariableName})";
+            List<string> switchCases = new List<string>();
+
+            for (int i = 0; i < this.memberTypeModels.Length; ++i)
+            {
+                int discriminator = i + 1;
+                string cloneMethod = context.MethodNameMap[this.memberTypeModels[i].ClrType];
+                switchCases.Add($"{discriminator} => new {this.GetCompilableTypeName()}({cloneMethod}({context.ItemVariableName}.Item{discriminator})),");
+            }
+
+            switchCases.Add("_ => throw new InvalidOperationException(\"Unexpected union discriminator\")");
+
+            string body = $@"
+                if ({context.ItemVariableName} is null) return null;
+                
+                return {context.ItemVariableName}.{nameof(FlatBufferUnion<string>.Discriminator)} switch {{
+                    {string.Join("\r\n", switchCases)}
+                }};";
+
+            return new CodeGeneratedMethod(body);
         }
 
         public override void Initialize()
@@ -220,7 +258,7 @@ $@"
 
             // Look for the actual FlatBufferUnion.
             Type unionType = this.ClrType;
-            while (unionType.BaseType != typeof(object))
+            while (unionType.BaseType != typeof(object) && unionType.BaseType is not null)
             {
                 unionType = unionType.BaseType;
             }
@@ -231,11 +269,11 @@ $@"
             {
                 if (!item.IsValidUnionMember)
                 {
-                    throw new InvalidFlatBufferDefinitionException($"Unions may not store '{item.GetType().Name}'.");
+                    throw new InvalidFlatBufferDefinitionException($"Unions may not store '{item.GetCompilableTypeName()}'.");
                 }
                 else if (!uniqueTypes.Add(item.ClrType))
                 {
-                    throw new InvalidFlatBufferDefinitionException($"Unions must consist of unique types. The type '{item.ClrType.Name}' was repeated.");
+                    throw new InvalidFlatBufferDefinitionException($"Unions must consist of unique types. The type '{item.GetCompilableTypeName()}' was repeated.");
                 }
 
                 if (item.ClrType == typeof(string) || item.ClrType == typeof(SharedString))
@@ -246,18 +284,6 @@ $@"
                     }
 
                     containsString = true;
-                }
-            }
-        }
-
-        public override void TraverseObjectGraph(HashSet<Type> seenTypes)
-        {
-            seenTypes.Add(this.ClrType);
-            foreach (var member in this.memberTypeModels)
-            {
-                if (seenTypes.Add(member.ClrType))
-                {
-                    member.TraverseObjectGraph(seenTypes);
                 }
             }
         }

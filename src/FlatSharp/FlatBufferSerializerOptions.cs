@@ -27,16 +27,29 @@ namespace FlatSharp
         /// Initializes a new instance of FlatBufferSerializerOptions with the given set of flags.
         /// </summary>
         /// <param name="option">The deserialization mode.</param>
-        public FlatBufferSerializerOptions(FlatBufferDeserializationOption option = FlatBufferDeserializationOption.Default)
+        public FlatBufferSerializerOptions(
+            FlatBufferDeserializationOption option = FlatBufferDeserializationOption.Default,
+            bool devirtualize = true)
         {
             if (!Enum.IsDefined(typeof(FlatBufferDeserializationOption), option))
             {
                 throw new ArgumentException(nameof(option), $"The value '{option}' is not defined in '{nameof(FlatBufferDeserializationOption)}'.");
             }
 
+            this.Devirtualize = devirtualize;
             this.DeserializationOption = option;
         }
 
+        /// <summary>
+        /// Indicates that FlatSharp should try to devirtualize <see cref="System.Collections.Generic.IList{T}" /> vectors.
+        /// Enabling this expands the size of the generated code but allows for must faster execution when using well-known
+        /// list types.
+        /// </summary>
+        public bool Devirtualize { get; }
+
+        /// <summary>
+        /// The deserialization mode.
+        /// </summary>
         public FlatBufferDeserializationOption DeserializationOption { get; }
 
         /// <summary>
@@ -69,13 +82,34 @@ namespace FlatSharp
         public bool PropertyCache => !this.Lazy && !this.GreedyDeserialize;
 
         /// <summary>
-        /// Bananas
+        /// Indicates if properties are always read lazily.
         /// </summary>
         public bool Lazy => this.DeserializationOption == FlatBufferDeserializationOption.Lazy;
 
         /// <summary>
-        /// Indicates if FlatSharp should intercept app domain load events to look for cross-referenced generated assemblies. Mostly useful for FlatSharp unit tests.
+        /// Indicates if write through is supported.
+        /// </summary>
+        public bool SupportsWriteThrough => this.DeserializationOption == FlatBufferDeserializationOption.Lazy ||
+                                            this.DeserializationOption == FlatBufferDeserializationOption.VectorCacheMutable;
+
+        /// <summary>
+        /// Indicates if the object is immutable OR changes to the object are guaranteed to be written back to the buffer.
+        /// </summary>
+        /// <remarks>
+        /// VectorCacheMutable is not eligible here, since only some changes are written back.
+        /// </remarks>
+        public bool CanSerializeWithMemoryCopy => this.DeserializationOption == FlatBufferDeserializationOption.Lazy ||
+                                                  this.DeserializationOption == FlatBufferDeserializationOption.PropertyCache;
+
+        /// <summary>
+        /// Indicates if FlatSharp should intercept app domain load events to look for cross-referenced generated assemblies. 
+        /// Mostly useful for FlatSharp unit tests.
         /// </summary>
         public bool EnableAppDomainInterceptOnAssemblyLoad { get; set; }
+
+        /// <summary>
+        /// Indicates if "protected internal" modifiers should be converted to protected.
+        /// </summary>
+        internal bool ConvertProtectedInternalToProtected { get; set; } = true;
     }
 }

@@ -16,112 +16,257 @@
 
 namespace FlatSharp.Compiler
 {
+    using FlatSharp.Attributes;
+    using FlatSharp.TypeModel;
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
+    using System.Reflection;
+    using System.Runtime.ExceptionServices;
 
     internal class TableOrStructDefinition : BaseSchemaMember
     {
+        internal const string SerializerPropertyName = "Serializer";
+
         public TableOrStructDefinition(
-            string name, 
-            FlatBufferDeserializationOption? serializerFlags,
+            string name,
             BaseSchemaMember parent) : base(name, parent)
         {
-            this.RequestedSerializer = serializerFlags;
         }
 
-        public IReadOnlyDictionary<string, string> Metadata { get; }
-
         public List<FieldDefinition> Fields { get; set; } = new List<FieldDefinition>();
-        
+
+        public List<StructVectorDefinition> StructVectors { get; set; } = new List<StructVectorDefinition>();
+
         public bool IsTable { get; set; }
 
-        public FlatBufferDeserializationOption? RequestedSerializer { get; }
+        public FlatBufferSchemaType SchemaType =>
+            this.IsTable ? FlatBufferSchemaType.Table : FlatBufferSchemaType.Struct;
+
+        public bool? NonVirtual { get; set; }
+
+        public bool? ForceWrite { get; set; }
+
+        public bool? WriteThrough { get; set; }
+
+        public DefaultConstructorKind? DefaultConstructorKind { get; set; }
+
+        public string? FileIdentifier { get; set; }
+
+        public FlatBufferDeserializationOption? RequestedSerializer { get; set; }
 
         protected override bool SupportsChildren => false;
 
-        public void AssignIndexes()
-        {
-            ErrorContext.Current.WithScope(this.Name, () =>
-            {
-                int nextIndex = 0;
-                for (int i = 0; i < this.Fields.Count; ++i)
-                {
-                    this.Fields[i].Index = nextIndex;
-
-                    nextIndex++;
-
-                    if (this.TryResolveName(this.Fields[i].FbsFieldType, out var typeDef) && typeDef is UnionDefinition)
-                    {
-                        // Unions are double-wide.
-                        nextIndex++;
-                    }
-                }
-            });
-        }
-
-        protected override void OnWriteCode(CodeWriter writer, CodeWritingPass pass, string forFile, IReadOnlyDictionary<string, string> precompiledSerailizers)
+        protected override void OnWriteCode(CodeWriter writer, CompileContext context)
         {
             this.AssignIndexes();
 
-            string attribute = this.IsTable ? "[FlatBufferTable]" : "[FlatBufferStruct]";
+            var attributeParts = new List<string>();
+            string attributeName = this.IsTable ? nameof(FlatBufferTableAttribute) : nameof(FlatBufferStructAttribute);
 
-            writer.AppendLine(attribute);
+            if (this.IsTable && !string.IsNullOrEmpty(this.FileIdentifier))
+            {
+                attributeParts.Add($"{nameof(FlatBufferTableAttribute.FileIdentifier)} = \"{this.FileIdentifier}\"");
+            }
+
+            bool hasSerializer = context.CompilePass >= CodeWritingPass.SerializerGeneration && this.RequestedSerializer is not null;
+
+            writer.AppendLine($"[{attributeName}({string.Join(", ", attributeParts)})]");
             writer.AppendLine("[System.Runtime.CompilerServices.CompilerGenerated]");
-            writer.AppendLine($"public partial class {this.Name} : object");
+            writer.AppendLine($"public partial class {this.Name}");
+            using (writer.IncreaseIndent())
+            {
+                writer.AppendLine(": object");
+                if (hasSerializer)
+                {
+                    writer.AppendLine($", {nameof(IFlatBufferSerializable)}<{this.Name}>");
+                }
+            }
+
             writer.AppendLine($"{{");
 
             using (writer.IncreaseIndent())
             {
-                writer.AppendLine($"partial void OnInitialized();");
+                // Default ctor.
+                var defaultCtorKind = this.DefaultConstructorKind ?? Compiler.DefaultConstructorKind.Public;
+                if (defaultCtorKind != Compiler.DefaultConstructorKind.None)
+                {
+                    if (defaultCtorKind == Compiler.DefaultConstructorKind.PublicObsolete)
+                    {
+                        writer.AppendLine("[Obsolete]");
+                    }
 
-                // default ctor.
-                writer.AppendLine($"public {this.Name}() {{ this.OnInitialized(); }}");
+                    writer.AppendLine($"public {this.Name}()");
+                    using (writer.WithBlock())
+                    {
+                        foreach (var field in this.Fields)
+                        {
+                            field.WriteDefaultConstructorLine(writer, context);
+                        }
 
+                        this.EmitStructVectorInitializations(writer);
+                        writer.AppendLine("this.OnInitialized(null);");
+                    }
+                }
+                else if (!this.IsTable)
+                {
+                    ErrorContext.Current.RegisterError("Structs must have default constructors.");
+                }
+
+                writer.AppendLine("#pragma warning disable CS8618"); // NULL FORGIVING
+                writer.AppendLine($"protected {this.Name}({nameof(FlatBufferDeserializationContext)} context)");
+                using (writer.WithBlock())
+                {
+                    this.EmitStructVectorInitializations(writer);
+                }
+                writer.AppendLine("#pragma warning restore CS8618"); // NULL FORGIVING
+
+                // Copy constructor.
                 writer.AppendLine($"public {this.Name}({this.Name} source)");
                 using (writer.WithBlock())
                 {
                     foreach (var field in this.Fields)
                     {
-                        field.WriteCopyConstructorLine(writer, "source", this);
+                        field.WriteCopyConstructorLine(writer, "source", context);
                     }
 
-                    writer.AppendLine("this.OnInitialized();");
+                    this.EmitStructVectorInitializations(writer);
+                    writer.AppendLine("this.OnInitialized(null);");
                 }
+
+                writer.AppendLine($"partial void OnInitialized({nameof(FlatBufferDeserializationContext)}? context);");
+                writer.AppendLine();
+
+                writer.AppendLine($"protected void {TableTypeModel.OnDeserializedMethodName}({nameof(FlatBufferDeserializationContext)}? context) => this.OnInitialized(context);");
+                writer.AppendLine();
 
                 foreach (var field in this.Fields)
                 {
-                    if (!this.IsTable && field.Deprecated)
-                    {
-                        ErrorContext.Current?.RegisterError($"FlatBuffer structs may not have deprecated fields.");
-                    }
-
-                    field.WriteField(writer, this);
+                    field.WriteField(writer, this, context);
                 }
 
-                if (pass == CodeWritingPass.SecondPass && precompiledSerailizers != null && this.RequestedSerializer != null)
+                foreach (var structVector in this.StructVectors)
                 {
-                    if (precompiledSerailizers.TryGetValue(this.FullName, out string serializer))
-                    {
-                        writer.AppendLine($"public static ISerializer<{this.FullName}> Serializer {{ get; }} = new {RoslynSerializerGenerator.GeneratedSerializerClassName}().AsISerializer();");
-                        writer.AppendLine(string.Empty);
-                        writer.AppendLine($"#region Serializer for {this.FullName}");
-                        writer.AppendLine(serializer);
-                        writer.AppendLine($"#endregion");
-                    }
-                    else
-                    {
-                        ErrorContext.Current.RegisterError($"Table {this.FullName} requested serializer, but none was found.");
-                    }
+                    structVector.EmitStructVector(this, writer, context);
+                }
+
+                if (hasSerializer)
+                {
+                    // generate the serializer.
+                    string serializer = this.GenerateSerializerForType(
+                        context,
+                        this.RequestedSerializer!.Value); // not null by assertion above.
+
+                    writer.AppendLine($"public static ISerializer<{this.FullName}> {SerializerPropertyName} {{ get; }} = new {RoslynSerializerGenerator.GeneratedSerializerClassName}().AsISerializer();");
+
+                    writer.AppendLine();
+
+                    writer.AppendLine($"ISerializer {nameof(IFlatBufferSerializable)}.{nameof(IFlatBufferSerializable.Serializer)} => {SerializerPropertyName};");
+                    writer.AppendLine($"ISerializer<{this.FullName}> {nameof(IFlatBufferSerializable)}<{this.FullName}>.{nameof(IFlatBufferSerializable.Serializer)} => {SerializerPropertyName};");
+
+                    writer.AppendLine();
+                    writer.AppendLine($"#region Serializer for {this.FullName}");
+                    writer.AppendLine(serializer);
+                    writer.AppendLine($"#endregion");
                 }
             }
 
             writer.AppendLine($"}}");
         }
 
-        protected override string OnGetCopyExpression(string source)
+        private void EmitStructVectorInitializations(CodeWriter writer)
         {
-            return $"{source} != null ? new {this.FullName}({source}) : null";
+            foreach (var sv in this.StructVectors)
+            {
+                sv.EmitStructVectorInitializer(writer);
+            }
+        }
+
+        public bool TryResolveTypeName(
+            string fbsFieldType, 
+            CompileContext? context, 
+            out ITypeModel? resolvedTypeModel, 
+            [NotNullWhen(true)] out string? typeName)
+        {
+            resolvedTypeModel = null;
+
+            if (context is not null && context.TypeModelContainer.TryResolveFbsAlias(fbsFieldType, out resolvedTypeModel))
+            {
+                typeName = resolvedTypeModel.ClrType.FullName ?? throw new InvalidOperationException("Full name was null");
+                return true;
+            }
+            else if (this.TryResolveName(fbsFieldType, out var node))
+            {
+                typeName = node.GlobalName;
+                return true;
+            }
+
+            typeName = null;
+            return false;
+        }
+
+        private string GenerateSerializerForType(
+            CompileContext context,
+            FlatBufferDeserializationOption deserializationOption)
+        {
+            Type? type = context.PreviousAssembly?.GetType(this.FullName);
+            FlatSharpInternal.Assert(type is not null, $"Flatsharp failed to find expected type '{this.FullName}' in assembly.");
+
+            var options = new FlatBufferSerializerOptions(deserializationOption) { ConvertProtectedInternalToProtected = false };
+            var generator = new RoslynSerializerGenerator(options, context.TypeModelContainer);
+
+            MethodInfo method = generator.GetType()
+                                         .GetMethod(nameof(RoslynSerializerGenerator.GenerateCSharp), BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)!
+                                         .MakeGenericMethod(type);
+
+            try
+            {
+                string code = (string)method.Invoke(generator, new[] { "private" })!;
+                return code;
+            }
+            catch (TargetInvocationException ex)
+            {
+                ExceptionDispatchInfo.Capture(ex.InnerException!).Throw();
+                throw;
+            }
+        }
+
+        private void AssignIndexes()
+        {
+            ErrorContext.Current.WithScope(
+                this.Name,
+                () =>
+                {
+                    if (this.Fields.Any(field => field.IsIndexSetManually))
+                    {
+                        if (!this.IsTable)
+                        {
+                            ErrorContext.Current.RegisterError("Structure fields may not have 'id' attribute set.");
+                        }
+
+                        if (!this.Fields.TrueForAll(field => field.IsIndexSetManually))
+                        {
+                            ErrorContext.Current.RegisterError("All or none fields should have 'id' attribute set.");
+                        }
+
+                        return;
+                    }
+
+                    int nextIndex = 0;
+                    foreach (var field in this.Fields)
+                    {
+                        field.Index = nextIndex;
+
+                        nextIndex++;
+
+                        if (this.TryResolveName(field.FbsFieldType, out var typeDef) && typeDef is UnionDefinition)
+                        {
+                            // Unions are double-wide.
+                            nextIndex++;
+                        }
+                    }
+                });
         }
     }
 }

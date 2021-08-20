@@ -84,9 +84,10 @@ namespace FlatSharp
             }
 
             var offsets = line.Offsets;
-            if (!object.ReferenceEquals(line.String, null))
+            SharedString? sharedString = line.String;
+            if (sharedString is not null)
             {
-                FlushSharedString(spanWriter, data, line.String, offsets, context);
+                FlushSharedString(spanWriter, data, sharedString, offsets, context);
             }
 
             line.String = value;
@@ -104,7 +105,7 @@ namespace FlatSharp
                 ref WriteCacheEntry item = ref cache[i];
                 var str = item.String;
 
-                if (!object.ReferenceEquals(str, null))
+                if (str is not null)
                 {
                     FlushSharedString(writer, data, str, item.Offsets, context);
                     item.String = null;
@@ -124,7 +125,7 @@ namespace FlatSharp
             int count = offsets.Count;
             for (int i = 0; i < count; ++i)
             {
-                spanWriter.WriteUOffset(span, offsets[i], stringOffset, context);
+                spanWriter.WriteUOffset(span, offsets[i], stringOffset);
             }
 
             offsets.Clear();
@@ -134,7 +135,7 @@ namespace FlatSharp
         private struct WriteCacheEntry
         {
             // The string
-            public SharedString String;
+            public SharedString? String;
 
             public List<int> Offsets;
         }

@@ -36,13 +36,14 @@
 		("ULong", "ulong", "ul", new[] { "ulong", "uint64" }, null, null),
 		("Float", "float", "f", new[] { "float", "float32" }, null, null),
 		("Double", "double", "d", new[] { "double", "float64" }, null, null),
-	};
+	}; 
 #>
 
 namespace FlatSharp.TypeModel
 {
 	using System;
 	using System.ComponentModel;
+	using System.Diagnostics.CodeAnalysis;
 
 	<#
 		foreach (var pair in types)
@@ -58,44 +59,28 @@ namespace FlatSharp.TypeModel
 	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public partial class <#= className #> : ScalarTypeModel
     {
-        public <#= className #>() : base(typeof(<#=typeName#>), sizeof(<#=typeName#>)) 
+        public <#= className #>(TypeModelContainer container) : base(container, typeof(<#=typeName#>), sizeof(<#=typeName#>)) 
         {
         }
 		
-        public override bool TryFormatStringAsLiteral(string value, out string literal)
+        public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
 		{
+			if (!<#= pair.typeName #>.TryParse(value, out _))
+			{
+			     literal = null;
+				 return false;
+			}
+
 			literal = $"(<#= pair.typeName #>)({value}<#= pair.literalSpecifier #>)";
 			return true;
 		}
 
-        public override bool TryGetSpanComparerType(out Type comparerType)
+        public override bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType)
         {
-            comparerType = typeof(<#= casedName #>SpanComparer);;
+            comparerType = typeof(<#= casedName #>SpanComparer);
             return true;
         }
 
-        protected override string InputBufferReadMethodName => nameof(<#= pair.readNameClass ?? "IInputBuffer" #>.Read<#= casedName #>);
-
-        protected override string SpanWriterWriteMethodName => nameof(<#= pair.writeNameClass ?? "ISpanWriter" #>.Write<#= casedName #>);
-    }
-
-	
-    /// <summary>
-    /// Type Model for <see cref="<#= typeName #>?"/>.
-    /// </summary>
-	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class Nullable<#= className #> : ScalarTypeModel
-    {
-        public Nullable<#= className #>() : base(typeof(<#=typeName#>?), sizeof(<#=typeName#>)) 
-        {
-        }
-
-        public override bool TryGetSpanComparerType(out Type comparerType)
-        {
-            comparerType = null;
-            return false;
-        }
-		
         protected override string InputBufferReadMethodName => nameof(<#= pair.readNameClass ?? "IInputBuffer" #>.Read<#= casedName #>);
 
         protected override string SpanWriterWriteMethodName => nameof(<#= pair.writeNameClass ?? "ISpanWriter" #>.Write<#= casedName #>);
@@ -105,7 +90,10 @@ namespace FlatSharp.TypeModel
 
 	public class ScalarTypeModelProvider : ITypeModelProvider
 	{
-        public bool TryCreateTypeModel(TypeModelContainer container, Type type, out ITypeModel typeModel)
+        public bool TryCreateTypeModel(
+			TypeModelContainer container, 
+			Type type, 
+            [NotNullWhen(true)] out ITypeModel? typeModel)
 		{
 			typeModel = null;
 		<#
@@ -118,13 +106,7 @@ namespace FlatSharp.TypeModel
 
 			if (type == typeof(<#= typeName #>))
 			{
-				typeModel = new <#= className #>(); 
-				return true;
-			}
-
-			if (type == typeof(<#= typeName #>?))
-			{
-				typeModel = new Nullable<#= className #>(); 
+				typeModel = new <#= className #>(container); 
 				return true;
 			}
 
@@ -133,7 +115,10 @@ namespace FlatSharp.TypeModel
 			return false;
 		}
 		
-        public bool TryResolveFbsAlias(TypeModelContainer container, string alias, out ITypeModel typeModel)
+        public bool TryResolveFbsAlias(
+			TypeModelContainer container, 
+			string alias, 
+            [NotNullWhen(true)] out ITypeModel? typeModel)
 		{
 			typeModel = null;
 			switch (alias)
@@ -151,13 +136,13 @@ namespace FlatSharp.TypeModel
 		<# 
 			} 
 		#>
-					typeModel = new <#= className #>();
+					typeModel = new <#= className #>(container);
 					break;
 
 		<# } #>
 			}
 
-			return typeModel != null;
+			return typeModel is not null;
 		}
 	}
 }

@@ -33,7 +33,7 @@ namespace FlatSharp
         /// </summary>
         public static StringSpanComparer Instance => default;
 
-        public StringSpanComparer(string notUsed)
+        public StringSpanComparer(string? notUsed)
         {
         }
 

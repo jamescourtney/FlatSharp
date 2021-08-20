@@ -19,7 +19,9 @@ namespace FlatSharp.TypeModel
     using System;
     using System.Collections.Generic;
     using System.Collections.Immutable;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
+    using System.Reflection;
 
     /// <summary>
     /// Defines a type model for an object that can be parsed and serialized to/from a FlatBuffer. While generally most useful to the 
@@ -91,9 +93,21 @@ namespace FlatSharp.TypeModel
         public abstract bool SerializesInline { get; }
 
         /// <summary>
+        /// Serialization method requires a <see cref="SerializationContext"/> argument.
+        /// </summary>
+        public virtual bool SerializeMethodRequiresContext => true;
+
+        /// <summary>
         /// Gets the maximum inline size of this item when padded for alignment, when stored in a table or vector.
         /// </summary>
         public virtual int MaxInlineSize => this.PhysicalLayout.Sum(x => x.InlineSize + SerializationHelpers.GetMaxPadding(x.Alignment));
+
+        /// <summary>
+        /// Most things don't have an explicit constructor.
+        /// </summary>
+        public virtual ConstructorInfo? PreferredSubclassConstructor => null;
+        
+        public abstract IEnumerable<ITypeModel> Children { get; }
 
         /// <summary>
         /// Validates a default value.
@@ -117,53 +131,41 @@ namespace FlatSharp.TypeModel
 
         public abstract CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context);
 
-        public abstract string GetThrowIfNullInvocation(string itemVariableName);
+        public abstract CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context);
 
-        public virtual string GetNonNullConditionExpression(string itemVariableName)
-        {
-            return $"!object.ReferenceEquals({itemVariableName}, null)";
-        }
+        public virtual string FormatDefaultValueAsLiteral(object? defaultValue) => this.GetTypeDefaultExpression();
 
-        public abstract void TraverseObjectGraph(HashSet<Type> seenTypes);
-
-        public virtual bool TryFormatDefaultValueAsLiteral(object defaultValue, out string literal)
+        public virtual bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
         {
             literal = null;
             return false;
         }
 
-        public virtual bool TryFormatStringAsLiteral(string value, out string literal)
-        {
-            literal = null;
-            return false;
-        }
-
-        public virtual bool TryGetUnderlyingVectorType(out ITypeModel typeModel)
+        public virtual bool TryGetUnderlyingVectorType([NotNullWhen(true)] out ITypeModel? typeModel)
         {
             typeModel = null;
             return false;
         }
 
-        public virtual bool TryGetSpanComparerType(out Type comparerType)
+        public virtual bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType)
         {
             comparerType = null;
             return false;
         }
 
-        public virtual bool TryGetTableKeyMember(out TableMemberModel tableMember)
+        public virtual bool TryGetTableKeyMember([NotNullWhen(true)] out TableMemberModel? tableMember)
         {
             tableMember = null;
             return false;
         }
 
-        public virtual TableMemberModel AdjustTableMember(TableMemberModel source)
+        public virtual void AdjustTableMember(TableMemberModel source)
         {
-            return source;
         }
 
-        public virtual string GetIsEqualToDefaultValueExpression(string variableName, string defaultValue)
+        public IEnumerable<Type> GetReferencedTypes()
         {
-            return $"{variableName} == {defaultValue}";
+            return new[] { this.ClrType };
         }
     }
 }

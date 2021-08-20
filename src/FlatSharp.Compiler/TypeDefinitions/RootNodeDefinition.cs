@@ -16,8 +16,6 @@
 
 namespace FlatSharp.Compiler
 {
-    using System.Collections.Generic;
-
     /// <summary>
     /// Defines the node at the root of the schema.
     /// </summary>
@@ -25,17 +23,14 @@ namespace FlatSharp.Compiler
     {
         public RootNodeDefinition(string fileName) : base("", null)
         {
-            this.Options = new HashSet<AttributeOption>();
             this.DeclaringFile = fileName;
         }
 
-        public override HashSet<AttributeOption> Options { get; }
-
-        public string InputHash { get; set; }
+        public string? InputHash { get; set; }
 
         protected override bool SupportsChildren => true;
 
-        protected override void OnWriteCode(CodeWriter writer, CodeWritingPass pass, string forFile, IReadOnlyDictionary<string, string> precompiledSerailizers)
+        protected override void OnWriteCode(CodeWriter writer, CompileContext context)
         {
             writer.AppendLine($@"
 //------------------------------------------------------------------------------
@@ -52,18 +47,55 @@ namespace FlatSharp.Compiler
             writer.AppendLine("using System.Collections.Generic;");
             writer.AppendLine("using System.Linq;");
             writer.AppendLine("using System.Runtime.CompilerServices;");
+            writer.AppendLine("using System.Threading;");
+            writer.AppendLine("using System.Threading.Tasks;");
             writer.AppendLine("using FlatSharp;");
             writer.AppendLine("using FlatSharp.Attributes;");
 
+            // disable obsolete warnings. Flatsharp allows marking default constructors
+            // as obsolete and we don't want to raise warnings for our own code.
+            writer.AppendLine("#pragma warning disable 0618");
+
+            // Test hook to check deeply for nullability violations.
+#if NET5_0_OR_GREATER
+            if (RoslynSerializerGenerator.EnableStrictValidation && 
+                context.Options.NullableWarnings == null)
+            {
+                context = context with 
+                { 
+                    Options = context.Options with 
+                    { 
+                        NullableWarnings = true
+                    } 
+                };
+            }
+#endif
+
+            if (context.Options.NullableWarnings == true)
+            {
+                writer.AppendLine("#nullable enable");
+            }
+            else
+            {
+                writer.AppendLine("#nullable enable annotations");
+            }
+
+            if (context.CompilePass > CodeWritingPass.Initialization && context.PreviousAssembly is not null)
+            {
+                context.FullyQualifiedCloneMethodName = CloneMethodsGenerator.GenerateCloneMethodsForAssembly(
+                    writer,
+                    context.Options,
+                    context.PreviousAssembly,
+                    context.TypeModelContainer);
+            }
+
             foreach (var child in this.Children.Values)
             {
-                child.WriteCode(writer, pass, forFile, precompiledSerailizers);
+                child.WriteCode(writer, context);
             }
-        }
 
-        protected override string OnGetCopyExpression(string source)
-        {
-            throw new System.NotImplementedException();
+            writer.AppendLine("#nullable restore");
+            writer.AppendLine("#pragma warning restore 0618");
         }
     }
 }

@@ -17,18 +17,34 @@
 namespace FlatSharp.Compiler
 {
     /// <summary>
-    /// Enumerates the values for code write pass. 
+    /// Enumerates the values for code write pass. FlatSharp compiler proceeds in several passes, getting
+    /// closer to the final output each time. This multi-phase approach is taken to allow the compiler
+    /// to only have a minimal understanding of the type system and the relationship between types. Instead,
+    /// it uses reflection on previous invocations to fine-tune its approach.
     /// </summary>
     internal enum CodeWritingPass
     {
         /// <summary>
-        /// Only writing out table and struct definitions.
+        /// Basic definitions of types and properties are written. Output code is reflectable but not functional.
         /// </summary>
-        FirstPass,
+        Initialization = 1,
 
         /// <summary>
-        /// Writing Serializers and RPC definitions.
+        /// Consumes the assembly from the initialization pass and adds the full details of property definitions. Output code has fully-defined FlatSharp
+        /// data contracts.
         /// </summary>
-        SecondPass
+        PropertyModeling = 2,
+
+        /// <summary>
+        /// Serializers are generated and included in the output.
+        /// </summary>
+        SerializerGeneration = 3,
+
+        /// <summary>
+        /// RPC definitions that consume the serializers are generated.
+        /// </summary>
+        RpcGeneration = 4,
+
+        LastPass = RpcGeneration,
     }
 }

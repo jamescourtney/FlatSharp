@@ -24,5 +24,9 @@ namespace FlatSharp.Attributes
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
     public class FlatBufferTableAttribute : Attribute
     {
+        /// <summary>
+        /// Specifies the file identifier for serialized tables. Must be precisely 4 ASCII characters.
+        /// </summary>
+        public string? FileIdentifier { get; set; }
     }
 }

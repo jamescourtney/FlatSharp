@@ -18,6 +18,7 @@ namespace FlatSharp.Unsafe
 {
     using System;
     using System.Buffers;
+    using System.ComponentModel;
     using System.Runtime.CompilerServices;
     using System.Text;
 
@@ -29,6 +30,11 @@ namespace FlatSharp.Unsafe
 
         public UnsafeArrayInputBuffer(ArraySegment<byte> memory)
         {
+            if (memory.Array is null)
+            {
+                throw new ArgumentException("ArraySegment had null array", nameof(memory));
+            }
+
             this.length = memory.Count;
             this.offset = memory.Offset;
             this.array = memory.Array;
@@ -45,7 +51,7 @@ namespace FlatSharp.Unsafe
 
         public int Length => this.length;
 
-        public ISharedStringReader SharedStringReader { get; set; }
+        public ISharedStringReader? SharedStringReader { get; set; }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte ReadByte(int offset)
@@ -230,14 +236,20 @@ namespace FlatSharp.Unsafe
         {
             return serializer.Parse(new Wrapper(this), offset);
         }
-        
-        private readonly struct Wrapper : IInputBuffer
+
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public readonly struct Wrapper : IInputBuffer
         {
             private readonly UnsafeArrayInputBuffer buffer;
 
-            public Wrapper(UnsafeArrayInputBuffer buffer) => this.buffer = buffer;
+            internal Wrapper(UnsafeArrayInputBuffer buffer) => this.buffer = buffer;
 
-            public ISharedStringReader SharedStringReader { get => this.buffer.SharedStringReader; set => this.buffer.SharedStringReader = value; }
+            public ISharedStringReader? SharedStringReader 
+            { 
+                get => this.buffer.SharedStringReader; 
+                set => this.buffer.SharedStringReader = value; 
+            }
+
             public int Length
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]

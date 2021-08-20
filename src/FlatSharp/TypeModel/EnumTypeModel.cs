@@ -20,6 +20,7 @@
     using System;
     using System.Collections.Generic;
     using System.Collections.Immutable;
+    using System.Diagnostics.CodeAnalysis;
     using System.Reflection;
 
     /// <summary>
@@ -31,6 +32,7 @@
 
         internal EnumTypeModel(Type type, TypeModelContainer typeModelContainer) : base(type, typeModelContainer)
         {
+            this.underlyingTypeModel = null!;
         }
 
         public override void Initialize()
@@ -45,12 +47,12 @@
             var attribute = enumType.GetCustomAttribute<FlatBufferEnumAttribute>();
             if (attribute == null)
             {
-                throw new InvalidFlatBufferDefinitionException($"Enums '{enumType.Name}' is not tagged with a [FlatBufferEnum] attribute.");
+                throw new InvalidFlatBufferDefinitionException($"Enum '{CSharpHelpers.GetCompilableTypeName(enumType)}' is not tagged with a [FlatBufferEnum] attribute.");
             }
 
             if (attribute.DeclaredUnderlyingType != Enum.GetUnderlyingType(enumType))
             {
-                throw new InvalidFlatBufferDefinitionException($"Enum '{enumType.Name}' declared underlying type '{attribute.DeclaredUnderlyingType}', but was actually '{Enum.GetUnderlyingType(enumType)}'");
+                throw new InvalidFlatBufferDefinitionException($"Enum '{CSharpHelpers.GetCompilableTypeName(enumType)}' declared underlying type '{attribute.DeclaredUnderlyingType}', but was actually '{CSharpHelpers.GetCompilableTypeName(Enum.GetUnderlyingType(enumType))}'");
             }
         }
 
@@ -72,14 +74,22 @@
 
         public override bool SerializesInline => true;
 
+        public override bool SerializeMethodRequiresContext => this.underlyingTypeModel.SerializeMethodRequiresContext;
+
+        public override IEnumerable<ITypeModel> Children => new[] { this.underlyingTypeModel };
+
         public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
         {
             Type underlyingType = this.underlyingTypeModel.ClrType;
             string underlyingTypeName = CSharpHelpers.GetCompilableTypeName(underlyingType);
 
-            return new CodeGeneratedMethod 
+            var innerContext = context with
+            {
+                ValueVariableName = $"({underlyingTypeName}){context.ValueVariableName}"
+            };
+
+            return new CodeGeneratedMethod($"return {innerContext.GetMaxSizeInvocation(underlyingType)};")
             { 
-                MethodBody = $"return {context.MethodNameMap[underlyingType]}(({underlyingTypeName}){context.ValueVariableName});",
                 IsMethodInline = true,
             };
         }
@@ -87,11 +97,10 @@
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
             Type underlyingType = this.underlyingTypeModel.ClrType;
-            string typeName = CSharpHelpers.GetCompilableTypeName(this.ClrType);
+            string body = $"return ({this.GetCompilableTypeName()}){context.GetParseInvocation(underlyingType)};";
 
-            return new CodeGeneratedMethod
+            return new CodeGeneratedMethod(body)
             {
-                MethodBody = $"return ({typeName}){context.MethodNameMap[underlyingType]}({context.InputBufferVariableName}, {context.OffsetVariableName});",
                 IsMethodInline = true,
             };
         }
@@ -101,40 +110,52 @@
             Type underlyingType = this.underlyingTypeModel.ClrType;
             string underlyingTypeName = CSharpHelpers.GetCompilableTypeName(underlyingType);
 
-            return new CodeGeneratedMethod
+            var innerContext = context with
             {
-                MethodBody = $"{context.MethodNameMap[underlyingType]}({context.SpanWriterVariableName}, {context.SpanVariableName}, ({underlyingTypeName}){context.ValueVariableName}, {context.OffsetVariableName}, {context.SerializationContextVariableName});",
+                ValueVariableName = $"({underlyingTypeName}){context.ValueVariableName}"
+            };
+
+            return new CodeGeneratedMethod($"{innerContext.GetSerializeInvocation(underlyingType)};")
+            {
                 IsMethodInline = true,
             };
         }
 
-        public override void TraverseObjectGraph(HashSet<Type> seenTypes)
+        public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
         {
-            seenTypes.Add(this.ClrType);
-            seenTypes.Add(Enum.GetUnderlyingType(this.ClrType));
-        }
-
-        public override string GetThrowIfNullInvocation(string itemVariableName)
-        {
-            // Enums are value types.
-            return string.Empty;
-        }
-
-        public override string GetNonNullConditionExpression(string itemVariableName)
-        {
-            // Enums are value types.
-            return "true";
-        }
-
-        public override bool TryFormatDefaultValueAsLiteral(object defaultValue, out string literal)
-        {
-            if (this.underlyingTypeModel.TryFormatDefaultValueAsLiteral(Convert.ChangeType(defaultValue, this.underlyingTypeModel.ClrType), out literal))
+            return new CodeGeneratedMethod($"return {context.ItemVariableName};")
             {
-                literal = $"({CSharpHelpers.GetCompilableTypeName(this.ClrType)}){literal}";
-                return true;
+                IsMethodInline = true,
+            };
+        }
+
+        public override string FormatDefaultValueAsLiteral(object? defaultValue)
+        {
+            if (defaultValue is not null)
+            {
+                object underlyingValue = Convert.ChangeType(defaultValue, this.underlyingTypeModel.ClrType);
+                return $"({this.GetCompilableTypeName()}){this.underlyingTypeModel.FormatDefaultValueAsLiteral(underlyingValue)}";
             }
 
-            return false;
+            return base.FormatDefaultValueAsLiteral(defaultValue);
+        }
+
+        public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
+        {
+            object result;
+            try
+            {
+                // TryParse not available non-generically.
+                result = Enum.Parse(this.ClrType, value, false);
+            }
+            catch
+            {
+                literal = null;
+                return false;
+            }
+
+            literal = $"{this.GetCompilableTypeName()}.{result}";
+            return true;
         }
 
         /// <summary>

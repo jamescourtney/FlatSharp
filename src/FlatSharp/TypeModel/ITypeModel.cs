@@ -19,6 +19,8 @@ namespace FlatSharp.TypeModel
     using System;
     using System.Collections.Generic;
     using System.Collections.Immutable;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Reflection;
 
     /// <summary>
     /// A type model. Declares both properties of a type and how to serialize/parse that type.
@@ -78,8 +80,26 @@ namespace FlatSharp.TypeModel
 
         /// <summary>
         /// When true, indicates that this type model serializes directly at the offset provided (ie, it does not write a uoffset).
+        /// This is the equivalent of a FlatBuffer "value" type.
         /// </summary>
         bool SerializesInline { get; }
+
+        /// <summary>
+        /// Indicates if the method returned by <see cref="CreateSerializeMethodBody(SerializationCodeGenContext)"/> requires
+        /// a <see cref="SerializationContext"/> parameter.
+        /// </summary>
+        bool SerializeMethodRequiresContext { get; }
+
+        /// <summary>
+        /// Gets the direct descendants of this type model.
+        /// </summary>
+        IEnumerable<ITypeModel> Children { get; }
+
+        /// <summary>
+        /// Indicates the constructor that subclasses should use. This constructor must have either 0 parameters or 1 parameter
+        /// that accepts an instance of <see cref="FlatSharpDeserializationContext"/>.
+        /// </summary>
+        ConstructorInfo? PreferredSubclassConstructor { get; }
 
         /// <summary>
         /// Validates a default value.
@@ -103,59 +123,47 @@ namespace FlatSharp.TypeModel
         CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context);
 
         /// <summary>
-        /// Returns an expression that asserts the given item is non-null. 
+        /// Implements a method to clone the given instance of the type model.
         /// </summary>
-        /// <param name="itemVariableName">The variable name of the item.</param>
-        /// <returns>An expression that tests for null (ie, "item == null").</returns>
-        string GetThrowIfNullInvocation(string itemVariableName);
+        CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context);
 
         /// <summary>
-        /// Returns a boolean expression testing if the given item is null or not.
+        /// Formats the given default value into a C# literal. If the default value is null, it indicates that
+        /// there is no default value and the type default should be returned.
         /// </summary>
-        /// <param name="itemVariableName">The variable name of the item.</param>
-        string GetNonNullConditionExpression(string itemVariableName);
-
-        /// <summary>
-        /// Returns a boolean expression that returns true when the given variable is equal to the default value.
-        /// </summary>
-        string GetIsEqualToDefaultValueExpression(string variableName, string defaultValue);
-
-        /// <summary>
-        /// Attempts to format the given default value into a C# literal. Not all implementations support this.
-        /// </summary>
-        bool TryFormatDefaultValueAsLiteral(object defaultValue, out string literal);
-
-        /// <summary>
-        /// Travses the object graph to identify types needed to build a serializer.
-        /// </summary>
-        void TraverseObjectGraph(HashSet<Type> seenTypes);
+        string FormatDefaultValueAsLiteral(object? defaultValue);
 
         /// <summary>
         /// Attempts to format the given string as a literal of this type. Not all implementations support this.
         /// </summary>
-        bool TryFormatStringAsLiteral(string value, out string literal);
+        bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal);
 
         /// <summary>
         /// For vectors, retrieves the inner type model. Other types return false.
         /// </summary>
-        bool TryGetUnderlyingVectorType(out ITypeModel typeModel);
+        bool TryGetUnderlyingVectorType([NotNullWhen(true)] out ITypeModel? typeModel);
 
         /// <summary>
         /// Attempts to get the type implementing <see cref="ISpanComparer"/> for the type model.
         /// </summary>
-        bool TryGetSpanComparerType(out Type comparerType);
+        bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType);
 
         /// <summary>
         /// Attempts to get the key of the table. Will return false when there is no key or the type model does not represent a table.
         /// </summary>
-        bool TryGetTableKeyMember(out TableMemberModel tableMember);
+        bool TryGetTableKeyMember([NotNullWhen(true)] out TableMemberModel? tableMember);
+
+        /// <summary>
+        /// Returns any additional types that must have their assemblies referenced.
+        /// </summary>
+        IEnumerable<Type> GetReferencedTypes();
 
         /// <summary>
         /// Invoked when this type model is being serialized as part of a table. Provides an opportunity to override or supplement
         /// the declared configuration in the table. This method will not be invoked
         /// when the type is serialized in other contexts, such as vectors and structs.
         /// </summary>
-        TableMemberModel AdjustTableMember(TableMemberModel source);
+        void AdjustTableMember(TableMemberModel source);
 
         /// <summary>
         /// Initializes and validates the type model.

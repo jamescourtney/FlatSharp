@@ -20,8 +20,7 @@ namespace FlatSharp
     using System.Collections;
     using System.Collections.Generic;
     using System.ComponentModel;
-
-#nullable enable
+    using System.Diagnostics.CodeAnalysis;
 
     /// <summary>
     /// An implementation of IIndexedVector for use after deserializing an object. This class is not intended to be used
@@ -30,6 +29,7 @@ namespace FlatSharp
     [EditorBrowsable(EditorBrowsableState.Never)]
     public class FlatBufferIndexedVector<TKey, TValue> : IIndexedVector<TKey, TValue>
         where TValue : class
+        where TKey : notnull
     {
         private readonly IReadOnlyList<TValue> vector;
 
@@ -44,7 +44,7 @@ namespace FlatSharp
             {
                 if (this.TryGetValue(key, out var value))
                 {
-                    return value!;
+                    return value;
                 }
 
                 throw new KeyNotFoundException();
@@ -88,10 +88,10 @@ namespace FlatSharp
             return false;
         }
 
-        public bool TryGetValue(TKey key, out TValue? value)
+        public bool TryGetValue(TKey key, [NotNullWhen(true)] out TValue? value)
         {
             value = this.vector.BinarySearchByFlatBufferKey(key);
-            return !object.ReferenceEquals(value, null);
+            return value is not null;
         }
 
         public bool ContainsKey(TKey key)

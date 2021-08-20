@@ -1,34 +1,39 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <OutputType>exe</OutputType>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <FlatSharpSchema Include="Example2-SchemaFiles\SchemaFilesExample.fbs" />
-    <FlatSharpSchema Include="Example3-SchemaFiles2\SchemaFilesExample2.fbs" />
-    <FlatSharpSchema Include="Example4-IOOptions\IOOptionsExample.fbs" />
-    <FlatSharpSchema Include="Example5-gRPC\GrpcExample.fbs" />
-    <FlatSharpSchema Include="Example6-CopyConstructors\CopyConstructorsExample.fbs" />
-    <FlatSharpSchema Include="Example7-Includes\A.fbs" />
-    <FlatSharpSchema Include="Example7-Includes\Subdirectory\B.fbs" />
-    <FlatSharpSchema Include="Example7-Includes\IncludesExample.fbs" />
-    <FlatSharpSchema Include="Example8-SortedVectors\SortedVectors.fbs" />
-    <FlatSharpSchema Include="Example9-Unions\Unions.fbs" />
+    <FlatSharpSchema Include="Example02-SchemaFiles\SchemaFilesExample.fbs" />
+    <FlatSharpSchema Include="Example03-SchemaFiles2\SchemaFilesExample2.fbs" />
+    <FlatSharpSchema Include="Example04-IOOptions\IOOptionsExample.fbs" />
+    <FlatSharpSchema Include="Example05-gRPC\GrpcExample.fbs" />
+    <FlatSharpSchema Include="Example06-CopyConstructors\CopyConstructorsExample.fbs" />
+    <FlatSharpSchema Include="Example07-Includes\A.fbs" />
+    <FlatSharpSchema Include="Example07-Includes\Subdirectory\B.fbs" />
+    <FlatSharpSchema Include="Example07-Includes\IncludesExample.fbs" />
+    <FlatSharpSchema Include="Example08-SortedVectors\SortedVectors.fbs" />
+    <FlatSharpSchema Include="Example09-Unions\Unions.fbs" />
     <FlatSharpSchema Include="Example10-SharedStrings\SharedStrings.fbs" />
     <FlatSharpSchema Include="Example11-IndexedVectors\IndexedVectors.fbs" />
+    <FlatSharpSchema Include="Example13-StructVectors\StructVectors.fbs" />
+    <FlatSharpSchema Include="Example14-WriteThrough\WriteThrough.fbs" />
+    <FlatSharpSchema Include="Example15-StructMarshalling\StructMarshalling.fbs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FlatSharp" Version="4.0.1" />
-    <PackageReference Include="FlatSharp.Compiler" Version="4.0.1">
+    <PackageReference Include="FlatSharp" Version="5.6.0" />
+    <PackageReference Include="FlatSharp.Compiler" Version="5.6.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="FlatSharp.Runtime" Version="4.0.1" />
-    <PackageReference Include="FlatSharp.Unsafe" Version="4.0.1" />
-    <PackageReference Include="Grpc" Version="2.32.0" />
+    <PackageReference Include="FlatSharp.Runtime" Version="5.6.0" />
+    <PackageReference Include="FlatSharp.Unsafe" Version="5.6.0" />
+    <PackageReference Include="Grpc" Version="2.38.1" />
   </ItemGroup>
 
 </Project>

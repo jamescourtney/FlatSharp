@@ -19,6 +19,7 @@ namespace FlatSharp
     using System;
     using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
+    using System.IO;
     using System.Runtime.CompilerServices;
 
     /// <summary>
@@ -56,7 +57,7 @@ namespace FlatSharp
             checked
             {
                 var reader = buffer.SharedStringReader;
-                if (reader != null)
+                if (reader is not null)
                 {
                     int uoffset = offset + buffer.ReadUOffset(offset);
                     return reader.ReadSharedString(buffer, uoffset);
@@ -100,51 +101,38 @@ namespace FlatSharp
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static void ThrowUOffsetLessThanMinimumException(uint uoffset)
         {
-            throw new IndexOutOfRangeException($"Decoded uoffset_t had value less than {sizeof(uint)}. Value = {uoffset}");
+            throw new InvalidDataException($"FlatBuffer was in an invalid format: Decoded uoffset_t had value less than {sizeof(uint)}. Value = {uoffset}");
         }
 
         /// <summary>
-        /// Traverses a vtable to find the absolute offset of a table field.
+        /// Validates a vtable and reads the initial bytes of a vtable.
         /// </summary>
-        public static int GetAbsoluteTableFieldLocation<TBuffer>(this TBuffer buffer, int tableOffset, int index) where TBuffer : IInputBuffer
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void InitializeVTable<TBuffer>(
+            this TBuffer buffer, 
+            int tableOffset,
+            out int vtableOffset,
+            out int maxVTableIndex) where TBuffer : IInputBuffer
         {
             checked
             {
-                int vtableOffset = tableOffset - buffer.ReadInt(tableOffset);
-                int vtableLength = buffer.ReadUShort(vtableOffset);
+                vtableOffset = tableOffset - buffer.ReadInt(tableOffset);
+                ushort vtableLength = buffer.ReadUShort(vtableOffset);
 
-                // VTable structure:
-                // ushort: vtable length
-                // ushort: table length
-                // ushort: index 0 offset
-                // ushort: index 1 offset
-                // etc
                 if (vtableLength < 4)
                 {
                     ThrowInvalidVtableException();
                 }
 
-                // the max index is ((vtableLength - 4) / 2) - 1
-                if (index >= (vtableLength - 4) / 2)
-                {
-                    // Not present, return 0. 0 is an indication that that field is not present.
-                    return 0;
-                }
-
-                ushort relativeOffset = buffer.ReadUShort(vtableOffset + 2 * (2 + index));
-                if (relativeOffset == 0)
-                {
-                    return 0;
-                }
-
-                return tableOffset + relativeOffset;
+                // Can be negative when all indexes are absent. This is by design.
+                maxVTableIndex = (vtableLength / 2) - 3;
             }
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static void ThrowInvalidVtableException()
         {
-            throw new IndexOutOfRangeException("VTable was not long enough to be valid.");
+            throw new InvalidDataException("FlatBuffer was in an invalid format: VTable was not long enough to be valid.");
         }
 
         // Seems to break JIT in .NET Core 2.1. Framework 4.7 and Core 3.1 work as expected.

@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\common.props" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <LangVersion>9.0</LangVersion>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <DebugType>pdbonly</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <Nullable>annotations</Nullable>
+    <ValidateExecutableReferencesMatchSelfContained>false</ValidateExecutableReferencesMatchSelfContained>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Benchmark.fbs.generated.cs" />
+    <Compile Include="Benchmark.fbs.generated.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" Version="0.12.1" />
+    <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.12.1" />
+    <PackageReference Include="Grpc" Version="2.27.0" />
+    <PackageReference Include="System.IO.FileSystem.Primitives" Version="4.3.0" />
+    <PackageReference Include="System.Runtime.InteropServices" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\FlatSharp.Compiler\FlatSharp.Compiler.csproj" />
+    <ProjectReference Include="..\..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
+    <ProjectReference Include="..\..\FlatSharp.Unsafe\FlatSharp.Unsafe.csproj" />
+    <ProjectReference Include="..\..\FlatSharp\FlatSharp.csproj" />
+  </ItemGroup>
+
+  <Target Name="FBS" BeforeTargets="BeforeBuild">
+    <Exec Command="..\..\FlatSharp.Compiler\bin\$(Configuration)\net5.0\FlatSharp.Compiler.exe -i Benchmark.fbs -o . --nullable-warnings true" />
+  </Target>
+</Project>

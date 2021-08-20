@@ -33,7 +33,7 @@ namespace FlatSharp
         private readonly int itemSize;
         private readonly int count;
 
-        public FlatBufferVector(
+        protected FlatBufferVector(
             TInputBuffer memory,
             int offset,
             int itemSize)
@@ -82,43 +82,44 @@ namespace FlatSharp
             throw new NotMutableException("FlatBufferVector does not support clearing.");
         }
 
-        public bool Contains(T item)
+        public bool Contains(T? item)
         {
             return this.IndexOf(item) >= 0;
         }
 
-        public void CopyTo(T[] array, int arrayIndex)
+        public void CopyTo(T[]? array, int arrayIndex)
         {
+            if (array is null)
+            {
+                throw new ArgumentNullException(nameof(array));
+            }
+
             var count = this.count;
             var memory = this.memory;
             var offset = this.offset;
             var itemSize = this.itemSize;
 
-            if (array.Length == count)
+            for (int i = 0; i < count; ++i)
             {
-                // special case: write code where the compiler can elide the 
-                // bounds check on the array.
-                for (int i = 0; i < array.Length; ++i)
-                {
-                    array[i] = this.ParseItem(memory, offset);
-                    offset = checked(offset + itemSize);
-                }
-            }
-            else
-            {
-                for (int i = 0; i < count; ++i)
-                {
-                    array[arrayIndex + i] = this.ParseItem(memory, offset);
-                    offset = checked(offset + itemSize);
-                }
+                array[arrayIndex + i] = this.ParseItem(memory, offset);
+                offset = checked(offset + itemSize);
             }
         }
 
         public T[] ToArray()
         {
-            int count = this.count;
-            T[] array = new T[count];
-            this.CopyTo(array, 0);
+            T[] array = new T[this.count];
+
+            var offset = this.offset;
+            var itemSize = this.itemSize;
+            var memory = this.memory;
+
+            for (int i = 0; i < array.Length; ++i)
+            {
+                array[i] = this.ParseItem(memory, offset);
+                offset = checked(offset + itemSize);
+            }
+
             return array;
         }
 
@@ -131,7 +132,7 @@ namespace FlatSharp
             }
         }
 
-        public int IndexOf(T item)
+        public int IndexOf(T? item)
         {
             // FlatBuffer vectors are not allowed to have null by definition.
             if (item is null)
@@ -159,7 +160,9 @@ namespace FlatSharp
 
         public List<T> FlatBufferVectorToList()
         {
-            return new List<T>(this);
+            var list = new List<T>(this.count);
+            list.AddRange(this);
+            return list;
         }
 
         public void Insert(int index, T item)

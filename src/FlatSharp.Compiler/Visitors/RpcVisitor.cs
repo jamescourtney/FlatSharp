@@ -23,34 +23,47 @@ namespace FlatSharp.Compiler
     /// <summary>
     /// Parses an enum definition.
     /// </summary>
-    internal class RpcVisitor : FlatBuffersBaseVisitor<RpcDefinition>
+    internal class RpcVisitor : FlatBuffersBaseVisitor<RpcDefinition?>
     {
         private readonly BaseSchemaMember parent;
 
-        private RpcDefinition rpcDefinition;
+        private RpcDefinition? rpcDefinition;
 
         public RpcVisitor(BaseSchemaMember parent)
         {
             this.parent = parent;
         }
 
-        public override RpcDefinition VisitRpc_decl([NotNull] FlatBuffersParser.Rpc_declContext context)
+        public override RpcDefinition? VisitRpc_decl([NotNull] FlatBuffersParser.Rpc_declContext context)
         {
             this.rpcDefinition = new RpcDefinition(context.IDENT().GetText(), this.parent);
+            var metadata = new MetadataVisitor().Visit(context.metadata());
+
+            if (metadata.TryGetValue(MetadataKeys.RpcInterface, out string? value))
+            {
+                if (string.IsNullOrEmpty(value))
+                {
+                    value = $"I{this.rpcDefinition.Name}";
+                }
+
+                this.rpcDefinition.GeneratedInterfaceName = value;
+            }
+
             base.VisitRpc_decl(context);
             return this.rpcDefinition;
         }
 
-        public override RpcDefinition VisitRpc_method([NotNull] FlatBuffersParser.Rpc_methodContext context)
+        public override RpcDefinition? VisitRpc_method([NotNull] FlatBuffersParser.Rpc_methodContext context)
         {
-            var idents = context.IDENT();
-            string name = idents[0].GetText();
-            string requestType = idents[1].GetText();
-            string responseType = idents[2].GetText();
-            Dictionary<string, string> metadata = new MetadataVisitor().Visit(context.metadata());
+            FlatSharpInternal.Assert(this.rpcDefinition != null, "Failed to initialize RPC definition");
+
+            string name = context.IDENT().GetText();
+            string requestType = context.type()[0].GetText();
+            string responseType = context.type()[1].GetText();
+            Dictionary<string, string?> metadata = new MetadataVisitor().Visit(context.metadata());
 
             var streamingType = RpcStreamingType.Unary;
-            if (metadata.TryGetValue("streaming", out string value))
+            if (metadata.TryGetValue("streaming", out string? value))
             {
                 streamingType = ParseStreamingType(value);
             }
@@ -59,7 +72,7 @@ namespace FlatSharp.Compiler
             return null;
         }
 
-        private static RpcStreamingType ParseStreamingType(string type)
+        private static RpcStreamingType ParseStreamingType(string? type)
         {
             if (!Enum.TryParse<RpcStreamingType>(type, true, out var result))
             {

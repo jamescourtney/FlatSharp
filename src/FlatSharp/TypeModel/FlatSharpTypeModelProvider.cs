@@ -18,6 +18,7 @@ namespace FlatSharp.TypeModel
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Reflection;
     using System.Runtime.InteropServices;
     using FlatSharp.Attributes;
@@ -30,13 +31,13 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// Tries to resolve an FBS alias into a type model.
         /// </summary>
-        public bool TryResolveFbsAlias(TypeModelContainer container, string alias, out ITypeModel typeModel)
+        public bool TryResolveFbsAlias(TypeModelContainer container, string alias, [NotNullWhen(true)] out ITypeModel? typeModel)
         {
             typeModel = null;
 
             if (alias == "string")
             {
-                typeModel = new StringTypeModel();
+                typeModel = new StringTypeModel(container);
                 return true;
             }
 
@@ -46,23 +47,31 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// Tries to create a type model based on the given type.
         /// </summary>
-        public bool TryCreateTypeModel(TypeModelContainer container, Type type, out ITypeModel typeModel)
+        public bool TryCreateTypeModel(TypeModelContainer container, Type type, [NotNullWhen(true)] out ITypeModel? typeModel)
         {
             if (type == typeof(string))
             {
-                typeModel = new StringTypeModel();
+                typeModel = new StringTypeModel(container);
                 return true;
             }
 
             if (type == typeof(SharedString))
             {
-                typeModel = new SharedStringTypeModel();
+                typeModel = new SharedStringTypeModel(container);
                 return true;
             }
 
             if (type.IsArray)
             {
-                typeModel = new ArrayVectorTypeModel(type, container);
+                if (typeof(IFlatBufferUnion).IsAssignableFrom(type.GetElementType()))
+                {
+                    typeModel = new ArrayVectorOfUnionTypeModel(type, container);
+                }
+                else
+                {
+                    typeModel = new ArrayVectorTypeModel(type, container);
+                }
+
                 return true;
             }
 
@@ -71,7 +80,15 @@ namespace FlatSharp.TypeModel
                 var genericDef = type.GetGenericTypeDefinition();
                 if (genericDef == typeof(IList<>) || genericDef == typeof(IReadOnlyList<>))
                 {
-                    typeModel = new ListVectorTypeModel(type, container);
+                    if (typeof(IFlatBufferUnion).IsAssignableFrom(type.GetGenericArguments()[0]))
+                    {
+                        typeModel = new ListVectorOfUnionTypeModel(type, container);
+                    }
+                    else
+                    {
+                        typeModel = new ListVectorTypeModel(type, container);
+                    }
+
                     return true;
                 }
 
@@ -88,7 +105,7 @@ namespace FlatSharp.TypeModel
                 }
             }
 
-            if (typeof(IUnion).IsAssignableFrom(type))
+            if (typeof(IFlatBufferUnion).IsAssignableFrom(type))
             {
                 typeModel = new UnionTypeModel(type, container);
                 return true;
@@ -100,21 +117,26 @@ namespace FlatSharp.TypeModel
                 return true;
             }
 
-            if (Nullable.GetUnderlyingType(type) != null)
+            var underlyingType = Nullable.GetUnderlyingType(type);
+            if (underlyingType is not null)
             {
-                typeModel = new NullableValueTypeTypeModel(type, container);
+                typeModel = new NullableTypeModel(container, type);
                 return true;
             }
 
             var tableAttribute = type.GetCustomAttribute<FlatBufferTableAttribute>();
-            if (tableAttribute != null)
+            var structAttribute = type.GetCustomAttribute<FlatBufferStructAttribute>();
+
+            if (tableAttribute is not null && structAttribute is not null)
+            {
+                throw new InvalidFlatBufferDefinitionException($"Type '{CSharpHelpers.GetCompilableTypeName(type)}' is declared as both [FlatBufferTable] and [FlatBufferStruct].");
+            }
+            else if (tableAttribute != null)
             {
                 typeModel = new TableTypeModel(type, container);
                 return true;
             }
-
-            var structAttribute = type.GetCustomAttribute<FlatBufferStructAttribute>();
-            if (structAttribute != null)
+            else if (structAttribute != null)
             {
                 if (!type.IsValueType)
                 {
