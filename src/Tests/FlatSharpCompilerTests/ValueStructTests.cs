@@ -17,6 +17,7 @@
 namespace FlatSharpTests.Compiler
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
     using System.Runtime.InteropServices;
@@ -53,7 +54,7 @@ namespace FlatSharpTests.Compiler
         {
             string schema = $@"
                 namespace ValueStructTests;
-                table Table ({MetadataKeys.SerializerKind}:""GreedyMutable"") {{ Struct:[Struct]; }}
+                table Table ({MetadataKeys.SerializerKind}:""GreedyMutable"") {{ StructVector:[Struct]; Struct : Struct; }}
                 struct Struct ({MetadataKeys.ValueStruct}) {{ A:int; B : Inner; C : ubyte; }} 
                 struct Inner ({MetadataKeys.ValueStruct}) {{ B : ulong; }}
                 ";
@@ -72,6 +73,12 @@ namespace FlatSharpTests.Compiler
 
             Assert.True(structType.IsExplicitLayout);
             Assert.True(innerStructType.IsExplicitLayout);
+
+            PropertyInfo structVectorProperty = tableType.GetProperty("StructVector");
+            Assert.Equal(typeof(IList<>).MakeGenericType(structType), structVectorProperty.PropertyType);
+
+            PropertyInfo structProperty = tableType.GetProperty("Struct");
+            Assert.Equal(typeof(Nullable<>).MakeGenericType(structType), structProperty.PropertyType);
 
             FieldInfo structA = structType.GetField("A");
             Assert.Equal(typeof(int), structA.FieldType);
