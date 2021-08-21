@@ -81,7 +81,7 @@
         public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
         {
             Type underlyingType = this.underlyingTypeModel.ClrType;
-            string underlyingTypeName = CSharpHelpers.GetCompilableTypeName(underlyingType);
+            string underlyingTypeName = CSharpHelpers.GetGlobalCompilableTypeName(underlyingType);
 
             var innerContext = context with
             {
@@ -108,7 +108,7 @@
         public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
         {
             Type underlyingType = this.underlyingTypeModel.ClrType;
-            string underlyingTypeName = CSharpHelpers.GetCompilableTypeName(underlyingType);
+            string underlyingTypeName = CSharpHelpers.GetGlobalCompilableTypeName(underlyingType);
 
             var innerContext = context with
             {

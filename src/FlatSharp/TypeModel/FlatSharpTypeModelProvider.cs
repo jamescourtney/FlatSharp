@@ -20,7 +20,7 @@ namespace FlatSharp.TypeModel
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Reflection;
-
+    using System.Runtime.InteropServices;
     using FlatSharp.Attributes;
 
     /// <summary>
@@ -131,21 +131,27 @@ namespace FlatSharp.TypeModel
             {
                 throw new InvalidFlatBufferDefinitionException($"Type '{CSharpHelpers.GetCompilableTypeName(type)}' is declared as both [FlatBufferTable] and [FlatBufferStruct].");
             }
-            else if (tableAttribute != null)
+            else if (tableAttribute is not null)
             {
                 typeModel = new TableTypeModel(type, container);
                 return true;
             }
-            else if (structAttribute != null)
+            else if (structAttribute is not null)
             {
-                typeModel = new StructTypeModel(type, container);
+                if (type.IsValueType)
+                {
+                    typeModel = new ValueStructTypeModel(type, container);
+                }
+                else
+                {
+                    typeModel = new StructTypeModel(type, container);
+                }
+
                 return true;
             }
-            else
-            {
-                typeModel = null;
-                return false;
-            }
+
+            typeModel = null;
+            return false;
         }
     }
 }

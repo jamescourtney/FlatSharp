@@ -86,6 +86,11 @@ namespace FlatSharp.Compiler
         public const string FileIdentifier = "fs_fileId";
 
         /// <summary>
+        /// Indicates that a struct is to be generated as a value type.
+        /// </summary>
+        public const string ValueStruct = "fs_valueStruct";
+
+        /// <summary>
         /// Indicates that a single table field should be force-written, or when declared on a table
         /// that all fields should be force written. Force Write refers to writing a value even if it
         /// matches the default.

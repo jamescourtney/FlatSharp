@@ -167,7 +167,7 @@
             if (this.IsRequired)
             {
                 string message = $"Table property '{this.FriendlyName}' is marked as required, but was missing from the buffer.";
-                return $"throw new {typeof(System.IO.InvalidDataException).GetCompilableTypeName()}(\"{message}\");";
+                return $"throw new {typeof(System.IO.InvalidDataException).GetGlobalCompilableTypeName()}(\"{message}\");";
             }
             else
             {

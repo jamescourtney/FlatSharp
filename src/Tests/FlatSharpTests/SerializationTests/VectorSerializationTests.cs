@@ -255,6 +255,47 @@ namespace FlatSharpTests
         }
 
         [Fact]
+        public void UnalignedStruct_Value5Byte()
+        {
+            var root = new RootTable<ValueFiveByteStruct[]>
+            {
+                Vector = new[]
+                {
+                    new ValueFiveByteStruct { Byte = 1, Int = 1 },
+                    new ValueFiveByteStruct { Byte = 2, Int = 2 },
+                    new ValueFiveByteStruct { Byte = 3, Int = 3 },
+                },
+            };
+
+            Span<byte> target = new byte[10240];
+            int offset = FlatBufferSerializer.Default.Serialize(root, target);
+            target = target.Slice(0, offset);
+
+            byte[] expectedResult =
+            {
+                4, 0, 0, 0,          // offset to table start
+                248, 255, 255, 255,  // soffset to vtable (-8)
+                12, 0, 0, 0,         // uoffset_t to vector
+                6, 0,                // vtable length
+                8, 0,                // table length
+                4, 0,                // offset of index 0 field
+                0, 0,                // padding to 4-byte alignment
+                3, 0, 0, 0,          // vector length
+                1, 0, 0, 0,          // index 0.Int
+                1,                   // index 0.Byte
+                0, 0, 0,             // padding
+                2, 0, 0, 0,          // index 1.Int
+                2,                   // index 1.Byte
+                0, 0, 0,             // padding
+                3, 0, 0, 0,          // index2.Int
+                3,                   // Index2.byte
+                0, 0, 0,             // padding
+            };
+
+            Assert.True(expectedResult.AsSpan().SequenceEqual(target));
+        }
+
+        [Fact]
         public void UnalignedStruct_9Byte()
         {
             var root = new RootTable2<NineByteStruct[]>
@@ -263,6 +304,47 @@ namespace FlatSharpTests
                 {
                     new NineByteStruct { Byte = 1, Long = 1 },
                     new NineByteStruct { Byte = 2, Long = 2 },
+                },
+            };
+
+            Span<byte> target = new byte[10240];
+            int offset = FlatBufferSerializer.Default.Serialize(root, target);
+            target = target.Slice(0, offset);
+
+            byte[] expectedResult =
+            {
+                4, 0, 0, 0,                     // offset to table start
+                246, 255, 255, 255,             // soffset to vtable (-10)
+                20, 0, 0, 0,                    // uoffset_t to vector
+                0,                              // alignment imp
+                0,                              // padding
+                8, 0,                           // vtable length
+                9, 0,                           // table length
+                8, 0,                           // offset to index 0 field
+                4, 0,                           // offset of index 1 field
+
+                0, 0, 0, 0, 0, 0,               // padding to 8 byte alignment for struct.
+                2, 0, 0, 0,                     // vector length
+                1, 0, 0, 0, 0, 0, 0, 0,         // index 0.Long
+                1,                              // index 0.Byte
+                0, 0, 0, 0, 0, 0, 0,            // padding
+                2, 0, 0, 0, 0, 0, 0, 0,         // index 1.Long
+                2,                              // index 1.Byte
+                0, 0, 0, 0, 0, 0, 0,            // padding
+            };
+
+            Assert.True(expectedResult.AsSpan().SequenceEqual(target));
+        }
+
+        [Fact]
+        public void UnalignedStruct_Value9Byte()
+        {
+            var root = new RootTable2<ValueNineByteStruct[]>
+            {
+                Vector = new[]
+                {
+                    new ValueNineByteStruct { Byte = 1, Long = 1 },
+                    new ValueNineByteStruct { Byte = 2, Long = 2 },
                 },
             };
 
@@ -884,6 +966,14 @@ namespace FlatSharpTests
 
             [FlatBufferItem(1)]
             public virtual byte Byte { get; set; }
+        }
+      
+        [FlatBufferStruct, StructLayout(LayoutKind.Explicit, Size = 9)]
+        public struct ValueNineByteStruct
+        {
+            [FieldOffset(0)] public long Long;
+
+            [FieldOffset(8)] public byte Byte;
         }
     }
 }

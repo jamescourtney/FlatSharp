@@ -25,23 +25,21 @@ namespace FlatSharp.Compiler
     using System.Reflection;
     using System.Runtime.ExceptionServices;
 
-    internal class TableOrStructDefinition : BaseSchemaMember
+    internal class TableOrStructDefinition : BaseTableOrStructDefinition
     {
         internal const string SerializerPropertyName = "Serializer";
 
         public TableOrStructDefinition(
             string name,
+            bool isTable,
             BaseSchemaMember parent) : base(name, parent)
         {
+            this.IsTable = isTable;
         }
 
-        public List<FieldDefinition> Fields { get; set; } = new List<FieldDefinition>();
+        public bool IsTable { get; }
 
-        public List<StructVectorDefinition> StructVectors { get; set; } = new List<StructVectorDefinition>();
-
-        public bool IsTable { get; set; }
-
-        public FlatBufferSchemaType SchemaType =>
+        public override FlatBufferSchemaType SchemaType =>
             this.IsTable ? FlatBufferSchemaType.Table : FlatBufferSchemaType.Struct;
 
         public bool? NonVirtual { get; set; }
@@ -57,6 +55,64 @@ namespace FlatSharp.Compiler
         public FlatBufferDeserializationOption? RequestedSerializer { get; set; }
 
         protected override bool SupportsChildren => false;
+
+        public override void ApplyMetadata(Dictionary<string, string?> metadata)
+        {
+            this.NonVirtual = metadata.ParseNullableBooleanMetadata(MetadataKeys.NonVirtualProperty, MetadataKeys.NonVirtualPropertyLegacy);
+            this.ForceWrite = metadata.ParseNullableBooleanMetadata(MetadataKeys.ForceWrite);
+            this.WriteThrough = metadata.ParseNullableBooleanMetadata(MetadataKeys.WriteThrough);
+
+            this.DefaultConstructorKind = metadata.ParseMetadata<DefaultConstructorKind?>(
+                new[] { MetadataKeys.DefaultConstructorKind },
+                ParseDefaultConstructorKind,
+                Compiler.DefaultConstructorKind.Public,
+                Compiler.DefaultConstructorKind.Public);
+
+            this.RequestedSerializer = metadata.ParseMetadata<FlatBufferDeserializationOption?>(
+                new[] { MetadataKeys.SerializerKind, MetadataKeys.PrecompiledSerializerLegacy },
+                ParseSerializerKind,
+                FlatBufferDeserializationOption.Default,
+                null);
+
+            if (!this.IsTable && this.RequestedSerializer is not null)
+            {
+                ErrorContext.Current.RegisterError("Structs may not have serializers.");
+            }
+
+            if (!this.IsTable && this.ForceWrite is not null)
+            {
+                ErrorContext.Current.RegisterError($"Structs may not use the '{MetadataKeys.ForceWrite}' attribute.");
+            }
+
+            if (metadata.ContainsKey(MetadataKeys.ObsoleteDefaultConstructorLegacy))
+            {
+                ErrorContext.Current.RegisterError($"The '{MetadataKeys.ObsoleteDefaultConstructorLegacy}' metadata attribute has been deprecated. Please use the '{MetadataKeys.DefaultConstructorKind}' attribute instead.");
+            }
+
+            if (metadata.TryGetValue(MetadataKeys.FileIdentifier, out var fileId))
+            {
+                if (!this.IsTable)
+                {
+                    ErrorContext.Current.RegisterError("Structs may not have file identifiers.");
+                }
+
+                this.FileIdentifier = fileId;
+            }
+        }
+
+        private static bool ParseSerializerKind(string value, out FlatBufferDeserializationOption? result)
+        {
+            var success = Enum.TryParse<FlatBufferDeserializationOption>(value, true, out var tempResult);
+            result = tempResult;
+            return success;
+        }
+
+        private static bool ParseDefaultConstructorKind(string value, out DefaultConstructorKind? result)
+        {
+            var success = Enum.TryParse<DefaultConstructorKind>(value, true, out var tempResult);
+            result = tempResult;
+            return success;
+        }
 
         protected override void OnWriteCode(CodeWriter writer, CompileContext context)
         {
@@ -102,7 +158,7 @@ namespace FlatSharp.Compiler
                     {
                         foreach (var field in this.Fields)
                         {
-                            field.WriteDefaultConstructorLine(writer, context);
+                            new PropertyWriter(this, field).WriteDefaultConstructorLine(writer, context);
                         }
 
                         this.EmitStructVectorInitializations(writer);
@@ -128,7 +184,7 @@ namespace FlatSharp.Compiler
                 {
                     foreach (var field in this.Fields)
                     {
-                        field.WriteCopyConstructorLine(writer, "source", context);
+                        new PropertyWriter(this, field).WriteCopyConstructorLine(writer, "source", context);
                     }
 
                     this.EmitStructVectorInitializations(writer);
@@ -143,7 +199,7 @@ namespace FlatSharp.Compiler
 
                 foreach (var field in this.Fields)
                 {
-                    field.WriteField(writer, this, context);
+                    new PropertyWriter(this, field).WriteField(writer, this, context);
                 }
 
                 foreach (var structVector in this.StructVectors)

@@ -547,9 +547,9 @@ namespace FlatSharpTests
                 TKey current = keyGet(items[i]);
                 TKey oracle = oracleGet(i);
 
-                Assert.True(comparer.Compare(previous, current) <= 0);
-                Assert.True(comparer.Compare(previous, oracle) <= 0);
-                Assert.True(comparer.Compare(current, oracle) == 0);
+                Assert.True(comparer.Compare(previous, current) <= 0, $"Expect: {previous} <= {current}");
+                Assert.True(comparer.Compare(previous, oracle) <= 0, $"Expect: {previous} <= {oracle}");
+                Assert.True(comparer.Compare(current, oracle) == 0, $"Expect: {current} == {oracle}");
 
                 // FlatBuffers c# has a bug where binary search is broken when using default values.
                 // Assert.True(oracleContains(current));

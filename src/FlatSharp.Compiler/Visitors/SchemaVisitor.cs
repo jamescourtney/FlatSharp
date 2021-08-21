@@ -67,7 +67,7 @@ namespace FlatSharp.Compiler
             ErrorContext.Current.WithScope(top.FullName, () =>
             {
                 FlatSharpInternal.Assert(this.CurrentFileName is not null, "Current file name should not be null");
-                TableOrStructDefinition def = new TypeVisitor(top, this.CurrentFileName).Visit(context);
+                new TypeVisitor(top, this.CurrentFileName).Visit(context);
             });
 
             return null;

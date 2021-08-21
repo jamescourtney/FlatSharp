@@ -171,7 +171,7 @@ namespace FlatSharp
                     private static void {GetWriteMethodName(itemModel)}(
                         TInputBuffer buffer,
                         int offset,
-                        {itemModel.ItemTypeModel.GetCompilableTypeName()} value)
+                        {itemModel.ItemTypeModel.GetGlobalCompilableTypeName()} value)
                     {{
                         {itemModel.CreateWriteThroughBody(writeValueMethodName, "buffer", "offset", "value")}
                     }}");
@@ -274,12 +274,12 @@ namespace FlatSharp
             return 
             $@"
                 private sealed class {this.ClassName}<TInputBuffer> 
-                    : {typeModel.GetCompilableTypeName()} 
-                    , {interfaceType.GetCompilableTypeName()}
+                    : {typeModel.GetGlobalCompilableTypeName()} 
+                    , {interfaceType.GetGlobalCompilableTypeName()}
                     where TInputBuffer : IInputBuffer
                 {{
-                    private static readonly {typeof(FlatBufferDeserializationContext).GetCompilableTypeName()} __CtorContext 
-                        = new {typeof(FlatBufferDeserializationContext).GetCompilableTypeName()}({typeof(FlatBufferDeserializationOption).GetCompilableTypeName()}.{options.DeserializationOption});
+                    private static readonly {typeof(FlatBufferDeserializationContext).GetGlobalCompilableTypeName()} __CtorContext 
+                        = new {typeof(FlatBufferDeserializationContext).GetGlobalCompilableTypeName()}({typeof(FlatBufferDeserializationOption).GetGlobalCompilableTypeName()}.{options.DeserializationOption});
 
                     {string.Join("\r\n", this.staticFieldDefinitions.Values)}
 
@@ -292,10 +292,10 @@ namespace FlatSharp
 
                     {this.GetCtorMethodDefinition(onDeserializedStatement, baseParams)}
 
-                    {typeof(Type).GetCompilableTypeName()} {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.TableOrStructType)} => typeof({typeModel.GetCompilableTypeName()});
-                    {typeof(FlatBufferDeserializationContext).GetCompilableTypeName()} {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.DeserializationContext)} => __CtorContext;
-                    {typeof(IInputBuffer).GetCompilableTypeName()}? {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.InputBuffer)} => {this.GetBufferReference()};
-                    bool {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.CanSerializeWithMemoryCopy)} => {this.options.CanSerializeWithMemoryCopy.ToString().ToLowerInvariant()};
+                    {typeof(Type).GetGlobalCompilableTypeName()} {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.TableOrStructType)} => typeof({typeModel.GetCompilableTypeName()});
+                    {typeof(FlatBufferDeserializationContext).GetGlobalCompilableTypeName()} {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.DeserializationContext)} => __CtorContext;
+                    {typeof(IInputBuffer).GetGlobalCompilableTypeName()}? {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.InputBuffer)} => {this.GetBufferReference()};
+                    bool {typeof(IFlatBufferDeserializedObject).GetGlobalCompilableTypeName()}.{nameof(IFlatBufferDeserializedObject.CanSerializeWithMemoryCopy)} => {this.options.CanSerializeWithMemoryCopy.ToString().ToLowerInvariant()};
 
                     {addressableStructImplementation}
 

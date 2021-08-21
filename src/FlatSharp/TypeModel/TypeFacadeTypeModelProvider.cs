@@ -167,13 +167,13 @@ namespace FlatSharp.TypeModel
 
             private static string GetConvertToUnderlyingInvocation(string source)
             {
-                string typeName = CSharpHelpers.GetCompilableTypeName(typeof(TConverter));
+                string typeName = CSharpHelpers.GetGlobalCompilableTypeName(typeof(TConverter));
                 return $"default({typeName}).{nameof(ITypeFacadeConverter<byte, byte>.ConvertToUnderlyingType)}({source})";
             }
 
             private static string GetConvertFromUnderlyingInvocation(string source)
             {
-                string typeName = CSharpHelpers.GetCompilableTypeName(typeof(TConverter));
+                string typeName = CSharpHelpers.GetGlobalCompilableTypeName(typeof(TConverter));
                 return $"default({typeName}).{nameof(ITypeFacadeConverter<byte, byte>.ConvertFromUnderlyingType)}({source})";
             }
         }

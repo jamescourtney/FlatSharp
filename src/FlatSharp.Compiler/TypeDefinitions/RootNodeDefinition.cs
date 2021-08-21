@@ -80,7 +80,7 @@ namespace FlatSharp.Compiler
                 writer.AppendLine("#nullable enable annotations");
             }
 
-            if (context.CompilePass > CodeWritingPass.Initialization && context.PreviousAssembly is not null)
+            if (context.CompilePass > CodeWritingPass.PropertyModeling && context.PreviousAssembly is not null)
             {
                 context.FullyQualifiedCloneMethodName = CloneMethodsGenerator.GenerateCloneMethodsForAssembly(
                     writer,
