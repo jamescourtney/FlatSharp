@@ -105,6 +105,18 @@ namespace FlatSharp.TypeModel
         public static bool IsOptionalValue(this ContextualTypeModelClassification flags)
             => flags.HasFlag(ContextualTypeModelClassification.ValueType | ContextualTypeModelClassification.Optional);
 
+        public static bool IsOptional(this ContextualTypeModelClassification flags)
+            => flags.HasFlag(ContextualTypeModelClassification.Optional);
+
+        public static bool IsRequired(this ContextualTypeModelClassification flags)
+            => flags.HasFlag(ContextualTypeModelClassification.Required);
+
+        public static bool IsReference(this ContextualTypeModelClassification flags)
+            => flags.HasFlag(ContextualTypeModelClassification.ReferenceType);
+
+        public static bool IsValue(this ContextualTypeModelClassification flags)
+            => flags.HasFlag(ContextualTypeModelClassification.ValueType);
+
         /// <summary>
         /// Shortcut for getting compilable type name.
         /// </summary>

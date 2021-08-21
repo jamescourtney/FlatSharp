@@ -332,11 +332,11 @@ namespace FlatSharp.Compiler
                 CodeWriter writer = new CodeWriter();
                 var steps = new[]
                 {
-                CodeWritingPass.Initialization,
-                CodeWritingPass.PropertyModeling,
-                CodeWritingPass.SerializerGeneration,
-                CodeWritingPass.RpcGeneration,
-            };
+                    CodeWritingPass.Initialization,
+                    CodeWritingPass.PropertyModeling,
+                    CodeWritingPass.SerializerGeneration,
+                    CodeWritingPass.RpcGeneration,
+                };
 
                 foreach (var step in steps)
                 {

@@ -22,7 +22,7 @@ namespace FlatSharp.Compiler
     using System.Collections.Generic;
     using System.Linq;
 
-    internal class TypeVisitor : FlatBuffersBaseVisitor<TableOrStructDefinition>
+    internal class TypeVisitor : FlatBuffersBaseVisitor<BaseTableOrStructDefinition>
     {
         private readonly BaseSchemaMember parent;
         private readonly string declaringFileName;
@@ -33,61 +33,34 @@ namespace FlatSharp.Compiler
             this.declaringFileName = declaringFileName;
         }
 
-        public override TableOrStructDefinition VisitType_decl([NotNull] FlatBuffersParser.Type_declContext context)
+        public override BaseTableOrStructDefinition VisitType_decl(
+            [NotNull] FlatBuffersParser.Type_declContext context)
         {
             Dictionary<string, string?> metadata = new MetadataVisitor().Visit(context.metadata());
 
-            TableOrStructDefinition definition = new TableOrStructDefinition(
-                context.IDENT().GetText(),
-                this.parent);
+            BaseTableOrStructDefinition definition;
+            if (context.GetChild(0).GetText() == "struct" && 
+                metadata.ParseNullableBooleanMetadata(MetadataKeys.ValueStruct) == true)
+            {
+                definition = new ValueStructDefinition(
+                    context.IDENT().GetText(),
+                    this.parent);
+            }
+            else
+            {
+                definition = new TableOrStructDefinition(
+                   context.IDENT().GetText(),
+                   isTable: context.GetChild(0).GetText() == "table",
+                   this.parent);
+            }
+
+            this.parent.AddChild(definition);
 
             definition.DeclaringFile = this.declaringFileName;
-            this.parent.AddChild(definition);
 
             ErrorContext.Current.WithScope(definition.Name, () =>
             {
-                definition.IsTable = context.GetChild(0).GetText() == "table";
-
-                definition.NonVirtual = metadata.ParseNullableBooleanMetadata(MetadataKeys.NonVirtualProperty, MetadataKeys.NonVirtualPropertyLegacy);
-                definition.ForceWrite = metadata.ParseNullableBooleanMetadata(MetadataKeys.ForceWrite);
-                definition.WriteThrough = metadata.ParseNullableBooleanMetadata(MetadataKeys.WriteThrough);
-
-                definition.DefaultConstructorKind = metadata.ParseMetadata<DefaultConstructorKind?>(
-                    new[] { MetadataKeys.DefaultConstructorKind },
-                    ParseDefaultConstructorKind,
-                    DefaultConstructorKind.Public,
-                    DefaultConstructorKind.Public);
-
-                definition.RequestedSerializer = metadata.ParseMetadata<FlatBufferDeserializationOption?>(
-                    new[] { MetadataKeys.SerializerKind, MetadataKeys.PrecompiledSerializerLegacy },
-                    ParseSerializerKind,
-                    FlatBufferDeserializationOption.Default,
-                    null);
-
-                if (!definition.IsTable && definition.RequestedSerializer is not null)
-                {
-                    ErrorContext.Current.RegisterError("Structs may not have serializers.");
-                }
-
-                if (!definition.IsTable && definition.ForceWrite is not null)
-                {
-                    ErrorContext.Current.RegisterError($"Structs may not use the '{MetadataKeys.ForceWrite}' attribute.");
-                }
-
-                if (metadata.ContainsKey(MetadataKeys.ObsoleteDefaultConstructorLegacy))
-                {
-                    ErrorContext.Current.RegisterError($"The '{MetadataKeys.ObsoleteDefaultConstructorLegacy}' metadata attribute has been deprecated. Please use the '{MetadataKeys.DefaultConstructorKind}' attribute instead.");
-                }
-
-                if (metadata.TryGetValue(MetadataKeys.FileIdentifier, out var fileId))
-                {
-                    if (!definition.IsTable)
-                    {
-                        ErrorContext.Current.RegisterError("Structs may not have file identifiers.");
-                    }
-
-                    definition.FileIdentifier = fileId;
-                }
+                definition.ApplyMetadata(metadata);
 
                 var fields = context.field_decl();
                 if (fields != null)

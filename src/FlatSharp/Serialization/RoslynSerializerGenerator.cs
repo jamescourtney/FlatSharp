@@ -383,7 +383,7 @@ $@"
 #if !DEBUG
                     string cSharp = cSharpFactory();
 #endif
-
+                    
                     throw new FlatSharpCompilationException(errors.ToArray(), cSharp);
                 }
             }

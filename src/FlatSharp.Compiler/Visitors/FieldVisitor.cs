@@ -22,9 +22,9 @@ namespace FlatSharp.Compiler
 
     internal class FieldVisitor : FlatBuffersBaseVisitor<bool>
     {
-        private readonly TableOrStructDefinition parent;
+        private readonly BaseTableOrStructDefinition parent;
 
-        public FieldVisitor(TableOrStructDefinition parent)
+        public FieldVisitor(BaseTableOrStructDefinition parent)
         {
             this.parent = parent;
         }
@@ -39,7 +39,13 @@ namespace FlatSharp.Compiler
 
                 var (fieldType, vectorType, structVectorLength) = GetFbsFieldType(context, metadata);
 
-                var definition = new FieldDefinition(this.parent, name, fieldType)
+                string? resolvedType = null;
+                if (this.parent.TryResolveName(fieldType, out var resolved))
+                {
+                    resolvedType = resolved.GlobalName;
+                }
+
+                var definition = new FieldDefinition(name, fieldType, resolvedType)
                 {
                     VectorType = vectorType,
                 };
@@ -78,7 +84,7 @@ namespace FlatSharp.Compiler
                 {
                     this.parent.Fields.Add(definition);
                 }
-                else if (this.parent.IsTable)
+                else if (this.parent.SchemaType != TypeModel.FlatBufferSchemaType.Struct)
                 {
                     ErrorContext.Current.RegisterError("Only structs may contain fixed-length vectors");
                 }
