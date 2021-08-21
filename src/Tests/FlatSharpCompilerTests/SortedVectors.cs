@@ -210,16 +210,55 @@ table VectorMember {{
         public void SortedVector_IndexedVector_KeyTypesCorrect_Double() => this.SortedVector_IndexedVector_KeyTypesCorrect<double>("double");
 
         [Fact]
+        public void SortedVector_IndexedVector_InvalidKey()
+        {
+            string schema = $@"
+            table Monster ({MetadataKeys.SerializerKind}) {{
+              Vector:[VectorMember] ({MetadataKeys.VectorKind}:IIndexedVector);
+            }}
+            table VectorMember {{
+                Data:DoesNotExist ({MetadataKeys.Key});
+            }}";
+
+            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+            Assert.Contains(
+                "Key type for table 'VectorMember' was not a known built-in type. Keys may be scalars or strings.",
+                ex.Message);
+        }
+
+        [Fact]
         public void SortedVector_IndexedVector_NoKey()
         {
             string schema = $@"
-table Monster ({MetadataKeys.SerializerKind}) {{
-  Vector:[VectorMember] ({MetadataKeys.VectorKind}:IIndexedVector);
-}}
-table VectorMember {{
-    Data:string;
-}}";
-            Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+            table Monster ({MetadataKeys.SerializerKind}) {{
+              Vector:[VectorMember] ({MetadataKeys.VectorKind}:IIndexedVector);
+            }}
+            table VectorMember {{
+                Data:string;
+            }}";
+
+            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+            Assert.Contains(
+                "Table 'VectorMember' has no property with the 'key' metadata.",
+                ex.Message);
+        }
+
+        [Fact]
+        public void SortedVector_IndexedVector_MultipleKeys()
+        {
+            string schema = $@"
+            table Monster ({MetadataKeys.SerializerKind}) {{
+              Vector:[VectorMember] ({MetadataKeys.VectorKind}:IIndexedVector);
+            }}
+            table VectorMember {{
+                Data:string ({MetadataKeys.Key});
+                Data2:string ({MetadataKeys.Key});
+            }}";
+
+            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+            Assert.Contains(
+                "Table 'VectorMember' declares more than one property with the 'key' metadata.",
+                ex.Message);
         }
 
         private void SortedVector_IndexedVector_KeyTypesCorrect<TKeyType>(string type, string metadata = null)

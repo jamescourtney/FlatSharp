@@ -74,19 +74,5 @@ namespace FlatSharp.Compiler
 
             return definition;
         }
-
-        private static bool ParseSerializerKind(string value, out FlatBufferDeserializationOption? result)
-        {
-            var success = Enum.TryParse<FlatBufferDeserializationOption>(value, true, out var tempResult);
-            result = tempResult;
-            return success;
-        }
-
-        private static bool ParseDefaultConstructorKind(string value, out DefaultConstructorKind? result)
-        {
-            var success = Enum.TryParse<DefaultConstructorKind>(value, true, out var tempResult);
-            result = tempResult;
-            return success;
-        }
     }
 }
