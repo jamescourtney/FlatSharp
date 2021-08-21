@@ -89,8 +89,8 @@ namespace FlatSharp.TypeModel
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
             string body;
-            string keyTypeName = CSharpHelpers.GetCompilableTypeName(this.keyTypeModel.ClrType);
-            string valueTypeName = CSharpHelpers.GetCompilableTypeName(this.valueTypeModel.ClrType);
+            string keyTypeName = CSharpHelpers.GetGlobalCompilableTypeName(this.keyTypeModel.ClrType);
+            string valueTypeName = CSharpHelpers.GetGlobalCompilableTypeName(this.valueTypeModel.ClrType);
 
             (string vectorClassDef, string vectorClassName) = FlatBufferVectorHelpers.CreateFlatBufferVectorSubclass(
                 this.valueTypeModel.ClrType,

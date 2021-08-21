@@ -113,7 +113,7 @@
             }
 
             string nonMarshalBody = $@"
-                var item = default({CSharpHelpers.GetCompilableTypeName(this.ClrType)});
+                var item = default({CSharpHelpers.GetGlobalCompilableTypeName(this.ClrType)});
                 {string.Join("\r\n", propertyStatements)}
                 return item;
             ";
@@ -129,7 +129,7 @@
             if (BitConverter.IsLittleEndian)
             {{
                 var mem = {context.InputBufferVariableName}.{nameof(IInputBuffer.GetReadOnlyByteMemory)}({context.OffsetVariableName}, {this.inlineSize});
-                return {typeof(MemoryMarshal).FullName}.{nameof(MemoryMarshal.Cast)}<byte, {CSharpHelpers.GetCompilableTypeName(this.ClrType)}>(mem.Span)[0];
+                return {typeof(MemoryMarshal).FullName}.{nameof(MemoryMarshal.Cast)}<byte, {CSharpHelpers.GetGlobalCompilableTypeName(this.ClrType)}>(mem.Span)[0];
             }}
             else
             {{
@@ -162,7 +162,7 @@
                 body = $@"
                 if (BitConverter.IsLittleEndian)
                 {{
-                    var tempSpan = {typeof(MemoryMarshal).FullName}.{nameof(MemoryMarshal.Cast)}<byte, {CSharpHelpers.GetCompilableTypeName(this.ClrType)}>({context.SpanVariableName}.Slice({context.OffsetVariableName}, {this.inlineSize}));
+                    var tempSpan = {typeof(MemoryMarshal).FullName}.{nameof(MemoryMarshal.Cast)}<byte, {CSharpHelpers.GetGlobalCompilableTypeName(this.ClrType)}>({context.SpanVariableName}.Slice({context.OffsetVariableName}, {this.inlineSize}));
                     tempSpan[0] = {context.ValueVariableName};
                 }}
                 else

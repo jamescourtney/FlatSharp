@@ -132,6 +132,12 @@ namespace FlatSharp.TypeModel
         public static string GetCompilableTypeName(this ITypeModel typeModel) 
             => CSharpHelpers.GetCompilableTypeName(typeModel.ClrType);
 
+        /// <summary>
+        /// Shortcut for getting compilable type name.
+        /// </summary>
+        public static string GetGlobalCompilableTypeName(this ITypeModel typeModel)
+            => CSharpHelpers.GetGlobalCompilableTypeName(typeModel.ClrType);
+
         public static string GetNullableAnnotationTypeName(this ItemMemberModel memberModel, FlatBufferSchemaType context)
         {
             var typeName = memberModel.ItemTypeModel.GetCompilableTypeName();

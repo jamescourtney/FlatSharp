@@ -32,6 +32,11 @@ namespace FlatSharp
         internal const string GeneratedClassMaxVtableIndexFieldName = "__maxVTableIndex";
         internal const string GeneratedClassVTableOffsetFieldName = "__vtableOffset";
 
+        internal static string GetGlobalCompilableTypeName(this Type t)
+        {
+            return $"global::{GetCompilableTypeName(t)}";
+        }
+
         internal static string GetCompilableTypeName(this Type t)
         {
             FlatSharpInternal.Assert(!string.IsNullOrEmpty(t.FullName), $"{t} has null/empty full name.");

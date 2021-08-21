@@ -169,7 +169,7 @@ $@"
 
             string code = $@"
                 [{nameof(FlatSharpGeneratedSerializerAttribute)}({nameof(FlatBufferDeserializationOption)}.{this.options.DeserializationOption})]
-                {visibility} sealed class {GeneratedSerializerClassName} : {nameof(IGeneratedSerializer<byte>)}<{CSharpHelpers.GetCompilableTypeName(typeof(TRoot))}>
+                {visibility} sealed class {GeneratedSerializerClassName} : {nameof(IGeneratedSerializer<byte>)}<{CSharpHelpers.GetGlobalCompilableTypeName(typeof(TRoot))}>
                 {{    
                     // Method generated to help AOT compilers make good decisions about generics.
                     public void __AotHelper()
@@ -450,7 +450,7 @@ $@"
             {
                 string methodText =
 $@"
-                public void Write<TSpanWriter>(TSpanWriter writer, Span<byte> target, {CSharpHelpers.GetCompilableTypeName(rootType)} root, int offset, SerializationContext context)
+                public void Write<TSpanWriter>(TSpanWriter writer, Span<byte> target, {CSharpHelpers.GetGlobalCompilableTypeName(rootType)} root, int offset, SerializationContext context)
                     where TSpanWriter : ISpanWriter
                 {{
                     {this.writeMethods[rootType]}(writer, target, root, offset, context);
@@ -462,7 +462,7 @@ $@"
             {
                 string methodText =
 $@"
-                public int GetMaxSize({CSharpHelpers.GetCompilableTypeName(rootType)} root)
+                public int GetMaxSize({CSharpHelpers.GetGlobalCompilableTypeName(rootType)} root)
                 {{
                     return {this.maxSizeMethods[rootType]}(root);
                 }}
@@ -473,7 +473,7 @@ $@"
             {
                 string methodText =
 $@"
-                public {CSharpHelpers.GetCompilableTypeName(rootType)} Parse<TInputBuffer>(TInputBuffer buffer, int offset) 
+                public {CSharpHelpers.GetGlobalCompilableTypeName(rootType)} Parse<TInputBuffer>(TInputBuffer buffer, int offset) 
                     where TInputBuffer : IInputBuffer
                 {{
                     return {this.readMethods[rootType]}(buffer, offset);
@@ -554,7 +554,7 @@ $@"
             string declaration =
 $@"
             {method.GetMethodImplAttribute()}
-            private static int {this.maxSizeMethods[type]}({CSharpHelpers.GetCompilableTypeName(type)} {context.ValueVariableName})
+            private static int {this.maxSizeMethods[type]}({CSharpHelpers.GetGlobalCompilableTypeName(type)} {context.ValueVariableName})
             {{
                 {method.MethodBody}
             }}";
@@ -564,7 +564,7 @@ $@"
 
         private void GenerateParseMethod(ITypeModel typeModel, CodeGeneratedMethod method, ParserCodeGenContext context)
         {
-            string clrType = typeModel.GetCompilableTypeName();
+            string clrType = typeModel.GetGlobalCompilableTypeName();
 
             string declaration =
             $@"
@@ -593,7 +593,7 @@ $@"
             private static void {this.writeMethods[typeModel.ClrType]}<TSpanWriter>(
                 TSpanWriter {context.SpanWriterVariableName}, 
                 Span<byte> {context.SpanVariableName}, 
-                {CSharpHelpers.GetCompilableTypeName(typeModel.ClrType)} {context.ValueVariableName}, 
+                {CSharpHelpers.GetGlobalCompilableTypeName(typeModel.ClrType)} {context.ValueVariableName}, 
                 {GetVTableOffsetVariableType(typeModel.PhysicalLayout.Length)} {context.OffsetVariableName} 
                 {contextParameter}) where TSpanWriter : ISpanWriter
             {{

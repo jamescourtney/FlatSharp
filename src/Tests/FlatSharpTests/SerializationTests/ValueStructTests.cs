@@ -157,7 +157,7 @@ namespace FlatSharpTests
 
                 Assert.Equal(
                     expectMarshal,
-                    serializer.CSharp.Contains($"MemoryMarshal.Cast<byte, {type.GetCompilableTypeName()}>"));
+                    serializer.CSharp.Contains($"MemoryMarshal.Cast<byte, {type.GetGlobalCompilableTypeName()}>"));
             }
 
             [Theory]
@@ -211,7 +211,7 @@ namespace FlatSharpTests
 
                 Assert.Equal(
                     expectMarshal,
-                    serializer.CSharp.Contains($"MemoryMarshal.Cast<byte, {type.GetCompilableTypeName()}>"));
+                    serializer.CSharp.Contains($"MemoryMarshal.Cast<byte, {type.GetGlobalCompilableTypeName()}>"));
             }
         }
 
@@ -252,7 +252,7 @@ namespace FlatSharpTests
 
                 Assert.Equal(
                     expectMarshal,
-                    serializer.CSharp.Contains($"MemoryMarshal.Cast<byte, {type.GetCompilableTypeName()}>"));
+                    serializer.CSharp.Contains($"MemoryMarshal.Cast<byte, {type.GetGlobalCompilableTypeName()}>"));
 
                 Assert.Equal(1, table.Item.IA);
                 Assert.Equal(2, table.Item.IB);
@@ -297,7 +297,7 @@ namespace FlatSharpTests
 
                 Assert.Equal(
                     expectMarshal,
-                    serializer.CSharp.Contains($"MemoryMarshal.Cast<byte, {type.GetCompilableTypeName()}>"));
+                    serializer.CSharp.Contains($"MemoryMarshal.Cast<byte, {type.GetGlobalCompilableTypeName()}>"));
 
                 Assert.Equal(1, table.Item.IA);
                 Assert.Equal(2, table.Item.IB);

@@ -51,7 +51,7 @@ namespace FlatSharp.Compiler
 
         public void WriteDefaultConstructorLine(CodeWriter writer, CompileContext context)
         {
-            ErrorContext.Current.WithScope(this.field.Name, () =>
+            ErrorContext.Current.WithScope(this.field.Name, (Action)(() =>
             {
                 if (context.CompilePass <= CodeWritingPass.PropertyModeling ||
                     !this.TryGetTypeModel(context, out var model))
@@ -66,7 +66,7 @@ namespace FlatSharp.Compiler
                 }
                 else if (model.ClassifyContextually(this.parent.SchemaType).IsRequiredReference())
                 {
-                    var cSharpTypeName = CSharpHelpers.GetCompilableTypeName(model.ClrType);
+                    var cSharpTypeName = CSharpHelpers.GetCompilableTypeName((Type)model.ClrType);
                     assignment = $"new {cSharpTypeName}()";
                 }
                 else if (model.ClassifyContextually(this.parent.SchemaType).IsOptional())
@@ -78,7 +78,7 @@ namespace FlatSharp.Compiler
                 {
                     writer.AppendLine($"this.{this.field.Name} = {assignment};");
                 }
-            });
+            }));
         }
 
         public void WriteCopyConstructorLine(CodeWriter writer, string sourceName, CompileContext context)
@@ -109,7 +109,7 @@ namespace FlatSharp.Compiler
                     return;
                 }
 
-                string clrType = $"global::{model.GetCompilableTypeName()}";
+                string clrType = model.GetGlobalCompilableTypeName();
 
                 //clrType = this.GetClrVectorTypeName(context, this.field.VectorType, clrType);
 
