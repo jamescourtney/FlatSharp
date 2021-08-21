@@ -227,6 +227,20 @@ table VectorMember {{
         }
 
         [Fact]
+        public void SortedVector_IndexedVector_UnknownTableType()
+        {
+            string schema = $@"
+            table Monster ({MetadataKeys.SerializerKind}) {{
+              Vector:[WhoKnows] ({MetadataKeys.VectorKind}:IIndexedVector);
+            }}";
+
+            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+            Assert.Contains(
+                $"Unable to resolve type WhoKnows.",
+                ex.Message);
+        }
+
+        [Fact]
         public void SortedVector_IndexedVector_NoKey()
         {
             string schema = $@"

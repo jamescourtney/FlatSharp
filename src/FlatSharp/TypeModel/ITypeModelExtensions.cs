@@ -18,6 +18,7 @@ namespace FlatSharp.TypeModel
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Reflection;
 
     [Flags]
@@ -93,27 +94,35 @@ namespace FlatSharp.TypeModel
             return flags;
         }
 
+        [ExcludeFromCodeCoverage]
         public static bool IsRequiredReference(this ContextualTypeModelClassification flags)
             => flags.HasFlag(ContextualTypeModelClassification.ReferenceType | ContextualTypeModelClassification.Required);
 
+        [ExcludeFromCodeCoverage]
         public static bool IsOptionalReference(this ContextualTypeModelClassification flags)
             => flags.HasFlag(ContextualTypeModelClassification.ReferenceType | ContextualTypeModelClassification.Optional);
 
+        [ExcludeFromCodeCoverage]
         public static bool IsRequiredValue(this ContextualTypeModelClassification flags)
             => flags.HasFlag(ContextualTypeModelClassification.ValueType | ContextualTypeModelClassification.Required);
 
+        [ExcludeFromCodeCoverage]
         public static bool IsOptionalValue(this ContextualTypeModelClassification flags)
             => flags.HasFlag(ContextualTypeModelClassification.ValueType | ContextualTypeModelClassification.Optional);
 
+        [ExcludeFromCodeCoverage]
         public static bool IsOptional(this ContextualTypeModelClassification flags)
             => flags.HasFlag(ContextualTypeModelClassification.Optional);
 
+        [ExcludeFromCodeCoverage]
         public static bool IsRequired(this ContextualTypeModelClassification flags)
             => flags.HasFlag(ContextualTypeModelClassification.Required);
 
+        [ExcludeFromCodeCoverage]
         public static bool IsReference(this ContextualTypeModelClassification flags)
             => flags.HasFlag(ContextualTypeModelClassification.ReferenceType);
 
+        [ExcludeFromCodeCoverage]
         public static bool IsValue(this ContextualTypeModelClassification flags)
             => flags.HasFlag(ContextualTypeModelClassification.ValueType);
 

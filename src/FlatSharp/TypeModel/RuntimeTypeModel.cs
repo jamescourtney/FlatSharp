@@ -135,24 +135,28 @@ namespace FlatSharp.TypeModel
 
         public virtual string FormatDefaultValueAsLiteral(object? defaultValue) => this.GetTypeDefaultExpression();
 
+        [ExcludeFromCodeCoverage]
         public virtual bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
         {
             literal = null;
             return false;
         }
 
+        [ExcludeFromCodeCoverage]
         public virtual bool TryGetUnderlyingVectorType([NotNullWhen(true)] out ITypeModel? typeModel)
         {
             typeModel = null;
             return false;
         }
 
+        [ExcludeFromCodeCoverage]
         public virtual bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType)
         {
             comparerType = null;
             return false;
         }
 
+        [ExcludeFromCodeCoverage]
         public virtual bool TryGetTableKeyMember([NotNullWhen(true)] out TableMemberModel? tableMember)
         {
             tableMember = null;
