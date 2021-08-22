@@ -159,11 +159,12 @@
             }
 
             string body;
+            string slice = $"Span<byte> sizedSpan = {context.SpanVariableName}.Slice({context.OffsetVariableName}, {this.inlineSize});";
             if (this.CanMarshalWhenLittleEndian && 
                 context.Options.EnableValueStructMemoryMarshalDeserialization)
             {
                 body = $@"
-                Span<byte> sizedSpan = {context.SpanVariableName}.Slice({context.OffsetVariableName}, {this.inlineSize});
+                {slice}
                 if (BitConverter.IsLittleEndian)
                 {{
                     var tempSpan = {typeof(MemoryMarshal).FullName}.{nameof(MemoryMarshal.Cast)}<byte, {CSharpHelpers.GetGlobalCompilableTypeName(this.ClrType)}>(sizedSpan);
@@ -177,7 +178,9 @@
             }
             else
             {
-                body = string.Join("\r\n", propertyStatements);
+                body = $@"
+                {slice}
+                {string.Join("\r\n", propertyStatements)}";
             }
 
             return new CodeGeneratedMethod(body);

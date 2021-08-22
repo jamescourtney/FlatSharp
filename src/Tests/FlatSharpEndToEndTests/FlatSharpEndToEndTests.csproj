@@ -4,7 +4,7 @@
   <PropertyGroup>
     <TargetFrameworks>net5.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
-    <AssemblyName>FlatSharpGrpcTests</AssemblyName>
+    <AssemblyName>FlatSharpEndToEndTests</AssemblyName>
     <RootNamespace>FlatSharpTests</RootNamespace>
     <DelaySign>false</DelaySign>
     <SignAssembly>true</SignAssembly>
@@ -30,6 +30,13 @@
     <ProjectReference Include="..\..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
     <ProjectReference Include="..\..\FlatSharp.Unsafe\FlatSharp.Unsafe.csproj" />
     <ProjectReference Include="..\..\FlatSharp\FlatSharp.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Grpc\Grpc.fbs.generated.cs" />
+    <Compile Include="Grpc\Grpc.fbs.generated.cs" />
+    <Compile Remove="ValueStructs\ValueStructs.fbs.generated.cs" />
+    <Compile Include="ValueStructs\ValueStructs.fbs.generated.cs" />
   </ItemGroup>
 
   <Target Name="FBS" BeforeTargets="BeforeBuild">
