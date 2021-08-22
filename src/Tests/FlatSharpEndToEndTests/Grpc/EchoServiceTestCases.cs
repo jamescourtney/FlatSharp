@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-namespace FlatSharpTests
+namespace FlatSharpEndToEndTests.GrpcTests
 {
     using System;
     using System.Collections.Generic;
@@ -23,13 +23,11 @@ namespace FlatSharpTests
     using System.Threading;
     using System.Threading.Tasks;
     using FlatSharp;
-    using FlatSharpTests.EchoServiceTests;
     using Grpc.Core;
     using Xunit;
     using Other.Namespace.Foobar;
     using SChannel = System.Threading.Channels.Channel;
 
-    
     public class EchoServiceTestCases
     {
         [Fact]

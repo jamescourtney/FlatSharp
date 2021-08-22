@@ -2,7 +2,7 @@
 namespace Other.Namespace.Foobar;
 table Blah (fs_serializer) { Value : int; }
 
-namespace FlatSharpTests.EchoServiceTests;
+namespace FlatSharpEndToEndTests.GrpcTests;
 
 table StringMessage (fs_serializer) {
     Value : string;

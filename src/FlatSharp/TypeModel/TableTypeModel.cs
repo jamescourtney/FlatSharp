@@ -415,9 +415,9 @@ namespace FlatSharp.TypeModel
 
                 string valueName = $"index{index}Value";
                 string getter = memberModel.PropertyInfo.Name;
-                if (!string.IsNullOrEmpty(memberModel.CustomGetter))
+                if (!string.IsNullOrEmpty(memberModel.CustomAccessor))
                 {
-                    getter = memberModel.CustomGetter;
+                    getter = memberModel.CustomAccessor;
                 }
 
                 getters.Add($"var {valueName} = {context.ValueVariableName}.{getter};");

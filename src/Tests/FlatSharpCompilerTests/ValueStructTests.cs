@@ -92,5 +92,17 @@ namespace FlatSharpTests.Compiler
             Assert.Equal(typeof(byte), structC.FieldType);
             Assert.Equal(16, structC.GetCustomAttribute<FieldOffsetAttribute>().Value);
         }
+
+        [Fact]
+        public void ValueStruct_Vector()
+        {
+            string schema = $@"
+                namespace ValueStructTests;
+                table Table ({MetadataKeys.SerializerKind}:""GreedyMutable"") {{ Struct : Struct; }}
+                struct Struct ({MetadataKeys.ValueStruct}) {{ A:[int : 12]; }} 
+                ";
+
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
+        }
     }
 }

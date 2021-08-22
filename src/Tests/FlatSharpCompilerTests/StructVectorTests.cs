@@ -202,10 +202,13 @@ namespace FlatSharpTests.Compiler
                 Assert.True(p.GetMethod.IsVirtual);
                 Assert.True(p.SetMethod.IsVirtual);
 
+                var metaAttr = p.GetCustomAttribute<FlatBufferMetadataAttribute>();
                 var attr = p.GetCustomAttribute<FlatBufferItemAttribute>();
                 Assert.NotNull(attr);
+                Assert.NotNull(metaAttr);
                 Assert.Equal(i, attr.Index);
-                Assert.Equal($"V[{attr.Index}]", attr.CustomGetter);
+                Assert.Equal(FlatBufferMetadataKind.Accessor, metaAttr.Kind);
+                Assert.Equal($"V[{attr.Index}]", metaAttr.Value);
             }
 
             var vectorProperty = fooType.GetProperty("V");

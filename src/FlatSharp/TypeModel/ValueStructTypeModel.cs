@@ -30,7 +30,7 @@
     /// </summary>
     public class ValueStructTypeModel : RuntimeTypeModel
     {
-        private readonly List<(int offset, FieldInfo field, ITypeModel model)> members = new List<(int offset, FieldInfo field, ITypeModel model)>();
+        private readonly List<(int offset, string accessor, ITypeModel model)> members = new List<(int, string, ITypeModel)>();
 
         private int inlineSize;
         private int maxAlignment = 1;
@@ -85,6 +85,8 @@
         /// </summary>
         public override bool SerializesInline => true;
 
+        public override bool SerializeMethodRequiresContext => false;
+
         public override IEnumerable<ITypeModel> Children => this.members.Select(x => x.model);
 
         public bool CanMarshalWhenLittleEndian { get; private set; }
@@ -107,7 +109,7 @@
             {
                 var member = this.members[i];
                 propertyStatements.Add($@"
-                    item.{member.field.Name} = {context.MethodNameMap[member.field.FieldType]}<{context.InputBufferTypeName}>(
+                    item.{member.accessor} = {context.MethodNameMap[member.model.ClrType]}<{context.InputBufferTypeName}>(
                         {context.InputBufferVariableName}, 
                         {context.OffsetVariableName} + {member.offset});");
             }
@@ -148,21 +150,24 @@
                 var member = this.members[i];
                 var fieldContext = context with 
                 { 
-                    OffsetVariableName = $"({context.OffsetVariableName} + {member.offset})",
-                    ValueVariableName = $"{context.ValueVariableName}.{member.field.Name}",
+                    SpanVariableName = "sizedSpan",
+                    OffsetVariableName = $"{member.offset}",
+                    ValueVariableName = $"{context.ValueVariableName}.{member.accessor}",
                 };
 
-                propertyStatements.Add(fieldContext.GetSerializeInvocation(member.field.FieldType) + ";");
+                propertyStatements.Add(fieldContext.GetSerializeInvocation(member.model.ClrType) + ";");
             }
 
             string body;
+            string slice = $"Span<byte> sizedSpan = {context.SpanVariableName}.Slice({context.OffsetVariableName}, {this.inlineSize});";
             if (this.CanMarshalWhenLittleEndian && 
                 context.Options.EnableValueStructMemoryMarshalDeserialization)
             {
                 body = $@"
+                {slice}
                 if (BitConverter.IsLittleEndian)
                 {{
-                    var tempSpan = {typeof(MemoryMarshal).FullName}.{nameof(MemoryMarshal.Cast)}<byte, {CSharpHelpers.GetGlobalCompilableTypeName(this.ClrType)}>({context.SpanVariableName}.Slice({context.OffsetVariableName}, {this.inlineSize}));
+                    var tempSpan = {typeof(MemoryMarshal).FullName}.{nameof(MemoryMarshal.Cast)}<byte, {CSharpHelpers.GetGlobalCompilableTypeName(this.ClrType)}>(sizedSpan);
                     tempSpan[0] = {context.ValueVariableName};
                 }}
                 else
@@ -173,7 +178,9 @@
             }
             else
             {
-                body = string.Join("\r\n", propertyStatements);
+                body = $@"
+                {slice}
+                {string.Join("\r\n", propertyStatements)}";
             }
 
             return new CodeGeneratedMethod(body);
@@ -193,15 +200,15 @@
             }
 
             var fields = this.ClrType
-                .GetFields(BindingFlags.Public | BindingFlags.Instance)
+                .GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
                 .Select(x => new
                 {
                     Field = x,
                     OffsetAttribute = x.GetCustomAttribute<FieldOffsetAttribute>(),
                 })
                 .Where(x => x.OffsetAttribute != null)
+                .OrderBy(x => x.OffsetAttribute!.Value)
                 .ToList();
-
 
             if (fields.Count == 0)
             {
@@ -213,17 +220,23 @@
             {
                 var offsetAttribute = item.OffsetAttribute;
                 var field = item.Field;
+                string? accessor = item.Field.GetFlatBufferMetadataOrNull(FlatBufferMetadataKind.Accessor);
 
                 ITypeModel propertyModel = this.typeModelContainer.CreateTypeModel(field.FieldType);
 
                 if (!propertyModel.IsValidStructMember || propertyModel.PhysicalLayout.Length > 1)
                 {
-                    throw new InvalidFlatBufferDefinitionException($"Struct '{this.GetCompilableTypeName()}' property {field.Name} cannot be part of a flatbuffer struct. Structs may only contain scalars and other structs.");
+                    throw new InvalidFlatBufferDefinitionException($"Struct '{this.GetCompilableTypeName()}' field {field.Name} cannot be part of a flatbuffer struct. Structs may only contain scalars and other structs.");
+                }
+
+                if (!field.IsPublic && string.IsNullOrEmpty(accessor))
+                {
+                    throw new InvalidFlatBufferDefinitionException($"Struct '{this.GetCompilableTypeName()}' field {field.Name} is not public and does not declare a custom accessor. Non-public fields must also specify a custom accessor.");
                 }
 
                 if (!propertyModel.ClrType.IsValueType)
                 {
-                    throw new InvalidFlatBufferDefinitionException($"Struct '{this.GetCompilableTypeName()}' property {field.Name} must be a value type if the struct is a value type.");
+                    throw new InvalidFlatBufferDefinitionException($"Struct '{this.GetCompilableTypeName()}' field {field.Name} must be a value type if the struct is a value type.");
                 }
 
                 int propertySize = propertyModel.PhysicalLayout[0].InlineSize;
@@ -233,7 +246,7 @@
                 // Pad for alignment.
                 this.inlineSize += SerializationHelpers.GetAlignmentError(this.inlineSize, propertyAlignment);
 
-                this.members.Add((this.inlineSize, field, propertyModel));
+                this.members.Add((this.inlineSize, accessor ?? field.Name, propertyModel));
                 if (offsetAttribute?.Value != this.inlineSize)
                 {
                     throw new InvalidFlatBufferDefinitionException($"Struct '{this.ClrType.GetCompilableTypeName()}' property '{field.Name}' defines invalid [FieldOffset] attribute. Expected: [FieldOffset({this.inlineSize})].");

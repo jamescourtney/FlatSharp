@@ -45,7 +45,7 @@ namespace FlatSharp.TypeModel
             this.ItemTypeModel = propertyModel;
             this.PropertyInfo = propertyInfo;
             this.Index = attribute.Index;
-            this.CustomGetter = attribute.CustomGetter;
+            this.CustomAccessor = propertyInfo.GetFlatBufferMetadataOrNull(FlatBufferMetadataKind.Accessor);
             this.IsWriteThrough = attribute.WriteThrough;
             this.IsRequired = attribute.Required;
 
@@ -71,7 +71,7 @@ namespace FlatSharp.TypeModel
                 throw new InvalidFlatBufferDefinitionException($"Property {declaringType} on did not declare a getter.");
             }
 
-            if (!getMethod.IsPublic && string.IsNullOrEmpty(this.CustomGetter))
+            if (!getMethod.IsPublic && string.IsNullOrEmpty(this.CustomAccessor))
             {
                 throw new InvalidFlatBufferDefinitionException($"Property {declaringType} must declare a public getter.");
             }
@@ -182,7 +182,7 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// A custom getter for this item.
         /// </summary>
-        public string? CustomGetter { get; set; }
+        public string? CustomAccessor { get; set; }
 
         /// <summary>
         /// The semantics of the setter.

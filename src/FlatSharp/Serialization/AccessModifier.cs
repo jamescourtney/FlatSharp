@@ -35,5 +35,10 @@ namespace FlatSharp
         /// A protected setter.
         /// </summary>
         Protected = 2,
+
+        /// <summary>
+        /// A private access modifier.
+        /// </summary>
+        Private = 3,
     }
 }

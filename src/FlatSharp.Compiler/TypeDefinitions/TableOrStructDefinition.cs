@@ -54,7 +54,37 @@ namespace FlatSharp.Compiler
 
         public FlatBufferDeserializationOption? RequestedSerializer { get; set; }
 
+        public List<FieldDefinition> Fields { get; } = new();
+
+        public List<StructVectorDefinition> StructVectors { get; } = new();
+
         protected override bool SupportsChildren => false;
+
+        public override void AddField(FieldDefinition field)
+        {
+            this.Fields.Add(field);
+        }
+
+        public override void AddStructVector(FieldDefinition definition, int count)
+        {
+            List<string> propNames = new();
+            for (int i = 0; i < count; ++i)
+            {
+                string propName = $"__flatsharp__{definition.Name}_{i}";
+
+                this.AddField(definition with
+                {
+                    Name = propName,
+                    SetterKind = SetterKind.Protected,
+                    GetterModifier = AccessModifier.Protected,
+                    CustomGetter = $"{definition.Name}[{i}]"
+                });
+
+                propNames.Add(propName);
+            }
+
+            this.StructVectors.Add(new StructVectorDefinition(definition.Name, definition.FbsFieldType, definition.SetterKind, propNames));
+        }
 
         public override void ApplyMetadata(Dictionary<string, string?> metadata)
         {

@@ -114,6 +114,7 @@ namespace FlatSharp
                 AccessModifier.Public => "public",
                 AccessModifier.Protected => "protected",
                 AccessModifier.ProtectedInternal => "protected internal",
+                AccessModifier.Private => "private",
                 _ => throw new InvalidOperationException($"Unexpected access modifier: '{modifier}'.")
             };
         }
@@ -138,6 +139,11 @@ namespace FlatSharp
             if (method.IsFamily)
             {
                 return AccessModifier.Protected;
+            }
+
+            if (method.IsPrivate)
+            {
+                return AccessModifier.Private;
             }
 
             throw new InvalidOperationException("Unexpected method visibility: " + method.Name);

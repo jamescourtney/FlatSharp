@@ -34,10 +34,8 @@ namespace FlatSharpTests
         {
             [Theory]
             [InlineData(typeof(ValidStruct_Marshallable), true)]
-            [InlineData(typeof(ValidStruct_Marshallable_HiddenField), true)]
             [InlineData(typeof(ValidStruct_NotMarshallable_MissingSizeHint), false)]
             [InlineData(typeof(ValidStruct_NotMarshallable_DueToSize), false)]
-            [InlineData(typeof(ValidStruct_NotMarshallable_DueToPrivateMember), false)]
             public void ValidStructs(Type type, bool marshallable)
             {
                 ITypeModel typeModel = RuntimeTypeModel.CreateFrom(type);
@@ -65,10 +63,10 @@ namespace FlatSharpTests
             [InlineData(typeof(InvalidStruct_Auto), "Value struct 'FlatSharpTests.ValueStructTests.TypeModel.InvalidStruct_Auto' must have [StructLayout(LayoutKind.Explicit)] specified.")]
             [InlineData(typeof(InvalidStruct_None), "Value struct 'FlatSharpTests.ValueStructTests.TypeModel.InvalidStruct_None' must have [StructLayout(LayoutKind.Explicit)] specified.")]
             [InlineData(typeof(InvalidStruct_Empty), "Value struct 'FlatSharpTests.ValueStructTests.TypeModel.InvalidStruct_Empty' is empty or has no public fields.")]
-            [InlineData(typeof(InvalidStruct_NoPublicFields), "Value struct 'FlatSharpTests.ValueStructTests.TypeModel.InvalidStruct_NoPublicFields' is empty or has no public fields.")]
-            [InlineData(typeof(InvalidStruct_ContainsReferenceType), "Struct 'FlatSharpTests.ValueStructTests.TypeModel.InvalidStruct_ContainsReferenceType' property Foo must be a value type if the struct is a value type.")]
+            [InlineData(typeof(InvalidStruct_NoPublicFields), "Struct 'FlatSharpTests.ValueStructTests.TypeModel.InvalidStruct_NoPublicFields' field Foo is not public and does not declare a custom accessor. Non-public fields must also specify a custom accessor.")]
+            [InlineData(typeof(InvalidStruct_ContainsReferenceType), "Struct 'FlatSharpTests.ValueStructTests.TypeModel.InvalidStruct_ContainsReferenceType' field Foo must be a value type if the struct is a value type.")]
             [InlineData(typeof(InvalidStruct_WrongFieldOffset), "Struct 'FlatSharpTests.ValueStructTests.TypeModel.InvalidStruct_WrongFieldOffset' property 'B' defines invalid [FieldOffset] attribute. Expected: [FieldOffset(8)].")]
-            [InlineData(typeof(InvalidStruct_NotValidStructMember), "Struct 'FlatSharpTests.ValueStructTests.TypeModel.InvalidStruct_NotValidStructMember' property A cannot be part of a flatbuffer struct. Structs may only contain scalars and other structs.")]
+            [InlineData(typeof(InvalidStruct_NotValidStructMember), "Struct 'FlatSharpTests.ValueStructTests.TypeModel.InvalidStruct_NotValidStructMember' field A cannot be part of a flatbuffer struct. Structs may only contain scalars and other structs.")]
             [InlineData(typeof(InvalidStruct_NotPublic), "Can't create type model from type FlatSharpTests.ValueStructTests.TypeModel.InvalidStruct_NotPublic because it is not public.")]
             public void InvalidStructs(Type structType, string expectedError)
             {
@@ -109,10 +107,6 @@ namespace FlatSharpTests
             [Theory]
             [InlineData(typeof(ValidStruct_Marshallable), true, true)]
             [InlineData(typeof(ValidStruct_Marshallable), false, false)]
-            [InlineData(typeof(ValidStruct_Marshallable_HiddenField), true, true)]
-            [InlineData(typeof(ValidStruct_Marshallable_HiddenField), false, false)]
-            [InlineData(typeof(ValidStruct_NotMarshallable_DueToPrivateMember), true, false)]
-            [InlineData(typeof(ValidStruct_NotMarshallable_DueToPrivateMember), false, false)]
             [InlineData(typeof(ValidStruct_NotMarshallable_DueToSize), true, false)]
             [InlineData(typeof(ValidStruct_NotMarshallable_DueToSize), false, false)]
             [InlineData(typeof(ValidStruct_NotMarshallable_MissingSizeHint), true, false)]
@@ -163,10 +157,6 @@ namespace FlatSharpTests
             [Theory]
             [InlineData(typeof(ValidStruct_Marshallable), true, true)]
             [InlineData(typeof(ValidStruct_Marshallable), false, false)]
-            [InlineData(typeof(ValidStruct_Marshallable_HiddenField), true, true)]
-            [InlineData(typeof(ValidStruct_Marshallable_HiddenField), false, false)]
-            [InlineData(typeof(ValidStruct_NotMarshallable_DueToPrivateMember), true, false)]
-            [InlineData(typeof(ValidStruct_NotMarshallable_DueToPrivateMember), false, false)]
             [InlineData(typeof(ValidStruct_NotMarshallable_DueToSize), true, false)]
             [InlineData(typeof(ValidStruct_NotMarshallable_DueToSize), false, false)]
             [InlineData(typeof(ValidStruct_NotMarshallable_MissingSizeHint), true, false)]
@@ -220,10 +210,6 @@ namespace FlatSharpTests
             [Theory]
             [InlineData(typeof(ValidStruct_Marshallable), true, true)]
             [InlineData(typeof(ValidStruct_Marshallable), false, false)]
-            [InlineData(typeof(ValidStruct_Marshallable_HiddenField), true, true)]
-            [InlineData(typeof(ValidStruct_Marshallable_HiddenField), false, false)]
-            [InlineData(typeof(ValidStruct_NotMarshallable_DueToPrivateMember), true, false)]
-            [InlineData(typeof(ValidStruct_NotMarshallable_DueToPrivateMember), false, false)]
             [InlineData(typeof(ValidStruct_NotMarshallable_DueToSize), true, false)]
             [InlineData(typeof(ValidStruct_NotMarshallable_DueToSize), false, false)]
             [InlineData(typeof(ValidStruct_NotMarshallable_MissingSizeHint), true, false)]
@@ -265,10 +251,6 @@ namespace FlatSharpTests
             [Theory]
             [InlineData(typeof(ValidStruct_Marshallable), true, true)]
             [InlineData(typeof(ValidStruct_Marshallable), false, false)]
-            [InlineData(typeof(ValidStruct_Marshallable_HiddenField), true, true)]
-            [InlineData(typeof(ValidStruct_Marshallable_HiddenField), false, false)]
-            [InlineData(typeof(ValidStruct_NotMarshallable_DueToPrivateMember), true, false)]
-            [InlineData(typeof(ValidStruct_NotMarshallable_DueToPrivateMember), false, false)]
             [InlineData(typeof(ValidStruct_NotMarshallable_DueToSize), true, false)]
             [InlineData(typeof(ValidStruct_NotMarshallable_DueToSize), false, false)]
             [InlineData(typeof(ValidStruct_NotMarshallable_MissingSizeHint), true, false)]
@@ -322,6 +304,13 @@ namespace FlatSharpTests
         }
 
         [FlatBufferTable]
+        public class SimpleTableAnything<T>
+        {
+            [FlatBufferItem(0)]
+            public virtual T? Item { get; set; }
+        }
+
+        [FlatBufferTable]
         public class SimpleTableNonNullable<T> : ISimpleTable
             where T : struct, IValidStruct
         {
@@ -370,23 +359,6 @@ namespace FlatSharpTests
             public ValidStruct_Inner IInner { get => this.Inner; set => this.Inner = value; }
         }
 
-        [FlatBufferStruct, StructLayout(LayoutKind.Explicit, Size = 20)]
-        public struct ValidStruct_Marshallable_HiddenField : IValidStruct
-        {
-            [FieldOffset(0)] public byte A;
-            [FieldOffset(1)] private byte Hidden;
-            [FieldOffset(2)] public short B;
-            [FieldOffset(4)] public int C;
-            [FieldOffset(8)] public long D;
-            [FieldOffset(16)] public ValidStruct_Inner Inner;
-
-            public byte IA { get => this.A; set => this.A = value; }
-            public short IB { get => this.B; set => this.B = value; }
-            public int IC { get => this.C; set => this.C = value; }
-            public long ID { get => this.D; set => this.D = value; }
-            public ValidStruct_Inner IInner { get => this.Inner; set => this.Inner = value; }
-        }
-
         [FlatBufferStruct, StructLayout(LayoutKind.Explicit)]
         public struct ValidStruct_NotMarshallable_MissingSizeHint : IValidStruct
         {
@@ -411,24 +383,6 @@ namespace FlatSharpTests
             [FieldOffset(4)] public int C;
             [FieldOffset(8)] public long D;
             [FieldOffset(16)] public ValidStruct_Inner Inner;
-
-            public byte IA { get => this.A; set => this.A = value; }
-            public short IB { get => this.B; set => this.B = value; }
-            public int IC { get => this.C; set => this.C = value; }
-            public long ID { get => this.D; set => this.D = value; }
-            public ValidStruct_Inner IInner { get => this.Inner; set => this.Inner = value; }
-        }
-
-
-        [FlatBufferStruct, StructLayout(LayoutKind.Explicit)]
-        public struct ValidStruct_NotMarshallable_DueToPrivateMember : IValidStruct
-        {
-            [FieldOffset(0)] public byte A;
-            [FieldOffset(2)] public short B;
-            [FieldOffset(4)] public int C;
-            [FieldOffset(8)] public long D;
-            [FieldOffset(16)] public ValidStruct_Inner Inner;
-            [FieldOffset(20)] private int Foo;
 
             public byte IA { get => this.A; set => this.A = value; }
             public short IB { get => this.B; set => this.B = value; }
