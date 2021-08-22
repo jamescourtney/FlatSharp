@@ -143,6 +143,7 @@
         public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
         {
             var propertyStatements = new List<string>();
+            propertyStatements.Add($"Span<byte> sizedSpan = {context.SpanVariableName}.Slice({context.OffsetVariableName}, {this.inlineSize});");
             for (int i = 0; i < this.members.Count; ++i)
             {
                 var member = this.members[i];
@@ -168,7 +169,6 @@
                 }}
                 else
                 {{
-                    Span<byte> sizedSpan = {context.SpanVariableName}.Slice({context.OffsetVariableName}, {this.inlineSize});
                     {string.Join("\r\n", propertyStatements)}
                 }}
                 ";
