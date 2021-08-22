@@ -85,6 +85,8 @@
         /// </summary>
         public override bool SerializesInline => true;
 
+        public override bool SerializeMethodRequiresContext => false;
+
         public override IEnumerable<ITypeModel> Children => this.members.Select(x => x.model);
 
         public bool CanMarshalWhenLittleEndian { get; private set; }
@@ -143,7 +145,6 @@
         public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
         {
             var propertyStatements = new List<string>();
-            propertyStatements.Add($"Span<byte> sizedSpan = {context.SpanVariableName}.Slice({context.OffsetVariableName}, {this.inlineSize});");
             for (int i = 0; i < this.members.Count; ++i)
             {
                 var member = this.members[i];
@@ -162,9 +163,10 @@
                 context.Options.EnableValueStructMemoryMarshalDeserialization)
             {
                 body = $@"
+                Span<byte> sizedSpan = {context.SpanVariableName}.Slice({context.OffsetVariableName}, {this.inlineSize});
                 if (BitConverter.IsLittleEndian)
                 {{
-                    var tempSpan = {typeof(MemoryMarshal).FullName}.{nameof(MemoryMarshal.Cast)}<byte, {CSharpHelpers.GetGlobalCompilableTypeName(this.ClrType)}>({context.SpanVariableName}.Slice({context.OffsetVariableName}, {this.inlineSize}));
+                    var tempSpan = {typeof(MemoryMarshal).FullName}.{nameof(MemoryMarshal.Cast)}<byte, {CSharpHelpers.GetGlobalCompilableTypeName(this.ClrType)}>(sizedSpan);
                     tempSpan[0] = {context.ValueVariableName};
                 }}
                 else

@@ -27,6 +27,7 @@ namespace FlatSharp.Compiler
         private readonly Dictionary<string, StructMemberModel> fieldNameMap;
         private readonly List<FieldDefinition> fieldDefs;
         private readonly List<(string name, List<string> fieldNames)> structVectors;
+        private int inlineSize;
 
         public ValueStructDefinition(
             string name,
@@ -98,6 +99,7 @@ namespace FlatSharp.Compiler
                 FlatSharpInternal.Assert(refType is not null, "Unable to find type");
 
                 StructTypeModel structModel = (StructTypeModel)RuntimeTypeModel.CreateFrom(refType);
+                this.inlineSize = structModel.PhysicalLayout[0].InlineSize;
 
                 foreach (var field in this.fieldDefs)
                 {
@@ -125,7 +127,7 @@ namespace FlatSharp.Compiler
             }
 
             writer.AppendLine($"[FlatBufferStruct]");
-            writer.AppendLine($"[System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Explicit)]");
+            writer.AppendLine($"[System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Explicit, Size = {this.inlineSize})]");
             writer.AppendLine($"public partial struct {this.Name}");
             using (writer.WithBlock())
             {

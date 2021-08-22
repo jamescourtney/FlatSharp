@@ -1,0 +1,29 @@
+﻿
+namespace FlatSharpEndToEndTests.ValueStructs;
+
+union TestUnion { RefStruct, ValueStruct, InnerValueStruct }
+
+table RootTable (fs_serializer:"GreedyMutable") {
+    RefStruct : RefStruct;
+    ValueStruct : ValueStruct;
+    ValueStructVector : [ValueStruct];
+    Union : TestUnion;
+    VectorOfUnion : [TestUnion];
+}
+
+struct RefStruct {
+    A : int;
+    VS : ValueStruct;
+}
+
+struct ValueStruct (fs_valueStruct) {
+    A : ubyte;
+    B : int;
+    C : long;
+    D : [ubyte : 128];
+    Inner : InnerValueStruct;
+}
+
+struct InnerValueStruct (fs_valueStruct) {
+    A : float;
+}
