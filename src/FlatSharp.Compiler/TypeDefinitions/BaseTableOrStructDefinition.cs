@@ -32,10 +32,10 @@ namespace FlatSharp.Compiler
 
         protected override bool SupportsChildren => false;
 
-        public List<FieldDefinition> Fields { get; } = new();
-
-        public List<StructVectorDefinition> StructVectors { get; } = new List<StructVectorDefinition>();
-
         public abstract void ApplyMetadata(Dictionary<string, string?> metadata);
+
+        public abstract void AddField(FieldDefinition field);
+
+        public abstract void AddStructVector(FieldDefinition definition, int count);
     }
 }

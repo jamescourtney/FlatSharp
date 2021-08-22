@@ -82,7 +82,7 @@ namespace FlatSharp.Compiler
 
                 if (structVectorLength == null)
                 {
-                    this.parent.Fields.Add(definition);
+                    this.parent.AddField(definition);
                 }
                 else if (this.parent.SchemaType != TypeModel.FlatBufferSchemaType.Struct)
                 {
@@ -94,23 +94,7 @@ namespace FlatSharp.Compiler
                 }
                 else
                 {
-                    List<string> groupNames = new List<string>();
-
-                    for (int i = 0; i < structVectorLength.Value; ++i)
-                    {
-                        string name = $"__flatsharp__{definition.Name}_{i}";
-                        this.parent.Fields.Add(definition with
-                        {
-                            Name = name,
-                            SetterKind = SetterKind.Protected,
-                            GetterModifier = AccessModifier.Protected,
-                            CustomGetter = $"{definition.Name}[{i}]"
-                        });
-
-                        groupNames.Add(name);
-                    }
-
-                    this.parent.StructVectors.Add(new StructVectorDefinition(definition.Name, definition.FbsFieldType, definition.SetterKind, groupNames));
+                    this.parent.AddStructVector(definition, structVectorLength.Value);
                 }
             });
 

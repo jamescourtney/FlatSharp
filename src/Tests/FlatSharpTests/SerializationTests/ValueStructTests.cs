@@ -53,6 +53,24 @@ namespace FlatSharpTests
             }
 
             [Fact]
+            public void StructVectorStruct()
+            {
+                ITypeModel typeModel = RuntimeTypeModel.CreateFrom(typeof(ValidStruct_WithVector));
+                var tm = Assert.IsType<ValueStructTypeModel>(typeModel);
+
+                var children = tm.Children.ToArray();
+                Assert.Equal(typeof(byte), children[0].ClrType);
+                
+                for (int i = 1; i < children.Length; ++i)
+                {
+                    Assert.Equal(typeof(int), children[i].ClrType);
+                }
+
+                Assert.Equal(44, tm.PhysicalLayout[0].InlineSize);
+                Assert.True(tm.CanMarshalWhenLittleEndian);
+            }
+
+            [Fact]
             public void SimpleStruct_Marshallable_WithoutSizeHint()
             {
                 ITypeModel typeModel = RuntimeTypeModel.CreateFrom(typeof(ValidStruct_Inner));
@@ -322,6 +340,13 @@ namespace FlatSharpTests
         }
 
         [FlatBufferTable]
+        public class SimpleTableAnything<T>
+        {
+            [FlatBufferItem(0)]
+            public virtual T? Item { get; set; }
+        }
+
+        [FlatBufferTable]
         public class SimpleTableNonNullable<T> : ISimpleTable
             where T : struct, IValidStruct
         {
@@ -435,6 +460,30 @@ namespace FlatSharpTests
             public int IC { get => this.C; set => this.C = value; }
             public long ID { get => this.D; set => this.D = value; }
             public ValidStruct_Inner IInner { get => this.Inner; set => this.Inner = value; }
+        }
+    }
+
+
+    [FlatBufferStruct, StructLayout(LayoutKind.Explicit)]
+    public struct ValidStruct_WithVector
+    {
+        [FieldOffset(0)] public byte Foo;
+
+        [FieldOffset(4)] [FlatBufferMetadata(FlatBufferMetadataKind.Accessor, "Vec(0)")] private int __Vector;
+
+        public int Vec_Count => 5;
+
+        public static ref int Vec_Item(ref ValidStruct_WithVector v, int index)
+        {
+            return ref v.__Vector;
+        }
+    }
+
+    public static class ValidStruct_WithVector_Extensions
+    {
+        public static ref int Vec(this ref ValidStruct_WithVector v, int index)
+        {
+            return ref ValidStruct_WithVector.Vec_Item(ref v, index);
         }
     }
 }

@@ -156,9 +156,9 @@ namespace FlatSharp.TypeModel
                 var memberInfo = this.Members[i];
 
                 string propertyAccessor = $"{context.ValueVariableName}.{memberInfo.PropertyInfo.Name}";
-                if (memberInfo.CustomGetter is not null)
+                if (memberInfo.CustomAccessor is not null)
                 {
-                    propertyAccessor = $"{context.ValueVariableName}.{memberInfo.CustomGetter}";
+                    propertyAccessor = $"{context.ValueVariableName}.{memberInfo.CustomAccessor}";
                 }
 
                 var propContext = context with

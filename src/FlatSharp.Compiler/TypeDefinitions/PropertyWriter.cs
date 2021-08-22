@@ -181,6 +181,7 @@ namespace FlatSharp.Compiler
                 SetterKind.Public or SetterKind.PublicInit => AccessModifier.Public,
                 SetterKind.Protected or SetterKind.ProtectedInit => AccessModifier.Protected,
                 SetterKind.ProtectedInternal or SetterKind.ProtectedInternalInit => AccessModifier.ProtectedInternal,
+                SetterKind.Private => AccessModifier.Private,
                 SetterKind.None => null,
                 _ => throw new InvalidOperationException($"Unexpected Setter Access Modifier '{this.field.SetterKind}'")
             };
@@ -215,7 +216,7 @@ namespace FlatSharp.Compiler
             string defaultValue = string.Empty;
             string isDeprecated = string.Empty;
             string forceWrite = string.Empty;
-            string customGetter = string.Empty;
+            string customAccessor = string.Empty;
             string writeThrough = string.Empty;
             string required = string.Empty;
 
@@ -236,7 +237,7 @@ namespace FlatSharp.Compiler
 
             if (!string.IsNullOrEmpty(this.field.CustomGetter))
             {
-                customGetter = $", {nameof(FlatBufferItemAttribute.CustomGetter)} = \"{this.field.CustomGetter}\"";
+                customAccessor = $"[{nameof(FlatBufferMetadataAttribute)}({nameof(FlatBufferMetadataKind)}.{nameof(FlatBufferMetadataKind.Accessor)}, \"{this.field.CustomGetter}\")]";
             }
 
             if (this.TryGetDefaultValueLiteral(thisTypeModel, out var literal))
@@ -271,7 +272,7 @@ namespace FlatSharp.Compiler
                 writeThrough = $", {nameof(FlatBufferItemAttribute.WriteThrough)} = true";
             }
 
-            return $"[{nameof(FlatBufferItemAttribute)}({this.field.Index}{defaultValue}{isDeprecated}{sortedVector}{isKey}{forceWrite}{customGetter}{writeThrough}{required})]";
+            return $"[{nameof(FlatBufferItemAttribute)}({this.field.Index}{defaultValue}{isDeprecated}{sortedVector}{isKey}{forceWrite}{writeThrough}{required})]{customAccessor}";
         }
 
         /// <summary>
