@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright 2021 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,15 +16,15 @@
 
 namespace Samples.ValueStructs;
 
-table Path (fs_serializer:Lazy)
+table Path (fs_serializer:"Lazy")
 {
-	Points : [Point];
+    Points : [Point];
 }
 
 // Beginning in FlatSharp version 5.7.0, FlatBuffer Structs can be declared as value types.
 struct Point (fs_valueStruct)
 {
     X : float;
-	Y : float;
-	Z : float;
+    Y : float;
+    Z : float;
 }
