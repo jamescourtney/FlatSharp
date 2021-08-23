@@ -55,8 +55,11 @@
             var oracle = Oracle.BasicTypes.GetRootAsBasicTypes(new FlatBuffers.ByteBuffer(realBuffer));
             
             var simple = FlatBufferSerializer.Default.Parse<BasicTypes>(realBuffer);
+
+#pragma warning disable CS0618 // Type or member is obsolete
             var simpleUnsafe = FlatBufferSerializer.Default.Parse<BasicTypes>(new UnsafeMemoryInputBuffer(realBuffer));
             var simpleUnsafeArray = FlatBufferSerializer.Default.Parse<BasicTypes>(new UnsafeArrayInputBuffer(realBuffer));
+#pragma warning restore CS0618 // Type or member is obsolete
 
             foreach (var parsed in new[] { simple, simpleUnsafe, simpleUnsafeArray })
             {
