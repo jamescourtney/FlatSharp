@@ -24,10 +24,18 @@ namespace FlatSharp
     public sealed class FlatSharpCompilationException : Exception
     {
         public FlatSharpCompilationException(string[] compilerErrors, string cSharp) 
-            : base("FlatSharp failed to generate proper C# for your schema. Please see the list of errors for precise errors.")
+            : base("FlatSharp failed to generate proper C# for your schema.")
         {
             this.CompilerErrors = compilerErrors;
             this.CSharp = cSharp;
+        }
+
+        public override string Message
+        {
+            get
+            {
+                return $"{base.Message}\r\n\r\n{string.Join("\r\n", this.CompilerErrors)}\r\n";
+            }
         }
 
         /// <summary>

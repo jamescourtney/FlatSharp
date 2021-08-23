@@ -115,7 +115,7 @@ namespace Samples.SerializerOptions
                 "When reading table/struct properties Lazy parsing returns a different instance each time.");
 
             // Invalidate the whole buffer. Undefined behavior past here!
-            Array.Fill(buffer, (byte)0);
+            buffer.AsSpan().Fill(0);
 
             try
             {
@@ -158,7 +158,7 @@ namespace Samples.SerializerOptions
             Debug.Assert(object.ReferenceEquals(index0_1.Fruit, index0_1.Fruit), "And the items returned from each vector exhibit property cache behavior");
 
             // Invalidate the whole buffer. Undefined behavior past here!
-            Array.Fill(buffer, (byte)0);
+            buffer.AsSpan().Fill(0);
 
             try
             {
@@ -219,7 +219,7 @@ namespace Samples.SerializerOptions
             var parsed = serializer.Parse<DemoTable>(buffer);
 
             // Fill array with 0. Source data is gone now, but we can still read the buffer because we were greedy!
-            Array.Fill(buffer, (byte)0);
+            buffer.AsSpan().Fill(0);
 
             InnerTable index0_1 = parsed.ListVector![0];
             InnerTable index0_2 = parsed.ListVector[0];

@@ -163,7 +163,7 @@ namespace FlatSharp.Compiler
                     writer.AppendLine($"public static ref {type} {name}_Item(ref {this.Name} item, int index)");
                     using (writer.WithBlock())
                     {
-                        if (isUnsafeVector)
+                        if (isUnsafeVector && context.CompilePass == CodeWritingPass.LastPass)
                         {
                             writer.AppendLine($"if (unchecked((uint)index) >= {props.Count})");
                             using (writer.WithBlock())

@@ -277,7 +277,9 @@ namespace FlatSharp
             $@"
                 private sealed class {this.ClassName}<TInputBuffer> 
                     : {typeModel.GetGlobalCompilableTypeName()} 
+#pragma warning disable CS0618 // Type or member is obsolete
                     , {interfaceType.GetGlobalCompilableTypeName()}
+#pragma warning restore CS0618 // Type or member is obsolete
                     where TInputBuffer : IInputBuffer
                 {{
                     private static readonly {typeof(FlatBufferDeserializationContext).GetGlobalCompilableTypeName()} __CtorContext 
