@@ -146,7 +146,7 @@ $@"
 $@"
                     case {unionIndex}:
                         {inlineAdjustment}
-                        return new {this.GetCompilableTypeName()}({itemContext.GetParseInvocation(unionMember.ClrType)});
+                        return new {this.GetGlobalCompilableTypeName()}({itemContext.GetParseInvocation(unionMember.ClrType)});
 ";
                 switchCases.Add(@case);
             }
@@ -236,7 +236,7 @@ $@"
             {
                 int discriminator = i + 1;
                 string cloneMethod = context.MethodNameMap[this.memberTypeModels[i].ClrType];
-                switchCases.Add($"{discriminator} => new {this.GetCompilableTypeName()}({cloneMethod}({context.ItemVariableName}.Item{discriminator})),");
+                switchCases.Add($"{discriminator} => new {this.GetGlobalCompilableTypeName()}({cloneMethod}({context.ItemVariableName}.Item{discriminator})),");
             }
 
             switchCases.Add("_ => throw new InvalidOperationException(\"Unexpected union discriminator\")");

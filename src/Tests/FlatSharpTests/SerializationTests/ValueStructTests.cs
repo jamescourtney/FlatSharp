@@ -34,6 +34,7 @@ namespace FlatSharpTests
         {
             [Theory]
             [InlineData(typeof(ValidStruct_Marshallable), true)]
+            [InlineData(typeof(ValidStruct_Marshallable_OutOfOrder), true)]
             [InlineData(typeof(ValidStruct_NotMarshallable_MissingSizeHint), false)]
             [InlineData(typeof(ValidStruct_NotMarshallable_DueToSize), false)]
             public void ValidStructs(Type type, bool marshallable)
@@ -107,6 +108,8 @@ namespace FlatSharpTests
             [Theory]
             [InlineData(typeof(ValidStruct_Marshallable), true, true)]
             [InlineData(typeof(ValidStruct_Marshallable), false, false)]
+            [InlineData(typeof(ValidStruct_Marshallable_OutOfOrder), true, true)]
+            [InlineData(typeof(ValidStruct_Marshallable_OutOfOrder), false, false)]
             [InlineData(typeof(ValidStruct_NotMarshallable_DueToSize), true, false)]
             [InlineData(typeof(ValidStruct_NotMarshallable_DueToSize), false, false)]
             [InlineData(typeof(ValidStruct_NotMarshallable_MissingSizeHint), true, false)]
@@ -157,6 +160,8 @@ namespace FlatSharpTests
             [Theory]
             [InlineData(typeof(ValidStruct_Marshallable), true, true)]
             [InlineData(typeof(ValidStruct_Marshallable), false, false)]
+            [InlineData(typeof(ValidStruct_Marshallable_OutOfOrder), true, true)]
+            [InlineData(typeof(ValidStruct_Marshallable_OutOfOrder), false, false)]
             [InlineData(typeof(ValidStruct_NotMarshallable_DueToSize), true, false)]
             [InlineData(typeof(ValidStruct_NotMarshallable_DueToSize), false, false)]
             [InlineData(typeof(ValidStruct_NotMarshallable_MissingSizeHint), true, false)]
@@ -208,13 +213,15 @@ namespace FlatSharpTests
         public class ParseTests
         {
             [Theory]
-            [InlineData(typeof(ValidStruct_Marshallable), true, true)]
-            [InlineData(typeof(ValidStruct_Marshallable), false, false)]
-            [InlineData(typeof(ValidStruct_NotMarshallable_DueToSize), true, false)]
-            [InlineData(typeof(ValidStruct_NotMarshallable_DueToSize), false, false)]
-            [InlineData(typeof(ValidStruct_NotMarshallable_MissingSizeHint), true, false)]
-            [InlineData(typeof(ValidStruct_NotMarshallable_MissingSizeHint), false, false)]
-            public void Parse_Nullable(Type type, bool enableMarshal, bool expectMarshal)
+            [InlineData(typeof(ValidStruct_Marshallable), true, true, FlatBufferDeserializationOption.Greedy)]
+            [InlineData(typeof(ValidStruct_Marshallable), false, false, FlatBufferDeserializationOption.Lazy)]
+            [InlineData(typeof(ValidStruct_Marshallable_OutOfOrder), true, true, FlatBufferDeserializationOption.PropertyCache)]
+            [InlineData(typeof(ValidStruct_Marshallable_OutOfOrder), false, false, FlatBufferDeserializationOption.VectorCache)]
+            [InlineData(typeof(ValidStruct_NotMarshallable_DueToSize), true, false, FlatBufferDeserializationOption.VectorCacheMutable)]
+            [InlineData(typeof(ValidStruct_NotMarshallable_DueToSize), false, false, FlatBufferDeserializationOption.Lazy)]
+            [InlineData(typeof(ValidStruct_NotMarshallable_MissingSizeHint), true, false, FlatBufferDeserializationOption.PropertyCache)]
+            [InlineData(typeof(ValidStruct_NotMarshallable_MissingSizeHint), false, false, FlatBufferDeserializationOption.GreedyMutable)]
+            public void Parse_Nullable(Type type, bool enableMarshal, bool expectMarshal, FlatBufferDeserializationOption option)
             {
                 byte[] data =
                 {
@@ -231,7 +238,7 @@ namespace FlatSharpTests
                 };
 
                 Type tableType = typeof(SimpleTableNullable<>).MakeGenericType(type);
-                var fbs = new FlatBufferSerializer(new FlatBufferSerializerOptions { EnableValueStructMemoryMarshalDeserialization = enableMarshal });
+                var fbs = new FlatBufferSerializer(new FlatBufferSerializerOptions(option) { EnableValueStructMemoryMarshalDeserialization = enableMarshal });
 
                 ISerializer serializer = fbs.Compile(tableType);
                 ISimpleTable table = (ISimpleTable)serializer.Parse(data);
@@ -247,10 +254,11 @@ namespace FlatSharpTests
                 Assert.Equal(5, table.Item.IInner.Test);
             }
 
-
             [Theory]
             [InlineData(typeof(ValidStruct_Marshallable), true, true)]
             [InlineData(typeof(ValidStruct_Marshallable), false, false)]
+            [InlineData(typeof(ValidStruct_Marshallable_OutOfOrder), true, true)]
+            [InlineData(typeof(ValidStruct_Marshallable_OutOfOrder), false, false)]
             [InlineData(typeof(ValidStruct_NotMarshallable_DueToSize), true, false)]
             [InlineData(typeof(ValidStruct_NotMarshallable_DueToSize), false, false)]
             [InlineData(typeof(ValidStruct_NotMarshallable_MissingSizeHint), true, false)]
@@ -351,6 +359,22 @@ namespace FlatSharpTests
             [FieldOffset(4)] public int C;
             [FieldOffset(8)] public long D;
             [FieldOffset(16)] public ValidStruct_Inner Inner;
+
+            public byte IA { get => this.A; set => this.A = value; }
+            public short IB { get => this.B; set => this.B = value; }
+            public int IC { get => this.C; set => this.C = value; }
+            public long ID { get => this.D; set => this.D = value; }
+            public ValidStruct_Inner IInner { get => this.Inner; set => this.Inner = value; }
+        }
+
+        [FlatBufferStruct, StructLayout(LayoutKind.Explicit, Size = 20)]
+        public struct ValidStruct_Marshallable_OutOfOrder : IValidStruct
+        {
+            [FieldOffset(16)] public ValidStruct_Inner Inner;
+            [FieldOffset(4)] public int C;
+            [FieldOffset(8)] public long D;
+            [FieldOffset(2)] public short B;
+            [FieldOffset(0)] public byte A;
 
             public byte IA { get => this.A; set => this.A = value; }
             public short IB { get => this.B; set => this.B = value; }

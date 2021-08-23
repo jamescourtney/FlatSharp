@@ -11,12 +11,8 @@
     <DebugSymbols>true</DebugSymbols>
     <Nullable>annotations</Nullable>
     <ValidateExecutableReferencesMatchSelfContained>false</ValidateExecutableReferencesMatchSelfContained>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="Benchmark.fbs.generated.cs" />
-    <Compile Include="Benchmark.fbs.generated.cs" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.12.1" />
@@ -31,6 +27,10 @@
     <ProjectReference Include="..\..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
     <ProjectReference Include="..\..\FlatSharp.Unsafe\FlatSharp.Unsafe.csproj" />
     <ProjectReference Include="..\..\FlatSharp\FlatSharp.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Benchmark.fbs.generated.cs" />
+    <Compile Include="Benchmark.fbs.generated.cs" />
   </ItemGroup>
 
   <Target Name="FBS" BeforeTargets="BeforeBuild">

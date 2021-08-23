@@ -19,6 +19,7 @@ namespace FlatSharp.Compiler
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Runtime.CompilerServices;
     using FlatSharp.Attributes;
     using FlatSharp.TypeModel;
 
@@ -26,7 +27,7 @@ namespace FlatSharp.Compiler
     {
         private readonly Dictionary<string, StructMemberModel> fieldNameMap;
         private readonly List<FieldDefinition> fieldDefs;
-        private readonly List<(string name, List<string> fieldNames)> structVectors;
+        private readonly List<(string name, bool @unsafe, List<string> fieldNames)> structVectors;
         private int inlineSize;
 
         public ValueStructDefinition(
@@ -69,7 +70,7 @@ namespace FlatSharp.Compiler
                 names.Add(name);
             }
 
-            this.structVectors.Add((definition.Name, names));
+            this.structVectors.Add((definition.Name, definition.IsUnsafeStructVector, names));
         }
 
         protected override void OnWriteCode(CodeWriter writer, CompileContext context)
@@ -149,9 +150,11 @@ namespace FlatSharp.Compiler
 
                 foreach (var structVectorDef in this.structVectors)
                 {
-                    (string name, List<string> props) = structVectorDef;
+                    (string name, bool isUnsafeVector, List<string> props) = structVectorDef;
+                    context.NeedsUnsafe |= isUnsafeVector;
 
                     StructMemberModel memberModel = this.fieldNameMap[props[0]];
+                    string itemType = memberModel.ItemTypeModel.GetGlobalCompilableTypeName();
 
                     string type = memberModel.ItemTypeModel.GetGlobalCompilableTypeName();
 
@@ -160,15 +163,46 @@ namespace FlatSharp.Compiler
                     writer.AppendLine($"public static ref {type} {name}_Item(ref {this.Name} item, int index)");
                     using (writer.WithBlock())
                     {
-                        writer.AppendLine("switch (index)");
-                        using (writer.WithBlock())
+                        if (isUnsafeVector)
                         {
-                            for (int i = 0; i < props.Count; ++i)
+                            writer.AppendLine($"if (unchecked((uint)index) >= {props.Count})");
+                            using (writer.WithBlock())
                             {
-                                writer.AppendLine($"case {i}: return ref item.{props[i]};");
+                                writer.AppendLine($"throw new IndexOutOfRangeException();");
                             }
 
-                            writer.AppendLine("default: throw new IndexOutOfRangeException();");
+                            writer.AppendLine($"unsafe");
+                            using (writer.WithBlock())
+                            {
+                                writer.AppendLine($"fixed ({this.Name}* pItem = &item)");
+                                using (writer.WithBlock())
+                                {
+                                    // Get byte* pointer to struct.
+                                    writer.AppendLine($"byte* pByte = (byte*)pItem;");
+
+                                    // Advance to position of the first item in the fector.
+                                    writer.AppendLine($"pByte += {memberModel.Offset};");
+
+                                    // Advance to correct index.
+                                    writer.AppendLine($"pByte += index * sizeof({itemType});");
+
+                                    // return ref.
+                                    writer.AppendLine($"return ref {typeof(Unsafe).GetGlobalCompilableTypeName()}.AsRef<{itemType}>(pByte);");
+                                }
+                            }
+                        }
+                        else
+                        {
+                            writer.AppendLine("switch (index)");
+                            using (writer.WithBlock())
+                            {
+                                for (int i = 0; i < props.Count; ++i)
+                                {
+                                    writer.AppendLine($"case {i}: return ref item.{props[i]};");
+                                }
+
+                                writer.AppendLine("default: throw new IndexOutOfRangeException();");
+                            }
                         }
                     }
                 }
@@ -179,7 +213,7 @@ namespace FlatSharp.Compiler
             {
                 foreach (var structVectorDef in this.structVectors)
                 {
-                    (string name, List<string> props) = structVectorDef;
+                    (string name, _, List<string> props) = structVectorDef;
                     StructMemberModel memberModel = this.fieldNameMap[props[0]];
                     string type = memberModel.ItemTypeModel.GetGlobalCompilableTypeName();
 

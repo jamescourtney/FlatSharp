@@ -135,24 +135,23 @@ $@"
                 CompileAssembly(
                     template,
                     this.options.EnableAppDomainInterceptOnAssemblyLoad,
+                    allowUnsafe: false,
                     externalRefs.ToArray());
 
             Type? type = assembly.GetType($"Generated.{GeneratedSerializerClassName}");
             FlatSharpInternal.Assert(type is not null, "Generated assembly did not contain serializer type.");
 
             object? item = Activator.CreateInstance(type);
-            if (item is IGeneratedSerializer<TRoot> serializer)
-            {
-                return new GeneratedSerializerWrapper<TRoot>(
-                    serializer,
-                    assembly,
-                    formattedTextFactory,
-                    assemblyData);
-            }
 
-            FlatSharpInternal.Assert(false, $"Compilation succeeded, but created instance {item}, Type = {assembly.GetTypes()[0]}");
+            FlatSharpInternal.Assert(
+                item is IGeneratedSerializer<TRoot>,
+                $"Compilation succeeded, but created instance {item}, Type = {assembly.GetTypes()[0]}");
 
-            return null; // won't ever hit.
+            return new GeneratedSerializerWrapper<TRoot>(
+                (IGeneratedSerializer<TRoot>)item,
+                assembly,
+                formattedTextFactory,
+                assemblyData);
         }
 
         internal string GenerateCSharp<TRoot>(string visibility = "public")
@@ -160,7 +159,7 @@ $@"
             ITypeModel rootModel = this.typeModelContainer.CreateTypeModel(typeof(TRoot));
             if (rootModel.SchemaType != FlatBufferSchemaType.Table)
             {
-                throw new InvalidFlatBufferDefinitionException($"Can only compile [FlatBufferTable] elements as root types. Type '{CSharpHelpers.GetCompilableTypeName(typeof(TRoot))}' is a {rootModel.SchemaType}.");
+                throw new InvalidFlatBufferDefinitionException($"Can only compile [FlatBufferTable] elements as root types. Type '{typeof(TRoot).GetCompilableTypeName()}' is a {rootModel.SchemaType}.");
             }
 
             this.DefineMethods(rootModel);
@@ -169,7 +168,7 @@ $@"
 
             string code = $@"
                 [{nameof(FlatSharpGeneratedSerializerAttribute)}({nameof(FlatBufferDeserializationOption)}.{this.options.DeserializationOption})]
-                {visibility} sealed class {GeneratedSerializerClassName} : {nameof(IGeneratedSerializer<byte>)}<{CSharpHelpers.GetGlobalCompilableTypeName(typeof(TRoot))}>
+                {visibility} sealed class {GeneratedSerializerClassName} : {nameof(IGeneratedSerializer<byte>)}<{typeof(TRoot).GetGlobalCompilableTypeName()}>
                 {{    
                     // Method generated to help AOT compilers make good decisions about generics.
                     public void __AotHelper()
@@ -228,6 +227,7 @@ $@"
         internal static (Assembly assembly, Func<string> formattedTextFactory, byte[] assemblyData) CompileAssembly(
             string sourceCode,
             bool enableAppDomainIntercept,
+            bool allowUnsafe,
             params Assembly[] additionalReferences)
         {
             var rootNode = ApplySyntaxTransformations(CSharpSyntaxTree.ParseText(sourceCode, ParseOptions).GetRoot());
@@ -246,7 +246,7 @@ $@"
             string name = $"FlatSharpDynamicAssembly_{Guid.NewGuid():n}";
             var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
                 .WithModuleName(name)
-                .WithAllowUnsafe(false)
+                .WithAllowUnsafe(allowUnsafe)
                 .WithOptimizationLevel(OptimizationLevel.Release)
                 .WithNullableContextOptions(NullableContextOptions.Enable);
 
@@ -342,6 +342,7 @@ $@"
                 MetadataReference.CreateFromFile(typeof(IGeneratedSerializer<byte>).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(InvalidDataException).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(ReadOnlyDictionary<,>).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Unsafe).Assembly.Location),
             });
 
             return references;

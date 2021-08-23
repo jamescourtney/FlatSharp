@@ -86,7 +86,7 @@ namespace FlatSharp.Compiler
             ITypeModel typeModel, 
             Dictionary<Type, string> methodNameMap)
         {
-            string typeName = CSharpHelpers.GetCompilableTypeName(typeModel.ClrType);
+            string typeName = typeModel.GetGlobalCompilableTypeName();
             CodeGeneratedMethod method = typeModel.CreateCloneMethodBody(new CloneCodeGenContext("item", methodNameMap));
 
             if (!typeModel.ClrType.IsValueType)

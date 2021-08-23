@@ -65,11 +65,23 @@ namespace FlatSharp.Attributes
             this MemberInfo memberInfo,
             FlatBufferMetadataKind kind)
         {
-            return memberInfo
+            string? result = memberInfo
                 .GetCustomAttributes<FlatBufferMetadataAttribute>()
                 .Where(x => x.Kind == kind)
                 .FirstOrDefault()?
                 .Value;
+
+            if (result is null && kind == FlatBufferMetadataKind.Accessor)
+            {
+                // Look at legacy attribute as well.
+                result = memberInfo
+                    .GetCustomAttribute<FlatBufferItemAttribute>()?
+#pragma warning disable CS0612 // Type or member is obsolete
+                    .CustomGetter;
+#pragma warning restore CS0612 // Type or member is obsolete
+            }
+
+            return result;
         }
     }
 }
