@@ -14,25 +14,17 @@
  * limitations under the License.
  */
 
-namespace Samples.StructMarshalling;
+namespace Samples.ValueStructs;
 
-table Table (fs_serializer:Lazy)
+table Path (fs_serializer:Lazy)
 {
-	         Vectors : [Vector3];
-	IrregularStructs : [IrregularStruct];
+	Points : [Point];
 }
 
-// Conforms to the format of System.Numerics.Vector3.
-struct Vector3 
+// Beginning in FlatSharp version 5.7.0, FlatBuffer Structs can be declared as value types.
+struct Point (fs_valueStruct)
 {
     X : float;
 	Y : float;
 	Z : float;
-}
-
-// This struct in FlatBuffers is only 9 bytes.
-struct IrregularStruct
-{
-    A : ulong;
-	B : byte;
 }

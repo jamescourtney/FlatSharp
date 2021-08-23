@@ -49,7 +49,7 @@ namespace FlatSharpTests
             Assert.True(withForceWriteSize > defaultSize);
         }
 
-        [Fact]
+        [Fact, Obsolete]
         public void SimpleTypes_UnsafeSpanWriter() =>
             this.SimpleTypesTest<UnsafeSpanWriter, BasicTypes>(new UnsafeSpanWriter());
 

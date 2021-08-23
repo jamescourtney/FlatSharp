@@ -98,7 +98,7 @@ namespace FlatSharpTests
                 (s, b) => s.Parse<PrimitiveTypesTable>(b));
         }
 
-        [Fact]
+        [Fact, Obsolete]
         public void UnsafeArrayInputBuffer()
         {
             this.InputBufferTest(new UnsafeArrayInputBuffer(Input));
@@ -110,7 +110,7 @@ namespace FlatSharpTests
                 (s, b) => s.Parse<PrimitiveTypesTable>(new UnsafeArrayInputBuffer(b)));
         }
 
-        [Fact]
+        [Fact, Obsolete]
         public void UnsafeMemoryInputBuffer()
         {
             using (var buffer = new UnsafeMemoryInputBuffer(new Memory<byte>(Input)))

@@ -23,10 +23,11 @@ namespace FlatSharpTests
     using FlatSharp.Attributes;
     using Xunit;
 
+#pragma warning disable CS0618 // Type or member is obsolete
+
     /// <summary>
     /// Verifies the IFlatBufferAddressableStruct interface is implemented correctly.
     /// </summary>
-    
     public class AddressableStructTests
     {
         [Fact]
@@ -273,4 +274,6 @@ namespace FlatSharpTests
             public byte AlignmentImp;
         }
     }
+
+#pragma warning restore CS0618 // Type or member is obsolete
 }

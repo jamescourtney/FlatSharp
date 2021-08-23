@@ -21,6 +21,7 @@ namespace FlatSharp.Unsafe
     using System.Runtime.CompilerServices;
     using System.Text;
 
+    [Obsolete("The FlatSharp.Unsafe package is deprecated and is scheduled for removal in FlatSharp version 6.")]
     public sealed unsafe class UnsafeSpanWriter : ISpanWriter
     {
         public UnsafeSpanWriter()

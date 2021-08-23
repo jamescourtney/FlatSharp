@@ -258,6 +258,7 @@ namespace FlatSharp
 
             Type interfaceType = typeof(IFlatBufferDeserializedObject);
 
+#pragma warning disable CS0618 // Type or member is obsolete
             string addressableStructImplementation = string.Empty;
             if (this.typeModel.SchemaType == FlatBufferSchemaType.Struct &&
                 this.typeModel.PhysicalLayout.Length == 1 &&
@@ -270,12 +271,15 @@ namespace FlatSharp
                     int {nameof(IFlatBufferAddressableStruct)}.{nameof(IFlatBufferAddressableStruct.Alignment)} => {this.typeModel.PhysicalLayout[0].Alignment};
                 ";
             }
+#pragma warning restore CS0618 // Type or member is obsolete
 
-            return 
+            return
             $@"
                 private sealed class {this.ClassName}<TInputBuffer> 
                     : {typeModel.GetGlobalCompilableTypeName()} 
+#pragma warning disable CS0618 // Type or member is obsolete
                     , {interfaceType.GetGlobalCompilableTypeName()}
+#pragma warning restore CS0618 // Type or member is obsolete
                     where TInputBuffer : IInputBuffer
                 {{
                     private static readonly {typeof(FlatBufferDeserializationContext).GetGlobalCompilableTypeName()} __CtorContext 

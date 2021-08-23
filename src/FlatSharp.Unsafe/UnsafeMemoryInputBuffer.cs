@@ -27,6 +27,7 @@ namespace FlatSharp.Unsafe
     /// lifetime of the <see cref="UnsafeMemoryInputBuffer"/>, so it is not appropriate
     /// to keep these for long periods of time.
     /// </summary>
+    [Obsolete("The FlatSharp.Unsafe package is deprecated and is scheduled for removal in FlatSharp version 6.")]
     public sealed unsafe class UnsafeMemoryInputBuffer : IInputBuffer, IDisposable
     {
         private readonly Memory<byte> memory;

@@ -106,17 +106,21 @@ namespace FlatSharp.Compiler
                             }
 
                             string cSharp = string.Empty;
-                            bool succeeded = false;
+                            Exception? exception = null;
                             try
                             {
                                 CreateCSharp(rootNode, options, out _, out cSharp);
-                                succeeded = true;
+                            }
+                            catch (Exception ex)
+                            {
+                                exception = ex;
+                                throw;
                             }
                             finally
                             {
-                                if (!succeeded)
+                                if (exception is not null)
                                 {
-                                    cSharp = $"{FailureMessage}\r\n\r\n\r\n\r\n{cSharp}";
+                                    cSharp = $"{FailureMessage}\r\n/* Error: \r\n{exception}\r\n*/\r\n\r\n{cSharp}";
                                 }
 
                                 if (cSharp is not null)
@@ -364,7 +368,7 @@ namespace FlatSharp.Compiler
                     if (step > CodeWritingPass.Initialization)
                     {
                         csharp = writer.ToString();
-                        (assembly, _, _) = RoslynSerializerGenerator.CompileAssembly(csharp, context?.NeedsUnsafe == true, true);
+                        (assembly, _, _) = RoslynSerializerGenerator.CompileAssembly(csharp, true, context?.NeedsUnsafe == true);
                     }
 
                     writer = new CodeWriter();
