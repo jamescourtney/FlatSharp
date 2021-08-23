@@ -100,6 +100,7 @@ namespace FlatSharpTests.Compiler
                 namespace ValueStructTests;
                 table Table ({MetadataKeys.SerializerKind}:""GreedyMutable"") {{ Struct : Struct; }}
                 struct Struct ({MetadataKeys.ValueStruct}) {{ A:[int : 12]; }} 
+                struct UnsafeStruct ({MetadataKeys.ValueStruct}) {{ A : [ int : 13 ] ({MetadataKeys.UnsafeValueStructVector}); }}
                 ";
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());

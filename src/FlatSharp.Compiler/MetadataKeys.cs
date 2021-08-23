@@ -91,6 +91,11 @@ namespace FlatSharp.Compiler
         public const string ValueStruct = "fs_valueStruct";
 
         /// <summary>
+        /// Indicates than a value struct vector's accessor should be generated with unsafe code.
+        /// </summary>
+        public const string UnsafeValueStructVector = "fs_unsafeStructVector";
+
+        /// <summary>
         /// Indicates that a single table field should be force-written, or when declared on a table
         /// that all fields should be force written. Force Write refers to writing a value even if it
         /// matches the default.

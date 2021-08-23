@@ -9,6 +9,8 @@ table RootTable (fs_serializer:"GreedyMutable") {
     ValueStructVector : [ValueStruct];
     Union : TestUnion;
     VectorOfUnion : [TestUnion];
+    RequiredValueStruct : ValueStruct (required);
+    str : string;
 }
 
 struct RefStruct {
@@ -22,6 +24,42 @@ struct ValueStruct (fs_valueStruct) {
     C : long;
     D : [ubyte : 128];
     Inner : InnerValueStruct;
+}
+
+struct ValueUnsafeStructVector_Byte (fs_valueStruct) {
+    GuardLower : ulong;
+    Vector : [ubyte : 128] (fs_unsafeStructVector);
+    GuardHigher : ulong;
+}
+
+struct ValueUnsafeStructVector_UShort (fs_valueStruct) {
+    GuardLower : ulong;
+    Vector : [ushort : 128] (fs_unsafeStructVector);
+    GuardHigher : ulong;
+}
+
+struct ValueUnsafeStructVector_UInt (fs_valueStruct) {
+    GuardLower : ulong;
+    Vector : [uint : 128] (fs_unsafeStructVector);
+    GuardHigher : ulong;
+}
+
+struct ValueUnsafeStructVector_ULong (fs_valueStruct) {
+    GuardLower : ulong;
+    Vector : [ulong : 128] (fs_unsafeStructVector);
+    GuardHigher : ulong;
+}
+
+struct ValueUnsafeStructVector_Float (fs_valueStruct) {
+    GuardLower : ulong;
+    Vector : [float : 128] (fs_unsafeStructVector);
+    GuardHigher : ulong;
+}
+
+struct ValueUnsafeStructVector_Double (fs_valueStruct) {
+    GuardLower : ulong;
+    Vector : [double : 128] (fs_unsafeStructVector);
+    GuardHigher : ulong;
 }
 
 struct InnerValueStruct (fs_valueStruct) {

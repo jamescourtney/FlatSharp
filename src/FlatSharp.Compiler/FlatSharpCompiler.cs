@@ -106,7 +106,7 @@ namespace FlatSharp.Compiler
                             string cSharp = string.Empty;
                             try
                             {
-                                CreateCSharp(rootNode, options, out cSharp);
+                                CreateCSharp(rootNode, options, out _, out cSharp);
                             }
                             finally
                             {
@@ -191,8 +191,8 @@ namespace FlatSharp.Compiler
                 {
                     Assembly[] additionalRefs = additionalReferences?.ToArray() ?? Array.Empty<Assembly>();
                     var rootNode = ParseSyntax("root.fbs", includeLoader);
-                    CreateCSharp(rootNode, options, out string cSharp);
-                    var (assembly, formattedText, _) = RoslynSerializerGenerator.CompileAssembly(cSharp, true, additionalRefs);
+                    CreateCSharp(rootNode, options, out bool needsUnsafe, out string cSharp);
+                    var (assembly, formattedText, _) = RoslynSerializerGenerator.CompileAssembly(cSharp, true, needsUnsafe, additionalRefs);
                     string debugText = formattedText();
                     return assembly;
                 }
@@ -311,7 +311,7 @@ namespace FlatSharp.Compiler
 
             using (ErrorContext.Current)
             {
-                CreateCSharp(ParseSyntax("root.fbs", includeLoader), options, out string csharp);
+                CreateCSharp(ParseSyntax("root.fbs", includeLoader), options, out _, out string csharp);
                 return csharp;
             }
         }
@@ -319,9 +319,11 @@ namespace FlatSharp.Compiler
         private static void CreateCSharp(
             BaseSchemaMember rootNode,
             CompilerOptions options,
+            out bool needsUnsafe,
             out string csharp)
         {
             csharp = string.Empty;
+
 
             try
             {
@@ -338,6 +340,7 @@ namespace FlatSharp.Compiler
                     CodeWritingPass.RpcGeneration,
                 };
 
+                CompileContext? context = null;
                 foreach (var step in steps)
                 {
                     var localOptions = options;
@@ -350,25 +353,29 @@ namespace FlatSharp.Compiler
                     if (step > CodeWritingPass.Initialization)
                     {
                         csharp = writer.ToString();
-                        (assembly, _, _) = RoslynSerializerGenerator.CompileAssembly(csharp, true);
+                        (assembly, _, _) = RoslynSerializerGenerator.CompileAssembly(csharp, context?.NeedsUnsafe == true, true);
                     }
 
                     writer = new CodeWriter();
 
+                    context = new CompileContext
+                    {
+                        CompilePass = step,
+                        Options = localOptions,
+                        RootFile = rootNode.DeclaringFile,
+                        PreviousAssembly = assembly,
+                        TypeModelContainer = TypeModelContainer.CreateDefault(),
+                        NeedsUnsafe = context?.NeedsUnsafe == true,
+                    };
+
                     rootNode.WriteCode(
                         writer,
-                        new CompileContext
-                        {
-                            CompilePass = step,
-                            Options = localOptions,
-                            RootFile = rootNode.DeclaringFile,
-                            PreviousAssembly = assembly,
-                            TypeModelContainer = TypeModelContainer.CreateDefault(),
-                        });
+                        context);
 
                     ErrorContext.Current.ThrowIfHasErrors();
                 }
 
+                needsUnsafe = context?.NeedsUnsafe == true;
                 csharp = writer.ToString();
 
             }

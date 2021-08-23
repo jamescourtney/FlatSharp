@@ -11,12 +11,8 @@
     <DebugSymbols>true</DebugSymbols>
     <Nullable>annotations</Nullable>
     <ValidateExecutableReferencesMatchSelfContained>false</ValidateExecutableReferencesMatchSelfContained>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="Benchmark.fbs.generated.cs" />
-    <Compile Include="Benchmark.fbs.generated.cs" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.12.1" />

@@ -71,6 +71,7 @@ namespace FlatSharp.Compiler
                 definition.ForceWrite = metadata.ParseNullableBooleanMetadata(MetadataKeys.ForceWrite);
                 definition.WriteThrough = metadata.ParseNullableBooleanMetadata(MetadataKeys.WriteThrough);
                 definition.IsRequired = metadata.ParseBooleanMetadata(MetadataKeys.Required);
+                definition.IsUnsafeStructVector = metadata.ParseBooleanMetadata(MetadataKeys.UnsafeValueStructVector);
 
                 this.ParseIdMetadata(definition, metadata);
 

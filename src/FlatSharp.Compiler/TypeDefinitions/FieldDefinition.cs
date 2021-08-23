@@ -16,12 +16,6 @@
 
 namespace FlatSharp.Compiler
 {
-    using System;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Reflection;
-    using FlatSharp.Attributes;
-    using FlatSharp.TypeModel;
-
     internal record FieldDefinition
     {
         public FieldDefinition(
@@ -69,6 +63,8 @@ namespace FlatSharp.Compiler
         public AccessModifier GetterModifier { get; set; } = AccessModifier.Public;
 
         public bool SharedString { get; set; }
+
+        public bool IsUnsafeStructVector { get; set; }
 
         /// <summary>
         /// Early-bound resolved type name. May be null if the type is unbound when the field is read.

@@ -20,6 +20,7 @@ namespace FlatSharpEndToEndTests.ValueStructs
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices;
     using Xunit;
 
@@ -114,6 +115,194 @@ namespace FlatSharpEndToEndTests.ValueStructs
                 var p = parsed.ValueStructVector[i];
                 AssertStructsEqual(t, p);
             }
+        }
+
+        [Fact]
+        public void ValueStructs_OutOfRange()
+        {
+            ValueUnsafeStructVector_Byte v = default;
+            Assert.Throws<IndexOutOfRangeException>(() => v.Vector(v.Vector_Length));
+            Assert.Throws<IndexOutOfRangeException>(() => v.Vector(-1));
+
+            ValueStruct safe = default;
+            Assert.Throws<IndexOutOfRangeException>(() => safe.D(safe.D_Length));
+            Assert.Throws<IndexOutOfRangeException>(() => safe.D(-1));
+        }
+
+        [Fact]
+        public void ValueStructVector_Unsafe_Byte()
+        {
+            ValueUnsafeStructVector_Byte v = default;
+
+            Assert.Equal(0ul, v.GuardLower);
+            Assert.Equal(0ul, v.GuardHigher);
+
+            for (int i = 0; i < v.Vector_Length; ++i)
+            {
+                v.Vector(i) = byte.MaxValue;
+            }
+
+            Assert.Equal(0ul, v.GuardLower);
+            Assert.Equal(0ul, v.GuardHigher);
+
+            for (int i = 0; i < v.Vector_Length; ++i)
+            {
+                Assert.Equal(byte.MaxValue, v.Vector(i));
+            }
+
+            ValidateGuardedSpan(v);
+        }
+
+        [Fact]
+        public void ValueStructVector_Unsafe_UShort()
+        {
+            ValueUnsafeStructVector_UShort v = default;
+
+            Assert.Equal(0ul, v.GuardLower);
+            Assert.Equal(0ul, v.GuardHigher);
+
+            for (int i = 0; i < v.Vector_Length; ++i)
+            {
+                v.Vector(i) = ushort.MaxValue;
+            }
+
+            Assert.Equal(0ul, v.GuardLower);
+            Assert.Equal(0ul, v.GuardHigher);
+
+            for (int i = 0; i < v.Vector_Length; ++i)
+            {
+                Assert.Equal(ushort.MaxValue, v.Vector(i));
+            }
+
+            ValidateGuardedSpan(v);
+        }
+
+        [Fact]
+        public void ValueStructVector_Unsafe_UInt()
+        {
+            ValueUnsafeStructVector_UInt v = default;
+
+            Assert.Equal(0ul, v.GuardLower);
+            Assert.Equal(0ul, v.GuardHigher);
+
+            for (int i = 0; i < v.Vector_Length; ++i)
+            {
+                v.Vector(i) = uint.MaxValue;
+            }
+
+            Assert.Equal(0ul, v.GuardLower);
+            Assert.Equal(0ul, v.GuardHigher);
+
+            for (int i = 0; i < v.Vector_Length; ++i)
+            {
+                Assert.Equal(uint.MaxValue, v.Vector(i));
+            }
+
+            ValidateGuardedSpan(v);
+        }
+
+        [Fact]
+        public void ValueStructVector_Unsafe_ULong()
+        {
+            ValueUnsafeStructVector_ULong v = default;
+
+            Assert.Equal(0ul, v.GuardLower);
+            Assert.Equal(0ul, v.GuardHigher);
+
+            for (int i = 0; i < v.Vector_Length; ++i)
+            {
+                v.Vector(i) = ulong.MaxValue;
+            }
+
+            Assert.Equal(0ul, v.GuardLower);
+            Assert.Equal(0ul, v.GuardHigher);
+
+            for (int i = 0; i < v.Vector_Length; ++i)
+            {
+                Assert.Equal(ulong.MaxValue, v.Vector(i));
+            }
+
+            ValidateGuardedSpan(v);
+        }
+
+        [Fact]
+        public void ValueStructVector_Unsafe_Float()
+        {
+            ValueUnsafeStructVector_Float v = default;
+
+            Assert.Equal(0ul, v.GuardLower);
+            Assert.Equal(0ul, v.GuardHigher);
+
+            for (int i = 0; i < v.Vector_Length; ++i)
+            {
+                v.Vector(i) = float.MaxValue;
+            }
+
+            Assert.Equal(0ul, v.GuardLower);
+            Assert.Equal(0ul, v.GuardHigher);
+
+            for (int i = 0; i < v.Vector_Length; ++i)
+            {
+                Assert.Equal(float.MaxValue, v.Vector(i));
+            }
+
+            ValidateGuardedSpan(v);
+        }
+
+        [Fact]
+        public void ValueStructVector_Unsafe_Double()
+        {
+            ValueUnsafeStructVector_Double v = default;
+
+            Assert.Equal(0ul, v.GuardLower);
+            Assert.Equal(0ul, v.GuardHigher);
+
+            for (int i = 0; i < v.Vector_Length; ++i)
+            {
+                v.Vector(i) = double.MaxValue;
+            }
+
+            Assert.Equal(0ul, v.GuardLower);
+            Assert.Equal(0ul, v.GuardHigher);
+
+            for (int i = 0; i < v.Vector_Length; ++i)
+            {
+                Assert.Equal(double.MaxValue, v.Vector(i));
+            }
+
+            ValidateGuardedSpan(v);
+        }
+
+        private void ValidateGuardedSpan<T>(T item) where T : struct
+        {
+            Span<T> span = new T[1];
+            span[0] = item;
+            Span<byte> bytes = MemoryMarshal.Cast<T, byte>(span);
+
+            Span<byte> guardLow = bytes[..sizeof(ulong)];
+            Span<byte> mid = bytes[sizeof(ulong)..^sizeof(ulong)];
+            Span<byte> guardHigh = bytes[^sizeof(ulong)..];
+
+            int count = 0;
+            for (int i = 0; i < guardLow.Length; ++i)
+            {
+                Assert.Equal(0, guardLow[i]);
+                count++;
+            }
+
+            for (int i = 0; i < mid.Length; ++i)
+            {
+                Assert.NotEqual(0, mid[i]);
+                count++;
+            }
+
+            for (int i = 0; i < guardHigh.Length; ++i)
+            {
+                Assert.Equal(0, guardHigh[i]);
+                count++;
+            }
+
+            Assert.Equal(count, Unsafe.SizeOf<T>());
         }
 
         [Fact]

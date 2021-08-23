@@ -135,6 +135,7 @@ $@"
                 CompileAssembly(
                     template,
                     this.options.EnableAppDomainInterceptOnAssemblyLoad,
+                    allowUnsafe: false,
                     externalRefs.ToArray());
 
             Type? type = assembly.GetType($"Generated.{GeneratedSerializerClassName}");
@@ -228,6 +229,7 @@ $@"
         internal static (Assembly assembly, Func<string> formattedTextFactory, byte[] assemblyData) CompileAssembly(
             string sourceCode,
             bool enableAppDomainIntercept,
+            bool allowUnsafe,
             params Assembly[] additionalReferences)
         {
             var rootNode = ApplySyntaxTransformations(CSharpSyntaxTree.ParseText(sourceCode, ParseOptions).GetRoot());
@@ -246,7 +248,7 @@ $@"
             string name = $"FlatSharpDynamicAssembly_{Guid.NewGuid():n}";
             var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
                 .WithModuleName(name)
-                .WithAllowUnsafe(false)
+                .WithAllowUnsafe(allowUnsafe)
                 .WithOptimizationLevel(OptimizationLevel.Release)
                 .WithNullableContextOptions(NullableContextOptions.Enable);
 
@@ -342,6 +344,7 @@ $@"
                 MetadataReference.CreateFromFile(typeof(IGeneratedSerializer<byte>).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(InvalidDataException).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(ReadOnlyDictionary<,>).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Unsafe).Assembly.Location),
             });
 
             return references;

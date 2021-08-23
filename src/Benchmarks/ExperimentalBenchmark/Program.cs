@@ -28,10 +28,9 @@ namespace BenchmarkCore
     [MemoryDiagnoser]
     [ThreadingDiagnoser]
     [MediumRunJob(BenchmarkDotNet.Jobs.RuntimeMoniker.NetCoreApp50, BenchmarkDotNet.Environments.Jit.RyuJit, BenchmarkDotNet.Environments.Platform.AnyCpu)]
-    public class StructVectorClone
+    public class Benchmark
     {
         private readonly byte[] data = new byte[10 * 1024 * 1024];
-        private SomeTable? table;
 
         private ArrayInputBuffer inputBuffer;
         //private UnsafeSpanWriter2 spanWriter;
@@ -39,41 +38,72 @@ namespace BenchmarkCore
         [GlobalSetup]
         public void Setup()
         {
-            this.inputBuffer = new ArrayInputBuffer(this.data);
-            //this.spanWriter = UnsafeSpanWriter2.Instance;
-
-            this.table = new SomeTable
-            {
-                Points = new List<Vec3>()
-            };
+            ValueTable t = new ValueTable();
+            t.Points = new List<Vec3Value>();
 
             for (int i = 0; i < 20_000; ++i)
             {
-                this.table.Points.Add(new Vec3 { X = 1, Y = 2, Z = 3 });
+                var value = new Vec3Value();
+
+                for (int ii = 0; ii < value.X_Length; ++ii)
+                {
+                    value.X(ii) = (byte)ii;
+                }
+
+                t.Points.Add(value);
             }
 
-            this.Serialize();
+            ValueTable.Serializer.Write(data, t);
+            inputBuffer = new ArrayInputBuffer(data);
         }
 
         [Benchmark]
-        public void Serialize()
+        public int ParseAndTraverse_Value()
         {
-            int size = SomeTable.Serializer.Write(SpanWriter.Instance, this.data, this.table!);
-        }
-
-        [Benchmark]
-        public int ParseAndTraverse()
-        {
-            var t = SomeTable.Serializer.Parse(this.inputBuffer);
+            var t = ValueTable.Serializer.Parse(this.inputBuffer);
 
             int sum = 0;
 
             var points = t.Points;
+            if (points is null)
+            {
+                return 0;
+            }
+
             int count = points.Count;
             for (int i = 0; i < count; ++i)
             {
-                var item = points[i];
-                sum += (int)(item.X + item.Y + item.Z);
+                var point = points[i];
+                for (int ii = 0; ii < point.X_Length; ++ii)
+                {
+                    sum += (int)point.X(ii);
+                }
+            }
+
+            return sum;
+        }
+
+        [Benchmark]
+        public int ParseAndTraverse_Ref()
+        {
+            var t = Table.Serializer.Parse(this.inputBuffer);
+
+            int sum = 0;
+
+            var points = t.Points;
+            if (points is null)
+            {
+                return 0;
+            }
+
+            int count = points.Count;
+            for (int i = 0; i < count; ++i)
+            {
+                var vec = points[i].X;
+                for (int ii = 0; ii < vec.Count; ++ii)
+                {
+                    sum += (int)vec[ii];
+                }
             }
 
             return sum;
@@ -84,47 +114,10 @@ namespace BenchmarkCore
     {
         public static void Main(string[] args)
         {
-            var table = new SomeTable
-            {
-                Points = new List<Vec3>
-                {
-                    new Vec3 { X = 1, Y = 2, Z = 3 },
-                    new Vec3 { X = 1, Y = 2, Z = 3 },
-                    new Vec3 { X = 1, Y = 2, Z = 3 },
-                    new Vec3 { X = 1, Y = 2, Z = 3 },
-                },
-                Vec = new Vec3 { X = 4, Y = 5, Z = 6 }
-            };
+            //Vec3Value v = default;
+            //v.X(3) = 5;
 
-            byte[] buffer = new byte[1024];
-            SomeTable.Serializer.Write(buffer, table);
-
-            var parsed = SomeTable.Serializer.Parse(buffer);
-
-            Vec3 vec = parsed.Points[0];
-            int length = parsed.Points.Count;
-
-            System.Numerics.Vector3 vec3 = default;
-
-            if (vec is IFlatBufferAddressableStruct @struct)
-            {
-                int offset = @struct.Offset;
-                int size = @struct.Size;
-                int alignment = @struct.Alignment;
-
-                for (int i = 0; i < length; ++i)
-                {
-                    vec3 += AsVec3(buffer, offset, size);
-
-                    offset += size;
-                    offset += SerializationHelpers.GetAlignmentError(offset, alignment);
-                }
-            }
-
-            static System.Numerics.Vector3 AsVec3(Memory<byte> memory, int offset, int length)
-            {
-                return MemoryMarshal.Cast<byte, System.Numerics.Vector3>(memory.Span.Slice(offset, length))[0];
-            }
+            BenchmarkRunner.Run<Benchmark>();
         }
     }
 }

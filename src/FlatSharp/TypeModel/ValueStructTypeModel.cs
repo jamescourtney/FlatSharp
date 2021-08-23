@@ -22,6 +22,7 @@
     using System.Collections.Immutable;
     using System.Linq;
     using System.Reflection;
+    using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices;
 
     /// <summary>
@@ -260,7 +261,23 @@
                 throw new InvalidFlatBufferDefinitionException($"Can't create type model from type {this.ClrType.GetCompilableTypeName()} because it is not public.");
             }
 
-            this.CanMarshalWhenLittleEndian = Marshal.SizeOf(this.ClrType) == this.inlineSize;
+            this.CanMarshalWhenLittleEndian =
+                UnsafeSizeOf(this.ClrType) == this.inlineSize &&
+                Marshal.SizeOf(this.ClrType) == this.inlineSize;
+        }
+
+        private static int UnsafeSizeOf(Type t)
+        {
+            object? value = typeof(Unsafe).GetMethod("SizeOf", BindingFlags.Public | BindingFlags.Static)?
+                .MakeGenericMethod(t)
+                .Invoke(null, new object[0]);
+
+            if (value is null)
+            {
+                return -1;
+            }
+
+            return (int)value;
         }
     }
 }
