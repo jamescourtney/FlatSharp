@@ -272,11 +272,7 @@
                 .MakeGenericMethod(t)
                 .Invoke(null, new object[0]);
 
-            if (value is null)
-            {
-                return -1;
-            }
-
+            FlatSharpInternal.Assert(value is not null, "Unsafe.SizeOf returned null.");
             return (int)value;
         }
     }

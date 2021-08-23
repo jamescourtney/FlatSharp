@@ -94,16 +94,28 @@ namespace FlatSharpTests.Compiler
         }
 
         [Fact]
-        public void ValueStruct_Vector()
+        public void ValueStruct_Vectors()
         {
             string schema = $@"
                 namespace ValueStructTests;
-                table Table ({MetadataKeys.SerializerKind}:""GreedyMutable"") {{ Struct : Struct; }}
-                struct Struct ({MetadataKeys.ValueStruct}) {{ A:[int : 12]; }} 
-                struct UnsafeStruct ({MetadataKeys.ValueStruct}) {{ A : [ int : 13 ] ({MetadataKeys.UnsafeValueStructVector}); }}
-                ";
+                struct StructA ({MetadataKeys.ValueStruct}) {{ 
+                    Safe : [int : 12];
+                }} 
+                struct StructB ({MetadataKeys.ValueStruct}) {{
+                    NotSafe : [int : 12] ({MetadataKeys.UnsafeValueStructVector});
+                }}";
 
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
+            string csharp = FlatSharpCompiler.TestHookCreateCSharp(schema, new());
+
+            // Syntax for "safe" struct vectors is a giant switch followed by "case {index}: return ref item.__flatsharp__{vecName}_index;
+            // Syntax for unsafe struct vectors is a fixed statement in an unsafe context.
+
+            // Todo: is there a better way to test this? Attribute? Roslyn? Something else?
+            Assert.Contains("case 9: return ref item.__flatsharp_Safe_9", csharp);
+            Assert.DoesNotContain("case 9: return ref item.__flatsharp_NotSafe_9", csharp);
+
+            Assert.DoesNotContain("fixed (StructA* pItem = &item)", csharp);
+            Assert.Contains("fixed (StructB* pItem = &item)", csharp);
         }
     }
 }

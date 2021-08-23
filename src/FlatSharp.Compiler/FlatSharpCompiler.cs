@@ -33,6 +33,8 @@ namespace FlatSharp.Compiler
 
     public class FlatSharpCompiler
     {
+        public const string FailureMessage = "// !! FLATSHARP CODE GENERATION FAILED. THIS FILE MAY CONTAIN INCOMPLETE OR INACCURATE DATA !!";
+
         [ExcludeFromCodeCoverage]
         static int Main(string[] args)
         {
@@ -96,7 +98,7 @@ namespace FlatSharp.Compiler
                             if (File.Exists(outputFullPath))
                             {
                                 string existingOutput = File.ReadAllText(outputFullPath);
-                                if (existingOutput.Contains(rootNode.InputHash))
+                                if (existingOutput.Contains(rootNode.InputHash) && !existingOutput.StartsWith(FailureMessage))
                                 {
                                     // Input file unchanged.
                                     return 0;
@@ -104,12 +106,19 @@ namespace FlatSharp.Compiler
                             }
 
                             string cSharp = string.Empty;
+                            bool succeeded = false;
                             try
                             {
                                 CreateCSharp(rootNode, options, out _, out cSharp);
+                                succeeded = true;
                             }
                             finally
                             {
+                                if (!succeeded)
+                                {
+                                    cSharp = $"{FailureMessage}\r\n\r\n\r\n\r\n{cSharp}";
+                                }
+
                                 if (cSharp is not null)
                                 {
                                     File.WriteAllText(outputFullPath, cSharp);
@@ -165,6 +174,9 @@ namespace FlatSharp.Compiler
             }
         }
 
+        /// <summary>
+        /// Test hook
+        /// </summary>
         internal static Assembly CompileAndLoadAssembly(
             string fbsSchema,
             CompilerOptions options,
@@ -323,7 +335,6 @@ namespace FlatSharp.Compiler
             out string csharp)
         {
             csharp = string.Empty;
-
 
             try
             {

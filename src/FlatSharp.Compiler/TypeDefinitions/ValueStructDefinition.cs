@@ -150,8 +150,8 @@ namespace FlatSharp.Compiler
 
                 foreach (var structVectorDef in this.structVectors)
                 {
-                    (string name, bool @unsafe, List<string> props) = structVectorDef;
-                    context.NeedsUnsafe |= @unsafe;
+                    (string name, bool isUnsafeVector, List<string> props) = structVectorDef;
+                    context.NeedsUnsafe |= isUnsafeVector;
 
                     StructMemberModel memberModel = this.fieldNameMap[props[0]];
                     string itemType = memberModel.ItemTypeModel.GetGlobalCompilableTypeName();
@@ -163,7 +163,7 @@ namespace FlatSharp.Compiler
                     writer.AppendLine($"public static ref {type} {name}_Item(ref {this.Name} item, int index)");
                     using (writer.WithBlock())
                     {
-                        if (context.NeedsUnsafe)
+                        if (isUnsafeVector)
                         {
                             writer.AppendLine($"if (unchecked((uint)index) >= {props.Count})");
                             using (writer.WithBlock())
