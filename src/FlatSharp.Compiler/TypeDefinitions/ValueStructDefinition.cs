@@ -208,19 +208,22 @@ namespace FlatSharp.Compiler
                 }
             }
 
-            writer.AppendLine($"public static class {this.Name}__FlatSharpExtensions");
-            using (writer.WithBlock())
+            if (this.structVectors.Count > 0)
             {
-                foreach (var structVectorDef in this.structVectors)
+                writer.AppendLine($"public static class {this.Name}__FlatSharpExtensions");
+                using (writer.WithBlock())
                 {
-                    (string name, _, List<string> props) = structVectorDef;
-                    StructMemberModel memberModel = this.fieldNameMap[props[0]];
-                    string type = memberModel.ItemTypeModel.GetGlobalCompilableTypeName();
-
-                    writer.AppendLine($"public static ref {type} {name}(this ref {this.Name} item, int index)");
-                    using (writer.WithBlock())
+                    foreach (var structVectorDef in this.structVectors)
                     {
-                        writer.AppendLine($"return ref {this.Name}.{name}_Item(ref item, index);");
+                        (string name, _, List<string> props) = structVectorDef;
+                        StructMemberModel memberModel = this.fieldNameMap[props[0]];
+                        string type = memberModel.ItemTypeModel.GetGlobalCompilableTypeName();
+
+                        writer.AppendLine($"public static ref {type} {name}(this ref {this.Name} item, int index)");
+                        using (writer.WithBlock())
+                        {
+                            writer.AppendLine($"return ref {this.Name}.{name}_Item(ref item, index);");
+                        }
                     }
                 }
             }

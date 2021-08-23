@@ -16,10 +16,13 @@
 
 namespace FlatSharp
 {
+    using System;
+
     /// <summary>
     /// An interface applied to structs deserialized by Flatsharp when using
     /// non-greedy deserialization. It should not be implemented externally.
     /// </summary>
+    [Obsolete("FlatSharp version 5.7 supports value type structs. This interface is being evaluated for removal in FlatSharp version 6.")]
     public interface IFlatBufferAddressableStruct : IFlatBufferDeserializedObject
     {
         /// <summary>

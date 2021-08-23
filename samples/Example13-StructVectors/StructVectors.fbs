@@ -17,12 +17,27 @@
 namespace Samples.StructVectors;
 
 table Transaction (fs_serializer) {
-   Amount:double;
-   Sender:string;
-   Receiver:string;
-   Hash:Sha256;
+   Amount : double;
+   Sender : string;
+   Receiver : string;
+
+   Hash_Reference : Sha256_Reference;
+   Hash_Value : Sha256_Value;
+   Hash_FastValue : Sha256_FastValue;
 }
 
-struct Sha256 {
+// A reference (class-based) struct representing a SHA256 value.
+struct Sha256_Reference {
    Value:[ubyte:32] (fs_nonVirtual);
+}
+
+// A value (struct-based) struct representing the same.
+struct Sha256_Value (fs_valueStruct) {
+   Value : [ ubyte : 32 ];
+}
+
+// A value (struct-based) struct using unsafe code for fast access to the value array. 
+// Requires compiling with <AllowUnsafeBlocks>. Use at your own risk!
+struct Sha256_FastValue (fs_valueStruct) {
+   Value : [ ubyte : 32 ] (fs_unsafeStructVector);
 }

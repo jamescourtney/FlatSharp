@@ -84,6 +84,32 @@ namespace BenchmarkCore
         }
 
         [Benchmark]
+        public int ParseAndTraverse_Value_Unsafe()
+        {
+            var t = ValueTable_Unsafe.Serializer.Parse(this.inputBuffer);
+
+            int sum = 0;
+
+            var points = t.Points;
+            if (points is null)
+            {
+                return 0;
+            }
+
+            int count = points.Count;
+            for (int i = 0; i < count; ++i)
+            {
+                var point = points[i];
+                for (int ii = 0; ii < point.X_Length; ++ii)
+                {
+                    sum += (int)point.X(ii);
+                }
+            }
+
+            return sum;
+        }
+
+        [Benchmark]
         public int ParseAndTraverse_Ref()
         {
             var t = Table.Serializer.Parse(this.inputBuffer);

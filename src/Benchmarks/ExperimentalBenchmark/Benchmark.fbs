@@ -5,6 +5,10 @@ table ValueTable (fs_serializer:Lazy) {
 	Points : [Vec3Value];
 }
 
+table ValueTable_Unsafe (fs_serializer:Lazy) {
+	Points : [Vec3Value_Unsafe];
+}
+
 table Table (fs_serializer:Lazy) {
 	Points : [Vec3];
 }
@@ -12,11 +16,17 @@ table Table (fs_serializer:Lazy) {
 struct Vec3 (fs_nonVirtual) {
 	temp : ulong;
 	imp : ubyte;
-	X : [ubyte : 128];
+	X : [ubyte : 32];
 }
 
 struct Vec3Value (fs_valueStruct) {
 	temp : ulong;
 	imp : ubyte;
-	X : [ubyte : 128];
+	X : [ubyte : 32];
+}
+
+struct Vec3Value_Unsafe (fs_valueStruct) {
+	temp : ulong;
+	imp : ubyte;
+	X : [ubyte : 32] (fs_unsafeStructVector);
 }
