@@ -29,7 +29,7 @@ namespace FlatSharpEndToEndTests.ValueStructs
         [Fact]
         public void Basics()
         {
-            Assert.Equal(148, Marshal.SizeOf<ValueStruct>());
+            Assert.Equal(148, Unsafe.SizeOf<ValueStruct>());
         }
 
         [Fact]
@@ -334,8 +334,8 @@ namespace FlatSharpEndToEndTests.ValueStructs
                 Assert.Equal(a.D(i), b.D(i));
             }
 
-            Span<byte> scratchA = stackalloc byte[Marshal.SizeOf<ValueStruct>()];
-            Span<byte> scratchB = stackalloc byte[Marshal.SizeOf<ValueStruct>()];
+            Span<byte> scratchA = stackalloc byte[Unsafe.SizeOf<ValueStruct>()];
+            Span<byte> scratchB = stackalloc byte[Unsafe.SizeOf<ValueStruct>()];
 
             MemoryMarshal.Cast<byte, ValueStruct>(scratchA)[0] = a;
             MemoryMarshal.Cast<byte, ValueStruct>(scratchB)[0] = b;

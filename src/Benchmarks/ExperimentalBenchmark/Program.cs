@@ -33,7 +33,9 @@ namespace BenchmarkCore
         private readonly byte[] data = new byte[10 * 1024 * 1024];
 
         private ArrayInputBuffer inputBuffer;
-        //private UnsafeSpanWriter2 spanWriter;
+        private ValueTable valueTable;
+        private ValueTable_Unsafe unsafeValueTable;
+        private Table table;
 
         [GlobalSetup]
         public void Setup()
@@ -55,6 +57,10 @@ namespace BenchmarkCore
 
             ValueTable.Serializer.Write(data, t);
             inputBuffer = new ArrayInputBuffer(data);
+
+            valueTable = new ValueTable(ValueTable.Serializer.Parse(data));
+            unsafeValueTable = new ValueTable_Unsafe(ValueTable_Unsafe.Serializer.Parse(data));
+            table = new Table(Table.Serializer.Parse(data));
         }
 
         [Benchmark]
@@ -84,6 +90,12 @@ namespace BenchmarkCore
         }
 
         [Benchmark]
+        public int Serialize_Value()
+        {
+            return ValueTable.Serializer.Write(this.data, this.valueTable);
+        }
+
+        [Benchmark]
         public int ParseAndTraverse_Value_Unsafe()
         {
             var t = ValueTable_Unsafe.Serializer.Parse(this.inputBuffer);
@@ -110,6 +122,12 @@ namespace BenchmarkCore
         }
 
         [Benchmark]
+        public int Serialize_Value_Unsafe()
+        {
+            return ValueTable_Unsafe.Serializer.Write(this.data, this.unsafeValueTable);
+        }
+
+        [Benchmark]
         public int ParseAndTraverse_Ref()
         {
             var t = Table.Serializer.Parse(this.inputBuffer);
@@ -133,6 +151,12 @@ namespace BenchmarkCore
             }
 
             return sum;
+        }
+
+        [Benchmark]
+        public int Serialize_Ref()
+        {
+            return Table.Serializer.Write(this.data, this.table);
         }
     }
 
