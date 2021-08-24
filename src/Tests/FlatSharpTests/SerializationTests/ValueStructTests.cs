@@ -75,6 +75,37 @@ namespace FlatSharpTests
                 Assert.Equal(expectedError, ex.Message);
             }
 
+            [Theory]
+            [InlineData(typeof(ValidStruct_Marshallable), 20, sizeof(ulong))]
+            [InlineData(typeof(ValidStruct_Marshallable_OutOfOrder), 20, sizeof(ulong))]
+            [InlineData(typeof(FiveByteStruct), 5, sizeof(byte))]
+            [InlineData(typeof(NineByteStruct), 9, sizeof(ulong))]
+            [InlineData(typeof(SixteenByteStruct), 16, sizeof(ulong))]
+            public void LayoutTests(Type structType, int expectedSize, int expectedAlignment)
+            {
+                ValueStructTypeModel model = (ValueStructTypeModel)RuntimeTypeModel.CreateFrom(structType);
+
+                var layout = Assert.Single(model.PhysicalLayout);
+
+                Assert.False(model.SerializeMethodRequiresContext);
+                Assert.True(model.SerializesInline);
+                Assert.True(model.IsValidStructMember);
+                Assert.True(model.IsValidTableMember);
+                Assert.True(model.IsValidUnionMember);
+                Assert.True(model.IsValidVectorMember);
+                Assert.False(model.IsValidSortedVectorKey);
+                Assert.True(model.IsFixedSize);
+
+                Assert.Equal(FlatBufferSchemaType.Struct, model.SchemaType);
+                Assert.Equal(
+                    SerializationHelpers.GetMaxPadding(expectedAlignment) + expectedSize,
+                    model.MaxInlineSize);
+
+                Assert.Equal(expectedSize, layout.InlineSize);
+                Assert.Equal(expectedAlignment, layout.Alignment);
+                Assert.Equal(Marshal.SizeOf(structType), layout.InlineSize);
+            }
+
             [FlatBufferStruct, StructLayout(LayoutKind.Sequential)]
             public struct InvalidStruct_Sequential { public byte A; }
 
@@ -208,6 +239,96 @@ namespace FlatSharpTests
                     expectMarshal,
                     serializer.CSharp.Contains($"MemoryMarshal.Cast<byte, {type.GetGlobalCompilableTypeName()}>"));
             }
+
+            [Fact]
+            public void Serialize_NineByte()
+            {
+                byte[] data =
+                {
+                    4, 0, 0, 0,
+                    242, 255, 255, 255,
+                    1, 0, 0, 0, 0, 0, 0, 0,
+                    2,
+                    0,
+                    6, 0,
+                    13, 0,
+                    4, 0,
+                };
+
+                var table = new SimpleTableAnything<NineByteStruct>
+                {
+                    Item = new NineByteStruct
+                    {
+                        A = 1,
+                        B = 2,
+                    }
+                };
+
+                byte[] buffer = new byte[1024];
+                int bytesWritten = FlatBufferSerializer.Default.Serialize(table, buffer);
+
+                Assert.True(data.AsSpan().SequenceEqual(buffer.AsSpan().Slice(0, bytesWritten)));
+            }
+
+            [Fact]
+            public void Serialize_FiveByte()
+            {
+                byte[] data =
+                {
+                    4, 0, 0, 0,
+                    246, 255, 255, 255,
+                    1, 2, 3, 4, 5, 0,
+                    6, 0,
+                    9, 0,
+                    4, 0,
+                };
+
+                SimpleTableAnything<FiveByteStruct> source = new()
+                {
+                    Item = new FiveByteStruct
+                    {
+                        A = 1,
+                        B = 2,
+                        C = 3,
+                        D = 4,
+                        E = 5,
+                    }
+                };
+
+                byte[] buffer = new byte[1024];
+                var written = FlatBufferSerializer.Default.Serialize(source, buffer);
+
+                Assert.True(data.AsSpan().SequenceEqual(buffer.AsSpan().Slice(0, written)));
+            }
+
+            [Fact]
+            public void Serialize_SixteenByte()
+            {
+                byte[] data =
+                {
+                    4, 0, 0, 0,
+                    236, 255, 255, 255,
+                    1, 0, 0, 0, 0, 0, 0, 0,
+                    2, 0, 0, 0, 0, 0, 0, 0,
+                    6, 0,
+                    20, 0,
+                    4, 0,
+                };
+
+                SimpleTableAnything<SixteenByteStruct?> source = new()
+                {
+                    Item = new SixteenByteStruct
+                    {
+                        A = 1,
+                        B = 2ul,
+                    }
+                };
+
+                byte[] buffer = new byte[1024];
+                var written = FlatBufferSerializer.Default.Serialize(source, buffer);
+
+                Assert.True(data.AsSpan().SequenceEqual(buffer.AsSpan().Slice(0, written)));
+            }
         }
 
         public class ParseTests
@@ -294,6 +415,198 @@ namespace FlatSharpTests
                 Assert.Equal(3, table.Item.IC);
                 Assert.Equal(4, table.Item.ID);
                 Assert.Equal(5, table.Item.IInner.Test);
+            }
+            
+            [Fact]
+            public void Parse_NineByte()
+            {
+                byte[] data =
+                {
+                    4, 0, 0, 0,
+                    242, 255, 255, 255,
+                    1, 0, 0, 0, 0, 0, 0, 0,
+                    2,
+                    0,
+                    6, 0,
+                    13, 0,
+                    4, 0,
+                };
+
+                var parsed = FlatBufferSerializer.Default.Parse<SimpleTableAnything<NineByteStruct?>>(data);
+
+                Assert.NotNull(parsed.Item);
+                Assert.Equal(1ul, parsed.Item.Value.A);
+                Assert.Equal(2, parsed.Item.Value.B);
+            }
+
+            [Fact]
+            public void Parse_FiveByte()
+            {
+                byte[] data =
+                {
+                    4, 0, 0, 0,
+                    246, 255, 255, 255,
+                    1, 2, 3, 4, 5, 0,
+                    6, 0,
+                    9, 0,
+                    4, 0,
+                };
+
+                var parsed = FlatBufferSerializer.Default.Parse<SimpleTableAnything<FiveByteStruct?>>(data);
+
+                Assert.NotNull(parsed.Item);
+                Assert.Equal(1, parsed.Item.Value.A);
+                Assert.Equal(2, parsed.Item.Value.B);
+                Assert.Equal(3, parsed.Item.Value.C);
+                Assert.Equal(4, parsed.Item.Value.D);
+                Assert.Equal(5, parsed.Item.Value.E);
+            }
+
+            [Fact]
+            public void Parse_SixteenByte()
+            {
+                byte[] data =
+                {
+                    4, 0, 0, 0,
+                    236, 255, 255, 255,
+                    1, 0, 0, 0, 0, 0, 0, 0,
+                    2, 0, 0, 0, 0, 0, 0, 0,
+                    6, 0,
+                    20, 0,
+                    4, 0,
+                };
+
+                byte[] buffer = new byte[1024];
+                var parsed = FlatBufferSerializer.Default.Parse< SimpleTableAnything<SixteenByteStruct?>>(data);
+
+                Assert.NotNull(parsed);
+                Assert.NotNull(parsed.Item);
+                Assert.Equal(1, parsed.Item.Value.A);
+                Assert.Equal(2ul, parsed.Item.Value.B);
+            }
+        }
+
+        public class FormattingTests
+        {
+            [Fact]
+            public void Bool() => RoundTrip(true, (ref ValueStruct_Bool s) => ref s.Value);
+
+            [Fact]
+            public void Byte() => RoundTrip(byte.MaxValue, (ref ValueStruct_Byte s) => ref s.Value);
+
+            [Fact]
+            public void SByte() => RoundTrip(sbyte.MinValue, (ref ValueStruct_SByte s) => ref s.Value);
+
+            [Fact]
+            public void UShort() => RoundTrip(ushort.MaxValue, (ref ValueStruct_UShort s) => ref s.Value);
+
+            [Fact]
+            public void Short() => RoundTrip(short.MinValue, (ref ValueStruct_Short s) => ref s.Value);
+
+            [Fact]
+            public void UInt() => RoundTrip(uint.MaxValue, (ref ValueStruct_UInt s) => ref s.Value);
+
+            [Fact]
+            public void Int() => RoundTrip(int.MinValue, (ref ValueStruct_Int s) => ref s.Value);
+
+            [Fact]
+            public void ULong() => RoundTrip(ulong.MaxValue, (ref ValueStruct_ULong s) => ref s.Value);
+
+            [Fact]
+            public void Long() => RoundTrip(long.MinValue, (ref ValueStruct_Long s) => ref s.Value);
+
+            [Fact]
+            public void Double() => RoundTrip(Math.PI, (ref ValueStruct_Double s) => ref s.Value);
+
+            [Fact]
+            public void Float() => RoundTrip((float)Math.E, (ref ValueStruct_Float s) => ref s.Value);
+
+            private static void RoundTrip<TStruct, TValue>(TValue value, GetValue<TStruct, TValue> getter) 
+                where TValue : struct
+                where TStruct : struct
+            {
+                SimpleTableAnything<GenericReferenceStruct<TValue>> refTable = new()
+                {
+                    Item = new() { Item = value }
+                };
+
+                TStruct valueItem = default;
+                getter(ref valueItem) = value;
+
+                SimpleTableAnything<TStruct?> valueTable = new()
+                {
+                    Item = valueItem
+                };
+
+                ValueStructTypeModel vstm = (ValueStructTypeModel)RuntimeTypeModel.CreateFrom(typeof(TStruct));
+                Assert.True(vstm.CanMarshalWhenLittleEndian);
+
+                byte[] referenceBuffer = new byte[1024];
+                byte[] referenceBufferNull = new byte[1024];
+                byte[] valueBufferNull = new byte[1024];
+                byte[] valueBuffer = new byte[1024];
+
+                int refNullBytesWritten = FlatBufferSerializer.Default.Serialize(new SimpleTableAnything<GenericReferenceStruct<TValue>>(), referenceBufferNull);
+                int valueNullBytesWritten = FlatBufferSerializer.Default.Serialize(new SimpleTableAnything<TStruct?>(), valueBufferNull);
+
+                int refBytesWritten = FlatBufferSerializer.Default.Serialize(refTable, referenceBuffer);
+                int valueBytesWritten = FlatBufferSerializer.Default.Serialize(valueTable, valueBuffer);
+
+                Assert.Equal(refBytesWritten, valueBytesWritten);
+                Assert.True(referenceBuffer.SequenceEqual(valueBuffer));
+
+                Assert.Equal(refNullBytesWritten, valueNullBytesWritten);
+                Assert.True(referenceBufferNull.SequenceEqual(valueBufferNull));
+
+                var parsed = FlatBufferSerializer.Default.Parse<SimpleTableAnything<TStruct>>(valueBuffer);
+                TStruct temp = parsed.Item;
+                Assert.Equal(value, getter(ref temp));
+
+                parsed = FlatBufferSerializer.Default.Parse<SimpleTableAnything<TStruct>>(referenceBufferNull);
+                temp = parsed.Item;
+                Assert.Equal(default(TValue), getter(ref temp));
+            }
+
+            public delegate ref TValue GetValue<TStruct, TValue>(ref TStruct @struct) where TStruct : struct;
+
+            [FlatBufferStruct, StructLayout(LayoutKind.Explicit)]
+            public struct ValueStruct_Bool {[FieldOffset(0)] public bool Value; }
+
+            [FlatBufferStruct, StructLayout(LayoutKind.Explicit)]
+            public struct ValueStruct_Byte { [FieldOffset(0)] public byte Value; }
+
+            [FlatBufferStruct, StructLayout(LayoutKind.Explicit)]
+            public struct ValueStruct_SByte {[FieldOffset(0)] public sbyte Value; }
+
+            [FlatBufferStruct, StructLayout(LayoutKind.Explicit)]
+            public struct ValueStruct_UShort {[FieldOffset(0)] public ushort Value; }
+
+            [FlatBufferStruct, StructLayout(LayoutKind.Explicit)]
+            public struct ValueStruct_Short {[FieldOffset(0)] public short Value; }
+
+            [FlatBufferStruct, StructLayout(LayoutKind.Explicit)]
+            public struct ValueStruct_UInt {[FieldOffset(0)] public uint Value; }
+
+            [FlatBufferStruct, StructLayout(LayoutKind.Explicit)]
+            public struct ValueStruct_Int {[FieldOffset(0)] public int Value; }
+
+            [FlatBufferStruct, StructLayout(LayoutKind.Explicit)]
+            public struct ValueStruct_ULong {[FieldOffset(0)] public ulong Value; }
+
+            [FlatBufferStruct, StructLayout(LayoutKind.Explicit)]
+            public struct ValueStruct_Long {[FieldOffset(0)] public long Value; }
+
+            [FlatBufferStruct, StructLayout(LayoutKind.Explicit)]
+            public struct ValueStruct_Float {[FieldOffset(0)] public float Value; }
+
+            [FlatBufferStruct, StructLayout(LayoutKind.Explicit)]
+            public struct ValueStruct_Double {[FieldOffset(0)] public double Value; }
+
+            [FlatBufferStruct]
+            public class GenericReferenceStruct<T> where T : struct
+            {
+                [FlatBufferItem(0)]
+                public virtual T Item { get; set; }
             }
         }
 
@@ -413,6 +726,30 @@ namespace FlatSharpTests
             public int IC { get => this.C; set => this.C = value; }
             public long ID { get => this.D; set => this.D = value; }
             public ValidStruct_Inner IInner { get => this.Inner; set => this.Inner = value; }
+        }
+
+        [FlatBufferStruct, StructLayout(LayoutKind.Explicit, Size = 16)]
+        public struct SixteenByteStruct
+        {
+            [FieldOffset(0)] public byte A;
+            [FieldOffset(8)] public ulong B;
+        }
+
+        [FlatBufferStruct, StructLayout(LayoutKind.Explicit, Size = 9)]
+        public struct NineByteStruct
+        {
+            [FieldOffset(0)] public ulong A;
+            [FieldOffset(8)] public byte B;
+        }
+
+        [FlatBufferStruct, StructLayout(LayoutKind.Explicit, Size = 5)]
+        public struct FiveByteStruct
+        {
+            [FieldOffset(0)] public byte A;
+            [FieldOffset(1)] public byte B;
+            [FieldOffset(2)] public byte C;
+            [FieldOffset(3)] public byte D;
+            [FieldOffset(4)] public byte E;
         }
     }
 }

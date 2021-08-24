@@ -261,9 +261,7 @@
                 throw new InvalidFlatBufferDefinitionException($"Can't create type model from type {this.ClrType.GetCompilableTypeName()} because it is not public.");
             }
 
-            this.CanMarshalWhenLittleEndian =
-                UnsafeSizeOf(this.ClrType) == this.inlineSize &&
-                Marshal.SizeOf(this.ClrType) == this.inlineSize;
+            this.CanMarshalWhenLittleEndian = UnsafeSizeOf(this.ClrType) == this.inlineSize;
         }
 
         private static int UnsafeSizeOf(Type t)

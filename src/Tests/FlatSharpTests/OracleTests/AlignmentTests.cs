@@ -193,7 +193,7 @@ namespace FlatSharpTests
             public FiveByteStruct AlignmentVec_0 { get; set; }
 
             [FlatBufferItem(1)]
-            public FiveByteStruct AlignmentVec_1 { get; set; }
+            public ValueFiveByteStruct AlignmentVec_1 { get; set; }
 
             [FlatBufferItem(2)]
             public FiveByteStruct AlignmentVec_2 { get; set; }
