@@ -75,6 +75,37 @@ namespace FlatSharpTests
                 Assert.Equal(expectedError, ex.Message);
             }
 
+            [Theory]
+            [InlineData(typeof(ValidStruct_Marshallable), 20, sizeof(ulong))]
+            [InlineData(typeof(ValidStruct_Marshallable_OutOfOrder), 20, sizeof(ulong))]
+            [InlineData(typeof(FiveByteStruct), 5, sizeof(byte))]
+            [InlineData(typeof(NineByteStruct), 9, sizeof(ulong))]
+            [InlineData(typeof(SixteenByteStruct), 16, sizeof(ulong))]
+            public void LayoutTests(Type structType, int expectedSize, int expectedAlignment)
+            {
+                ValueStructTypeModel model = (ValueStructTypeModel)RuntimeTypeModel.CreateFrom(structType);
+
+                var layout = Assert.Single(model.PhysicalLayout);
+
+                Assert.False(model.SerializeMethodRequiresContext);
+                Assert.True(model.SerializesInline);
+                Assert.True(model.IsValidStructMember);
+                Assert.True(model.IsValidTableMember);
+                Assert.True(model.IsValidUnionMember);
+                Assert.True(model.IsValidVectorMember);
+                Assert.False(model.IsValidSortedVectorKey);
+                Assert.True(model.IsFixedSize);
+
+                Assert.Equal(FlatBufferSchemaType.Struct, model.SchemaType);
+                Assert.Equal(
+                    SerializationHelpers.GetMaxPadding(expectedAlignment) + expectedSize,
+                    model.MaxInlineSize);
+
+                Assert.Equal(expectedSize, layout.InlineSize);
+                Assert.Equal(expectedAlignment, layout.Alignment);
+                Assert.Equal(Marshal.SizeOf(structType), layout.InlineSize);
+            }
+
             [FlatBufferStruct, StructLayout(LayoutKind.Sequential)]
             public struct InvalidStruct_Sequential { public byte A; }
 
@@ -413,6 +444,30 @@ namespace FlatSharpTests
             public int IC { get => this.C; set => this.C = value; }
             public long ID { get => this.D; set => this.D = value; }
             public ValidStruct_Inner IInner { get => this.Inner; set => this.Inner = value; }
+        }
+
+        [FlatBufferStruct, StructLayout(LayoutKind.Explicit, Size = 16)]
+        public struct SixteenByteStruct
+        {
+            [FieldOffset(0)] public byte A;
+            [FieldOffset(8)] public ulong B;
+        }
+
+        [FlatBufferStruct, StructLayout(LayoutKind.Explicit, Size = 9)]
+        public struct NineByteStruct
+        {
+            [FieldOffset(0)] public ulong A;
+            [FieldOffset(8)] public byte B;
+        }
+
+        [FlatBufferStruct, StructLayout(LayoutKind.Explicit, Size = 5)]
+        public struct FiveByteStruct
+        {
+            [FieldOffset(0)] public byte A;
+            [FieldOffset(1)] public byte B;
+            [FieldOffset(2)] public byte C;
+            [FieldOffset(3)] public byte D;
+            [FieldOffset(4)] public byte E;
         }
     }
 }
