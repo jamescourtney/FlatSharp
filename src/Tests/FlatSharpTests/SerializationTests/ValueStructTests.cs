@@ -239,6 +239,96 @@ namespace FlatSharpTests
                     expectMarshal,
                     serializer.CSharp.Contains($"MemoryMarshal.Cast<byte, {type.GetGlobalCompilableTypeName()}>"));
             }
+
+            [Fact]
+            public void Serialize_NineByte()
+            {
+                byte[] data =
+                {
+                    4, 0, 0, 0,
+                    242, 255, 255, 255,
+                    1, 0, 0, 0, 0, 0, 0, 0,
+                    2,
+                    0,
+                    6, 0,
+                    13, 0,
+                    4, 0,
+                };
+
+                var table = new SimpleTableAnything<NineByteStruct>
+                {
+                    Item = new NineByteStruct
+                    {
+                        A = 1,
+                        B = 2,
+                    }
+                };
+
+                byte[] buffer = new byte[1024];
+                int bytesWritten = FlatBufferSerializer.Default.Serialize(table, buffer);
+
+                Assert.True(data.AsSpan().SequenceEqual(buffer.AsSpan().Slice(0, bytesWritten)));
+            }
+
+            [Fact]
+            public void Serialize_FiveByte()
+            {
+                byte[] data =
+                {
+                    4, 0, 0, 0,
+                    246, 255, 255, 255,
+                    1, 2, 3, 4, 5, 0,
+                    6, 0,
+                    9, 0,
+                    4, 0,
+                };
+
+                SimpleTableAnything<FiveByteStruct> source = new()
+                {
+                    Item = new FiveByteStruct
+                    {
+                        A = 1,
+                        B = 2,
+                        C = 3,
+                        D = 4,
+                        E = 5,
+                    }
+                };
+
+                byte[] buffer = new byte[1024];
+                var written = FlatBufferSerializer.Default.Serialize(source, buffer);
+
+                Assert.True(data.AsSpan().SequenceEqual(buffer.AsSpan().Slice(0, written)));
+            }
+
+            [Fact]
+            public void Serialize_SixteenByte()
+            {
+                byte[] data =
+                {
+                    4, 0, 0, 0,
+                    236, 255, 255, 255,
+                    1, 0, 0, 0, 0, 0, 0, 0,
+                    2, 0, 0, 0, 0, 0, 0, 0,
+                    6, 0,
+                    20, 0,
+                    4, 0,
+                };
+
+                SimpleTableAnything<SixteenByteStruct?> source = new()
+                {
+                    Item = new SixteenByteStruct
+                    {
+                        A = 1,
+                        B = 2ul,
+                    }
+                };
+
+                byte[] buffer = new byte[1024];
+                var written = FlatBufferSerializer.Default.Serialize(source, buffer);
+
+                Assert.True(data.AsSpan().SequenceEqual(buffer.AsSpan().Slice(0, written)));
+            }
         }
 
         public class ParseTests
@@ -325,6 +415,74 @@ namespace FlatSharpTests
                 Assert.Equal(3, table.Item.IC);
                 Assert.Equal(4, table.Item.ID);
                 Assert.Equal(5, table.Item.IInner.Test);
+            }
+            
+            [Fact]
+            public void Parse_NineByte()
+            {
+                byte[] data =
+                {
+                    4, 0, 0, 0,
+                    242, 255, 255, 255,
+                    1, 0, 0, 0, 0, 0, 0, 0,
+                    2,
+                    0,
+                    6, 0,
+                    13, 0,
+                    4, 0,
+                };
+
+                var parsed = FlatBufferSerializer.Default.Parse<SimpleTableAnything<NineByteStruct?>>(data);
+
+                Assert.NotNull(parsed.Item);
+                Assert.Equal(1ul, parsed.Item.Value.A);
+                Assert.Equal(2, parsed.Item.Value.B);
+            }
+
+            [Fact]
+            public void Parse_FiveByte()
+            {
+                byte[] data =
+                {
+                    4, 0, 0, 0,
+                    246, 255, 255, 255,
+                    1, 2, 3, 4, 5, 0,
+                    6, 0,
+                    9, 0,
+                    4, 0,
+                };
+
+                var parsed = FlatBufferSerializer.Default.Parse<SimpleTableAnything<FiveByteStruct?>>(data);
+
+                Assert.NotNull(parsed.Item);
+                Assert.Equal(1, parsed.Item.Value.A);
+                Assert.Equal(2, parsed.Item.Value.B);
+                Assert.Equal(3, parsed.Item.Value.C);
+                Assert.Equal(4, parsed.Item.Value.D);
+                Assert.Equal(5, parsed.Item.Value.E);
+            }
+
+            [Fact]
+            public void Parse_SixteenByte()
+            {
+                byte[] data =
+                {
+                    4, 0, 0, 0,
+                    236, 255, 255, 255,
+                    1, 0, 0, 0, 0, 0, 0, 0,
+                    2, 0, 0, 0, 0, 0, 0, 0,
+                    6, 0,
+                    20, 0,
+                    4, 0,
+                };
+
+                byte[] buffer = new byte[1024];
+                var parsed = FlatBufferSerializer.Default.Parse< SimpleTableAnything<SixteenByteStruct?>>(data);
+
+                Assert.NotNull(parsed);
+                Assert.NotNull(parsed.Item);
+                Assert.Equal(1, parsed.Item.Value.A);
+                Assert.Equal(2ul, parsed.Item.Value.B);
             }
         }
 
