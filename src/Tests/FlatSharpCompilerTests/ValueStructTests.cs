@@ -107,15 +107,17 @@ namespace FlatSharpTests.Compiler
 
             string csharp = FlatSharpCompiler.TestHookCreateCSharp(schema, new());
 
+            Assert.Contains("throw new IndexOutOfRangeException()", csharp);
+
             // Syntax for "safe" struct vectors is a giant switch followed by "case {index}: return ref item.__flatsharp__{vecName}_index;
-            // Syntax for unsafe struct vectors is a fixed statement in an unsafe context.
+            // Syntax for unsafe struct vectors is an indexed unsafe field reference access.
 
             // Todo: is there a better way to test this? Attribute? Roslyn? Something else?
             Assert.Contains("case 9: return ref item.__flatsharp_Safe_9", csharp);
             Assert.DoesNotContain("case 9: return ref item.__flatsharp_NotSafe_9", csharp);
 
-            Assert.DoesNotContain("fixed (StructA* pItem = &item)", csharp);
-            Assert.Contains("fixed (StructB* pItem = &item)", csharp);
+            Assert.DoesNotContain("return ref global::System.Runtime.CompilerServices.Unsafe.Add(ref item.__flatsharp_Safe_0, index)", csharp);
+            Assert.Contains("return ref global::System.Runtime.CompilerServices.Unsafe.Add(ref item.__flatsharp_NotSafe_0, index)", csharp);
         }
     }
 }
