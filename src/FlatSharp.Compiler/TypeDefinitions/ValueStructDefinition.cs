@@ -170,26 +170,8 @@ namespace FlatSharp.Compiler
                             {
                                 writer.AppendLine($"throw new IndexOutOfRangeException();");
                             }
-
-                            writer.AppendLine($"unsafe");
-                            using (writer.WithBlock())
-                            {
-                                writer.AppendLine($"fixed ({this.Name}* pItem = &item)");
-                                using (writer.WithBlock())
-                                {
-                                    // Get byte* pointer to struct.
-                                    writer.AppendLine($"byte* pByte = (byte*)pItem;");
-
-                                    // Advance to position of the first item in the fector.
-                                    writer.AppendLine($"pByte += {memberModel.Offset};");
-
-                                    // Advance to correct index.
-                                    writer.AppendLine($"pByte += index * sizeof({itemType});");
-
-                                    // return ref.
-                                    writer.AppendLine($"return ref {typeof(Unsafe).GetGlobalCompilableTypeName()}.AsRef<{itemType}>(pByte);");
-                                }
-                            }
+                            
+                            writer.AppendLine($"return ref {typeof(Unsafe).GetGlobalCompilableTypeName()}.Add(ref item.{props[0]}, index);");
                         }
                         else
                         {
