@@ -103,6 +103,12 @@ namespace FlatSharp.TypeModel
                     typeModel = new IndexedVectorTypeModel(type, container);
                     return true;
                 }
+
+                if (genericDef == typeof(IVector<>))
+                {
+                    typeModel = new FlatBufferVectorTypeModel(type, container);
+                    return true;
+                }
             }
 
             if (typeof(IFlatBufferUnion).IsAssignableFrom(type))

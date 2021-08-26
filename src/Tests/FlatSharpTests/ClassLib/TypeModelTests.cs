@@ -729,6 +729,13 @@ namespace FlatSharpTests
             var model = RuntimeTypeModel.CreateFrom(typeof(Memory<byte>?));
             Assert.IsType<NullableTypeModel>(model);
         }
+        
+        [Fact]
+        public void TypeModel_Vector_IVectorOfByte()
+        {
+            var model = this.VectorTest(typeof(IVector<>), typeof(byte));
+            Assert.IsType<FlatBufferVectorTypeModel>(model);
+        }
 
         [Fact]
         public void TypeModel_Vector_NullableReadOnlyMemoryOfByte()

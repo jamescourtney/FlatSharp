@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright 2020 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,24 +14,22 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Compiler
-{
-    /// <summary>
-    /// Enumerates supported vector types.
-    /// </summary>
-    internal enum VectorType
-    {
-        /// <summary>
-        /// Not a vector.
-        /// </summary>
-        None,
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
-        IList,
-        IReadOnlyList,
-        Array,
-        Memory,
-        ReadOnlyMemory,
-        IIndexedVector,
-        IVector
+namespace FlatSharp
+{
+    [SuppressMessage("ReSharper", "PossibleInterfaceMemberAmbiguity")]
+    public interface IVector<T>
+        : IList<T>, IReadOnlyList<T>
+    {
+        Memory<byte> GetByteMemory();
+
+        Memory<byte> GetByteMemory(int index);
+
+        Memory<byte> GetByteMemory(int index, int length);
+
+        public int Length { get; }
     }
 }

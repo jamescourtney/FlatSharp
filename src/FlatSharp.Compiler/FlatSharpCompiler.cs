@@ -205,9 +205,9 @@ namespace FlatSharp.Compiler
                 context.PushScope("$");
                 try
                 {
-                    Assembly[] additionalRefs = additionalReferences?.ToArray() ?? Array.Empty<Assembly>();
                     var rootNode = ParseSyntax("root.fbs", includeLoader);
                     CreateCSharp(rootNode, options, out bool needsUnsafe, out string cSharp);
+                    Assembly[] additionalRefs = additionalReferences?.ToArray() ?? Array.Empty<Assembly>();
                     var (assembly, formattedText, _) = RoslynSerializerGenerator.CompileAssembly(cSharp, true, needsUnsafe, additionalRefs);
                     string debugText = formattedText();
                     return assembly;

@@ -39,7 +39,7 @@ namespace FlatSharp.TypeModel
 
             FlatSharpInternal.Assert(
                 genericDef == typeof(IList<>) || genericDef == typeof(IReadOnlyList<>),
-                "Cannot build a vector from type: { this.ClrType}. Only List, ReadOnlyList, Memory, ReadOnlyMemory, and Arrays are supported.");
+                $"Cannot build a vector from type: {this.ClrType}. Only IVector, IList, IReadOnlyList, Memory, ReadOnlyMemory, and Arrays are supported.");
 
             this.isReadOnly = genericDef == typeof(IReadOnlyList<>);
             return this.ClrType.GetGenericArguments()[0];
