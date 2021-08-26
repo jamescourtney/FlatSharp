@@ -62,6 +62,11 @@ namespace FlatSharp.Compiler
 
         public override void AddField(FieldDefinition field)
         {
+            if (field.IsUnsafeStructVector)
+            {
+                ErrorContext.Current.RegisterError($"Field '{field.Name}' declares the '{MetadataKeys.UnsafeValueStructVector}' attribute. Unsafe struct vectors are only supported on value structs.");
+            }
+
             this.Fields.Add(field);
         }
 

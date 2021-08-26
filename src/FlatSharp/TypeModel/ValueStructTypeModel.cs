@@ -90,7 +90,9 @@
 
         public override IEnumerable<ITypeModel> Children => this.members.Select(x => x.model);
 
-        public bool CanMarshalWhenLittleEndian { get; private set; }
+        public bool CanMarshalOnSerialize { get; private set; }
+
+        public bool CanMarshalOnParse { get; private set; }
 
         public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
         {
@@ -121,7 +123,7 @@
                 return item;
             ";
 
-            if (!this.CanMarshalWhenLittleEndian || !context.Options.EnableValueStructMemoryMarshalDeserialization)
+            if (!this.CanMarshalOnParse || !context.Options.EnableValueStructMemoryMarshalDeserialization)
             {
                 return new CodeGeneratedMethod(nonMarshalBody);
             }
@@ -161,8 +163,7 @@
 
             string body;
             string slice = $"Span<byte> sizedSpan = {context.SpanVariableName}.Slice({context.OffsetVariableName}, {this.inlineSize});";
-            if (this.CanMarshalWhenLittleEndian && 
-                context.Options.EnableValueStructMemoryMarshalDeserialization)
+            if (this.CanMarshalOnSerialize && context.Options.EnableValueStructMemoryMarshalDeserialization)
             {
                 body = $@"
                 {slice}
@@ -261,7 +262,36 @@
                 throw new InvalidFlatBufferDefinitionException($"Can't create type model from type {this.ClrType.GetCompilableTypeName()} because it is not public.");
             }
 
-            this.CanMarshalWhenLittleEndian = UnsafeSizeOf(this.ClrType) == this.inlineSize;
+            this.CanMarshalOnSerialize = false;
+            this.CanMarshalOnParse = false;
+
+            if (UnsafeSizeOf(this.ClrType) == this.inlineSize)
+            {
+                this.CanMarshalOnParse = structAttribute.MemoryMarshalBehavior switch
+                {
+                    MemoryMarshalBehavior.Parse or MemoryMarshalBehavior.Always => true,
+                    MemoryMarshalBehavior.Default => this.IsComplexStruct(),
+                    _ => false,
+                };
+
+                this.CanMarshalOnSerialize = structAttribute.MemoryMarshalBehavior switch
+                {
+                    MemoryMarshalBehavior.Serialize or MemoryMarshalBehavior.Always => true,
+                    MemoryMarshalBehavior.Default => this.IsComplexStruct(),
+                    _ => false,
+                };
+            }
+        }
+
+        /// <summary>
+        /// A complex struct is defined as:
+        /// Having nested structs OR having at least 5 members. Not rocket science, but 
+        /// experimentally, performance of MemoryMarshal.Cast overtakes field-by-field serialization 
+        /// at around the 4 element mark. This is a heurustic, and can be overridden.
+        /// </summary>
+        private bool IsComplexStruct()
+        {
+            return this.members.Count > 4 || this.members.Any(x => x.model.SchemaType != FlatBufferSchemaType.Scalar);
         }
 
         private static int UnsafeSizeOf(Type t)

@@ -53,10 +53,5 @@ namespace FlatSharp.Compiler
         /// Resolves type models.
         /// </summary>
         public TypeModelContainer TypeModelContainer { get; init; } = TypeModelContainer.CreateDefault();
-
-        /// <summary>
-        /// Indicates if future compilations need the unsafe keyword.
-        /// </summary>
-        public bool NeedsUnsafe { get; set; }
     }
 }

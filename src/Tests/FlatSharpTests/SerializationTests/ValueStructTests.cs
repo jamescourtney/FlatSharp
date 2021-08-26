@@ -17,6 +17,7 @@
 namespace FlatSharpTests
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Runtime.InteropServices;
     using FlatSharp;
@@ -33,11 +34,11 @@ namespace FlatSharpTests
         public class TypeModel
         {
             [Theory]
-            [InlineData(typeof(ValidStruct_Marshallable), true)]
-            [InlineData(typeof(ValidStruct_Marshallable_OutOfOrder), true)]
-            [InlineData(typeof(ValidStruct_NotMarshallable_MissingSizeHint), false)]
-            [InlineData(typeof(ValidStruct_NotMarshallable_DueToSize), false)]
-            public void ValidStructs(Type type, bool marshallable)
+            [InlineData(typeof(ValidStruct_Marshallable), true, true)]
+            [InlineData(typeof(ValidStruct_Marshallable_OutOfOrder), true, true)]
+            [InlineData(typeof(ValidStruct_NotMarshallable_MissingSizeHint), false, false)]
+            [InlineData(typeof(ValidStruct_NotMarshallable_DueToSize), false, false)]
+            public void ValidStructs(Type type, bool marshalSerialize, bool marshalParse)
             {
                 ITypeModel typeModel = RuntimeTypeModel.CreateFrom(type);
                 var tm = Assert.IsType<ValueStructTypeModel>(typeModel);
@@ -48,15 +49,40 @@ namespace FlatSharpTests
                 Assert.Equal(typeof(int), children[2].ClrType);
                 Assert.Equal(typeof(long), children[3].ClrType);
                 Assert.Equal(typeof(ValidStruct_Inner), children[4].ClrType);
-                Assert.Equal(marshallable, tm.CanMarshalWhenLittleEndian);
+                Assert.Equal(marshalSerialize, tm.CanMarshalOnSerialize);
+                Assert.Equal(marshalParse, tm.CanMarshalOnParse);
             }
 
-            [Fact]
-            public void SimpleStruct_Marshallable_WithoutSizeHint()
+            [Theory]
+            [InlineData(typeof(MarshalAlways), true, true, true)]
+            [InlineData(typeof(MarshalParse), true, false, true)]
+            [InlineData(typeof(MarshalSerialize), true, true, false)]
+            [InlineData(typeof(MarshalNever), true, false, false)]
+            [InlineData(typeof(MarshalDefault_Simple), true, false, false)] // simple structs are not marshalled.
+            [InlineData(typeof(MarshalDefault_Complex_DueToInnerStruct), true, true, true)]
+            [InlineData(typeof(MarshalDefault_Complex_DueToLotsOfFields), true, true, true)]
+            [InlineData(typeof(MarshalAlways), false, true, true)]
+            [InlineData(typeof(MarshalParse), false, false, true)]
+            [InlineData(typeof(MarshalSerialize), false, true, false)]
+            [InlineData(typeof(MarshalNever), false, false, false)]
+            [InlineData(typeof(MarshalDefault_Simple), false, false, false)] // simple structs are not marshalled.
+            [InlineData(typeof(MarshalDefault_Complex_DueToInnerStruct), false, true, true)]
+            [InlineData(typeof(MarshalDefault_Complex_DueToLotsOfFields), false, true, true)]
+            public void MarshalConfigTests(Type type, bool marshalEnable, bool marshalSerialize, bool marshalParse)
             {
-                ITypeModel typeModel = RuntimeTypeModel.CreateFrom(typeof(ValidStruct_Inner));
+                ITypeModel typeModel = RuntimeTypeModel.CreateFrom(type);
                 var tm = Assert.IsType<ValueStructTypeModel>(typeModel);
-                Assert.True(tm.CanMarshalWhenLittleEndian);
+                
+                Assert.Equal(marshalSerialize, tm.CanMarshalOnSerialize);
+                Assert.Equal(marshalParse, tm.CanMarshalOnParse);
+
+                var options = new FlatBufferSerializerOptions { EnableValueStructMemoryMarshalDeserialization = marshalEnable };
+
+                CodeGeneratedMethod serializeMethod = tm.CreateSerializeMethodBody(ContextHelpers.CreateSerializeContext(options));
+                CodeGeneratedMethod parseMethod = tm.CreateParseMethodBody(ContextHelpers.CreateParserContext(options));
+
+                Assert.Equal(parseMethod.MethodBody.Contains("MemoryMarshal.Cast"), marshalEnable && marshalParse);
+                Assert.Equal(serializeMethod.MethodBody.Contains("MemoryMarshal.Cast"), marshalEnable && marshalSerialize);
             }
 
             [Theory]
@@ -240,8 +266,10 @@ namespace FlatSharpTests
                     serializer.CSharp.Contains($"MemoryMarshal.Cast<byte, {type.GetGlobalCompilableTypeName()}>"));
             }
 
-            [Fact]
-            public void Serialize_NineByte()
+            [Theory]
+            [InlineData(true)]
+            [InlineData(false)]
+            public void Serialize_NineByte(bool marshal)
             {
                 byte[] data =
                 {
@@ -265,13 +293,18 @@ namespace FlatSharpTests
                 };
 
                 byte[] buffer = new byte[1024];
-                int bytesWritten = FlatBufferSerializer.Default.Serialize(table, buffer);
+
+                var serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions { EnableValueStructMemoryMarshalDeserialization = marshal });
+                int bytesWritten = serializer.Serialize(table, buffer);
 
                 Assert.True(data.AsSpan().SequenceEqual(buffer.AsSpan().Slice(0, bytesWritten)));
+                Assert.Equal(marshal, serializer.Compile(table.GetType()).CSharp.Contains("MemoryMarshal.Cast"));
             }
 
-            [Fact]
-            public void Serialize_FiveByte()
+            [Theory]
+            [InlineData(true)]
+            [InlineData(false)]
+            public void Serialize_FiveByte(bool marshal)
             {
                 byte[] data =
                 {
@@ -296,13 +329,18 @@ namespace FlatSharpTests
                 };
 
                 byte[] buffer = new byte[1024];
-                var written = FlatBufferSerializer.Default.Serialize(source, buffer);
+
+                var serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions { EnableValueStructMemoryMarshalDeserialization = marshal });
+                var written = serializer.Serialize(source, buffer);
 
                 Assert.True(data.AsSpan().SequenceEqual(buffer.AsSpan().Slice(0, written)));
+                Assert.Equal(marshal, serializer.Compile(source.GetType()).CSharp.Contains("MemoryMarshal.Cast"));
             }
 
-            [Fact]
-            public void Serialize_SixteenByte()
+            [Theory]
+            [InlineData(true)]
+            [InlineData(false)]
+            public void Serialize_SixteenByte(bool marshal)
             {
                 byte[] data =
                 {
@@ -325,9 +363,12 @@ namespace FlatSharpTests
                 };
 
                 byte[] buffer = new byte[1024];
-                var written = FlatBufferSerializer.Default.Serialize(source, buffer);
+
+                var serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions { EnableValueStructMemoryMarshalDeserialization = marshal });
+                var written = serializer.Serialize(source, buffer);
 
                 Assert.True(data.AsSpan().SequenceEqual(buffer.AsSpan().Slice(0, written)));
+                Assert.Equal(marshal, serializer.Compile(source.GetType()).CSharp.Contains("MemoryMarshal.Cast"));
             }
         }
 
@@ -416,9 +457,11 @@ namespace FlatSharpTests
                 Assert.Equal(4, table.Item.ID);
                 Assert.Equal(5, table.Item.IInner.Test);
             }
-            
-            [Fact]
-            public void Parse_NineByte()
+
+            [Theory]
+            [InlineData(true)]
+            [InlineData(false)]
+            public void Parse_NineByte(bool marshal)
             {
                 byte[] data =
                 {
@@ -432,15 +475,20 @@ namespace FlatSharpTests
                     4, 0,
                 };
 
-                var parsed = FlatBufferSerializer.Default.Parse<SimpleTableAnything<NineByteStruct?>>(data);
+                var serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions { EnableValueStructMemoryMarshalDeserialization = marshal });
+                var parsed = serializer.Parse<SimpleTableAnything<NineByteStruct?>>(data);
 
                 Assert.NotNull(parsed.Item);
                 Assert.Equal(1ul, parsed.Item.Value.A);
                 Assert.Equal(2, parsed.Item.Value.B);
+
+                Assert.Equal(marshal, serializer.Compile<SimpleTableAnything<NineByteStruct?>>().CSharp.Contains("MemoryMarshal.Cast"));
             }
 
-            [Fact]
-            public void Parse_FiveByte()
+            [Theory]
+            [InlineData(true)]
+            [InlineData(false)]
+            public void Parse_FiveByte(bool marshal)
             {
                 byte[] data =
                 {
@@ -452,7 +500,8 @@ namespace FlatSharpTests
                     4, 0,
                 };
 
-                var parsed = FlatBufferSerializer.Default.Parse<SimpleTableAnything<FiveByteStruct?>>(data);
+                var serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions { EnableValueStructMemoryMarshalDeserialization = marshal });
+                var parsed = serializer.Parse<SimpleTableAnything<FiveByteStruct?>>(data);
 
                 Assert.NotNull(parsed.Item);
                 Assert.Equal(1, parsed.Item.Value.A);
@@ -460,10 +509,14 @@ namespace FlatSharpTests
                 Assert.Equal(3, parsed.Item.Value.C);
                 Assert.Equal(4, parsed.Item.Value.D);
                 Assert.Equal(5, parsed.Item.Value.E);
+
+                Assert.Equal(marshal, serializer.Compile<SimpleTableAnything<FiveByteStruct?>>().CSharp.Contains("MemoryMarshal.Cast"));
             }
 
-            [Fact]
-            public void Parse_SixteenByte()
+            [Theory]
+            [InlineData(true)]
+            [InlineData(false)]
+            public void Parse_SixteenByte(bool marshal)
             {
                 byte[] data =
                 {
@@ -476,13 +529,15 @@ namespace FlatSharpTests
                     4, 0,
                 };
 
-                byte[] buffer = new byte[1024];
-                var parsed = FlatBufferSerializer.Default.Parse< SimpleTableAnything<SixteenByteStruct?>>(data);
+                var serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions { EnableValueStructMemoryMarshalDeserialization = marshal });
+                var parsed = serializer.Parse<SimpleTableAnything<SixteenByteStruct?>>(data);
 
                 Assert.NotNull(parsed);
                 Assert.NotNull(parsed.Item);
                 Assert.Equal(1, parsed.Item.Value.A);
                 Assert.Equal(2ul, parsed.Item.Value.B);
+
+                Assert.Equal(marshal, serializer.Compile<SimpleTableAnything<SixteenByteStruct?>>().CSharp.Contains("MemoryMarshal.Cast"));
             }
         }
 
@@ -539,26 +594,40 @@ namespace FlatSharpTests
                 };
 
                 ValueStructTypeModel vstm = (ValueStructTypeModel)RuntimeTypeModel.CreateFrom(typeof(TStruct));
-                Assert.True(vstm.CanMarshalWhenLittleEndian);
+                Assert.True(vstm.CanMarshalOnSerialize);
+                Assert.True(vstm.CanMarshalOnParse);
 
                 byte[] referenceBuffer = new byte[1024];
                 byte[] referenceBufferNull = new byte[1024];
-                byte[] valueBufferNull = new byte[1024];
-                byte[] valueBuffer = new byte[1024];
+                byte[] valueMarshalBufferNull = new byte[1024];
+                byte[] valueNonMarshalBufferNull = new byte[1024];
+                byte[] valueMarhalBuffer = new byte[1024];
+                byte[] valueNonMarhalBuffer = new byte[1024];
+
+                var marshalSerializer = new FlatBufferSerializer(new FlatBufferSerializerOptions { EnableValueStructMemoryMarshalDeserialization = true });
+                var nonMarshalSerializer = new FlatBufferSerializer(new FlatBufferSerializerOptions { EnableValueStructMemoryMarshalDeserialization = false });
 
                 int refNullBytesWritten = FlatBufferSerializer.Default.Serialize(new SimpleTableAnything<GenericReferenceStruct<TValue>>(), referenceBufferNull);
-                int valueNullBytesWritten = FlatBufferSerializer.Default.Serialize(new SimpleTableAnything<TStruct?>(), valueBufferNull);
+                int valueNullMarshalBytesWritten = marshalSerializer.Serialize(new SimpleTableAnything<TStruct?>(), valueMarshalBufferNull);
+                int valueNullNonMarshalBytesWritten = nonMarshalSerializer.Serialize(new SimpleTableAnything<TStruct?>(), valueNonMarshalBufferNull);
 
                 int refBytesWritten = FlatBufferSerializer.Default.Serialize(refTable, referenceBuffer);
-                int valueBytesWritten = FlatBufferSerializer.Default.Serialize(valueTable, valueBuffer);
+                int valueMarshalBytesWritten = marshalSerializer.Serialize(valueTable, valueMarhalBuffer);
+                int valueNonMarshalBytesWritten = nonMarshalSerializer.Serialize(valueTable, valueNonMarhalBuffer);
 
-                Assert.Equal(refBytesWritten, valueBytesWritten);
-                Assert.True(referenceBuffer.SequenceEqual(valueBuffer));
+                Assert.Equal(refBytesWritten, valueMarshalBytesWritten);
+                Assert.Equal(refBytesWritten, valueNonMarshalBytesWritten);
 
-                Assert.Equal(refNullBytesWritten, valueNullBytesWritten);
-                Assert.True(referenceBufferNull.SequenceEqual(valueBufferNull));
+                Assert.True(referenceBuffer.SequenceEqual(valueMarhalBuffer));
+                Assert.True(referenceBuffer.SequenceEqual(valueNonMarhalBuffer));
 
-                var parsed = FlatBufferSerializer.Default.Parse<SimpleTableAnything<TStruct>>(valueBuffer);
+                Assert.Equal(refNullBytesWritten, valueNullMarshalBytesWritten);
+                Assert.Equal(refNullBytesWritten, valueNullNonMarshalBytesWritten);
+
+                Assert.True(referenceBufferNull.SequenceEqual(valueMarshalBufferNull));
+                Assert.True(referenceBufferNull.SequenceEqual(valueNonMarshalBufferNull));
+
+                var parsed = FlatBufferSerializer.Default.Parse<SimpleTableAnything<TStruct>>(valueMarhalBuffer);
                 TStruct temp = parsed.Item;
                 Assert.Equal(value, getter(ref temp));
 
@@ -569,37 +638,37 @@ namespace FlatSharpTests
 
             public delegate ref TValue GetValue<TStruct, TValue>(ref TStruct @struct) where TStruct : struct;
 
-            [FlatBufferStruct, StructLayout(LayoutKind.Explicit)]
+            [FlatBufferStruct(MemoryMarshalBehavior = MemoryMarshalBehavior.Always), StructLayout(LayoutKind.Explicit)]
             public struct ValueStruct_Bool {[FieldOffset(0)] public bool Value; }
 
-            [FlatBufferStruct, StructLayout(LayoutKind.Explicit)]
+            [FlatBufferStruct(MemoryMarshalBehavior = MemoryMarshalBehavior.Always), StructLayout(LayoutKind.Explicit)]
             public struct ValueStruct_Byte { [FieldOffset(0)] public byte Value; }
 
-            [FlatBufferStruct, StructLayout(LayoutKind.Explicit)]
+            [FlatBufferStruct(MemoryMarshalBehavior = MemoryMarshalBehavior.Always), StructLayout(LayoutKind.Explicit)]
             public struct ValueStruct_SByte {[FieldOffset(0)] public sbyte Value; }
 
-            [FlatBufferStruct, StructLayout(LayoutKind.Explicit)]
+            [FlatBufferStruct(MemoryMarshalBehavior = MemoryMarshalBehavior.Always), StructLayout(LayoutKind.Explicit)]
             public struct ValueStruct_UShort {[FieldOffset(0)] public ushort Value; }
 
-            [FlatBufferStruct, StructLayout(LayoutKind.Explicit)]
+            [FlatBufferStruct(MemoryMarshalBehavior = MemoryMarshalBehavior.Always), StructLayout(LayoutKind.Explicit)]
             public struct ValueStruct_Short {[FieldOffset(0)] public short Value; }
 
-            [FlatBufferStruct, StructLayout(LayoutKind.Explicit)]
+            [FlatBufferStruct(MemoryMarshalBehavior = MemoryMarshalBehavior.Always), StructLayout(LayoutKind.Explicit)]
             public struct ValueStruct_UInt {[FieldOffset(0)] public uint Value; }
 
-            [FlatBufferStruct, StructLayout(LayoutKind.Explicit)]
+            [FlatBufferStruct(MemoryMarshalBehavior = MemoryMarshalBehavior.Always), StructLayout(LayoutKind.Explicit)]
             public struct ValueStruct_Int {[FieldOffset(0)] public int Value; }
 
-            [FlatBufferStruct, StructLayout(LayoutKind.Explicit)]
+            [FlatBufferStruct(MemoryMarshalBehavior = MemoryMarshalBehavior.Always), StructLayout(LayoutKind.Explicit)]
             public struct ValueStruct_ULong {[FieldOffset(0)] public ulong Value; }
 
-            [FlatBufferStruct, StructLayout(LayoutKind.Explicit)]
+            [FlatBufferStruct(MemoryMarshalBehavior = MemoryMarshalBehavior.Always), StructLayout(LayoutKind.Explicit)]
             public struct ValueStruct_Long {[FieldOffset(0)] public long Value; }
 
-            [FlatBufferStruct, StructLayout(LayoutKind.Explicit)]
+            [FlatBufferStruct(MemoryMarshalBehavior = MemoryMarshalBehavior.Always), StructLayout(LayoutKind.Explicit)]
             public struct ValueStruct_Float {[FieldOffset(0)] public float Value; }
 
-            [FlatBufferStruct, StructLayout(LayoutKind.Explicit)]
+            [FlatBufferStruct(MemoryMarshalBehavior = MemoryMarshalBehavior.Always), StructLayout(LayoutKind.Explicit)]
             public struct ValueStruct_Double {[FieldOffset(0)] public double Value; }
 
             [FlatBufferStruct]
@@ -728,22 +797,68 @@ namespace FlatSharpTests
             public ValidStruct_Inner IInner { get => this.Inner; set => this.Inner = value; }
         }
 
-        [FlatBufferStruct, StructLayout(LayoutKind.Explicit, Size = 16)]
+        [FlatBufferStruct(MemoryMarshalBehavior = MemoryMarshalBehavior.Always), StructLayout(LayoutKind.Explicit, Size = 16)]
         public struct SixteenByteStruct
         {
             [FieldOffset(0)] public byte A;
             [FieldOffset(8)] public ulong B;
         }
 
-        [FlatBufferStruct, StructLayout(LayoutKind.Explicit, Size = 9)]
+        [FlatBufferStruct(MemoryMarshalBehavior = MemoryMarshalBehavior.Always), StructLayout(LayoutKind.Explicit, Size = 9)]
         public struct NineByteStruct
         {
             [FieldOffset(0)] public ulong A;
             [FieldOffset(8)] public byte B;
         }
 
-        [FlatBufferStruct, StructLayout(LayoutKind.Explicit, Size = 5)]
+        [FlatBufferStruct(MemoryMarshalBehavior = MemoryMarshalBehavior.Always), StructLayout(LayoutKind.Explicit, Size = 5)]
         public struct FiveByteStruct
+        {
+            [FieldOffset(0)] public byte A;
+            [FieldOffset(1)] public byte B;
+            [FieldOffset(2)] public byte C;
+            [FieldOffset(3)] public byte D;
+            [FieldOffset(4)] public byte E;
+        }
+
+        // Small struct that shouldn't marshal (but we are making it).
+        [FlatBufferStruct(MemoryMarshalBehavior = MemoryMarshalBehavior.Always), StructLayout(LayoutKind.Explicit)]
+        public struct MarshalAlways { [FieldOffset(0)] public byte A; }
+
+        [FlatBufferStruct(MemoryMarshalBehavior = MemoryMarshalBehavior.Serialize), StructLayout(LayoutKind.Explicit)]
+        public struct MarshalSerialize {[FieldOffset(0)] public byte A; }
+
+        [FlatBufferStruct(MemoryMarshalBehavior = MemoryMarshalBehavior.Parse), StructLayout(LayoutKind.Explicit)]
+        public struct MarshalParse {[FieldOffset(0)] public byte A; }
+
+        // Complex struct that should marshal (but we are not letting it).
+        [FlatBufferStruct(MemoryMarshalBehavior = MemoryMarshalBehavior.Never), StructLayout(LayoutKind.Explicit)]
+        public struct MarshalNever
+        {
+            [FieldOffset(0)] public byte A;
+            [FieldOffset(1)] public byte B;
+            [FieldOffset(2)] public byte C;
+            [FieldOffset(3)] public byte D;
+            [FieldOffset(4)] public byte E;
+        }
+
+        [FlatBufferStruct(MemoryMarshalBehavior = MemoryMarshalBehavior.Default), StructLayout(LayoutKind.Explicit)]
+        public struct MarshalDefault_Simple
+        {
+            [FieldOffset(0)] public byte A;
+            [FieldOffset(1)] public byte B;
+            [FieldOffset(2)] public byte C;
+            [FieldOffset(3)] public byte D;
+        }
+
+        [FlatBufferStruct(MemoryMarshalBehavior = MemoryMarshalBehavior.Default), StructLayout(LayoutKind.Explicit)]
+        public struct MarshalDefault_Complex_DueToInnerStruct
+        {
+            [FieldOffset(0)] public FiveByteStruct A;
+        }
+
+        [FlatBufferStruct(MemoryMarshalBehavior = MemoryMarshalBehavior.Default), StructLayout(LayoutKind.Explicit)]
+        public struct MarshalDefault_Complex_DueToLotsOfFields
         {
             [FieldOffset(0)] public byte A;
             [FieldOffset(1)] public byte B;

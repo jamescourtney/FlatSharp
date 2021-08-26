@@ -8,7 +8,7 @@
   
   <PropertyGroup>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>5.7.0</Version>
+    <Version>5.7.1</Version>
     <Version Condition=" '$(VersionMajor)' != '' ">$(VersionMajor)</Version>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <Authors>James Courtney</Authors>

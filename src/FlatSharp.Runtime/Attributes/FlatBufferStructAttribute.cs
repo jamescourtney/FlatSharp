@@ -17,7 +17,38 @@
 namespace FlatSharp.Attributes
 {
     using System;
-    using System.ComponentModel;
+
+    /// <summary>
+    /// Indicates how/if FlatSharp should use MemoryMarshal when interacting with this struct.
+    /// </summary>
+    [Flags]
+    public enum MemoryMarshalBehavior
+    {
+        /// <summary>
+        /// Never. Always use field by field copies.
+        /// </summary>
+        Never = 0,
+
+        /// <summary>
+        /// Flatsharp will choose when to enable memory marshalling.
+        /// </summary>
+        Default = 1,
+
+        /// <summary>
+        /// On serializing.
+        /// </summary>
+        Serialize = 2,
+
+        /// <summary>
+        /// On parsing.
+        /// </summary>
+        Parse = 3,
+
+        /// <summary>
+        /// Always (both serialize and parse).
+        /// </summary>
+        Always = 4,
+    }
 
     /// <summary>
     /// Marks a class as being a FlatBuffer struct.
@@ -26,10 +57,8 @@ namespace FlatSharp.Attributes
     public class FlatBufferStructAttribute : Attribute
     {
         /// <summary>
-        /// Specifies the write-through interface for derived classes to implement. Reserved for use by the FlatSharp compiler
-        /// and may change in future versions.
+        /// Enables reading and writing value structs with calls to MemoryMarshal.Cast.
         /// </summary>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public string? WriteThroughInterfaceName { get; set; }
+        public MemoryMarshalBehavior MemoryMarshalBehavior { get; set; } = MemoryMarshalBehavior.Default;
     }
 }

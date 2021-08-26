@@ -119,5 +119,62 @@ namespace FlatSharpTests.Compiler
             Assert.DoesNotContain("return ref global::System.Runtime.CompilerServices.Unsafe.Add(ref item.__flatsharp_Safe_0, index)", csharp);
             Assert.Contains("return ref global::System.Runtime.CompilerServices.Unsafe.Add(ref item.__flatsharp_NotSafe_0, index)", csharp);
         }
+
+        [Theory]
+        [InlineData(MemoryMarshalBehavior.Always, MemoryMarshalBehavior.Always)]
+        [InlineData(MemoryMarshalBehavior.Never, MemoryMarshalBehavior.Never)]
+        [InlineData(MemoryMarshalBehavior.Parse, MemoryMarshalBehavior.Parse)]
+        [InlineData(MemoryMarshalBehavior.Serialize, MemoryMarshalBehavior.Serialize)]
+        [InlineData(MemoryMarshalBehavior.Default, MemoryMarshalBehavior.Default)]
+        [InlineData(null, MemoryMarshalBehavior.Default)]
+        public void ValueStruct_MarshalOptions(MemoryMarshalBehavior? behavior, MemoryMarshalBehavior expected)
+        {
+            string attribute = string.Empty;
+            if (behavior is not null)
+            {
+                attribute = $", {MetadataKeys.MemoryMarshalBehavior}:\"{behavior}\"";
+            }
+
+            string schema = $@"
+                namespace ValueStructTests;
+                table Table {{ A : StructA; }}
+                struct StructA ({MetadataKeys.ValueStruct}{attribute}) {{ 
+                    Value : int;
+                }}";
+
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
+
+            Type type = asm.GetType("ValueStructTests.StructA");
+            Assert.NotNull(type);
+
+            var flatBufferStruct = type.GetCustomAttribute<FlatBufferStructAttribute>();
+            Assert.Equal(expected, flatBufferStruct.MemoryMarshalBehavior);
+        }
+
+        [Fact]
+        public void ValueStruct_WriteThrough_NotAllowed_OnStruct()
+        {
+            string schema = $@"
+                namespace ValueStructTests;
+                struct StructB ({MetadataKeys.ValueStruct}, {MetadataKeys.WriteThrough}) {{
+                    A : int;
+                }}";
+
+            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+            Assert.Contains($"Value struct 'StructB' declares the {MetadataKeys.WriteThrough} attribute. Write through is not supported on value type structs.", ex.Message);
+        }
+
+        [Fact]
+        public void ValueStruct_WriteThrough_NotAllowed_OnField()
+        {
+            string schema = $@"
+                namespace ValueStructTests;
+                struct StructB ({MetadataKeys.ValueStruct}) {{
+                    A : int ({MetadataKeys.WriteThrough});
+                }}";
+
+            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+            Assert.Contains($"Value struct field 'StructB.A' declares the {MetadataKeys.WriteThrough} attribute. Write through is not supported on value type structs.", ex.Message);
+        }
     }
 }

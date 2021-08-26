@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#if !NET5_0_OR_GREATER
+#if !NETCOREAPP3_1_OR_GREATER
 
 namespace System.Diagnostics.CodeAnalysis
 {

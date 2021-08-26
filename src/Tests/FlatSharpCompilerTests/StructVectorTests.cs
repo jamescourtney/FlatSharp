@@ -94,6 +94,24 @@ namespace FlatSharpTests.Compiler
         }
 
         [Fact]
+        public void StructVector_UnsafeVectorOnReferenceType()
+        {
+            string schema = $@"
+            namespace StructVectorTests;
+
+            struct Foo {{
+              V:[int:7] ({MetadataKeys.UnsafeValueStructVector});
+            }}";
+
+            var ex = Assert.Throws<InvalidFbsFileException>(
+                () => FlatSharpCompiler.CompileAndLoadAssembly(
+                    schema,
+                    new()));
+
+            Assert.Contains($"Field '__flatsharp__V_0' declares the '{MetadataKeys.UnsafeValueStructVector}' attribute. Unsafe struct vectors are only supported on value structs.", ex.Message);
+        }
+
+        [Fact]
         public void StructVector_NestedStruct()
         {
             int length = 7;
