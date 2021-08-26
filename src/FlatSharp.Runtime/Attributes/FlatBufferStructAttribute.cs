@@ -19,7 +19,8 @@ namespace FlatSharp.Attributes
     using System;
 
     /// <summary>
-    /// Indicates how/if FlatSharp should use MemoryMarshal when interacting with this struct.
+    /// Indicates how FlatSharp should use MemoryMarshal.Cast when interacting with this struct. When Memory Marshalling is enabled, FlatSharp will
+    /// opportunistically serialize and deserialize a value-type struct with a call to <see cref="System.Runtime.InteropServices.MemoryMarshal.Cast{TFrom, TTo}(Span{TFrom})"/>.
     /// </summary>
     [Flags]
     public enum MemoryMarshalBehavior
@@ -30,22 +31,22 @@ namespace FlatSharp.Attributes
         Never = 0,
 
         /// <summary>
-        /// Flatsharp will choose when to enable memory marshalling.
+        /// Flatsharp will choose when to enable memory marshalling. This can change from release to release.
         /// </summary>
         Default = 1,
 
         /// <summary>
-        /// On serializing.
+        /// Memory marshalling is enabled when serializing only.
         /// </summary>
         Serialize = 2,
 
         /// <summary>
-        /// On parsing.
+        /// Memory marshalling is enabled when parsing only.
         /// </summary>
         Parse = 3,
 
         /// <summary>
-        /// Always (both serialize and parse).
+        /// Memory marshalling is enabled for both serializing and parsing.
         /// </summary>
         Always = 4,
     }
