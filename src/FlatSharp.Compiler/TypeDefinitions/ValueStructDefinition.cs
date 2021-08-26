@@ -41,14 +41,30 @@ namespace FlatSharp.Compiler
 
         public override FlatBufferSchemaType SchemaType => FlatBufferSchemaType.Struct;
 
+        public MemoryMarshalBehavior MemoryMarshalBehavior { get; set; }
+
         protected override bool SupportsChildren => false;
 
         public override void ApplyMetadata(Dictionary<string, string?> metadata)
         {
+            this.MemoryMarshalBehavior = metadata.ParseEnumMetadata(
+                new[] { MetadataKeys.MemoryMarshalBehavior },
+                MemoryMarshalBehavior.Default,
+                MemoryMarshalBehavior.Default);
+
+            if (metadata.ParseNullableBooleanMetadata(MetadataKeys.WriteThrough) == true)
+            {
+                ErrorContext.Current.RegisterError($"Value struct '{this.Name}' declares the {MetadataKeys.WriteThrough} attribute. Write through is not supported on value type structs.");
+            }
         }
 
         public override void AddField(FieldDefinition fieldDefinition)
         {
+            if (fieldDefinition.WriteThrough == true)
+            {
+                ErrorContext.Current.RegisterError($"Value struct field '{this.Name}.{fieldDefinition.Name}' declares the {MetadataKeys.WriteThrough} attribute. Write through is not supported on value type structs.");
+            }
+
             this.fieldDefs.Add(fieldDefinition);
         }
 
@@ -65,6 +81,7 @@ namespace FlatSharp.Compiler
                     SetterKind = SetterKind.Private,
                     CustomGetter = $"{definition.Name}({i})",
                     Name = name,
+                    IsUnsafeStructVector = false,
                 });
 
                 names.Add(name);
@@ -127,7 +144,7 @@ namespace FlatSharp.Compiler
                 }
             }
 
-            writer.AppendLine($"[FlatBufferStruct]");
+            writer.AppendLine($"[FlatBufferStruct({nameof(FlatBufferStructAttribute.MemoryMarshalBehavior)} = {typeof(MemoryMarshalBehavior).GetGlobalCompilableTypeName()}.{this.MemoryMarshalBehavior})]");
             writer.AppendLine($"[System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Explicit, Size = {this.inlineSize})]");
             writer.AppendLine($"public partial struct {this.Name}");
             using (writer.WithBlock())
@@ -151,7 +168,6 @@ namespace FlatSharp.Compiler
                 foreach (var structVectorDef in this.structVectors)
                 {
                     (string name, bool isUnsafeVector, List<string> props) = structVectorDef;
-                    context.NeedsUnsafe |= isUnsafeVector;
 
                     StructMemberModel memberModel = this.fieldNameMap[props[0]];
                     string itemType = memberModel.ItemTypeModel.GetGlobalCompilableTypeName();

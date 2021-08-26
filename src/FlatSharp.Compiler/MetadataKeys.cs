@@ -96,6 +96,11 @@ namespace FlatSharp.Compiler
         public const string UnsafeValueStructVector = "fs_unsafeStructVector";
 
         /// <summary>
+        /// Allows a value struct to be serialized/deserialized with a call to MemoryMarshal.
+        /// </summary>
+        public const string MemoryMarshalBehavior = "fs_memoryMarshal";
+
+        /// <summary>
         /// Indicates that a single table field should be force-written, or when declared on a table
         /// that all fields should be force written. Force Write refers to writing a value even if it
         /// matches the default.

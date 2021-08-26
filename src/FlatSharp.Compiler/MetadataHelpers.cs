@@ -55,6 +55,21 @@ namespace FlatSharp.Compiler
             return defaultValueIfNotPresent;
         }
 
+        public static TEnum ParseEnumMetadata<TEnum>(
+            this Dictionary<string, string?> metadata,
+            string[] keys,
+            TEnum defaultIfPresent,
+            TEnum defaultfIfNotPresent) where TEnum : struct
+        {
+            static bool TryParseEnum(string s, out TEnum value) => System.Enum.TryParse(s, true, out value);
+
+            return metadata.ParseMetadata(
+                keys,
+                TryParseEnum,
+                defaultIfPresent,
+                defaultfIfNotPresent);
+        }
+
         public static bool ParseBooleanMetadata(this IDictionary<string, string?> metadata, params string[] keys)
         {
             return ParseMetadata(

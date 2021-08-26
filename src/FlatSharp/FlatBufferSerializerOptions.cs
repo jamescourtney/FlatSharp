@@ -109,7 +109,8 @@ namespace FlatSharp
 
         /// <summary>
         /// Allows FlatSharp to deserialize value structs with MemoryMarshal calls when on Little Endian
-        /// architectures.
+        /// architectures. Setting this to false will disable all MemoryMarshal calls, but a value of true
+        /// is not wholly sufficient to enable them.
         /// </summary>
         public bool EnableValueStructMemoryMarshalDeserialization { get; set; } = true;
 
