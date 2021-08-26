@@ -28,5 +28,14 @@ namespace FlatSharp.Compiler
 
         [Option("nullable-warnings", Default = false)]
         public bool? NullableWarnings { get; set; }
+
+        [Option('s', "offset-size")]
+        public int? OffsetSize { get; set; }
+
+        [Option( "file-identifier-size")]
+        public int? FileIdentifierSize { get; set; }
+        
+        [Option("strict-file-identifier-size")]
+        public bool? StrictFileIdentifierSize { get; set; }
     }
 }

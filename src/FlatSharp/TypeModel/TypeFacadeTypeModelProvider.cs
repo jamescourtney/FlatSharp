@@ -32,9 +32,9 @@ namespace FlatSharp.TypeModel
         private readonly ITypeModel model;
 
         public TypeFacadeTypeModelProvider(
-            ITypeModel underlyingModel)
+            ITypeModel underlyingModel, OffsetModel offsetModel)
         {
-            this.model = new TypeFacadeTypeModel(underlyingModel);
+            this.model = new TypeFacadeTypeModel(underlyingModel, offsetModel);
         }
 
         public bool TryCreateTypeModel(TypeModelContainer container, Type type, [NotNullWhen(true)] out ITypeModel? typeModel)
@@ -60,12 +60,16 @@ namespace FlatSharp.TypeModel
             private readonly ITypeModel underlyingModel;
 
             public TypeFacadeTypeModel(
-                ITypeModel underlyingModel)
+                ITypeModel underlyingModel,
+                OffsetModel offsetModel)
             {
                 this.underlyingModel = underlyingModel;
+                this.OffsetModel = offsetModel;
             }
 
             public FlatBufferSchemaType SchemaType => this.underlyingModel.SchemaType;
+            
+            public  OffsetModel OffsetModel { get; }
 
             public Type ClrType => typeof(TType);
 

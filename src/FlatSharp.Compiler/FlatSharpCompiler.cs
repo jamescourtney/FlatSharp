@@ -371,15 +371,32 @@ namespace FlatSharp.Compiler
 
                     writer = new CodeWriter();
 
+                    TypeModelContainer container;
+                    
+                    if (localOptions.OffsetSize == null
+                        && localOptions.FileIdentifierSize == null
+                        && localOptions.StrictFileIdentifierSize == null)
+                    {
+                        container = TypeModelContainer.CreateDefault();
+                    }
+                    else
+                    {
+                        container = TypeModelContainer.CreateDefault(new(
+                            localOptions.OffsetSize,
+                            localOptions.FileIdentifierSize,
+                            localOptions.StrictFileIdentifierSize
+                        ));
+                    }
+
                     rootNode.WriteCode(
                         writer,
                         new CompileContext
                         {
                             CompilePass = step,
                             Options = localOptions,
-                            RootFile = rootNode.DeclaringFile,
+                            RootFile = rootNode.DeclaringFile ?? string.Empty,
                             PreviousAssembly = assembly,
-                            TypeModelContainer = TypeModelContainer.CreateDefault(),
+                            TypeModelContainer = container,
                         });
 
                     ErrorContext.Current.ThrowIfHasErrors();

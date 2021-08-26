@@ -31,7 +31,7 @@
         internal ScalarTypeModel(
             TypeModelContainer container,
             Type type,
-            int size) : base(type, container)
+            int size) : base(type, container, container.OffsetModel)
         {
             this.size = size;
         }

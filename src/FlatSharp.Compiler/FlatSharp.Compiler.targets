@@ -33,7 +33,7 @@
 
     <Message Text="$(TargetFramework) $(TargetFrameworkIdentifier): $(CompilerInvocation) --nullable-annotations $(FlatSharpNullable) --input &quot;%(FlatSharpSchema.fullpath)&quot; --output $(IntermediateOutputPath)" Importance="high" />
     <Exec 
-        Command="$(CompilerInvocation) --nullable-warnings $(FlatSharpNullable) --input &quot;%(FlatSharpSchema.fullpath)&quot; --output $(IntermediateOutputPath) "
+        Command="$(CompilerInvocation) $(FlatSharpCompilerOptions) --nullable-warnings $(FlatSharpNullable) --input &quot;%(FlatSharpSchema.fullpath)&quot; --output $(IntermediateOutputPath) "
         CustomErrorRegularExpression=".*" 
         Condition=" '%(FlatSharpSchema.fullpath)' != '' " />
     

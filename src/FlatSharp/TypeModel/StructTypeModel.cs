@@ -37,7 +37,7 @@ namespace FlatSharp.TypeModel
         private MethodInfo? onDeserializeMethod;
         private FlatBufferStructAttribute attribute = null!;
 
-        internal StructTypeModel(Type clrType, TypeModelContainer container) : base(clrType, container)
+        internal StructTypeModel(Type clrType, TypeModelContainer container) : base(clrType, container, container.OffsetModel)
         {
         }
 

@@ -29,7 +29,7 @@ namespace FlatSharp.TypeModel
         // count of items + padding(uoffset_t);
         protected static readonly int VectorMinSize = sizeof(uint) + SerializationHelpers.GetMaxPadding(sizeof(uint));
 
-        internal BaseVectorTypeModel(Type vectorType, TypeModelContainer provider) : base(vectorType, provider)
+        internal BaseVectorTypeModel(Type vectorType, TypeModelContainer provider) : base(vectorType, provider, provider.OffsetModel)
         {
             this.ItemTypeModel = null!;
         }
@@ -160,7 +160,7 @@ namespace FlatSharp.TypeModel
                 int vectorOffset = {context.SerializationContextVariableName}.{nameof(SerializationContext.AllocateVector)}({itemTypeModel.PhysicalLayout[0].Alignment}, count, {this.PaddedMemberInlineSize});
                 {context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteUOffset)}({context.SpanVariableName}, {context.OffsetVariableName}, vectorOffset);
                 {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteInt)}({context.SpanVariableName}, count, vectorOffset);
-                vectorOffset += sizeof(int);
+                vectorOffset += {OffsetModel.OffsetSize};
 
                 {this.CreateLoop(context.Options, context.ValueVariableName, "count", "current", loopBody)}";
 

@@ -29,7 +29,7 @@ namespace FlatSharp.TypeModel
         private Type underlyingType;
         private ITypeModel underlyingTypeModel;
 
-        internal NullableTypeModel(TypeModelContainer container, Type type) : base(type, container)
+        internal NullableTypeModel(TypeModelContainer container, Type type) : base(type, container, container.OffsetModel)
         {
             this.underlyingType = null!;
             this.underlyingTypeModel = null!;

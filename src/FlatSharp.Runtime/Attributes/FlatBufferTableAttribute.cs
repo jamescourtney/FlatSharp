@@ -27,6 +27,6 @@ namespace FlatSharp.Attributes
         /// <summary>
         /// Specifies the file identifier for serialized tables. Must be precisely 4 ASCII characters.
         /// </summary>
-        public string? FileIdentifier { get; set; }
+        public string? FileIdentifier;
     }
 }

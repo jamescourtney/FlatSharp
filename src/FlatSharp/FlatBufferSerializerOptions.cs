@@ -118,5 +118,20 @@ namespace FlatSharp
         /// Indicates if "protected internal" modifiers should be converted to protected.
         /// </summary>
         internal bool ConvertProtectedInternalToProtected { get; set; } = true;
+
+        /// <summary>
+        /// Specify the offset size
+        /// </summary>
+        public int? OffsetSize { get; set; } = null;
+
+        /// <summary>
+        /// Specify the size of the file identifier.
+        /// </summary>
+        public int? FileIdentifierSize { get; set; } = null;
+        
+        /// <summary>
+        /// Specify if the size of the file identifier is strict.
+        /// </summary>
+        public bool? StrictFileIdentifierSize { get; set; } = null;
     }
 }

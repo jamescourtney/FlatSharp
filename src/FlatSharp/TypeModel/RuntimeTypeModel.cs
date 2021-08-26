@@ -31,11 +31,17 @@ namespace FlatSharp.TypeModel
     {
         protected readonly TypeModelContainer typeModelContainer;
 
-        internal RuntimeTypeModel(Type clrType, TypeModelContainer typeModelContainer)
+        internal RuntimeTypeModel(Type clrType, TypeModelContainer typeModelContainer, OffsetModel offsetModel)
         {
             this.ClrType = clrType;
             this.typeModelContainer = typeModelContainer;
+            OffsetModel = offsetModel;
         }
+
+        /// <summary>
+        /// The offset model for serialization.
+        /// </summary>
+        public OffsetModel OffsetModel { get; }
 
         /// <summary>
         /// Initializes this runtime type model instance.
@@ -122,7 +128,15 @@ namespace FlatSharp.TypeModel
         /// </summary>
         internal static ITypeModel CreateFrom(Type type)
         {
-            return TypeModelContainer.CreateDefault().CreateTypeModel(type);
+            return CreateFrom(TypeModelContainer.CreateDefault(), type);
+        }
+        
+        /// <summary>
+        /// Gets or creates a runtime type model from the given type. This is only used in test cases any more.
+        /// </summary>
+        internal static ITypeModel CreateFrom(TypeModelContainer container, Type type)
+        {
+            return container.CreateTypeModel(type);
         }
 
         public abstract CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context);

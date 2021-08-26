@@ -118,7 +118,7 @@
                     {this.GetNotPresentStatement()}
                 }}
 
-                ushort relativeOffset = buffer.ReadUShort({vtableLocationVariableName} + {4 + (2 * this.Index)});
+                ushort relativeOffset = buffer.ReadUShort({vtableLocationVariableName} + {OffsetModel.OffsetSize + (2 * this.Index)});
                 if (relativeOffset == 0)
                 {{
                     {this.GetNotPresentStatement()}
@@ -140,7 +140,7 @@
                 int idx = this.Index + i;
 
                 relativeOffsets.Add($@"
-                ushort relativeOffset{i} = buffer.ReadUShort({vtableLocationVariableName} + {4 + (2 * idx)});
+                ushort relativeOffset{i} = buffer.ReadUShort({vtableLocationVariableName} + {OffsetModel.OffsetSize + (2 * idx)});
                 if (relativeOffset{i} == 0)
                 {{
                     {this.GetNotPresentStatement()}

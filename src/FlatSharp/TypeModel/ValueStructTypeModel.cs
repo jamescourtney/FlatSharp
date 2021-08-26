@@ -36,7 +36,7 @@
         private int inlineSize;
         private int maxAlignment = 1;
 
-        internal ValueStructTypeModel(Type clrType, TypeModelContainer container) : base(clrType, container)
+        internal ValueStructTypeModel(Type clrType, TypeModelContainer container) : base(clrType, container, container.OffsetModel)
         {
         }
 

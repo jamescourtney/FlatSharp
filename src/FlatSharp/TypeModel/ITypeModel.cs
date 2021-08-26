@@ -27,6 +27,8 @@ namespace FlatSharp.TypeModel
     /// </summary>
     public interface ITypeModel
     {
+        OffsetModel OffsetModel { get; }
+        
         /// <summary>
         /// Gets the schema element type that this type model represents. Note that this is not a 1:1 relationship with the type of class. There can
         /// be multiple implementations of ITypeModel that satisfy a particular schema type.

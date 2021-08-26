@@ -48,7 +48,7 @@ namespace FlatSharp
         /// Creates a new FlatBufferSerializer using the given options.
         /// </summary>
         public FlatBufferSerializer(FlatBufferSerializerOptions options) 
-            : this(options, TypeModelContainer.CreateDefault())
+            : this(options, TypeModelContainer.CreateDefault(new(options.OffsetSize, options.FileIdentifierSize, options.StrictFileIdentifierSize)))
         {
         }
 

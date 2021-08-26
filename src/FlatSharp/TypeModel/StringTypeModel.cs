@@ -25,8 +25,7 @@ namespace FlatSharp.TypeModel
     /// </summary>
     public class StringTypeModel : RuntimeTypeModel
     {
-        internal StringTypeModel(TypeModelContainer container) : base(typeof(string), container)
-        {
+        internal StringTypeModel(TypeModelContainer container) : base(typeof(string), container, container.OffsetModel)     {
         }
 
         /// <summary>

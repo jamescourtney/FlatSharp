@@ -26,7 +26,7 @@ namespace FlatSharp.TypeModel
     /// </summary>
     public abstract class BaseVectorOfUnionTypeModel : RuntimeTypeModel
     {
-        internal BaseVectorOfUnionTypeModel(Type vectorType, TypeModelContainer provider) : base(vectorType, provider)
+        internal BaseVectorOfUnionTypeModel(Type vectorType, TypeModelContainer provider) : base(vectorType, provider, provider.OffsetModel)
         {
             this.ItemTypeModel = null!;
         }
@@ -104,12 +104,12 @@ namespace FlatSharp.TypeModel
         public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
         {
             // 2 vectors.
-            int baseSize = 2 * (sizeof(int) + SerializationHelpers.GetMaxPadding(sizeof(int)));
+            int baseSize = 2 * (OffsetModel.OffsetSize + SerializationHelpers.GetMaxPadding(OffsetModel.OffsetSize));
 
             string body =
             $@"
                 int count = {context.ValueVariableName}.{this.LengthPropertyName};
-                int length = {baseSize} + (count * (sizeof(byte) + sizeof(int)));
+                int length = {baseSize} + (count * (sizeof(byte) + {OffsetModel.OffsetSize}));
 
                 for (int i = 0; i < count; ++i)
                 {{
@@ -139,12 +139,12 @@ namespace FlatSharp.TypeModel
                 int discriminatorVectorOffset = {context.SerializationContextVariableName}.{nameof(SerializationContext.AllocateVector)}(sizeof(byte), count, sizeof(byte));
                 {context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteUOffset)}({context.SpanVariableName}, {context.OffsetVariableName}.offset0, discriminatorVectorOffset);
                 {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteInt)}({context.SpanVariableName}, count, discriminatorVectorOffset);
-                discriminatorVectorOffset += sizeof(int);
+                discriminatorVectorOffset += {OffsetModel.OffsetSize};
 
-                int offsetVectorOffset = {context.SerializationContextVariableName}.{nameof(SerializationContext.AllocateVector)}(sizeof(int), count, sizeof(int));
+                int offsetVectorOffset = {context.SerializationContextVariableName}.{nameof(SerializationContext.AllocateVector)}({OffsetModel.OffsetSize}, count, {OffsetModel.OffsetSize});
                 {context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteUOffset)}({context.SpanVariableName}, {context.OffsetVariableName}.offset1, offsetVectorOffset);
                 {context.SpanWriterVariableName}.{nameof(SpanWriter.WriteInt)}({context.SpanVariableName}, count, offsetVectorOffset);
-                offsetVectorOffset += sizeof(int);
+                offsetVectorOffset += {OffsetModel.OffsetSize};
 
                 for (int i = 0; i < count; ++i)
                 {{
@@ -155,7 +155,7 @@ namespace FlatSharp.TypeModel
                       {innerContext.GetSerializeInvocation(itemTypeModel.ClrType)};
 
                       discriminatorVectorOffset++;
-                      offsetVectorOffset += sizeof(int);
+                      offsetVectorOffset += {OffsetModel.OffsetSize};
                 }}";
 
             return new CodeGeneratedMethod(body);

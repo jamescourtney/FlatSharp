@@ -31,7 +31,6 @@ namespace FlatSharp.TypeModel
     public class TableTypeModel : RuntimeTypeModel
     {
         internal const string OnDeserializedMethodName = "OnFlatSharpDeserialized";
-        private const int FileIdentifierSize = 4;
 
         private readonly string ParseClassName = "tableReader_" + Guid.NewGuid().ToString("n");
 
@@ -49,7 +48,7 @@ namespace FlatSharp.TypeModel
         private FlatBufferTableAttribute attribute = null!;
         private readonly string tableReaderClassName = "tableReader_" + Guid.NewGuid().ToString("n");
 
-        internal TableTypeModel(Type clrType, TypeModelContainer typeModelProvider) : base(clrType, typeModelProvider)
+        internal TableTypeModel(Type clrType, TypeModelContainer typeModelProvider) : base(clrType, typeModelProvider, typeModelProvider.OffsetModel)
         {
         }
 
@@ -119,8 +118,8 @@ namespace FlatSharp.TypeModel
         /// </summary>
         internal int NonPaddedMaxTableInlineSize
         {
-            // add sizeof(int) for soffset_t to vtable.
-            get => this.IndexToMemberMap.Values.Sum(x => x.ItemTypeModel.MaxInlineSize) + sizeof(int);
+            // add TypeModel.OffsetSize for soffset_t to vtable.
+            get => this.IndexToMemberMap.Values.Sum(x => x.ItemTypeModel.MaxInlineSize) + OffsetModel.OffsetSize;
         }
 
         public override ConstructorInfo? PreferredSubclassConstructor => this.preferredConstructor;
@@ -135,7 +134,7 @@ namespace FlatSharp.TypeModel
                 this.attribute = attr;
             }
 
-            ValidateFileIdentifier(this.attribute.FileIdentifier);
+            OffsetModel.ValidateFileIdentifier(ref this.attribute.FileIdentifier);
 
             EnsureClassCanBeInheritedByOutsideAssembly(this.ClrType, out this.preferredConstructor);
             this.onDeserializeMethod = ValidateOnDeserializedMethod(this);
@@ -363,26 +362,6 @@ namespace FlatSharp.TypeModel
             }
         }
 
-        private static void ValidateFileIdentifier(string? fileIdentifier)
-        {
-            if (!string.IsNullOrEmpty(fileIdentifier))
-            {
-                if (fileIdentifier.Length != FileIdentifierSize)
-                {
-                    throw new InvalidFlatBufferDefinitionException($"File identifier '{fileIdentifier}' is invalid. FileIdentifiers must be exactly {FileIdentifierSize} ASCII characters.");
-                }
-
-                for (int i = 0; i < fileIdentifier.Length; ++i)
-                {
-                    char c = fileIdentifier[i];
-                    if (c >= 128)
-                    {
-                        throw new InvalidFlatBufferDefinitionException($"File identifier '{fileIdentifier}' contains non-ASCII characters. Character '{c}' is invalid.");
-                    }
-                }
-            }
-        }
-
         public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
         {
             var type = this.ClrType;
@@ -483,12 +462,12 @@ namespace FlatSharp.TypeModel
             // Start by asking for the worst-case number of bytes from the serializationcontext.
             string methodStart =
 $@"
-                int tableStart = {context.SerializationContextVariableName}.{nameof(SerializationContext.AllocateSpace)}({maxInlineSize}, sizeof(int));
+                int tableStart = {context.SerializationContextVariableName}.{nameof(SerializationContext.AllocateSpace)}({maxInlineSize}, {OffsetModel.OffsetSize});
                 {context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteUOffset)}({context.SpanVariableName}, {context.OffsetVariableName}, tableStart);
-                int currentOffset = tableStart + sizeof(int); // skip past vtable soffset_t.
+                int currentOffset = tableStart + {OffsetModel.OffsetSize}; // skip past vtable soffset_t.
 
                 int vtableLength = {minVtableLength};
-                Span<byte> vtable = stackalloc byte[{4 + 2 * (maxIndex + 1)}];
+                Span<byte> vtable = stackalloc byte[{OffsetModel.OffsetSize + 2 * (maxIndex + 1)}];
 ";
 
             List<string> body = new();
@@ -745,8 +724,8 @@ $@"
             return tableMember != null;
         }
 
-        private int GetVTableLength(int index) => 4 + (2 * (index + 1));
+        private int GetVTableLength(int index) => OffsetModel.OffsetSize + (2 * (index + 1));
 
-        private int GetVTablePosition(int index) => 4 + (2 * index);
+        private int GetVTablePosition(int index) => OffsetModel.OffsetSize + (2 * index);
     }
 }

@@ -31,49 +31,71 @@ namespace FlatSharpTests.Compiler
     
     public class StructVectorTests
     {
-        [Fact]
-        public void StructVector_Byte_NegativeLength() 
-            => Assert.Throws<InvalidFbsFileException>(() => this.RunTest<byte>("ubyte", -3, FlatBufferDeserializationOption.Greedy));
+        public static readonly IEnumerable<object[]> OffsetSizes = new[]
+        {
+            new object[] { 1 },
+            new object[] { 2 },
+            new object[] { 4 },
+            new object[] { 8 }
+        };
+        
+        [Theory]
+        [MemberData(nameof(OffsetSizes))]
+        public void StructVector_Byte_NegativeLength(int offsetSize)
+            => Assert.Throws<InvalidFbsFileException>(() => this.RunTest<byte>("ubyte", -3, FlatBufferDeserializationOption.Greedy, offsetSize));
 
-        [Fact]
-        public void StructVector_Byte_ZeroLength()
-            => Assert.Throws<InvalidFbsFileException>(() => this.RunTest<byte>("ubyte", 0, FlatBufferDeserializationOption.Greedy));
+        [Theory]
+        [MemberData(nameof(OffsetSizes))]
+        public void StructVector_Byte_ZeroLength(int offsetSize)
+            => Assert.Throws<InvalidFbsFileException>(() => this.RunTest<byte>("ubyte", 0, FlatBufferDeserializationOption.Greedy, offsetSize));
 
-        [Fact]
-        public void StructVector_Byte() => this.RunTest<byte>("ubyte", 1, FlatBufferDeserializationOption.Greedy);
+        [Theory]
+        [MemberData(nameof(OffsetSizes))]
+        public void StructVector_Byte(int offsetSize) => this.RunTest<byte>("ubyte", 1, FlatBufferDeserializationOption.Greedy, offsetSize);
 
-        [Fact]
-        public void StructVector_SByte() => this.RunTest<sbyte>("byte", 2, FlatBufferDeserializationOption.GreedyMutable);
+        [Theory]
+        [MemberData(nameof(OffsetSizes))]
+        public void StructVector_SByte(int offsetSize) => this.RunTest<sbyte>("byte", 2, FlatBufferDeserializationOption.GreedyMutable, offsetSize);
 
-        [Fact]
-        public void StructVector_Bool() => this.RunTest<bool>("bool", 3, FlatBufferDeserializationOption.VectorCache);
+        [Theory]
+        [MemberData(nameof(OffsetSizes))]
+        public void StructVector_Bool(int offsetSize) => this.RunTest<bool>("bool", 3, FlatBufferDeserializationOption.VectorCache, offsetSize);
 
-        [Fact]
-        public void StructVector_UShort() => this.RunTest<ushort>("ushort", 4, FlatBufferDeserializationOption.VectorCacheMutable);
+        [Theory]
+        [MemberData(nameof(OffsetSizes))]
+        public void StructVector_UShort(int offsetSize) => this.RunTest<ushort>("ushort", 4, FlatBufferDeserializationOption.VectorCacheMutable, offsetSize);
 
-        [Fact]
-        public void StructVector_Short() => this.RunTest<short>("short", 5, FlatBufferDeserializationOption.PropertyCache);
+        [Theory]
+        [MemberData(nameof(OffsetSizes))]
+        public void StructVector_Short(int offsetSize) => this.RunTest<short>("short", 5, FlatBufferDeserializationOption.PropertyCache, offsetSize);
 
-        [Fact]
-        public void StructVector_UInt() => this.RunTest<uint>("uint", 6, FlatBufferDeserializationOption.Lazy);
+        [Theory]
+        [MemberData(nameof(OffsetSizes))]
+        public void StructVector_UInt(int offsetSize) => this.RunTest<uint>("uint", 6, FlatBufferDeserializationOption.Lazy, offsetSize);
 
-        [Fact]
-        public void StructVector_Int() => this.RunTest<int>("int", 7, FlatBufferDeserializationOption.Greedy);
+        [Theory]
+        [MemberData(nameof(OffsetSizes))]
+        public void StructVector_Int(int offsetSize) => this.RunTest<int>("int", 7, FlatBufferDeserializationOption.Greedy, offsetSize);
 
-        [Fact]
-        public void StructVector_ULong() => this.RunTest<ulong>("ulong", 8, FlatBufferDeserializationOption.Greedy);
+        [Theory]
+        [MemberData(nameof(OffsetSizes))]
+        public void StructVector_ULong(int offsetSize) => this.RunTest<ulong>("ulong", 8, FlatBufferDeserializationOption.Greedy, offsetSize);
 
-        [Fact]
-        public void StructVector_Long() => this.RunTest<long>("long", 9, FlatBufferDeserializationOption.Greedy);
+        [Theory]
+        [MemberData(nameof(OffsetSizes))]
+        public void StructVector_Long(int offsetSize) => this.RunTest<long>("long", 9, FlatBufferDeserializationOption.Greedy, offsetSize);
 
-        [Fact]
-        public void StructVector_Float() => this.RunTest<float>("float", 10, FlatBufferDeserializationOption.Greedy);
+        [Theory]
+        [MemberData(nameof(OffsetSizes))]
+        public void StructVector_Float(int offsetSize) => this.RunTest<float>("float", 10, FlatBufferDeserializationOption.Greedy, offsetSize);
 
-        [Fact]
-        public void StructVector_Double() => this.RunTest<double>("double", 11, FlatBufferDeserializationOption.Greedy);
+        [Theory]
+        [MemberData(nameof(OffsetSizes))]
+        public void StructVector_Double(int offsetSize) => this.RunTest<double>("double", 11, FlatBufferDeserializationOption.Greedy, offsetSize);
 
-        [Fact]
-        public void StructVector_InvalidType()
+        [Theory]
+        [MemberData(nameof(OffsetSizes))]
+        public void StructVector_InvalidType(int offsetSize)
         {
             string schema = $@"
             namespace StructVectorTests;
@@ -88,13 +110,14 @@ namespace FlatSharpTests.Compiler
             var ex = Assert.Throws<InvalidFbsFileException>(
                 () => FlatSharpCompiler.CompileAndLoadAssembly(
                     schema,
-                    new()));
+                    new() { OffsetSize = offsetSize }));
 
             Assert.Contains("Unable to resolve struct vector type 'Bar'.", ex.Message);
         }
 
-        [Fact]
-        public void StructVector_UnsafeVectorOnReferenceType()
+        [Theory]
+        [MemberData(nameof(OffsetSizes))]
+        public void StructVector_UnsafeVectorOnReferenceType(int offsetSize)
         {
             string schema = $@"
             namespace StructVectorTests;
@@ -111,8 +134,9 @@ namespace FlatSharpTests.Compiler
             Assert.Contains($"Field '__flatsharp__V_0' declares the '{MetadataKeys.UnsafeValueStructVector}' attribute. Unsafe struct vectors are only supported on value structs.", ex.Message);
         }
 
-        [Fact]
-        public void StructVector_NestedStruct()
+        [Theory]
+        [MemberData(nameof(OffsetSizes))]
+        public void StructVector_NestedStruct(int offsetSize)
         {
             int length = 7;
 
@@ -129,7 +153,7 @@ namespace FlatSharpTests.Compiler
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(
                 schema,
-                new());
+                new() { OffsetSize = offsetSize });
 
             Type tableType = asm.GetType("StructVectorTests.Table");
             Type fooType = asm.GetType("StructVectorTests.Foo");
@@ -191,7 +215,7 @@ namespace FlatSharpTests.Compiler
             }
         }
 
-        private void RunTest<T>(string fbsType, int length, FlatBufferDeserializationOption option) where T : struct
+        private void RunTest<T>(string fbsType, int length, FlatBufferDeserializationOption option, int offsetSize) where T : struct
         {
             string schema = $@"
             namespace StructVectorTests;
@@ -205,7 +229,7 @@ namespace FlatSharpTests.Compiler
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(
                 schema, 
-                new());
+                new() { OffsetSize = offsetSize });
 
             Type tableType = asm.GetType("StructVectorTests.Table");
             Type fooType = asm.GetType("StructVectorTests.Foo");

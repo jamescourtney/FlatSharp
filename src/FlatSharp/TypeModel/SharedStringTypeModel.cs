@@ -25,7 +25,7 @@ namespace FlatSharp.TypeModel
     /// </summary>
     public class SharedStringTypeModel : RuntimeTypeModel, ITypeModel
     {
-        internal SharedStringTypeModel(TypeModelContainer container) : base(typeof(SharedString), container)
+        internal SharedStringTypeModel(TypeModelContainer container) : base(typeof(SharedString), container, container.OffsetModel)
         {
         }
 

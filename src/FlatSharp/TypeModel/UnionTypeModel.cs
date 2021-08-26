@@ -29,7 +29,7 @@ namespace FlatSharp.TypeModel
     {
         private ITypeModel[] memberTypeModels;
 
-        internal UnionTypeModel(Type unionType, TypeModelContainer provider) : base(unionType, provider)
+        internal UnionTypeModel(Type unionType, TypeModelContainer provider) : base(unionType, provider, provider.OffsetModel)
         {
             this.memberTypeModels = null!;
         }

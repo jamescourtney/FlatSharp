@@ -50,7 +50,7 @@ namespace FlatSharp.Compiler
 
         public DefaultConstructorKind? DefaultConstructorKind { get; set; }
 
-        public string? FileIdentifier { get; set; }
+        public string? FileIdentifier;
 
         public FlatBufferDeserializationOption? RequestedSerializer { get; set; }
 
@@ -158,6 +158,7 @@ namespace FlatSharp.Compiler
 
             if (this.IsTable && !string.IsNullOrEmpty(this.FileIdentifier))
             {
+                context.TypeModelContainer.OffsetModel.ValidateFileIdentifier(ref this.FileIdentifier);
                 attributeParts.Add($"{nameof(FlatBufferTableAttribute.FileIdentifier)} = \"{this.FileIdentifier}\"");
             }
 

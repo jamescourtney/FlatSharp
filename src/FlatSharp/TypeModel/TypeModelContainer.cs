@@ -36,8 +36,9 @@ namespace FlatSharp.TypeModel
         private readonly ConcurrentDictionary<Type, ITypeModel> cache = new ConcurrentDictionary<Type, ITypeModel>();
         private readonly List<ITypeModelProvider> providers = new List<ITypeModelProvider>();
 
-        private TypeModelContainer()
+        private TypeModelContainer(OffsetModel offsetModel)
         {
+            OffsetModel = offsetModel;
         }
 
         /// <summary>
@@ -45,7 +46,7 @@ namespace FlatSharp.TypeModel
         /// </summary>
         public static TypeModelContainer CreateEmpty()
         {
-            return new TypeModelContainer();
+            return new TypeModelContainer(OffsetModel.Default);
         }
 
         /// <summary>
@@ -53,11 +54,24 @@ namespace FlatSharp.TypeModel
         /// </summary>
         public static TypeModelContainer CreateDefault()
         {
-            var container = new TypeModelContainer();
+            var container = new TypeModelContainer(OffsetModel.Default);
             container.RegisterProvider(new ScalarTypeModelProvider());
             container.RegisterProvider(new FlatSharpTypeModelProvider());
             return container;
         }
+
+        /// <summary>
+        /// Creates a FlatSharp type model container with default support but with a custom offset model.
+        /// </summary>
+        public static TypeModelContainer CreateDefault(OffsetModel offsetModel)
+        {
+            var container = new TypeModelContainer(offsetModel);
+            container.RegisterProvider(new ScalarTypeModelProvider());
+            container.RegisterProvider(new FlatSharpTypeModelProvider());
+            return container;
+        }
+
+        public OffsetModel OffsetModel { get; }
 
         /// <summary>
         /// Registers a type facade for the given type. Facades are a convenience mechanism to
@@ -94,12 +108,12 @@ namespace FlatSharp.TypeModel
             if (typeof(TUnderlyingType).IsValueType && Nullable.GetUnderlyingType(typeof(TUnderlyingType)) == null)
             {
                 // non-nullable value type: omit the null check
-                provider = new TypeFacadeTypeModelProvider<TConverter, TUnderlyingType, TFacadeType>(model);
+                provider = new TypeFacadeTypeModelProvider<TConverter, TUnderlyingType, TFacadeType>(model, OffsetModel);
             }
             else
             {
                 // reference type or nullable value type.
-                provider = new TypeFacadeTypeModelProvider<NullCheckingTypeFacadeConverter<TUnderlyingType, TFacadeType, TConverter>, TUnderlyingType, TFacadeType>(model);
+                provider = new TypeFacadeTypeModelProvider<NullCheckingTypeFacadeConverter<TUnderlyingType, TFacadeType, TConverter>, TUnderlyingType, TFacadeType>(model, OffsetModel);
             }
 
             // add first.

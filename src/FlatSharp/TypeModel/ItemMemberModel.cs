@@ -43,6 +43,7 @@ namespace FlatSharp.TypeModel
             var setMethod = propertyInfo.SetMethod;
 
             this.ItemTypeModel = propertyModel;
+            this.OffsetModel = propertyModel.OffsetModel;
             this.PropertyInfo = propertyInfo;
             this.Index = attribute.Index;
             this.CustomAccessor = propertyInfo.GetFlatBufferMetadataOrNull(FlatBufferMetadataKind.Accessor);
@@ -102,6 +103,8 @@ namespace FlatSharp.TypeModel
                 }
             }
         }
+        
+        public OffsetModel OffsetModel { get; }
 
         private static bool CanBeOverridden(MethodInfo method)
         {

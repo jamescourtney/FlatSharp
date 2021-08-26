@@ -30,7 +30,7 @@
     {
         private ITypeModel underlyingTypeModel;
 
-        internal EnumTypeModel(Type type, TypeModelContainer typeModelContainer) : base(type, typeModelContainer)
+        internal EnumTypeModel(Type type, TypeModelContainer typeModelContainer) : base(type, typeModelContainer, typeModelContainer.OffsetModel)
         {
             this.underlyingTypeModel = null!;
         }
