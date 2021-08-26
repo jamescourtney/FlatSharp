@@ -230,6 +230,11 @@ $@"
             bool allowUnsafe,
             params Assembly[] additionalReferences)
         {
+            if (allowUnsafe)
+            {
+                sourceCode = "#define FLATSHARP_UNSAFE\n" + sourceCode;
+            }
+            
             var rootNode = ApplySyntaxTransformations(CSharpSyntaxTree.ParseText(sourceCode, ParseOptions).GetRoot());
             SyntaxTree tree = SyntaxFactory.SyntaxTree(rootNode);
             Func<string> formattedTextFactory = GetFormattedTextFactory(tree);
@@ -250,6 +255,24 @@ $@"
                 .WithOptimizationLevel(OptimizationLevel.Release)
                 .WithNullableContextOptions(NullableContextOptions.Enable);
 
+            if (allowUnsafe)
+            {
+                var flatSharpAsm = typeof(RoslynSerializerGenerator).Assembly;
+                var flatSharpAsmName = flatSharpAsm.GetName();
+
+                var flatSharpUnsafeAsmName = new AssemblyName(
+                    "FlatSharp.Unsafe" +
+                    flatSharpAsmName.FullName
+                        .Substring(flatSharpAsmName.Name.Length)
+                );
+
+                var addRefs = new List<Assembly>(additionalReferences)
+                {
+                    Assembly.Load(flatSharpUnsafeAsmName)
+                };
+                additionalReferences = addRefs.ToArray();
+            }
+            
             CSharpCompilation compilation = CSharpCompilation.Create(
                 name,
                 new[] { tree },
@@ -363,6 +386,7 @@ $@"
                 var failures = result.Diagnostics
                     .Where(d => d.Id != "CS8019") // unnecessary using directive.
                     .Where(d => d.Id != "CS1701") // DLL version mismatch
+                    .Where(d => d.Id != "CS1030") // intentionally emitted warnings
                     .ToArray();
 
                 if (failures.Length > 0)

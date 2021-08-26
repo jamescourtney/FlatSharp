@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+using FlatSharp.Unsafe;
+
 namespace FlatSharpTests.Compiler
 {
     using System;
@@ -53,15 +55,18 @@ table OuterTable ({MetadataKeys.SerializerKind}: ""Greedy"") {{
   IntVector_List:[int] ({MetadataKeys.VectorKind}:""IList"", id: 9);
   IntVector_RoList:[int] ({MetadataKeys.VectorKind}:""IReadOnlyList"", id: 10);
   IntVector_Array:[int] ({MetadataKeys.VectorKind}:""Array"", id: 11);
+  IntVector_Vector:[int] ({MetadataKeys.VectorKind}:""IVector"", id: 12);
   
-  TableVector_List:[InnerTable] ({MetadataKeys.VectorKind}:""IList"", id: 12);
-  TableVector_RoList:[InnerTable] ({MetadataKeys.VectorKind}:""IReadOnlyList"", id: 13);
-  TableVector_Indexed:[InnerTable] ({MetadataKeys.VectorKind}:""IIndexedVector"", id: 14);
-  TableVector_Array:[InnerTable] ({MetadataKeys.VectorKindLegacy}:""Array"", id: 15);
+  TableVector_List:[InnerTable] ({MetadataKeys.VectorKind}:""IList"", id: 13);
+  TableVector_RoList:[InnerTable] ({MetadataKeys.VectorKind}:""IReadOnlyList"", id: 14);
+  TableVector_Indexed:[InnerTable] ({MetadataKeys.VectorKind}:""IIndexedVector"", id: 15);
+  TableVector_Array:[InnerTable] ({MetadataKeys.VectorKindLegacy}:""Array"", id: 16);
+  TableVector_Vector:[InnerTable] ({MetadataKeys.VectorKind}:""IVector"", id: 17);
 
-  ByteVector:[ubyte] ({MetadataKeys.VectorKind}:""Memory"", id: 16);
-  ByteVector_RO:[ubyte] ({MetadataKeys.VectorKind}:""ReadOnlyMemory"", id: 17);
-  Union:Union (id: 18);
+  ByteVector:[ubyte] ({MetadataKeys.VectorKind}:""Memory"", id: 18);
+  ByteVector_RO:[ubyte] ({MetadataKeys.VectorKind}:""ReadOnlyMemory"", id: 19);
+  ByteVector_Vector:[ubyte] ({MetadataKeys.VectorKind}:""IVector"", id: 20);
+  Union:Union (id: 21);
 }}
 
 struct OuterStruct {{
@@ -97,11 +102,13 @@ table InnerTable {{
                 IntVector_Array = new[] { 7, 8, 9, },
                 IntVector_List = new[] { 10, 11, 12, }.ToList(),
                 IntVector_RoList = new[] { 13, 14, 15 }.ToList(),
+                IntVector_Vector = FlatBufferVector.Create( new[] { 13, 14, 15 }),
 
                 TableVector_Array = CreateInner("Rocket", "Molly", "Clementine"),
                 TableVector_Indexed = new IndexedVector<string, InnerTable>(CreateInner("Pudge", "Sunshine", "Gypsy"), false),
                 TableVector_List = CreateInner("Finnegan", "Daisy"),
                 TableVector_RoList = CreateInner("Gordita", "Lunchbox"),
+                TableVector_Vector = FlatBufferVector.Create( CreateInner("Gordita", "Lunchbox")),
 
                 Union = new FlatBufferUnion<OuterTable, InnerTable, OuterStruct, InnerStruct>(new OuterStruct())
             };
@@ -316,24 +323,33 @@ table InnerTable {{
             public int[]? IntVector_Array { get; set; }
 
             [FlatBufferItem(12)]
-            public IList<InnerTable>? TableVector_List { get; set; }
+            public IVector<int>? IntVector_Vector { get; set; }
 
             [FlatBufferItem(13)]
-            public IReadOnlyList<InnerTable>? TableVector_RoList { get; set; }
+            public IList<InnerTable>? TableVector_List { get; set; }
 
             [FlatBufferItem(14)]
-            public IIndexedVector<string, InnerTable>? TableVector_Indexed { get; set; }
+            public IReadOnlyList<InnerTable>? TableVector_RoList { get; set; }
 
             [FlatBufferItem(15)]
-            public InnerTable[]? TableVector_Array { get; set; }
+            public IIndexedVector<string, InnerTable>? TableVector_Indexed { get; set; }
 
             [FlatBufferItem(16)]
-            public Memory<byte>? ByteVector { get; set; }
+            public InnerTable[]? TableVector_Array { get; set; }
 
             [FlatBufferItem(17)]
-            public ReadOnlyMemory<byte>? ByteVector_RO { get; set; }
+            public IVector<InnerTable>? TableVector_Vector { get; set; }
 
             [FlatBufferItem(18)]
+            public Memory<byte>? ByteVector { get; set; }
+
+            [FlatBufferItem(19)]
+            public ReadOnlyMemory<byte>? ByteVector_RO { get; set; }
+
+            [FlatBufferItem(20)]
+            public IVector<byte>? ByteVector_Vector { get; set; }
+
+            [FlatBufferItem(21)]
             public FlatBufferUnion<OuterTable, InnerTable, OuterStruct, InnerStruct>? Union { get; set; }
         }
 

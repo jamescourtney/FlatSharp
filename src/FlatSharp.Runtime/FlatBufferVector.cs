@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+using System.Buffers;
+using System.IO;
+using System.Runtime.InteropServices;
+
 namespace FlatSharp
 {
     using System;
@@ -22,10 +26,67 @@ namespace FlatSharp
     using System.Runtime.CompilerServices;
 
     /// <summary>
+    /// A base class that FlatBuffersNet implements to deserialize vectors.
+    /// </summary>
+    public abstract class FlatBufferVector<T> : IVector<T>
+    {
+        public abstract IEnumerator<T> GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator()
+            => GetEnumerator();
+
+        public abstract void Add(T item);
+
+        public abstract void Clear();
+
+        public abstract bool Contains(T item);
+
+        public abstract void CopyTo(T[] array, int arrayIndex);
+
+        public abstract bool Remove(T item);
+
+        public abstract int Count
+        {
+            get;
+        }
+
+        public abstract bool IsReadOnly
+        {
+            get;
+        }
+
+        public abstract int IndexOf(T item);
+
+        public abstract void Insert(int index, T item);
+
+        public abstract void RemoveAt(int index);
+
+        public abstract T this[int index]
+        {
+            get;
+            set;
+        }
+
+        public abstract Memory<byte> GetByteMemory();
+
+        public abstract Memory<byte> GetByteMemory(int index);
+
+        public abstract Memory<byte> GetByteMemory(int index, int length);
+
+        public int Length
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get {
+                return Count;
+            }
+        }
+    }
+    
+    /// <summary>
     /// A base class that FlatBuffersNet implements to deserialize vectors. FlatBufferVetor{T} is a lazy implementation
     /// which will create a new instance for each item it returns. Calling .ToList() is an effective way to do caching.
     /// </summary>
-    public abstract class FlatBufferVector<T, TInputBuffer> : IList<T>, IReadOnlyList<T>
+    public abstract class FlatBufferVector<T, TInputBuffer> : FlatBufferVector<T>
         where TInputBuffer : IInputBuffer
     {
         private readonly TInputBuffer memory;
@@ -51,7 +112,7 @@ namespace FlatSharp
         /// <summary>
         /// Gets the item at the given index.
         /// </summary>
-        public T this[int index]
+        public override T this[int index]
         {
             get
             {
@@ -68,26 +129,57 @@ namespace FlatSharp
             }
         }
 
-        public int Count => this.count;
 
-        public bool IsReadOnly => true;
+        public override Memory<byte> GetByteMemory()
+        {
+            return this.memory.GetByteMemory(GetOffset(this.itemSize, this.offset, 0), this.itemSize * this.count);
+        }
 
-        public void Add(T item)
+        public override Memory<byte> GetByteMemory(int index)
+        {
+            if ((uint)index >= (uint)this.count)
+            {
+                throw new ArgumentOutOfRangeException(nameof(index));
+            }
+            return this.memory.GetByteMemory(GetOffset(this.itemSize, this.offset, index), this.itemSize);
+        }
+
+
+        public override Memory<byte> GetByteMemory(int index, int length)
+        {
+            if ((uint)index >= (uint)this.count)
+            {
+                throw new ArgumentOutOfRangeException(nameof(index));
+            }
+            
+            if ((uint)index + (uint)length >= (uint)this.count)
+            {
+                throw new ArgumentOutOfRangeException(nameof(length));
+            }
+            
+            return this.memory.GetByteMemory(GetOffset(this.itemSize, this.offset, index), this.itemSize * length);
+        }
+
+        public override int Count => this.count;
+
+        public override bool IsReadOnly => true;
+
+        public override void Add(T item)
         {
             throw new NotMutableException("FlatBufferVector does not allow adding items.");
         }
 
-        public void Clear()
+        public override void Clear()
         {
             throw new NotMutableException("FlatBufferVector does not support clearing.");
         }
 
-        public bool Contains(T? item)
+        public override bool Contains(T? item)
         {
             return this.IndexOf(item) >= 0;
         }
 
-        public void CopyTo(T[]? array, int arrayIndex)
+        public override void CopyTo(T[]? array, int arrayIndex)
         {
             if (array is null)
             {
@@ -123,7 +215,7 @@ namespace FlatSharp
             return array;
         }
 
-        public IEnumerator<T> GetEnumerator()
+        public override IEnumerator<T> GetEnumerator()
         {
             int count = this.count;
             for (int i = 0; i < count; ++i)
@@ -132,7 +224,7 @@ namespace FlatSharp
             }
         }
 
-        public int IndexOf(T? item)
+        public override int IndexOf(T? item)
         {
             // FlatBuffer vectors are not allowed to have null by definition.
             if (item is null)
@@ -165,24 +257,19 @@ namespace FlatSharp
             return list;
         }
 
-        public void Insert(int index, T item)
+        public override void Insert(int index, T item)
         {
             throw new NotMutableException("FlatBufferVector does not support inserting.");
         }
 
-        public bool Remove(T item)
+        public override bool Remove(T item)
         {
             throw new NotMutableException("FlatBufferVector does not support removing.");
         }
 
-        public void RemoveAt(int index)
+        public override void RemoveAt(int index)
         {
             throw new NotMutableException("FlatBufferVector does not support removing.");
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return this.GetEnumerator();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -322,6 +322,11 @@ namespace FlatSharp.Compiler
                     string keyType = this.GetIndexedVectorKeyType(context);
                     return $"IIndexedVector<{keyType}, {clrType}>";
 
+                case VectorType.IVector: {
+                    context.NeedsUnsafe = true;
+                    return $"IVector<{clrType}>";
+                }
+
                 case VectorType.None:
                     return clrType;
 
