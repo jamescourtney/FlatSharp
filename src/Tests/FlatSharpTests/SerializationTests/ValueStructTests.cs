@@ -848,7 +848,6 @@ namespace FlatSharpTests
             [FieldOffset(0)] public byte A;
             [FieldOffset(1)] public byte B;
             [FieldOffset(2)] public byte C;
-            [FieldOffset(3)] public byte D;
         }
 
         [FlatBufferStruct(MemoryMarshalBehavior = MemoryMarshalBehavior.Default), StructLayout(LayoutKind.Explicit)]
@@ -864,7 +863,6 @@ namespace FlatSharpTests
             [FieldOffset(1)] public byte B;
             [FieldOffset(2)] public byte C;
             [FieldOffset(3)] public byte D;
-            [FieldOffset(4)] public byte E;
         }
     }
 }

@@ -285,13 +285,13 @@
 
         /// <summary>
         /// A complex struct is defined as:
-        /// Having nested structs OR having at least 5 members. Not rocket science, but 
+        /// Having nested structs OR having at least 4 members. Not rocket science, but 
         /// experimentally, performance of MemoryMarshal.Cast overtakes field-by-field serialization 
         /// at around the 4 element mark. This is a heurustic, and can be overridden.
         /// </summary>
         private bool IsComplexStruct()
         {
-            return this.members.Count > 4 || this.members.Any(x => x.model.SchemaType != FlatBufferSchemaType.Scalar);
+            return this.members.Count >= 4 || this.members.Any(x => x.model.SchemaType != FlatBufferSchemaType.Scalar);
         }
 
         private static int UnsafeSizeOf(Type t)
