@@ -29,6 +29,7 @@ namespace FlatSharp
 {
 	public interface IFlatBufferUnion
 	{
+		byte Discriminator { get; }
 	}
 
 
@@ -36,9 +37,20 @@ namespace FlatSharp
 		for (int i = 0; i < numGenerics; ++i)
 		{
 			var range = Enumerable.Range(1, i + 1);
+			var genericList = string.Join(", ", range.Select(x => "T" + x));
 	#>
+			public interface IFlatBufferUnion<<#= genericList #>> : IFlatBufferUnion
+			<# foreach (var genericType in range) { #>
+				where T<#= genericType #> : notnull
+			<# } #>
+			{
+			<# foreach (var genericType in range) { #>
+				T<#= genericType #> Item<#= genericType #> { get; }
+			<# } #>
+			}
+
 			[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-			public class FlatBufferUnion<<#= string.Join(", ", range.Select(x => "T" + x)) #>> : IFlatBufferUnion
+			public struct FlatBufferUnion<<#= genericList #>> : IFlatBufferUnion<<#= genericList #>>
 
 			<# foreach (var genericType in range) { #>
 				where T<#= genericType #> : notnull

@@ -114,7 +114,6 @@ namespace FlatSharp.TypeModel
                 for (int i = 0; i < count; ++i)
                 {{
                       var current = {context.ValueVariableName}{this.Indexer("i")};
-                      {this.GetThrowIfNullStatement("current")}
                       length += {context.MethodNameMap[this.ItemTypeModel.ClrType]}(current);
                 }}
 
@@ -149,7 +148,6 @@ namespace FlatSharp.TypeModel
                 for (int i = 0; i < count; ++i)
                 {{
                       var current = {context.ValueVariableName}{this.Indexer("i")};
-                      {this.GetThrowIfNullStatement("current")}
 
                       var tuple = (discriminatorVectorOffset, offsetVectorOffset);
                       {innerContext.GetSerializeInvocation(itemTypeModel.ClrType)};
@@ -185,11 +183,5 @@ namespace FlatSharp.TypeModel
         /// Returns the type of union.
         /// </summary>
         public abstract Type OnInitialize();
-
-        private string GetThrowIfNullStatement(string variableName)
-        {
-            FlatSharpInternal.Assert(!this.ItemTypeModel.IsNonNullableClrValueType(), "Unions are reference types");
-            return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({variableName});";
-        }
     }
 }

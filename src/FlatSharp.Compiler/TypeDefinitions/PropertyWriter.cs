@@ -205,6 +205,10 @@ namespace FlatSharp.Compiler
             {
                 clrTypeName += "?";
             }
+            else if (thisTypeModel?.SchemaType == FlatBufferSchemaType.Union && Nullable.GetUnderlyingType(thisTypeModel.ClrType) == null)
+            {
+                clrTypeName += "?";
+            }
 
             return $"{modifiers.propertyModifier.ToCSharpString()} {@virtual} {clrTypeName} {this.field.Name} {{ {modifiers.getModifer.ToCSharpString()} get; {setter} }}";
         }

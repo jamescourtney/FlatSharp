@@ -222,7 +222,7 @@ $@"
                 switch (discriminatorValue)
                 {{
                     {string.Join("\r\n", switchCases)}
-                    default: throw new InvalidOperationException(""Unexpected"");
+                    default: throw new InvalidOperationException(""Unexpected discriminator. Unions must be initialized."");
                 }}";
 
             return new CodeGeneratedMethod(serializeBlock);
@@ -242,9 +242,7 @@ $@"
             switchCases.Add("_ => throw new InvalidOperationException(\"Unexpected union discriminator\")");
 
             string body = $@"
-                if ({context.ItemVariableName} is null) return null;
-                
-                return {context.ItemVariableName}.{nameof(FlatBufferUnion<string>.Discriminator)} switch {{
+                return {context.ItemVariableName}.{nameof(IFlatBufferUnion.Discriminator)} switch {{
                     {string.Join("\r\n", switchCases)}
                 }};";
 
@@ -257,11 +255,8 @@ $@"
             HashSet<Type> uniqueTypes = new HashSet<Type>();
 
             // Look for the actual FlatBufferUnion.
-            Type unionType = this.ClrType;
-            while (unionType.BaseType != typeof(object) && unionType.BaseType is not null)
-            {
-                unionType = unionType.BaseType;
-            }
+            Type unionType = this.ClrType.GetInterfaces()
+                .Single(x => x != typeof(IFlatBufferUnion) && typeof(IFlatBufferUnion).IsAssignableFrom(x));
 
             this.memberTypeModels = unionType.GetGenericArguments().Select(this.typeModelContainer.CreateTypeModel).ToArray();
 

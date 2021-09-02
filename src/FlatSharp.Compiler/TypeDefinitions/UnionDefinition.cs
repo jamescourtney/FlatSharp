@@ -18,6 +18,7 @@ namespace FlatSharp.Compiler
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
 
     /// <summary>
@@ -29,11 +30,13 @@ namespace FlatSharp.Compiler
         {
         }
 
+        protected override bool SupportsChildren => false;
+
         public List<(string? alias, string type)> Components { get; set; } = new List<(string? alias, string type)>();
 
-        private List<(int index, string alias, string fullyQualifiedType)> GetResolvedComponents()
+        private List<(int index, string alias, string globalName, string fullTypeName, BaseSchemaMember? member)> GetResolvedComponents()
         {
-            var resolvedComponentNames = new List<(int, string, string)>();
+            var resolvedComponentNames = new List<(int, string, string, string, BaseSchemaMember? member)>();
             int index = 1;
             foreach (var component in this.Components)
             {
@@ -46,11 +49,11 @@ namespace FlatSharp.Compiler
 
                 if (this.TryResolveName(component.type, out var reference))
                 {
-                    resolvedComponentNames.Add((index++, component.alias ?? fallbackName, reference.GlobalName));
+                    resolvedComponentNames.Add((index++, component.alias ?? fallbackName, reference.GlobalName, reference.FullName, reference));
                 }
                 else
                 {
-                    resolvedComponentNames.Add((index++, component.alias ?? fallbackName, component.type));
+                    resolvedComponentNames.Add((index++, component.alias ?? fallbackName, component.type, component.type, null));
                 }
             }
 
@@ -60,10 +63,12 @@ namespace FlatSharp.Compiler
         protected override void OnWriteCode(CodeWriter writer, CompileContext context)
         {
             var resolvedComponents = this.GetResolvedComponents();
-            string baseTypeName = string.Join(", ", resolvedComponents.Select(x => x.fullyQualifiedType));
+            string baseTypeName = string.Join(", ", resolvedComponents.Select(x => x.globalName));
+
+            string interfaceName = $"IFlatBufferUnion<{baseTypeName}>";
 
             writer.AppendLine("[System.Runtime.CompilerServices.CompilerGenerated]");
-            writer.AppendLine($"public partial class {this.Name} : FlatBufferUnion<{baseTypeName}>");
+            writer.AppendLine($"public partial struct {this.Name} : {interfaceName}");
             using (writer.WithBlock())
             {
                 // Generate an internal type enum.
@@ -76,16 +81,40 @@ namespace FlatSharp.Compiler
                     }
                 }
 
+                writer.AppendLine($"private readonly FlatBufferUnion<{baseTypeName}> union;");
+
                 writer.AppendLine();
-                writer.AppendLine("public ItemKind Kind => (ItemKind)base.Discriminator;");
+                writer.AppendLine("public ItemKind Kind => (ItemKind)this.union.Discriminator;");
+
+                writer.AppendLine();
+                writer.AppendLine("public byte Discriminator => this.union.Discriminator;");
 
                 foreach (var item in resolvedComponents)
                 {
                     writer.AppendLine();
-                    writer.AppendLine($"public {this.Name}({item.fullyQualifiedType} value) : base(value) {{ }}");
+                    writer.AppendLine($"public {this.Name}({item.globalName} value) {{ this.union = new FlatBufferUnion<{baseTypeName}>(value); }}");
 
                     writer.AppendLine();
-                    writer.AppendLine($"public {item.fullyQualifiedType} {item.alias} => base.Item{item.index};");
+                    writer.AppendLine($"public {item.globalName} {item.alias} => this.union.Item{item.index};");
+
+                    writer.AppendLine();
+                    writer.AppendLine($"public {item.globalName} Item{item.index} => this.union.Item{item.index};");
+
+                    string notNullWhen = string.Empty;
+                    string nullableReference = string.Empty;
+
+                    if (item.member is TableOrStructDefinition referenceDef)
+                    {
+                        if (context.Options.NullableWarnings == true)
+                        {
+                            notNullWhen = $"[{typeof(NotNullWhenAttribute).GetGlobalCompilableTypeName()}(true)] ";
+                        }
+
+                        nullableReference = "?";
+                    }
+
+                    writer.AppendLine();
+                    writer.AppendLine($"public bool TryGet({notNullWhen}out {item.globalName}{nullableReference} value) => this.union.TryGet(out value);");
                 }
 
                 // Clone method
@@ -96,7 +125,7 @@ namespace FlatSharp.Compiler
             }
         }
 
-        private void WriteSwitchMethod(CodeWriter writer, bool hasReturn, bool hasState, List<(int index, string alias, string fullyQualifiedName)> components)
+        private void WriteSwitchMethod(CodeWriter writer, bool hasReturn, bool hasState, List<(int index, string alias, string globalName, string fullName, BaseSchemaMember? member)> components)
         {
             const string GenericReturnType = "TReturn";
             const string VoidReturnType = "void";
@@ -138,7 +167,7 @@ namespace FlatSharp.Compiler
 
             List<string> args = new List<string>();
 
-            writer.AppendLine($"public new {returnType} Switch{genericArgsWithEnds}(");
+            writer.AppendLine($"public {returnType} Switch{genericArgsWithEnds}(");
             using (writer.IncreaseIndent())
             {
                 if (hasState)
@@ -152,15 +181,13 @@ namespace FlatSharp.Compiler
                     string argName = $"case{item.alias}";
                     args.Add(argName);
 
-                    writer.AppendLine($", {itemDelegateType(item.fullyQualifiedName)} {argName}");
+                    writer.AppendLine($", {itemDelegateType(item.globalName)} {argName}");
                 }
             }
 
             string stateParam = hasState ? "state, " : string.Empty;
 
-            writer.AppendLine($") => base.Switch{genericArgsWithEnds}({stateParam}caseDefault, {string.Join(", ", args)});");
+            writer.AppendLine($") => this.union.Switch{genericArgsWithEnds}({stateParam}caseDefault, {string.Join(", ", args)});");
         }
-
-        protected override bool SupportsChildren => false;
     }
 }

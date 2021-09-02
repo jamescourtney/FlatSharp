@@ -51,6 +51,26 @@ namespace FlatSharp
         }
 
         [return: NotNullIfNotNull("source")]
+        public static IList<T>? Clone<T>(IList<T>? source, CloneCallback<T> cloneItem)
+            where T : struct, IFlatBufferUnion
+        {
+            if (source is null)
+            {
+                return null;
+            }
+
+            int count = source.Count;
+            List<T> newList = new List<T>(count);
+
+            for (int i = 0; i < count; ++i)
+            {
+                newList.Add(cloneItem(source[i]));
+            }
+
+            return newList;
+        }
+
+        [return: NotNullIfNotNull("source")]
         public static IReadOnlyList<T>? Clone<T>(IReadOnlyList<T>? source)
             where T : struct
         {
