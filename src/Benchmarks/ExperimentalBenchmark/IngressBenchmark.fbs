@@ -1,0 +1,50 @@
+﻿
+namespace BenchmarkCore;
+
+table Map (fs_serializer:Lazy){
+    Items: [KeyValue];
+}
+
+table Array {
+    Items: [Primitive];
+}
+
+table KeyValue  (fs_serializer:Lazy) {
+    Timestamp: int64 (fs_forceWrite);
+    Key: Primitive (required);
+    Value: Primitive (required);
+    KeyMeta: Primitive;
+    ValueMeta: Primitive;
+}
+
+struct B    { v: bool; }
+struct I8   { v: int8;}
+struct I16  { v: int16;}
+struct I32  { v: int32;}
+struct I64  { v: int64;}
+struct Ui8  { v: uint8;}
+struct Ui16 { v: uint16;}
+struct Ui32 { v: uint32;}
+struct Ui64 { v: uint64;}
+struct F    { v: float;}
+struct F32  { v: float32;}
+struct F64  { v: float64;}
+
+union Primitive (fs_value_struct) {
+     B,
+     string,
+     I8,
+     I16,
+     I32,
+     I64,
+     Ui8,
+     Ui16,
+     Ui32,
+     Ui64,
+     F,
+     F32,
+     F64,
+     Map,
+     Array,
+}
+

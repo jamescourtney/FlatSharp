@@ -166,8 +166,10 @@ namespace BenchmarkCore
         {
             //Vec3Value v = default;
             //v.X(3) = 5;
-
-            BenchmarkRunner.Run<Benchmark>();
+            
+            BenchmarkRunner.Run<IngressBenchmark>();
+            //BenchmarkRunner.Run<Benchmark>();
+            
         }
     }
 }

@@ -30,10 +30,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Benchmark.fbs.generated.cs" />
+    <Compile Remove="IngressBenchmark.fbs.generated.cs" />
     <Compile Include="Benchmark.fbs.generated.cs" />
+    <Compile Include="IngressBenchmark.fbs.generated.cs" />
   </ItemGroup>
 
   <Target Name="FBS" BeforeTargets="BeforeBuild">
     <Exec Command="..\..\FlatSharp.Compiler\bin\$(Configuration)\net5.0\FlatSharp.Compiler.exe -i Benchmark.fbs -o . --nullable-warnings true" />
+    <Exec Command="..\..\FlatSharp.Compiler\bin\$(Configuration)\net5.0\FlatSharp.Compiler.exe -i IngressBenchmark.fbs -o . --nullable-warnings true" />
   </Target>
 </Project>
