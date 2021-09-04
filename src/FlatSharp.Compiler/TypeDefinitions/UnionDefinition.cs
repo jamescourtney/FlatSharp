@@ -136,7 +136,7 @@ namespace FlatSharp.Compiler
                     {
                         if (context.Options.NullableWarnings == true)
                         {
-                            notNullWhen = $"[NotNullWhen(true)] ";
+                            notNullWhen = $"[global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] ";
                         }
 
                         nullableReference = "?";
