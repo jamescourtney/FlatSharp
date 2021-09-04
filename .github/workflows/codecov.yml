@@ -2,9 +2,9 @@ name: Code Coverage
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, flatSharp6 ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, flatSharp6 ]
   workflow_dispatch:
 
 jobs:
