@@ -248,8 +248,8 @@
             var oracle = Oracle.UnionTable.GetRootAsUnionTable(new FlatBuffers.ByteBuffer(realBuffer)).Value<Oracle.BasicTypes>().Value;
             var unionTable = FlatBufferSerializer.Default.Parse<UnionTable>(realBuffer);
 
-            Assert.Equal(1, unionTable.Union.Discriminator);
-            BasicTypes parsed = unionTable.Union.Item1;
+            Assert.Equal(1, unionTable.Union.Value.Discriminator);
+            BasicTypes parsed = unionTable.Union.Value.Item1;
             Assert.NotNull(parsed);
 
             Assert.True(parsed.Bool);
@@ -289,8 +289,8 @@
             byte[] realBuffer = builder.DataBuffer.ToSizedArray();
             var unionTable = FlatBufferSerializer.Default.Parse<UnionTable>(realBuffer);
 
-            Assert.Equal(2, unionTable.Union.Discriminator);
-            Location parsed = unionTable.Union.Item2;
+            Assert.Equal(2, unionTable.Union.Value.Discriminator);
+            Location parsed = unionTable.Union.Value.Item2;
             Assert.NotNull(parsed);
 
             Assert.Equal(1.0f, parsed.X);
@@ -313,8 +313,8 @@
             byte[] realBuffer = builder.DataBuffer.ToSizedArray();
             var unionTable = FlatBufferSerializer.Default.Parse<UnionTable>(realBuffer);
 
-            Assert.Equal(3, unionTable.Union.Discriminator);
-            string parsed = unionTable.Union.Item3;
+            Assert.Equal(3, unionTable.Union.Value.Discriminator);
+            string parsed = unionTable.Union.Value.Item3;
             Assert.Equal("foobar", parsed);
         }
 

@@ -100,7 +100,7 @@ namespace FlatSharpEndToEndTests.ValueStructs
             AssertStructsEqual(table.RefStruct.VS, parsed.RefStruct.VS);
 
             AssertStructsEqual(table.ValueStruct.Value, parsed.ValueStruct.Value);
-            AssertStructsEqual(table.Union.ValueStruct, parsed.Union.ValueStruct);
+            AssertStructsEqual(table.Union.Value.ValueStruct, parsed.Union.Value.ValueStruct);
 
             for (int i = 0; i < table.VectorOfUnion.Count; ++i)
             {

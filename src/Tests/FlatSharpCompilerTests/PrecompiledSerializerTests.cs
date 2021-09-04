@@ -86,7 +86,7 @@ root_type Monster;";
             Assert.Equal(typeof(IList<byte>), monsterType.GetProperty("inventory").PropertyType);
             Assert.Equal(typeof(IList<>).MakeGenericType(vecType), monsterType.GetProperty("path").PropertyType);
             Assert.Equal(typeof(IList<>).MakeGenericType(weaponType), monsterType.GetProperty("weapons").PropertyType);
-            Assert.True(typeof(FlatBufferUnion<,>).MakeGenericType(weaponType, vecType).IsAssignableFrom(monsterType.GetProperty("equipped").PropertyType));
+            Assert.True(typeof(IFlatBufferUnion<,>).MakeGenericType(weaponType, vecType).IsAssignableFrom(Nullable.GetUnderlyingType(monsterType.GetProperty("equipped").PropertyType)));
             Assert.Equal(typeof(string), monsterType.GetProperty("name").PropertyType);
             Assert.True(monsterType.GetProperty("friendly").GetCustomAttribute<FlatBufferItemAttribute>().Deprecated);
 
