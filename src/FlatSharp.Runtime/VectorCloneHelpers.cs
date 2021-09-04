@@ -51,7 +51,7 @@ namespace FlatSharp
         }
 
         [return: NotNullIfNotNull("source")]
-        public static IList<T>? Clone<T>(IList<T>? source, CloneCallback<T> cloneItem)
+        public static IList<T>? CloneVectorOfUnion<T>(IList<T>? source, CloneCallback<T> cloneItem)
             where T : struct, IFlatBufferUnion
         {
             if (source is null)
@@ -91,6 +91,26 @@ namespace FlatSharp
         }
 
         [return: NotNullIfNotNull("source")]
+        public static IReadOnlyList<T>? CloneVectorOfUnion<T>(IReadOnlyList<T>? source, CloneCallback<T> cloneItem)
+            where T : struct, IFlatBufferUnion
+        {
+            if (source is null)
+            {
+                return null;
+            }
+
+            int count = source.Count;
+            List<T> newList = new List<T>(count);
+
+            for (int i = 0; i < count; ++i)
+            {
+                newList.Add(cloneItem(source[i]));
+            }
+
+            return newList;
+        }
+
+        [return: NotNullIfNotNull("source")]
         public static IReadOnlyList<T>? Clone<T>(IReadOnlyList<T>? source, CloneCallback<T> cloneItem)
             where T : class
         {
@@ -111,7 +131,7 @@ namespace FlatSharp
         }
 
         [return: NotNullIfNotNull("source")]
-        public static IList<T>? Clone<T>(IList<T>? source, Func<T, T> cloneItem)
+        public static IList<T>? Clone<T>(IList<T>? source, CloneCallback<T> cloneItem)
             where T : class
         {
             if (source is null)
@@ -147,7 +167,26 @@ namespace FlatSharp
         }
 
         [return: NotNullIfNotNull("source")]
-        public static T[]? Clone<T>(T[]? source, Func<T, T> cloneItem)
+        public static T[]? CloneVectorOfUnion<T>(T[]? source, CloneCallback<T> cloneItem)
+            where T : struct, IFlatBufferUnion
+        {
+            if (source is null)
+            {
+                return null;
+            }
+
+            int count = source.Length;
+            T[] clone = new T[count];
+            for (int i = 0; i < count; ++i)
+            {
+                clone[i] = cloneItem(source[i]);
+            }
+
+            return clone;
+        }
+
+        [return: NotNullIfNotNull("source")]
+        public static T[]? Clone<T>(T[]? source, CloneCallback<T> cloneItem)
             where T : class
         {
             if (source is null)

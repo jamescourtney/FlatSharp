@@ -16,6 +16,7 @@
 
 namespace FlatSharp.Compiler
 {
+    using FlatSharp.TypeModel;
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
@@ -67,8 +68,14 @@ namespace FlatSharp.Compiler
 
             string interfaceName = $"IFlatBufferUnion<{baseTypeName}>";
 
+            string structOrClass = "struct";
+            if (context.CompilePass == CodeWritingPass.Initialization)
+            {
+                structOrClass = "class";
+            }
+
             writer.AppendLine("[System.Runtime.CompilerServices.CompilerGenerated]");
-            writer.AppendLine($"public partial struct {this.Name} : {interfaceName}");
+            writer.AppendLine($"public partial {structOrClass} {this.Name} : {interfaceName}");
             using (writer.WithBlock())
             {
                 // Generate an internal type enum.
@@ -103,7 +110,8 @@ namespace FlatSharp.Compiler
                     string notNullWhen = string.Empty;
                     string nullableReference = string.Empty;
 
-                    if (item.member is TableOrStructDefinition referenceDef)
+                    if (item.member is TableOrStructDefinition referenceDef ||
+                        (context.TypeModelContainer.TryResolveFbsAlias(item.fullTypeName, out ITypeModel? typeModel) && typeModel.SchemaType == FlatBufferSchemaType.String))
                     {
                         if (context.Options.NullableWarnings == true)
                         {

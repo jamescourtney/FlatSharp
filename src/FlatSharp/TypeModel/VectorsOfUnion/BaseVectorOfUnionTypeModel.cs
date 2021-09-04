@@ -163,7 +163,7 @@ namespace FlatSharp.TypeModel
         {
             string parameters = parameters = $"{context.ItemVariableName}, {context.MethodNameMap[this.ItemTypeModel.ClrType]}";
 
-            string body =  $"return {nameof(VectorCloneHelpers)}.{nameof(VectorCloneHelpers.Clone)}<{this.ItemTypeModel.GetCompilableTypeName()}>({parameters});";
+            string body =  $"return {nameof(VectorCloneHelpers)}.{nameof(VectorCloneHelpers.CloneVectorOfUnion)}<{this.ItemTypeModel.GetCompilableTypeName()}>({parameters});";
             return new CodeGeneratedMethod(body)
             {
                 IsMethodInline = true,

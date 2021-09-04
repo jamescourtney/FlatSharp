@@ -87,50 +87,13 @@ namespace FlatSharpTests
         [Fact]
         public void FlatBufferVector_Contains()
         {
-            Assert.False(this.vector.Vector.Contains(null));
             Assert.True(this.vector.Vector.Contains(new Union("foobar")));
             Assert.False(this.vector.Vector.Contains(new Union("blah")));
         }
 
         [Fact]
-        public void FlatBufferVector_CopyTo()
-        {
-            Union[] array = new Union[100];
-
-            this.vector.Vector.CopyTo(array, 50);
-            
-            for (int i = 0; i < 50; ++i)
-            {
-                Assert.Null(array[i]);
-            }
-
-            for (int i = 0; i < this.vector.Vector.Count; ++i)
-            {
-                Assert.NotNull(array[i + 50]);
-            }
-
-            for (int i = 50 + this.vector.Vector.Count; i < array.Length; ++i)
-            {
-                Assert.Null(array[i]);
-            }
-        }
-
-        [Fact]
-        public void FlatBufferVector_CopyTo_SizedArray()
-        {
-            Union[] array = new Union[this.vector.Vector.Count];
-            this.vector.Vector.CopyTo(array, 0);
-
-            for (int i = 0; i < this.vector.Vector.Count; ++i)
-            {
-                Assert.NotNull(array[i]);
-            }
-        }
-
-        [Fact]
         public void FlatBufferVector_IndexOf()
         {
-            Assert.Equal(-1, this.vector.Vector.IndexOf(null));
             Assert.Equal(0, this.vector.Vector.IndexOf(new Union("foobar")));
             Assert.Equal(-1, this.vector.Vector.IndexOf(new Union("monster")));
         }

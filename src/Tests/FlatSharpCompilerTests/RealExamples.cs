@@ -132,7 +132,7 @@ table Weapon {{
             Assert.Equal(typeof(IList<byte>), monsterType.GetProperty("inventory").PropertyType);
             Assert.Equal(typeof(IList<>).MakeGenericType(vec3Type), monsterType.GetProperty("path").PropertyType);
             Assert.Equal(typeof(IList<>).MakeGenericType(weaponType), monsterType.GetProperty("weapons").PropertyType);
-            Assert.True(typeof(FlatBufferUnion<,,,,>).MakeGenericType(weaponType, vec3Type, vec4Type, monsterType, typeof(string)).IsAssignableFrom(monsterType.GetProperty("equipped").PropertyType));
+            Assert.True(typeof(IFlatBufferUnion<,,,,>).MakeGenericType(weaponType, vec3Type, vec4Type, monsterType, typeof(string)).IsAssignableFrom(Nullable.GetUnderlyingType(monsterType.GetProperty("equipped").PropertyType)));
             Assert.Equal(typeof(string), monsterType.GetProperty("name").PropertyType);
             Assert.True(monsterType.GetProperty("friendly").GetCustomAttribute<FlatBufferItemAttribute>().Deprecated);
 

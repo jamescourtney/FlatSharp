@@ -135,7 +135,7 @@ table InnerTable {{
             DeepCompareIntVector(original.IntVector_List, parsed.IntVector_List, copied.IntVector_List);
             DeepCompareIntVector(original.IntVector_RoList, parsed.IntVector_RoList, copied.IntVector_RoList);
 
-            Assert.Equal((byte)3, original.Union.Discriminator);
+            Assert.Equal((byte)3, original.Union.Value.Discriminator);
             Assert.Equal((byte)3, parsed.Union.Discriminator);
             Assert.Equal((byte)3, copied.Union.Discriminator);
             Assert.Equal("CopyConstructorTest.OuterStruct", copied.Union.Item3.GetType().FullName);
