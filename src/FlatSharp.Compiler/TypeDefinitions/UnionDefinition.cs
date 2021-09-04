@@ -103,7 +103,8 @@ namespace FlatSharp.Compiler
                     writer.AppendLine($"public {this.Name}({item.globalName} value)");
                     using (writer.WithBlock())
                     {
-                        writer.AppendLine($"this.value = value ?? throw new ArgumentNullException(nameof(value));");
+                        writer.AppendLine($"object temp = value;");
+                        writer.AppendLine($"this.value = temp ?? throw new ArgumentNullException(nameof(value));");
                         writer.AppendLine($"this.Discriminator = {item.index};");
                     }
 
