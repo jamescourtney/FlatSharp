@@ -26,7 +26,6 @@ namespace FlatSharpTests
     using System.Text;
     using FlatSharp;
     using FlatSharp.Attributes;
-    using FlatSharp.Unsafe;
     using Xunit;
 
     /// <summary>
@@ -96,34 +95,6 @@ namespace FlatSharpTests
             this.TableSerializationTest(
                 SpanWriter.Instance,
                 (s, b) => s.Parse<PrimitiveTypesTable>(b));
-        }
-
-        [Fact, Obsolete]
-        public void UnsafeArrayInputBuffer()
-        {
-            this.InputBufferTest(new UnsafeArrayInputBuffer(Input));
-            this.StringInputBufferTest(new UnsafeArrayInputBuffer(StringInput));
-            this.TestDeserializeBoth(b => new UnsafeArrayInputBuffer(b));
-            this.TestReadByteArray(b => new UnsafeArrayInputBuffer(b));
-            this.TableSerializationTest(
-                new UnsafeSpanWriter(),
-                (s, b) => s.Parse<PrimitiveTypesTable>(new UnsafeArrayInputBuffer(b)));
-        }
-
-        [Fact, Obsolete]
-        public void UnsafeMemoryInputBuffer()
-        {
-            using (var buffer = new UnsafeMemoryInputBuffer(new Memory<byte>(Input)))
-            {
-                this.InputBufferTest(buffer);
-            }
-
-            using (var buffer = new UnsafeMemoryInputBuffer(new Memory<byte>(StringInput)))
-            {
-                this.StringInputBufferTest(buffer);
-            }
-
-            this.TestDeserializeBoth(b => new UnsafeMemoryInputBuffer(b));
         }
 
         [Fact]

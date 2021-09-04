@@ -17,7 +17,6 @@
  namespace FlatSharpTests
 {
     using FlatSharp;
-    using FlatSharp.Unsafe;
     using Xunit;
     using System;
     using System.Collections.Generic;
@@ -56,12 +55,7 @@
             
             var simple = FlatBufferSerializer.Default.Parse<BasicTypes>(realBuffer);
 
-#pragma warning disable CS0618 // Type or member is obsolete
-            var simpleUnsafe = FlatBufferSerializer.Default.Parse<BasicTypes>(new UnsafeMemoryInputBuffer(realBuffer));
-            var simpleUnsafeArray = FlatBufferSerializer.Default.Parse<BasicTypes>(new UnsafeArrayInputBuffer(realBuffer));
-#pragma warning restore CS0618 // Type or member is obsolete
-
-            foreach (var parsed in new[] { simple, simpleUnsafe, simpleUnsafeArray })
+            foreach (var parsed in new[] { simple })
             {
                 Assert.True(parsed.Bool);
                 Assert.Equal(oracle.Byte, parsed.Byte);
