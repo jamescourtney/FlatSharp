@@ -88,24 +88,44 @@ namespace FlatSharp.Compiler
                     }
                 }
 
-                writer.AppendLine($"private readonly FlatBufferUnion<{baseTypeName}> union;");
+                writer.AppendLine();
+                writer.AppendLine("private readonly object value;");
 
                 writer.AppendLine();
-                writer.AppendLine("public ItemKind Kind => (ItemKind)this.union.Discriminator;");
+                writer.AppendLine("public ItemKind Kind => (ItemKind)this.Discriminator;");
 
                 writer.AppendLine();
-                writer.AppendLine("public byte Discriminator => this.union.Discriminator;");
+                writer.AppendLine("public byte Discriminator { get; }");
 
                 foreach (var item in resolvedComponents)
                 {
                     writer.AppendLine();
-                    writer.AppendLine($"public {this.Name}({item.globalName} value) {{ this.union = new FlatBufferUnion<{baseTypeName}>(value); }}");
+                    writer.AppendLine($"public {this.Name}({item.globalName} value)");
+                    using (writer.WithBlock())
+                    {
+                        writer.AppendLine($"this.value = value ?? throw new ArgumentNullException(nameof(value));");
+                        writer.AppendLine($"this.Discriminator = {item.index};");
+                    }
 
                     writer.AppendLine();
-                    writer.AppendLine($"public {item.globalName} {item.alias} => this.union.Item{item.index};");
+                    writer.AppendLine($"public {item.globalName} {item.alias} => this.Item{item.index};");
 
                     writer.AppendLine();
-                    writer.AppendLine($"public {item.globalName} Item{item.index} => this.union.Item{item.index};");
+                    writer.AppendLine($"public {item.globalName} Item{item.index}");
+                    using (writer.WithBlock())
+                    {
+                        writer.AppendLine("get");
+                        using (writer.WithBlock())
+                        {
+                            writer.AppendLine($"if (this.Discriminator != {item.index})");
+                            using (writer.WithBlock())
+                            {
+                                writer.AppendLine("throw new InvalidOperationException();");
+                            }
+
+                            writer.AppendLine($"return ({item.globalName})this.value;");
+                        }
+                    }
 
                     string notNullWhen = string.Empty;
                     string nullableReference = string.Empty;
@@ -122,7 +142,19 @@ namespace FlatSharp.Compiler
                     }
 
                     writer.AppendLine();
-                    writer.AppendLine($"public bool TryGet({notNullWhen}out {item.globalName}{nullableReference} value) => this.union.TryGet(out value);");
+                    writer.AppendLine($"public bool TryGet({notNullWhen}out {item.globalName}{nullableReference} value)");
+                    using (writer.WithBlock())
+                    {
+                        writer.AppendLine($"if (this.Discriminator != {item.index})");
+                        using (writer.WithBlock())
+                        {
+                            writer.AppendLine("value = default;");
+                            writer.AppendLine("return false;");
+                        }
+
+                        writer.AppendLine($"value = ({item.globalName})this.value;");
+                        writer.AppendLine("return true;");
+                    }
                 }
 
                 // Clone method
@@ -195,7 +227,48 @@ namespace FlatSharp.Compiler
 
             string stateParam = hasState ? "state, " : string.Empty;
 
-            writer.AppendLine($") => this.union.Switch{genericArgsWithEnds}({stateParam}caseDefault, {string.Join(", ", args)});");
+            writer.AppendLine(")");
+            using (writer.WithBlock())
+            {
+                writer.AppendLine("switch (this.Discriminator)");
+                using (writer.WithBlock())
+                {
+                    foreach (var item in components)
+                    {
+                        if (hasReturn)
+                        {
+                            writer.AppendLine($"case {item.index}: return case{item.alias}({stateParam}this.Item{item.index});");
+                        }
+                        else
+                        {
+                            writer.AppendLine($"case {item.index}: case{item.alias}({stateParam}this.Item{item.index}); break;");
+                        }
+                    }
+
+                    if (hasReturn)
+                    {
+                        if (hasState)
+                        {
+                            writer.AppendLine($"default: return caseDefault(state);");
+                        }
+                        else
+                        {
+                            writer.AppendLine($"default: return caseDefault();");
+                        }
+                    }
+                    else
+                    {
+                        if (hasState)
+                        {
+                            writer.AppendLine($"default: caseDefault(state); break;");
+                        }
+                        else
+                        {
+                            writer.AppendLine($"default: caseDefault(); break;");
+                        }
+                    }
+                }
+            }
         }
     }
 }
