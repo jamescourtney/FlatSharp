@@ -498,7 +498,6 @@ namespace FlatSharpTests
             var serializer = FlatBufferSerializer.Default.Compile<RootTableSorted<IList<TableWithKey<SharedString>>>>()
                 .WithSettings(new SerializerSettings
                 {
-                    SharedStringReaderFactory = () => SharedStringReader.CreateThreadSafe(),
                     SharedStringWriterFactory = () => new SharedStringWriter(),
                 });
 
@@ -700,7 +699,6 @@ namespace FlatSharpTests
             var sharedStringSerializer = serializer.Compile<RootTable<IIndexedVector<SharedString, TableWithKey<SharedString>>>>()
                 .WithSettings(new SerializerSettings
                 {
-                    SharedStringReaderFactory = () => SharedStringReader.Create(5000),
                     SharedStringWriterFactory = () => new SharedStringWriter(5000),
                 });
 

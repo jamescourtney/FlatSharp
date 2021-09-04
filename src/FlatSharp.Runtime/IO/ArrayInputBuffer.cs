@@ -39,8 +39,6 @@ namespace FlatSharp
 
         public int Length => this.memory.Count;
 
-        public ISharedStringReader? SharedStringReader { get; set; }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte ReadByte(int offset)
         {
@@ -138,12 +136,6 @@ namespace FlatSharp
             private readonly ArrayInputBuffer buffer;
 
             internal Wrapper(ArrayInputBuffer buffer) => this.buffer = buffer;
-
-            public ISharedStringReader? SharedStringReader 
-            { 
-                get => this.buffer.SharedStringReader; 
-                set => this.buffer.SharedStringReader = value; 
-            }
 
             public int Length
             {

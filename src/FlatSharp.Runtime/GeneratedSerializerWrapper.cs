@@ -31,7 +31,6 @@ namespace FlatSharp
         private readonly IGeneratedSerializer<T> innerSerializer;
         private readonly Lazy<string?> lazyCSharp;
         private readonly ThreadLocal<ISharedStringWriter>? sharedStringWriter;
-        private readonly Func<ISharedStringReader>? sharedStringReaderFactory;
         private readonly bool enableMemoryCopySerialization;
         private readonly string? fileIdentifier;
 
@@ -59,7 +58,6 @@ namespace FlatSharp
             this.fileIdentifier = template.fileIdentifier;
 
             this.enableMemoryCopySerialization = settings.EnableMemoryCopySerialization;
-            this.sharedStringReaderFactory = settings.SharedStringReaderFactory;
 
             Func<ISharedStringWriter>? writerFactory = settings.SharedStringWriterFactory;
             if (writerFactory is not null)
@@ -121,7 +119,6 @@ namespace FlatSharp
                 throw new ArgumentException("Buffer is too small to be valid!");
             }
 
-            buffer.SharedStringReader = this.sharedStringReaderFactory?.Invoke();
             return buffer.InvokeParse(this.innerSerializer, 0);
         }
 
