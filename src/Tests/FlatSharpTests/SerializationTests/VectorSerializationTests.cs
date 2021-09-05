@@ -498,11 +498,10 @@ namespace FlatSharpTests
             var serializer = FlatBufferSerializer.Default.Compile<RootTableSorted<IList<TableWithKey<SharedString>>>>()
                 .WithSettings(new SerializerSettings
                 {
-                    SharedStringReaderFactory = () => SharedStringReader.CreateThreadSafe(),
                     SharedStringWriterFactory = () => new SharedStringWriter(),
                 });
 
-            serializer.Write(SpanWriter.Instance, data, root);
+            serializer.Write(default(SpanWriter), data, root);
 
             var parsed = serializer.Parse(data);
 
@@ -514,7 +513,6 @@ namespace FlatSharpTests
             Assert.Equal("d", parsed.Vector[5].Key.String);
 
             Assert.NotNull(parsed.Vector.BinarySearchByFlatBufferKey((SharedString)"b"));
-            Assert.True(object.ReferenceEquals(parsed.Vector[1].Key, parsed.Vector[2].Key));
         }
 
         [Fact]
@@ -700,7 +698,6 @@ namespace FlatSharpTests
             var sharedStringSerializer = serializer.Compile<RootTable<IIndexedVector<SharedString, TableWithKey<SharedString>>>>()
                 .WithSettings(new SerializerSettings
                 {
-                    SharedStringReaderFactory = () => SharedStringReader.Create(5000),
                     SharedStringWriterFactory = () => new SharedStringWriter(5000),
                 });
 
@@ -712,7 +709,7 @@ namespace FlatSharpTests
                 SharedString key = kvp.Key;
                 SharedString value = kvp.Value.Key;
 
-                Assert.True(object.ReferenceEquals(key.String, value.String));
+                Assert.Equal(key.String, value.String);
             }
 
             foreach (var key in keys)
@@ -720,7 +717,6 @@ namespace FlatSharpTests
                 SharedString expectedKey = key;
                 Assert.True(parsed.Vector.TryGetValue(key, out var value));
                 Assert.Equal(expectedKey, value.Key);
-                Assert.False(object.ReferenceEquals(expectedKey.String, value.Key.String));
             }
         }
 

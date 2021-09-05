@@ -17,7 +17,6 @@
 namespace FlatSharpTests
 {
     using FlatSharp;
-    using FlatSharp.Unsafe;
     using Xunit;
     using System;
     using System.Collections.Generic;
@@ -48,10 +47,6 @@ namespace FlatSharpTests
 
             Assert.True(withForceWriteSize > defaultSize);
         }
-
-        [Fact, Obsolete]
-        public void SimpleTypes_UnsafeSpanWriter() =>
-            this.SimpleTypesTest<UnsafeSpanWriter, BasicTypes>(new UnsafeSpanWriter());
 
         private int SimpleTypesDefaultValues_Test<TBasicTypes>()
             where TBasicTypes : class, IBasicTypes, new()

@@ -17,7 +17,6 @@
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
 using FlatSharp;
-using FlatSharp.Unsafe;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

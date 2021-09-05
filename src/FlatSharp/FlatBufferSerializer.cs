@@ -122,7 +122,8 @@ namespace FlatSharp
         /// </summary>
         public T Parse<T>(Memory<byte> memory) where T : class
         {
-            return this.Parse<T>(new MemoryInputBuffer(memory));
+            return this.Parse<T, MemoryInputBuffer>(
+                new MemoryInputBuffer(memory));
         }
 
         /// <summary>
@@ -130,7 +131,8 @@ namespace FlatSharp
         /// </summary>
         public T Parse<T>(ReadOnlyMemory<byte> memory) where T : class
         {
-            return this.Parse<T>(new ReadOnlyMemoryInputBuffer(memory));
+            return this.Parse<T, ReadOnlyMemoryInputBuffer>(
+                new ReadOnlyMemoryInputBuffer(memory));
         }
 
         /// <summary>
@@ -146,13 +148,23 @@ namespace FlatSharp
         /// </summary>
         public T Parse<T>(ArraySegment<byte> arraySegment) where T : class
         {
-            return this.Parse<T>(new ArrayInputBuffer(arraySegment));
+            return this.Parse<T, ArrayInputBuffer>(
+                new ArrayInputBuffer(arraySegment));
         }
-        
+
         /// <summary>
         /// Parses the given input buffer as an instance of <typeparamref name="T"/>.
         /// </summary>
         public T Parse<T>(IInputBuffer buffer)
+            where T : class
+        {
+            return this.Parse<T, IInputBuffer>(buffer);
+        }
+
+        /// <summary>
+        /// Parses the given input buffer as an instance of <typeparamref name="T"/>.
+        /// </summary>
+        public T Parse<T, TInputBuffer>(TInputBuffer buffer) where TInputBuffer : IInputBuffer
             where T : class
         {
             return this.GetOrCreateTypedSerializer<T>().Parse(buffer);
@@ -164,7 +176,7 @@ namespace FlatSharp
         /// <returns>The length of data that was written to the memory block.</returns>
         public int Serialize<T>(T item, Span<byte> destination) where T : class
         {
-            return this.Serialize(item, destination, SpanWriter.Instance);
+            return this.Serialize(item, destination, default(SpanWriter));
         }
 
         /// <summary>

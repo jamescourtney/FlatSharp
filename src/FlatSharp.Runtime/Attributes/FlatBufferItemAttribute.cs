@@ -77,13 +77,5 @@ namespace FlatSharp.Attributes
         /// When set, indicates that the field is required. Only applies to non-scalar fields on tables.
         /// </summary>
         public bool Required { get; set; }
-
-        /// <summary>
-        /// A C# expression that gets the value of the current property from the enclosing object.
-        /// This is a very advanced feature and is only intended to be used by the FlatSharp compiler.
-        /// </summary>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        [Obsolete("The custom getter property is obsolete. Please use FlatBufferMetadataAttribute instead")]
-        public string? CustomGetter { get; set; }
     }
 }

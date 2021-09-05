@@ -49,7 +49,7 @@ namespace FlatSharp.Compiler
                     var serializer = Serializer<T>.Value;
                     var bufferWriter = sc.GetBufferWriter();
                     var span = bufferWriter.GetSpan(serializer.GetMaxSize(item));
-                    int bytesWritten = serializer.Write(SpanWriter.Instance, span, item);
+                    int bytesWritten = serializer.Write(default(SpanWriter), span, item);
                     bufferWriter.Advance(bytesWritten);
                     sc.Complete();
                 }},

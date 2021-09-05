@@ -5,8 +5,6 @@ VisualStudioVersion = 16.0.29709.97
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlatSharp", "FlatSharp\FlatSharp.csproj", "{D11706AA-5178-4795-9F9C-0DCD751A35B4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlatSharp.Unsafe", "FlatSharp.Unsafe\FlatSharp.Unsafe.csproj", "{6282B9BF-A8C5-461C-8512-7742976308E4}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlatSharp.Compiler", "FlatSharp.Compiler\FlatSharp.Compiler.csproj", "{9B3C0F61-A742-4D5A-A487-7D4DB914EC39}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlatSharp.Runtime", "FlatSharp.Runtime\FlatSharp.Runtime.csproj", "{07B42C28-D362-49D5-91D6-795634FF49AA}"
@@ -45,10 +43,6 @@ Global
 		{D11706AA-5178-4795-9F9C-0DCD751A35B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D11706AA-5178-4795-9F9C-0DCD751A35B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D11706AA-5178-4795-9F9C-0DCD751A35B4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6282B9BF-A8C5-461C-8512-7742976308E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6282B9BF-A8C5-461C-8512-7742976308E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6282B9BF-A8C5-461C-8512-7742976308E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6282B9BF-A8C5-461C-8512-7742976308E4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9B3C0F61-A742-4D5A-A487-7D4DB914EC39}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9B3C0F61-A742-4D5A-A487-7D4DB914EC39}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9B3C0F61-A742-4D5A-A487-7D4DB914EC39}.Release|Any CPU.ActiveCfg = Release|Any CPU
