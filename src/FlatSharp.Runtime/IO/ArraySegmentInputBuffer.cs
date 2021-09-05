@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2018 James Courtney
+ * Copyright 2021 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ namespace FlatSharp
     using System.Text;
 
     /// <summary>
-    /// An implementation of <see cref="IInputBuffer"/> for managed arrays.
+    /// An implementation of <see cref="IInputBuffer"/> for array segments.
     /// </summary>
     public struct ArraySegmentInputBuffer : IInputBuffer
     {
