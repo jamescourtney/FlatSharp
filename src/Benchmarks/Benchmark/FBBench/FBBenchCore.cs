@@ -29,6 +29,7 @@ namespace Benchmark.FBBench
     using FlatSharp;
     using FlatSharp.Attributes;
     using ProtoBuf;
+    using InputBufferKind = FlatSharp.ArrayInputBuffer;
 
     public abstract class FBBenchCore
     {
@@ -54,7 +55,7 @@ namespace Benchmark.FBBench
 
         protected byte[] fs_readMemory;
         protected readonly byte[] fs_writeMemory = new byte[64 * 1024];
-        public ArrayInputBuffer inputBuffer;
+        public InputBufferKind inputBuffer;
 
         [Params(30)]
         public virtual int VectorLength { get; set; }
@@ -216,7 +217,7 @@ namespace Benchmark.FBBench
 
                 int offset = this.fs_serializer.Serialize(this.defaultContainer, this.fs_writeMemory);
                 this.fs_readMemory = this.fs_writeMemory.AsSpan(0, offset).ToArray();
-                this.inputBuffer = new ArrayInputBuffer(this.fs_readMemory);
+                this.inputBuffer = new InputBufferKind(this.fs_readMemory);
                 this.FlatSharp_ParseAndTraverse();
             }
 
@@ -533,37 +534,37 @@ namespace Benchmark.FBBench
 
         public virtual void FlatSharp_ParseAndTraverse()
         {
-            var item = this.Parse<FooBarListContainer, ArrayInputBuffer>(this.inputBuffer);
+            var item = this.Parse<FooBarListContainer, InputBufferKind>(this.inputBuffer);
             this.TraverseFooBarContainer(item);
         }
 
         public virtual void FlatSharp_ParseAndTraversePartial()
         {
-            var item = this.Parse<FooBarListContainer, ArrayInputBuffer>(this.inputBuffer);
+            var item = this.Parse<FooBarListContainer, InputBufferKind>(this.inputBuffer);
             this.TraverseFooBarContainerPartial(item);
         }
 
         public virtual void FlatSharp_ParseAndTraverse_ValueStructs()
         {
-            var item = this.Parse<FooBarListContainer_ValueType, ArrayInputBuffer>(this.inputBuffer);
+            var item = this.Parse<FooBarListContainer_ValueType, InputBufferKind>(this.inputBuffer);
             this.TraverseFooBarContainer(item);
         }
 
         public virtual void FlatSharp_ParseAndTraversePartial_ValueStructs()
         {
-            var item = this.Parse<FooBarListContainer_ValueType, ArrayInputBuffer>(this.inputBuffer);
+            var item = this.Parse<FooBarListContainer_ValueType, InputBufferKind>(this.inputBuffer);
             this.TraverseFooBarContainerPartial(item);
         }
 
         public virtual void FlatSharp_ParseAndTraverse_NonVirtual()
         {
-            var item = this.Parse<FooBarListContainerNonVirtual, ArrayInputBuffer>(this.inputBuffer);
+            var item = this.Parse<FooBarListContainerNonVirtual, InputBufferKind>(this.inputBuffer);
             this.TraverseFooBarContainer(item);
         }
 
         public virtual void FlatSharp_ParseAndTraversePartial_NonVirtual()
         {
-            var item = this.Parse<FooBarListContainerNonVirtual, ArrayInputBuffer>(this.inputBuffer);
+            var item = this.Parse<FooBarListContainerNonVirtual, InputBufferKind>(this.inputBuffer);
             this.TraverseFooBarContainerPartial(item);
         }
 
