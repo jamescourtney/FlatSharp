@@ -57,7 +57,7 @@ namespace FlatSharpTests
         }
 
         [Fact]
-        public void SafeMemoryInputBuffer()
+        public void MemoryInputBuffer()
         {
             this.InputBufferTest(new MemoryInputBuffer(Input));
             this.StringInputBufferTest(new MemoryInputBuffer(StringInput));
@@ -69,7 +69,7 @@ namespace FlatSharpTests
         }
 
         [Fact]
-        public void SafeReadOnlyMemoryInputBuffer()
+        public void ReadOnlyMemoryInputBuffer()
         {
             this.InputBufferTest(new ReadOnlyMemoryInputBuffer(Input));
             this.StringInputBufferTest(new ReadOnlyMemoryInputBuffer(StringInput));
@@ -95,6 +95,18 @@ namespace FlatSharpTests
             this.TableSerializationTest(
                 default(SpanWriter),
                 (s, b) => s.Parse<PrimitiveTypesTable>(b));
+        }
+
+        [Fact]
+        public void ArraySegmentInputBuffer()
+        {
+            this.InputBufferTest(new ArraySegmentInputBuffer(new ArraySegment<byte>(Input)));
+            this.StringInputBufferTest(new ArraySegmentInputBuffer(new ArraySegment<byte>(StringInput)));
+            this.TestDeserializeBoth(b => new ArraySegmentInputBuffer(new ArraySegment<byte>(b)));
+            this.TestReadByteArray(b => new ArraySegmentInputBuffer(new ArraySegment<byte>(b)));
+            this.TableSerializationTest(
+                default(SpanWriter),
+                (s, b) => s.Parse<PrimitiveTypesTable>(new ArraySegment<byte>(b)));
         }
 
         [Fact]

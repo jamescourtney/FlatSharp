@@ -140,7 +140,7 @@ namespace FlatSharp
         /// </summary>
         public T Parse<T>(byte[] buffer) where T : class
         {
-            return this.Parse<T>(new ArraySegment<byte>(buffer));
+            return this.Parse<T, ArrayInputBuffer>(new ArrayInputBuffer(buffer));
         }
 
         /// <summary>
@@ -148,8 +148,8 @@ namespace FlatSharp
         /// </summary>
         public T Parse<T>(ArraySegment<byte> arraySegment) where T : class
         {
-            return this.Parse<T, ArrayInputBuffer>(
-                new ArrayInputBuffer(arraySegment));
+            return this.Parse<T, ArraySegmentInputBuffer>(
+                new ArraySegmentInputBuffer(arraySegment));
         }
 
         /// <summary>

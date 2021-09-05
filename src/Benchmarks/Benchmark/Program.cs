@@ -18,6 +18,7 @@ namespace Benchmark
 {
     using BenchmarkDotNet.Columns;
     using BenchmarkDotNet.Configs;
+    using BenchmarkDotNet.Diagnosers;
     using BenchmarkDotNet.Environments;
     using BenchmarkDotNet.Exporters;
     using BenchmarkDotNet.Jobs;
@@ -34,13 +35,14 @@ namespace Benchmark
 
             Job job = Job.ShortRun
                 .WithAnalyzeLaunchVariance(true)
-                .WithLaunchCount(7)
+                .WithLaunchCount(1)
                 .WithWarmupCount(5)
-                .WithIterationCount(7)
+                .WithIterationCount(9)
                 .WithRuntime(CoreRuntime.Core50);
 
             var config = DefaultConfig.Instance
                  .AddColumn(new[] { StatisticColumn.P25, StatisticColumn.P50, StatisticColumn.P67, StatisticColumn.P80, StatisticColumn.P90, StatisticColumn.P95 })
+                 .AddDiagnoser(MemoryDiagnoser.Default)
                  .AddJob(job);
 
             summaries.Add(BenchmarkRunner.Run(typeof(FBBench.FBSerializeBench), config));

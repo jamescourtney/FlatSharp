@@ -57,7 +57,7 @@ namespace FlatSharp
         /// <returns>The parsed instance.</returns>
         public static T Parse<T>(this ISerializer<T> serializer, ArraySegment<byte> data) where T : class
         {
-            return serializer.Parse(new ArrayInputBuffer(data));
+            return serializer.Parse(new ArraySegmentInputBuffer(data));
         }
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace FlatSharp
         /// <returns>The parsed instance.</returns>
         public static object Parse(this ISerializer serializer, ArraySegment<byte> data)
         {
-            return serializer.Parse(new ArrayInputBuffer(data));
+            return serializer.Parse(new ArraySegmentInputBuffer(data));
         }
 
         /// <summary>

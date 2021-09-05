@@ -119,11 +119,11 @@ namespace FlatSharp
                 throw new ArgumentException("Buffer is too small to be valid!");
             }
 
-            return this.innerSerializer.Parse(buffer, 0);
+            // In case buffer is a reference type or is a boxed value, this allows it the opportunity to "wrap" itself in a value struct for efficiency.
+            return buffer.InvokeParse(this.innerSerializer, 0);
         }
 
-        object ISerializer.Parse<TInputBuffer>(TInputBuffer buffer)
-            => this.Parse(buffer);
+        object ISerializer.Parse<TInputBuffer>(TInputBuffer buffer) => this.Parse(buffer);
 
         public int Write<TSpanWriter>(TSpanWriter writer, Span<byte> destination, T item)
             where TSpanWriter : ISpanWriter
