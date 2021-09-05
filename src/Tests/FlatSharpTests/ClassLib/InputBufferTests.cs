@@ -64,7 +64,7 @@ namespace FlatSharpTests
             this.TestDeserializeBoth(b => new MemoryInputBuffer(b));
             this.TestReadByteArray(b => new MemoryInputBuffer(b));
             this.TableSerializationTest(
-                SpanWriter.Instance,
+                default(SpanWriter),
                 (s, b) => s.Parse<PrimitiveTypesTable>(b.AsMemory()));
         }
 
@@ -81,7 +81,7 @@ namespace FlatSharpTests
             Assert.Equal("ReadOnlyMemory inputs may not deserialize writable memory.", ex.Message);
 
             this.TableSerializationTest(
-                SpanWriter.Instance,
+                default(SpanWriter),
                 (s, b) => s.Parse<PrimitiveTypesTable>((ReadOnlyMemory<byte>)b.AsMemory()));
         }
 
@@ -93,7 +93,7 @@ namespace FlatSharpTests
             this.TestDeserializeBoth(b => new ArrayInputBuffer(b));
             this.TestReadByteArray(b => new ArrayInputBuffer(b));
             this.TableSerializationTest(
-                SpanWriter.Instance,
+                default(SpanWriter),
                 (s, b) => s.Parse<PrimitiveTypesTable>(b));
         }
 
@@ -274,7 +274,7 @@ namespace FlatSharpTests
             FlatBufferSerializer.Default.Serialize(table, dest);
 
             TBuffer buffer = bufferBuilder(dest);
-            var parsed = FlatBufferSerializer.Default.Parse<TType>(buffer);
+            var parsed = FlatBufferSerializer.Default.Parse<TType, TBuffer>(buffer);
             for (int i = 1; i <= 5; ++i)
             {
                 Assert.Equal(i + 5, parsed.Memory.Span[i - 1]);

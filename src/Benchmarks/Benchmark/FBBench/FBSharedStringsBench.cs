@@ -82,7 +82,7 @@ namespace Benchmark.FBBench
         public int Serialize_RandomStringVector_WithRegularString()
         {
             return this.regularStringSerializer.Write(
-                SpanWriter.Instance,
+                default(SpanWriter),
                 serializedNonSharedStringVector,
                 nonSharedStringVector);
         }
@@ -91,7 +91,7 @@ namespace Benchmark.FBBench
         public int Serialize_RandomStringVector_WithSharing()
         {
             return this.sharedStringSerializer.Write(
-                SpanWriter.Instance,
+                default(SpanWriter),
                 this.serializedRandomStringVector,
                 randomSharedStringVector);
         }
@@ -100,7 +100,7 @@ namespace Benchmark.FBBench
         public int Serialize_NonRandomStringVector_WithSharing()
         {
             return this.sharedStringSerializer.Write(
-                SpanWriter.Instance, 
+                default(SpanWriter), 
                 this.serializedGuassianStringVector, 
                 this.nonRandomSharedStringVector);
         }

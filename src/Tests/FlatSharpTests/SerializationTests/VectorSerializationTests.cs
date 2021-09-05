@@ -501,7 +501,7 @@ namespace FlatSharpTests
                     SharedStringWriterFactory = () => new SharedStringWriter(),
                 });
 
-            serializer.Write(SpanWriter.Instance, data, root);
+            serializer.Write(default(SpanWriter), data, root);
 
             var parsed = serializer.Parse(data);
 
