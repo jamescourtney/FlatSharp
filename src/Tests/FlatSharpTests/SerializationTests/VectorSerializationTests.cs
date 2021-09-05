@@ -513,7 +513,6 @@ namespace FlatSharpTests
             Assert.Equal("d", parsed.Vector[5].Key.String);
 
             Assert.NotNull(parsed.Vector.BinarySearchByFlatBufferKey((SharedString)"b"));
-            Assert.True(object.ReferenceEquals(parsed.Vector[1].Key, parsed.Vector[2].Key));
         }
 
         [Fact]
@@ -710,7 +709,7 @@ namespace FlatSharpTests
                 SharedString key = kvp.Key;
                 SharedString value = kvp.Value.Key;
 
-                Assert.True(object.ReferenceEquals(key.String, value.String));
+                Assert.Equal(key.String, value.String);
             }
 
             foreach (var key in keys)
@@ -718,7 +717,6 @@ namespace FlatSharpTests
                 SharedString expectedKey = key;
                 Assert.True(parsed.Vector.TryGetValue(key, out var value));
                 Assert.Equal(expectedKey, value.Key);
-                Assert.False(object.ReferenceEquals(expectedKey.String, value.Key.String));
             }
         }
 
