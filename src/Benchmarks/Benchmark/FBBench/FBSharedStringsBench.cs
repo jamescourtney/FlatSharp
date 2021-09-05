@@ -34,7 +34,6 @@ namespace Benchmark.FBBench
 
         private ISerializer<VectorTable<string>> regularStringSerializer;
         private ISerializer<VectorTable<SharedString>> sharedStringSerializer;
-        private ISerializer<VectorTable<SharedString>> sharedStringThreadSafeSerializer;
 
         public byte[] serializedGuassianStringVector = new byte[10 * 1024 * 1024];
         public byte[] serializedRandomStringVector = new byte[10 * 1024 * 1024];
@@ -53,14 +52,6 @@ namespace Benchmark.FBBench
             this.sharedStringSerializer = FlatBufferSerializer.Default.Compile<VectorTable<SharedString>>()
                 .WithSettings(new SerializerSettings
                 {
-                    SharedStringReaderFactory = () => SharedStringReader.Create(this.CacheSize),
-                    SharedStringWriterFactory = () => new SharedStringWriter(this.CacheSize),
-                });
-
-            this.sharedStringThreadSafeSerializer = FlatBufferSerializer.Default.Compile<VectorTable<SharedString>>()
-                .WithSettings(new SerializerSettings
-                {
-                    SharedStringReaderFactory = () => SharedStringReader.CreateThreadSafe(this.CacheSize),
                     SharedStringWriterFactory = () => new SharedStringWriter(this.CacheSize),
                 });
 
@@ -91,7 +82,7 @@ namespace Benchmark.FBBench
         public int Serialize_RandomStringVector_WithRegularString()
         {
             return this.regularStringSerializer.Write(
-                SpanWriter.Instance,
+                default(SpanWriter),
                 serializedNonSharedStringVector,
                 nonSharedStringVector);
         }
@@ -100,7 +91,7 @@ namespace Benchmark.FBBench
         public int Serialize_RandomStringVector_WithSharing()
         {
             return this.sharedStringSerializer.Write(
-                SpanWriter.Instance,
+                default(SpanWriter),
                 this.serializedRandomStringVector,
                 randomSharedStringVector);
         }
@@ -109,33 +100,9 @@ namespace Benchmark.FBBench
         public int Serialize_NonRandomStringVector_WithSharing()
         {
             return this.sharedStringSerializer.Write(
-                SpanWriter.Instance, 
+                default(SpanWriter), 
                 this.serializedGuassianStringVector, 
                 this.nonRandomSharedStringVector);
-        }
-
-        [Benchmark]
-        public void Parse_RepeatedStringVector_WithRegularString()
-        {
-            this.regularStringSerializer.Parse(this.serializedNonSharedStringVector);
-        }
-
-        [Benchmark]
-        public void Parse_RepeatedStringVector_WithSharedStrings()
-        {
-            this.sharedStringSerializer.Parse(this.serializedNonSharedStringVector);
-        }
-
-        [Benchmark]
-        public void Parse_NonRandomSharedStringVector_WithSharedStrings_NonThreadSafe()
-        {
-            this.sharedStringSerializer.Parse(this.serializedGuassianStringVector);
-        }
-
-        [Benchmark]
-        public void Parse_NonRandomSharedStringVector_WithSharedStrings_ThreadSafe()
-        {
-            this.sharedStringThreadSafeSerializer.Parse(this.serializedGuassianStringVector);
         }
 
         [FlatBufferTable]

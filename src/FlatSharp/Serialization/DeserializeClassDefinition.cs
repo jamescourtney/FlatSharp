@@ -258,28 +258,11 @@ namespace FlatSharp
 
             Type interfaceType = typeof(IFlatBufferDeserializedObject);
 
-#pragma warning disable CS0618 // Type or member is obsolete
-            string addressableStructImplementation = string.Empty;
-            if (this.typeModel.SchemaType == FlatBufferSchemaType.Struct &&
-                this.typeModel.PhysicalLayout.Length == 1 &&
-                !this.options.GreedyDeserialize)
-            {
-                interfaceType = typeof(IFlatBufferAddressableStruct);
-                addressableStructImplementation = $@"
-                    int {nameof(IFlatBufferAddressableStruct)}.{nameof(IFlatBufferAddressableStruct.Size)} => {this.typeModel.PhysicalLayout[0].InlineSize};
-                    int {nameof(IFlatBufferAddressableStruct)}.{nameof(IFlatBufferAddressableStruct.Offset)} => this.{OffsetVariableName};
-                    int {nameof(IFlatBufferAddressableStruct)}.{nameof(IFlatBufferAddressableStruct.Alignment)} => {this.typeModel.PhysicalLayout[0].Alignment};
-                ";
-            }
-#pragma warning restore CS0618 // Type or member is obsolete
-
             return
             $@"
                 private sealed class {this.ClassName}<TInputBuffer> 
-                    : {typeModel.GetGlobalCompilableTypeName()} 
-#pragma warning disable CS0618 // Type or member is obsolete
+                    : {typeModel.GetGlobalCompilableTypeName()}
                     , {interfaceType.GetGlobalCompilableTypeName()}
-#pragma warning restore CS0618 // Type or member is obsolete
                     where TInputBuffer : IInputBuffer
                 {{
                     private static readonly {typeof(FlatBufferDeserializationContext).GetGlobalCompilableTypeName()} __CtorContext 
@@ -300,8 +283,6 @@ namespace FlatSharp
                     {typeof(FlatBufferDeserializationContext).GetGlobalCompilableTypeName()} {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.DeserializationContext)} => __CtorContext;
                     {typeof(IInputBuffer).GetGlobalCompilableTypeName()}? {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.InputBuffer)} => {this.GetBufferReference()};
                     bool {typeof(IFlatBufferDeserializedObject).GetGlobalCompilableTypeName()}.{nameof(IFlatBufferDeserializedObject.CanSerializeWithMemoryCopy)} => {this.options.CanSerializeWithMemoryCopy.ToString().ToLowerInvariant()};
-
-                    {addressableStructImplementation}
 
                     {string.Join("\r\n", this.propertyOverrides)}
                     {string.Join("\r\n", this.readMethods)}

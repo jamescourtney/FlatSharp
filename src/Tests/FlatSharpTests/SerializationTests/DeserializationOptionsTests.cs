@@ -581,7 +581,7 @@ namespace FlatSharpTests
             Assert.Equal(1, parsed.First.First);
             Assert.Equal(2, parsed.Second.Second);
             Assert.Equal("Foo bar baz bat", parsed.String);
-            Assert.Equal(3, parsed.Union.Item2.Second);
+            Assert.Equal(3, parsed.Union.Value.Item2.Second);
 
             return parsed;
         }

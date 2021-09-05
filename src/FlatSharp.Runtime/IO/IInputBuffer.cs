@@ -25,11 +25,6 @@ namespace FlatSharp
     public interface IInputBuffer
     {
         /// <summary>
-        /// Gets or sets the SharedStringReader for this buffer.
-        /// </summary>
-        ISharedStringReader? SharedStringReader { get; set; }
-
-        /// <summary>
         /// Gets the length of this input buffer.
         /// </summary>
         int Length { get; }

@@ -62,6 +62,10 @@ table OuterTable ({MetadataKeys.SerializerKind}: ""Greedy"") {{
   ByteVector:[ubyte] ({MetadataKeys.VectorKind}:""Memory"", id: 16);
   ByteVector_RO:[ubyte] ({MetadataKeys.VectorKind}:""ReadOnlyMemory"", id: 17);
   Union:Union (id: 18);
+
+  VectorOfUnion : [Union] (id: 20);
+  VectorOfUnion_RoList : [Union] (id: 22, {MetadataKeys.VectorKind}:""IReadOnlyList"");
+  VectorOfUnion_Array : [Union] (id: 24, {MetadataKeys.VectorKind}:""Array"");
 }}
 
 struct OuterStruct {{
@@ -103,7 +107,28 @@ table InnerTable {{
                 TableVector_List = CreateInner("Finnegan", "Daisy"),
                 TableVector_RoList = CreateInner("Gordita", "Lunchbox"),
 
-                Union = new FlatBufferUnion<OuterTable, InnerTable, OuterStruct, InnerStruct>(new OuterStruct())
+                Union = new FlatBufferUnion<OuterTable, InnerTable, OuterStruct, InnerStruct>(new OuterStruct()),
+                VectorOfUnion = new List<FlatBufferUnion<OuterTable, InnerTable, OuterStruct, InnerStruct>>
+                {
+                    new(new OuterTable()),
+                    new(new InnerTable()),
+                    new(new OuterStruct()),
+                    new(new InnerStruct()),
+                },
+                VectorOfUnion_RoList = new List<FlatBufferUnion<OuterTable, InnerTable, OuterStruct, InnerStruct>>
+                {
+                    new(new OuterTable()),
+                    new(new InnerTable()),
+                    new(new OuterStruct()),
+                    new(new InnerStruct()),
+                },
+                VectorOfUnion_Array = new FlatBufferUnion<OuterTable, InnerTable, OuterStruct, InnerStruct>[]
+                {
+                    new(new OuterTable()),
+                    new(new InnerTable()),
+                    new(new OuterStruct()),
+                    new(new InnerStruct()),
+                }
             };
 
             byte[] data = new byte[FlatBufferSerializer.Default.GetMaxSize(original)];
@@ -135,13 +160,49 @@ table InnerTable {{
             DeepCompareIntVector(original.IntVector_List, parsed.IntVector_List, copied.IntVector_List);
             DeepCompareIntVector(original.IntVector_RoList, parsed.IntVector_RoList, copied.IntVector_RoList);
 
-            Assert.Equal((byte)3, original.Union.Discriminator);
+            Assert.Equal((byte)3, original.Union.Value.Discriminator);
             Assert.Equal((byte)3, parsed.Union.Discriminator);
             Assert.Equal((byte)3, copied.Union.Discriminator);
             Assert.Equal("CopyConstructorTest.OuterStruct", copied.Union.Item3.GetType().FullName);
             Assert.NotEqual("CopyConstructorTest.OuterStruct", parsed.Union.Item3.GetType().FullName);
             Assert.NotSame(parsed.Union, copied.Union);
             Assert.NotSame(parsed.Union.Item3, copied.Union.Item3);
+
+            for (int i = 1; i <= 4; ++i)
+            {
+                Assert.Equal((byte)i, original.VectorOfUnion[i - 1].Discriminator);
+                Assert.Equal((byte)i, (byte)parsed.VectorOfUnion[i - 1].Discriminator);
+                Assert.Equal((byte)i, (byte)copied.VectorOfUnion[i - 1].Discriminator);
+            }
+
+            Assert.NotSame(parsed.VectorOfUnion[0].Item1, copied.VectorOfUnion[0].Item1);
+            Assert.NotSame(parsed.VectorOfUnion[1].Item2, copied.VectorOfUnion[1].Item2);
+            Assert.NotSame(parsed.VectorOfUnion[2].Item3, copied.VectorOfUnion[2].Item3);
+            Assert.NotSame(parsed.VectorOfUnion[3].Item4, copied.VectorOfUnion[3].Item4);
+
+            for (int i = 1; i <= 4; ++i)
+            {
+                Assert.Equal((byte)i, original.VectorOfUnion_RoList[i - 1].Discriminator);
+                Assert.Equal((byte)i, (byte)parsed.VectorOfUnion_RoList[i - 1].Discriminator);
+                Assert.Equal((byte)i, (byte)copied.VectorOfUnion_RoList[i - 1].Discriminator);
+            }
+
+            Assert.NotSame(parsed.VectorOfUnion_RoList[0].Item1, copied.VectorOfUnion_RoList[0].Item1);
+            Assert.NotSame(parsed.VectorOfUnion_RoList[1].Item2, copied.VectorOfUnion_RoList[1].Item2);
+            Assert.NotSame(parsed.VectorOfUnion_RoList[2].Item3, copied.VectorOfUnion_RoList[2].Item3);
+            Assert.NotSame(parsed.VectorOfUnion_RoList[3].Item4, copied.VectorOfUnion_RoList[3].Item4);
+
+            for (int i = 1; i <= 4; ++i)
+            {
+                Assert.Equal((byte)i, original.VectorOfUnion_Array[i - 1].Discriminator);
+                Assert.Equal((byte)i, (byte)parsed.VectorOfUnion_Array[i - 1].Discriminator);
+                Assert.Equal((byte)i, (byte)copied.VectorOfUnion_Array[i - 1].Discriminator);
+            }
+
+            Assert.NotSame(parsed.VectorOfUnion_Array[0].Item1, copied.VectorOfUnion_Array[0].Item1);
+            Assert.NotSame(parsed.VectorOfUnion_Array[1].Item2, copied.VectorOfUnion_Array[1].Item2);
+            Assert.NotSame(parsed.VectorOfUnion_Array[2].Item3, copied.VectorOfUnion_Array[2].Item3);
+            Assert.NotSame(parsed.VectorOfUnion_Array[3].Item4, copied.VectorOfUnion_Array[3].Item4);
 
             Memory<byte>? mem = copied.ByteVector;
             Memory<byte>? pMem = parsed.ByteVector;
@@ -335,6 +396,15 @@ table InnerTable {{
 
             [FlatBufferItem(18)]
             public FlatBufferUnion<OuterTable, InnerTable, OuterStruct, InnerStruct>? Union { get; set; }
+
+            [FlatBufferItem(20)]
+            public IList<FlatBufferUnion<OuterTable, InnerTable, OuterStruct, InnerStruct>>? VectorOfUnion { get; set; }
+
+            [FlatBufferItem(22)]
+            public IReadOnlyList<FlatBufferUnion<OuterTable, InnerTable, OuterStruct, InnerStruct>>? VectorOfUnion_RoList { get; set; }
+
+            [FlatBufferItem(24)]
+            public FlatBufferUnion<OuterTable, InnerTable, OuterStruct, InnerStruct>[]? VectorOfUnion_Array { get; set; }
         }
 
         [FlatBufferTable]

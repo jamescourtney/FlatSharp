@@ -45,7 +45,7 @@ namespace FlatSharpTests
                     SharedStringWriterFactory = () => new SharedStringWriter(3)
                 });
 
-            int bytesWritten = serializer.Write(SpanWriter.Instance, destination, t);
+            int bytesWritten = serializer.Write(default(SpanWriter), destination, t);
 
             byte[] expectedBytes = new byte[]
             {
@@ -90,7 +90,7 @@ namespace FlatSharpTests
                     SharedStringWriterFactory = () => new SharedStringWriter(5)
                 });
 
-            int bytesWritten = serializer.Write(SpanWriter.Instance, destination, t);
+            int bytesWritten = serializer.Write(default(SpanWriter), destination, t);
 
             byte[] expectedBytes = new byte[]
             {
@@ -134,7 +134,7 @@ namespace FlatSharpTests
                     SharedStringWriterFactory = () => new SharedStringWriter(5)
                 });
 
-            int bytesWritten = serializer.Write(SpanWriter.Instance, destination, t);
+            int bytesWritten = serializer.Write(default(SpanWriter), destination, t);
 
             Assert.True(bytesWritten <= maxBytes);
 
@@ -175,7 +175,7 @@ namespace FlatSharpTests
                     SharedStringWriterFactory = () => new SharedStringWriter(5)
                 });
 
-            int bytesWritten = serializer.Write(SpanWriter.Instance, destination, t);
+            int bytesWritten = serializer.Write(default(SpanWriter), destination, t);
 
             byte[] expectedBytes = new byte[]
             {
@@ -213,7 +213,7 @@ namespace FlatSharpTests
                     SharedStringWriterFactory = () => new SharedStringWriter(5)
                 });
 
-            int bytesWritten = serializer.Write(SpanWriter.Instance, destination, t);
+            int bytesWritten = serializer.Write(default(SpanWriter), destination, t);
 
             byte[] expectedBytes = new byte[]
             {
@@ -250,7 +250,7 @@ namespace FlatSharpTests
                     SharedStringWriterFactory = () => new SharedStringWriter(1)
                 });
 
-            int bytesWritten = serializer.Write(SpanWriter.Instance, destination, t);
+            int bytesWritten = serializer.Write(default(SpanWriter), destination, t);
 
             byte[] expectedBytes = new byte[]
             {
@@ -295,7 +295,7 @@ namespace FlatSharpTests
                     SharedStringWriterFactory = () => new SharedStringWriter(100)
                 });
 
-            int bytesWritten = serializer.Write(SpanWriter.Instance, destination, t);
+            int bytesWritten = serializer.Write(default(SpanWriter), destination, t);
 
             byte[] stringBytes = Encoding.UTF8.GetBytes("string");
 
@@ -304,38 +304,6 @@ namespace FlatSharpTests
             int secondIndex = destination.AsSpan().Slice(0, firstIndex + 1).IndexOf(stringBytes);
             Assert.Equal(-1, secondIndex);
         }
-
-        /// <summary>
-        /// Tests reading shared strings.
-        /// </summary>
-        [Fact]
-        public void Test_ReadSharedStrings()
-        {
-            var t = new StringsTable<SharedString>
-            {
-                String1 = "string",
-                String2 = "foo",
-                String3 = "string",
-            };
-
-            byte[] destination = new byte[1024];
-            var serializer = FlatBufferSerializer.Default.Compile<StringsTable<SharedString>>()
-                .WithSettings(new SerializerSettings
-                {
-                    SharedStringWriterFactory = () => new SharedStringWriter(100),
-                    SharedStringReaderFactory = () => SharedStringReader.Create(100),
-                });
-
-            int bytesWritten = serializer.Write(SpanWriter.Instance, destination, t);
-
-            var table = serializer.Parse(destination);
-            Assert.Equal("string", (string)table.String1);
-            Assert.Equal("foo", (string)table.String2);
-            Assert.Equal("string", (string)table.String3);
-
-            Assert.True(object.ReferenceEquals(table.String1.String, table.String3.String));
-        }
-
 
         /// <summary>
         /// Tests reading shared strings.
@@ -353,7 +321,7 @@ namespace FlatSharpTests
             byte[] destination = new byte[1024];
             var serializer = FlatBufferSerializer.Default.Compile<StringsTable<SharedString>>();
 
-            int bytesWritten = serializer.Write(SpanWriter.Instance, destination, t);
+            int bytesWritten = serializer.Write(default(SpanWriter), destination, t);
 
             var table = serializer.Parse(destination);
             Assert.Equal("string", (string)table.String1);

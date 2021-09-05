@@ -48,10 +48,10 @@ table D ({MetadataKeys.SerializerKind}) {{ Union:TestUnion; }}
             Type cType = asm.GetType("Foobar.C");
             Type dType = asm.GetType("Foobar.D");
 
-            Assert.Equal(unionType, dType.GetProperty("Union").PropertyType);
+            Assert.Equal(unionType, Nullable.GetUnderlyingType(dType.GetProperty("Union").PropertyType));
 
             // Custom union derives from FlatBufferUnion
-            Assert.True(typeof(FlatBufferUnion<,,>).MakeGenericType(aType, bType, cType).IsAssignableFrom(unionType));
+            Assert.True(typeof(IFlatBufferUnion<,,>).MakeGenericType(aType, bType, cType).IsAssignableFrom(unionType));
             Type[] types = new[] { aType, bType, cType };
             string[] expectedAliases = new[] { "First", "B", "C" };
 
@@ -128,7 +128,7 @@ table D ({MetadataKeys.SerializerKind}) {{ Union:TestUnion; }}
 
             Type dType = asm.GetType("Foobar.D");
 
-            Assert.Equal(unionType, dType.GetProperty("Union").PropertyType);
+            Assert.Equal(unionType, Nullable.GetUnderlyingType(dType.GetProperty("Union").PropertyType));
         }
 
         [Fact]
@@ -151,7 +151,7 @@ table D ({MetadataKeys.SerializerKind}) {{ Union:TestUnion; }}
             Type unionType = asm.GetType("Foobar.TestUnion");
             Type dType = asm.GetType("Foobar.D");
 
-            Assert.Equal(unionType, dType.GetProperty("Union").PropertyType);
+            Assert.Equal(unionType, Nullable.GetUnderlyingType(dType.GetProperty("Union").PropertyType));
         }
     }
 }

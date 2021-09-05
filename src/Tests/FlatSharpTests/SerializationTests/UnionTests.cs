@@ -30,9 +30,20 @@ namespace FlatSharpTests
     /// <summary>
     /// Verifies expected binary formats for test data.
     /// </summary>
-    
     public class UnionTests
     {
+        [Fact]
+        public void Union_Default_Fails()
+        {
+            UnionTable<SimpleTable, SimpleStruct> table = new()
+            {
+                Item = default(FlatBufferUnion<SimpleTable, SimpleStruct>)
+            };
+
+            Assert.Throws<InvalidOperationException>(() => FlatBufferSerializer.Default.GetMaxSize(table));
+            Assert.Throws<InvalidOperationException>(() => FlatBufferSerializer.Default.Serialize(table, new byte[1024]));
+        }
+
         [Fact]
         public void Union_2Items_TableAndStruct_RoundTrip()
         {
@@ -144,9 +155,9 @@ namespace FlatSharpTests
             FlatBufferSerializer.Default.Serialize(table, buffer);
 
             var parseResult = FlatBufferSerializer.Default.Parse<UnionTable<T1, T2>>(buffer);
-            Assert.Equal(1, parseResult.Item.Discriminator);
+            Assert.Equal(1, parseResult.Item.Value.Discriminator);
 
-            return parseResult.Item.Item1;
+            return parseResult.Item.Value.Item1;
         }
 
         private static T2 CreateAndDeserialize2<T1, T2>(T1 one, T2 two)
@@ -161,9 +172,9 @@ namespace FlatSharpTests
             FlatBufferSerializer.Default.Serialize(table, buffer);
 
             var parseResult = FlatBufferSerializer.Default.Parse<UnionTable<T1, T2>>(buffer);
-            Assert.Equal(2, parseResult.Item.Discriminator);
+            Assert.Equal(2, parseResult.Item.Value.Discriminator);
 
-            return parseResult.Item.Item2;
+            return parseResult.Item.Value.Item2;
         }
 
         [FlatBufferTable]
