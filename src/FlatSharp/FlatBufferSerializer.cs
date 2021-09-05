@@ -151,7 +151,16 @@ namespace FlatSharp
             return this.Parse<T, ArrayInputBuffer>(
                 new ArrayInputBuffer(arraySegment));
         }
-        
+
+        /// <summary>
+        /// Parses the given input buffer as an instance of <typeparamref name="T"/>.
+        /// </summary>
+        public T Parse<T>(IInputBuffer buffer)
+            where T : class
+        {
+            return this.Parse<T, IInputBuffer>(buffer);
+        }
+
         /// <summary>
         /// Parses the given input buffer as an instance of <typeparamref name="T"/>.
         /// </summary>
@@ -168,6 +177,16 @@ namespace FlatSharp
         public int Serialize<T>(T item, Span<byte> destination) where T : class
         {
             return this.Serialize(item, destination, default(SpanWriter));
+        }
+
+        /// <summary>
+        /// Writes the given object to the given memory block.
+        /// </summary>
+        /// <returns>The length of data that was written to the memory block.</returns>
+        public int Serialize<T>(T item, Span<byte> destination, ISpanWriter spanWriter)
+            where T : class
+        {
+            return this.Serialize<T, ISpanWriter>(item, destination, spanWriter);
         }
 
         /// <summary>

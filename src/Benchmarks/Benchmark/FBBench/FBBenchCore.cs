@@ -490,28 +490,28 @@ namespace Benchmark.FBBench
 
         public virtual void FlatSharp_ParseAndTraverse()
         {
-            var item = this.fs_serializer.Parse<FooBarListContainer, ArrayInputBuffer>(this.inputBuffer);
+            var item = this.fs_serializer.Parse<FooBarListContainer>(this.inputBuffer);
 
             this.TraverseFooBarContainer(item);
         }
 
         public virtual void FlatSharp_ParseAndTraversePartial()
         {
-            var item = this.fs_serializer.Parse<FooBarListContainer, ArrayInputBuffer>(this.inputBuffer);
+            var item = this.fs_serializer.Parse<FooBarListContainer>(this.inputBuffer);
 
             this.TraverseFooBarContainerPartial(item);
         }
 
         public virtual void FlatSharp_ParseAndTraverse_NonVirtual()
         {
-            var item = this.fs_serializer.Parse<FooBarListContainerNonVirtual, ArrayInputBuffer>(this.inputBuffer);
+            var item = this.fs_serializer.Parse<FooBarListContainerNonVirtual>(this.inputBuffer);
 
             this.TraverseFooBarContainer(item);
         }
 
         public virtual void FlatSharp_ParseAndTraversePartial_NonVirtual()
         {
-            var item = this.fs_serializer.Parse<FooBarListContainerNonVirtual, ArrayInputBuffer>(this.inputBuffer);
+            var item = this.fs_serializer.Parse<FooBarListContainerNonVirtual>(this.inputBuffer);
 
             this.TraverseFooBarContainerPartial(item);
         }
