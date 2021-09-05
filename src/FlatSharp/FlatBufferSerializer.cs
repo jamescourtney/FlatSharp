@@ -183,16 +183,6 @@ namespace FlatSharp
         /// Writes the given object to the given memory block.
         /// </summary>
         /// <returns>The length of data that was written to the memory block.</returns>
-        public int Serialize<T>(T item, Span<byte> destination, ISpanWriter spanWriter)
-            where T : class
-        {
-            return this.Serialize<T, ISpanWriter>(item, destination, spanWriter);
-        }
-
-        /// <summary>
-        /// Writes the given object to the given memory block.
-        /// </summary>
-        /// <returns>The length of data that was written to the memory block.</returns>
         public int Serialize<T, TSpanWriter>(T item, Span<byte> destination, TSpanWriter writer) 
             where T : class 
             where TSpanWriter : ISpanWriter
