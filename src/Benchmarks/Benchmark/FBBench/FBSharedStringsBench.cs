@@ -39,7 +39,7 @@ namespace Benchmark.FBBench
         public byte[] serializedRandomStringVector = new byte[10 * 1024 * 1024];
         public byte[] serializedNonSharedStringVector = new byte[10 * 1024 * 1024];
 
-        [Params(100, 200, 400, 800)]
+        [Params(127, 1024)]
         public int CacheSize { get; set; }
 
         [Params(1000)]
