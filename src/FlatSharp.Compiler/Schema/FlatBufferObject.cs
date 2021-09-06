@@ -67,6 +67,10 @@
                 {
                     this.WriteReferenceTableOrStruct(writer, context, containerKind, typeAttributes);
                 }
+                else
+                {
+
+                }
             }
         }
 
@@ -119,23 +123,23 @@
 
                     if (isArray)
                     {
-                        // TODO
-                        int length = field.Type.FixedLength;
-                        for (int i = 0; i < length; ++i)
+                        ushort length = field.Type.FixedLength;
+                        for (ushort i = 0; i < length; ++i)
                         {
                             // Add virtual fields to represent the array.
                             var temp = new Field
                             {
                                 Attributes = field.Attributes,
                                 Type = new FlatBufferType { BaseType = field.Type.ElementType },
-                                Name = $"__flatsharp__{field.Name}_{i}",
+                                Name = GetStructVectorPropertyName(field, i),
                             };
 
                             writer.AppendLine();
                             writer.AppendLine(this.GetPropertyAttribute(temp, fieldAttributes, attributes, nextField++, customGetter: $"{field.Name}[{i}]"));
-                            writer.AppendLine($"protected {@virtual}{typeName} {temp.Name} {{ get; {setter} }}");
+                            writer.AppendLine($"protected {@virtual}{typeName} {temp.Name} {{ get; set; }}");
                         }
 
+                        this.WriteReferenceStructVector(field, typeName, name, writer);
                         continue;
                     }
                     else if (isVector)
@@ -260,9 +264,80 @@
             return $"[{nameof(FlatBufferItemAttribute)}({fieldId}{defaultValue}{isDeprecated}{sortedVector}{isKey}{forceWrite}{writeThrough}{required})]{customAccessor}";
         }
 
-        private void WriteValueStruct()
+        private void WriteReferenceStructVector(
+            Field field, 
+            string underlyingTypeName,
+            string containerTypeName,
+            CodeWriter writer)
         {
+            string vectorTypeName = $"__{field.Name}Vector";
 
+            writer.AppendLine();
+            writer.AppendLine($"public {vectorTypeName} {field.Name} => new {vectorTypeName}(this);");
+
+            writer.AppendLine();
+            writer.AppendLine($"public struct {vectorTypeName} : IEnumerable<{underlyingTypeName}>");
+            using (writer.WithBlock())
+            {
+                writer.AppendLine($"private readonly {containerTypeName} parent;");
+
+                writer.AppendLine();
+                writer.AppendLine($"private {vectorTypeName}({containerTypeName} parent)");
+                using (writer.WithBlock())
+                {
+                    writer.AppendLine($"this.parent = parent;");
+                }
+
+                writer.AppendLine($"public {underlyingTypeName} this[int index]");
+                using (writer.WithBlock())
+                {
+                    writer.AppendLine("get");
+                    using (writer.WithBlock())
+                    {
+                        writer.AppendLine("switch (index)");
+                        using (writer.WithBlock())
+                        {
+                            for (ushort i = 0; i < field.Type.FixedLength; ++i)
+                            {
+                                writer.AppendLine($"case {i}: return this.parent.{GetStructVectorPropertyName(field, i)};");
+                            }
+                        }
+
+                        writer.AppendLine("throw new IndexOutOfRangeException();");
+                    }
+
+                    writer.AppendLine("set");
+                    using (writer.WithBlock())
+                    {
+                        writer.AppendLine("switch (index)");
+                        using (writer.WithBlock())
+                        {
+                            for (ushort i = 0; i < field.Type.FixedLength; ++i)
+                            {
+                                writer.AppendLine($"case {i}: this.parent.{GetStructVectorPropertyName(field, i)} = value; return;");
+                            }
+                        }
+
+                        writer.AppendLine("throw new IndexOutOfRangeException();");
+                    }
+                }
+
+                writer.AppendLine($"public IEnumerator<{underlyingTypeName}> GetEnumerator()");
+                using (writer.WithBlock())
+                {
+                    for (ushort i = 0; i < field.Type.FixedLength; ++i)
+                    {
+                        writer.AppendLine($"yield return {this.GetStructVectorPropertyName(field, i)};");
+                    }
+                }
+
+                writer.AppendLine($"IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();");
+            }
+        }
+
+        private string GetStructVectorPropertyName(Field sourceField, ushort index)
+        {
+            return $"__flatsharp__{sourceField.Name}_{index}";
         }
 
         private FlatSharpAttributeTarget Classify()
