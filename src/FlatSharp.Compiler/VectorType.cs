@@ -16,21 +16,21 @@
 
 namespace FlatSharp.Compiler
 {
-    using CommandLine;
-
-    public static class Helpers
+    /// <summary>
+    /// Enumerates supported vector types.
+    /// </summary>
+    internal enum VectorType
     {
-        public static (string ns, string typeName) ParseName(string name)
-        {
-            int lastIndex = name.LastIndexOf('.');
-            return (name.Substring(0, lastIndex), name.Substring(lastIndex + 1));
-        }
+        /// <summary>
+        /// Not a vector.
+        /// </summary>
+        None,
 
-        public static IIndexedVector<TKey, TValue> DefaultIfNull<TKey, TValue>(this IIndexedVector<TKey, TValue>? vector)
-            where TValue : class
-            where TKey : notnull
-        {
-            return vector ?? new IndexedVector<TKey, TValue>();
-        }
+        IList,
+        IReadOnlyList,
+        Array,
+        Memory,
+        ReadOnlyMemory,
+        IIndexedVector,
     }
 }

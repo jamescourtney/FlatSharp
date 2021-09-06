@@ -43,14 +43,17 @@
 
         internal void WriteCode(CodeWriter writer, CompileContext context)
         {
-            if (this.Attributes is not null)
+            if (context.CompilePass >= CodeWritingPass.LastPass && context.RootFile != this.DeclarationFile)
             {
-                if (this.Attributes.TryGetValue(MetadataKeys.BitFlags, out var kvp))
-                {
-                    writer.AppendLine("[Flags]");
-                }
+                return;
             }
 
+            if (this.UnderlyingType.BaseType == BaseType.UType)
+            {
+                return;
+            }
+
+            var attributes = this.Attributes ?? new IndexedVector<string, KeyValue>();
             (string ns, string name) = Helpers.ParseName(this.Name);
 
             writer.AppendLine($"namespace {ns}");
@@ -58,12 +61,19 @@
             {
                 FlatSharpInternal.Assert(this.UnderlyingType.BaseType.TryGetBuiltInTypeName(out string? underlyingType), "Failed to get underlying type");
 
+                if (attributes.TryGetValue(MetadataKeys.BitFlags, out var kvp))
+                {
+                    writer.AppendLine("[Flags]");
+                }
+
                 writer.AppendLine($"[FlatBufferEnum(typeof({underlyingType}))]");
                 writer.AppendLine($"public enum {name} : {underlyingType}");
-
-                foreach (var item in this.Values.Select(x => x.Value).OrderBy(x => x.Value))
+                using (writer.WithBlock())
                 {
-                    writer.AppendLine($"{item.Key} = {item.Value},");
+                    foreach (var item in this.Values.Select(x => x.Value).OrderBy(x => x.Value))
+                    {
+                        writer.AppendLine($"{item.Key} = {item.Value},");
+                    }
                 }
             }
         }

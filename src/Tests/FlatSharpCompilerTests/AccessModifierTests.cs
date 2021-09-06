@@ -58,7 +58,7 @@ namespace FlatSharpTests.Compiler
             namespace VirtualTests;
             table VirtualTable ({MetadataKeys.SerializerKind}:""{option}"") {{
                 Default:int ({MetadataKeys.Setter}:""{setterKind}"");
-                ForcedVirtual:int ({MetadataKeys.NonVirtualProperty}:""false"", {MetadataKeys.SetterLegacy}:""{setterKind}"");
+                ForcedVirtual:int ({MetadataKeys.NonVirtualProperty}:""false"", {MetadataKeys.Setter}:""{setterKind}"");
                 ForcedNonVirtual:int ({MetadataKeys.NonVirtualProperty}:""true"", {MetadataKeys.Setter}:""{(setterKind != SetterKind.None ? setterKind : SetterKind.Public)}"");
                 Struct:VirtualStruct;
             }}

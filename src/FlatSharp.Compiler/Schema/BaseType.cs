@@ -1,13 +1,14 @@
 ﻿namespace FlatSharp.Compiler.Schema
 {
     using FlatSharp.Attributes;
+    using System;
     using System.Diagnostics.CodeAnalysis;
 
     [FlatBufferEnum(typeof(byte))]
     public enum BaseType : byte
     {
         None,
-        UnionDiscriminator,
+        UType,
         Bool,
         Byte,
         UByte,
@@ -117,6 +118,36 @@
             }
 
             return false;
+        }
+
+        public static int GetScalarSize(this BaseType type)
+        {
+            FlatSharpInternal.Assert(type.IsScalar(), "Type " + type + " was not a scalar");
+
+            switch (type)
+            {
+                case BaseType.Bool:
+                case BaseType.Byte:
+                case BaseType.UByte:
+                    return 1;
+
+                case BaseType.Short:
+                case BaseType.UShort:
+                    return 2;
+
+                case BaseType.Int:
+                case BaseType.UInt:
+                case BaseType.Float:
+                    return 4;
+
+                case BaseType.Long:
+                case BaseType.ULong:
+                case BaseType.Double:
+                    return 8;
+
+                default:
+                    throw new InvalidOperationException("impossible");
+            }
         }
     }
 }

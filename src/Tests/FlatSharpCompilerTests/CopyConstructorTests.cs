@@ -57,7 +57,7 @@ table OuterTable ({MetadataKeys.SerializerKind}: ""Greedy"") {{
   TableVector_List:[InnerTable] ({MetadataKeys.VectorKind}:""IList"", id: 12);
   TableVector_RoList:[InnerTable] ({MetadataKeys.VectorKind}:""IReadOnlyList"", id: 13);
   TableVector_Indexed:[InnerTable] ({MetadataKeys.VectorKind}:""IIndexedVector"", id: 14);
-  TableVector_Array:[InnerTable] ({MetadataKeys.VectorKindLegacy}:""Array"", id: 15);
+  TableVector_Array:[InnerTable] ({MetadataKeys.VectorKind}:""Array"", id: 15);
 
   ByteVector:[ubyte] ({MetadataKeys.VectorKind}:""Memory"", id: 16);
   ByteVector_RO:[ubyte] ({MetadataKeys.VectorKind}:""ReadOnlyMemory"", id: 17);

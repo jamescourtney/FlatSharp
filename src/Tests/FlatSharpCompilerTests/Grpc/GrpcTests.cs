@@ -49,7 +49,7 @@ namespace routeguide;
         longitude:int32;
     }}
 
-    table Rectangle ({MetadataKeys.PrecompiledSerializerLegacy}:lazy)
+    table Rectangle ({MetadataKeys.SerializerKind}:lazy)
     {{
         lo:Point;
         hi:Point;
@@ -116,66 +116,6 @@ namespace routeguide;
         }
 
         [Fact]
-        public void RpcUnknownType()
-        {
-            string schema = $@"
-namespace RpcUnknownType;
-
-    rpc_service RouteGuide
-    {{
-        GetFeature(NotExisting):Point;
-    }}
-
-    table Point ({MetadataKeys.SerializerKind}:lazy)
-    {{
-        latitude:int32;
-        longitude:int32;
-    }}";
-
-            Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.TestHookCreateCSharp(schema, new()));
-        }
-
-        [Fact]
-        public void RpcUnknownStreamingType()
-        {
-            string schema = $@"
-namespace RpcUnknownStreamingType;
-
-    rpc_service RouteGuide
-    {{
-        GetFeature(Point):Point (streaming:banana);
-    }}
-
-    table Point ({MetadataKeys.SerializerKind}:lazy)
-    {{
-        latitude:int32;
-        longitude:int32;
-    }}";
-
-            Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.TestHookCreateCSharp(schema, new()));
-        }
-
-        [Fact]
-        public void RpcReturnsAStruct()
-        {
-            string schema = $@"
-namespace RpcReturnsAStruct;
-
-    rpc_service RouteGuide
-    {{
-        GetFeature(Point):Point;
-    }}
-
-    struct Point ({MetadataKeys.SerializerKind}:lazy)
-    {{
-        latitude:int32;
-        longitude:int32;
-    }}";
-
-            Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.TestHookCreateCSharp(schema, new()));
-        }
-
-        [Fact]
         public void NoPrecompiledSerializer()
         {
             string schema = $@"
@@ -192,7 +132,7 @@ namespace NoPrecompiledSerializer;
         longitude:int32;
     }}";
 
-            Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.TestHookCreateCSharp(schema, new()));
+            Assert.True(false);
         }
 
 #if NET5_0_OR_GREATER

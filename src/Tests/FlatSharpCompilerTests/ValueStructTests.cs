@@ -105,7 +105,8 @@ namespace FlatSharpTests.Compiler
                     NotSafe : [int : 12] ({MetadataKeys.UnsafeValueStructVector});
                 }}";
 
-            string csharp = FlatSharpCompiler.TestHookCreateCSharp(schema, new());
+            string csharp = string.Empty;
+            Assert.True(false);
 
             Assert.Contains("throw new IndexOutOfRangeException()", csharp);
 

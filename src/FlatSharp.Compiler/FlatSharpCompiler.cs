@@ -23,17 +23,18 @@ namespace FlatSharp.Compiler
     using System.Linq;
     using System.Reflection;
     using System.Runtime.ExceptionServices;
+    using System.Runtime.InteropServices;
     using System.Security.Cryptography;
     using System.Text;
     using System.Threading;
-
-    using Antlr4.Runtime;
     using CommandLine;
     using FlatSharp.TypeModel;
 
     public class FlatSharpCompiler
     {
         public const string FailureMessage = "// !! FLATSHARP CODE GENERATION FAILED. THIS FILE MAY CONTAIN INCOMPLETE OR INACCURATE DATA !!";
+
+        private static string AssemblyVersion => typeof(FlatSharpCompiler).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "unknown";
 
         [ExcludeFromCodeCoverage]
         static int Main(string[] args)
@@ -88,12 +89,13 @@ namespace FlatSharp.Compiler
                     {
                         try
                         {
-                            string inputHash = typeof(FlatSharpCompiler).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "unknown";
+                            string inputHash = AssemblyVersion;
 
-                            byte[] fileData = File.ReadAllBytes(options.InputFile);
+                            byte[] bfbs = GetBfbs(options.InputFile);
+
                             using (var hash = SHA256Managed.Create())
                             {
-                                inputHash += "." + Convert.ToBase64String(hash.ComputeHash(fileData));
+                                inputHash += "." + Convert.ToBase64String(hash.ComputeHash(bfbs));
                             }
 
                             if (File.Exists(outputFullPath))
@@ -110,7 +112,7 @@ namespace FlatSharp.Compiler
                             Exception? exception = null;
                             try
                             {
-                                CreateCSharp(fileData, inputHash, options, out cSharp);
+                                CreateCSharp(bfbs, inputHash, options, out cSharp);
                             }
                             catch (Exception ex)
                             {
@@ -170,9 +172,104 @@ namespace FlatSharp.Compiler
             }
         }
 
+        // Test hook
+        internal static Assembly CompileAndLoadAssembly(
+            string fbsSchema,
+            CompilerOptions options,
+            IEnumerable<Assembly>? additionalReferences = null)
+        {
+            using (var context = ErrorContext.Current)
+            {
+                context.PushScope("$");
+                string fbsFile = Path.GetTempFileName() + ".fbs";
+                try
+                {
+                    Assembly[] additionalRefs = additionalReferences?.ToArray() ?? Array.Empty<Assembly>();
+
+                    File.WriteAllText(fbsFile, fbsSchema);
+                    options.InputFile = fbsFile;
+
+                    byte[] bfbs = GetBfbs(fbsFile);
+                    CreateCSharp(bfbs, "hash", options, out string cSharp);
+
+                    var (assembly, formattedText, _) = RoslynSerializerGenerator.CompileAssembly(cSharp, true, additionalRefs);
+                    string debugText = formattedText();
+                    return assembly;
+                }
+                finally
+                {
+                    context.PopScope();
+                    File.Delete(fbsFile);
+                }
+            }
+        }
+
+        internal static byte[] GetBfbs(string fbsFilePath)
+        {
+            string os;
+            string name;
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                os = "windows";
+                name = "flatc.exe";
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                os = "macos";
+                name = "flatc";
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                os = "linux";
+                name = "flatc";
+            }
+            else
+            {
+                throw new InvalidOperationException("FlatSharp compiler is not supported on this operating system.");
+            }
+
+            string temp = Path.GetTempPath();
+            string dirName = $"flatsharpcompiler_temp_{Guid.NewGuid():n}";
+            string outputDir = Path.Combine(temp, dirName);
+            Directory.CreateDirectory(outputDir);
+
+            string currentProcess = typeof(FlatSharpCompiler).Assembly.Location;
+            string currentDirectory = Path.GetDirectoryName(currentProcess)!;
+
+            string flatcPath = Path.Combine(currentDirectory, "flatc", os, name);
+            System.Diagnostics.Process p = new System.Diagnostics.Process
+            {
+                StartInfo = new System.Diagnostics.ProcessStartInfo
+                {
+                    CreateNoWindow = true,
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true,
+                    FileName = flatcPath,
+                    Arguments = $"-b --schema --bfbs-comments --bfbs-filenames \"{Path.GetDirectoryName(fbsFilePath)}\" --no-warnings -o {outputDir} {fbsFilePath}",
+                }
+            };
+
+            try
+            {
+                p.Start();
+                string stdout = p.StandardOutput.ReadToEnd();
+                string stderr = p.StandardError.ReadToEnd();
+
+                p.WaitForExit();
+
+                string output = Directory.GetFiles(outputDir, "*.bfbs").Single();
+                return File.ReadAllBytes(output);
+            }
+            finally
+            {
+                Directory.Delete(outputDir, recursive: true);
+            }
+        }
+
         private static void CreateCSharp(
             byte[] bfbs,
-            string bfbsHash,
+            string inputHash,
             CompilerOptions options,
             out string csharp)
         {
@@ -180,8 +277,6 @@ namespace FlatSharp.Compiler
 
             try
             {
-                var schema = FlatBufferSerializer.Default.Parse<Schema.Schema>(bfbs);
-
                 Assembly? assembly = null;
                 CodeWriter writer = new CodeWriter();
                 var steps = new[]
@@ -194,10 +289,9 @@ namespace FlatSharp.Compiler
 
                 foreach (var step in steps)
                 {
+                    var schema = FlatBufferSerializer.Default.Parse<Schema.Schema>(bfbs);
+
                     var localOptions = options;
-
-                    schema.WriteCode(writer, null!);
-
                     if (step <= CodeWritingPass.PropertyModeling)
                     {
                         localOptions = localOptions with { NullableWarnings = false };
@@ -210,6 +304,20 @@ namespace FlatSharp.Compiler
                     }
 
                     writer = new CodeWriter();
+
+                    schema.WriteCode(
+                        writer,
+                        new CompileContext
+                        {
+                            CompilePass = step,
+                            Options = localOptions,
+                            RootFile = $"//{Path.GetFileName(options.InputFile)}",
+                            InputHash = inputHash,
+                            Root = schema,
+                            PreviousAssembly = assembly,
+                            TypeModelContainer = TypeModelContainer.CreateDefault(),
+                        });
+
                     ErrorContext.Current.ThrowIfHasErrors();
                 }
 

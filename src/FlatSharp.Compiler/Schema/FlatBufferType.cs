@@ -1,6 +1,7 @@
 ﻿namespace FlatSharp.Compiler.Schema
 {
     using FlatSharp.Attributes;
+    using System;
 
     /*
     table Type
@@ -32,5 +33,33 @@
 
         [FlatBufferItem(3)]
         public virtual ushort FixedLength { get; set; }
+
+        public string FormatTypeName(Schema root, out bool isVector, out bool isArray)
+        {
+            isVector = this.BaseType == BaseType.Vector;
+            isArray = this.BaseType == BaseType.Array;
+
+            BaseType toFormat = this.BaseType;
+            if (isVector || isArray)
+            {
+                toFormat = this.ElementType;
+            }
+
+            if (this.Index == -1 && toFormat.TryGetBuiltInTypeName(out string? typeName))
+            {
+                return typeName;
+            }
+
+            if (toFormat == BaseType.Obj) // table or struct
+            {
+                return root.Objects[this.Index].Name;
+            }
+            else if (toFormat == BaseType.UType || toFormat == BaseType.Union || (this.Index != -1 && toFormat.IsScalar()))
+            {
+                return root.Enums[this.Index].Name;
+            }
+
+            throw new InvalidOperationException();
+        }
     }
 }

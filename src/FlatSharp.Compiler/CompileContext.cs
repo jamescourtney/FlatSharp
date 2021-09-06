@@ -35,6 +35,16 @@ namespace FlatSharp.Compiler
         public Assembly? PreviousAssembly { get; init; }
 
         /// <summary>
+        /// The input hash.
+        /// </summary>
+        public string InputHash { get; init; } = string.Empty;
+
+        /// <summary>
+        /// The Root schema.
+        /// </summary>
+        public Schema.Schema Root { get; init; } = new();
+
+        /// <summary>
         /// The root FBS file in the compilation.
         /// </summary>
         public string RootFile { get; init; } = string.Empty;

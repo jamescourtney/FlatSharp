@@ -170,16 +170,5 @@ namespace FlatSharpTests.Compiler
             Assert.True(constructor.IsPublic);
             Assert.NotNull(constructor.GetCustomAttribute<ObsoleteAttribute>());
         }
-
-        [Fact]
-        public void LegacyObsoleteDefaultConstructor()
-        {
-            string schema = $@"
-            namespace Foo; 
-            table Table ({MetadataKeys.ObsoleteDefaultConstructorLegacy}) {{ Int:int; }}";
-
-            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.StartsWith("Message='The 'ObsoleteDefaultConstructor' metadata attribute has been deprecated. Please use the 'fs_defaultCtor' attribute instead.'", ex.Errors[0]);
-        }
     }
 }

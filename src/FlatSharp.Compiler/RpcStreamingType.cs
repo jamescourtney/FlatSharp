@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2020 James Courtney
+ * Copyright 2021 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,21 +16,16 @@
 
 namespace FlatSharp.Compiler
 {
-    using CommandLine;
-
-    public static class Helpers
+    public enum RpcStreamingType
     {
-        public static (string ns, string typeName) ParseName(string name)
-        {
-            int lastIndex = name.LastIndexOf('.');
-            return (name.Substring(0, lastIndex), name.Substring(lastIndex + 1));
-        }
+        Unary = 0,
+        None = 0,
 
-        public static IIndexedVector<TKey, TValue> DefaultIfNull<TKey, TValue>(this IIndexedVector<TKey, TValue>? vector)
-            where TValue : class
-            where TKey : notnull
-        {
-            return vector ?? new IndexedVector<TKey, TValue>();
-        }
+        Client = 1,
+        Server = 2,
+
+        Bidirectional = 3,
+        Bidi = 3,
+        Duplex = 3,
     }
 }

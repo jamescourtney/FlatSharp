@@ -21,7 +21,6 @@ namespace FlatSharpTests.Compiler
     using FlatSharp.Compiler;
     using Xunit;
 
-    
     public class FullTests
     {
 #if NET5_0_OR_GREATER
@@ -40,6 +39,8 @@ namespace FlatSharpTests.Compiler
         private void Test(FlatBufferDeserializationOption option)
         {
             string schema = $@"
+            {MetadataHelpers.AllAttributes}
+
             namespace FullTest;
 
             enum RegularEnum : ubyte {{ A, B, C = 4, D, E = 10 }}
@@ -47,18 +48,18 @@ namespace FlatSharpTests.Compiler
 
             union Any {{ Table, InnerStruct, OuterStruct, IT : InnerTable }}
 
-            table Table ({MetadataKeys.SerializerKind}:{option}, {MetadataKeys.FileIdentifier}:""abcd"") 
+            table Table ({MetadataKeys.SerializerKind}:""{option}"", {MetadataKeys.FileIdentifier}:""abcd"") 
             {{ 
                 Bool : bool;
                 DeprecatedBool : bool ({MetadataKeys.Deprecated});
-                Byte : ubyte ({MetadataKeys.Setter}:Public, {MetadataKeys.NonVirtualProperty});
-                SByte : byte ({MetadataKeys.Setter}:None);
-                UShort : ushort = 3 ({MetadataKeys.Setter}:PublicInit);
-                Short : short = null ({MetadataKeys.Setter}:ProtectedInit, {MetadataKeys.NonVirtualProperty});
-                DeprecatedShort : short ({MetadataKeys.Deprecated}, {MetadataKeys.Setter}:ProtectedInit, {MetadataKeys.NonVirtualProperty});
-                UInt : uint = null ({MetadataKeys.Setter}:Protected);
-                Int : int = 3 ({MetadataKeys.Setter}:ProtectedInternal);
-                ULong : ulong ({MetadataKeys.Setter}:ProtectedInternalInit);
+                Byte : ubyte ({MetadataKeys.Setter}:""Public"", {MetadataKeys.NonVirtualProperty});
+                SByte : byte ({MetadataKeys.Setter}:""None"");
+                UShort : ushort = 3 ({MetadataKeys.Setter}:""PublicInit"");
+                Short : short = null ({MetadataKeys.Setter}:""ProtectedInit"", {MetadataKeys.NonVirtualProperty});
+                DeprecatedShort : short ({MetadataKeys.Deprecated}, {MetadataKeys.Setter}:""ProtectedInit"", {MetadataKeys.NonVirtualProperty});
+                UInt : uint = null ({MetadataKeys.Setter}:""Protected"");
+                Int : int = 3 ({MetadataKeys.Setter}:""ProtectedInternal"");
+                ULong : ulong ({MetadataKeys.Setter}:""ProtectedInternalInit"");
                 Long : long = null;
                 Double : double = 10;
                 Float : float ({MetadataKeys.NonVirtualProperty});
@@ -90,17 +91,17 @@ namespace FlatSharpTests.Compiler
                 String : string ({MetadataKeys.Key});   
                 String2 : string ({MetadataKeys.SharedString});
             }}
+
+            struct InnerStruct {{
+                Bytes : [ubyte:32];
+                BytesNonVirtual : [uint:4] ({MetadataKeys.NonVirtualProperty});
+            }}
             
             struct OuterStruct {{
                 InnerNonVirtual : InnerStruct ({MetadataKeys.NonVirtualProperty});
                 Inner : InnerStruct;
                 RegEnum : RegularEnum ({MetadataKeys.NonVirtualProperty});
                 FEnum : FlagsEnum;
-            }}
-
-            struct InnerStruct {{
-                Bytes : [ubyte:32];
-                BytesNonVirtual : [uint:4] ({MetadataKeys.NonVirtualProperty});
             }}
             ";
 
