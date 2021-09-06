@@ -16,21 +16,14 @@
 
 namespace FlatSharp.Compiler
 {
-    /// <summary>
-    /// Enumerates supported vector types.
-    /// </summary>
-    internal enum VectorType
-    {
-        /// <summary>
-        /// Not a vector.
-        /// </summary>
-        None,
+    using CommandLine;
 
-        IList,
-        IReadOnlyList,
-        Array,
-        Memory,
-        ReadOnlyMemory,
-        IIndexedVector,
+    public static class Helpers
+    {
+        public static (string ns, string typeName) ParseName(string name)
+        {
+            int lastIndex = name.LastIndexOf('.');
+            return (name.Substring(0, lastIndex), name.Substring(lastIndex + 1));
+        }
     }
 }

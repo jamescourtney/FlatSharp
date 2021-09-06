@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "FlatSharp.Compiler": {
+      "commandName": "Project",
+      "commandLineArgs": "-i C:\\git\\FlatSharp\\src\\Tests\\FlatSharpTests\\Tests.bfbs -o ."
+    }
+  }
+}

@@ -31,14 +31,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Antlr4 Update="FlatBuffers.g4">
-      <Generator>MSBuild:Compile</Generator>
-      <Listener>False</Listener>
-      <Visitor>True</Visitor>
-    </Antlr4>
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
     <ProjectReference Include="..\FlatSharp\FlatSharp.csproj" />
   </ItemGroup>

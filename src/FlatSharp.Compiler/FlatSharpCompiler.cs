@@ -88,17 +88,18 @@ namespace FlatSharp.Compiler
                     {
                         try
                         {
-                            RootNodeDefinition rootNode = ParseSyntax(options.InputFile, new IncludeFileLoader());
+                            string inputHash = typeof(FlatSharpCompiler).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "unknown";
 
-                            if (string.IsNullOrEmpty(rootNode.InputHash))
+                            byte[] fileData = File.ReadAllBytes(options.InputFile);
+                            using (var hash = SHA256Managed.Create())
                             {
-                                throw new InvalidFbsFileException("Failed to compute input hash");
+                                inputHash += "." + Convert.ToBase64String(hash.ComputeHash(fileData));
                             }
 
                             if (File.Exists(outputFullPath))
                             {
                                 string existingOutput = File.ReadAllText(outputFullPath);
-                                if (existingOutput.Contains(rootNode.InputHash) && !existingOutput.StartsWith(FailureMessage))
+                                if (existingOutput.Contains(inputHash) && !existingOutput.StartsWith(FailureMessage))
                                 {
                                     // Input file unchanged.
                                     return 0;
@@ -109,7 +110,7 @@ namespace FlatSharp.Compiler
                             Exception? exception = null;
                             try
                             {
-                                CreateCSharp(rootNode, options, out cSharp);
+                                CreateCSharp(fileData, inputHash, options, out cSharp);
                             }
                             catch (Exception ex)
                             {
@@ -138,15 +139,6 @@ namespace FlatSharp.Compiler
                             Thread.Sleep(TimeSpan.FromMilliseconds(new Random().Next(20, 200)));
                         }
                     }
-                }
-                catch (InvalidFbsFileException ex)
-                {
-                    foreach (var message in ex.Errors)
-                    {
-                        Console.Error.WriteLine(message);
-                    }
-
-                    return -1;
                 }
                 catch (FlatSharpCompilationException)
                 {
@@ -178,162 +170,9 @@ namespace FlatSharp.Compiler
             }
         }
 
-        /// <summary>
-        /// Test hook
-        /// </summary>
-        internal static Assembly CompileAndLoadAssembly(
-            string fbsSchema,
-            CompilerOptions options,
-            IEnumerable<Assembly>? additionalReferences = null,
-            Dictionary<string, string>? additionalIncludes = null)
-        {
-            InMemoryIncludeLoader includeLoader = new InMemoryIncludeLoader
-            {
-                { "root.fbs", fbsSchema }
-            };
-
-            if (additionalIncludes != null)
-            {
-                foreach (var kvp in additionalIncludes)
-                {
-                    includeLoader[kvp.Key] = kvp.Value;
-                }
-            }
-
-            using (var context = ErrorContext.Current)
-            {
-                context.PushScope("$");
-                try
-                {
-                    Assembly[] additionalRefs = additionalReferences?.ToArray() ?? Array.Empty<Assembly>();
-                    var rootNode = ParseSyntax("root.fbs", includeLoader);
-                    CreateCSharp(rootNode, options, out string cSharp);
-                    var (assembly, formattedText, _) = RoslynSerializerGenerator.CompileAssembly(cSharp, true, additionalRefs);
-                    string debugText = formattedText();
-                    return assembly;
-                }
-                finally
-                {
-                    context.PopScope();
-                }
-            }
-        }
-
-        internal static RootNodeDefinition TestHookParseSyntax(string fbsSchema, Dictionary<string, string>? includes = null)
-        {
-            InMemoryIncludeLoader includeLoader = new InMemoryIncludeLoader
-            {
-                { "root.fbs", fbsSchema }
-            };
-
-            if (includes != null)
-            {
-                foreach (var kvp in includes)
-                {
-                    includeLoader[kvp.Key] = kvp.Value;
-                }
-            }
-
-            using (ErrorContext.Current)
-            {
-                return ParseSyntax("root.fbs", includeLoader);
-            }
-        }
-
-        private static RootNodeDefinition ParseSyntax(
-            string fbsPath,
-            IIncludeLoader includeLoader)
-        {
-            string rootPath = Path.GetFullPath(fbsPath);
-
-            // First, visit includes. We need to figure out which files warrant a thorough look.
-            HashSet<string> includes = new HashSet<string>() { rootPath };
-            Queue<string> visitOrder = new Queue<string>();
-            visitOrder.Enqueue(rootPath);
-
-            var rootNode = new RootNodeDefinition(rootPath);
-            var schemaVisitor = new SchemaVisitor(rootNode);
-
-            // SHA256 -> 32 bytes.
-            byte[] hash = new byte[32];
-
-            string asmVersion = typeof(FlatSharpCompiler).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "unknown";
-            Encoding.UTF8.GetBytes(asmVersion, 0, asmVersion.Length, hash, 0);
-
-            while (visitOrder.Count > 0)
-            {
-                string next = visitOrder.Dequeue();
-                string fbs = includeLoader.LoadInclude(next);
-
-                using (var sha256 = SHA256Managed.Create())
-                {
-                    byte[] componentHash = sha256.ComputeHash(Encoding.UTF8.GetBytes(fbs));
-                    for (int i = 0; i < hash.Length; ++i)
-                    {
-                        hash[i] ^= componentHash[i];
-                    }
-                }
-
-                schemaVisitor.CurrentFileName = next;
-
-                // Traverse the graph of includes.
-                var includeVisitor = new IncludeVisitor(next, includes, visitOrder);
-
-                ErrorContext.Current.WithScope(next, () =>
-                {
-                    var schema = GetParser(fbs).schema();
-                    ErrorContext.Current.ThrowIfHasErrors();
-
-                    includeVisitor.Visit(schema); 
-                    ErrorContext.Current.ThrowIfHasErrors();
-
-                    schemaVisitor.Visit(schema); 
-                    ErrorContext.Current.ThrowIfHasErrors();
-                });
-            }
-
-            rootNode.InputHash = $"{asmVersion}.{Convert.ToBase64String(hash)}";
-            return rootNode;
-        }
-
-        private static FlatBuffersParser GetParser(string fbs)
-        {
-            AntlrInputStream input = new AntlrInputStream(fbs);
-            FlatBuffersLexer lexer = new FlatBuffersLexer(input);
-            CommonTokenStream tokenStream = new CommonTokenStream(lexer);
-            FlatBuffersParser parser = new FlatBuffersParser(tokenStream);
-
-            parser.AddErrorListener(new CustomErrorListener());
-            return parser;
-        }
-
-        internal static string TestHookCreateCSharp(
-            string fbsSchema,
-            CompilerOptions options,
-            Dictionary<string, string>? includes = null)
-        {
-            InMemoryIncludeLoader includeLoader = new InMemoryIncludeLoader
-            {
-                { "root.fbs", fbsSchema }
-            };
-
-            if (includes != null)
-            {
-                foreach (var pair in includes)
-                {
-                    includeLoader[pair.Key] = pair.Value;
-                }
-            }
-
-            using (ErrorContext.Current)
-            {
-                CreateCSharp(ParseSyntax("root.fbs", includeLoader), options, out string csharp);
-                return csharp;
-            }
-        }
-
         private static void CreateCSharp(
-            BaseSchemaMember rootNode,
+            byte[] bfbs,
+            string bfbsHash,
             CompilerOptions options,
             out string csharp)
         {
@@ -341,8 +180,7 @@ namespace FlatSharp.Compiler
 
             try
             {
-                ErrorContext.Current.ThrowIfHasErrors();
-                FlatSharpInternal.Assert(!string.IsNullOrEmpty(rootNode.DeclaringFile), "RootNode missing declaring file");
+                var schema = FlatBufferSerializer.Default.Parse<Schema.Schema>(bfbs);
 
                 Assembly? assembly = null;
                 CodeWriter writer = new CodeWriter();
@@ -358,6 +196,8 @@ namespace FlatSharp.Compiler
                 {
                     var localOptions = options;
 
+                    schema.WriteCode(writer, null!);
+
                     if (step <= CodeWritingPass.PropertyModeling)
                     {
                         localOptions = localOptions with { NullableWarnings = false };
@@ -370,18 +210,6 @@ namespace FlatSharp.Compiler
                     }
 
                     writer = new CodeWriter();
-
-                    rootNode.WriteCode(
-                        writer,
-                        new CompileContext
-                        {
-                            CompilePass = step,
-                            Options = localOptions,
-                            RootFile = rootNode.DeclaringFile,
-                            PreviousAssembly = assembly,
-                            TypeModelContainer = TypeModelContainer.CreateDefault(),
-                        });
-
                     ErrorContext.Current.ThrowIfHasErrors();
                 }
 
