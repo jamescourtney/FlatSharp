@@ -22,7 +22,7 @@ namespace FlatSharp.Compiler
     /// to only have a minimal understanding of the type system and the relationship between types. Instead,
     /// it uses reflection on previous invocations to fine-tune its approach.
     /// </summary>
-    internal enum CodeWritingPass
+    public enum CodeWritingPass
     {
         /// <summary>
         /// Basic definitions of types and properties are written. Output code is reflectable but not functional.

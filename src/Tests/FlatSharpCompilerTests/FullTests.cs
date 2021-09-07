@@ -48,7 +48,7 @@ namespace FlatSharpTests.Compiler
 
             union Any {{ Table, InnerStruct, OuterStruct, IT : InnerTable }}
 
-            table Table ({MetadataKeys.SerializerKind}:""{option}"", {MetadataKeys.FileIdentifier}:""abcd"") 
+            table Table ({MetadataKeys.SerializerKind}:""{option}"") 
             {{ 
                 Bool : bool;
                 DeprecatedBool : bool ({MetadataKeys.Deprecated});

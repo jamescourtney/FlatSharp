@@ -17,40 +17,13 @@
 namespace FlatSharp.Compiler
 {
     using FlatSharp.Attributes;
+    using FlatSharp.Compiler.SchemaModel;
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
 
-    public enum FlatSharpAttributeTarget
-    {
-        Table,
-        Struct,
-        ValueStruct,
-        Union,
-        Enum,
-        RpcService,
-
-        TableField,
-        StructField,
-        ValueStructField,
-    }
-
-    [AttributeUsage(AttributeTargets.Property)]
-    public class FlatSharpAttributeUsageAttribute : Attribute
-    {
-        public FlatSharpAttributeUsageAttribute(string key, params FlatSharpAttributeTarget[] usages)
-        {
-            this.Key = key;
-            this.Targets = usages;
-        }
-
-        public string Key { get; }
-
-        public FlatSharpAttributeTarget[] Targets { get; }
-    }
-
-    internal class FlatSharpAttributes
+    public class FlatSharpAttributes
     {
         private readonly IIndexedVector<string, Schema.KeyValue> rawAttributes;
 
@@ -59,72 +32,92 @@ namespace FlatSharp.Compiler
             this.rawAttributes = attrs ?? new IndexedVector<string, Schema.KeyValue>();
         }
 
-        [FlatSharpAttributeUsage(MetadataKeys.SerializerKind, FlatSharpAttributeTarget.Table)]
         public FlatBufferDeserializationOption? DeserializationOption => this.TryParseEnum(MetadataKeys.SerializerKind, FlatBufferDeserializationOption.Default);
 
-        [FlatSharpAttributeUsage(
-            MetadataKeys.NonVirtualProperty,
-            FlatSharpAttributeTarget.Table,
-            FlatSharpAttributeTarget.Struct,
-            FlatSharpAttributeTarget.TableField,
-            FlatSharpAttributeTarget.StructField)]
         public bool? NonVirtual => this.TryParseBoolean(MetadataKeys.NonVirtualProperty);
 
-        [FlatSharpAttributeUsage(MetadataKeys.SortedVector, FlatSharpAttributeTarget.TableField)]
         public bool? SortedVector => this.TryParseBoolean(MetadataKeys.SortedVector);
 
-        [FlatSharpAttributeUsage(MetadataKeys.SharedString, FlatSharpAttributeTarget.TableField)]
         public bool? SharedString => this.TryParseBoolean(MetadataKeys.SharedString);
 
-        [FlatSharpAttributeUsage(MetadataKeys.DefaultConstructorKind, FlatSharpAttributeTarget.Table)]
+        public bool? ValueStruct => this.TryParseBoolean(MetadataKeys.ValueStruct);
+
         public DefaultConstructorKind? DefaultCtorKind => this.TryParseEnum(MetadataKeys.DefaultConstructorKind, DefaultConstructorKind.Public);
 
-        [FlatSharpAttributeUsage(MetadataKeys.VectorKind, FlatSharpAttributeTarget.TableField)]
         public VectorType? VectorKind => this.TryParseEnum(MetadataKeys.VectorKind, VectorType.IList);
 
-        [FlatSharpAttributeUsage(MetadataKeys.Setter, FlatSharpAttributeTarget.TableField, FlatSharpAttributeTarget.StructField)]
         public SetterKind? SetterKind => this.TryParseEnum(MetadataKeys.Setter, Compiler.SetterKind.Public);
 
-        [FlatSharpAttributeUsage(MetadataKeys.Setter, FlatSharpAttributeTarget.TableField, FlatSharpAttributeTarget.Table)]
         public bool? ForceWrite => this.TryParseBoolean(MetadataKeys.ForceWrite);
 
-        [FlatSharpAttributeUsage(MetadataKeys.FileIdentifier, FlatSharpAttributeTarget.Table)]
-        public string? FileId
-        {
-            get
-            {
-                if (this.rawAttributes.TryGetValue(MetadataKeys.FileIdentifier, out var value))
-                {
-                    return value.Value;
-                }
-
-                return null;
-            }
-        }
-
-        [FlatSharpAttributeUsage(MetadataKeys.UnsafeValueStructVector, FlatSharpAttributeTarget.ValueStructField)]
         public bool? UnsafeStructVector => this.TryParseBoolean(MetadataKeys.UnsafeValueStructVector);
 
-        [FlatSharpAttributeUsage(MetadataKeys.MemoryMarshalBehavior, FlatSharpAttributeTarget.ValueStruct)]
         public MemoryMarshalBehavior? MemoryMarshalBehavior => this.TryParseEnum(MetadataKeys.MemoryMarshalBehavior, Attributes.MemoryMarshalBehavior.Default);
 
-        [FlatSharpAttributeUsage(MetadataKeys.WriteThrough, FlatSharpAttributeTarget.Struct, FlatSharpAttributeTarget.StructField)]
         public bool? WriteThrough => this.TryParseBoolean(MetadataKeys.WriteThrough);
 
-        public void Validate(FlatSharpAttributeTarget item)
+        public bool? RpcInterface => this.TryParseBoolean(MetadataKeys.RpcInterface);
+
+        public void Validate(IFlatSharpAttributeSupportTester testable)
         {
-            foreach (var prop in this.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            void RegisterError(string key)
             {
-                var attr = prop.GetCustomAttribute<FlatSharpAttributeUsageAttribute>();
-                FlatSharpInternal.Assert(attr is not null, "Missing attribute");
+                ErrorContext.Current.RegisterError($"Attribute '{key}' declared on '{testable.FullName}' is not valid on {testable.ElementType} elements.");
+            }
 
-                bool isNull = prop.GetValue(this) is null;
+            if (this.NonVirtual is not null && !testable.SupportsNonVirtual(this.NonVirtual.Value))
+            {
+                RegisterError(MetadataKeys.NonVirtualProperty);
+            }
 
-                if (!isNull && !attr.Targets.Contains(item))
-                {
-                    // Value set on an item that it wasn't allowed for.
-                    ErrorContext.Current.RegisterError($"Attribute '{attr.Key}' is not allowed on {item} members.");
-                }
+            if (this.DeserializationOption is not null && !testable.SupportsDeserializationOption(this.DeserializationOption.Value))
+            {
+                RegisterError(MetadataKeys.SerializerKind);
+            }
+
+            if (this.SortedVector is not null && !testable.SupportsSortedVector(this.SortedVector.Value))
+            {
+                RegisterError(MetadataKeys.SortedVector);
+            }
+
+            if (this.SharedString is not null && !testable.SupportsSharedString(this.SharedString.Value))
+            {
+                RegisterError(MetadataKeys.SharedString);
+            }
+
+            if (this.DefaultCtorKind is not null && !testable.SupportsDefaultCtorKindOption(this.DefaultCtorKind.Value))
+            {
+                RegisterError(MetadataKeys.DefaultConstructorKind);
+            }
+
+            if (this.SetterKind is not null && !testable.SupportsSetterKind(this.SetterKind.Value))
+            {
+                RegisterError(MetadataKeys.Setter);
+            }
+
+            if (this.ForceWrite is not null && !testable.SupportsForceWrite(this.ForceWrite.Value))
+            {
+                RegisterError(MetadataKeys.ForceWrite);
+            }
+
+            if (this.UnsafeStructVector is not null && !testable.SupportsUnsafeStructVector(this.UnsafeStructVector.Value))
+            {
+                RegisterError(MetadataKeys.UnsafeValueStructVector);
+            }
+
+            if (this.MemoryMarshalBehavior is not null && !testable.SupportsMemoryMarshal(this.MemoryMarshalBehavior.Value))
+            {
+                RegisterError(MetadataKeys.MemoryMarshalBehavior);
+            }
+
+            if (this.VectorKind is not null && !testable.SupportsVectorType(this.VectorKind.Value))
+            {
+                RegisterError(MetadataKeys.VectorKind);
+            }
+
+            if (this.WriteThrough is not null && !testable.SupportsWriteThrough(this.WriteThrough.Value))
+            {
+                RegisterError(MetadataKeys.WriteThrough);
             }
         }
 

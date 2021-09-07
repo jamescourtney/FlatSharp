@@ -36,7 +36,6 @@ namespace FlatSharpTests.Compiler
             names.Add(MetadataKeys.DefaultConstructorKind);
             names.Add(MetadataKeys.VectorKind);
             names.Add(MetadataKeys.Setter);
-            names.Add(MetadataKeys.FileIdentifier);
             names.Add(MetadataKeys.ValueStruct);
             names.Add(MetadataKeys.UnsafeValueStructVector);
             names.Add(MetadataKeys.MemoryMarshalBehavior);

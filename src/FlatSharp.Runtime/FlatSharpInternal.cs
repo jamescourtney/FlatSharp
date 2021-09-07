@@ -32,8 +32,19 @@ namespace FlatSharp
         {
             if (!condition)
             {
-                throw new InvalidOperationException($"FlatSharp Internal Error! Message = '{message}'. File = '{System.IO.Path.GetFileName(fileName)}', Member = '{memberName}:{lineNumber}'");
+                throw new FlatSharpInternalException(message, memberName, fileName, lineNumber);
             }
+        }
+    }
+
+    public class FlatSharpInternalException : Exception
+    {
+        public FlatSharpInternalException(
+            string message,
+            [CallerMemberName] string memberName = "",
+            [CallerFilePath] string fileName = "",
+            [CallerLineNumber] int lineNumber = -1) : base($"FlatSharp Internal Error! Message = '{message}'.File = '{System.IO.Path.GetFileName(fileName)}', Member = '{memberName}:{lineNumber}'")
+        {
         }
     }
 }

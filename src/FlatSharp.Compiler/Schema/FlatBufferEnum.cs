@@ -1,6 +1,24 @@
-﻿namespace FlatSharp.Compiler.Schema
+﻿/*
+ * Copyright 2021 James Courtney
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+namespace FlatSharp.Compiler.Schema
 {
     using FlatSharp.Attributes;
+    using FlatSharp.Compiler.SchemaModel;
+    using System;
     using System.Collections.Generic;
     using System.Linq;
 
@@ -38,44 +56,17 @@
         [FlatBufferItem(5)]
         public virtual IList<string>? Documentation { get; set; }
 
-        [FlatBufferItem(6)]
-        public virtual string? DeclarationFile { get; set; }
+        [FlatBufferItem(6, Required = true)]
+        public virtual string DeclarationFile { get; set; } = string.Empty;
 
-        internal void WriteCode(CodeWriter writer, CompileContext context)
+        public BaseSchemaModel ToSchemaModel(Schema schema)
         {
-            if (context.CompilePass >= CodeWritingPass.LastPass && context.RootFile != this.DeclarationFile)
+            if (EnumSchemaModel.TryCreate(schema, this, out var enumModel))
             {
-                return;
+                return enumModel;
             }
 
-            if (this.UnderlyingType.BaseType == BaseType.UType)
-            {
-                return;
-            }
-
-            var attributes = this.Attributes ?? new IndexedVector<string, KeyValue>();
-            (string ns, string name) = Helpers.ParseName(this.Name);
-
-            writer.AppendLine($"namespace {ns}");
-            using (writer.WithBlock())
-            {
-                FlatSharpInternal.Assert(this.UnderlyingType.BaseType.TryGetBuiltInTypeName(out string? underlyingType), "Failed to get underlying type");
-
-                if (attributes.TryGetValue(MetadataKeys.BitFlags, out var kvp))
-                {
-                    writer.AppendLine("[Flags]");
-                }
-
-                writer.AppendLine($"[FlatBufferEnum(typeof({underlyingType}))]");
-                writer.AppendLine($"public enum {name} : {underlyingType}");
-                using (writer.WithBlock())
-                {
-                    foreach (var item in this.Values.Select(x => x.Value).OrderBy(x => x.Value))
-                    {
-                        writer.AppendLine($"{item.Key} = {item.Value},");
-                    }
-                }
-            }
+            throw new NotImplementedException();
         }
     }
 }

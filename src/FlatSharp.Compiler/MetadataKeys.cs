@@ -74,11 +74,6 @@ namespace FlatSharp.Compiler
         public const string Setter = "fs_setter";
 
         /// <summary>
-        /// Controls the file identifier injected into the buffer when serializing. Must be precisely a 4 byte ASCII string.
-        /// </summary>
-        public const string FileIdentifier = "fs_fileId";
-
-        /// <summary>
         /// Indicates that a struct is to be generated as a value type.
         /// </summary>
         public const string ValueStruct = "fs_valueStruct";

@@ -246,7 +246,7 @@ namespace FlatSharp.Compiler
                     RedirectStandardError = true,
                     RedirectStandardOutput = true,
                     FileName = flatcPath,
-                    Arguments = $"-b --schema --bfbs-comments --bfbs-filenames \"{Path.GetDirectoryName(fbsFilePath)}\" --no-warnings -o {outputDir} {fbsFilePath}",
+                    Arguments = $"-b --schema --bfbs-comments --bfbs-builtins --bfbs-filenames \"{Path.GetDirectoryName(fbsFilePath)}\" --no-warnings -o {outputDir} {fbsFilePath}",
                 }
             };
 
@@ -287,10 +287,12 @@ namespace FlatSharp.Compiler
                     CodeWritingPass.RpcGeneration,
                 };
 
+                FlatBufferSerializer serializer = new FlatBufferSerializer(FlatBufferDeserializationOption.GreedyMutable); // immutable.
+                var schema = serializer.Parse<Schema.Schema>(bfbs);
+                var rootModel = schema.ToRootModel();
+
                 foreach (var step in steps)
                 {
-                    var schema = FlatBufferSerializer.Default.Parse<Schema.Schema>(bfbs);
-
                     var localOptions = options;
                     if (step <= CodeWritingPass.PropertyModeling)
                     {
@@ -305,7 +307,7 @@ namespace FlatSharp.Compiler
 
                     writer = new CodeWriter();
 
-                    schema.WriteCode(
+                    rootModel.WriteCode(
                         writer,
                         new CompileContext
                         {

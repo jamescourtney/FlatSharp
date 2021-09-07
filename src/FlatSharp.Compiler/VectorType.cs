@@ -19,13 +19,8 @@ namespace FlatSharp.Compiler
     /// <summary>
     /// Enumerates supported vector types.
     /// </summary>
-    internal enum VectorType
+    public enum VectorType
     {
-        /// <summary>
-        /// Not a vector.
-        /// </summary>
-        None,
-
         IList,
         IReadOnlyList,
         Array,
