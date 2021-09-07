@@ -26,25 +26,11 @@ namespace FlatSharp.Compiler.SchemaModel
     using FlatSharp.Attributes;
     using FlatSharp.TypeModel;
 
-    public class TableSchemaModel : BaseSchemaModel
+    public class TableSchemaModel : BaseReferenceTypeSchemaModel
     {
-        private readonly Dictionary<int, PropertyFieldModel> properties;
-        private readonly FlatBufferObject table;
-
-        private TableSchemaModel(Schema schema, FlatBufferObject table) : base(schema, new FlatSharpAttributes(table.Attributes))
+        private TableSchemaModel(Schema schema, FlatBufferObject table) : base(schema, table)
         {
             FlatSharpInternal.Assert(table.IsStruct == false, "Not expecting struct");
-
-            this.FullName = table.Name;
-            this.DeclaringFile = table.DeclarationFile;
-            this.properties = new Dictionary<int, PropertyFieldModel>();
-            this.table = table;
-            
-            foreach (var field in table.Fields)
-            {
-                FlatSharpInternal.Assert(PropertyFieldModel.TryCreate(this, field.Value, out PropertyFieldModel? model), "Failed to create property model");
-                this.properties[field.Value.Id] = model;
-            }
         }
 
         public static bool TryCreate(Schema schema, FlatBufferObject table, [NotNullWhen(true)] out TableSchemaModel? model)
@@ -59,18 +45,20 @@ namespace FlatSharp.Compiler.SchemaModel
             return true;
         }
 
-        public override string FullName { get; }
+        public override bool OptionalFieldsSupported => true;
 
         public override FlatBufferSchemaElementType ElementType => FlatBufferSchemaElementType.Table;
 
-        public override string DeclaringFile { get; }
+        public override bool SupportsDeserializationOption(FlatBufferDeserializationOption option) => true;
+
+        public override bool SupportsForceWrite(bool forceWriteOption) => true;
 
         protected override void OnValidate()
         {
             // TODO   
         }
 
-        protected override void OnWriteCode(CodeWriter writer, CompileContext context)
+        protected override void EmitClassDefinition(CodeWriter writer, CompileContext context)
         {
             string fileId = string.Empty;
             if (this.Schema.RootTable?.Name == this.Name && !string.IsNullOrEmpty(this.Schema.FileIdentifier))
@@ -83,86 +71,11 @@ namespace FlatSharp.Compiler.SchemaModel
             writer.AppendLine(attribute);
             writer.AppendLine("[System.Runtime.CompilerServices.CompilerGenerated]");
             writer.AppendLine($"public partial class {this.Name}");
-            using (writer.IncreaseIndent())
-            {
-                writer.AppendLine(": object");
-            }
-
-            using (writer.WithBlock())
-            {
-                this.EmitDefaultConstrutor(writer);
-                this.EmitDeserializationConstructor(writer);
-                this.EmitCopyConstructor(writer, context);
-
-                writer.AppendLine("partial void OnInitialized(FlatBufferDeserializationContext? context);");
-
-                writer.AppendLine($"protected void {TableTypeModel.OnDeserializedMethodName}({nameof(FlatBufferDeserializationContext)}? context) => this.OnInitialized(context);");
-                writer.AppendLine();
-
-                foreach (var property in this.properties)
-                {
-                    int index = property.Key;
-                    PropertyFieldModel model = property.Value;
-                    model.WriteCode(writer, index);
-                }
-            }
         }
 
-        private void EmitCopyConstructor(CodeWriter writer, CompileContext context)
+        protected override void EmitDefaultConstructorFieldInitialization(PropertyFieldModel model, CodeWriter writer, CompileContext context)
         {
-            writer.AppendLine($"public {this.Name}({this.Name} source)");
-            using (writer.WithBlock())
-            {
-                if (context.CompilePass <= CodeWritingPass.PropertyModeling)
-                {
-                    return;
-                }
-
-                foreach (var property in this.properties)
-                {
-                    string name = property.Value.Field.Name;
-                    writer.AppendLine($"this.{name} = {context.FullyQualifiedCloneMethodName}(source.{name});");
-                }
-            }
+            writer.AppendLine($"this.{model.Field.Name} = {model.GetDefaultValue()};");
         }
-
-        private void EmitDefaultConstrutor(CodeWriter writer)
-        {
-            if (this.Attributes.DefaultCtorKind != DefaultConstructorKind.None)
-            {
-                if (this.Attributes.DefaultCtorKind == DefaultConstructorKind.PublicObsolete)
-                {
-                    writer.AppendLine("[Obsolete]");
-                }
-
-                writer.AppendLine("#pragma warning disable CS8618"); // nullable
-                writer.AppendLine($"public {this.Name}()");
-                using (writer.WithBlock())
-                {
-                    writer.AppendLine("this.OnInitialized(null);");
-                }
-                writer.AppendLine("#pragma warning restore CS8618"); // nullable
-            }
-        }
-
-        private void EmitDeserializationConstructor(CodeWriter writer)
-        {
-            writer.AppendLine("#pragma warning disable CS8618"); // nullable
-            writer.AppendLine($"protected {this.Name}(FlatBufferDeserializationContext context)");
-            using (writer.WithBlock())
-            {
-                // Intentionally left empty.
-            }
-
-            writer.AppendLine("#pragma warning restore CS8618"); // nullable
-        }
-
-        public override bool SupportsDefaultCtorKindOption(DefaultConstructorKind kind) => true;
-
-        public override bool SupportsDeserializationOption(FlatBufferDeserializationOption option) => true;
-
-        public override bool SupportsForceWrite(bool forceWriteOption) => true;
-
-        public override bool SupportsNonVirtual(bool nonVirtualValue) => true;
     }
 }

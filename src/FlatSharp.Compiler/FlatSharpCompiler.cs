@@ -287,7 +287,7 @@ namespace FlatSharp.Compiler
                     CodeWritingPass.RpcGeneration,
                 };
 
-                FlatBufferSerializer serializer = new FlatBufferSerializer(FlatBufferDeserializationOption.GreedyMutable); // immutable.
+                FlatBufferSerializer serializer = new FlatBufferSerializer(FlatBufferDeserializationOption.Greedy); // immutable.
                 var schema = serializer.Parse<Schema.Schema>(bfbs);
                 var rootModel = schema.ToRootModel();
 

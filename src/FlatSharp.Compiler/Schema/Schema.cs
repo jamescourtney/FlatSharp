@@ -80,6 +80,10 @@ namespace FlatSharp.Compiler.Schema
                 {
                     model.AddElement(tableModel);
                 }
+                else if (ReferenceStructSchemaModel.TryCreate(this, obj, out var refStructModel))
+                {
+                    model.AddElement(refStructModel);
+                }
             }
 
             return model;

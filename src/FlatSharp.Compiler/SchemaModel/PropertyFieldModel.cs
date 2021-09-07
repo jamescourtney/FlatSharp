@@ -26,22 +26,23 @@ namespace FlatSharp.Compiler.SchemaModel
     public record PropertyFieldModel : IFlatSharpAttributeSupportTester
     {
         public PropertyFieldModel(
-            BaseSchemaModel parent,
+            BaseReferenceTypeSchemaModel parent,
             Field field,
+            int index,
             FlatBufferSchemaElementType elementType,
             string? customGetter,
-            FlatSharpAttributes attributes,
-            bool defaultOptional)
+            FlatSharpAttributes attributes)
         {
             this.Field = field;
             this.ElementType = elementType;
             this.Attributes = attributes;
             this.Parent = parent;
             this.CustomGetter = customGetter;
-            this.DefaultOptional = defaultOptional;
+            this.FieldName = field.Name;
+            this.Index = index;
         }
 
-        public BaseSchemaModel Parent { get; init; }
+        public BaseReferenceTypeSchemaModel Parent { get; init; }
 
         public Field Field { get; init; }
 
@@ -53,7 +54,13 @@ namespace FlatSharp.Compiler.SchemaModel
 
         public bool DefaultOptional { get; init; }
 
-        public static bool TryCreate(BaseSchemaModel parent, Field field, [NotNullWhen(true)] out PropertyFieldModel? model)
+        public string FieldName { get; init; }
+
+        public int Index { get; init; }
+
+        public bool HasDefaultValue => this.Field.DefaultDouble != 0 || this.Field.DefaultInteger != 0;
+
+        public static bool TryCreate(BaseReferenceTypeSchemaModel parent, Field field, [NotNullWhen(true)] out PropertyFieldModel? model)
         {
             model = null;
             if (parent.ElementType != FlatBufferSchemaElementType.Table && parent.ElementType != FlatBufferSchemaElementType.Struct)
@@ -67,19 +74,32 @@ namespace FlatSharp.Compiler.SchemaModel
                 return false;
             }
 
+            if (field.Type.BaseType == BaseType.UType || field.Type.ElementType == BaseType.UType)
+            {
+                return false;
+            }
+
+            int index = field.Id;
+            if (field.Type.ElementType == BaseType.Union || field.Type.BaseType == BaseType.Union)
+            {
+                // Unions and Vectors of unions come as two entries. The first is a "UType" that we skip. The second
+                // is the "union" that we keep. However, we need to adjust the index down by one to account for this.
+                index--;
+            }
+
             var attributes = new FlatSharpAttributes(field.Attributes);
 
             var opts = parent.ElementType == FlatBufferSchemaElementType.Table
-                                           ? (FlatBufferSchemaElementType.TableField, true)
-                                           : (FlatBufferSchemaElementType.StructField, false);
+                                           ? (FlatBufferSchemaElementType.TableField)
+                                           : (FlatBufferSchemaElementType.StructField);
 
-            model = new PropertyFieldModel(parent, field, opts.Item1, string.Empty, attributes, opts.Item2);
+            model = new PropertyFieldModel(parent, field, index, opts, string.Empty, attributes);
             return true;
         }
 
-        public void WriteCode(CodeWriter writer, int index)
+        public void WriteCode(CodeWriter writer)
         {
-            writer.AppendLine(this.GetAttribute(index));
+            writer.AppendLine(this.GetAttribute());
 
             string setter = this.Attributes.SetterKind switch
             {
@@ -100,10 +120,37 @@ namespace FlatSharp.Compiler.SchemaModel
             };
 
             string typeName = this.GetTypeName();
-            writer.AppendLine($"public {@virtual}{typeName} {this.Field.Name} {{ get; {setter} }}");
+            writer.AppendLine($"public {@virtual}{typeName} {this.FieldName} {{ get; {setter} }}");
         }
 
-        private string GetAttribute(int index)
+        public string GetDefaultValue()
+        {
+            if (!this.HasDefaultValue)
+            {
+                return "default!";
+            }
+
+            string typeName = this.GetSimpleTypeName();
+
+            if (this.Field.DefaultDouble != 0)
+            {
+                return $"({typeName}){this.Field.DefaultDouble:G17}d";
+            }
+            else
+            {
+                FlatSharpInternal.Assert(this.Field.DefaultInteger != 0, "Expected default integer");
+
+                string defaultInt = this.Field.DefaultInteger.ToString();
+                if (this.Field.Type.BaseType == BaseType.ULong)
+                {
+                    defaultInt = $"{(ulong)this.Field.DefaultInteger}ul";
+                }
+
+                return $"({typeName}){defaultInt}";
+            }
+        }
+
+        private string GetAttribute()
         {
             string isKey = string.Empty;
             string sortedVector = string.Empty;
@@ -129,23 +176,9 @@ namespace FlatSharp.Compiler.SchemaModel
                 isDeprecated = $", {nameof(FlatBufferItemAttribute.Deprecated)} = true";
             }
 
-            if (this.Field.DefaultDouble != 0)
+            if (this.HasDefaultValue)
             {
-                FlatSharpInternal.Assert(this.Field.Type.BaseType.TryGetBuiltInTypeName(out string? rawTypeName),  "Couldn't get type name");
-                defaultValue = $", {nameof(FlatBufferItemAttribute.DefaultValue)} = ({rawTypeName}){this.Field.DefaultDouble:G17}d";
-            }
-            else if (this.Field.DefaultInteger != 0)
-            {
-                FlatSharpInternal.Assert(this.Field.Type.BaseType.TryGetBuiltInTypeName(out string? rawTypeName), "Couldn't get type name");
-
-                string suffix = "L";
-                if (this.Field.Type.BaseType == BaseType.ULong)
-                {
-                    // special
-                    suffix = "ul";
-                }
-
-                defaultValue = $", {nameof(FlatBufferItemAttribute.DefaultValue)} = ({rawTypeName}){this.Field.DefaultInteger}{suffix}";
+                defaultValue = $", {nameof(FlatBufferItemAttribute.DefaultValue)} = {this.GetDefaultValue()}";
             }
 
             if (this.Field.Required)
@@ -166,10 +199,22 @@ namespace FlatSharp.Compiler.SchemaModel
                 writeThrough = $", {nameof(FlatBufferItemAttribute.WriteThrough)} = true";
             }
 
-            return $"[{nameof(FlatBufferItemAttribute)}({index}{defaultValue}{isDeprecated}{sortedVector}{isKey}{forceWrite}{writeThrough}{required})]{customAccessor}";
+            return $"[{nameof(FlatBufferItemAttribute)}({this.Index}{defaultValue}{isDeprecated}{sortedVector}{isKey}{forceWrite}{writeThrough}{required})]{customAccessor}";
         }
 
-        private string GetTypeName()
+        public string GetTypeName()
+        {
+            string typeName = this.GetSimpleTypeName();
+
+            if (this.Parent.OptionalFieldsSupported && this.Field.Optional)
+            {
+                typeName += "?";
+            }
+
+            return typeName;
+        }
+
+        private string GetSimpleTypeName()
         {
             FlatBufferType type = this.Field.Type;
 
@@ -181,7 +226,7 @@ namespace FlatSharp.Compiler.SchemaModel
                 baseType = type.ElementType;
             }
 
-            string typeName = string.Empty;
+            string typeName;
             if (type.Index == -1)
             {
                 if (baseType == BaseType.String && this.Attributes.SharedString == true)
@@ -206,29 +251,10 @@ namespace FlatSharp.Compiler.SchemaModel
                 typeName = this.Parent.Schema.Enums[type.Index].Name;
             }
 
-            bool optional = false;
-            if (this.Field.Required)
-            {
-                optional = false;
-            }
-            else if (this.Field.Optional)
-            {
-                optional = true;
-            }
-            else if (this.Field.Type.BaseType.IsScalar())
-            {
-                optional = false;
-            }
-
             if (isVector)
             {
                 this.TryGetElementKeyType(out string? keyType);
                 typeName = this.GetVectorTypeName(typeName, keyType);
-            }
-
-            if (optional)
-            {
-                typeName += "?";
             }
 
             return typeName;
@@ -274,7 +300,7 @@ namespace FlatSharp.Compiler.SchemaModel
 
         FlatBufferSchemaElementType IFlatSharpAttributeSupportTester.ElementType => this.ElementType;
 
-        string IFlatSharpAttributeSupportTester.FullName => $"{this.Parent.FullName}.{this.Field.Name}";
+        string IFlatSharpAttributeSupportTester.FullName => $"{this.Parent.FullName}.{this.FieldName}";
 
         bool IFlatSharpAttributeSupportTester.SupportsNonVirtual(bool nonVirtualValue) => true;
 

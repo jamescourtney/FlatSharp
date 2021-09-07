@@ -30,7 +30,7 @@ namespace FlatSharp.Compiler.SchemaModel
         private readonly Dictionary<string, long> nameValueMap;
         private readonly string underlyingType;
 
-        private EnumSchemaModel(Schema schema, FlatBufferEnum @enum) : base(schema, new FlatSharpAttributes(@enum.Attributes))
+        private EnumSchemaModel(Schema schema, FlatBufferEnum @enum) : base(schema, @enum.Name, new FlatSharpAttributes(@enum.Attributes))
         {
             FlatSharpInternal.Assert(!@enum.IsUnion, "Not expecting union");
             FlatSharpInternal.Assert(@enum.UnderlyingType.BaseType.IsInteger(), "Expected scalar base type");
@@ -38,7 +38,6 @@ namespace FlatSharp.Compiler.SchemaModel
 
             this.isFlags = @enum.Attributes?.ContainsKey(MetadataKeys.BitFlags) == true;
             this.nameValueMap = @enum.Values.ToDictionary(x => x.Value.Key, x => x.Value.Value);
-            this.FullName = @enum.Name;
             this.DeclaringFile = @enum.DeclarationFile;
         }
 
@@ -53,8 +52,6 @@ namespace FlatSharp.Compiler.SchemaModel
             model = new EnumSchemaModel(schema, @enum);
             return true;
         }
-
-        public override string FullName { get; }
 
         public override FlatBufferSchemaElementType ElementType => FlatBufferSchemaElementType.Enum;
 

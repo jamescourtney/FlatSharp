@@ -24,10 +24,16 @@ namespace FlatSharp.Compiler.SchemaModel
 
     public abstract class BaseSchemaModel : IFlatSharpAttributeSupportTester
     {
-        protected BaseSchemaModel(Schema.Schema schema, FlatSharpAttributes attributes)
+        protected BaseSchemaModel(Schema.Schema schema, string name, FlatSharpAttributes attributes)
         {
             this.Attributes = attributes;
             this.Schema = schema;
+            this.FullName = name;
+
+            (string ns, string typeName) = Helpers.ParseName(name);
+
+            this.Namespace = ns;
+            this.Name = typeName;
         }
 
         public Schema.Schema Schema { get; }
@@ -63,11 +69,11 @@ namespace FlatSharp.Compiler.SchemaModel
         {
         }
 
-        public string Namespace => this.FullName.Substring(0, this.FullName.LastIndexOf('.'));
+        public string Namespace { get; }
 
-        public string Name => this.FullName.Substring(this.FullName.LastIndexOf('.') + 1);
+        public string Name { get; }
 
-        public abstract string FullName { get; }
+        public string FullName { get; }
 
         public abstract string DeclaringFile { get; }
 
