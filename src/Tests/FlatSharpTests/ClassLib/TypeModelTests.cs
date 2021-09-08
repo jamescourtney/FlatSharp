@@ -158,6 +158,7 @@ namespace FlatSharpTests
             RuntimeTypeModel.CreateFrom(typeof(Table_ForceWrite<float>));
             RuntimeTypeModel.CreateFrom(typeof(Table_ForceWrite<double>));
             RuntimeTypeModel.CreateFrom(typeof(Table_ForceWrite<TaggedEnum>));
+            RuntimeTypeModel.CreateFrom(typeof(Table_ForceWrite<FlatBufferUnion<string>>));
 
             // This is a special case and is allowed since memory is a struct
             // and is therefore non-null. It will be written as a 0 byte vector.
@@ -181,7 +182,6 @@ namespace FlatSharpTests
             ValidateError<GenericStruct<int>>();
             ValidateError<int[]>();
             ValidateError<FlatBufferUnion<string>?>();
-            ValidateError<FlatBufferUnion<string>>();
             ValidateError<Table_ForceWrite<int>>();
             ValidateError<Memory<byte>?>();
         }

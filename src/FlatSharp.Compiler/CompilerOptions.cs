@@ -28,5 +28,8 @@ namespace FlatSharp.Compiler
 
         [Option("nullable-warnings", Default = false)]
         public bool? NullableWarnings { get; set; }
+
+        [Option("flatc-path", Hidden = true)]
+        public string? FlatcPath { get; set; }
     }
 }

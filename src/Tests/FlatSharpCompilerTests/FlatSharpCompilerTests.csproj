@@ -2,8 +2,7 @@
   <Import Project="..\..\common.props" />
 
   <PropertyGroup>
-    <TargetFrameworks Condition=" '$(AppVeyorBuild)' != 'true' ">netcoreapp2.1;net47;netcoreapp3.1;net472;net5.0</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(AppVeyorBuild)' == 'true' ">netcoreapp2.1;net47;netcoreapp3.1;net5.0</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.1;netcoreapp3.1;net5.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <PlatformTarget>x64</PlatformTarget>
     <AssemblyName>FlatSharpCompilerTests</AssemblyName>
@@ -11,12 +10,9 @@
     <DelaySign>false</DelaySign>
     <SignAssembly>true</SignAssembly>
     <Nullable>annotations</Nullable>
+    <DeploymentEnabled>false</DeploymentEnabled>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Include="..\FlatSharpTests\ModuleInitializer.cs" Link="ModuleInitializer.cs" />
-  </ItemGroup>
-
+  
   <ItemGroup>
     <PackageReference Include="Grpc.Core" Version="2.27.0" />
     <PackageReference Include="Grpc.Core.Api" Version="2.35.0" />

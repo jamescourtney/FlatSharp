@@ -13,7 +13,6 @@
     <license type="expression">Apache-2.0</license>
     <developmentDependency>true</developmentDependency>
      <dependencies>
-      <group targetFramework=".NETFramework4.7" />
       <group targetFramework=".NETCoreApp2.1" />
       <group targetFramework="net5.0" />
     </dependencies>
@@ -21,15 +20,12 @@
   <files>
     <file src="_._" target="lib/netcoreapp2.1/" />
     <file src="_._" target="lib/net5.0/" />
-    <file src="_._" target="lib/net47/" />
     
     <file src="FlatSharp.Compiler.targets" target="build/netcoreapp2.1/FlatSharp.Compiler.targets" />
-    <file src="FlatSharp.Compiler.targets" target="build/net47/FlatSharp.Compiler.targets" />
     <file src="FlatSharp.Compiler.targets" target="build/net5.0/FlatSharp.Compiler.targets" />
     
     <file src="FlatSharp.Compiler.targets" target="tools/" />
     
-    <file src="$OutDir$\net47\**" target="tools/net47" />
     <file src="$OutDir$\netcoreapp2.1\**" target="tools/netcoreapp2.1" />
     <file src="$OutDir$\net5.0\**" target="tools/net5.0" />
   </files>

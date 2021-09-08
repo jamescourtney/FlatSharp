@@ -89,7 +89,7 @@ namespace FlatSharp.Compiler
                         {
                             string inputHash = AssemblyVersion;
 
-                            byte[] bfbs = GetBfbs(options.InputFile);
+                            byte[] bfbs = GetBfbs(options);
 
                             using (var hash = SHA256Managed.Create())
                             {
@@ -198,7 +198,7 @@ namespace FlatSharp.Compiler
                     File.WriteAllText(fbsFile, fbsSchema);
                     options.InputFile = fbsFile;
 
-                    byte[] bfbs = GetBfbs(fbsFile);
+                    byte[] bfbs = GetBfbs(options);
                     CreateCSharp(bfbs, "hash", options, out string cSharp);
 
                     var (assembly, formattedText, _) = RoslynSerializerGenerator.CompileAssembly(cSharp, true, additionalRefs);
@@ -227,40 +227,51 @@ namespace FlatSharp.Compiler
             return asm;
         }
 
-        internal static byte[] GetBfbs(string fbsFilePath)
+        internal static byte[] GetBfbs(CompilerOptions options)
         {
-            string os;
-            string name;
+            string flatcPath;
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (options.FlatcPath is null)
             {
-                os = "windows";
-                name = "flatc.exe";
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                os = "macos";
-                name = "flatc";
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                os = "linux";
-                name = "flatc";
+                string os;
+                string name;
+
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    os = "windows";
+                    name = "flatc.exe";
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    os = "macos";
+                    name = "flatc";
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    os = "linux";
+                    name = "flatc";
+                }
+                else
+                {
+                    throw new InvalidOperationException("FlatSharp compiler is not supported on this operating system.");
+                }
+
+                string currentProcess = typeof(FlatSharpCompiler).Assembly.Location;
+                string currentDirectory = Path.GetDirectoryName(currentProcess)!;
+                flatcPath = Path.Combine(currentDirectory, "flatc", os, name);
             }
             else
             {
-                throw new InvalidOperationException("FlatSharp compiler is not supported on this operating system.");
+                flatcPath = options.FlatcPath;
             }
 
             string temp = Path.GetTempPath();
             string dirName = $"flatsharpcompiler_temp_{Guid.NewGuid():n}";
             string outputDir = Path.Combine(temp, dirName);
+
             Directory.CreateDirectory(outputDir);
+            FileInfo info = new FileInfo(options.InputFile);
 
-            string currentProcess = typeof(FlatSharpCompiler).Assembly.Location;
-            string currentDirectory = Path.GetDirectoryName(currentProcess)!;
-
-            string flatcPath = Path.Combine(currentDirectory, "flatc", os, name);
             System.Diagnostics.Process p = new System.Diagnostics.Process
             {
                 StartInfo = new System.Diagnostics.ProcessStartInfo
@@ -268,13 +279,16 @@ namespace FlatSharp.Compiler
                     CreateNoWindow = true,
                     RedirectStandardError = true,
                     RedirectStandardOutput = true,
+                    UseShellExecute = false,
                     FileName = flatcPath,
-                    Arguments = $"-b --schema --bfbs-comments --bfbs-builtins --bfbs-filenames \"{Path.GetDirectoryName(fbsFilePath)}\" --no-warnings -o {outputDir} {fbsFilePath}",
+                    Arguments = $"-b --schema --bfbs-comments --bfbs-builtins --bfbs-filenames \"{info.DirectoryName}\" --no-warnings -o \"{outputDir}\" \"{info.FullName}\"",
                 }
             };
 
             try
             {
+                Console.WriteLine("Arguments: " + p.StartInfo.Arguments);
+
                 p.Start();
                 string stdout = p.StandardOutput.ReadToEnd();
                 string stderr = p.StandardError.ReadToEnd();
