@@ -1,4 +1,8 @@
 ﻿
+attribute "fs_serializer";
+attribute "fs_sharedString";
+attribute "fs_rpcInterface";
+
 namespace Other.Namespace.Foobar;
 table Blah (fs_serializer) { Value : int; }
 
@@ -9,7 +13,7 @@ table StringMessage (fs_serializer) {
 }
 
 table MultiStringMessage (fs_serializer:"VectorCacheMutable") {
-    Value : [string] (fs_sharedString);
+    Value : [string] (fs_sharedString, required);
 }
 
 rpc_service EchoService (fs_rpcInterface) {
