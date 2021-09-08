@@ -88,6 +88,10 @@ namespace FlatSharp.Compiler.Schema
                 {
                     model.AddElement(refStructModel);
                 }
+                else if (ValueStructSchemaModel.TryCreate(this, obj, out var valueStructModel))
+                {
+                    model.AddElement(valueStructModel);
+                }
             }
 
             return model;

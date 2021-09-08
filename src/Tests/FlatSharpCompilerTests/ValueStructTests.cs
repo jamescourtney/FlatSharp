@@ -32,6 +32,7 @@ namespace FlatSharpTests.Compiler
         public void ValueStruct_BasicDefinition()
         {
             string schema = $@"
+                {MetadataHelpers.AllAttributes}
                 namespace ValueStructTests;
                 table Table ({MetadataKeys.SerializerKind}:""GreedyMutable"") {{ Struct:Struct; }}
                 struct Struct ({MetadataKeys.ValueStruct}) {{ foo:int; }} 
@@ -137,6 +138,7 @@ namespace FlatSharpTests.Compiler
             }
 
             string schema = $@"
+                {MetadataHelpers.AllAttributes}
                 namespace ValueStructTests;
                 table Table {{ A : StructA; }}
                 struct StructA ({MetadataKeys.ValueStruct}{attribute}) {{ 
