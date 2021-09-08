@@ -46,5 +46,7 @@ namespace FlatSharp.Compiler
         VectorType? VectorKind { get; }
 
         bool? WriteThrough { get; }
+
+        RpcStreamingType? StreamingType { get; }
     }
 }

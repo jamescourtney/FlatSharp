@@ -136,6 +136,11 @@ namespace FlatSharp.Compiler
         /// </summary>
         public const string Required = "required";
 
+        /// <summary>
+        /// gRPC streaming kinds.
+        /// </summary>
+        public const string Streaming = "streaming";
+
         public static IEnumerable<string> UnsupportedStandardAttributes => new[]
         {
             "force_align", "flexbuffer", "hash", "original_order"

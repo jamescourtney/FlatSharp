@@ -58,6 +58,8 @@ namespace FlatSharp.Compiler
 
         public bool? RpcInterface => this.TryParseBoolean(MetadataKeys.RpcInterface);
 
+        public RpcStreamingType? StreamingType => this.TryParseEnum(MetadataKeys.Streaming, RpcStreamingType.None);
+
         public void Validate(IFlatSharpAttributeSupportTester testable)
         {
             void RegisterError(string key)

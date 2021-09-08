@@ -32,6 +32,7 @@ namespace FlatSharp.Compiler.SchemaModel
         ValueStructField = 9,
         StructVector = 10,
         ValueStructVector = 11,
+        RpcCall = 12,
     }
 
     public interface IFlatSharpAttributeSupportTester
@@ -62,7 +63,9 @@ namespace FlatSharp.Compiler.SchemaModel
 
         bool SupportsWriteThrough(bool writeThroughOption);
 
-        bool SupportsRpcInterface(bool rpcInterface);
+        bool SupportsRpcInterface(bool supportsRpcInterface);
+
+        bool SupportsStreamingType(RpcStreamingType streamingType);
     }
 
     public static class IFlatSharpAttributeSupportTesterExtensions
@@ -127,6 +130,16 @@ namespace FlatSharp.Compiler.SchemaModel
             if (attrs.WriteThrough is not null && !testable.SupportsWriteThrough(attrs.WriteThrough.Value))
             {
                 RegisterError(MetadataKeys.WriteThrough);
+            }
+
+            if (attrs.RpcInterface is not null && !testable.SupportsRpcInterface(attrs.RpcInterface.Value))
+            {
+                RegisterError(MetadataKeys.RpcInterface);
+            }
+
+            if (attrs.StreamingType is not null && !testable.SupportsStreamingType(attrs.StreamingType.Value))
+            {
+                RegisterError(MetadataKeys.Streaming);
             }
         }
     }

@@ -37,7 +37,7 @@ table Service {
 
         // Must be a table.
         [FlatBufferItem(1)]
-        public virtual IIndexedVector<string, RpcCall>? Calls { get; set; }
+        public virtual IList<RpcCall>? Calls { get; set; }
 
         [FlatBufferItem(2)]
         public virtual IIndexedVector<string, KeyValue>? Attributes { get; set; }
@@ -45,7 +45,7 @@ table Service {
         [FlatBufferItem(3)]
         public virtual IList<string>? Documentation { get; set; }
 
-        [FlatBufferItem(4)]
-        public virtual string? DeclaringFile { get; set; }
+        [FlatBufferItem(4, Required = true)]
+        public virtual string DeclaringFile { get; set; } = string.Empty;
     }
 }
