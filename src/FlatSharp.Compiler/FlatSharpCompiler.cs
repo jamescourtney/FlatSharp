@@ -173,7 +173,7 @@ namespace FlatSharp.Compiler
         }
 
         // Test hook
-        internal static Assembly CompileAndLoadAssembly(
+        internal static (Assembly, string) CompileAndLoadAssemblyWithCode(
             string fbsSchema,
             CompilerOptions options,
             IEnumerable<Assembly>? additionalReferences = null)
@@ -194,7 +194,7 @@ namespace FlatSharp.Compiler
 
                     var (assembly, formattedText, _) = RoslynSerializerGenerator.CompileAssembly(cSharp, true, additionalRefs);
                     string debugText = formattedText();
-                    return assembly;
+                    return (assembly, cSharp);
                 }
                 finally
                 {
@@ -202,6 +202,20 @@ namespace FlatSharp.Compiler
                     File.Delete(fbsFile);
                 }
             }
+        }
+
+        // Test hook
+        internal static Assembly CompileAndLoadAssembly(
+            string fbsSchema,
+            CompilerOptions options,
+            IEnumerable<Assembly>? additionalReferences = null)
+        {
+            (Assembly asm, _) = CompileAndLoadAssemblyWithCode(
+                fbsSchema,
+                options,
+                additionalReferences);
+
+            return asm;
         }
 
         internal static byte[] GetBfbs(string fbsFilePath)

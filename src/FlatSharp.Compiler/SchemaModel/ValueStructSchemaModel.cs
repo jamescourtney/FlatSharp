@@ -129,6 +129,58 @@ namespace FlatSharp.Compiler.SchemaModel
                     writer.AppendLine($"{field.visibility} {field.type} {field.name};");
                     writer.AppendLine();
                 }
+
+                foreach (var sv in this.structVectors)
+                {
+                    writer.AppendLine($"public int {sv.field.Name}_Length => {sv.field.Type.FixedLength};");
+                    writer.AppendLine();
+                    writer.AppendLine($"public static ref {sv.type} {sv.field.Name}_Item(ref {this.Name} item, int index)");
+                    using (writer.WithBlock())
+                    {
+                        var fieldAttrs = new FlatSharpAttributes(sv.field.Attributes);
+                        if (fieldAttrs.UnsafeStructVector == true)
+                        {
+                            writer.AppendLine($"if (unchecked((uint)index) >= {sv.field.Type.FixedLength})");
+                            using (writer.WithBlock())
+                            {
+                                writer.AppendLine("throw new IndexOutOfRangeException();");
+                            }
+
+                            writer.AppendLine($"return ref System.Runtime.CompilerServices.Unsafe.Add(ref item.{sv.items[0]}, index);");
+                        }
+                        else
+                        {
+                            writer.AppendLine("switch (index)");
+                            using (writer.WithBlock())
+                            {
+                                for (int i = 0; i < sv.items.Count; ++i)
+                                {
+                                    var item = sv.items[i];
+                                    writer.AppendLine($"case {i}: return ref item.{item};");
+                                }
+
+                                writer.AppendLine("default: throw new IndexOutOfRangeException();");
+                            }
+                        }
+                    }
+                }
+            }
+
+            // extensions class.
+            if (this.structVectors.Any())
+            {
+                writer.AppendLine($"public static class {this.Name}__FlatSharpExtensions");
+                using (writer.WithBlock())
+                {
+                    foreach (var sv in this.structVectors)
+                    {
+                        writer.AppendLine($"public static ref {sv.type} {sv.field.Name}(this ref {this.Name} item, int index)");
+                        using (writer.WithBlock())
+                        {
+                            writer.AppendLine($"return ref {this.Name}.{sv.field.Name}_Item(ref item, index);");
+                        }
+                    }
+                }
             }
         }
 

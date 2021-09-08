@@ -98,6 +98,7 @@ namespace FlatSharpTests.Compiler
         public void ValueStruct_Vectors()
         {
             string schema = $@"
+                {MetadataHelpers.AllAttributes}
                 namespace ValueStructTests;
                 struct StructA ({MetadataKeys.ValueStruct}) {{ 
                     Safe : [int : 12];
@@ -106,8 +107,9 @@ namespace FlatSharpTests.Compiler
                     NotSafe : [int : 12] ({MetadataKeys.UnsafeValueStructVector});
                 }}";
 
-            string csharp = string.Empty;
-            Assert.True(false);
+            (Assembly asm, string csharp) = FlatSharpCompiler.CompileAndLoadAssemblyWithCode(
+                schema,
+                new());
 
             Assert.Contains("throw new IndexOutOfRangeException()", csharp);
 
@@ -115,11 +117,11 @@ namespace FlatSharpTests.Compiler
             // Syntax for unsafe struct vectors is an indexed unsafe field reference access.
 
             // Todo: is there a better way to test this? Attribute? Roslyn? Something else?
-            Assert.Contains("case 9: return ref item.__flatsharp_Safe_9", csharp);
-            Assert.DoesNotContain("case 9: return ref item.__flatsharp_NotSafe_9", csharp);
+            Assert.Contains("case 9: return ref item.__flatsharp__Safe_9", csharp);
+            Assert.DoesNotContain("case 9: return ref item.__flatsharp__NotSafe_9", csharp);
 
-            Assert.DoesNotContain("return ref global::System.Runtime.CompilerServices.Unsafe.Add(ref item.__flatsharp_Safe_0, index)", csharp);
-            Assert.Contains("return ref global::System.Runtime.CompilerServices.Unsafe.Add(ref item.__flatsharp_NotSafe_0, index)", csharp);
+            Assert.DoesNotContain("return ref System.Runtime.CompilerServices.Unsafe.Add(ref item.__flatsharp__Safe_0, index)", csharp);
+            Assert.Contains("return ref System.Runtime.CompilerServices.Unsafe.Add(ref item.__flatsharp__NotSafe_0, index)", csharp);
         }
 
         [Theory]
