@@ -23,7 +23,7 @@ namespace FlatSharp.Compiler.SchemaModel
     using FlatSharp.Attributes;
     using System.Diagnostics.CodeAnalysis;
 
-    public record PropertyFieldModel : IFlatSharpAttributeSupportTester
+    public record PropertyFieldModel
     {
         public PropertyFieldModel(
             BaseReferenceTypeSchemaModel parent,
@@ -41,7 +41,16 @@ namespace FlatSharp.Compiler.SchemaModel
             this.FieldName = field.Name;
             this.Index = index;
 
-            this.ValidateAttributes(this.Attributes);
+            new FlatSharpAttributeValidator(elementType, $"{this.Parent.FullName}.{this.FieldName}")
+            {
+                NonVirtualValidator = _ => AttributeValidationResult.Valid,
+                VectorTypeValidator = _ => this.ValidWhenParentIs<TableSchemaModel>(),
+                SortedVectorValidator = _ => this.ValidWhenParentIs<TableSchemaModel>(),
+                SharedStringValidator = _ => this.ValidWhenParentIs<TableSchemaModel>(),
+                SetterKindValidator = _ => AttributeValidationResult.Valid,
+                ForceWriteValidator = _ => this.ValidWhenParentIs<TableSchemaModel>(),
+                WriteThroughValidator = _ => this.ValidWhenParentIs<ReferenceStructSchemaModel>(),
+            }.Validate(this.Attributes);
         }
 
         public bool ProtectedGetter { get; init; }
@@ -280,44 +289,14 @@ namespace FlatSharp.Compiler.SchemaModel
             };
         }
 
-        FlatBufferSchemaElementType IFlatSharpAttributeSupportTester.ElementType => this.ElementType;
-
-        string IFlatSharpAttributeSupportTester.FullName => $"{this.Parent.FullName}.{this.FieldName}";
-
-        SupportTestResult IFlatSharpAttributeSupportTester.SupportsNonVirtual(bool nonVirtualValue) => SupportTestResult.Valid;
-
-        SupportTestResult IFlatSharpAttributeSupportTester.SupportsVectorType(VectorType vectorType) => this.ValidWhenParentIs<TableSchemaModel>();
-
-        SupportTestResult IFlatSharpAttributeSupportTester.SupportsDeserializationOption(FlatBufferDeserializationOption option) => SupportTestResult.NeverValid;
-
-        SupportTestResult IFlatSharpAttributeSupportTester.SupportsSortedVector(bool sortedVectorOption) => this.ValidWhenParentIs<TableSchemaModel>();
-
-        SupportTestResult IFlatSharpAttributeSupportTester.SupportsSharedString(bool sharedStringOption) => this.ValidWhenParentIs<TableSchemaModel>();
-
-        SupportTestResult IFlatSharpAttributeSupportTester.SupportsDefaultCtorKindOption(DefaultConstructorKind kind) => SupportTestResult.NeverValid;
-
-        SupportTestResult IFlatSharpAttributeSupportTester.SupportsSetterKind(SetterKind setterKind) => SupportTestResult.Valid;
-
-        SupportTestResult IFlatSharpAttributeSupportTester.SupportsForceWrite(bool forceWriteOption) => this.ValidWhenParentIs<TableSchemaModel>();
-
-        SupportTestResult IFlatSharpAttributeSupportTester.SupportsUnsafeStructVector(bool unsafeStructVector) => SupportTestResult.NeverValid;
-
-        SupportTestResult IFlatSharpAttributeSupportTester.SupportsMemoryMarshal(MemoryMarshalBehavior option) => SupportTestResult.NeverValid;
-
-        SupportTestResult IFlatSharpAttributeSupportTester.SupportsWriteThrough(bool writeThroughOption) => this.ValidWhenParentIs<ReferenceStructSchemaModel>();
-
-        SupportTestResult IFlatSharpAttributeSupportTester.SupportsRpcInterface(bool rpcInterface) => SupportTestResult.NeverValid;
-
-        SupportTestResult IFlatSharpAttributeSupportTester.SupportsStreamingType(RpcStreamingType streamingType) => SupportTestResult.NeverValid;
-
-        private SupportTestResult ValidWhenParentIs<T>()
+        private AttributeValidationResult ValidWhenParentIs<T>()
         {
             if (this.Parent is T)
             {
-                return SupportTestResult.Valid;
+                return AttributeValidationResult.Valid;
             }
 
-            return SupportTestResult.NeverValid;
+            return AttributeValidationResult.NeverValid;
         }
     }
 }

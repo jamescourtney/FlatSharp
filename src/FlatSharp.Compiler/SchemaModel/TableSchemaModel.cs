@@ -33,6 +33,10 @@ namespace FlatSharp.Compiler.SchemaModel
         private TableSchemaModel(Schema schema, FlatBufferObject table) : base(schema, table)
         {
             FlatSharpInternal.Assert(table.IsStruct == false, "Not expecting struct");
+
+            this.AttributeValidator.DeserializationOptionValidator = _ => AttributeValidationResult.Valid;
+            this.AttributeValidator.DefaultConstructorValidator = _ => AttributeValidationResult.Valid;
+            this.AttributeValidator.ForceWriteValidator = _ => AttributeValidationResult.Valid;
         }
 
         public static bool TryCreate(Schema schema, FlatBufferObject table, [NotNullWhen(true)] out TableSchemaModel? model)
@@ -51,12 +55,6 @@ namespace FlatSharp.Compiler.SchemaModel
 
         public override FlatBufferSchemaElementType ElementType => FlatBufferSchemaElementType.Table;
 
-        public override SupportTestResult SupportsDeserializationOption(FlatBufferDeserializationOption option) => SupportTestResult.Valid;
-
-        public override SupportTestResult SupportsDefaultCtorKindOption(DefaultConstructorKind kind) => SupportTestResult.Valid;
-
-        public override SupportTestResult SupportsForceWrite(bool forceWriteOption) => SupportTestResult.Valid;
-
         protected override void OnValidate()
         {
             // TODO   
@@ -64,7 +62,7 @@ namespace FlatSharp.Compiler.SchemaModel
 
         protected override void EmitExtraData(CodeWriter writer, CompileContext context)
         {
-            if (this.Attributes.DeserializationOption is not null && context.CompilePass >= CodeWritingPass.SerializerGeneration)
+            if (this.Attributes.DeserializationOption is not null && context.CompilePass >= CodeWritingPass.SerializerAndRpcGeneration)
             {
                 // generate the serializer.
                 string serializer = this.GenerateSerializerForType(
@@ -102,7 +100,7 @@ namespace FlatSharp.Compiler.SchemaModel
             using (writer.IncreaseIndent())
             {
                 writer.AppendLine(": object");
-                if (this.Attributes.DeserializationOption is not null && context.CompilePass >= CodeWritingPass.SerializerGeneration)
+                if (this.Attributes.DeserializationOption is not null && context.CompilePass >= CodeWritingPass.SerializerAndRpcGeneration)
                 {
                     writer.AppendLine($", {nameof(IFlatBufferSerializable)}<{this.FullName}>");
                 }

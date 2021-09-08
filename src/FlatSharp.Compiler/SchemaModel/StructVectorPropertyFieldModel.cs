@@ -24,7 +24,7 @@ namespace FlatSharp.Compiler.SchemaModel
     using System.Diagnostics.CodeAnalysis;
     using System.Collections.Generic;
 
-    public record StructVectorPropertyFieldModel : IFlatSharpAttributeSupportTester
+    public record StructVectorPropertyFieldModel
     {
         public StructVectorPropertyFieldModel(
             BaseReferenceTypeSchemaModel parent,
@@ -67,6 +67,12 @@ namespace FlatSharp.Compiler.SchemaModel
             }
 
             this.Properties = propertyModels;
+
+            new FlatSharpAttributeValidator(FlatBufferSchemaElementType.StructVector, $"{this.Parent.FullName}.{this.FieldName}")
+            {
+                NonVirtualValidator = _ => AttributeValidationResult.Valid,
+                SetterKindValidator = k => k == SetterKind.Public ? AttributeValidationResult.Valid : AttributeValidationResult.ValueInvalid,
+            }.Validate(this.Attributes);
         }
 
         public BaseReferenceTypeSchemaModel Parent { get; init; }
@@ -207,35 +213,5 @@ namespace FlatSharp.Compiler.SchemaModel
                 }
             }
         }
-
-        FlatBufferSchemaElementType IFlatSharpAttributeSupportTester.ElementType => FlatBufferSchemaElementType.StructVector;
-
-        string IFlatSharpAttributeSupportTester.FullName => $"{this.Parent.FullName}.{this.FieldName}";
-
-        SupportTestResult IFlatSharpAttributeSupportTester.SupportsNonVirtual(bool nonVirtualValue) => SupportTestResult.Valid;
-
-        SupportTestResult IFlatSharpAttributeSupportTester.SupportsVectorType(VectorType vectorType) => SupportTestResult.NeverValid;
-
-        SupportTestResult IFlatSharpAttributeSupportTester.SupportsDeserializationOption(FlatBufferDeserializationOption option) => SupportTestResult.NeverValid;
-
-        SupportTestResult IFlatSharpAttributeSupportTester.SupportsSortedVector(bool sortedVectorOption) => SupportTestResult.NeverValid;
-
-        SupportTestResult IFlatSharpAttributeSupportTester.SupportsSharedString(bool sharedStringOption) => SupportTestResult.NeverValid;
-
-        SupportTestResult IFlatSharpAttributeSupportTester.SupportsDefaultCtorKindOption(DefaultConstructorKind kind) => SupportTestResult.NeverValid;
-
-        SupportTestResult IFlatSharpAttributeSupportTester.SupportsSetterKind(SetterKind setterKind) => setterKind == SetterKind.Public ? SupportTestResult.Valid : SupportTestResult.ValueInvalid;
-
-        SupportTestResult IFlatSharpAttributeSupportTester.SupportsForceWrite(bool forceWriteOption) => SupportTestResult.NeverValid;
-
-        SupportTestResult IFlatSharpAttributeSupportTester.SupportsUnsafeStructVector(bool unsafeStructVector) => SupportTestResult.NeverValid;
-
-        SupportTestResult IFlatSharpAttributeSupportTester.SupportsMemoryMarshal(MemoryMarshalBehavior option) => SupportTestResult.NeverValid;
-
-        SupportTestResult IFlatSharpAttributeSupportTester.SupportsWriteThrough(bool writeThroughOption) => SupportTestResult.NeverValid;
-
-        SupportTestResult IFlatSharpAttributeSupportTester.SupportsRpcInterface(bool rpcInterface) => SupportTestResult.NeverValid;
-
-        SupportTestResult IFlatSharpAttributeSupportTester.SupportsStreamingType(RpcStreamingType streamingType) => SupportTestResult.NeverValid;
     }
 }

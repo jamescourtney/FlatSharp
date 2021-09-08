@@ -59,13 +59,13 @@ namespace FlatSharp.Compiler.SchemaModel
                     this.structVectors.Add(svModel);
                 }
             }
+
+            this.AttributeValidator.NonVirtualValidator = (b) => AttributeValidationResult.Valid;
         }
 
         public abstract bool OptionalFieldsSupported { get; }
 
         public sealed override string DeclaringFile { get; }
-
-        public sealed override SupportTestResult SupportsNonVirtual(bool nonVirtualValue) => SupportTestResult.Valid;
 
         protected sealed override void OnWriteCode(CodeWriter writer, CompileContext context)
         {

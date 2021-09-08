@@ -16,12 +16,8 @@
 
 namespace FlatSharp.Compiler
 {
-    using FlatSharp.Attributes;
-    using FlatSharp.Compiler.SchemaModel;
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reflection;
+    using FlatSharp.Attributes;
 
     public class FlatSharpAttributes : IFlatSharpAttributes
     {
@@ -30,6 +26,14 @@ namespace FlatSharp.Compiler
         public FlatSharpAttributes(IIndexedVector<string, Schema.KeyValue>? attrs)
         {
             this.rawAttributes = attrs ?? new IndexedVector<string, Schema.KeyValue>();
+
+            foreach (var unsupported in MetadataKeys.UnsupportedStandardAttributes)
+            {
+                if (this.rawAttributes.ContainsKey(unsupported))
+                {
+                    ErrorContext.Current.RegisterError($"FlatSharp does not support the '{unsupported}' attribute.");
+                }
+            }
         }
 
         public FlatBufferDeserializationOption? DeserializationOption => this.TryParseEnum(MetadataKeys.SerializerKind, FlatBufferDeserializationOption.Default);

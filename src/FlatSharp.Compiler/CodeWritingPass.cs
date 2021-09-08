@@ -38,13 +38,8 @@ namespace FlatSharp.Compiler
         /// <summary>
         /// Serializers are generated and included in the output.
         /// </summary>
-        SerializerGeneration = 3,
+        SerializerAndRpcGeneration = 3,
 
-        /// <summary>
-        /// RPC definitions that consume the serializers are generated.
-        /// </summary>
-        RpcGeneration = 4,
-
-        LastPass = RpcGeneration,
+        LastPass = SerializerAndRpcGeneration,
     }
 }

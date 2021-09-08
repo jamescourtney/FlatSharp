@@ -26,7 +26,6 @@ namespace FlatSharpTests.Compiler
     using FlatSharp.TypeModel;
     using Xunit;
 
-    
     public class MetadataTests
     {
         [Fact]

@@ -334,12 +334,16 @@ namespace FlatSharp.Compiler
             {
                 Assembly? assembly = null;
                 CodeWriter writer = new CodeWriter();
+
+                // FlatSharp is a three pass compiler.
+                // Pass 1: We write the initial class definitions, etc.
+                // Pass 2: We reflect on what we wrote to fill in a few pieces of missing data.
+                // Pass 3: We generate serializers and RPC definitions.
                 var steps = new[]
                 {
                     CodeWritingPass.Initialization,
                     CodeWritingPass.PropertyModeling,
-                    CodeWritingPass.SerializerGeneration,
-                    CodeWritingPass.RpcGeneration,
+                    CodeWritingPass.SerializerAndRpcGeneration,
                 };
 
                 FlatBufferSerializer serializer = new FlatBufferSerializer(FlatBufferDeserializationOption.Greedy); // immutable.

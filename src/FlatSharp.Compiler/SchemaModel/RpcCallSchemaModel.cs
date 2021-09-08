@@ -21,7 +21,7 @@ namespace FlatSharp.Compiler.SchemaModel
     using FlatSharp.Compiler.Schema;
     using FlatSharp.Attributes;
 
-    public class RpcCallSchemaModel : IFlatSharpAttributeSupportTester
+    public class RpcCallSchemaModel
     {
         private readonly FlatSharpAttributes attributes;
         private readonly string fullName;
@@ -33,7 +33,11 @@ namespace FlatSharp.Compiler.SchemaModel
             this.fullName = $"{parentService.Name}.{call.Name}";
             this.call = call;
 
-            this.ValidateAttributes(this.attributes);
+            new FlatSharpAttributeValidator(FlatBufferSchemaElementType.RpcCall, $"{parentService.Name}.{call.Name}")
+            {
+                StreamingTypeValidator = _ => AttributeValidationResult.Valid,
+            }.Validate(this.attributes);
+
             this.ValidateHasSerializer(call.Request);
             this.ValidateHasSerializer(call.Response);
         }
@@ -56,35 +60,5 @@ namespace FlatSharp.Compiler.SchemaModel
                 ErrorContext.Current.RegisterError($"RPC call '{this.fullName}' uses table '{obj.Name}', which does not specify the '{MetadataKeys.SerializerKind}' attribute.");
             }
         }
-
-        FlatBufferSchemaElementType IFlatSharpAttributeSupportTester.ElementType => FlatBufferSchemaElementType.RpcCall;
-
-        string IFlatSharpAttributeSupportTester.FullName => this.fullName;
-
-        SupportTestResult IFlatSharpAttributeSupportTester.SupportsDefaultCtorKindOption(DefaultConstructorKind kind) => SupportTestResult.NeverValid;
-
-        SupportTestResult IFlatSharpAttributeSupportTester.SupportsDeserializationOption(FlatBufferDeserializationOption option) => SupportTestResult.NeverValid;
-
-        SupportTestResult IFlatSharpAttributeSupportTester.SupportsForceWrite(bool forceWriteOption) => SupportTestResult.NeverValid;
-
-        SupportTestResult IFlatSharpAttributeSupportTester.SupportsMemoryMarshal(MemoryMarshalBehavior option) => SupportTestResult.NeverValid;
-
-        SupportTestResult IFlatSharpAttributeSupportTester.SupportsNonVirtual(bool nonVirtualValue) => SupportTestResult.NeverValid;
-
-        SupportTestResult IFlatSharpAttributeSupportTester.SupportsRpcInterface(bool supportsRpcInterface) => SupportTestResult.NeverValid;
-
-        SupportTestResult IFlatSharpAttributeSupportTester.SupportsSetterKind(SetterKind setterKind) => SupportTestResult.NeverValid;
-
-        SupportTestResult IFlatSharpAttributeSupportTester.SupportsSharedString(bool sharedStringOption) => SupportTestResult.NeverValid;
-
-        SupportTestResult IFlatSharpAttributeSupportTester.SupportsSortedVector(bool sortedVectorOption) => SupportTestResult.NeverValid;
-
-        SupportTestResult IFlatSharpAttributeSupportTester.SupportsUnsafeStructVector(bool unsafeStructVector) => SupportTestResult.NeverValid;
-
-        SupportTestResult IFlatSharpAttributeSupportTester.SupportsVectorType(VectorType vectorType) => SupportTestResult.NeverValid;
-
-        SupportTestResult IFlatSharpAttributeSupportTester.SupportsWriteThrough(bool writeThroughOption) => SupportTestResult.NeverValid;
-
-        SupportTestResult IFlatSharpAttributeSupportTester.SupportsStreamingType(RpcStreamingType streamingType) => SupportTestResult.Valid;
     }
 }

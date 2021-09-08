@@ -31,6 +31,15 @@ namespace FlatSharp.Compiler.SchemaModel
         private ReferenceStructSchemaModel(Schema schema, FlatBufferObject @struct) : base(schema, @struct)
         {
             FlatSharpInternal.Assert(@struct.IsStruct, "Expecting struct");
+
+            this.AttributeValidator.DefaultConstructorValidator = kind => kind switch
+            {
+                DefaultConstructorKind.Public or DefaultConstructorKind.PublicObsolete => AttributeValidationResult.Valid,
+                _ => AttributeValidationResult.ValueInvalid,
+            };
+
+            this.AttributeValidator.WriteThroughValidator = _ => AttributeValidationResult.Valid;
+
         }
 
         public static bool TryCreate(Schema schema, FlatBufferObject @struct, [NotNullWhen(true)] out ReferenceStructSchemaModel? model)
@@ -53,15 +62,6 @@ namespace FlatSharp.Compiler.SchemaModel
         public override bool OptionalFieldsSupported => false;
 
         public override FlatBufferSchemaElementType ElementType => FlatBufferSchemaElementType.Struct;
-
-        // Structs must have public default constructors.
-        public override SupportTestResult SupportsDefaultCtorKindOption(DefaultConstructorKind kind) => kind switch
-        {
-            DefaultConstructorKind.Public or DefaultConstructorKind.PublicObsolete => SupportTestResult.Valid,
-            _ => SupportTestResult.ValueInvalid,
-        };
-
-        public override SupportTestResult SupportsWriteThrough(bool writeThroughOption) => SupportTestResult.Valid;
 
         protected override void OnValidate()
         {

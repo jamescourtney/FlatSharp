@@ -16,15 +16,12 @@
 
 namespace FlatSharp.Compiler.SchemaModel
 {
-    using FlatSharp;
-    using FlatSharp.Attributes;
-    using System;
-    using System.Collections.Generic;
-    using System.Text;
-
-    public abstract class BaseSchemaModel : IFlatSharpAttributeSupportTester
+    public abstract class BaseSchemaModel
     {
-        protected BaseSchemaModel(Schema.Schema schema, string name, FlatSharpAttributes attributes)
+        protected BaseSchemaModel(
+            Schema.Schema schema,
+            string name,
+            FlatSharpAttributes attributes)
         {
             this.Attributes = attributes;
             this.Schema = schema;
@@ -34,15 +31,29 @@ namespace FlatSharp.Compiler.SchemaModel
 
             this.Namespace = ns;
             this.Name = typeName;
+
+            this.AttributeValidator = new FlatSharpAttributeValidator(this.ElementType, name);
         }
 
         public Schema.Schema Schema { get; }
 
         public FlatSharpAttributes Attributes { get; }
 
+        public FlatSharpAttributeValidator AttributeValidator { get; }
+
+        public string Namespace { get; }
+
+        public string Name { get; }
+
+        public string FullName { get; }
+
+        public abstract string DeclaringFile { get; }
+
+        public abstract FlatBufferSchemaElementType ElementType { get; }
+
         private void Validate()
         {
-            this.ValidateAttributes(this.Attributes);
+            this.AttributeValidator.Validate(this.Attributes);
             this.OnValidate();
         }
 
@@ -68,41 +79,5 @@ namespace FlatSharp.Compiler.SchemaModel
         protected virtual void OnValidate()
         {
         }
-
-        public string Namespace { get; }
-
-        public string Name { get; }
-
-        public string FullName { get; }
-
-        public abstract string DeclaringFile { get; }
-
-        public abstract FlatBufferSchemaElementType ElementType { get; }
-
-        public virtual SupportTestResult SupportsNonVirtual(bool nonVirtualValue) => SupportTestResult.NeverValid;
-
-        public virtual SupportTestResult SupportsDeserializationOption(FlatBufferDeserializationOption option) => SupportTestResult.NeverValid;
-
-        public virtual SupportTestResult SupportsSortedVector(bool sortedVectorOption) => SupportTestResult.NeverValid;
-
-        public virtual SupportTestResult SupportsSharedString(bool sharedStringOption) => SupportTestResult.NeverValid;
-
-        public virtual SupportTestResult SupportsDefaultCtorKindOption(DefaultConstructorKind kind) => SupportTestResult.NeverValid;
-
-        public virtual SupportTestResult SupportsSetterKind(SetterKind setterKind) => SupportTestResult.NeverValid;
-
-        public virtual SupportTestResult SupportsForceWrite(bool forceWriteOption) => SupportTestResult.NeverValid;
-
-        public virtual SupportTestResult SupportsUnsafeStructVector(bool unsafeStructVector) => SupportTestResult.NeverValid;
-
-        public virtual SupportTestResult SupportsMemoryMarshal(MemoryMarshalBehavior option) => SupportTestResult.NeverValid;
-
-        public virtual SupportTestResult SupportsWriteThrough(bool writeThroughOption) => SupportTestResult.NeverValid;
-
-        public virtual SupportTestResult SupportsRpcInterface(bool rpcInterface) => SupportTestResult.NeverValid;
-
-        public virtual SupportTestResult SupportsVectorType(VectorType vectorType) => SupportTestResult.NeverValid;
-
-        public virtual SupportTestResult SupportsStreamingType(RpcStreamingType streamingType) => SupportTestResult.NeverValid;
     }
 }

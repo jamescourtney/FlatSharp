@@ -26,8 +26,7 @@ namespace FlatSharpTests.Compiler
     using FlatSharp.Compiler;
     using FlatSharp.TypeModel;
     using Xunit;
-
-    
+        
     public class TableMemberTests
     {
         [Fact]
@@ -40,49 +39,25 @@ namespace FlatSharpTests.Compiler
         public void TableMember_sbyte() => this.RunCompoundTestWithDefaultValue<sbyte>("byte");
 
         [Fact]
-        public void TableMember_short_alias() => this.RunCompoundTestWithDefaultValue<short>("short");
-
-        [Fact]
         public void TableMember_short() => this.RunCompoundTestWithDefaultValue<short>("int16");
-
-        [Fact]
-        public void TableMember_ushort_alias() => this.RunCompoundTestWithDefaultValue<ushort>("ushort");
 
         [Fact]
         public void TableMember_ushort() => this.RunCompoundTestWithDefaultValue<ushort>("uint16");
 
         [Fact]
-        public void TableMember_int_alias() => this.RunCompoundTestWithDefaultValue<int>("int");
-
-        [Fact]
         public void TableMember_int() => this.RunCompoundTestWithDefaultValue<int>("int32");
-
-        [Fact]
-        public void TableMember_uint_alias() => this.RunCompoundTestWithDefaultValue<uint>("uint");
 
         [Fact]
         public void TableMember_uint() => this.RunCompoundTestWithDefaultValue<uint>("uint32");
 
         [Fact]
-        public void TableMember_long_alias() => this.RunCompoundTestWithDefaultValue<long>("long");
-
-        [Fact]
         public void TableMember_long() => this.RunCompoundTestWithDefaultValue<long>("int64");
-
-        [Fact]
-        public void TableMember_ulong_alias() => this.RunCompoundTestWithDefaultValue<ulong>("ulong");
 
         [Fact]
         public void TableMember_ulong() => this.RunCompoundTestWithDefaultValue<ulong>("uint64");
 
         [Fact]
-        public void TableMember_float_alias() => this.RunCompoundTestWithDefaultValue<float>("float", "G3", 3.14f);
-
-        [Fact]
         public void TableMember_float() => this.RunCompoundTestWithDefaultValue<float>("float32", "G3", 3.14f);
-
-        [Fact]
-        public void TableMember_double_alias() => this.RunCompoundTestWithDefaultValue<double>("double", "G17");
 
         [Fact]
         public void TableMember_double() => this.RunCompoundTestWithDefaultValue<double>("float64", "G17");

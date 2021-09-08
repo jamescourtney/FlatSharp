@@ -17,7 +17,6 @@
 namespace FlatSharp.Compiler
 {
     using FlatSharp.Attributes;
-    using FlatSharp.Compiler.SchemaModel;
 
     public interface IFlatSharpAttributes
     {

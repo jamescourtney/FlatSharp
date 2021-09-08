@@ -14,20 +14,22 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Compiler
+namespace FlatSharp.Compiler.SchemaModel
 {
-    public static class Helpers
+    public enum FlatBufferSchemaElementType
     {
-        public static (string ns, string typeName) ParseName(string name)
-        {
-            int lastIndex = name.LastIndexOf('.');
-            if (lastIndex == -1)
-            {
-                ErrorContext.Current.RegisterError($"Type '{name}' not within a namespace.");
-                return ("TempNs", name);
-            }
-
-            return (name.Substring(0, lastIndex), name.Substring(lastIndex + 1));
-        }
+        Unknown = 0,
+        Table = 1,
+        Struct = 2,
+        ValueStruct = 3,
+        Enum = 4,
+        Union = 5,
+        RpcService = 6,
+        TableField = 7,
+        StructField = 8,
+        ValueStructField = 9,
+        StructVector = 10,
+        ValueStructVector = 11,
+        RpcCall = 12,
     }
 }

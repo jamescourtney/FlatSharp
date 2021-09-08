@@ -74,6 +74,8 @@ namespace FlatSharp.Compiler.SchemaModel
                     this.fields.Add(new(field.Offset, field.Name, "public", fieldType, field.Name, this, attrs));
                 }
             }
+
+            this.AttributeValidator.MemoryMarshalValidator = _ => AttributeValidationResult.Valid;
         }
 
         public static bool TryCreate(Schema schema, FlatBufferObject @struct, [NotNullWhen(true)] out ValueStructSchemaModel? model)
@@ -189,21 +191,20 @@ namespace FlatSharp.Compiler.SchemaModel
             }
         }
 
-        public override SupportTestResult SupportsMemoryMarshal(MemoryMarshalBehavior option) => SupportTestResult.Valid;
-
-
-        private class ValueStructVectorModel : IFlatSharpAttributeSupportTester
+        private class ValueStructVectorModel
         {
             public ValueStructVectorModel(string type, string name, List<string> properties, ValueStructSchemaModel parent, IFlatSharpAttributes attributes)
             {
                 this.Name = name;
                 this.TypeName = type;
                 this.Name = name;
-                this.FullName = $"{parent.Name}.{name}";
                 this.Properties = properties;
                 this.Attributes = attributes;
 
-                this.ValidateAttributes(attributes);
+                new FlatSharpAttributeValidator(FlatBufferSchemaElementType.ValueStructField, $"{parent.Name}.{name}")
+                {
+                    UnsafeStructVectorValidator = _ => AttributeValidationResult.Valid,
+                }.Validate(attributes);
             }
 
             public IReadOnlyList<string> Properties { get; }
@@ -212,40 +213,10 @@ namespace FlatSharp.Compiler.SchemaModel
 
             public string TypeName { get; }
 
-            public FlatBufferSchemaElementType ElementType => FlatBufferSchemaElementType.ValueStructField;
-
-            public string FullName { get; }
-
             public IFlatSharpAttributes Attributes { get; }
-
-            public SupportTestResult SupportsDefaultCtorKindOption(DefaultConstructorKind kind) => SupportTestResult.NeverValid;
-
-            public SupportTestResult SupportsDeserializationOption(FlatBufferDeserializationOption option) => SupportTestResult.NeverValid;
-
-            public SupportTestResult SupportsForceWrite(bool forceWriteOption) => SupportTestResult.NeverValid;
-
-            public SupportTestResult SupportsMemoryMarshal(MemoryMarshalBehavior option) => SupportTestResult.NeverValid;
-
-            public SupportTestResult SupportsNonVirtual(bool nonVirtualValue) => SupportTestResult.NeverValid;
-
-            public SupportTestResult SupportsRpcInterface(bool supportsRpcInterface) => SupportTestResult.NeverValid;
-
-            public SupportTestResult SupportsSetterKind(SetterKind setterKind) => SupportTestResult.NeverValid;
-
-            public SupportTestResult SupportsSharedString(bool sharedStringOption) => SupportTestResult.NeverValid;
-
-            public SupportTestResult SupportsSortedVector(bool sortedVectorOption) => SupportTestResult.NeverValid;
-
-            public SupportTestResult SupportsStreamingType(RpcStreamingType streamingType) => SupportTestResult.NeverValid;
-
-            public SupportTestResult SupportsUnsafeStructVector(bool unsafeStructVector) => SupportTestResult.Valid;
-
-            public SupportTestResult SupportsVectorType(VectorType vectorType) => SupportTestResult.NeverValid;
-
-            public SupportTestResult SupportsWriteThrough(bool writeThroughOption) => SupportTestResult.NeverValid;
         }
 
-        private class ValueStructFieldModel : IFlatSharpAttributeSupportTester
+        private class ValueStructFieldModel
         {
             public ValueStructFieldModel(int offset, string name, string visibility, string type, string accessor, ValueStructSchemaModel parent, IFlatSharpAttributes attributes)
             {
@@ -254,9 +225,8 @@ namespace FlatSharp.Compiler.SchemaModel
                 this.Visibility = visibility;
                 this.TypeName = type;
                 this.Accessor = accessor;
-                this.FullName = $"{parent.Name}.{name}";
 
-                this.ValidateAttributes(attributes);
+                new FlatSharpAttributeValidator(FlatBufferSchemaElementType.ValueStructField, $"{parent.Name}.{name}").Validate(attributes);
             }
 
             public int Offset { get; }
@@ -268,36 +238,6 @@ namespace FlatSharp.Compiler.SchemaModel
             public string TypeName { get;  }
 
             public string Accessor { get; }
-
-            public FlatBufferSchemaElementType ElementType => FlatBufferSchemaElementType.ValueStructField;
-
-            public string FullName { get; }
-
-            public SupportTestResult SupportsDefaultCtorKindOption(DefaultConstructorKind kind) => SupportTestResult.NeverValid;
-
-            public SupportTestResult SupportsDeserializationOption(FlatBufferDeserializationOption option) => SupportTestResult.NeverValid;
-
-            public SupportTestResult SupportsForceWrite(bool forceWriteOption) => SupportTestResult.NeverValid;
-
-            public SupportTestResult SupportsMemoryMarshal(MemoryMarshalBehavior option) => SupportTestResult.NeverValid;
-
-            public SupportTestResult SupportsNonVirtual(bool nonVirtualValue) => SupportTestResult.NeverValid;
-
-            public SupportTestResult SupportsRpcInterface(bool supportsRpcInterface) => SupportTestResult.NeverValid;
-
-            public SupportTestResult SupportsSetterKind(SetterKind setterKind) => SupportTestResult.NeverValid;
-
-            public SupportTestResult SupportsSharedString(bool sharedStringOption) => SupportTestResult.NeverValid;
-
-            public SupportTestResult SupportsSortedVector(bool sortedVectorOption) => SupportTestResult.NeverValid;
-
-            public SupportTestResult SupportsStreamingType(RpcStreamingType streamingType) => SupportTestResult.NeverValid;
-
-            public SupportTestResult SupportsUnsafeStructVector(bool unsafeStructVector) => SupportTestResult.NeverValid;
-
-            public SupportTestResult SupportsVectorType(VectorType vectorType) => SupportTestResult.NeverValid;
-
-            public SupportTestResult SupportsWriteThrough(bool writeThroughOption) => SupportTestResult.NeverValid;
         }
     }
 }

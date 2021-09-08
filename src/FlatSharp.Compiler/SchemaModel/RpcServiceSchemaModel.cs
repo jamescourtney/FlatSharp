@@ -59,6 +59,8 @@ namespace FlatSharp.Compiler.SchemaModel
                     this.calls.Add(new(service, call));
                 }
             }
+
+            this.AttributeValidator.RpcInterfaceValidator = _ => AttributeValidationResult.Valid;
         }
 
         public override FlatBufferSchemaElementType ElementType => FlatBufferSchemaElementType.RpcService;
@@ -67,7 +69,7 @@ namespace FlatSharp.Compiler.SchemaModel
 
         protected override void OnWriteCode(CodeWriter writer, CompileContext context)
         {
-            if (context.CompilePass < CodeWritingPass.RpcGeneration)
+            if (context.CompilePass < CodeWritingPass.SerializerAndRpcGeneration)
             {
                 return;
             }
@@ -563,7 +565,5 @@ namespace FlatSharp.Compiler.SchemaModel
             string methodType = GetGrpcMethodType(call.StreamingType);
             return $"new {GrpcCore}.{methodType}ServerMethod<{call.RequestType}, {call.ResponseType}>(serviceImpl.{call.Name})";
         }
-
-        public override SupportTestResult SupportsRpcInterface(bool supportsRpcInterface) => SupportTestResult.Valid;
     }
 }
