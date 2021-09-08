@@ -50,32 +50,44 @@ namespace FlatSharp.Compiler.Schema
         [FlatBufferItem(3)]
         public virtual ushort FixedLength { get; set; }
 
-        public string FormatTypeName(Schema root, out bool isVector, out bool isArray)
+        public string ResolveTypeOrElementTypeName(Schema schema, IFlatSharpAttributes? attributes)
         {
-            isVector = this.BaseType == BaseType.Vector;
-            isArray = this.BaseType == BaseType.Array;
+            BaseType baseType = this.BaseType;
 
-            BaseType toFormat = this.BaseType;
+            bool isVector = baseType == BaseType.Vector;
+            bool isArray = baseType == BaseType.Array;
+
             if (isVector || isArray)
             {
-                toFormat = this.ElementType;
+                baseType = this.ElementType;
             }
 
-            if (this.Index == -1 && toFormat.TryGetBuiltInTypeName(out string? typeName))
+            string typeName;
+            if (this.Index == -1)
             {
-                return typeName;
+                if (baseType == BaseType.String && attributes?.SharedString == true)
+                {
+                    typeName = "SharedString";
+                }
+                else
+                {
+                    // Default value. This means that this is a simple built-in type.
+                    FlatSharpInternal.Assert(baseType.TryGetBuiltInTypeName(out string? temp), "Failed to get type name");
+                    typeName = temp;
+                }
+            }
+            else if (baseType == BaseType.Obj)
+            {
+                // table or struct.
+                typeName = schema.Objects[this.Index].Name;
+            }
+            else
+            {
+                // enum (or union).
+                typeName = schema.Enums[this.Index].Name;
             }
 
-            if (toFormat == BaseType.Obj) // table or struct
-            {
-                return root.Objects[this.Index].Name;
-            }
-            else if (toFormat == BaseType.UType || toFormat == BaseType.Union || (this.Index != -1 && toFormat.IsScalar()))
-            {
-                return root.Enums[this.Index].Name;
-            }
-
-            throw new InvalidOperationException();
+            return typeName;
         }
     }
 }

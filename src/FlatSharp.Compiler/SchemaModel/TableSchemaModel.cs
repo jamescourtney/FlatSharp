@@ -25,6 +25,8 @@ namespace FlatSharp.Compiler.SchemaModel
     using System.Diagnostics.CodeAnalysis;
     using FlatSharp.Attributes;
     using FlatSharp.TypeModel;
+    using System.Reflection;
+    using System.Runtime.ExceptionServices;
 
     public class TableSchemaModel : BaseReferenceTypeSchemaModel
     {
@@ -58,6 +60,29 @@ namespace FlatSharp.Compiler.SchemaModel
             // TODO   
         }
 
+        protected override void EmitExtraData(CodeWriter writer, CompileContext context)
+        {
+            if (this.Attributes.DeserializationOption is not null && context.CompilePass >= CodeWritingPass.SerializerGeneration)
+            {
+                // generate the serializer.
+                string serializer = this.GenerateSerializerForType(
+                    context,
+                    this.Attributes.DeserializationOption.Value);
+
+                writer.AppendLine($"public static ISerializer<{this.FullName}> Serializer {{ get; }} = new {RoslynSerializerGenerator.GeneratedSerializerClassName}().AsISerializer();");
+
+                writer.AppendLine();
+
+                writer.AppendLine($"ISerializer {nameof(IFlatBufferSerializable)}.{nameof(IFlatBufferSerializable.Serializer)} => Serializer;");
+                writer.AppendLine($"ISerializer<{this.FullName}> {nameof(IFlatBufferSerializable)}<{this.FullName}>.{nameof(IFlatBufferSerializable.Serializer)} => Serializer;");
+
+                writer.AppendLine();
+                writer.AppendLine($"#region Serializer for {this.FullName}");
+                writer.AppendLine(serializer);
+                writer.AppendLine($"#endregion");
+            }
+        }
+
         protected override void EmitClassDefinition(CodeWriter writer, CompileContext context)
         {
             string fileId = string.Empty;
@@ -71,11 +96,46 @@ namespace FlatSharp.Compiler.SchemaModel
             writer.AppendLine(attribute);
             writer.AppendLine("[System.Runtime.CompilerServices.CompilerGenerated]");
             writer.AppendLine($"public partial class {this.Name}");
+
+            using (writer.IncreaseIndent())
+            {
+                writer.AppendLine(": object");
+                if (this.Attributes.DeserializationOption is not null && context.CompilePass >= CodeWritingPass.SerializerGeneration)
+                {
+                    writer.AppendLine($", {nameof(IFlatBufferSerializable)}<{this.FullName}>");
+                }
+            }
         }
 
         protected override void EmitDefaultConstructorFieldInitialization(PropertyFieldModel model, CodeWriter writer, CompileContext context)
         {
             writer.AppendLine($"this.{model.Field.Name} = {model.GetDefaultValue()};");
+        }
+
+        private string GenerateSerializerForType(
+            CompileContext context,
+            FlatBufferDeserializationOption deserializationOption)
+        {
+            Type? type = context.PreviousAssembly?.GetType(this.FullName);
+            FlatSharpInternal.Assert(type is not null, $"Flatsharp failed to find expected type '{this.FullName}' in assembly.");
+
+            var options = new FlatBufferSerializerOptions(deserializationOption) { ConvertProtectedInternalToProtected = false };
+            var generator = new RoslynSerializerGenerator(options, context.TypeModelContainer);
+
+            MethodInfo method = generator.GetType()
+                                         .GetMethod(nameof(RoslynSerializerGenerator.GenerateCSharp), BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)!
+                                         .MakeGenericMethod(type);
+
+            try
+            {
+                string code = (string)method.Invoke(generator, new[] { "private" })!;
+                return code;
+            }
+            catch (TargetInvocationException ex)
+            {
+                ExceptionDispatchInfo.Capture(ex.InnerException!).Throw();
+                throw;
+            }
         }
     }
 }

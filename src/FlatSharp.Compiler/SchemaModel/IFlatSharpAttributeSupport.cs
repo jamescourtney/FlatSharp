@@ -30,6 +30,8 @@ namespace FlatSharp.Compiler.SchemaModel
         TableField = 7,
         StructField = 8,
         ValueStructField = 9,
+        StructVector = 10,
+        ValueStructVector = 11,
     }
 
     public interface IFlatSharpAttributeSupportTester
@@ -61,5 +63,71 @@ namespace FlatSharp.Compiler.SchemaModel
         bool SupportsWriteThrough(bool writeThroughOption);
 
         bool SupportsRpcInterface(bool rpcInterface);
+    }
+
+    public static class IFlatSharpAttributeSupportTesterExtensions
+    {
+        public static void Validate(this IFlatSharpAttributeSupportTester testable, IFlatSharpAttributes attrs)
+        {
+            void RegisterError(string key)
+            {
+                ErrorContext.Current.RegisterError($"Attribute '{key}' declared on '{testable.FullName}' is not valid on {testable.ElementType} elements.");
+            }
+
+            if (attrs.NonVirtual is not null && !testable.SupportsNonVirtual(attrs.NonVirtual.Value))
+            {
+                RegisterError(MetadataKeys.NonVirtualProperty);
+            }
+
+            if (attrs.DeserializationOption is not null && !testable.SupportsDeserializationOption(attrs.DeserializationOption.Value))
+            {
+                RegisterError(MetadataKeys.SerializerKind);
+            }
+
+            if (attrs.SortedVector is not null && !testable.SupportsSortedVector(attrs.SortedVector.Value))
+            {
+                RegisterError(MetadataKeys.SortedVector);
+            }
+
+            if (attrs.SharedString is not null && !testable.SupportsSharedString(attrs.SharedString.Value))
+            {
+                RegisterError(MetadataKeys.SharedString);
+            }
+
+            if (attrs.DefaultCtorKind is not null && !testable.SupportsDefaultCtorKindOption(attrs.DefaultCtorKind.Value))
+            {
+                RegisterError(MetadataKeys.DefaultConstructorKind);
+            }
+
+            if (attrs.SetterKind is not null && !testable.SupportsSetterKind(attrs.SetterKind.Value))
+            {
+                RegisterError(MetadataKeys.Setter);
+            }
+
+            if (attrs.ForceWrite is not null && !testable.SupportsForceWrite(attrs.ForceWrite.Value))
+            {
+                RegisterError(MetadataKeys.ForceWrite);
+            }
+
+            if (attrs.UnsafeStructVector is not null && !testable.SupportsUnsafeStructVector(attrs.UnsafeStructVector.Value))
+            {
+                RegisterError(MetadataKeys.UnsafeValueStructVector);
+            }
+
+            if (attrs.MemoryMarshalBehavior is not null && !testable.SupportsMemoryMarshal(attrs.MemoryMarshalBehavior.Value))
+            {
+                RegisterError(MetadataKeys.MemoryMarshalBehavior);
+            }
+
+            if (attrs.VectorKind is not null && !testable.SupportsVectorType(attrs.VectorKind.Value))
+            {
+                RegisterError(MetadataKeys.VectorKind);
+            }
+
+            if (attrs.WriteThrough is not null && !testable.SupportsWriteThrough(attrs.WriteThrough.Value))
+            {
+                RegisterError(MetadataKeys.WriteThrough);
+            }
+        }
     }
 }

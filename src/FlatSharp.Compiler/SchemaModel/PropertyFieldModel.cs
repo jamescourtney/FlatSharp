@@ -31,7 +31,7 @@ namespace FlatSharp.Compiler.SchemaModel
             int index,
             FlatBufferSchemaElementType elementType,
             string? customGetter,
-            FlatSharpAttributes attributes)
+            IFlatSharpAttributes attributes)
         {
             this.Field = field;
             this.ElementType = elementType;
@@ -42,6 +42,8 @@ namespace FlatSharp.Compiler.SchemaModel
             this.Index = index;
         }
 
+        public bool ProtectedGetter { get; init; }
+
         public BaseReferenceTypeSchemaModel Parent { get; init; }
 
         public Field Field { get; init; }
@@ -50,7 +52,7 @@ namespace FlatSharp.Compiler.SchemaModel
 
         public string? CustomGetter { get; init; }
 
-        public FlatSharpAttributes Attributes { get; init; }
+        public IFlatSharpAttributes Attributes { get; init; }
 
         public bool DefaultOptional { get; init; }
 
@@ -60,7 +62,7 @@ namespace FlatSharp.Compiler.SchemaModel
 
         public bool HasDefaultValue => this.Field.DefaultDouble != 0 || this.Field.DefaultInteger != 0;
 
-        public static bool TryCreate(BaseReferenceTypeSchemaModel parent, Field field, [NotNullWhen(true)] out PropertyFieldModel? model)
+        public static bool TryCreate(BaseReferenceTypeSchemaModel parent, Field field, int previousIndex, [NotNullWhen(true)] out PropertyFieldModel? model)
         {
             model = null;
             if (parent.ElementType != FlatBufferSchemaElementType.Table && parent.ElementType != FlatBufferSchemaElementType.Struct)
@@ -86,6 +88,8 @@ namespace FlatSharp.Compiler.SchemaModel
                 // is the "union" that we keep. However, we need to adjust the index down by one to account for this.
                 index--;
             }
+
+            index = Math.Max(index, previousIndex + 1);
 
             var attributes = new FlatSharpAttributes(field.Attributes);
 
@@ -120,7 +124,14 @@ namespace FlatSharp.Compiler.SchemaModel
             };
 
             string typeName = this.GetTypeName();
-            writer.AppendLine($"public {@virtual}{typeName} {this.FieldName} {{ get; {setter} }}");
+
+            string access = "public";
+            if (this.ProtectedGetter)
+            {
+                access = "protected";
+            }
+
+            writer.AppendLine($"{access} {@virtual}{typeName} {this.FieldName} {{ get; {setter} }}");
         }
 
         public string GetDefaultValue()
@@ -130,7 +141,7 @@ namespace FlatSharp.Compiler.SchemaModel
                 return "default!";
             }
 
-            string typeName = this.GetSimpleTypeName();
+            string typeName = this.Field.Type.ResolveTypeOrElementTypeName(this.Parent.Schema, this.Attributes);
 
             if (this.Field.DefaultDouble != 0)
             {
@@ -186,6 +197,11 @@ namespace FlatSharp.Compiler.SchemaModel
                 required = $", {nameof(FlatBufferItemAttribute.Required)} = true";
             }
 
+            if (!string.IsNullOrEmpty(this.CustomGetter))
+            {
+                customAccessor = $"[{nameof(FlatBufferMetadataAttribute)}({nameof(FlatBufferMetadataKind)}.{nameof(FlatBufferMetadataKind.Accessor)}, \"{this.CustomGetter}\")]";
+            }
+
             if (this.Attributes.ForceWrite ?? this.Parent.Attributes.ForceWrite == true)
             {
                 if (this.Field.Type.BaseType.IsScalar())
@@ -204,57 +220,17 @@ namespace FlatSharp.Compiler.SchemaModel
 
         public string GetTypeName()
         {
-            string typeName = this.GetSimpleTypeName();
+            string typeName = this.Field.Type.ResolveTypeOrElementTypeName(this.Parent.Schema, this.Attributes);
+
+            if (this.Field.Type.BaseType == BaseType.Vector)
+            {
+                this.TryGetElementKeyType(out string? keyType);
+                typeName = this.GetVectorTypeName(typeName, keyType);
+            }
 
             if (this.Parent.OptionalFieldsSupported && this.Field.Optional)
             {
                 typeName += "?";
-            }
-
-            return typeName;
-        }
-
-        private string GetSimpleTypeName()
-        {
-            FlatBufferType type = this.Field.Type;
-
-            bool isVector = type.BaseType == BaseType.Vector;
-            BaseType baseType = type.BaseType;
-
-            if (isVector)
-            {
-                baseType = type.ElementType;
-            }
-
-            string typeName;
-            if (type.Index == -1)
-            {
-                if (baseType == BaseType.String && this.Attributes.SharedString == true)
-                {
-                    typeName = "SharedString";
-                }
-                else
-                {
-                    // Default value. This means that this is a simple built-in type.
-                    FlatSharpInternal.Assert(baseType.TryGetBuiltInTypeName(out string? temp), "Failed to get type name");
-                    typeName = temp;
-                }
-            }
-            else if (baseType == BaseType.Obj)
-            {
-                // table or struct.
-                typeName = this.Parent.Schema.Objects[type.Index].Name;
-            }
-            else
-            {
-                // enum (or union).
-                typeName = this.Parent.Schema.Enums[type.Index].Name;
-            }
-
-            if (isVector)
-            {
-                this.TryGetElementKeyType(out string? keyType);
-                typeName = this.GetVectorTypeName(typeName, keyType);
             }
 
             return typeName;

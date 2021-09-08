@@ -30,19 +30,33 @@ namespace FlatSharp.Compiler.SchemaModel
     public abstract class BaseReferenceTypeSchemaModel : BaseSchemaModel
     {
         private readonly Dictionary<int, PropertyFieldModel> properties;
+        private readonly List<StructVectorPropertyFieldModel> structVectors;
         private readonly FlatBufferObject table;
 
         protected BaseReferenceTypeSchemaModel(Schema schema, FlatBufferObject table) : base(schema, table.Name, new FlatSharpAttributes(table.Attributes))
         {
             this.DeclaringFile = table.DeclarationFile;
             this.properties = new Dictionary<int, PropertyFieldModel>();
+            this.structVectors = new();
             this.table = table;
-            
-            foreach (var field in table.Fields)
+
+            int previousIndex = -1;
+            foreach (var field in table.Fields.OrderBy(x => x.Value.Id))
             {
-                if (PropertyFieldModel.TryCreate(this, field.Value, out PropertyFieldModel? model))
+                if (PropertyFieldModel.TryCreate(this, field.Value, previousIndex, out PropertyFieldModel? model))
                 {
+                    previousIndex = model.Index;
                     this.properties[model.Index] = model;
+                }
+                else if (StructVectorPropertyFieldModel.TryCreate(this, field.Value, previousIndex, out StructVectorPropertyFieldModel? svModel))
+                {
+                    for (int i = 0; i < svModel.Properties.Count; ++i)
+                    {
+                        previousIndex = svModel.Properties[i].Index;
+                        this.properties[previousIndex] = svModel.Properties[i];
+                    }
+
+                    this.structVectors.Add(svModel);
                 }
             }
         }
@@ -74,7 +88,14 @@ namespace FlatSharp.Compiler.SchemaModel
                 {
                     int index = property.Key;
                     PropertyFieldModel model = property.Value;
+
+                    writer.AppendLine();
                     model.WriteCode(writer);
+                }
+
+                foreach (var sv in this.structVectors)
+                {
+                    sv.WriteCode(writer);
                 }
 
                 this.EmitExtraData(writer, context);

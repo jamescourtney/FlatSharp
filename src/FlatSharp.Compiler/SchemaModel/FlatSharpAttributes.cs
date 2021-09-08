@@ -23,7 +23,7 @@ namespace FlatSharp.Compiler
     using System.Linq;
     using System.Reflection;
 
-    public class FlatSharpAttributes
+    public class FlatSharpAttributes : IFlatSharpAttributes
     {
         private readonly IIndexedVector<string, Schema.KeyValue> rawAttributes;
 
@@ -130,7 +130,7 @@ namespace FlatSharp.Compiler
                     return true;
                 }
 
-                bool? result = value.Value.ToLowerInvariant() switch 
+                bool? result = value.Value.ToLowerInvariant() switch
                 {
                     // seems that "0" can mean "included but no value set".
                     "true" => true,
@@ -139,7 +139,7 @@ namespace FlatSharp.Compiler
                     _ => null,
                 };
 
-                
+
                 if (result is null)
                 {
                     ErrorContext.Current.RegisterError($"Unable to parse '{value.Value}' as a boolean. Expecting 'true' or 'false'.");

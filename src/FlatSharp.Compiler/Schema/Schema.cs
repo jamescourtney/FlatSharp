@@ -72,6 +72,10 @@ namespace FlatSharp.Compiler.Schema
                 {
                     model.AddElement(enumModel);
                 }
+                else if (UnionSchemaModel.TryCreate(this, @enum, out var unionModel))
+                {
+                    model.AddElement(unionModel);
+                }
             }
 
             foreach (var obj in this.Objects)

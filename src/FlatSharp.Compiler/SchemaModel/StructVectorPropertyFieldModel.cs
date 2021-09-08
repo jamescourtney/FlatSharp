@@ -1,0 +1,237 @@
+﻿/*
+ * Copyright 2021 James Courtney
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+namespace FlatSharp.Compiler.SchemaModel
+{
+    using System;
+
+    using FlatSharp;
+    using FlatSharp.Compiler.Schema;
+    using FlatSharp.Attributes;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Collections.Generic;
+
+    public record StructVectorPropertyFieldModel : IFlatSharpAttributeSupportTester
+    {
+        public StructVectorPropertyFieldModel(
+            BaseReferenceTypeSchemaModel parent,
+            Field field,
+            int startIndex,
+            FlatSharpAttributes attributes)
+        {
+            FlatSharpInternal.Assert(field.Type.ElementType.IsScalar(), "Struct vectors must be scalars");
+            FlatSharpInternal.Assert(field.Type.FixedLength != 0, "Struct vectors must have fixed length");
+
+            this.Field = field;
+            this.Attributes = attributes;
+            this.Parent = parent;
+            this.FieldName = field.Name;
+
+            List<PropertyFieldModel> propertyModels = new List<PropertyFieldModel>();
+            for (int i = 0; i < field.Type.FixedLength; ++i)
+            {
+                var modifiedAttributes = new MutableFlatSharpAttributes(attributes)
+                {
+                    SetterKind = null, // default
+                };
+
+                var model = new PropertyFieldModel(
+                    this.Parent,
+                    new Field
+                    {
+                        Attributes = field.Attributes,
+                        Name = $"__flatsharp__{field.Name}__{i}",
+                        Type = field.Type,
+                    },
+                    startIndex + i,
+                    FlatBufferSchemaElementType.StructField,
+                    $"{field.Name}[{i}]",
+                    modifiedAttributes)
+                {
+                    ProtectedGetter = true,
+                };
+
+                propertyModels.Add(model);
+            }
+
+            this.Properties = propertyModels;
+        }
+
+        public BaseReferenceTypeSchemaModel Parent { get; init; }
+
+        public Field Field { get; init; }
+
+        public FlatBufferSchemaElementType ElementType { get; init; }
+
+        public FlatSharpAttributes Attributes { get; init; }
+
+        public string FieldName { get; init; }
+
+        public IReadOnlyList<PropertyFieldModel> Properties { get; init; }
+
+        public static bool TryCreate(
+            BaseReferenceTypeSchemaModel parent,
+            Field field,
+            int previousIndex,
+            [NotNullWhen(true)] out StructVectorPropertyFieldModel? model)
+        {
+            model = null;
+            if (parent.ElementType != FlatBufferSchemaElementType.Struct)
+            {
+                return false;
+            }
+
+            if (field.Type.BaseType != BaseType.Array)
+            {
+                // handled by StructVectorSchemaModel.
+                return false;
+            }
+
+            int startIndex = previousIndex + 1;
+            model = new StructVectorPropertyFieldModel(parent, field, startIndex, new FlatSharpAttributes(field.Attributes));
+
+            return true;
+        }
+
+        public void WriteCode(CodeWriter writer)
+        {
+            string structName = $"__{this.Field.Name}_Vector";
+
+            string typeName = this.Field.Type.ResolveTypeOrElementTypeName(this.Parent.Schema, this.Attributes);
+
+            writer.AppendLine($"public {structName} {this.Field.Name} => new {structName}(this);");
+            writer.AppendLine();
+
+            // class is next.
+            writer.AppendLine($"public partial struct {structName} : System.Collections.Generic.IEnumerable<{typeName}>");
+            using (writer.WithBlock())
+            {
+                writer.AppendLine($"private readonly {this.Parent.FullName} item;");
+
+                // ctor
+                writer.AppendLine();
+                writer.AppendLine($"public {structName}({this.Parent.FullName} item)");
+                using (writer.WithBlock())
+                {
+                    writer.AppendLine($"this.item = item;");
+                }
+
+                writer.AppendLine($"public int Count => {this.Field.Type.FixedLength};");
+
+                // indexer
+                writer.AppendLine();
+                writer.AppendLine($"public {typeName} this[int index]");
+                using (writer.WithBlock())
+                {
+                    writer.AppendLine("get");
+                    using (writer.WithBlock())
+                    {
+                        writer.AppendLine("var thisItem = this.item;");
+                        writer.AppendLine("switch (index)");
+                        using (writer.WithBlock())
+                        {
+                            for (int i = 0; i < this.Field.Type.FixedLength; ++i)
+                            {
+                                writer.AppendLine($"case {i}: return thisItem.{this.Properties[i].FieldName};");
+                            }
+
+                            writer.AppendLine($"default: throw new IndexOutOfRangeException();");
+                        }
+                    }
+
+                    writer.AppendLine();
+
+                    if (this.Attributes.SetterKind != SetterKind.None)
+                    {
+                        writer.AppendLine("set");
+                        using (writer.WithBlock())
+                        {
+                            writer.AppendLine("var thisItem = this.item;");
+                            writer.AppendLine("switch (index)");
+                            using (writer.WithBlock())
+                            {
+                                for (int i = 0; i < this.Field.Type.FixedLength; ++i)
+                                {
+                                    writer.AppendLine($"case {i}: thisItem.{this.Properties[i].FieldName} = value; break;");
+                                }
+
+                                writer.AppendLine($"default: throw new IndexOutOfRangeException();");
+                            }
+                        }
+                    }
+                }
+
+                writer.AppendLine("System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => this.GetEnumerator();");
+                writer.AppendLine();
+                writer.AppendLine($"public System.Collections.Generic.IEnumerator<{typeName}> GetEnumerator()");
+                using (writer.WithBlock())
+                {
+                    writer.AppendLine("var thisItem = this.item;");
+                    for (int i = 0; i < this.Properties.Count; ++i)
+                    {
+                        writer.AppendLine($"yield return thisItem.{this.Properties[i].FieldName};");
+                    }
+                }
+
+                foreach (var collectionType in new[] { $"ReadOnlySpan<{typeName}>", $"IReadOnlyList<{typeName}>" })
+                {
+                    writer.AppendMethodSummaryComment($"Deep copies the first {this.Properties.Count} items from the source into this struct vector.");
+                    writer.AppendLine($"public void CopyFrom({collectionType} source)");
+                    using (writer.WithBlock())
+                    {
+                        writer.AppendLine("var thisItem = this.item;");
+
+                        // Load in reverse so that the JIT can just do a bounds check on the very first item.
+                        // This also requries the parameter being a local variable instead of a param.
+                        writer.AppendLine("var s = source;");
+                        for (int i = this.Properties.Count - 1; i >= 0; --i)
+                        {
+                            writer.AppendLine($"thisItem.{this.Properties[i].FieldName} = s[{i}];");
+                        }
+                    }
+                }
+            }
+        }
+
+        FlatBufferSchemaElementType IFlatSharpAttributeSupportTester.ElementType => FlatBufferSchemaElementType.StructVector;
+
+        string IFlatSharpAttributeSupportTester.FullName => $"{this.Parent.FullName}.{this.FieldName}";
+
+        bool IFlatSharpAttributeSupportTester.SupportsNonVirtual(bool nonVirtualValue) => true;
+
+        bool IFlatSharpAttributeSupportTester.SupportsVectorType(VectorType vectorType) => false;
+
+        bool IFlatSharpAttributeSupportTester.SupportsDeserializationOption(FlatBufferDeserializationOption option) => false;
+
+        bool IFlatSharpAttributeSupportTester.SupportsSortedVector(bool sortedVectorOption) => false;
+
+        bool IFlatSharpAttributeSupportTester.SupportsSharedString(bool sharedStringOption) => false;
+
+        bool IFlatSharpAttributeSupportTester.SupportsDefaultCtorKindOption(DefaultConstructorKind kind) => false;
+
+        bool IFlatSharpAttributeSupportTester.SupportsSetterKind(SetterKind setterKind) => false;
+
+        bool IFlatSharpAttributeSupportTester.SupportsForceWrite(bool forceWriteOption) => false;
+
+        bool IFlatSharpAttributeSupportTester.SupportsUnsafeStructVector(bool unsafeStructVector) => false;
+
+        bool IFlatSharpAttributeSupportTester.SupportsMemoryMarshal(MemoryMarshalBehavior option) => false;
+
+        bool IFlatSharpAttributeSupportTester.SupportsWriteThrough(bool writeThroughOption) => true;
+
+        bool IFlatSharpAttributeSupportTester.SupportsRpcInterface(bool rpcInterface) => false;
+    }
+}
