@@ -31,8 +31,9 @@ namespace FlatSharp.Compiler.SchemaModel
         {
             this.attributes = new(call.Attributes);
             this.fullName = $"{parentService.Name}.{call.Name}";
+            this.call = call;
 
-            this.attributes.Validate(this);
+            this.ValidateAttributes(this.attributes);
             this.ValidateHasSerializer(call.Request);
             this.ValidateHasSerializer(call.Response);
         }
@@ -60,30 +61,30 @@ namespace FlatSharp.Compiler.SchemaModel
 
         string IFlatSharpAttributeSupportTester.FullName => this.fullName;
 
-        bool IFlatSharpAttributeSupportTester.SupportsDefaultCtorKindOption(DefaultConstructorKind kind) => false;
+        SupportTestResult IFlatSharpAttributeSupportTester.SupportsDefaultCtorKindOption(DefaultConstructorKind kind) => SupportTestResult.NeverValid;
 
-        bool IFlatSharpAttributeSupportTester.SupportsDeserializationOption(FlatBufferDeserializationOption option) => false;
+        SupportTestResult IFlatSharpAttributeSupportTester.SupportsDeserializationOption(FlatBufferDeserializationOption option) => SupportTestResult.NeverValid;
 
-        bool IFlatSharpAttributeSupportTester.SupportsForceWrite(bool forceWriteOption) => false;
+        SupportTestResult IFlatSharpAttributeSupportTester.SupportsForceWrite(bool forceWriteOption) => SupportTestResult.NeverValid;
 
-        bool IFlatSharpAttributeSupportTester.SupportsMemoryMarshal(MemoryMarshalBehavior option) => false;
+        SupportTestResult IFlatSharpAttributeSupportTester.SupportsMemoryMarshal(MemoryMarshalBehavior option) => SupportTestResult.NeverValid;
 
-        bool IFlatSharpAttributeSupportTester.SupportsNonVirtual(bool nonVirtualValue) => false;
+        SupportTestResult IFlatSharpAttributeSupportTester.SupportsNonVirtual(bool nonVirtualValue) => SupportTestResult.NeverValid;
 
-        bool IFlatSharpAttributeSupportTester.SupportsRpcInterface(bool supportsRpcInterface) => false;
+        SupportTestResult IFlatSharpAttributeSupportTester.SupportsRpcInterface(bool supportsRpcInterface) => SupportTestResult.NeverValid;
 
-        bool IFlatSharpAttributeSupportTester.SupportsSetterKind(SetterKind setterKind) => false;
+        SupportTestResult IFlatSharpAttributeSupportTester.SupportsSetterKind(SetterKind setterKind) => SupportTestResult.NeverValid;
 
-        bool IFlatSharpAttributeSupportTester.SupportsSharedString(bool sharedStringOption) => false;
+        SupportTestResult IFlatSharpAttributeSupportTester.SupportsSharedString(bool sharedStringOption) => SupportTestResult.NeverValid;
 
-        bool IFlatSharpAttributeSupportTester.SupportsSortedVector(bool sortedVectorOption) => false;
+        SupportTestResult IFlatSharpAttributeSupportTester.SupportsSortedVector(bool sortedVectorOption) => SupportTestResult.NeverValid;
 
-        bool IFlatSharpAttributeSupportTester.SupportsUnsafeStructVector(bool unsafeStructVector) => false;
+        SupportTestResult IFlatSharpAttributeSupportTester.SupportsUnsafeStructVector(bool unsafeStructVector) => SupportTestResult.NeverValid;
 
-        bool IFlatSharpAttributeSupportTester.SupportsVectorType(VectorType vectorType) => false;
+        SupportTestResult IFlatSharpAttributeSupportTester.SupportsVectorType(VectorType vectorType) => SupportTestResult.NeverValid;
 
-        bool IFlatSharpAttributeSupportTester.SupportsWriteThrough(bool writeThroughOption) => false;
+        SupportTestResult IFlatSharpAttributeSupportTester.SupportsWriteThrough(bool writeThroughOption) => SupportTestResult.NeverValid;
 
-        bool IFlatSharpAttributeSupportTester.SupportsStreamingType(RpcStreamingType streamingType) => true;
+        SupportTestResult IFlatSharpAttributeSupportTester.SupportsStreamingType(RpcStreamingType streamingType) => SupportTestResult.Valid;
     }
 }

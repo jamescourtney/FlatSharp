@@ -24,13 +24,13 @@ namespace FlatSharpTests.Compiler
     using FlatSharp.Compiler;
     using Xunit;
 
-    
     public class OptionalScalarTests
     {
         [Fact]
         public void TestOptionalScalars()
         {
             string schema = $@"
+            {MetadataHelpers.AllAttributes}
             namespace OptionalScalarTests;
             
             enum TestEnum : ubyte
@@ -39,7 +39,7 @@ namespace FlatSharpTests.Compiler
                 B = 2
             }}
 
-            table Table ({MetadataKeys.SerializerKind}:greedy) {{
+            table Table ({MetadataKeys.SerializerKind}:""greedy"") {{
                 Bool : bool = null;
                 Byte : ubyte = null;
                 SByte : byte = null;

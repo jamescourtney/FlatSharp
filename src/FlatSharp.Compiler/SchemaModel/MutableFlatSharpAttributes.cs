@@ -42,6 +42,7 @@ namespace FlatSharp.Compiler
                 this.ValueStruct = other.ValueStruct;
                 this.VectorKind = other.VectorKind;
                 this.WriteThrough = other.WriteThrough;
+                this.StreamingType = other.StreamingType;
             }
         }
 
@@ -70,5 +71,7 @@ namespace FlatSharp.Compiler
         public VectorType? VectorKind { get; set; }
 
         public bool? WriteThrough { get; set; }
+
+        public RpcStreamingType? StreamingType { get; set; }
     }
 }

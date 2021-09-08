@@ -23,6 +23,12 @@ namespace FlatSharp.Compiler
         public static (string ns, string typeName) ParseName(string name)
         {
             int lastIndex = name.LastIndexOf('.');
+            if (lastIndex == -1)
+            {
+                ErrorContext.Current.RegisterError($"Type '{name}' not within a namespace.");
+                return ("TempNs", name);
+            }
+
             return (name.Substring(0, lastIndex), name.Substring(lastIndex + 1));
         }
 

@@ -35,7 +35,7 @@ namespace FlatSharp.Compiler.SchemaModel
                     var serializer = Serializer<T>.Value;
                     var bufferWriter = sc.GetBufferWriter();
                     var span = bufferWriter.GetSpan(serializer.GetMaxSize(item));
-                    int bytesWritten = serializer.Write(SpanWriter.Instance, span, item);
+                    int bytesWritten = serializer.Write(default(SpanWriter), span, item);
                     bufferWriter.Advance(bytesWritten);
                     sc.Complete();
                 }},
@@ -49,7 +49,7 @@ namespace FlatSharp.Compiler.SchemaModel
         public RpcServiceSchemaModel(Schema schema, RpcService service) : base(schema, service.Name, new FlatSharpAttributes(service.Attributes))
         {
             this.service = service;
-            this.interfaceName = $"I{service.Name}";
+            this.interfaceName = $"I{this.Name}";
             this.calls = new();
 
             if (service.Calls is not null)
@@ -564,6 +564,6 @@ namespace FlatSharp.Compiler.SchemaModel
             return $"new {GrpcCore}.{methodType}ServerMethod<{call.RequestType}, {call.ResponseType}>(serviceImpl.{call.Name})";
         }
 
-        public override bool SupportsRpcInterface(bool supportsRpcInterface) => true;
+        public override SupportTestResult SupportsRpcInterface(bool supportsRpcInterface) => SupportTestResult.Valid;
     }
 }

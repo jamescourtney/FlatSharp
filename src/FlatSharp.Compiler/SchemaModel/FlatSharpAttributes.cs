@@ -60,69 +60,6 @@ namespace FlatSharp.Compiler
 
         public RpcStreamingType? StreamingType => this.TryParseEnum(MetadataKeys.Streaming, RpcStreamingType.None);
 
-        public void Validate(IFlatSharpAttributeSupportTester testable)
-        {
-            void RegisterError(string key)
-            {
-                ErrorContext.Current.RegisterError($"Attribute '{key}' declared on '{testable.FullName}' is not valid on {testable.ElementType} elements.");
-            }
-
-            if (this.NonVirtual is not null && !testable.SupportsNonVirtual(this.NonVirtual.Value))
-            {
-                RegisterError(MetadataKeys.NonVirtualProperty);
-            }
-
-            if (this.DeserializationOption is not null && !testable.SupportsDeserializationOption(this.DeserializationOption.Value))
-            {
-                RegisterError(MetadataKeys.SerializerKind);
-            }
-
-            if (this.SortedVector is not null && !testable.SupportsSortedVector(this.SortedVector.Value))
-            {
-                RegisterError(MetadataKeys.SortedVector);
-            }
-
-            if (this.SharedString is not null && !testable.SupportsSharedString(this.SharedString.Value))
-            {
-                RegisterError(MetadataKeys.SharedString);
-            }
-
-            if (this.DefaultCtorKind is not null && !testable.SupportsDefaultCtorKindOption(this.DefaultCtorKind.Value))
-            {
-                RegisterError(MetadataKeys.DefaultConstructorKind);
-            }
-
-            if (this.SetterKind is not null && !testable.SupportsSetterKind(this.SetterKind.Value))
-            {
-                RegisterError(MetadataKeys.Setter);
-            }
-
-            if (this.ForceWrite is not null && !testable.SupportsForceWrite(this.ForceWrite.Value))
-            {
-                RegisterError(MetadataKeys.ForceWrite);
-            }
-
-            if (this.UnsafeStructVector is not null && !testable.SupportsUnsafeStructVector(this.UnsafeStructVector.Value))
-            {
-                RegisterError(MetadataKeys.UnsafeValueStructVector);
-            }
-
-            if (this.MemoryMarshalBehavior is not null && !testable.SupportsMemoryMarshal(this.MemoryMarshalBehavior.Value))
-            {
-                RegisterError(MetadataKeys.MemoryMarshalBehavior);
-            }
-
-            if (this.VectorKind is not null && !testable.SupportsVectorType(this.VectorKind.Value))
-            {
-                RegisterError(MetadataKeys.VectorKind);
-            }
-
-            if (this.WriteThrough is not null && !testable.SupportsWriteThrough(this.WriteThrough.Value))
-            {
-                RegisterError(MetadataKeys.WriteThrough);
-            }
-        }
-
         private bool? TryParseBoolean(string key)
         {
             if (this.rawAttributes.TryGetValue(key, out Schema.KeyValue? value))
@@ -160,7 +97,7 @@ namespace FlatSharp.Compiler
         {
             if (this.rawAttributes.TryGetValue(key, out Schema.KeyValue? value))
             {
-                if (value.Value is null)
+                if (value.Value == "0") // seems to indicate that value isn't present.
                 {
                     return defaultIfPresent;
                 }

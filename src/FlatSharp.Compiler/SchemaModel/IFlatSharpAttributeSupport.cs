@@ -35,111 +35,146 @@ namespace FlatSharp.Compiler.SchemaModel
         RpcCall = 12,
     }
 
+    public class SupportTestResult
+    {
+        private const string ElementTypeSubs = "__ELEMENT_TYPE__";
+        private const string AttributeNameSubs = "__ATTR_NAME__";
+        private const string AttributeValueSubs = "__ATTR_VALUE__";
+
+        public static readonly SupportTestResult Valid = new(null, true);
+
+        public static readonly SupportTestResult NeverValid = new SupportTestResult($"The attribute {AttributeNameSubs} is never valid on {ElementTypeSubs} elements.", false);
+
+        public static readonly SupportTestResult ValueInvalid = new SupportTestResult($"The attribute {AttributeNameSubs} value {AttributeValueSubs} is not valid on {ElementTypeSubs} elements.", false);
+
+
+        private SupportTestResult(string? message, bool isValid)
+        {
+            this.Message = message ?? string.Empty;
+            this.IsValid = isValid;
+        }
+
+        public string Message { get; }
+
+        public bool IsValid { get; }
+
+        public string ToString(FlatBufferSchemaElementType type, string attributeName, string attributeValue)
+        {
+            return this.Message
+                .Replace(AttributeNameSubs, $"'{attributeName}'")
+                .Replace(ElementTypeSubs, type.ToString())
+                .Replace(AttributeValueSubs, attributeValue);
+        }
+    }
+
     public interface IFlatSharpAttributeSupportTester
     {
         FlatBufferSchemaElementType ElementType { get; }
 
         string FullName { get; }
 
-        bool SupportsNonVirtual(bool nonVirtualValue);
+        SupportTestResult SupportsNonVirtual(bool nonVirtualValue);
 
-        bool SupportsVectorType(VectorType vectorType);
+        SupportTestResult SupportsVectorType(VectorType vectorType);
 
-        bool SupportsDeserializationOption(FlatBufferDeserializationOption option);
+        SupportTestResult SupportsDeserializationOption(FlatBufferDeserializationOption option);
 
-        bool SupportsSortedVector(bool sortedVectorOption);
+        SupportTestResult SupportsSortedVector(bool sortedVectorOption);
 
-        bool SupportsSharedString(bool sharedStringOption);
+        SupportTestResult SupportsSharedString(bool sharedStringOption);
 
-        bool SupportsDefaultCtorKindOption(DefaultConstructorKind kind);
+        SupportTestResult SupportsDefaultCtorKindOption(DefaultConstructorKind kind);
 
-        bool SupportsSetterKind(SetterKind setterKind);
+        SupportTestResult SupportsSetterKind(SetterKind setterKind);
 
-        bool SupportsForceWrite(bool forceWriteOption);
+        SupportTestResult SupportsForceWrite(bool forceWriteOption);
 
-        bool SupportsUnsafeStructVector(bool unsafeStructVector);
+        SupportTestResult SupportsUnsafeStructVector(bool unsafeStructVector);
 
-        bool SupportsMemoryMarshal(MemoryMarshalBehavior option);
+        SupportTestResult SupportsMemoryMarshal(MemoryMarshalBehavior option);
 
-        bool SupportsWriteThrough(bool writeThroughOption);
+        SupportTestResult SupportsWriteThrough(bool writeThroughOption);
 
-        bool SupportsRpcInterface(bool supportsRpcInterface);
+        SupportTestResult SupportsRpcInterface(bool supportsRpcInterface);
 
-        bool SupportsStreamingType(RpcStreamingType streamingType);
+        SupportTestResult SupportsStreamingType(RpcStreamingType streamingType);
     }
 
     public static class IFlatSharpAttributeSupportTesterExtensions
     {
-        public static void Validate(this IFlatSharpAttributeSupportTester testable, IFlatSharpAttributes attrs)
+        public static void ValidateAttributes(this IFlatSharpAttributeSupportTester testable, IFlatSharpAttributes attrs)
         {
-            void RegisterError(string key)
+            void RegisterError(string key, SupportTestResult result, object value)
             {
-                ErrorContext.Current.RegisterError($"Attribute '{key}' declared on '{testable.FullName}' is not valid on {testable.ElementType} elements.");
+                if (!result.IsValid)
+                {
+                    ErrorContext.Current.RegisterError(result.ToString(testable.ElementType, key, value?.ToString() ?? string.Empty));
+                }
             }
 
-            if (attrs.NonVirtual is not null && !testable.SupportsNonVirtual(attrs.NonVirtual.Value))
+            if (attrs.NonVirtual is not null)
             {
-                RegisterError(MetadataKeys.NonVirtualProperty);
+                RegisterError(MetadataKeys.NonVirtualProperty, testable.SupportsNonVirtual(attrs.NonVirtual.Value), attrs.NonVirtual.Value);
             }
 
-            if (attrs.DeserializationOption is not null && !testable.SupportsDeserializationOption(attrs.DeserializationOption.Value))
+            if (attrs.DeserializationOption is not null)
             {
-                RegisterError(MetadataKeys.SerializerKind);
+                RegisterError(MetadataKeys.SerializerKind, testable.SupportsDeserializationOption(attrs.DeserializationOption.Value), attrs.DeserializationOption.Value);
             }
 
-            if (attrs.SortedVector is not null && !testable.SupportsSortedVector(attrs.SortedVector.Value))
+            if (attrs.SortedVector is not null)
             {
-                RegisterError(MetadataKeys.SortedVector);
+                RegisterError(MetadataKeys.SortedVector, testable.SupportsSortedVector(attrs.SortedVector.Value), attrs.SortedVector.Value);
             }
 
-            if (attrs.SharedString is not null && !testable.SupportsSharedString(attrs.SharedString.Value))
+            if (attrs.SharedString is not null)
             {
-                RegisterError(MetadataKeys.SharedString);
+                RegisterError(MetadataKeys.SharedString, testable.SupportsSharedString(attrs.SharedString.Value), attrs.SharedString.Value);
             }
 
-            if (attrs.DefaultCtorKind is not null && !testable.SupportsDefaultCtorKindOption(attrs.DefaultCtorKind.Value))
+            if (attrs.DefaultCtorKind is not null)
             {
-                RegisterError(MetadataKeys.DefaultConstructorKind);
+                RegisterError(MetadataKeys.DefaultConstructorKind, testable.SupportsDefaultCtorKindOption(attrs.DefaultCtorKind.Value), attrs.DefaultCtorKind.Value);
             }
 
-            if (attrs.SetterKind is not null && !testable.SupportsSetterKind(attrs.SetterKind.Value))
+            if (attrs.SetterKind is not null)
             {
-                RegisterError(MetadataKeys.Setter);
+                RegisterError(MetadataKeys.Setter, testable.SupportsSetterKind(attrs.SetterKind.Value), attrs.SetterKind.Value);
             }
 
-            if (attrs.ForceWrite is not null && !testable.SupportsForceWrite(attrs.ForceWrite.Value))
+            if (attrs.ForceWrite is not null)
             {
-                RegisterError(MetadataKeys.ForceWrite);
+                RegisterError(MetadataKeys.ForceWrite, testable.SupportsForceWrite(attrs.ForceWrite.Value), attrs.ForceWrite.Value);
             }
 
-            if (attrs.UnsafeStructVector is not null && !testable.SupportsUnsafeStructVector(attrs.UnsafeStructVector.Value))
+            if (attrs.UnsafeStructVector is not null)
             {
-                RegisterError(MetadataKeys.UnsafeValueStructVector);
+                RegisterError(MetadataKeys.UnsafeValueStructVector, testable.SupportsUnsafeStructVector(attrs.UnsafeStructVector.Value), attrs.UnsafeStructVector.Value);
             }
 
-            if (attrs.MemoryMarshalBehavior is not null && !testable.SupportsMemoryMarshal(attrs.MemoryMarshalBehavior.Value))
+            if (attrs.MemoryMarshalBehavior is not null)
             {
-                RegisterError(MetadataKeys.MemoryMarshalBehavior);
+                RegisterError(MetadataKeys.MemoryMarshalBehavior, testable.SupportsMemoryMarshal(attrs.MemoryMarshalBehavior.Value), attrs.MemoryMarshalBehavior.Value);
             }
 
-            if (attrs.VectorKind is not null && !testable.SupportsVectorType(attrs.VectorKind.Value))
+            if (attrs.VectorKind is not null)
             {
-                RegisterError(MetadataKeys.VectorKind);
+                RegisterError(MetadataKeys.VectorKind, testable.SupportsVectorType(attrs.VectorKind.Value), attrs.VectorKind.Value);
             }
 
-            if (attrs.WriteThrough is not null && !testable.SupportsWriteThrough(attrs.WriteThrough.Value))
+            if (attrs.WriteThrough is not null)
             {
-                RegisterError(MetadataKeys.WriteThrough);
+                RegisterError(MetadataKeys.WriteThrough, testable.SupportsWriteThrough(attrs.WriteThrough.Value), attrs.WriteThrough.Value);
             }
 
-            if (attrs.RpcInterface is not null && !testable.SupportsRpcInterface(attrs.RpcInterface.Value))
+            if (attrs.RpcInterface is not null)
             {
-                RegisterError(MetadataKeys.RpcInterface);
+                RegisterError(MetadataKeys.RpcInterface, testable.SupportsRpcInterface(attrs.RpcInterface.Value), attrs.RpcInterface.Value);
             }
 
-            if (attrs.StreamingType is not null && !testable.SupportsStreamingType(attrs.StreamingType.Value))
+            if (attrs.StreamingType is not null)
             {
-                RegisterError(MetadataKeys.Streaming);
+                RegisterError(MetadataKeys.Streaming, testable.SupportsStreamingType(attrs.StreamingType.Value), attrs.StreamingType.Value);
             }
         }
     }

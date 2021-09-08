@@ -26,36 +26,16 @@ namespace FlatSharpTests.Compiler
 
     public class SharedStringCompilerTests
     {
-        // [Fact]
-        private void SharedStringInlineTypeTest()
-        {
-            string schema = $@"
-            namespace SharedStringTests;
-            table Table {{
-                foo:SharedString;
-                bar:[SharedString] ({MetadataKeys.VectorKind}:array);
-                baz:[SharedString] ({MetadataKeys.VectorKind}:ilist);
-            }}"; 
-
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
-
-            Type tableType = asm.GetTypes().Single(x => x.FullName == "SharedStringTests.Table");
-            var property = tableType.GetProperty("foo");
-
-            Assert.Equal(typeof(SharedString), property.PropertyType);
-            Assert.Equal(typeof(SharedString[]), tableType.GetProperty("bar").PropertyType);
-            Assert.Equal(typeof(IList<SharedString>), tableType.GetProperty("baz").PropertyType);
-        }
-
         [Fact]
         public void SharedStringMetadataTypeTest()
         {
             string schema = $@"
+            {MetadataHelpers.AllAttributes}
             namespace SharedStringTests;
             table Table {{
                 foo:string ({MetadataKeys.SharedString});
-                bar:[string] ({MetadataKeys.VectorKind}:array, {MetadataKeys.SharedString});
-                baz:[string] ({MetadataKeys.VectorKind}:ilist, {MetadataKeys.SharedString});
+                bar:[string] ({MetadataKeys.VectorKind}:""array"", {MetadataKeys.SharedString});
+                baz:[string] ({MetadataKeys.VectorKind}:""ilist"", {MetadataKeys.SharedString});
             }}";
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());

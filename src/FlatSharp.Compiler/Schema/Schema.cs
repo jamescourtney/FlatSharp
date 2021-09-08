@@ -54,7 +54,7 @@ namespace FlatSharp.Compiler.Schema
         public virtual FlatBufferObject? RootTable { get; set; }
 
         [FlatBufferItem(5)]
-        public virtual IIndexedVector<string, RpcService>? Services { get; set; }
+        public virtual IList<RpcService>? Services { get; set; }
 
         [FlatBufferItem(6)]
         public virtual AdvancedFeatures AdvancedFeatures { get; set; }
@@ -91,6 +91,14 @@ namespace FlatSharp.Compiler.Schema
                 else if (ValueStructSchemaModel.TryCreate(this, obj, out var valueStructModel))
                 {
                     model.AddElement(valueStructModel);
+                }
+            }
+
+            if (this.Services is not null)
+            {
+                foreach (var service in this.Services)
+                {
+                    model.AddElement(new RpcServiceSchemaModel(this, service));
                 }
             }
 

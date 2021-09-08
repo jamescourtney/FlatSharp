@@ -16,19 +16,17 @@
 
 namespace FlatSharp.Compiler
 {
+    using CommandLine;
+    using FlatSharp.TypeModel;
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Linq;
     using System.Reflection;
-    using System.Runtime.ExceptionServices;
     using System.Runtime.InteropServices;
     using System.Security.Cryptography;
-    using System.Text;
     using System.Threading;
-    using CommandLine;
-    using FlatSharp.TypeModel;
 
     public class FlatSharpCompiler
     {
@@ -126,10 +124,7 @@ namespace FlatSharp.Compiler
                                     cSharp = $"{FailureMessage}\r\n/* Error: \r\n{exception}\r\n*/\r\n\r\n{cSharp}";
                                 }
 
-                                if (cSharp is not null)
-                                {
-                                    File.WriteAllText(outputFullPath, cSharp);
-                                }
+                                File.WriteAllText(outputFullPath, cSharp);
                             }
                         }
                         catch (IOException)
@@ -142,11 +137,25 @@ namespace FlatSharp.Compiler
                         }
                     }
                 }
+                catch (InvalidFbsFileException ex)
+                {
+                    foreach (var message in ex.Errors)
+                    {
+                        Console.Error.WriteLine(message);
+                    }
+
+                    return -1;
+                }
+                catch (InvalidFlatBufferDefinitionException ex)
+                {
+                    Console.Error.WriteLine(ex.Message);
+                    return -1;
+                }
                 catch (FlatSharpCompilationException)
                 {
                     Console.Error.WriteLine(
-                        $"FlatSharp failed to generate valid C# output. \r\n" + 
-                        $"This is commonly caused by the fbs schema using a C# keyword, for example: \r\n" + 
+                        $"FlatSharp failed to generate valid C# output. \r\n" +
+                        $"This is commonly caused by the fbs schema using a C# keyword, for example: \r\n" +
                         $"\ttable SomeTable {{\r\n\t\tclass : string\r\n\t}}\r\n" +
                         "\r\n" +
                         $"The output can be viewed in: '{Path.GetFullPath(outputFullPath)}'.");
@@ -272,8 +281,26 @@ namespace FlatSharp.Compiler
 
                 p.WaitForExit();
 
-                string output = Directory.GetFiles(outputDir, "*.bfbs").Single();
-                return File.ReadAllBytes(output);
+                if (p.ExitCode == 0)
+                {
+                    string output = Directory.GetFiles(outputDir, "*.bfbs").Single();
+                    return File.ReadAllBytes(output);
+                }
+                else
+                {
+                    string[] lines = stdout.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+                    foreach (var line in lines)
+                    {
+                        if (!string.IsNullOrEmpty(line))
+                        {
+                            ErrorContext.Current.RegisterError(line);
+                        }
+                    }
+
+                    ErrorContext.Current.ThrowIfHasErrors();
+                    throw new InvalidFbsFileException("Unknown error when invoking flatc. Process exited with error, but didn't write any errors.");
+                }
             }
             finally
             {
@@ -304,6 +331,8 @@ namespace FlatSharp.Compiler
                 FlatBufferSerializer serializer = new FlatBufferSerializer(FlatBufferDeserializationOption.Greedy); // immutable.
                 var schema = serializer.Parse<Schema.Schema>(bfbs);
                 var rootModel = schema.ToRootModel();
+
+                ErrorContext.Current.ThrowIfHasErrors();
 
                 foreach (var step in steps)
                 {

@@ -54,6 +54,15 @@ namespace FlatSharp.Compiler.SchemaModel
 
         public override FlatBufferSchemaElementType ElementType => FlatBufferSchemaElementType.Struct;
 
+        // Structs must have public default constructors.
+        public override SupportTestResult SupportsDefaultCtorKindOption(DefaultConstructorKind kind) => kind switch
+        {
+            DefaultConstructorKind.Public or DefaultConstructorKind.PublicObsolete => SupportTestResult.Valid,
+            _ => SupportTestResult.ValueInvalid,
+        };
+
+        public override SupportTestResult SupportsWriteThrough(bool writeThroughOption) => SupportTestResult.Valid;
+
         protected override void OnValidate()
         {
             // TODO   

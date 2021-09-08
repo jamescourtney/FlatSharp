@@ -33,6 +33,7 @@ namespace FlatSharpTests.Compiler
         {
             // https://github.com/google/flatbuffers/blob/master/samples/monster.fbs
             string schema = $@"
+{MetadataHelpers.AllAttributes}
 namespace MyGame;
 enum Color:byte {{ Red = 0, Green, Blue = 2 }}
 
@@ -57,7 +58,7 @@ table Monster ({MetadataKeys.SerializerKind}:""greedymutable"") {{
   path:[Vec3];
 }}
 
-table Weapon ({MetadataKeys.SerializerKind}:lazy) {{
+table Weapon ({MetadataKeys.SerializerKind}:""lazy"") {{
   name:string;
   damage:short;
 }}
@@ -102,19 +103,19 @@ root_type Monster;";
         [Fact]
         public void FlagsOptions_Greedy()
         {
-            this.TestFlags(FlatBufferDeserializationOption.Greedy, $"{MetadataKeys.SerializerKind}:{nameof(FlatBufferDeserializationOption.Greedy)}");
+            this.TestFlags(FlatBufferDeserializationOption.Greedy, $"{MetadataKeys.SerializerKind}:\"{nameof(FlatBufferDeserializationOption.Greedy)}\"");
         }
 
         [Fact]
         public void FlagsOptions_MutableGreedy()
         {
-            this.TestFlags(FlatBufferDeserializationOption.GreedyMutable, $"{MetadataKeys.SerializerKind}:{nameof(FlatBufferDeserializationOption.GreedyMutable)}");
+            this.TestFlags(FlatBufferDeserializationOption.GreedyMutable, $"{MetadataKeys.SerializerKind}:\"{nameof(FlatBufferDeserializationOption.GreedyMutable)}\"");
         }
 
         [Fact]
         public void FlagsOptions_Default()
         {
-            this.TestFlags(FlatBufferDeserializationOption.Default, $"{MetadataKeys.SerializerKind}:{nameof(FlatBufferDeserializationOption.Default)}");
+            this.TestFlags(FlatBufferDeserializationOption.Default, $"{MetadataKeys.SerializerKind}:\"{nameof(FlatBufferDeserializationOption.Default)}\"");
         }
 
         [Fact]
@@ -126,25 +127,25 @@ root_type Monster;";
         [Fact]
         public void FlagsOptions_Lazy()
         {
-            this.TestFlags(FlatBufferDeserializationOption.Lazy, $"{MetadataKeys.SerializerKind}:{nameof(FlatBufferDeserializationOption.Lazy)}");
+            this.TestFlags(FlatBufferDeserializationOption.Lazy, $"{MetadataKeys.SerializerKind}:\"{nameof(FlatBufferDeserializationOption.Lazy)}\"");
         }
 
         [Fact]
         public void FlagsOptions_MutableVectorCache()
         {
-            this.TestFlags(FlatBufferDeserializationOption.VectorCacheMutable, $"{MetadataKeys.SerializerKind}:{nameof(FlatBufferDeserializationOption.VectorCacheMutable)}");
+            this.TestFlags(FlatBufferDeserializationOption.VectorCacheMutable, $"{MetadataKeys.SerializerKind}:\"{nameof(FlatBufferDeserializationOption.VectorCacheMutable)}\"");
         }
 
         [Fact]
         public void FlagsOptions_VectorCache()
         {
-            this.TestFlags(FlatBufferDeserializationOption.VectorCache, $"{MetadataKeys.SerializerKind}:{nameof(FlatBufferDeserializationOption.VectorCache)}");
+            this.TestFlags(FlatBufferDeserializationOption.VectorCache, $"{MetadataKeys.SerializerKind}:\"{nameof(FlatBufferDeserializationOption.VectorCache)}\"");
         }
 
         [Fact]
         public void FlagsOptions_PropertyCache()
         {
-            this.TestFlags(FlatBufferDeserializationOption.PropertyCache, $"{MetadataKeys.SerializerKind}:{nameof(FlatBufferDeserializationOption.PropertyCache)}");
+            this.TestFlags(FlatBufferDeserializationOption.PropertyCache, $"{MetadataKeys.SerializerKind}:\"{nameof(FlatBufferDeserializationOption.PropertyCache)}\"");
         }
 
         [Fact]
@@ -158,7 +159,7 @@ root_type Monster;";
 
         private void TestFlags(FlatBufferDeserializationOption expectedFlags, string metadata)
         {
-            string schema = $"namespace Test; table FooTable ({metadata}) {{ foo:string; bar:string; }}";
+            string schema = $"{MetadataHelpers.AllAttributes} namespace Test; table FooTable ({metadata}) {{ foo:string; bar:string; }}";
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
 
             Type type = asm.GetType("Test.FooTable");

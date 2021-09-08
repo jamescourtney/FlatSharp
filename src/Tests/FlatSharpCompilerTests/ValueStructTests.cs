@@ -54,10 +54,11 @@ namespace FlatSharpTests.Compiler
         public void ValueStruct_Nested()
         {
             string schema = $@"
+                {MetadataHelpers.AllAttributes}
                 namespace ValueStructTests;
-                table Table ({MetadataKeys.SerializerKind}:""GreedyMutable"") {{ StructVector:[Struct]; Struct : Struct; }}
-                struct Struct ({MetadataKeys.ValueStruct}) {{ A:int; B : Inner; C : ubyte; }} 
+                table Table ({MetadataKeys.SerializerKind}:""GreedyMutable"") {{ StructVector:[Struct]; Item : Struct; }}
                 struct Inner ({MetadataKeys.ValueStruct}) {{ B : ulong; }}
+                struct Struct ({MetadataKeys.ValueStruct}) {{ A:int; B : Inner; C : ubyte; }} 
                 ";
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
@@ -78,7 +79,7 @@ namespace FlatSharpTests.Compiler
             PropertyInfo structVectorProperty = tableType.GetProperty("StructVector");
             Assert.Equal(typeof(IList<>).MakeGenericType(structType), structVectorProperty.PropertyType);
 
-            PropertyInfo structProperty = tableType.GetProperty("Struct");
+            PropertyInfo structProperty = tableType.GetProperty("Item");
             Assert.Equal(typeof(Nullable<>).MakeGenericType(structType), structProperty.PropertyType);
 
             FieldInfo structA = structType.GetField("A");
@@ -160,26 +161,28 @@ namespace FlatSharpTests.Compiler
         public void ValueStruct_WriteThrough_NotAllowed_OnStruct()
         {
             string schema = $@"
+                {MetadataHelpers.AllAttributes}
                 namespace ValueStructTests;
                 struct StructB ({MetadataKeys.ValueStruct}, {MetadataKeys.WriteThrough}) {{
                     A : int;
                 }}";
 
             var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.Contains($"Value struct 'StructB' declares the {MetadataKeys.WriteThrough} attribute. Write through is not supported on value type structs.", ex.Message);
+            Assert.Contains($"The attribute 'fs_writeThrough' is never valid on ValueStruct elements.", ex.Message);
         }
 
         [Fact]
         public void ValueStruct_WriteThrough_NotAllowed_OnField()
         {
             string schema = $@"
+                {MetadataHelpers.AllAttributes}
                 namespace ValueStructTests;
                 struct StructB ({MetadataKeys.ValueStruct}) {{
                     A : int ({MetadataKeys.WriteThrough});
                 }}";
 
             var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.Contains($"Value struct field 'StructB.A' declares the {MetadataKeys.WriteThrough} attribute. Write through is not supported on value type structs.", ex.Message);
+            Assert.Contains($"The attribute 'fs_writeThrough' is never valid on ValueStructField elements.", ex.Message);
         }
     }
 }

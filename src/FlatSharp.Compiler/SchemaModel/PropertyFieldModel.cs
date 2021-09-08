@@ -40,6 +40,8 @@ namespace FlatSharp.Compiler.SchemaModel
             this.CustomGetter = customGetter;
             this.FieldName = field.Name;
             this.Index = index;
+
+            this.ValidateAttributes(this.Attributes);
         }
 
         public bool ProtectedGetter { get; init; }
@@ -156,6 +158,10 @@ namespace FlatSharp.Compiler.SchemaModel
                 {
                     defaultInt = $"{(ulong)this.Field.DefaultInteger}ul";
                 }
+                if (this.Field.Type.BaseType == BaseType.Bool)
+                {
+                    return "true";
+                }
 
                 return $"({typeName}){defaultInt}";
             }
@@ -202,12 +208,12 @@ namespace FlatSharp.Compiler.SchemaModel
                 customAccessor = $"[{nameof(FlatBufferMetadataAttribute)}({nameof(FlatBufferMetadataKind)}.{nameof(FlatBufferMetadataKind.Accessor)}, \"{this.CustomGetter}\")]";
             }
 
-            if (this.Attributes.ForceWrite ?? this.Parent.Attributes.ForceWrite == true)
+            bool emitForcedWrite = this.Attributes.ForceWrite == true
+                                || (this.Attributes.ForceWrite == null && this.Parent.Attributes.ForceWrite == true && this.Field.Type.BaseType.IsScalar());
+
+            if (emitForcedWrite)
             {
-                if (this.Field.Type.BaseType.IsScalar())
-                {
-                    forceWrite = $", {nameof(FlatBufferItemAttribute.ForceWrite)} = true";
-                }
+                forceWrite = $", {nameof(FlatBufferItemAttribute.ForceWrite)} = true";
             }
 
             if (this.Attributes.WriteThrough ?? this.Parent.Attributes.WriteThrough == true)
@@ -252,7 +258,7 @@ namespace FlatSharp.Compiler.SchemaModel
             {
                 if (item.Value.Key)
                 {
-                    FlatSharpInternal.Assert(item.Value.Type.BaseType.TryGetBuiltInTypeName(out keyType), "Couldn't format key type");
+                    keyType = item.Value.Type.ResolveTypeOrElementTypeName(this.Parent.Schema, new FlatSharpAttributes(item.Value.Attributes));
                     return true;
                 }
             }
@@ -269,7 +275,7 @@ namespace FlatSharp.Compiler.SchemaModel
                 VectorType.Array => $"{innerType}[]",
                 VectorType.Memory => $"Memory<{innerType}>",
                 VectorType.ReadOnlyMemory => $"ReadOnlyMemory<{innerType}>",
-                VectorType.IIndexedVector => $"IIndexedVector<{keyType}, {innerType}>",
+                VectorType.IIndexedVector => $"IIndexedVector<{keyType ?? "string"}, {innerType}>",
                 _ => throw new FlatSharpInternalException("Unknown vector kind: " + this.Attributes.VectorKind),
             };
         }
@@ -278,28 +284,40 @@ namespace FlatSharp.Compiler.SchemaModel
 
         string IFlatSharpAttributeSupportTester.FullName => $"{this.Parent.FullName}.{this.FieldName}";
 
-        bool IFlatSharpAttributeSupportTester.SupportsNonVirtual(bool nonVirtualValue) => true;
+        SupportTestResult IFlatSharpAttributeSupportTester.SupportsNonVirtual(bool nonVirtualValue) => SupportTestResult.Valid;
 
-        bool IFlatSharpAttributeSupportTester.SupportsVectorType(VectorType vectorType) => true;
+        SupportTestResult IFlatSharpAttributeSupportTester.SupportsVectorType(VectorType vectorType) => this.ValidWhenParentIs<TableSchemaModel>();
 
-        bool IFlatSharpAttributeSupportTester.SupportsDeserializationOption(FlatBufferDeserializationOption option) => false;
+        SupportTestResult IFlatSharpAttributeSupportTester.SupportsDeserializationOption(FlatBufferDeserializationOption option) => SupportTestResult.NeverValid;
 
-        bool IFlatSharpAttributeSupportTester.SupportsSortedVector(bool sortedVectorOption) => true;
+        SupportTestResult IFlatSharpAttributeSupportTester.SupportsSortedVector(bool sortedVectorOption) => this.ValidWhenParentIs<TableSchemaModel>();
 
-        bool IFlatSharpAttributeSupportTester.SupportsSharedString(bool sharedStringOption) => true;
+        SupportTestResult IFlatSharpAttributeSupportTester.SupportsSharedString(bool sharedStringOption) => this.ValidWhenParentIs<TableSchemaModel>();
 
-        bool IFlatSharpAttributeSupportTester.SupportsDefaultCtorKindOption(DefaultConstructorKind kind) => false;
+        SupportTestResult IFlatSharpAttributeSupportTester.SupportsDefaultCtorKindOption(DefaultConstructorKind kind) => SupportTestResult.NeverValid;
 
-        bool IFlatSharpAttributeSupportTester.SupportsSetterKind(SetterKind setterKind) => true;
+        SupportTestResult IFlatSharpAttributeSupportTester.SupportsSetterKind(SetterKind setterKind) => SupportTestResult.Valid;
 
-        bool IFlatSharpAttributeSupportTester.SupportsForceWrite(bool forceWriteOption) => true;
+        SupportTestResult IFlatSharpAttributeSupportTester.SupportsForceWrite(bool forceWriteOption) => this.ValidWhenParentIs<TableSchemaModel>();
 
-        bool IFlatSharpAttributeSupportTester.SupportsUnsafeStructVector(bool unsafeStructVector) => false;
+        SupportTestResult IFlatSharpAttributeSupportTester.SupportsUnsafeStructVector(bool unsafeStructVector) => SupportTestResult.NeverValid;
 
-        bool IFlatSharpAttributeSupportTester.SupportsMemoryMarshal(MemoryMarshalBehavior option) => false;
+        SupportTestResult IFlatSharpAttributeSupportTester.SupportsMemoryMarshal(MemoryMarshalBehavior option) => SupportTestResult.NeverValid;
 
-        bool IFlatSharpAttributeSupportTester.SupportsWriteThrough(bool writeThroughOption) => true;
+        SupportTestResult IFlatSharpAttributeSupportTester.SupportsWriteThrough(bool writeThroughOption) => this.ValidWhenParentIs<ReferenceStructSchemaModel>();
 
-        bool IFlatSharpAttributeSupportTester.SupportsRpcInterface(bool rpcInterface) => true;
+        SupportTestResult IFlatSharpAttributeSupportTester.SupportsRpcInterface(bool rpcInterface) => SupportTestResult.NeverValid;
+
+        SupportTestResult IFlatSharpAttributeSupportTester.SupportsStreamingType(RpcStreamingType streamingType) => SupportTestResult.NeverValid;
+
+        private SupportTestResult ValidWhenParentIs<T>()
+        {
+            if (this.Parent is T)
+            {
+                return SupportTestResult.Valid;
+            }
+
+            return SupportTestResult.NeverValid;
+        }
     }
 }

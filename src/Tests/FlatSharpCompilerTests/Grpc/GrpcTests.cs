@@ -33,29 +33,30 @@ namespace FlatSharpTests.Compiler
         public void RouteGuideTest()
         {
             string schema = $@"
+{MetadataHelpers.AllAttributes}
 namespace routeguide;
 
     rpc_service RouteGuide
     {{
         GetFeature(Point):Feature;
-        ListFeatures(Rectangle):Feature (streaming:server);
-        RecordRoute(Point):RouteSummary (streaming:client);
-        RouteChat(RouteNote):RouteNote (streaming:duplex);
+        ListFeatures(Rectangle):Feature (streaming:""server"");
+        RecordRoute(Point):RouteSummary (streaming:""client"");
+        RouteChat(RouteNote):RouteNote (streaming:""duplex"");
     }}
 
-    table Point ({MetadataKeys.SerializerKind}:lazy)
+    table Point ({MetadataKeys.SerializerKind}:""lazy"")
     {{
         latitude:int32;
         longitude:int32;
     }}
 
-    table Rectangle ({MetadataKeys.SerializerKind}:lazy)
+    table Rectangle ({MetadataKeys.SerializerKind}:""lazy"")
     {{
         lo:Point;
         hi:Point;
     }}
 
-    table Feature ({MetadataKeys.SerializerKind}:lazy)
+    table Feature ({MetadataKeys.SerializerKind}:""lazy"")
     {{
         // The name of the feature.
         name:string;
@@ -64,20 +65,20 @@ namespace routeguide;
         location:Point;
     }}
 
-    table RouteNote ({MetadataKeys.SerializerKind}:lazy)
+    table RouteNote ({MetadataKeys.SerializerKind}:""lazy"")
     {{
         location:Point;
         message:string;
     }}
 
-    table RouteSummary ({MetadataKeys.SerializerKind}:greedymutable)
+    table RouteSummary ({MetadataKeys.SerializerKind}:""greedymutable"")
     {{
         point_count:int;
         feature_count:int;
         distance:int;
         elapsed_time:int;
     }}";
-            Assembly compiled = FlatSharpCompiler.CompileAndLoadAssembly(
+            (Assembly compiled, string source) = FlatSharpCompiler.CompileAndLoadAssemblyWithCode(
                 schema,
                 new(),
                 additionalReferences: new[] 
@@ -119,29 +120,35 @@ namespace routeguide;
         public void NoPrecompiledSerializer()
         {
             string schema = $@"
-namespace NoPrecompiledSerializer;
+                {MetadataHelpers.AllAttributes}
+                namespace NoPrecompiledSerializer;
 
-    rpc_service RouteGuide
-    {{
-        GetFeature(Point):Point;
-    }}
+                rpc_service RouteGuide
+                {{
+                    GetFeature(Point):Point;
+                }}
 
-    table Point
-    {{
-        latitude:int32;
-        longitude:int32;
-    }}";
+                table Point
+                {{
+                    latitude:int32;
+                    longitude:int32;
+                }}";
 
-            Assert.True(false);
+            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(
+                schema,
+                new(),
+                additionalReferences: new[]
+                {
+                    typeof(Grpc.Core.AsyncClientStreamingCall<,>).Assembly,
+                    typeof(ChannelReader<>).Assembly,
+                }));
+
+            Assert.Contains(
+                "RPC call 'NoPrecompiledSerializer.RouteGuide.GetFeature' uses table 'NoPrecompiledSerializer.Point', which does not specify the 'fs_serializer' attribute.",
+                ex.Message);
         }
 
 #if NET5_0_OR_GREATER
-        [Fact]
-        public void RpcInterfaceWithName()
-        {
-            this.RpcInterfaceWithNameHelper($"{MetadataKeys.RpcInterface}:\"IBlahService\"", "IBlahService");
-        }
-
         [Fact]
         public void RpcInterfaceWithDefaultName()
         {
@@ -151,6 +158,7 @@ namespace NoPrecompiledSerializer;
         private void RpcInterfaceWithNameHelper(string attribute, string expectedInterfaceName)
         {
             string schema = $@"
+                {MetadataHelpers.AllAttributes}
                 namespace Foobar;
                 table Message ({MetadataKeys.SerializerKind}) {{ Value : string; }}
                 rpc_service FoobarService ({attribute}) 

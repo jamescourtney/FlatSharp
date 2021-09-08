@@ -30,8 +30,8 @@ namespace FlatSharp.Compiler.SchemaModel
     {
         private readonly FlatBufferObject @struct;
 
-        private readonly List<(int offset, string name, string visibility, string type, string accessor)> fields;
-        private readonly List<(string type, string name, List<string> items, Field field)> structVectors;
+        private readonly List<ValueStructFieldModel> fields;
+        private readonly List<ValueStructVectorModel> structVectors;
 
         private ValueStructSchemaModel(Schema schema, FlatBufferObject @struct) : base(schema, @struct.Name, new FlatSharpAttributes(@struct.Attributes))
         {
@@ -45,6 +45,7 @@ namespace FlatSharp.Compiler.SchemaModel
             foreach (var kvp in this.@struct.Fields.OrderBy(x => x.Value.Id))
             {
                 Field field = kvp.Value;
+                IFlatSharpAttributes attrs = new FlatSharpAttributes(field.Attributes);
 
                 string fieldType = field.Type.ResolveTypeOrElementTypeName(schema, this.Attributes);
                 if (field.Type.BaseType == BaseType.Array)
@@ -57,15 +58,20 @@ namespace FlatSharp.Compiler.SchemaModel
                     {
                         string name = $"__flatsharp__{field.Name}_{i}";
 
+                        MutableFlatSharpAttributes tempAttrs = new MutableFlatSharpAttributes(attrs)
+                        {
+                            UnsafeStructVector = null,
+                        };
+
                         vectorFields.Add(name);
-                        this.fields.Add((field.Offset + (i * size), name, "private", fieldType, $"{field.Name}({i})"));
+                        this.fields.Add(new(field.Offset + (i * size), name, "private", fieldType, $"{field.Name}({i})", this, tempAttrs));
                     }
 
-                    this.structVectors.Add((fieldType, field.Name, vectorFields, field));
+                    this.structVectors.Add(new(fieldType, field.Name, vectorFields, this, attrs));
                 }
                 else
                 {
-                    this.fields.Add((field.Offset, field.Name, "public", fieldType, field.Name));
+                    this.fields.Add(new(field.Offset, field.Name, "public", fieldType, field.Name, this, attrs));
                 }
             }
         }
@@ -124,38 +130,37 @@ namespace FlatSharp.Compiler.SchemaModel
             {
                 foreach (var field in this.fields)
                 {
-                    writer.AppendLine($"[System.Runtime.InteropServices.FieldOffset({field.offset})]");
-                    writer.AppendLine($"[FlatBufferMetadataAttribute(FlatBufferMetadataKind.Accessor, \"{field.accessor}\")]");
-                    writer.AppendLine($"{field.visibility} {field.type} {field.name};");
+                    writer.AppendLine($"[System.Runtime.InteropServices.FieldOffset({field.Offset})]");
+                    writer.AppendLine($"[FlatBufferMetadataAttribute(FlatBufferMetadataKind.Accessor, \"{field.Accessor}\")]");
+                    writer.AppendLine($"{field.Visibility} {field.TypeName} {field.Name};");
                     writer.AppendLine();
                 }
 
                 foreach (var sv in this.structVectors)
                 {
-                    writer.AppendLine($"public int {sv.field.Name}_Length => {sv.field.Type.FixedLength};");
+                    writer.AppendLine($"public int {sv.Name}_Length => {sv.Properties.Count};");
                     writer.AppendLine();
-                    writer.AppendLine($"public static ref {sv.type} {sv.field.Name}_Item(ref {this.Name} item, int index)");
+                    writer.AppendLine($"public static ref {sv.TypeName} {sv.Name}_Item(ref {this.Name} item, int index)");
                     using (writer.WithBlock())
                     {
-                        var fieldAttrs = new FlatSharpAttributes(sv.field.Attributes);
-                        if (fieldAttrs.UnsafeStructVector == true)
+                        if (sv.Attributes.UnsafeStructVector == true)
                         {
-                            writer.AppendLine($"if (unchecked((uint)index) >= {sv.field.Type.FixedLength})");
+                            writer.AppendLine($"if (unchecked((uint)index) >= {sv.Properties.Count})");
                             using (writer.WithBlock())
                             {
                                 writer.AppendLine("throw new IndexOutOfRangeException();");
                             }
 
-                            writer.AppendLine($"return ref System.Runtime.CompilerServices.Unsafe.Add(ref item.{sv.items[0]}, index);");
+                            writer.AppendLine($"return ref System.Runtime.CompilerServices.Unsafe.Add(ref item.{sv.Properties[0]}, index);");
                         }
                         else
                         {
                             writer.AppendLine("switch (index)");
                             using (writer.WithBlock())
                             {
-                                for (int i = 0; i < sv.items.Count; ++i)
+                                for (int i = 0; i < sv.Properties.Count; ++i)
                                 {
-                                    var item = sv.items[i];
+                                    var item = sv.Properties[i];
                                     writer.AppendLine($"case {i}: return ref item.{item};");
                                 }
 
@@ -174,16 +179,125 @@ namespace FlatSharp.Compiler.SchemaModel
                 {
                     foreach (var sv in this.structVectors)
                     {
-                        writer.AppendLine($"public static ref {sv.type} {sv.field.Name}(this ref {this.Name} item, int index)");
+                        writer.AppendLine($"public static ref {sv.TypeName} {sv.Name}(this ref {this.Name} item, int index)");
                         using (writer.WithBlock())
                         {
-                            writer.AppendLine($"return ref {this.Name}.{sv.field.Name}_Item(ref item, index);");
+                            writer.AppendLine($"return ref {this.Name}.{sv.Name}_Item(ref item, index);");
                         }
                     }
                 }
             }
         }
 
-        public override bool SupportsMemoryMarshal(MemoryMarshalBehavior option) => true;
+        public override SupportTestResult SupportsMemoryMarshal(MemoryMarshalBehavior option) => SupportTestResult.Valid;
+
+
+        private class ValueStructVectorModel : IFlatSharpAttributeSupportTester
+        {
+            public ValueStructVectorModel(string type, string name, List<string> properties, ValueStructSchemaModel parent, IFlatSharpAttributes attributes)
+            {
+                this.Name = name;
+                this.TypeName = type;
+                this.Name = name;
+                this.FullName = $"{parent.Name}.{name}";
+                this.Properties = properties;
+                this.Attributes = attributes;
+
+                this.ValidateAttributes(attributes);
+            }
+
+            public IReadOnlyList<string> Properties { get; }
+
+            public string Name { get; }
+
+            public string TypeName { get; }
+
+            public FlatBufferSchemaElementType ElementType => FlatBufferSchemaElementType.ValueStructField;
+
+            public string FullName { get; }
+
+            public IFlatSharpAttributes Attributes { get; }
+
+            public SupportTestResult SupportsDefaultCtorKindOption(DefaultConstructorKind kind) => SupportTestResult.NeverValid;
+
+            public SupportTestResult SupportsDeserializationOption(FlatBufferDeserializationOption option) => SupportTestResult.NeverValid;
+
+            public SupportTestResult SupportsForceWrite(bool forceWriteOption) => SupportTestResult.NeverValid;
+
+            public SupportTestResult SupportsMemoryMarshal(MemoryMarshalBehavior option) => SupportTestResult.NeverValid;
+
+            public SupportTestResult SupportsNonVirtual(bool nonVirtualValue) => SupportTestResult.NeverValid;
+
+            public SupportTestResult SupportsRpcInterface(bool supportsRpcInterface) => SupportTestResult.NeverValid;
+
+            public SupportTestResult SupportsSetterKind(SetterKind setterKind) => SupportTestResult.NeverValid;
+
+            public SupportTestResult SupportsSharedString(bool sharedStringOption) => SupportTestResult.NeverValid;
+
+            public SupportTestResult SupportsSortedVector(bool sortedVectorOption) => SupportTestResult.NeverValid;
+
+            public SupportTestResult SupportsStreamingType(RpcStreamingType streamingType) => SupportTestResult.NeverValid;
+
+            public SupportTestResult SupportsUnsafeStructVector(bool unsafeStructVector) => SupportTestResult.Valid;
+
+            public SupportTestResult SupportsVectorType(VectorType vectorType) => SupportTestResult.NeverValid;
+
+            public SupportTestResult SupportsWriteThrough(bool writeThroughOption) => SupportTestResult.NeverValid;
+        }
+
+        private class ValueStructFieldModel : IFlatSharpAttributeSupportTester
+        {
+            public ValueStructFieldModel(int offset, string name, string visibility, string type, string accessor, ValueStructSchemaModel parent, IFlatSharpAttributes attributes)
+            {
+                this.Offset = offset;
+                this.Name = name;
+                this.Visibility = visibility;
+                this.TypeName = type;
+                this.Accessor = accessor;
+                this.FullName = $"{parent.Name}.{name}";
+
+                this.ValidateAttributes(attributes);
+            }
+
+            public int Offset { get; }
+
+            public string Name { get; }
+
+            public string Visibility { get; }
+
+            public string TypeName { get;  }
+
+            public string Accessor { get; }
+
+            public FlatBufferSchemaElementType ElementType => FlatBufferSchemaElementType.ValueStructField;
+
+            public string FullName { get; }
+
+            public SupportTestResult SupportsDefaultCtorKindOption(DefaultConstructorKind kind) => SupportTestResult.NeverValid;
+
+            public SupportTestResult SupportsDeserializationOption(FlatBufferDeserializationOption option) => SupportTestResult.NeverValid;
+
+            public SupportTestResult SupportsForceWrite(bool forceWriteOption) => SupportTestResult.NeverValid;
+
+            public SupportTestResult SupportsMemoryMarshal(MemoryMarshalBehavior option) => SupportTestResult.NeverValid;
+
+            public SupportTestResult SupportsNonVirtual(bool nonVirtualValue) => SupportTestResult.NeverValid;
+
+            public SupportTestResult SupportsRpcInterface(bool supportsRpcInterface) => SupportTestResult.NeverValid;
+
+            public SupportTestResult SupportsSetterKind(SetterKind setterKind) => SupportTestResult.NeverValid;
+
+            public SupportTestResult SupportsSharedString(bool sharedStringOption) => SupportTestResult.NeverValid;
+
+            public SupportTestResult SupportsSortedVector(bool sortedVectorOption) => SupportTestResult.NeverValid;
+
+            public SupportTestResult SupportsStreamingType(RpcStreamingType streamingType) => SupportTestResult.NeverValid;
+
+            public SupportTestResult SupportsUnsafeStructVector(bool unsafeStructVector) => SupportTestResult.NeverValid;
+
+            public SupportTestResult SupportsVectorType(VectorType vectorType) => SupportTestResult.NeverValid;
+
+            public SupportTestResult SupportsWriteThrough(bool writeThroughOption) => SupportTestResult.NeverValid;
+        }
     }
 }

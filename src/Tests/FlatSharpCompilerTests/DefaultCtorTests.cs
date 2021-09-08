@@ -23,13 +23,12 @@ namespace FlatSharpTests.Compiler
     using FlatSharp.Compiler;
     using Xunit;
 
-    
     public class DefaultCtorTests
     {
         [Fact]
         public void DefaultCtorKind_NotSpecified_Table()
         {
-            string schema = $"namespace Foo; table BaseTable {{ Int:int; }}";
+            string schema = $"{MetadataHelpers.AllAttributes}namespace Foo; table BaseTable {{ Int:int; }}";
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
             Type baseTableType = asm.GetTypes().Single(x => x.Name == "BaseTable");
@@ -43,7 +42,7 @@ namespace FlatSharpTests.Compiler
         [Fact]
         public void DefaultCtorKind_NotSpecified_Struct()
         {
-            string schema = $"namespace Foo; struct BaseTable {{ Int:int; }}";
+            string schema = $"{MetadataHelpers.AllAttributes}namespace Foo; struct BaseTable {{ Int:int; }}";
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
             Type baseTableType = asm.GetTypes().Single(x => x.Name == "BaseTable");
@@ -57,7 +56,7 @@ namespace FlatSharpTests.Compiler
         [Fact]
         public void DefaultCtorKind_NoValue_Table()
         {
-            string schema = $"namespace Foo; table BaseTable ({MetadataKeys.DefaultConstructorKind}) {{ Int:int; }}";
+            string schema = $"{MetadataHelpers.AllAttributes}namespace Foo; table BaseTable ({MetadataKeys.DefaultConstructorKind}) {{ Int:int; }}";
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
             Type baseTableType = asm.GetTypes().Single(x => x.Name == "BaseTable");
@@ -71,7 +70,7 @@ namespace FlatSharpTests.Compiler
         [Fact]
         public void DefaultCtorKind_NoValue_Struct()
         {
-            string schema = $"namespace Foo; struct BaseTable ({MetadataKeys.DefaultConstructorKind}) {{ Int:int; }}";
+            string schema = $"{MetadataHelpers.AllAttributes}namespace Foo; struct BaseTable ({MetadataKeys.DefaultConstructorKind}) {{ Int:int; }}";
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
             Type baseTableType = asm.GetTypes().Single(x => x.Name == "BaseTable");
@@ -86,17 +85,19 @@ namespace FlatSharpTests.Compiler
         public void DefaultCtorKind_None_Struct()
         {
             string schema = $@"
+            {MetadataHelpers.AllAttributes}
             namespace Foo; 
             struct InnerStruct ({MetadataKeys.DefaultConstructorKind}:""{DefaultConstructorKind.None}"") {{ Int:int; }}";
 
             var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.Equal("Message='Structs must have default constructors.', Scope=$..Foo.InnerStruct", ex.Errors[0]);
+            Assert.Contains("The attribute 'fs_defaultCtor' value None is not valid on Struct elements.", ex.Errors[0]);
         }
 
         [Fact]
         public void DefaultCtorKind_None_Table()
         {
             string schema = $@"
+            {MetadataHelpers.AllAttributes}
             namespace Foo; 
             table Table ({MetadataKeys.DefaultConstructorKind}:""{DefaultConstructorKind.None}"") {{ Int:int; }}";
 
@@ -111,6 +112,7 @@ namespace FlatSharpTests.Compiler
         public void DefaultCtorKind_Public_Struct()
         {
             string schema = $@"
+            {MetadataHelpers.AllAttributes}
             namespace Foo; 
             struct InnerStruct ({MetadataKeys.DefaultConstructorKind}:""{DefaultConstructorKind.Public}"") {{ Int:int; }}";
 
@@ -127,6 +129,7 @@ namespace FlatSharpTests.Compiler
         public void DefaultCtorKind_Public_Table()
         {
             string schema = $@"
+            {MetadataHelpers.AllAttributes}
             namespace Foo; 
             table Table ({MetadataKeys.DefaultConstructorKind}:""{DefaultConstructorKind.Public}"") {{ Int:int; }}";
 
@@ -143,6 +146,7 @@ namespace FlatSharpTests.Compiler
         public void DefaultCtorKind_PublicObsolete_Struct()
         {
             string schema = $@"
+            {MetadataHelpers.AllAttributes}
             namespace Foo; 
             struct InnerStruct ({MetadataKeys.DefaultConstructorKind}:""{DefaultConstructorKind.PublicObsolete}"") {{ Int:int; }}";
 
@@ -159,6 +163,7 @@ namespace FlatSharpTests.Compiler
         public void DefaultCtorKind_PublicObsolete_Table()
         {
             string schema = $@"
+            {MetadataHelpers.AllAttributes}
             namespace Foo; 
             table Table ({MetadataKeys.DefaultConstructorKind}:""{DefaultConstructorKind.PublicObsolete}"") {{ Int:int; }}";
 

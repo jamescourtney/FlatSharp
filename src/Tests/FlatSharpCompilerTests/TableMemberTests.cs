@@ -90,101 +90,10 @@ namespace FlatSharpTests.Compiler
         [Fact]
         public void TableMember_string() => this.RunCompoundTest<string>("string");
 
-        [Fact]
-        public void TableMember_with_id()
-        {
-            try
-            {
-                const string Schema = "namespace TableMemberTests; table Table { member:string (id:1); member2:int (id:0); }";
-                var assembly = FlatSharpCompiler.CompileAndLoadAssembly(Schema, new());
-
-                var tableType = assembly.GetType("TableMemberTests.Table");
-                var property = tableType.GetProperty("member");
-
-                Assert.Equal(typeof(string), property.PropertyType);
-                var attribute = property.GetCustomAttribute<FlatBufferItemAttribute>();
-
-                Assert.Equal(1, attribute.Index);
-
-                dynamic item = Activator.CreateInstance(tableType);
-                item.member = "member";
-                item.member2 = 57;
-
-                var data = new byte[100];
-
-                var serializer = CompilerTestHelpers.CompilerTestSerializer.Compile((object)item);
-                serializer.Write(data, (object)item);
-                dynamic parsed = serializer.Parse(data);
-
-                Assert.Equal("member", parsed.member);
-                Assert.Equal(57, parsed.member2);
-            }
-            catch (TargetInvocationException ex)
-            {
-                throw ex.InnerException;
-            }
-        }
-
-        [Fact]
-        public void TableMember_only_some_fields_have_id()
-        {
-            try
-            {
-                const string Schema = "namespace TableMemberTests; table Table { member:string (id:1); member2:int; }";
-                Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(Schema, new()));
-            }
-            catch (TargetInvocationException ex)
-            {
-                throw ex.InnerException;
-            }
-        }
-
-        [Fact]
-        public void TableMember_negative_id()
-        {
-            try
-            {
-                const string Schema = "namespace TableMemberTests; table Table { member:string (id:0); member2:int (id:-1); }";
-                Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(Schema, new()));
-            }
-            catch (TargetInvocationException ex)
-            {
-                throw ex.InnerException;
-            }
-        }
-
-        [Fact]
-        public void TableMember_has_id_attribute_but_with_no_value()
-        {
-            try
-            {
-                const string Schema = "namespace TableMemberTests; table Table { member:string (id:0); member2:int (id); }";
-                Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(Schema, new()));
-            }
-            catch (TargetInvocationException ex)
-            {
-                throw ex.InnerException;
-            }
-        }
-
-        [Fact]
-        public void StructMember_with_id()
-        {
-            try
-            {
-                const string Schema = "namespace TableMemberTests; struct Struct { member:string (id:1); member2:int (id:0); }";
-                Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(Schema, new()));
-            }
-            catch (TargetInvocationException ex)
-            {
-                throw ex.InnerException;
-            }
-        }
-
         private void RunCompoundTestWithDefaultValue_Bool(string fbsType)
         {
             this.RunSingleTest<bool>($"{fbsType} = true", hasDefaultValue: true, expectedDefaultValue: true);
-            this.RunSingleTest<bool>($"{fbsType} = false", hasDefaultValue: true, expectedDefaultValue: false);
+            this.RunSingleTest<bool>($"{fbsType} = false", hasDefaultValue: false, expectedDefaultValue: false);
             this.RunCompoundTest<bool>(fbsType);
         }
 
@@ -196,6 +105,15 @@ namespace FlatSharpTests.Compiler
                 Random random = new Random();
                 byte[] data = new byte[16];
                 random.NextBytes(data);
+
+                if (typeof(T) == typeof(ulong))
+                {
+                    // FlatBuffers doesn't represent default values over long.maxvalue. Trim the leading
+                    // bit off the high and low values so we don't have to care about endianness.
+                    data[0] &= 0x7F;
+                    data[7] &= 0x7F;
+                }
+
                 randomValue = MemoryMarshal.Cast<byte, T>(data)[0];
             }
             else
@@ -212,19 +130,22 @@ namespace FlatSharpTests.Compiler
             this.RunSingleTest<T>(fbsType);
             this.RunSingleTest<T>($"{fbsType} ({MetadataKeys.Deprecated})", deprecated: true);
             this.RunSingleTest<IList<T>>($"[{fbsType}]");
-            this.RunSingleTest<IList<T>>($"[{fbsType}]  ({MetadataKeys.VectorKind}: IList)");
-            this.RunSingleTest<T[]>($"[{fbsType}]  ({MetadataKeys.VectorKind}: Array)");
-            this.RunSingleTest<IReadOnlyList<T>>($"[{fbsType}]  ({MetadataKeys.VectorKind}: IReadOnlyList)");
+            this.RunSingleTest<IList<T>>($"[{fbsType}]  ({MetadataKeys.VectorKind}:\"IList\")");
+            this.RunSingleTest<T[]>($"[{fbsType}]  ({MetadataKeys.VectorKind}:\"Array\")");
+            this.RunSingleTest<IReadOnlyList<T>>($"[{fbsType}]  ({MetadataKeys.VectorKind}:\"IReadOnlyList\")");
 
             if (typeof(T) == typeof(byte))
             {
-                this.RunSingleTest<Memory<T>?>($"[{fbsType}]  ({MetadataKeys.VectorKind}: Memory)");
-                this.RunSingleTest<ReadOnlyMemory<T>?>($"[{fbsType}]  ({MetadataKeys.VectorKind}: ReadOnlyMemory)");
+                this.RunSingleTest<Memory<T>?>($"[{fbsType}]  ({MetadataKeys.VectorKind}:\"Memory\")");
+                this.RunSingleTest<ReadOnlyMemory<T>?>($"[{fbsType}]  ({MetadataKeys.VectorKind}:\"ReadOnlyMemory\")");
             }
             else
             {
-                Assert.Throws<InvalidFbsFileException>(() => this.RunSingleTest<Memory<T>>($"[{fbsType}]  ({MetadataKeys.VectorKind}: Memory)"));
-                Assert.Throws<InvalidFbsFileException>(() => this.RunSingleTest<ReadOnlyMemory<T>>($"[{fbsType}]  ({MetadataKeys.VectorKind}: ReadOnlyMemory)"));
+                var ex1 = Assert.Throws<InvalidFlatBufferDefinitionException>(() => this.RunSingleTest<Memory<T>>($"[{fbsType}]  ({MetadataKeys.VectorKind}:\"Memory\")"));
+                var ex2 = Assert.Throws<InvalidFlatBufferDefinitionException>(() => this.RunSingleTest<ReadOnlyMemory<T>>($"[{fbsType}]  ({MetadataKeys.VectorKind}:\"ReadOnlyMemory\")"));
+
+                Assert.Contains("Memory vectors may only be ReadOnlyMemory<byte> or Memory<byte>", ex1.Message);
+                Assert.Contains("Memory vectors may only be ReadOnlyMemory<byte> or Memory<byte>", ex2.Message);
             }
         }
 
@@ -232,7 +153,7 @@ namespace FlatSharpTests.Compiler
         {
             try
             {
-                string schema = $@"namespace TableMemberTests; table Table {{ member:{fbsType}; member2:int; }}";
+                string schema = $@"{MetadataHelpers.AllAttributes} namespace TableMemberTests; table Table {{ member:{fbsType}; member2:int; }}";
                 Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
 
                 Type tableType = asm.GetType("TableMemberTests.Table");

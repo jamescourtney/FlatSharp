@@ -119,6 +119,7 @@ namespace FlatSharp.Compiler.Schema
         {
             switch (type)
             {
+                case BaseType.Bool:
                 case BaseType.Float:
                 case BaseType.Double:
                     return true;
@@ -130,7 +131,6 @@ namespace FlatSharp.Compiler.Schema
         {
             switch (type)
             {
-                case BaseType.Bool:
                 case BaseType.Byte:
                 case BaseType.UByte:
                 case BaseType.Short:

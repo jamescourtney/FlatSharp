@@ -51,9 +51,11 @@ namespace FlatSharp.Compiler.SchemaModel
 
         public override FlatBufferSchemaElementType ElementType => FlatBufferSchemaElementType.Table;
 
-        public override bool SupportsDeserializationOption(FlatBufferDeserializationOption option) => true;
+        public override SupportTestResult SupportsDeserializationOption(FlatBufferDeserializationOption option) => SupportTestResult.Valid;
 
-        public override bool SupportsForceWrite(bool forceWriteOption) => true;
+        public override SupportTestResult SupportsDefaultCtorKindOption(DefaultConstructorKind kind) => SupportTestResult.Valid;
+
+        public override SupportTestResult SupportsForceWrite(bool forceWriteOption) => SupportTestResult.Valid;
 
         protected override void OnValidate()
         {
@@ -86,9 +88,9 @@ namespace FlatSharp.Compiler.SchemaModel
         protected override void EmitClassDefinition(CodeWriter writer, CompileContext context)
         {
             string fileId = string.Empty;
-            if (this.Schema.RootTable?.Name == this.Name && !string.IsNullOrEmpty(this.Schema.FileIdentifier))
+            if (this.Schema.RootTable?.Name == this.FullName && !string.IsNullOrEmpty(this.Schema.FileIdentifier))
             {
-                fileId = $"{nameof(FlatBufferTableAttribute.FileIdentifier)} = \"{fileId}\"";
+                fileId = $"{nameof(FlatBufferTableAttribute.FileIdentifier)} = \"{this.Schema.FileIdentifier}\"";
             }
 
             string attribute = $"[FlatBufferTable({fileId})]";

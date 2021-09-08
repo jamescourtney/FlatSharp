@@ -65,9 +65,7 @@ namespace FlatSharp.Compiler.SchemaModel
 
         public sealed override string DeclaringFile { get; }
 
-        public sealed override bool SupportsDefaultCtorKindOption(DefaultConstructorKind kind) => true;
-
-        public sealed override bool SupportsNonVirtual(bool nonVirtualValue) => true;
+        public sealed override SupportTestResult SupportsNonVirtual(bool nonVirtualValue) => SupportTestResult.Valid;
 
         protected sealed override void OnWriteCode(CodeWriter writer, CompileContext context)
         {
@@ -95,7 +93,7 @@ namespace FlatSharp.Compiler.SchemaModel
 
                 foreach (var sv in this.structVectors)
                 {
-                    sv.WriteCode(writer);
+                    sv.WriteCode(writer, context);
                 }
 
                 this.EmitExtraData(writer, context);

@@ -28,7 +28,6 @@ namespace FlatSharpTests.Compiler
     using FlatSharp.TypeModel;
     using Xunit;
 
-    
     public class StructVectorTests
     {
         [Fact]
@@ -76,6 +75,7 @@ namespace FlatSharpTests.Compiler
         public void StructVector_InvalidType()
         {
             string schema = $@"
+            {MetadataHelpers.AllAttributes}
             namespace StructVectorTests;
 
             table Table ({MetadataKeys.SerializerKind}) {{
@@ -90,13 +90,14 @@ namespace FlatSharpTests.Compiler
                     schema,
                     new()));
 
-            Assert.Contains("Unable to resolve struct vector type 'Bar'.", ex.Message);
+            Assert.Contains("error: structs may contain only scalar or struct fields", ex.Message);
         }
 
         [Fact]
         public void StructVector_UnsafeVectorOnReferenceType()
         {
             string schema = $@"
+            {MetadataHelpers.AllAttributes}
             namespace StructVectorTests;
 
             struct Foo {{
@@ -108,7 +109,7 @@ namespace FlatSharpTests.Compiler
                     schema,
                     new()));
 
-            Assert.Contains($"Field '__flatsharp__V_0' declares the '{MetadataKeys.UnsafeValueStructVector}' attribute. Unsafe struct vectors are only supported on value structs.", ex.Message);
+            Assert.Contains($"The attribute '{MetadataKeys.UnsafeValueStructVector}' is never valid on StructField elements.", ex.Message);
         }
 
         [Fact]
@@ -117,6 +118,7 @@ namespace FlatSharpTests.Compiler
             int length = 7;
 
             string schema = $@"
+            {MetadataHelpers.AllAttributes}
             namespace StructVectorTests;
 
             table Table ({MetadataKeys.SerializerKind}) {{
@@ -194,6 +196,7 @@ namespace FlatSharpTests.Compiler
         private void RunTest<T>(string fbsType, int length, FlatBufferDeserializationOption option) where T : struct
         {
             string schema = $@"
+            {MetadataHelpers.AllAttributes}
             namespace StructVectorTests;
 
             table Table ({MetadataKeys.SerializerKind}) {{
@@ -203,7 +206,7 @@ namespace FlatSharpTests.Compiler
               V:[{fbsType}:{length}];
             }}";
 
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(
+            (Assembly asm, string code) = FlatSharpCompiler.CompileAndLoadAssemblyWithCode(
                 schema, 
                 new());
 

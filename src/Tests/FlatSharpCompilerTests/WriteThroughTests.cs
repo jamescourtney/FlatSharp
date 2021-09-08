@@ -32,8 +32,9 @@ namespace FlatSharpTests.Compiler
             static void Test(FlatBufferDeserializationOption option)
             {
                 string schema = $@"
+                {MetadataHelpers.AllAttributes}
                 namespace ForceWriteTests;
-                table Table ({MetadataKeys.SerializerKind}:{option}) {{ Struct:Struct; }}
+                table Table ({MetadataKeys.SerializerKind}:""{option}"") {{ Struct:Struct; }}
                 struct Struct ({MetadataKeys.WriteThrough}) {{ foo:int; bar:int ({MetadataKeys.WriteThrough}:""false""); }} 
                 ";
 

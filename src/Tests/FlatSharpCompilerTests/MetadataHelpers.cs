@@ -29,6 +29,7 @@ namespace FlatSharpTests.Compiler
         {
             List<string> names = new List<string>();
 
+            names.Add(string.Empty);
             names.Add(MetadataKeys.SerializerKind);
             names.Add(MetadataKeys.NonVirtualProperty);
             names.Add(MetadataKeys.SortedVector);
@@ -42,6 +43,7 @@ namespace FlatSharpTests.Compiler
             names.Add(MetadataKeys.ForceWrite);
             names.Add(MetadataKeys.WriteThrough);
             names.Add(MetadataKeys.RpcInterface);
+            names.Add(string.Empty);
 
             AllAttributes = string.Join("\r\n", names.Select(x => $"attribute \"{x}\";"));
         }

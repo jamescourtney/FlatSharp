@@ -42,7 +42,7 @@ namespace FlatSharp.Compiler.SchemaModel
 
         private void Validate()
         {
-            this.Attributes.Validate(this);
+            this.ValidateAttributes(this.Attributes);
             this.OnValidate();
         }
 
@@ -79,28 +79,30 @@ namespace FlatSharp.Compiler.SchemaModel
 
         public abstract FlatBufferSchemaElementType ElementType { get; }
 
-        public virtual bool SupportsNonVirtual(bool nonVirtualValue) => false;
+        public virtual SupportTestResult SupportsNonVirtual(bool nonVirtualValue) => SupportTestResult.NeverValid;
 
-        public virtual bool SupportsDeserializationOption(FlatBufferDeserializationOption option) => false;
+        public virtual SupportTestResult SupportsDeserializationOption(FlatBufferDeserializationOption option) => SupportTestResult.NeverValid;
 
-        public virtual bool SupportsSortedVector(bool sortedVectorOption) => false;
+        public virtual SupportTestResult SupportsSortedVector(bool sortedVectorOption) => SupportTestResult.NeverValid;
 
-        public virtual bool SupportsSharedString(bool sharedStringOption) => false;
+        public virtual SupportTestResult SupportsSharedString(bool sharedStringOption) => SupportTestResult.NeverValid;
 
-        public virtual bool SupportsDefaultCtorKindOption(DefaultConstructorKind kind) => false;
+        public virtual SupportTestResult SupportsDefaultCtorKindOption(DefaultConstructorKind kind) => SupportTestResult.NeverValid;
 
-        public virtual bool SupportsSetterKind(SetterKind setterKind) => false;
+        public virtual SupportTestResult SupportsSetterKind(SetterKind setterKind) => SupportTestResult.NeverValid;
 
-        public virtual bool SupportsForceWrite(bool forceWriteOption) => false;
+        public virtual SupportTestResult SupportsForceWrite(bool forceWriteOption) => SupportTestResult.NeverValid;
 
-        public virtual bool SupportsUnsafeStructVector(bool unsafeStructVector) => false;
+        public virtual SupportTestResult SupportsUnsafeStructVector(bool unsafeStructVector) => SupportTestResult.NeverValid;
 
-        public virtual bool SupportsMemoryMarshal(MemoryMarshalBehavior option) => false;
+        public virtual SupportTestResult SupportsMemoryMarshal(MemoryMarshalBehavior option) => SupportTestResult.NeverValid;
 
-        public virtual bool SupportsWriteThrough(bool writeThroughOption) => false;
+        public virtual SupportTestResult SupportsWriteThrough(bool writeThroughOption) => SupportTestResult.NeverValid;
 
-        public virtual bool SupportsRpcInterface(bool rpcInterface) => false;
+        public virtual SupportTestResult SupportsRpcInterface(bool rpcInterface) => SupportTestResult.NeverValid;
 
-        public virtual bool SupportsVectorType(VectorType vectorType) => false;
+        public virtual SupportTestResult SupportsVectorType(VectorType vectorType) => SupportTestResult.NeverValid;
+
+        public virtual SupportTestResult SupportsStreamingType(RpcStreamingType streamingType) => SupportTestResult.NeverValid;
     }
 }

@@ -22,90 +22,11 @@ namespace FlatSharpTests.Compiler
     using FlatSharp;
     using FlatSharp.Attributes;
     using FlatSharp.Compiler;
+    using FlatSharp.TypeModel;
     using Xunit;
 
-    
     public class ForceWriteTests
     {
-        [Fact]
-        public void ForceWrite_OnStruct()
-        {
-            string schema = $@"
-            namespace ForceWriteTests;
-            table Table {{ Struct:Struct ({MetadataKeys.ForceWrite}); }}
-            struct Struct {{ foo:int; }} 
-            ";
-
-            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.StartsWith("Message='Property 'Struct' on table 'ForceWriteTests.Table' declares the ForceWrite option, but the type is not supported for force write.', Scope=$", ex.Errors[0]);
-        }
-
-        [Fact]
-        public void ForceWrite_OnStructVector()
-        {
-            string schema = $@"
-            namespace ForceWriteTests;
-            table Table {{ Struct:[Struct] ({MetadataKeys.ForceWrite}); }}
-            struct Struct {{ foo:int; }} 
-            ";
-
-            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.StartsWith("Message='Property 'Struct' on table 'ForceWriteTests.Table' declares the ForceWrite option, but the type is not supported for force write.', Scope=$", ex.Errors[0]);
-        }
-
-        [Fact]
-        public void ForceWrite_OnTable()
-        {
-            string schema = $@"
-            namespace ForceWriteTests;
-            table Table {{ OtherTable:OtherTable ({MetadataKeys.ForceWrite}); }}
-            table OtherTable {{ foo:int; }} 
-            ";
-
-            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.StartsWith("Message='Property 'OtherTable' on table 'ForceWriteTests.Table' declares the ForceWrite option, but the type is not supported for force write.', Scope=$", ex.Errors[0]);
-        }
-
-        [Fact]
-        public void ForceWrite_OnTableVector()
-        {
-            string schema = $@"
-            namespace ForceWriteTests;
-            table Table {{ OtherTable:[OtherTable] ({MetadataKeys.ForceWrite}); }}
-            table OtherTable {{ foo:int; }} 
-            ";
-
-            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.StartsWith("Message='Property 'OtherTable' on table 'ForceWriteTests.Table' declares the ForceWrite option, but the type is not supported for force write.', Scope=$", ex.Errors[0]);
-        }
-
-        [Fact]
-        public void ForceWrite_OnOptionalScalar()
-        {
-            string schema = $@"
-            namespace ForceWriteTests;
-            table Table {{  optInt:int = null ({MetadataKeys.ForceWrite}); }}
-            ";
-
-            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.StartsWith("Message='Property 'optInt' on table 'ForceWriteTests.Table' declares the ForceWrite option, but the type is not supported for force write.', Scope=$", ex.Errors[0]);
-        }
-
-        [Fact]
-        public void ForceWrite_OnUnion()
-        {
-            string schema = $@"
-            namespace ForceWriteTests;
-            struct SA {{ I:int; }}
-            struct SB {{ I:int; }}
-            union SU {{ SA, SB }}
-            table Table {{  Union:SU ({MetadataKeys.ForceWrite}); }}
-            ";
-
-            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.StartsWith("Message='Property 'Union' on table 'ForceWriteTests.Table' declares the ForceWrite option, but the type is not supported for force write.', Scope=$", ex.Errors[0]);
-        }
-
         [Fact]
         public void ForceWrite_NoTableOption() => this.RunTest(string.Empty, false);
 
@@ -126,7 +47,11 @@ namespace FlatSharpTests.Compiler
             }
 
             string schema = $@"
+            {MetadataHelpers.AllAttributes}
             namespace ForceWriteTests;
+            enum SomeEnum : ubyte {{ First = 0, Second = 1 }}
+            struct SomeStruct {{ I:int; }}
+            union SomeUnion {{ SomeTable, SomeStruct }}
             table FakeTable {tableMetadata}
             {{ 
                 Default:int; 
@@ -146,9 +71,6 @@ namespace FlatSharpTests.Compiler
                 Union:SomeUnion;
             }}
             
-            enum SomeEnum : ubyte {{ First = 0, Second = 1 }}
-            union SomeUnion {{ SomeTable, SomeStruct }}
-            struct SomeStruct {{ I:int; }}
             table SomeTable {{ I:int; }}
             ";
 

@@ -55,6 +55,7 @@ namespace FlatSharpTests.Compiler
         private void Test(SetterKind setterKind, FlatBufferDeserializationOption option)
         {
             string schema = $@"
+            {MetadataHelpers.AllAttributes}
             namespace VirtualTests;
             table VirtualTable ({MetadataKeys.SerializerKind}:""{option}"") {{
                 Default:int ({MetadataKeys.Setter}:""{setterKind}"");
@@ -65,8 +66,8 @@ namespace FlatSharpTests.Compiler
 
             struct VirtualStruct {{
                 Default:int ({MetadataKeys.Setter}:""{setterKind}"");
-                ForcedVirtual:int ({MetadataKeys.NonVirtualProperty}:""false"", setter:""{setterKind}"");
-                ForcedNonVirtual:int ({MetadataKeys.NonVirtualProperty}:""true"", setter:""{(setterKind != SetterKind.None ? setterKind : SetterKind.Public)}"");
+                ForcedVirtual:int ({MetadataKeys.NonVirtualProperty}:""false"", {MetadataKeys.Setter}:""{setterKind}"");
+                ForcedNonVirtual:int ({MetadataKeys.NonVirtualProperty}:""true"", {MetadataKeys.Setter}:""{(setterKind != SetterKind.None ? setterKind : SetterKind.Public)}"");
             }}";
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());

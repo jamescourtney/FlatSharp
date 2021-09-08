@@ -32,7 +32,6 @@ namespace FlatSharp.Compiler.SchemaModel
             int startIndex,
             FlatSharpAttributes attributes)
         {
-            FlatSharpInternal.Assert(field.Type.ElementType.IsScalar(), "Struct vectors must be scalars");
             FlatSharpInternal.Assert(field.Type.FixedLength != 0, "Struct vectors must have fixed length");
 
             this.Field = field;
@@ -53,7 +52,7 @@ namespace FlatSharp.Compiler.SchemaModel
                     new Field
                     {
                         Attributes = field.Attributes,
-                        Name = $"__flatsharp__{field.Name}__{i}",
+                        Name = $"__flatsharp__{field.Name}_{i}",
                         Type = field.Type,
                     },
                     startIndex + i,
@@ -106,7 +105,7 @@ namespace FlatSharp.Compiler.SchemaModel
             return true;
         }
 
-        public void WriteCode(CodeWriter writer)
+        public void WriteCode(CodeWriter writer, CompileContext context)
         {
             string structName = $"__{this.Field.Name}_Vector";
 
@@ -192,14 +191,17 @@ namespace FlatSharp.Compiler.SchemaModel
                     writer.AppendLine($"public void CopyFrom({collectionType} source)");
                     using (writer.WithBlock())
                     {
-                        writer.AppendLine("var thisItem = this.item;");
-
-                        // Load in reverse so that the JIT can just do a bounds check on the very first item.
-                        // This also requries the parameter being a local variable instead of a param.
-                        writer.AppendLine("var s = source;");
-                        for (int i = this.Properties.Count - 1; i >= 0; --i)
+                        if (context.FullyQualifiedCloneMethodName is not null)
                         {
-                            writer.AppendLine($"thisItem.{this.Properties[i].FieldName} = s[{i}];");
+                            writer.AppendLine("var thisItem = this.item;");
+
+                            // Load in reverse so that the JIT can just do a bounds check on the very first item.
+                            // This also requries the parameter being a local variable instead of a param.
+                            writer.AppendLine("var s = source;");
+                            for (int i = this.Properties.Count - 1; i >= 0; --i)
+                            {
+                                writer.AppendLine($"thisItem.{this.Properties[i].FieldName} = {context.FullyQualifiedCloneMethodName}(s[{i}]);");
+                            }
                         }
                     }
                 }
@@ -210,28 +212,30 @@ namespace FlatSharp.Compiler.SchemaModel
 
         string IFlatSharpAttributeSupportTester.FullName => $"{this.Parent.FullName}.{this.FieldName}";
 
-        bool IFlatSharpAttributeSupportTester.SupportsNonVirtual(bool nonVirtualValue) => true;
+        SupportTestResult IFlatSharpAttributeSupportTester.SupportsNonVirtual(bool nonVirtualValue) => SupportTestResult.Valid;
 
-        bool IFlatSharpAttributeSupportTester.SupportsVectorType(VectorType vectorType) => false;
+        SupportTestResult IFlatSharpAttributeSupportTester.SupportsVectorType(VectorType vectorType) => SupportTestResult.NeverValid;
 
-        bool IFlatSharpAttributeSupportTester.SupportsDeserializationOption(FlatBufferDeserializationOption option) => false;
+        SupportTestResult IFlatSharpAttributeSupportTester.SupportsDeserializationOption(FlatBufferDeserializationOption option) => SupportTestResult.NeverValid;
 
-        bool IFlatSharpAttributeSupportTester.SupportsSortedVector(bool sortedVectorOption) => false;
+        SupportTestResult IFlatSharpAttributeSupportTester.SupportsSortedVector(bool sortedVectorOption) => SupportTestResult.NeverValid;
 
-        bool IFlatSharpAttributeSupportTester.SupportsSharedString(bool sharedStringOption) => false;
+        SupportTestResult IFlatSharpAttributeSupportTester.SupportsSharedString(bool sharedStringOption) => SupportTestResult.NeverValid;
 
-        bool IFlatSharpAttributeSupportTester.SupportsDefaultCtorKindOption(DefaultConstructorKind kind) => false;
+        SupportTestResult IFlatSharpAttributeSupportTester.SupportsDefaultCtorKindOption(DefaultConstructorKind kind) => SupportTestResult.NeverValid;
 
-        bool IFlatSharpAttributeSupportTester.SupportsSetterKind(SetterKind setterKind) => false;
+        SupportTestResult IFlatSharpAttributeSupportTester.SupportsSetterKind(SetterKind setterKind) => setterKind == SetterKind.Public ? SupportTestResult.Valid : SupportTestResult.ValueInvalid;
 
-        bool IFlatSharpAttributeSupportTester.SupportsForceWrite(bool forceWriteOption) => false;
+        SupportTestResult IFlatSharpAttributeSupportTester.SupportsForceWrite(bool forceWriteOption) => SupportTestResult.NeverValid;
 
-        bool IFlatSharpAttributeSupportTester.SupportsUnsafeStructVector(bool unsafeStructVector) => false;
+        SupportTestResult IFlatSharpAttributeSupportTester.SupportsUnsafeStructVector(bool unsafeStructVector) => SupportTestResult.NeverValid;
 
-        bool IFlatSharpAttributeSupportTester.SupportsMemoryMarshal(MemoryMarshalBehavior option) => false;
+        SupportTestResult IFlatSharpAttributeSupportTester.SupportsMemoryMarshal(MemoryMarshalBehavior option) => SupportTestResult.NeverValid;
 
-        bool IFlatSharpAttributeSupportTester.SupportsWriteThrough(bool writeThroughOption) => true;
+        SupportTestResult IFlatSharpAttributeSupportTester.SupportsWriteThrough(bool writeThroughOption) => SupportTestResult.NeverValid;
 
-        bool IFlatSharpAttributeSupportTester.SupportsRpcInterface(bool rpcInterface) => false;
+        SupportTestResult IFlatSharpAttributeSupportTester.SupportsRpcInterface(bool rpcInterface) => SupportTestResult.NeverValid;
+
+        SupportTestResult IFlatSharpAttributeSupportTester.SupportsStreamingType(RpcStreamingType streamingType) => SupportTestResult.NeverValid;
     }
 }
