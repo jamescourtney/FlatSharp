@@ -12,7 +12,6 @@ FlatSharp is Google's FlatBuffers serialization format implemented in C#, for C#
 All FlatSharp packages are published on nuget.org:
 - **FlatSharp.Runtime**: The runtime library. You always need this.
 - **FlatSharp**: Support for runtime schemas with C# attributes. Includes ```FlatBufferSerializer```.
-- **FlatSharp.Unsafe**: Unsafe I/O extensions.
 - **FlatSharp.Compiler**: Build time compiler for generating C# from an FBS schema.
 
 As of version 3.3.1, FlatSharp is in production use at Microsoft. 
@@ -166,19 +165,12 @@ There are two main ways to use FlatSharp: Precompilation with .fbs files and run
 - Better interop with other FlatBuffers languages via .fbs files
 - gRPC Support
 - Schema validation errors caught at build-time instead of runtime.
-- Better supported with other .NET toolchains
+- Better supported with other .NET toolchains (Unity / Blazor / etc)
 
-Runtime compilation is not planned to be deprecated (in fact the FlatSharp tests use Runtime compilation extensively), and can offer some compelling use cases as well, such as building more complex data structures that are shared between projects.
-
-Framework | FlatSharp.Runtime | FlatSharp | FlatSharp.Unsafe | FlatSharp.Compiler
------------- | ------------- | --------  | ---------------- | -----------------
-Unity / Blazor / Xamarin / Mono | ✔️ |❌ | ❌| ✔️
-.NET Core (Precompiled) | ✔️ | ❌ | ❌ | ✔️
-.NET Core (Runtime-compiled) | ✔️ | ✔️ | ❌ | ❌
-.NET Framework (Precompiled) | ✔️ | ❌ | ❔ | ✔️
-.NET Framework (Runtime-compiled) | ✔️ | ✔️ | ❔ | ❌
-
-❔: .NET Framework does not have first-class support for ```Memory<T>``` and ```Span<T>```, which results in degraded performance relative to .NET Core. Use of the unsafe packages has a sizeable impact on FlatSharp's speed on the legacy platform, but requires the use of unsafe code. For most cases, FlatSharp will be plenty fast without this.
+Scenario | FlatSharp.Runtime | FlatSharp | FlatSharp.Compiler
+------------ | ------------- | -------- | -----------------
+Ahead of Time Compilation | ✔️ | ❌ | ✔️
+Runtime Compilation | ✔️ | ✔️ | ❌
 
 ### License
 FlatSharp is licensed under Apache 2.0.
