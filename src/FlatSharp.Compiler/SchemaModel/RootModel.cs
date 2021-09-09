@@ -18,11 +18,25 @@ namespace FlatSharp.Compiler.SchemaModel
 {
     using System;
     using System.Collections.Generic;
-    using System.Text;
+    using FlatSharp.Compiler.Schema;
 
     public class RootModel
     {
+        private const AdvancedFeatures SupportedAdvancedFeatures =
+            AdvancedFeatures.AdvancedArrayFeatures | // struct vectors
+            AdvancedFeatures.AdvancedUnionFeatures | // vectors of union and string members in unions.
+            AdvancedFeatures.OptionalScalars;        // nullable scalars in tables.
+
         private readonly List<BaseSchemaModel> elements = new();
+
+        public RootModel(AdvancedFeatures advancedFeatures)
+        {
+            if ((advancedFeatures & ~SupportedAdvancedFeatures) != AdvancedFeatures.None)
+            {   
+                // bail immediately. We can't make any progress.
+                throw new InvalidFbsFileException($"FBS schema contains advanced features that FlatSharp does not yet support.");
+            }
+        }
 
         public void AddElement(BaseSchemaModel model)
         {

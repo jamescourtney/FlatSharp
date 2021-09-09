@@ -64,7 +64,7 @@ namespace FlatSharp.Compiler.Schema
 
         public RootModel ToRootModel()
         {
-            RootModel model = new RootModel();
+            RootModel model = new RootModel(this.AdvancedFeatures);
 
             foreach (var @enum in this.Enums)
             {

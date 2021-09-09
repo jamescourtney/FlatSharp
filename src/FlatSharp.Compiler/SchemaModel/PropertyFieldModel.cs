@@ -51,6 +51,11 @@ namespace FlatSharp.Compiler.SchemaModel
                 ForceWriteValidator = _ => this.ValidWhenParentIs<TableSchemaModel>(),
                 WriteThroughValidator = _ => this.ValidWhenParentIs<ReferenceStructSchemaModel>(),
             }.Validate(this.Attributes);
+
+            FlatSharpInternal.Assert(this.Field.Type.BaseType.IsKnown(), "Base type was not known");
+            FlatSharpInternal.Assert(
+                this.Field.Type.ElementType == BaseType.None ||
+                this.Field.Type.ElementType.IsKnown(), "Element type was not known");
         }
 
         public bool ProtectedGetter { get; init; }

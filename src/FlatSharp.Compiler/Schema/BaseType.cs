@@ -53,11 +53,6 @@ namespace FlatSharp.Compiler.Schema
             return type > BaseType.None && type < BaseType.MaxBaseType;
         }
 
-        public static bool IsBuiltIn(this BaseType type)
-        {
-            return type.IsScalar() || type == BaseType.String;
-        }
-
         public static bool TryGetBuiltInTypeName(this BaseType type, [NotNullWhen(true)] out string? typeName)
         {
             switch (type)
@@ -127,6 +122,7 @@ namespace FlatSharp.Compiler.Schema
 
             return type.IsInteger();
         }
+
         public static bool IsInteger(this BaseType type)
         {
             switch (type)
