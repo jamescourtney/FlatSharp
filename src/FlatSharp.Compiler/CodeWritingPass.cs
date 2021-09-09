@@ -22,7 +22,7 @@ namespace FlatSharp.Compiler
     /// to only have a minimal understanding of the type system and the relationship between types. Instead,
     /// it uses reflection on previous invocations to fine-tune its approach.
     /// </summary>
-    internal enum CodeWritingPass
+    public enum CodeWritingPass
     {
         /// <summary>
         /// Basic definitions of types and properties are written. Output code is reflectable but not functional.
@@ -38,13 +38,8 @@ namespace FlatSharp.Compiler
         /// <summary>
         /// Serializers are generated and included in the output.
         /// </summary>
-        SerializerGeneration = 3,
+        SerializerAndRpcGeneration = 3,
 
-        /// <summary>
-        /// RPC definitions that consume the serializers are generated.
-        /// </summary>
-        RpcGeneration = 4,
-
-        LastPass = RpcGeneration,
+        LastPass = SerializerAndRpcGeneration,
     }
 }

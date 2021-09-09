@@ -134,11 +134,6 @@ namespace FlatSharp.TypeModel
         string FormatDefaultValueAsLiteral(object? defaultValue);
 
         /// <summary>
-        /// Attempts to format the given string as a literal of this type. Not all implementations support this.
-        /// </summary>
-        bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal);
-
-        /// <summary>
         /// For vectors, retrieves the inner type model. Other types return false.
         /// </summary>
         bool TryGetUnderlyingVectorType([NotNullWhen(true)] out ITypeModel? typeModel);

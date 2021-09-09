@@ -35,8 +35,9 @@ namespace FlatSharpTests.Compiler
         private void VirtualTest(bool defaultNonVirtual)
         {
             string schema = $@"
+            {MetadataHelpers.AllAttributes}
             namespace VirtualTests;
-            table VirtualTable ({MetadataKeys.NonVirtualProperty}:""{defaultNonVirtual.ToString().ToLowerInvariant()}"", PrecompiledSerializer:Lazy) {{
+            table VirtualTable ({MetadataKeys.NonVirtualProperty}:""{defaultNonVirtual.ToString().ToLowerInvariant()}"", {MetadataKeys.SerializerKind}:""Lazy"") {{
                 Default:int;
                 ForcedVirtual:int ({MetadataKeys.NonVirtualProperty}:""false"");
                 ForcedNonVirtual:int ({MetadataKeys.NonVirtualProperty}:""true"");
@@ -49,7 +50,7 @@ namespace FlatSharpTests.Compiler
                 ForcedNonVirtual:int ({MetadataKeys.NonVirtualProperty}:""true"");
             }}
 
-            table DefaultTable ({MetadataKeys.SerializerKind}:lazy) {{ Default:int; Struct:DefaultStruct; }}
+            table DefaultTable ({MetadataKeys.SerializerKind}:""lazy"") {{ Default:int; Struct:DefaultStruct; }}
             struct DefaultStruct {{ Default:int; }}";
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());

@@ -24,7 +24,7 @@ namespace FlatSharp.Compiler
     /// <summary>
     /// Utility class for generating reasonably formatted code.
     /// </summary>
-    internal class CodeWriter
+    public class CodeWriter
     {
         private const string OneIndent = "    ";
         private int indent;

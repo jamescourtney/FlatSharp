@@ -32,18 +32,6 @@ namespace FlatSharp.TypeModel
         public BoolTypeModel(TypeModelContainer container) : base(container, typeof(bool), sizeof(bool)) 
         {
         }
-		
-        public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
-		{
-			if (!bool.TryParse(value, out _))
-			{
-			     literal = null;
-				 return false;
-			}
-
-			literal = $"(bool)({value})";
-			return true;
-		}
 
         public override bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType)
         {
@@ -66,18 +54,6 @@ namespace FlatSharp.TypeModel
         public ByteTypeModel(TypeModelContainer container) : base(container, typeof(byte), sizeof(byte)) 
         {
         }
-		
-        public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
-		{
-			if (!byte.TryParse(value, out _))
-			{
-			     literal = null;
-				 return false;
-			}
-
-			literal = $"(byte)({value})";
-			return true;
-		}
 
         public override bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType)
         {
@@ -100,18 +76,6 @@ namespace FlatSharp.TypeModel
         public SByteTypeModel(TypeModelContainer container) : base(container, typeof(sbyte), sizeof(sbyte)) 
         {
         }
-		
-        public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
-		{
-			if (!sbyte.TryParse(value, out _))
-			{
-			     literal = null;
-				 return false;
-			}
-
-			literal = $"(sbyte)({value})";
-			return true;
-		}
 
         public override bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType)
         {
@@ -134,18 +98,6 @@ namespace FlatSharp.TypeModel
         public UShortTypeModel(TypeModelContainer container) : base(container, typeof(ushort), sizeof(ushort)) 
         {
         }
-		
-        public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
-		{
-			if (!ushort.TryParse(value, out _))
-			{
-			     literal = null;
-				 return false;
-			}
-
-			literal = $"(ushort)({value})";
-			return true;
-		}
 
         public override bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType)
         {
@@ -168,18 +120,6 @@ namespace FlatSharp.TypeModel
         public ShortTypeModel(TypeModelContainer container) : base(container, typeof(short), sizeof(short)) 
         {
         }
-		
-        public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
-		{
-			if (!short.TryParse(value, out _))
-			{
-			     literal = null;
-				 return false;
-			}
-
-			literal = $"(short)({value})";
-			return true;
-		}
 
         public override bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType)
         {
@@ -202,18 +142,6 @@ namespace FlatSharp.TypeModel
         public IntTypeModel(TypeModelContainer container) : base(container, typeof(int), sizeof(int)) 
         {
         }
-		
-        public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
-		{
-			if (!int.TryParse(value, out _))
-			{
-			     literal = null;
-				 return false;
-			}
-
-			literal = $"(int)({value})";
-			return true;
-		}
 
         public override bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType)
         {
@@ -236,18 +164,6 @@ namespace FlatSharp.TypeModel
         public UIntTypeModel(TypeModelContainer container) : base(container, typeof(uint), sizeof(uint)) 
         {
         }
-		
-        public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
-		{
-			if (!uint.TryParse(value, out _))
-			{
-			     literal = null;
-				 return false;
-			}
-
-			literal = $"(uint)({value}u)";
-			return true;
-		}
 
         public override bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType)
         {
@@ -270,18 +186,6 @@ namespace FlatSharp.TypeModel
         public LongTypeModel(TypeModelContainer container) : base(container, typeof(long), sizeof(long)) 
         {
         }
-		
-        public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
-		{
-			if (!long.TryParse(value, out _))
-			{
-			     literal = null;
-				 return false;
-			}
-
-			literal = $"(long)({value}L)";
-			return true;
-		}
 
         public override bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType)
         {
@@ -304,18 +208,6 @@ namespace FlatSharp.TypeModel
         public ULongTypeModel(TypeModelContainer container) : base(container, typeof(ulong), sizeof(ulong)) 
         {
         }
-		
-        public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
-		{
-			if (!ulong.TryParse(value, out _))
-			{
-			     literal = null;
-				 return false;
-			}
-
-			literal = $"(ulong)({value}ul)";
-			return true;
-		}
 
         public override bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType)
         {
@@ -338,18 +230,6 @@ namespace FlatSharp.TypeModel
         public FloatTypeModel(TypeModelContainer container) : base(container, typeof(float), sizeof(float)) 
         {
         }
-		
-        public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
-		{
-			if (!float.TryParse(value, out _))
-			{
-			     literal = null;
-				 return false;
-			}
-
-			literal = $"(float)({value}f)";
-			return true;
-		}
 
         public override bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType)
         {
@@ -372,18 +252,6 @@ namespace FlatSharp.TypeModel
         public DoubleTypeModel(TypeModelContainer container) : base(container, typeof(double), sizeof(double)) 
         {
         }
-		
-        public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
-		{
-			if (!double.TryParse(value, out _))
-			{
-			     literal = null;
-				 return false;
-			}
-
-			literal = $"(double)({value}d)";
-			return true;
-		}
 
         public override bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType)
         {
@@ -484,73 +352,6 @@ namespace FlatSharp.TypeModel
 
 		
 			return false;
-		}
-		
-        public bool TryResolveFbsAlias(
-			TypeModelContainer container, 
-			string alias, 
-            [NotNullWhen(true)] out ITypeModel? typeModel)
-		{
-			typeModel = null;
-			switch (alias)
-			{
-						case "bool":
-							typeModel = new BoolTypeModel(container);
-					break;
-
-						case "ubyte":
-						case "uint8":
-							typeModel = new ByteTypeModel(container);
-					break;
-
-						case "byte":
-						case "int8":
-							typeModel = new SByteTypeModel(container);
-					break;
-
-						case "ushort":
-						case "uint16":
-							typeModel = new UShortTypeModel(container);
-					break;
-
-						case "short":
-						case "int16":
-							typeModel = new ShortTypeModel(container);
-					break;
-
-						case "int":
-						case "int32":
-							typeModel = new IntTypeModel(container);
-					break;
-
-						case "uint":
-						case "uint32":
-							typeModel = new UIntTypeModel(container);
-					break;
-
-						case "long":
-						case "int64":
-							typeModel = new LongTypeModel(container);
-					break;
-
-						case "ulong":
-						case "uint64":
-							typeModel = new ULongTypeModel(container);
-					break;
-
-						case "float":
-						case "float32":
-							typeModel = new FloatTypeModel(container);
-					break;
-
-						case "double":
-						case "float64":
-							typeModel = new DoubleTypeModel(container);
-					break;
-
-					}
-
-			return typeModel is not null;
 		}
 	}
 }

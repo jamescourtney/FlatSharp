@@ -140,24 +140,6 @@
             return base.FormatDefaultValueAsLiteral(defaultValue);
         }
 
-        public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
-        {
-            object result;
-            try
-            {
-                // TryParse not available non-generically.
-                result = Enum.Parse(this.ClrType, value, false);
-            }
-            catch
-            {
-                literal = null;
-                return false;
-            }
-
-            literal = $"{this.GetCompilableTypeName()}.{result}";
-            return true;
-        }
-
         /// <summary>
         /// Validates a default value.
         /// </summary>

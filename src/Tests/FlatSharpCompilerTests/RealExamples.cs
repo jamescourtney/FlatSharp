@@ -68,10 +68,11 @@ namespace FlatSharpTests.Compiler
         {
             // https://github.com/google/flatbuffers/blob/master/samples/monster.fbs
             string schema = $@"
+{MetadataHelpers.AllAttributes}
 namespace MyGame;
 
 enum Color:byte {{ Red = 0, Green, Blue = 2 }}
-union Equipment {{ Weapon, Vec3, Vec4, Monster, string }}
+union Equipment {{ Weapon, Vec3, Vec4, Monster }}
 
 struct Vec3 {{
   x:float;
@@ -86,7 +87,7 @@ struct Vec4 {{
   t:float;
 }}
 
-table Monster ({MetadataKeys.SerializerKind}:{flags}) {{
+table Monster ({MetadataKeys.SerializerKind}:""{flags}"") {{
   pos:Vec3;
   mana:short = 150;
   hp:short = 100;
@@ -99,11 +100,11 @@ table Monster ({MetadataKeys.SerializerKind}:{flags}) {{
   path:[Vec3];
   vec4:Vec4;
   FakeVector1:[string] ({MetadataKeys.VectorKind}:""IReadOnlyList"");
-  FakeVector2:[string] ({MetadataKeys.VectorKind}:Array);
-  FakeVector3:[string] ({MetadataKeys.VectorKind}:IList);
+  FakeVector2:[string] ({MetadataKeys.VectorKind}:""Array"");
+  FakeVector3:[string] ({MetadataKeys.VectorKind}:""IList"");
   FakeVector4:[string];
-  FakeMemoryVector:[ubyte] ({MetadataKeys.VectorKind}:Memory);
-  FakeMemoryVectorReadOnly:[ubyte] ({MetadataKeys.VectorKind}:ReadOnlyMemory);
+  FakeMemoryVector:[ubyte] ({MetadataKeys.VectorKind}:""Memory"");
+  FakeMemoryVectorReadOnly:[ubyte] ({MetadataKeys.VectorKind}:""ReadOnlyMemory"");
 }}
 
 table Weapon {{
@@ -132,7 +133,7 @@ table Weapon {{
             Assert.Equal(typeof(IList<byte>), monsterType.GetProperty("inventory").PropertyType);
             Assert.Equal(typeof(IList<>).MakeGenericType(vec3Type), monsterType.GetProperty("path").PropertyType);
             Assert.Equal(typeof(IList<>).MakeGenericType(weaponType), monsterType.GetProperty("weapons").PropertyType);
-            Assert.True(typeof(IFlatBufferUnion<,,,,>).MakeGenericType(weaponType, vec3Type, vec4Type, monsterType, typeof(string)).IsAssignableFrom(Nullable.GetUnderlyingType(monsterType.GetProperty("equipped").PropertyType)));
+            Assert.True(typeof(IFlatBufferUnion<,,,>).MakeGenericType(weaponType, vec3Type, vec4Type, monsterType).IsAssignableFrom(Nullable.GetUnderlyingType(monsterType.GetProperty("equipped").PropertyType)));
             Assert.Equal(typeof(string), monsterType.GetProperty("name").PropertyType);
             Assert.True(monsterType.GetProperty("friendly").GetCustomAttribute<FlatBufferItemAttribute>().Deprecated);
 

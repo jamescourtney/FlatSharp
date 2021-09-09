@@ -31,15 +31,27 @@ namespace FlatSharpTests.Compiler
         public void Required_Attribute_OnParse()
         {
             string schema = $@"
+            {MetadataHelpers.AllAttributes}
             namespace RequiredTests;
-            table NonRequiredTable ({MetadataKeys.SerializerKind}:""Lazy"") {{ Struct:Struct; String:string; }}
-            table Table ({MetadataKeys.SerializerKind}:""Lazy"") {{ Struct:Struct ({MetadataKeys.Required}); String:string ({MetadataKeys.Required}); }}
-            struct Struct {{ foo:int; }} 
+            table NonRequiredTable ({MetadataKeys.SerializerKind}:""Lazy"") {{ Struct:RefStruct; String:string; VStruct : ValueStruct; }}
+            table Table ({MetadataKeys.SerializerKind}:""Lazy"") {{ Struct:RefStruct ({MetadataKeys.Required}); String:string ({MetadataKeys.Required}); VStruct : ValueStruct ({MetadataKeys.Required}); }}
+            struct RefStruct {{ foo:int; }} 
+            struct ValueStruct ({MetadataKeys.ValueStruct}) {{ A : int; }}
             ";
-            
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
-            Type tableType = asm.GetType("RequiredTests.Table");
+
+            (Assembly asm, string code) = FlatSharpCompiler.CompileAndLoadAssemblyWithCode(schema, new());
+            Type requiredTableType = asm.GetType("RequiredTests.Table");
             Type nonRequiredTable = asm.GetType("RequiredTests.NonRequiredTable");
+
+            Assert.True(requiredTableType.GetProperty("Struct").GetCustomAttribute<FlatBufferItemAttribute>().Required);
+            Assert.True(requiredTableType.GetProperty("String").GetCustomAttribute<FlatBufferItemAttribute>().Required);
+            Assert.True(requiredTableType.GetProperty("VStruct").GetCustomAttribute<FlatBufferItemAttribute>().Required);
+            Assert.Null(Nullable.GetUnderlyingType(requiredTableType.GetProperty("VStruct").PropertyType)); // required => not nullable.
+
+            Assert.False(nonRequiredTable.GetProperty("Struct").GetCustomAttribute<FlatBufferItemAttribute>().Required);
+            Assert.False(nonRequiredTable.GetProperty("String").GetCustomAttribute<FlatBufferItemAttribute>().Required);
+            Assert.False(nonRequiredTable.GetProperty("VStruct").GetCustomAttribute<FlatBufferItemAttribute>().Required);
+            Assert.NotNull(Nullable.GetUnderlyingType(nonRequiredTable.GetProperty("VStruct").PropertyType)); // not required => nullable.
 
             ISerializer nonRequiredSerializer = (ISerializer)nonRequiredTable.GetProperty("Serializer", BindingFlags.Public | BindingFlags.Static).GetValue(null);
             dynamic nonRequiredItem = Activator.CreateInstance(nonRequiredTable);
@@ -47,7 +59,7 @@ namespace FlatSharpTests.Compiler
             byte[] buffer = new byte[1024];
             nonRequiredSerializer.Write(buffer, (object)nonRequiredItem);
 
-            ISerializer serializer = (ISerializer)tableType.GetProperty("Serializer", BindingFlags.Public | BindingFlags.Static).GetValue(null);
+            ISerializer serializer = (ISerializer)requiredTableType.GetProperty("Serializer", BindingFlags.Public | BindingFlags.Static).GetValue(null);
             dynamic parsed = serializer.Parse(buffer);
 
             var ex = Assert.Throws<System.IO.InvalidDataException>(
@@ -69,6 +81,7 @@ namespace FlatSharpTests.Compiler
         public void Required_Attribute_OnSerialize()
         {
             string schema = $@"
+            {MetadataHelpers.AllAttributes}
             namespace RequiredTests;
             table Table ({MetadataKeys.SerializerKind}:""Lazy"") {{ Struct:Struct ({MetadataKeys.Required}); String:string ({MetadataKeys.Required}); }}
             struct Struct {{ foo:int; }} 

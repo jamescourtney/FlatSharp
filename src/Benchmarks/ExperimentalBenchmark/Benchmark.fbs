@@ -1,15 +1,20 @@
 ﻿
+attribute "fs_serializer";
+attribute "fs_nonVirtual";
+attribute "fs_valueStruct";
+attribute "fs_unsafeStructVector";
+
 namespace BenchmarkCore;
 
-table ValueTable (fs_serializer:Lazy) {
+table ValueTable (fs_serializer:"Lazy") {
 	Points : [Vec3Value];
 }
 
-table ValueTable_Unsafe (fs_serializer:Lazy) {
+table ValueTable_Unsafe (fs_serializer:"Lazy") {
 	Points : [Vec3Value_Unsafe];
 }
 
-table Table (fs_serializer:Lazy) {
+table Table (fs_serializer:"Lazy") {
 	Points : [Vec3];
 }
 

@@ -28,8 +28,10 @@ namespace FlatSharpTests.Compiler
         public void ClassKeyword()
         {
             string fbs = $"namespace Foo.Bar; enum class : ubyte (bit_flags) {{ Red, Blue, Green, Yellow }}";
-            Assert.Throws<FlatSharpCompilationException>(
+            var ex = Assert.Throws<FlatSharpCompilationException>(
                 () => FlatSharpCompiler.CompileAndLoadAssembly(fbs, new()));
+
+
         }
     }
 }

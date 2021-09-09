@@ -179,6 +179,7 @@ $@"
                         this.Parse<MemoryInputBuffer>(default!, 0);
                         this.Parse<ReadOnlyMemoryInputBuffer>(default!, 0);
                         this.Parse<ArrayInputBuffer>(default!, 0);
+                        this.Parse<ArraySegmentInputBuffer>(default!, 0);
 
                         throw new InvalidOperationException(""__AotHelper is not intended to be invoked"");
                     }}

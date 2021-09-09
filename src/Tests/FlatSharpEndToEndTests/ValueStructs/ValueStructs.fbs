@@ -1,21 +1,24 @@
 ﻿
+attribute "fs_serializer";
+attribute "fs_unsafeStructVector";
+attribute "fs_valueStruct";
+
 namespace FlatSharpEndToEndTests.ValueStructs;
 
 union TestUnion { RefStruct, ValueStruct, InnerValueStruct }
 
 table RootTable (fs_serializer:"GreedyMutable") {
-    RefStruct : RefStruct;
-    ValueStruct : ValueStruct;
-    ValueStructVector : [ValueStruct];
-    Union : TestUnion;
-    VectorOfUnion : [TestUnion];
-    RequiredValueStruct : ValueStruct (required);
+    refStruct : RefStruct;
+    valueStruct : ValueStruct;
+    valueStructVector : [ValueStruct];
+    union : TestUnion;
+    vectorOfUnion : [TestUnion];
+    requiredValueStruct : ValueStruct (required);
     str : string;
 }
 
-struct RefStruct {
-    A : int;
-    VS : ValueStruct;
+struct InnerValueStruct (fs_valueStruct) {
+    A : float;
 }
 
 struct ValueStruct (fs_valueStruct) {
@@ -24,6 +27,11 @@ struct ValueStruct (fs_valueStruct) {
     C : long;
     D : [ubyte : 128];
     Inner : InnerValueStruct;
+}
+
+struct RefStruct {
+    A : int;
+    VS : ValueStruct;
 }
 
 struct ValueUnsafeStructVector_Byte (fs_valueStruct) {
@@ -60,8 +68,4 @@ struct ValueUnsafeStructVector_Double (fs_valueStruct) {
     GuardLower : ulong;
     Vector : [double : 128] (fs_unsafeStructVector);
     GuardHigher : ulong;
-}
-
-struct InnerValueStruct (fs_valueStruct) {
-    A : float;
 }

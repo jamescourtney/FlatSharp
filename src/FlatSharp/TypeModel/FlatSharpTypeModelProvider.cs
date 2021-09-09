@@ -29,22 +29,6 @@ namespace FlatSharp.TypeModel
     public class FlatSharpTypeModelProvider : ITypeModelProvider
     {
         /// <summary>
-        /// Tries to resolve an FBS alias into a type model.
-        /// </summary>
-        public bool TryResolveFbsAlias(TypeModelContainer container, string alias, [NotNullWhen(true)] out ITypeModel? typeModel)
-        {
-            typeModel = null;
-
-            if (alias == "string")
-            {
-                typeModel = new StringTypeModel(container);
-                return true;
-            }
-
-            return false;
-        }
-
-        /// <summary>
         /// Tries to create a type model based on the given type.
         /// </summary>
         public bool TryCreateTypeModel(TypeModelContainer container, Type type, [NotNullWhen(true)] out ITypeModel? typeModel)

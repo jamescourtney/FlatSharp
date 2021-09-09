@@ -29,7 +29,6 @@ namespace FlatSharp.Compiler
         /// - Table
         /// </summary>
         public const string SerializerKind = "fs_serializer";
-        public const string PrecompiledSerializerLegacy = "PrecompiledSerializer";
 
         /// <summary>
         /// Controls whether fields are virtual or non-virtual. They are virtual by default.
@@ -39,7 +38,6 @@ namespace FlatSharp.Compiler
         /// - Field 
         /// </summary>
         public const string NonVirtualProperty = "fs_nonVirtual";
-        public const string NonVirtualPropertyLegacy = "nonVirtual";
 
         /// <summary>
         /// Controls whether a vector field should be sorted or not. The field must be a vector.
@@ -47,7 +45,6 @@ namespace FlatSharp.Compiler
         /// - Field 
         /// </summary>
         public const string SortedVector = "fs_sortedVector";
-        public const string SortedVectorLegacy = "sortedvector";
 
         /// <summary>
         /// Controls whether FlatSharp should model the string or string vector as a SharedString for string deduplication.
@@ -55,13 +52,11 @@ namespace FlatSharp.Compiler
         /// - String Field or Vector of String field
         /// </summary>
         public const string SharedString = "fs_sharedString";
-        public const string SharedStringLegacy = "sharedstring";
 
         /// <summary>
         /// Controls how FlatSharp should generate a default constructor for the given type.
         /// </summary>
         public const string DefaultConstructorKind = "fs_defaultCtor";
-        public const string ObsoleteDefaultConstructorLegacy = "ObsoleteDefaultConstructor";
 
         /// <summary>
         /// Controls the type of vector FlatSharp will generate. Valid values can be found in <see cref="VectorType"/>.
@@ -69,7 +64,6 @@ namespace FlatSharp.Compiler
         /// - Table vector field
         /// </summary>
         public const string VectorKind = "fs_vector";
-        public const string VectorKindLegacy = "VectorType";
 
         /// <summary>
         /// Controls the type of setter FlatSharp will generate for a given field. Valid values can be found in <see cref="SetterKind"/>.
@@ -78,12 +72,6 @@ namespace FlatSharp.Compiler
         /// - Struct field
         /// </summary>
         public const string Setter = "fs_setter";
-        public const string SetterLegacy = "setter";
-
-        /// <summary>
-        /// Controls the file identifier injected into the buffer when serializing. Must be precisely a 4 byte ASCII string.
-        /// </summary>
-        public const string FileIdentifier = "fs_fileId";
 
         /// <summary>
         /// Indicates that a struct is to be generated as a value type.
@@ -147,6 +135,11 @@ namespace FlatSharp.Compiler
         /// Required fields on tables.
         /// </summary>
         public const string Required = "required";
+
+        /// <summary>
+        /// gRPC streaming kinds.
+        /// </summary>
+        public const string Streaming = "streaming";
 
         public static IEnumerable<string> UnsupportedStandardAttributes => new[]
         {

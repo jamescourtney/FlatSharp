@@ -49,12 +49,6 @@ namespace FlatSharp.TypeModel
             return false;
         }
 
-        public bool TryResolveFbsAlias(TypeModelContainer container, string alias, [NotNullWhen(true)] out ITypeModel? typeModel)
-        {
-            typeModel = null;
-            return false;
-        }
-
         private class TypeFacadeTypeModel : ITypeModel
         {
             private readonly ITypeModel underlyingModel;
@@ -145,12 +139,6 @@ namespace FlatSharp.TypeModel
             }
 
             public string FormatDefaultValueAsLiteral(object? defaultValue) => this.GetTypeDefaultExpression();
-
-            public bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
-            {
-                literal = null;
-                return false;
-            }
 
             public bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType) 
                 => this.underlyingModel.TryGetSpanComparerType(out comparerType);

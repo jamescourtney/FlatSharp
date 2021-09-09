@@ -46,13 +46,14 @@ namespace FlatSharpTests.Compiler
         private void RunTest(string vectorKind, FlatBufferDeserializationOption option)
         {
             string schema = $@"
+            {MetadataHelpers.AllAttributes}
             namespace VectorOfUnionTests;
-
-            table Table ({MetadataKeys.SerializerKind}:{option}) {{
-                Vector:[Union] (fs_vector:{vectorKind});
-            }}
             
-            union Union {{ StringValue:string, Foo, Table2 }}
+            union Union {{ Foo, Table2 }}
+
+            table Table ({MetadataKeys.SerializerKind}:""{option}"") {{
+                Vector:[Union] (fs_vector:""{vectorKind}"");
+            }}
 
             struct Foo {{
               A:int;

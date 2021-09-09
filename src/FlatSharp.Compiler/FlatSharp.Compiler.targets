@@ -13,13 +13,7 @@
       <FlatSharpNullable Condition=" '$(Nullable)' == 'enable' ">true</FlatSharpNullable>
     </PropertyGroup>
     
-    <!-- Try legacy .net framework-->
-    <PropertyGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
-      <CompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\tools\net47\FlatSharp.Compiler.exe'))</CompilerPath>
-      <CompilerInvocation>$(CompilerPath)</CompilerInvocation>
-    </PropertyGroup>
-
-    <!-- next try .net5.0. Note that this can have various prefixes (net5.0-windows, etc) -->
+    <!-- try .net5.0. Note that this can have various prefixes (net5.0-windows, etc) -->
     <PropertyGroup Condition="$(TargetFramework.StartsWith('net5.0'))">
       <CompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\tools\net5.0\FlatSharp.Compiler.dll'))</CompilerPath>
       <CompilerInvocation>dotnet $(CompilerPath)</CompilerInvocation>

@@ -2,16 +2,13 @@
   <Import Project="..\common.props" />
   
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net47;net5.0</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.1;net5.0</TargetFrameworks>
     <AssemblyName>FlatSharp.Compiler</AssemblyName>
     <RootNamespace>FlatSharp.Compiler</RootNamespace>
     <OutputType>Exe</OutputType>
-    <Antlr4UseCSharpGenerator>True</Antlr4UseCSharpGenerator>
     <NuspecFile>FlatSharp.Compiler.nuspec</NuspecFile>
-    <AntlrVersion>4.6.6</AntlrVersion>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    <AntlrRuntimeRoot>$(NugetPackageRoot)\Antlr4.Runtime\$(AntlrVersion)</AntlrRuntimeRoot>
-    <NuspecProperties>$(NuspecProperties);AntlrRuntime=$(AntlrRuntimeRoot);OutDir=$(MSBuildThisFileDirectory)\bin\$(Configuration)</NuspecProperties>
+    <NuspecProperties>$(NuspecProperties);OutDir=$(MSBuildThisFileDirectory)\bin\$(Configuration)</NuspecProperties>
     <Nullable>annotations</Nullable>
     <NoWarn>CS3021;3021</NoWarn>
   </PropertyGroup>
@@ -21,25 +18,30 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="Antlr4.CodeGenerator" Version="$(AntlrVersion)">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Antlr4.Runtime" Version="$(AntlrVersion)" />
     <PackageReference Include="CommandLineParser" Version="2.8.0" />
-    <PackageReference Include="NETStandard.Library" Version="2.0.3" />
   </ItemGroup>
 
   <ItemGroup>
-    <Antlr4 Update="FlatBuffers.g4">
-      <Generator>MSBuild:Compile</Generator>
-      <Listener>False</Listener>
-      <Visitor>True</Visitor>
-    </Antlr4>
+    <Content Include="..\ext\flatc\windows\flatc.exe">
+      <Link>flatc\windows\flatc.exe</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ext\flatc\linux\flatc">
+      <Link>flatc\linux\flatc</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ext\flatc\macos\flatc">
+      <Link>flatc\macos\flatc</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
     <ProjectReference Include="..\FlatSharp\FlatSharp.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
 </Project>
