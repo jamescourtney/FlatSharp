@@ -168,6 +168,10 @@ namespace FlatSharp.Compiler
                 Console.Error.WriteLine($"No file specified");
                 return -1;
             }
+            finally
+            {
+                ErrorContext.Current.Clear();
+            }
 
             return 0;
         }
@@ -195,6 +199,7 @@ namespace FlatSharp.Compiler
             }
             finally
             {
+                ErrorContext.Current.Clear();
                 File.Delete(fbsFile);
             }
         }

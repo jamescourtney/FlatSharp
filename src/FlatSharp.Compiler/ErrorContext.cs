@@ -47,6 +47,11 @@ namespace FlatSharp.Compiler
             }
         }
 
+        public void Clear()
+        {
+            this.errors.Clear();
+        }
+
         public void RegisterError(string message)
         {
             this.errors.Add(message);
