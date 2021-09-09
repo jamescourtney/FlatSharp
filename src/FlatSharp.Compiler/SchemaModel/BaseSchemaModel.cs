@@ -61,16 +61,13 @@ namespace FlatSharp.Compiler.SchemaModel
         {
             if (context.CompilePass < CodeWritingPass.LastPass || context.RootFile == this.DeclaringFile)
             {
-                ErrorContext.Current.WithScope(this.Name, () =>
-                {
-                    this.Validate();
+                this.Validate();
 
-                    writer.AppendLine($"namespace {this.Namespace}");
-                    using (writer.WithBlock())
-                    {
-                        this.OnWriteCode(writer, context);
-                    }
-                });
+                writer.AppendLine($"namespace {this.Namespace}");
+                using (writer.WithBlock())
+                {
+                    this.OnWriteCode(writer, context);
+                }
             }
         }
 

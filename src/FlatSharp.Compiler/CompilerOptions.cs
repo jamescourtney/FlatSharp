@@ -20,7 +20,7 @@ namespace FlatSharp.Compiler
 
     public record CompilerOptions
     {
-        [Option('i', "input", HelpText = "BFBS input file", Required = true)]
+        [Option('i', "input", HelpText = "FBS input file", Required = true)]
         public string InputFile { get; set; } = string.Empty;
 
         [Option('o', "output", HelpText = "Output directory", Required = true)]

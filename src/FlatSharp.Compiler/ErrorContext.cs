@@ -24,7 +24,7 @@ namespace FlatSharp.Compiler
     using System.Linq;
     using System.Threading;
 
-    internal class ErrorContext : IDisposable
+    internal class ErrorContext
     {
         private static readonly ThreadLocal<ErrorContext> ThreadLocalContext = new ThreadLocal<ErrorContext>(() => new ErrorContext());
 
@@ -38,17 +38,7 @@ namespace FlatSharp.Compiler
         }
 
         public IEnumerable<string> Errors => this.errors;
-                
-        public void PushScope(string scope, int? lineNumber = null, string? context = null)
-        {
-            this.contextStack.AddLast((scope, lineNumber, context));
-        }
-
-        public void PopScope()
-        {
-            this.contextStack.RemoveLast();
-        }
-
+         
         public void ThrowIfHasErrors()
         {
             if (this.Errors.Any())
@@ -57,61 +47,9 @@ namespace FlatSharp.Compiler
             }
         }
 
-        public void WithScope(string scope, Action callback)
-        {
-            this.WithScope(scope, () =>
-            {
-                callback();
-                return true;
-            });
-        }
-        
-        public T? WithScope<T>(string scope, Func<T> callback) where T : notnull
-        {
-            try
-            {
-                this.PushScope(scope);
-                return callback();
-            }
-            catch (InvalidFlatBufferDefinitionException ex)
-            {
-                this.RegisterError(ex.Message);
-                return default;
-            }
-            catch (InvalidFbsFileException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                this.RegisterError("Unexpected FlatSharp compiler error: " + ex);
-                return default;
-            }
-            finally
-            {
-                this.PopScope();
-            }
-        }
-
         public void RegisterError(string message)
         {
-            if (this.contextStack.Count > 0)
-            {
-                var top = this.contextStack.Last();
-                string scope = string.Join(".", this.contextStack.Select(x => x.scope));
-                this.errors.Add($"Message='{message}', Scope={scope}");
-            }
-            else
-            {
-                Debug.Assert(false);
-                this.errors.Add(message);
-            }
-        }
-
-        public void Dispose()
-        {
-            FlatSharpInternal.Assert(this.contextStack.Count == 0, "Context was not fully popped");
-            ThreadLocalContext.Value = new ErrorContext();
+            this.errors.Add(message);
         }
     }
 }

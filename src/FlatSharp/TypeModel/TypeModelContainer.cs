@@ -185,24 +185,6 @@ namespace FlatSharp.TypeModel
         }
 
         /// <summary>
-        /// Attempts to resolve a type model from the given FBS type alias.
-        /// </summary>
-        public bool TryResolveFbsAlias(string alias, [NotNullWhen(true)] out ITypeModel? typeModel)
-        {
-            typeModel = null;
-
-            foreach (var provider in this.providers)
-            {
-                if (provider.TryResolveFbsAlias(this, alias, out typeModel))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        /// <summary>
         /// Creates the a type model for the given type or throws an exception.
         /// </summary>
         public ITypeModel CreateTypeModel(Type type)

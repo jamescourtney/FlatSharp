@@ -23,7 +23,6 @@ namespace FlatSharpTests.Compiler
     using FlatSharp.Compiler;
     using Xunit;
 
-    
     public class AccessModifierTests
     {
         [Fact]

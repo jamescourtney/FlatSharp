@@ -17,14 +17,17 @@
 namespace FlatSharp.Compiler
 {
     using System;
+    using System.Collections.Generic;
     using FlatSharp.Attributes;
 
     public class FlatSharpAttributes : IFlatSharpAttributes
     {
         private readonly IIndexedVector<string, Schema.KeyValue> rawAttributes;
+        private readonly Dictionary<string, object?> parsed;
 
         public FlatSharpAttributes(IIndexedVector<string, Schema.KeyValue>? attrs)
         {
+            this.parsed = new();
             this.rawAttributes = attrs ?? new IndexedVector<string, Schema.KeyValue>();
 
             foreach (var unsupported in MetadataKeys.UnsupportedStandardAttributes)
@@ -66,58 +69,74 @@ namespace FlatSharp.Compiler
 
         private bool? TryParseBoolean(string key)
         {
+            if (this.parsed.TryGetValue(key, out object? obj))
+            {
+                return (bool?)obj;
+            }
+
+            bool? result;
             if (this.rawAttributes.TryGetValue(key, out Schema.KeyValue? value))
             {
-                if (value.Value is null)
-                {
-                    return true;
-                }
+                FlatSharpInternal.Assert(value.Value is not null, "Not expecting 'null' values.");
 
-                bool? result = value.Value.ToLowerInvariant() switch
+                result = value.Value.ToLowerInvariant() switch
                 {
                     // seems that "0" can mean "included but no value set".
-                    "true" => true,
-                    "0" => true,
+                    "true" or "0" => true,
                     "false" => false,
                     _ => null,
                 };
 
-
                 if (result is null)
                 {
-                    ErrorContext.Current.RegisterError($"Unable to parse '{value.Value}' as a boolean. Expecting 'true' or 'false'.");
+                    ErrorContext.Current.RegisterError($"Unable to parse '{key}' value '{value.Value}' as a boolean. Expecting 'true' or 'false'.");
                     result = true;
                 }
-
-                return result;
             }
             else
             {
-                return null;
+                result = null;
             }
+
+            this.parsed[key] = result;
+            return result;
         }
 
         private TEnum? TryParseEnum<TEnum>(string key, TEnum defaultIfPresent) where TEnum : struct, Enum
         {
+            if (this.parsed.TryGetValue(key, out object? obj))
+            {
+                return (TEnum?)obj;
+            }
+
+            TEnum? result;
+
             if (this.rawAttributes.TryGetValue(key, out Schema.KeyValue? value))
             {
+                FlatSharpInternal.Assert(value.Value is not null, "Not expecting null");
+
                 if (value.Value == "0") // seems to indicate that value isn't present.
                 {
-                    return defaultIfPresent;
+                    result = defaultIfPresent;
                 }
-
-                if (!Enum.TryParse<TEnum>(value.Value, ignoreCase: true, out var result))
+                else if (Enum.TryParse<TEnum>(value.Value, ignoreCase: true, out TEnum temp))
                 {
-                    ErrorContext.Current.RegisterError($"Unable to parse '{value.Value}' as an instance of {typeof(TEnum).GetCompilableTypeName()}.");
-                    return defaultIfPresent;
+                    result = temp;
                 }
-
-                return result;
+                else
+                {
+                    string suggestions = string.Join(", ", Enum.GetNames(typeof(TEnum)));
+                    ErrorContext.Current.RegisterError($"Unable to parse '{key}' value '{value.Value}'. Valid values are: {suggestions}.");
+                    result = defaultIfPresent;
+                }
             }
             else
             {
-                return null;
+                result = null;
             }
+
+            this.parsed[key] = result;
+            return result;
         }
     }
 }
