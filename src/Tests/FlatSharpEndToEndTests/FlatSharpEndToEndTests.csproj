@@ -31,7 +31,6 @@
     <ProjectReference Include="..\..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
     <ProjectReference Include="..\..\FlatSharp\FlatSharp.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <Compile Remove="Grpc\Grpc.fbs.generated.cs" />
     <Compile Include="Grpc\Grpc.fbs.generated.cs" />

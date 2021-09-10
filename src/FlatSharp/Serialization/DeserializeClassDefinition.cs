@@ -105,12 +105,14 @@ namespace FlatSharp
 
         public string ClassName { get; }
 
-        public void AddProperty(ItemMemberModel itemModel, string readValueMethodName, string writeValueMethodName)
+        public void AddProperty(
+            ItemMemberModel itemModel,
+            ParserCodeGenContext context)
         {
             this.AddFieldDefinitions(itemModel);
-            this.AddPropertyDefinitions(itemModel, writeValueMethodName);
+            this.AddPropertyDefinitions(itemModel, context.SerializeMethodNameMap[itemModel.ItemTypeModel.ClrType]);
             this.AddCtorStatements(itemModel);
-            this.AddReadMethod(itemModel, readValueMethodName);
+            this.AddReadMethod(itemModel, context);
 
             if (itemModel.IsWriteThrough)
             {
@@ -120,7 +122,7 @@ namespace FlatSharp
                         $"Property '{itemModel.PropertyInfo.Name}' of {this.typeModel.SchemaType} '{this.typeModel.GetCompilableTypeName()}' specifies the WriteThrough option. However, WriteThrough is only supported when using deserialization option 'VectorCacheMutable' or 'Lazy'.");
                 }
 
-                this.AddWriteThroughMethod(itemModel, writeValueMethodName);
+                this.AddWriteThroughMethod(itemModel, context.SerializeMethodNameMap[itemModel.ItemTypeModel.ClrType]);
             }
         }
 
@@ -140,12 +142,19 @@ namespace FlatSharp
             this.instanceFieldDefinitions[GetFieldName(itemModel)] = $"private {typeName} {GetFieldName(itemModel)};";
         }
 
-        private void AddReadMethod(ItemMemberModel itemModel, string readValueMethodName)
+        private void AddReadMethod(
+            ItemMemberModel itemModel,
+            ParserCodeGenContext ctx)
         {
+            ctx = ctx with
+            {
+                InputBufferTypeName = "TInputBuffer",
+                OffsetVariableName = "offset",
+                InputBufferVariableName = "buffer",
+            };
+
             string body = itemModel.CreateReadItemBody(
-                readValueMethodName,
-                "buffer",
-                "offset",
+                ctx,
                 "vtableOffset",
                 "maxVtableIndex");
 
@@ -159,7 +168,7 @@ namespace FlatSharp
                     int vtableOffset, 
                     int maxVtableIndex)
                 {{
-                    {body};
+                    {body}
                 }}");
         }
 

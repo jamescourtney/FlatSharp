@@ -22,25 +22,40 @@ namespace FlatSharp.TypeModel
     {
         public static (string classDef, string className) CreateFlatBufferVectorSubclass(
             Type itemType,
-            string inputBufferTypeName,
-            string parseFunctionName)
+            ParserCodeGenContext context)
         {
             string className = $"FlatBufferVector_{Guid.NewGuid():n}";
 
+            context = context with
+            {
+                InputBufferTypeName = "TInputBuffer",
+                InputBufferVariableName = "memory",
+                IsOffsetByRef = false,
+                TableFieldContextVariableName = "fieldContext",
+            };
+
             string classDef = $@"
-                public sealed class {className}<{inputBufferTypeName}> : FlatBufferVector<{CSharpHelpers.GetGlobalCompilableTypeName(itemType)}, {inputBufferTypeName}>
-                    where {inputBufferTypeName} : {nameof(IInputBuffer)}
+                public sealed class {className}<{context.InputBufferTypeName}> : FlatBufferVector<{CSharpHelpers.GetGlobalCompilableTypeName(itemType)}, {context.InputBufferTypeName}>
+                    where {context.InputBufferTypeName} : {nameof(IInputBuffer)}
                 {{
                     public {className}(
-                        {inputBufferTypeName} memory,
+                        {context.InputBufferTypeName} memory,
                         int offset,
-                        int itemSize) : base(memory, offset, itemSize)
+                        int itemSize) : base(memory, offset, itemSize, default({nameof(TableFieldContext)}))
                     {{
                     }}
 
-                    protected override {CSharpHelpers.GetGlobalCompilableTypeName(itemType)} ParseItem({inputBufferTypeName} memory, int offset)
+                    public {className}(
+                        {context.InputBufferTypeName} memory,
+                        int offset,
+                        int itemSize,
+                        {nameof(TableFieldContext)} fieldContext) : base(memory, offset, itemSize, fieldContext)
                     {{
-                        return {parseFunctionName}(memory, offset);
+                    }}
+
+                    protected override {CSharpHelpers.GetGlobalCompilableTypeName(itemType)} ParseItem({context.InputBufferTypeName} memory, int offset, in {nameof(TableFieldContext)} fieldContext)
+                    {{
+                        return {context.GetParseInvocation(itemType)};
                     }}
                 }}
             ";
@@ -49,28 +64,47 @@ namespace FlatSharp.TypeModel
         }
 
         public static (string classDef, string className) CreateFlatBufferVectorOfUnionSubclass(
-            Type itemType,
             ITypeModel typeModel,
-            string inputBufferTypeName,
-            string parseFunctionName)
+            ParserCodeGenContext context)
         {
             string className = $"FlatBufferUnionVector_{Guid.NewGuid():n}";
 
+            context = context with
+            {
+                InputBufferTypeName = "TInputBuffer",
+                InputBufferVariableName = "memory",
+                IsOffsetByRef = true,
+                TableFieldContextVariableName = "fieldContext",
+                OffsetVariableName = "temp",
+            };
+
             string classDef = $@"
-                public sealed class {className}<{inputBufferTypeName}> : FlatBufferVectorOfUnion<{CSharpHelpers.GetCompilableTypeName(itemType)}, {inputBufferTypeName}>
-                    where {inputBufferTypeName} : {nameof(IInputBuffer)}
+                public sealed class {className}<{context.InputBufferTypeName}> : FlatBufferVectorOfUnion<{typeModel.GetGlobalCompilableTypeName()}, {context.InputBufferTypeName}>
+                    where {context.InputBufferTypeName} : {nameof(IInputBuffer)}
                 {{
                     public {className}(
-                        {inputBufferTypeName} memory,
+                        {context.InputBufferTypeName} memory,
                         int discriminatorOffset,
-                        int offsetVectorOffset) : base(memory, discriminatorOffset, offsetVectorOffset)
+                        int offsetVectorOffset) : base(memory, discriminatorOffset, offsetVectorOffset, default({nameof(TableFieldContext)}))
                     {{
                     }}
 
-                    protected override {CSharpHelpers.GetGlobalCompilableTypeName(itemType)} ParseItem({inputBufferTypeName} memory, int discriminatorOffset, int offsetOffset)
+                    public {className}(
+                        {context.InputBufferTypeName} memory,
+                        int discriminatorOffset,
+                        int offsetVectorOffset,
+                        {nameof(TableFieldContext)} fieldContext) : base(memory, discriminatorOffset, offsetVectorOffset, fieldContext)
                     {{
-                        var temp = (discriminatorOffset, offsetOffset);
-                        return {parseFunctionName}(memory, ref temp);
+                    }}
+
+                    protected override {typeModel.GetGlobalCompilableTypeName()} ParseItem(
+                        {context.InputBufferTypeName} memory,
+                        int discriminatorOffset,
+                        int offsetOffset,
+                        in {nameof(TableFieldContext)} {context.TableFieldContextVariableName})
+                    {{
+                        var {context.OffsetVariableName} = (discriminatorOffset, offsetOffset);
+                        return {context.GetParseInvocation(typeModel.ClrType)};
                     }}
                 }}
             ";

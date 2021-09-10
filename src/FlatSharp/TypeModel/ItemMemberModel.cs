@@ -193,15 +193,10 @@ namespace FlatSharp.TypeModel
         /// Creates a method body to read the given property. This is contextual depending
         /// on whether this member is table/struct/etc.
         /// </summary>
-        /// <param name="parseItemMethodName">A method that can parse the type from a buffer and offset.</param>
-        /// <param name="bufferVariableName">The buffer variable name.</param>
-        /// <param name="offsetVariableName">The offset at which the container (table/struct) starts.</param>
         /// <param name="vtableLocationVariableName">For tables, the offset of the vtable.</param>
         /// <param name="vtableMaxIndexVariableName">For tables, the max index of the vtable.</param>
         public abstract string CreateReadItemBody(
-            string parseItemMethodName,
-            string bufferVariableName,
-            string offsetVariableName,
+            ParserCodeGenContext context,
             string vtableLocationVariableName,
             string vtableMaxIndexVariableName);
 

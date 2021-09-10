@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2020 James Courtney
+ * Copyright 2021 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ namespace FlatSharp
     using FlatSharp.TypeModel;
     using System;
     using System.Collections.Generic;
+    using System.Text;
 
     /// <summary>
     /// Code gen context for serialization methods.
@@ -31,10 +32,12 @@ namespace FlatSharp
             string spanWriterVariableName,
             string valueVariableName,
             string offsetVariableName,
+            string tableFieldContextVariableName,
             bool isOffsetByRef,
             IReadOnlyDictionary<Type, string> methodNameMap,
             TypeModelContainer typeModelContainer,
-            FlatBufferSerializerOptions options)
+            FlatBufferSerializerOptions options,
+            IReadOnlyList<TableFieldContext> allFieldContexts)
         {
             this.SerializationContextVariableName = serializationContextVariableName;
             this.SpanWriterVariableName = spanWriterVariableName;
@@ -45,12 +48,19 @@ namespace FlatSharp
             this.TypeModelContainer = typeModelContainer;
             this.IsOffsetByRef = isOffsetByRef;
             this.Options = options;
+            this.TableFieldContextVariableName = tableFieldContextVariableName;
+            this.AllFieldContexts = allFieldContexts;
         }
 
         /// <summary>
         /// The variable name of the serialization context. Represents a <see cref="SerializationContext"/> value.
         /// </summary>
         public string SerializationContextVariableName { get; init; }
+
+        /// <summary>
+        /// The variable name of the table field context parameter. Represents a <see cref="TableFieldContext"/> value.
+        /// </summary>
+        public string TableFieldContextVariableName { get; init; }
 
         /// <summary>
         /// The variable name of the span. Represents a <see cref="System.Span{System.Byte}"/> value.
@@ -93,6 +103,11 @@ namespace FlatSharp
         public FlatBufferSerializerOptions Options { get; private init; }
 
         /// <summary>
+        /// All contexts for the entire object graph.
+        /// </summary>
+        public IReadOnlyList<TableFieldContext> AllFieldContexts { get; }
+
+        /// <summary>
         /// Gets a serialization invocation for the given type.
         /// </summary>
         public string GetSerializeInvocation(Type type)
@@ -104,14 +119,22 @@ namespace FlatSharp
                 byRef = "ref ";
             }
 
+            StringBuilder sb = new StringBuilder();
+            sb.Append($"{this.MethodNameMap[type]}({this.SpanWriterVariableName}, {this.SpanVariableName}, {this.ValueVariableName}, {byRef}{this.OffsetVariableName}");
+
             if (typeModel.SerializeMethodRequiresContext)
             {
-                return $"{this.MethodNameMap[type]}({this.SpanWriterVariableName}, {this.SpanVariableName}, {this.ValueVariableName}, {byRef}{this.OffsetVariableName}, {this.SerializationContextVariableName})";
+                sb.Append($", {this.SerializationContextVariableName}");
             }
-            else
+
+            if (typeModel.TableFieldContextRequirements.HasFlag(TableFieldContextRequirements.Serialize))
             {
-                return $"{this.MethodNameMap[type]}({this.SpanWriterVariableName}, {this.SpanVariableName}, {this.ValueVariableName}, {byRef}{this.OffsetVariableName})";
+                sb.Append($", {this.TableFieldContextVariableName}");
             }
+
+            sb.Append(")");
+
+            return sb.ToString();
         }
     }
 }

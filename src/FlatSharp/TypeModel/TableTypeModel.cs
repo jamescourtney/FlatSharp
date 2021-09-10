@@ -34,6 +34,7 @@ namespace FlatSharp.TypeModel
         private const int FileIdentifierSize = 4;
 
         private readonly string ParseClassName = "tableReader_" + Guid.NewGuid().ToString("n");
+        private readonly string ExtraClassName = "tableMetadata_" + Guid.NewGuid().ToString("n");
 
         /// <summary>
         /// Maps vtable index -> type model.
@@ -206,6 +207,22 @@ namespace FlatSharp.TypeModel
 
                 this.memberTypes[index] = model;
             }
+        }
+
+        public override List<TableFieldContext> GetFieldContexts()
+        {
+            List<TableFieldContext> items = new List<TableFieldContext>();
+            foreach (TableMemberModel member in this.memberTypes.Values)
+            {
+                TableFieldContext ctx = new TableFieldContext
+                {
+                    SharedString = member.IsSharedString
+                };
+
+                items.Add(ctx);
+            }
+
+            return items;
         }
 
         private void ValidateForceWrite(TableMemberModel model)
@@ -644,7 +661,8 @@ $@"
                 serializeInvocation = (context with
                 {
                     ValueVariableName = $"{valueVariableName}{nullForgiving}",
-                    OffsetVariableName = $"{OffsetVariableName(index, 0)}"
+                    OffsetVariableName = $"{OffsetVariableName(index, 0)}",
+                    TableFieldContextVariableName = $"{this.ExtraClassName}.{memberModel.PropertyInfo.Name}",
                 }).GetSerializeInvocation(memberModel.ItemTypeModel.ClrType);
             }
             else
@@ -654,6 +672,7 @@ $@"
                     ValueVariableName = $"{valueVariableName}{nullForgiving}",
                     OffsetVariableName = $"offsetTuple",
                     IsOffsetByRef = true,
+                    TableFieldContextVariableName = $"{this.ExtraClassName}.{memberModel.PropertyInfo.Name}",
                 }).GetSerializeInvocation(memberModel.ItemTypeModel.ClrType);
 
                 offsetTuple = $"var offsetTuple = ({string.Join(", ", Enumerable.Range(0, vtableEntries).Select(x => OffsetVariableName(index, x)))});";
@@ -676,7 +695,13 @@ $@"
             {
                 int index = item.Key;
                 var value = item.Value;
-                classDef.AddProperty(value, context.MethodNameMap[value.ItemTypeModel.ClrType], context.SerializeMethodNameMap[value.ItemTypeModel.ClrType]);
+
+                var tempContext = context with
+                {
+                    TableFieldContextVariableName = $"{this.ExtraClassName}.{item.Value.PropertyInfo.Name}"
+                };
+
+                classDef.AddProperty(value, tempContext);
             }
 
             string body = $"return {this.tableReaderClassName}<{context.InputBufferTypeName}>.GetOrCreate({context.InputBufferVariableName}, {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}));";
@@ -711,11 +736,17 @@ $@"
                 string variableName = $"index{index}Value";
                 statements.Add($"var {variableName} = {context.ValueVariableName}.{member.PropertyInfo.Name};");
 
+                var itemContext = context with
+                {
+                    ValueVariableName = variableName,
+                    TableFieldContextVariableName = $"{this.ExtraClassName}.{member.PropertyInfo.Name}",
+                };
+
                 string statement =
 $@" 
                     if ({itemModel.GetNotEqualToDefaultValueLiteralExpression(variableName, member.DefaultValueLiteral)})
                     {{
-                        runningSum += {context.MethodNameMap[itemModel.ClrType]}({variableName});
+                        runningSum += {itemContext.GetMaxSizeInvocation(itemModel.ClrType)};
                     }}";
 
                 statements.Add(statement);
@@ -737,6 +768,32 @@ $@"
             {
                 IsMethodInline = true,
             };
+        }
+
+        public override string? CreateExtraClasses()
+        {
+            Dictionary<string, TableFieldContext> fields = new();
+
+            foreach (var member in this.memberTypes.Values)
+            {
+                TableFieldContext ctx = new TableFieldContext();
+                if (member.IsSharedString)
+                {
+                    ctx.SharedString = true;
+                }
+
+                fields[member.PropertyInfo.Name] = ctx;
+            }
+
+            var allFields = fields.Select(kvp => 
+                $"public static readonly {nameof(TableFieldContext)} {kvp.Key} = new {nameof(TableFieldContext)} {{ SharedString = {kvp.Value.SharedString.ToString().ToLowerInvariant()} }};");
+
+            return $@"
+                private static class {this.ExtraClassName}
+                {{
+                    {string.Join("\r\n", allFields)}
+                }}
+            ";
         }
 
         public override bool TryGetTableKeyMember([NotNullWhen(true)] out TableMemberModel? tableMember)

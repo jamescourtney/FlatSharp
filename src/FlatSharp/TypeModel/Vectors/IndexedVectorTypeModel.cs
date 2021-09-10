@@ -94,14 +94,20 @@ namespace FlatSharp.TypeModel
 
             (string vectorClassDef, string vectorClassName) = FlatBufferVectorHelpers.CreateFlatBufferVectorSubclass(
                 this.valueTypeModel.ClrType,
-                context.InputBufferTypeName,
-                context.MethodNameMap[this.valueTypeModel.ClrType]);
+                context);
+
+            string fieldContextArg = string.Empty;
+            if (!string.IsNullOrEmpty(context.TableFieldContextVariableName))
+            {
+                fieldContextArg = $", {context.TableFieldContextVariableName}";
+            }
 
             string createFlatBufferVector =
             $@"new {vectorClassName}<{context.InputBufferTypeName}>(
                     {context.InputBufferVariableName}, 
                     {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}), 
-                    {this.PaddedMemberInlineSize})";
+                    {this.PaddedMemberInlineSize}
+                    {fieldContextArg})";
 
             if (context.Options.PreallocateVectors)
             {

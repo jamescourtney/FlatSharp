@@ -16,6 +16,7 @@
 
 namespace FlatSharp.TypeModel
 {
+    using FlatSharp;
     using FlatSharp.Runtime;
     using System;
     using System.Collections.Generic;
@@ -87,6 +88,8 @@ namespace FlatSharp.TypeModel
 
             public bool SerializeMethodRequiresContext => underlyingModel.SerializeMethodRequiresContext;
 
+            public TableFieldContextRequirements TableFieldContextRequirements => underlyingModel.TableFieldContextRequirements;
+
             public void AdjustTableMember(TableMemberModel source) => this.underlyingModel.AdjustTableMember(source);
 
             public CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
@@ -134,6 +137,8 @@ namespace FlatSharp.TypeModel
                 };
             }
 
+            public string? CreateExtraClasses() => null;
+
             public void Initialize()
             {
             }
@@ -164,6 +169,8 @@ namespace FlatSharp.TypeModel
                 string typeName = CSharpHelpers.GetGlobalCompilableTypeName(typeof(TConverter));
                 return $"default({typeName}).{nameof(ITypeFacadeConverter<byte, byte>.ConvertFromUnderlyingType)}({source})";
             }
+
+            public List<TableFieldContext> GetFieldContexts() => this.underlyingModel.GetFieldContexts();
         }
     }
 }

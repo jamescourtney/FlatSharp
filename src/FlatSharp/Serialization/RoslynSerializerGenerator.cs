@@ -163,7 +163,7 @@ $@"
 
             this.DefineMethods(rootModel);
             this.ImplementInterfaceMethod(typeof(TRoot));
-            this.ImplementMethods();
+            this.ImplementMethods(rootModel);
 
             string code = $@"
                 [{nameof(FlatSharpGeneratedSerializerAttribute)}({nameof(FlatBufferDeserializationOption)}.{this.options.DeserializationOption})]
@@ -471,24 +471,47 @@ $@"
             }
         }
 
-        private void ImplementMethods()
+        private void ImplementMethods(ITypeModel rootTypeModel)
         {
+            List<TableFieldContext> allContexts = rootTypeModel.GetAllTableFieldContexts();
+
             foreach (var type in this.writeMethods.Keys)
             {
                 ITypeModel typeModel = this.typeModelContainer.CreateTypeModel(type);
                 bool isOffsetByRef = typeModel.PhysicalLayout.Length > 1;
 
-                var maxSizeContext = new GetMaxSizeCodeGenContext("value", this.maxSizeMethods, this.options);
-                var parseContext = new ParserCodeGenContext("buffer", "offset", "TInputBuffer", isOffsetByRef, this.readMethods, this.writeMethods, this.options);
-                var serializeContext = new SerializationCodeGenContext("context", "span", "spanWriter", "value", "offset", isOffsetByRef, this.writeMethods, this.typeModelContainer, this.options);
+                var requirements = typeModel.TableFieldContextRequirements;
+
+                string getMaxSizeFieldContextVariableName = requirements.HasFlag(TableFieldContextRequirements.GetMaxSize)
+                    ? "fieldContext"
+                    : string.Empty;
+
+                string parseFieldContextVariableName = requirements.HasFlag(TableFieldContextRequirements.Parse)
+                    ? "fieldContext"
+                    : string.Empty;
+
+                string serializeFieldContextVariableName = requirements.HasFlag(TableFieldContextRequirements.Serialize)
+                    ? "fieldContext"
+                    : string.Empty;
+
+                var maxSizeContext = new GetMaxSizeCodeGenContext("value", getMaxSizeFieldContextVariableName, this.maxSizeMethods, this.options, this.typeModelContainer, allContexts);
+                var parseContext = new ParserCodeGenContext("buffer", "offset", "TInputBuffer", isOffsetByRef, parseFieldContextVariableName, this.readMethods, this.writeMethods, this.options, this.typeModelContainer, allContexts);
+                var serializeContext = new SerializationCodeGenContext("context", "span", "spanWriter", "value", "offset", serializeFieldContextVariableName, isOffsetByRef, this.writeMethods, this.typeModelContainer, this.options, allContexts);
 
                 var maxSizeMethod = typeModel.CreateGetMaxSizeMethodBody(maxSizeContext);
                 var parseMethod = typeModel.CreateParseMethodBody(parseContext);
                 var writeMethod = typeModel.CreateSerializeMethodBody(serializeContext);
 
-                this.GenerateGetMaxSizeMethod(type, maxSizeMethod, maxSizeContext);
+                this.GenerateGetMaxSizeMethod(typeModel, maxSizeMethod, maxSizeContext);
                 this.GenerateParseMethod(typeModel, parseMethod, parseContext);
                 this.GenerateSerializeMethod(typeModel, writeMethod, serializeContext);
+
+                string? extraClasses = typeModel.CreateExtraClasses();
+                if (extraClasses is not null)
+                {
+                    var node = CSharpSyntaxTree.ParseText(extraClasses, ParseOptions);
+                    this.methodDeclarations.Add(node.GetRoot());
+                }
             }
         }
 
@@ -537,12 +560,18 @@ $@"
         /// <summary>
         /// Gets a method to serialize the given type with the given body.
         /// </summary>
-        private void GenerateGetMaxSizeMethod(Type type, CodeGeneratedMethod method, GetMaxSizeCodeGenContext context)
+        private void GenerateGetMaxSizeMethod(ITypeModel typeModel, CodeGeneratedMethod method, GetMaxSizeCodeGenContext context)
         {
+            string tableFieldContextParameter = string.Empty;
+            if (typeModel.TableFieldContextRequirements.HasFlag(TableFieldContextRequirements.GetMaxSize))
+            {
+                tableFieldContextParameter = $", in {nameof(TableFieldContext)} {context.TableFieldContextVariableName}";
+            }
+
             string declaration =
 $@"
             {method.GetMethodImplAttribute()}
-            private static int {this.maxSizeMethods[type]}({CSharpHelpers.GetGlobalCompilableTypeName(type)} {context.ValueVariableName})
+            private static int {this.maxSizeMethods[typeModel.ClrType]}({typeModel.GetGlobalCompilableTypeName()} {context.ValueVariableName}{tableFieldContextParameter})
             {{
                 {method.MethodBody}
             }}";
@@ -552,6 +581,12 @@ $@"
 
         private void GenerateParseMethod(ITypeModel typeModel, CodeGeneratedMethod method, ParserCodeGenContext context)
         {
+            string tableFieldContextParameter = string.Empty;
+            if (typeModel.TableFieldContextRequirements.HasFlag(TableFieldContextRequirements.Parse))
+            {
+                tableFieldContextParameter = $", in {nameof(TableFieldContext)} {context.TableFieldContextVariableName}";
+            }
+
             string clrType = typeModel.GetGlobalCompilableTypeName();
 
             string declaration =
@@ -559,7 +594,8 @@ $@"
             {method.GetMethodImplAttribute()}
             private static {clrType} {this.readMethods[typeModel.ClrType]}<TInputBuffer>(
                 TInputBuffer {context.InputBufferVariableName}, 
-                {GetVTableOffsetVariableType(typeModel.PhysicalLayout.Length)} {context.OffsetVariableName}) where TInputBuffer : IInputBuffer
+                {GetVTableOffsetVariableType(typeModel.PhysicalLayout.Length)} {context.OffsetVariableName}
+                {tableFieldContextParameter}) where TInputBuffer : IInputBuffer
             {{
                 {method.MethodBody}
             }}";
@@ -569,10 +605,17 @@ $@"
 
         private void GenerateSerializeMethod(ITypeModel typeModel, CodeGeneratedMethod method, SerializationCodeGenContext context)
         {
-            string contextParameter = string.Empty;
+            string serializationContextParameter = string.Empty;
+            string tableFieldContextParameter = string.Empty;
+
             if (typeModel.SerializeMethodRequiresContext)
             {
-                contextParameter = $", {nameof(SerializationContext)} {context.SerializationContextVariableName}";
+                serializationContextParameter = $", {nameof(SerializationContext)} {context.SerializationContextVariableName}";
+            }
+
+            if (typeModel.TableFieldContextRequirements.HasFlag(TableFieldContextRequirements.Serialize))
+            {
+                tableFieldContextParameter = $", in {nameof(TableFieldContext)} {context.TableFieldContextVariableName}";
             }
 
             string declaration =
@@ -582,8 +625,9 @@ $@"
                 TSpanWriter {context.SpanWriterVariableName}, 
                 Span<byte> {context.SpanVariableName}, 
                 {CSharpHelpers.GetGlobalCompilableTypeName(typeModel.ClrType)} {context.ValueVariableName}, 
-                {GetVTableOffsetVariableType(typeModel.PhysicalLayout.Length)} {context.OffsetVariableName} 
-                {contextParameter}) where TSpanWriter : ISpanWriter
+                {GetVTableOffsetVariableType(typeModel.PhysicalLayout.Length)} {context.OffsetVariableName}
+                {serializationContextParameter}
+                {tableFieldContextParameter}) where TSpanWriter : ISpanWriter
             {{
                 {method.MethodBody}
             }}";

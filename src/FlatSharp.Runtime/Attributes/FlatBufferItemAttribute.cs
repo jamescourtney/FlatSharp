@@ -77,5 +77,10 @@ namespace FlatSharp.Attributes
         /// When set, indicates that the field is required. Only applies to non-scalar fields on tables.
         /// </summary>
         public bool Required { get; set; }
+
+        /// <summary>
+        /// Indicates if strings within this vector or item should be shared.
+        /// </summary>
+        public bool SharedString { get; set; }
     }
 }

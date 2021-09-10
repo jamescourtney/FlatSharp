@@ -32,15 +32,18 @@ namespace FlatSharp
         private readonly int offset;
         private readonly int itemSize;
         private readonly int count;
+        private readonly TableFieldContext fieldContext;
 
         protected FlatBufferVector(
             TInputBuffer memory,
             int offset,
-            int itemSize)
+            int itemSize,
+            TableFieldContext fieldContext)
         {
             this.memory = memory;
             this.offset = offset;
             this.itemSize = itemSize;
+            this.fieldContext = fieldContext;
             this.count = checked((int)this.memory.ReadUInt(this.offset));
 
             // Advance to the start of the element at index 0. Easiest to do this once
@@ -60,7 +63,7 @@ namespace FlatSharp
                     throw new IndexOutOfRangeException();
                 }
 
-                return this.ParseItem(this.memory, GetOffset(this.itemSize, this.offset, index));
+                return this.ParseItem(this.memory, GetOffset(this.itemSize, this.offset, index), this.fieldContext);
             }
             set
             {
@@ -101,7 +104,7 @@ namespace FlatSharp
 
             for (int i = 0; i < count; ++i)
             {
-                array[arrayIndex + i] = this.ParseItem(memory, offset);
+                array[arrayIndex + i] = this.ParseItem(memory, offset, this.fieldContext);
                 offset = checked(offset + itemSize);
             }
         }
@@ -116,7 +119,7 @@ namespace FlatSharp
 
             for (int i = 0; i < array.Length; ++i)
             {
-                array[i] = this.ParseItem(memory, offset);
+                array[i] = this.ParseItem(memory, offset, this.fieldContext);
                 offset = checked(offset + itemSize);
             }
 
@@ -128,7 +131,7 @@ namespace FlatSharp
             int count = this.count;
             for (int i = 0; i < count; ++i)
             {
-                yield return this.ParseItem(this.memory, GetOffset(this.itemSize, this.offset, i));
+                yield return this.ParseItem(this.memory, GetOffset(this.itemSize, this.offset, i), this.fieldContext);
             }
         }
 
@@ -147,7 +150,7 @@ namespace FlatSharp
 
             for (int i = 0; i < count; ++i)
             {
-                if (item.Equals(this.ParseItem(memory, offset)))
+                if (item.Equals(this.ParseItem(memory, offset, this.fieldContext)))
                 {
                     return i;
                 }
@@ -191,6 +194,6 @@ namespace FlatSharp
             return checked(baseOffset + (itemSize * index));
         }
 
-        protected abstract T ParseItem(TInputBuffer buffer, int offset);
+        protected abstract T ParseItem(TInputBuffer buffer, int offset, in TableFieldContext context);
     }
 }

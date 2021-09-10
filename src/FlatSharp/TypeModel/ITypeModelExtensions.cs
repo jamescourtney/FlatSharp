@@ -208,5 +208,28 @@ namespace FlatSharp.TypeModel
                 }
             }
         }
+
+        /// <summary>
+        /// Gets all TableFieldContexts for the entire object graph.
+        /// </summary>
+        public static List<TableFieldContext> GetAllTableFieldContexts(this ITypeModel rootType)
+        {
+            static void GetTableFieldContextsRecursive(ITypeModel model, List<TableFieldContext> contexts, HashSet<Type> seenTypes)
+            {
+                if (seenTypes.Add(model.ClrType))
+                {
+                    contexts.AddRange(model.GetFieldContexts());
+
+                    foreach (var child in model.Children)
+                    {
+                        GetTableFieldContextsRecursive(child, contexts, seenTypes);
+                    }
+                }
+            }
+
+            List<TableFieldContext> result = new();
+            GetTableFieldContextsRecursive(rootType, result, new());
+            return result;
+        }
     }
 }

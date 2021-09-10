@@ -67,7 +67,7 @@ namespace FlatSharp.Compiler.Schema
             {
                 if (baseType == BaseType.String && attributes?.SharedString == true)
                 {
-                    typeName = "SharedString";
+                    typeName = "string";
                 }
                 else
                 {

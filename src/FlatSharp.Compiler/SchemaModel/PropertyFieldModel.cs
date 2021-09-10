@@ -22,6 +22,7 @@ namespace FlatSharp.Compiler.SchemaModel
     using FlatSharp.Compiler.Schema;
     using FlatSharp.Attributes;
     using System.Diagnostics.CodeAnalysis;
+    using System.Text;
 
     public record PropertyFieldModel
     {
@@ -183,38 +184,32 @@ namespace FlatSharp.Compiler.SchemaModel
 
         private string GetAttribute()
         {
-            string isKey = string.Empty;
-            string sortedVector = string.Empty;
-            string defaultValue = string.Empty;
-            string isDeprecated = string.Empty;
-            string forceWrite = string.Empty;
             string customAccessor = string.Empty;
-            string writeThrough = string.Empty;
-            string required = string.Empty;
+            StringBuilder attribute = new($"[{nameof(FlatBufferItemAttribute)}({this.Index}");
 
             if (this.Field.Key)
             {
-                isKey = $", {nameof(FlatBufferItemAttribute.Key)} = true";
+                attribute.Append($", {nameof(FlatBufferItemAttribute.Key)} = true");
             }
 
             if (this.Attributes.SortedVector == true)
             {
-                sortedVector = $", {nameof(FlatBufferItemAttribute.SortedVector)} = true";
+                attribute.Append($", {nameof(FlatBufferItemAttribute.SortedVector)} = true");
             }
 
             if (this.Field.Deprecated)
             {
-                isDeprecated = $", {nameof(FlatBufferItemAttribute.Deprecated)} = true";
+                attribute.Append($", {nameof(FlatBufferItemAttribute.Deprecated)} = true");
             }
 
             if (this.HasDefaultValue)
             {
-                defaultValue = $", {nameof(FlatBufferItemAttribute.DefaultValue)} = {this.GetDefaultValue()}";
+                attribute.Append($", {nameof(FlatBufferItemAttribute.DefaultValue)} = {this.GetDefaultValue()}");
             }
 
             if (this.Field.Required)
             {
-                required = $", {nameof(FlatBufferItemAttribute.Required)} = true";
+                attribute.Append($", {nameof(FlatBufferItemAttribute.Required)} = true");
             }
 
             if (!string.IsNullOrEmpty(this.CustomGetter))
@@ -227,15 +222,23 @@ namespace FlatSharp.Compiler.SchemaModel
 
             if (emitForcedWrite)
             {
-                forceWrite = $", {nameof(FlatBufferItemAttribute.ForceWrite)} = true";
+                attribute.Append($", {nameof(FlatBufferItemAttribute.ForceWrite)} = true");
             }
 
             if (this.Attributes.WriteThrough ?? this.Parent.Attributes.WriteThrough == true)
             {
-                writeThrough = $", {nameof(FlatBufferItemAttribute.WriteThrough)} = true";
+                attribute.Append($", {nameof(FlatBufferItemAttribute.WriteThrough)} = true");
             }
 
-            return $"[{nameof(FlatBufferItemAttribute)}({this.Index}{defaultValue}{isDeprecated}{sortedVector}{isKey}{forceWrite}{writeThrough}{required})]{customAccessor}";
+            if (this.Attributes.SharedString == true)
+            {
+                attribute.Append($", {nameof(FlatBufferItemAttribute.SharedString)} = true");
+            }
+
+            attribute.Append(")]");
+            attribute.Append(customAccessor);
+
+            return attribute.ToString();
         }
 
         public string GetTypeName()

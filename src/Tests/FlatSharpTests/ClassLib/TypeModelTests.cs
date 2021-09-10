@@ -925,12 +925,6 @@ namespace FlatSharpTests
         }
 
         [Fact]
-        public void TypeModel_SortedVector_OfTableWithSharedStringKeyKey_Allowed()
-        {
-            RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<SharedString>[]>));
-        }
-
-        [Fact]
         public void TypeModel_SortedVector_OfTableWithMultipleKeys_NotAllowed()
         {
             var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
@@ -1018,18 +1012,6 @@ namespace FlatSharpTests
             var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
                 RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, TaggedEnum?>?>)));
             Assert.Equal("Unions may not store 'System.Nullable<FlatSharpTests.TypeModelTests.TaggedEnum>'.", ex.Message);
-        }
-
-        [Fact]
-        public void TypeModel_Union_StringAndSharedStringNotAllowed()
-        {
-            var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
-                RuntimeTypeModel.CreateFrom(typeof(FlatBufferUnion<string, SharedString>?)));
-            Assert.Equal("Unions may only contain one string type. String and SharedString cannot cohabit the union.", ex.Message);
-
-            ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
-                RuntimeTypeModel.CreateFrom(typeof(FlatBufferUnion<string, GenericTable<string>, SharedString>?)));
-            Assert.Equal("Unions may only contain one string type. String and SharedString cannot cohabit the union.", ex.Message);
         }
 
         [Fact]

@@ -179,9 +179,6 @@ table VectorMember {{
         }
 
         [Fact]
-        public void SortedVector_IndexedVector_KeyTypesCorrect_SharedString() => this.SortedVector_IndexedVector_KeyTypesCorrect<SharedString>("string", MetadataKeys.SharedString);
-
-        [Fact]
         public void SortedVector_IndexedVector_KeyTypesCorrect_String() => this.SortedVector_IndexedVector_KeyTypesCorrect<string>("string");
 
         [Fact]

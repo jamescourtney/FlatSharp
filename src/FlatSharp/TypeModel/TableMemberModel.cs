@@ -36,6 +36,7 @@
             this.IsKey = attribute.Key;
             this.IsDeprecated = attribute.Deprecated;
             this.ForceWrite = attribute.ForceWrite;
+            this.IsSharedString = attribute.SharedString;
 
             if (!propertyModel.IsValidTableMember)
             {
@@ -63,6 +64,22 @@
                 if (this.DefaultValue is not null)
                 {
                     throw new InvalidFlatBufferDefinitionException($"Table property '{this.FriendlyName}' declared the Required attribute and also declared a Default Value. These two items are incompatible.");
+                }
+            }
+
+            if (this.IsSharedString)
+            {
+                if (propertyModel.SchemaType == FlatBufferSchemaType.String)
+                {
+                    // regular ol' string
+                }
+                else if (propertyModel.TryGetUnderlyingVectorType(out ITypeModel? memberModel) && memberModel.SchemaType == FlatBufferSchemaType.String)
+                {
+                    // vector of string.
+                }
+                else
+                {
+                    throw new InvalidFlatBufferDefinitionException($"Table property '{this.FriendlyName}' declared the SharedString attribute. This is only supported on strings and vectors of strings.");
                 }
             }
         }
@@ -94,24 +111,40 @@
         public bool ForceWrite { get; set; }
 
         /// <summary>
+        /// Indicates if strings within this member should be shared.
+        /// </summary>
+        public bool IsSharedString { get; set; }
+
+        /// <summary>
         /// Returns a C# literal that is equal to the default value.
         /// </summary>
         public string DefaultValueLiteral => this.ItemTypeModel.FormatDefaultValueAsLiteral(this.DefaultValue);
 
-        public override string CreateReadItemBody(string parseItemMethodName, string bufferVariableName, string offsetVariableName, string vtableLocationVariableName, string vtableMaxIndexVariableName)
+        public override string CreateReadItemBody(
+            ParserCodeGenContext context,
+            string vtableLocationVariableName,
+            string vtableMaxIndexVariableName)
         {
             if (this.ItemTypeModel.PhysicalLayout.Length == 1)
             {
-                return this.CreateSingleWidthReadItemBody(parseItemMethodName, bufferVariableName, offsetVariableName, vtableLocationVariableName, vtableMaxIndexVariableName);
+                return this.CreateSingleWidthReadItemBody(context, vtableLocationVariableName, vtableMaxIndexVariableName);
             }
             else
             {
-                return this.CreateWideReadItemBody(parseItemMethodName, bufferVariableName, offsetVariableName, vtableLocationVariableName, vtableMaxIndexVariableName);
+                return this.CreateWideReadItemBody(context, vtableLocationVariableName, vtableMaxIndexVariableName);
             }
         }
 
-        private string CreateSingleWidthReadItemBody(string parseItemMethodName, string bufferVariableName, string offsetVariableName, string vtableLocationVariableName, string vtableMaxIndexVariableName)
+        private string CreateSingleWidthReadItemBody(
+            ParserCodeGenContext context,
+            string vtableLocationVariableName,
+            string vtableMaxIndexVariableName)
         {
+            var adjustedContext = context with
+            {
+                OffsetVariableName = "absoluteLocation",
+            };
+
             return $@"
                 if ({this.Index} > {vtableMaxIndexVariableName})
                 {{
@@ -124,11 +157,15 @@
                     {this.GetNotPresentStatement()}
                 }}
 
-                int absoluteLocation = {offsetVariableName} + relativeOffset;
-                return {parseItemMethodName}({bufferVariableName}, absoluteLocation);";
+                int absoluteLocation = {context.OffsetVariableName} + relativeOffset;
+                
+                return {adjustedContext.GetParseInvocation(this.PropertyInfo.PropertyType)};";
         }
 
-        private string CreateWideReadItemBody(string parseItemMethodName, string bufferVariableName, string offsetVariableName, string vtableLocationVariableName, string vtableMaxIndexVariableName)
+        private string CreateWideReadItemBody(
+            ParserCodeGenContext context,
+            string vtableLocationVariableName,
+            string vtableMaxIndexVariableName)
         {
             int items = this.ItemTypeModel.PhysicalLayout.Length;
 
@@ -147,8 +184,14 @@
                 }}
                 ");
 
-                absoluteLocations.Add($"relativeOffset{i} + {offsetVariableName}");
+                absoluteLocations.Add($"relativeOffset{i} + {context.OffsetVariableName}");
             }
+
+            var adjustedContext = context with
+            {
+                OffsetVariableName = "absoluteLocations",
+                IsOffsetByRef = true,
+            };
 
             return $@"
                 if ({this.Index + items - 1} > {vtableMaxIndexVariableName})
@@ -159,7 +202,7 @@
                 {string.Join("\r\n", relativeOffsets)}
 
                 var absoluteLocations = ({string.Join(", ", absoluteLocations)});
-                return {parseItemMethodName}({bufferVariableName}, ref absoluteLocations);";
+                return {adjustedContext.GetParseInvocation(this.PropertyInfo.PropertyType)};";
         }
 
         private string GetNotPresentStatement()
