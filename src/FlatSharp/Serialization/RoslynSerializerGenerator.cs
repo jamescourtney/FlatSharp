@@ -563,7 +563,7 @@ $@"
         private void GenerateGetMaxSizeMethod(ITypeModel typeModel, CodeGeneratedMethod method, GetMaxSizeCodeGenContext context)
         {
             string tableFieldContextParameter = string.Empty;
-            if (typeModel.TableFieldContextRequirements.HasFlag(TableFieldContextRequirements.Parse))
+            if (typeModel.TableFieldContextRequirements.HasFlag(TableFieldContextRequirements.GetMaxSize))
             {
                 tableFieldContextParameter = $", in {nameof(TableFieldContext)} {context.TableFieldContextVariableName}";
             }
