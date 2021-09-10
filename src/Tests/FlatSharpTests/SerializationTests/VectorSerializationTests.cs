@@ -480,42 +480,6 @@ namespace FlatSharpTests
         }
 
         [Fact]
-        public void SortedVector_SharedStringKey()
-        {
-            var root = new RootTableSorted<IList<TableWithKey<SharedString>>>();
-
-            root.Vector = new List<TableWithKey<SharedString>>
-            {
-                new TableWithKey<SharedString> { Key = "d", Value = "0" },
-                new TableWithKey<SharedString> { Key = "c", Value = "1" },
-                new TableWithKey<SharedString> { Key = "b", Value = "2" },
-                new TableWithKey<SharedString> { Key = "a", Value = "3" },
-                new TableWithKey<SharedString> { Key = "", Value = "4" },
-                new TableWithKey<SharedString> { Key = "a", Value = "5" },
-            };
-
-            byte[] data = new byte[1024];
-            var serializer = FlatBufferSerializer.Default.Compile<RootTableSorted<IList<TableWithKey<SharedString>>>>()
-                .WithSettings(new SerializerSettings
-                {
-                    SharedStringWriterFactory = () => new SharedStringWriter(),
-                });
-
-            serializer.Write(default(SpanWriter), data, root);
-
-            var parsed = serializer.Parse(data);
-
-            Assert.Equal("", parsed.Vector[0].Key.String);
-            Assert.Equal("a", parsed.Vector[1].Key.String);
-            Assert.Equal("a", parsed.Vector[2].Key.String);
-            Assert.Equal("b", parsed.Vector[3].Key.String);
-            Assert.Equal("c", parsed.Vector[4].Key.String);
-            Assert.Equal("d", parsed.Vector[5].Key.String);
-
-            Assert.NotNull(parsed.Vector.BinarySearchByFlatBufferKey((SharedString)"b"));
-        }
-
-        [Fact]
         public void SortedVector_StringKey_Null()
         {
             var root = new RootTableSorted<IList<TableWithKey<string>>>();
@@ -674,49 +638,6 @@ namespace FlatSharpTests
             foreach (var key in keys)
             {
                 Assert.Equal(table.Vector[key].Value, parsed.Vector[key].Value);
-            }
-        }
-
-        [Fact]
-        public void IndexedVector_SharedStrings()
-        {
-            var table = new RootTable<IIndexedVector<SharedString, TableWithKey<SharedString>>>
-            {
-                Vector = new IndexedVector<SharedString, TableWithKey<SharedString>>()
-            };
-
-            List<SharedString> keys = new List<SharedString>();
-            for (int i = 0; i < 50; ++i)
-            {
-                string key = Guid.NewGuid().ToString();
-                keys.Add(key);
-                table.Vector.AddOrReplace(new TableWithKey<SharedString> { Key = key, Value = Guid.NewGuid().ToString() });
-            }
-
-            byte[] data = new byte[10 * 1024 * 1024];
-            var serializer = new FlatBufferSerializer(FlatBufferDeserializationOption.Lazy);
-            var sharedStringSerializer = serializer.Compile<RootTable<IIndexedVector<SharedString, TableWithKey<SharedString>>>>()
-                .WithSettings(new SerializerSettings
-                {
-                    SharedStringWriterFactory = () => new SharedStringWriter(5000),
-                });
-
-            int bytesWritten = sharedStringSerializer.Write(data, table);
-            var parsed = sharedStringSerializer.Parse(data);
-
-            foreach (var kvp in parsed.Vector)
-            {
-                SharedString key = kvp.Key;
-                SharedString value = kvp.Value.Key;
-
-                Assert.Equal(key.String, value.String);
-            }
-
-            foreach (var key in keys)
-            {
-                SharedString expectedKey = key;
-                Assert.True(parsed.Vector.TryGetValue(key, out var value));
-                Assert.Equal(expectedKey, value.Key);
             }
         }
 

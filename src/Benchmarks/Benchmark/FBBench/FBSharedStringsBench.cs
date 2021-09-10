@@ -16,8 +16,6 @@
 
 namespace Benchmark.FBBench
 {
-#if !NO_SHARED_STRINGS
-
     using BenchmarkDotNet.Attributes;
     using FlatSharp;
     using FlatSharp.Attributes;
@@ -28,12 +26,14 @@ namespace Benchmark.FBBench
 
     public class FBSharedStringBench : FBBenchCore
     {
-        public VectorTable<string> nonSharedStringVector;
-        public VectorTable<SharedString> randomSharedStringVector;
-        public VectorTable<SharedString> nonRandomSharedStringVector;
+#if FLATSHARP_6_0_0_OR_GREATER
 
-        private ISerializer<VectorTable<string>> regularStringSerializer;
-        private ISerializer<VectorTable<SharedString>> sharedStringSerializer;
+        public NonSharedVectorTable nonSharedStringVector;
+        public SharedVectorTable randomSharedStringVector;
+        public SharedVectorTable nonRandomSharedStringVector;
+
+        private ISerializer<NonSharedVectorTable> regularStringSerializer;
+        private ISerializer<SharedVectorTable> sharedStringSerializer;
 
         public byte[] serializedGuassianStringVector = new byte[10 * 1024 * 1024];
         public byte[] serializedRandomStringVector = new byte[10 * 1024 * 1024];
@@ -47,9 +47,9 @@ namespace Benchmark.FBBench
 
         public override void GlobalSetup()
         {
-            this.regularStringSerializer = FlatBufferSerializer.Default.Compile<VectorTable<string>>();
+            this.regularStringSerializer = FlatBufferSerializer.Default.Compile<NonSharedVectorTable>();
 
-            this.sharedStringSerializer = FlatBufferSerializer.Default.Compile<VectorTable<SharedString>>()
+            this.sharedStringSerializer = FlatBufferSerializer.Default.Compile<SharedVectorTable>()
                 .WithSettings(new SerializerSettings
                 {
                     SharedStringWriterFactory = () => new SharedStringWriter(this.CacheSize),
@@ -67,9 +67,9 @@ namespace Benchmark.FBBench
             List<string> guassianGuids = Enumerable.Range(0, this.VectorLength)
                 .Select(i => guids[NextGaussianInt(random, 0, guids.Count - 1)]).ToList();
 
-            nonSharedStringVector = new VectorTable<string> { Vector = randomGuids.ToList() };
-            randomSharedStringVector = new VectorTable<SharedString> { Vector = randomGuids.Select(SharedString.Create).ToList() };
-            nonRandomSharedStringVector = new VectorTable<SharedString> { Vector = guassianGuids.Select(SharedString.Create).ToList() };
+            nonSharedStringVector = new NonSharedVectorTable { Vector = randomGuids.ToList() };
+            randomSharedStringVector = new SharedVectorTable { Vector = randomGuids.ToList() };
+            nonRandomSharedStringVector = new SharedVectorTable { Vector = guassianGuids.ToList() };
 
             int nonSharedSize = this.Serialize_RandomStringVector_WithRegularString();
             int cacheSize = this.Serialize_NonRandomStringVector_WithSharing();
@@ -106,10 +106,17 @@ namespace Benchmark.FBBench
         }
 
         [FlatBufferTable]
-        public class VectorTable<T>
+        public class NonSharedVectorTable
         {
             [FlatBufferItem(0)]
-            public virtual IList<T> Vector { get; set; }
+            public virtual IList<string> Vector { get; set; }
+        }
+
+        [FlatBufferTable]
+        public class SharedVectorTable
+        {
+            [FlatBufferItem(0, SharedString = true)]
+            public virtual IList<string> Vector { get; set; }
         }
 
         public static int NextGaussianInt(Random r, int min, int max)
@@ -130,7 +137,7 @@ namespace Benchmark.FBBench
 
             return rand_normal;
         }
-    }
 
 #endif
+    }
 }

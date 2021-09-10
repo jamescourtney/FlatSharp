@@ -38,7 +38,7 @@ namespace FlatSharp
         /// <param name="offset">The location in the buffer of the uoffset to the string.</param>
         /// <param name="value">The string to write.</param>
         /// <param name="context">The serialization context.</param>
-        void WriteSharedString<TSpanWriter>(TSpanWriter spanWriter, Span<byte> data, int offset, SharedString value, SerializationContext context)
+        void WriteSharedString<TSpanWriter>(TSpanWriter spanWriter, Span<byte> data, int offset, string value, SerializationContext context)
             where TSpanWriter : ISpanWriter;
 
         /// <summary>

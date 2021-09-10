@@ -39,7 +39,7 @@ namespace FlatSharp.TypeModel
 
             FlatSharpInternal.Assert(
                 genericDef == typeof(IList<>) || genericDef == typeof(IReadOnlyList<>),
-                "Cannot build a vector from type: { this.ClrType}. Only List, ReadOnlyList, Memory, ReadOnlyMemory, and Arrays are supported.");
+                $"Cannot build a vector from type: {this.ClrType}. Only List, ReadOnlyList, Memory, ReadOnlyMemory, and Arrays are supported.");
 
             this.isReadOnly = genericDef == typeof(IReadOnlyList<>);
             return this.ClrType.GetGenericArguments()[0];
@@ -103,16 +103,22 @@ namespace FlatSharp.TypeModel
         {
             (string vectorClassDef, string vectorClassName) = FlatBufferVectorHelpers.CreateFlatBufferVectorSubclass(
                 this.ItemTypeModel.ClrType,
-                context.InputBufferTypeName,
-                context.MethodNameMap[this.ItemTypeModel.ClrType]);
+                context);
 
             string body;
+
+            string fieldContextArg = string.Empty;
+            if (!string.IsNullOrEmpty(context.TableFieldContextVariableName))
+            {
+                fieldContextArg = $", {context.TableFieldContextVariableName}";
+            }
 
             string createFlatBufferVector =
                 $@"new {vectorClassName}<{context.InputBufferTypeName}>(
                         {context.InputBufferVariableName}, 
                         {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}), 
-                        {this.PaddedMemberInlineSize})";
+                        {this.PaddedMemberInlineSize}
+                        {fieldContextArg})";
 
             if (context.Options.PreallocateVectors)
             {

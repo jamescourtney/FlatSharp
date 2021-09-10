@@ -32,13 +32,6 @@
     <ProjectReference Include="..\..\FlatSharp\FlatSharp.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Remove="Grpc\Grpc.fbs.generated.cs" />
-    <Compile Include="Grpc\Grpc.fbs.generated.cs" />
-    <Compile Remove="ValueStructs\ValueStructs.fbs.generated.cs" />
-    <Compile Include="ValueStructs\ValueStructs.fbs.generated.cs" />
-  </ItemGroup>
-
   <Target Name="FBS" BeforeTargets="BeforeBuild">
     <Exec Command="dotnet ..\..\FlatSharp.Compiler\bin\$(Configuration)\net5.0\FlatSharp.Compiler.dll --nullable-warnings true -i Grpc\Grpc.fbs -o Grpc\" />
     <Exec Command="dotnet ..\..\FlatSharp.Compiler\bin\$(Configuration)\net5.0\FlatSharp.Compiler.dll --nullable-warnings true -i ValueStructs\ValueStructs.fbs -o ValueStructs\" />

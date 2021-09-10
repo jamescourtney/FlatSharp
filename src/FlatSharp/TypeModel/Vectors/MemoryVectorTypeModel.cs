@@ -17,6 +17,7 @@
 namespace FlatSharp.TypeModel
 {
     using System;
+    using System.Collections.Generic;
 
     /// <summary>
     /// Defines a vector type model for a memory vector of byte.

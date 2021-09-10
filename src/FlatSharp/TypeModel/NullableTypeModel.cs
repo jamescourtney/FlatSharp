@@ -80,6 +80,11 @@ namespace FlatSharp.TypeModel
         /// </summary>
         public override bool SerializesInline => this.underlyingTypeModel.SerializesInline;
 
+        /// <summary>
+        /// Defer to underlying type model about whether we need this.
+        /// </summary>
+        public override TableFieldContextRequirements TableFieldContextRequirements => this.underlyingTypeModel.TableFieldContextRequirements;
+
         public override IEnumerable<ITypeModel> Children => new[] { this.underlyingTypeModel };
 
         /// <summary>

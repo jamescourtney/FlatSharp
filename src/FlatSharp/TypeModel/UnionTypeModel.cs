@@ -90,6 +90,12 @@ namespace FlatSharp.TypeModel
         public ITypeModel[] UnionElementTypeModel => this.memberTypeModels;
 
         /// <summary>
+        /// We need it to pass through.
+        /// </summary>
+        public override TableFieldContextRequirements TableFieldContextRequirements => 
+            this.memberTypeModels.Select(x => x.TableFieldContextRequirements).Aggregate(TableFieldContextRequirements.None, (a, b) => a | b);
+
+        /// <summary>
         /// Unions have an implicit dependency on <see cref="byte"/> for the discriminator.
         /// </summary>
         public override IEnumerable<ITypeModel> Children => this.memberTypeModels.Concat(new[] { this.typeModelContainer.CreateTypeModel(typeof(byte)) });
@@ -101,10 +107,16 @@ namespace FlatSharp.TypeModel
             {
                 var unionMember = this.UnionElementTypeModel[i];
                 int unionIndex = i + 1;
+
+                var itemContext = context with
+                {
+                    ValueVariableName = $"{context.ValueVariableName}.Item{unionIndex}",
+                };
+
                 string @case =
 $@"
                     case {unionIndex}:
-                        return {sizeof(uint) + SerializationHelpers.GetMaxPadding(sizeof(uint))} + {context.MethodNameMap[unionMember.ClrType]}({context.ValueVariableName}.Item{unionIndex});";
+                        return {sizeof(uint) + SerializationHelpers.GetMaxPadding(sizeof(uint))} + {itemContext.GetMaxSizeInvocation(unionMember.ClrType)};";
 
                 switchCases.Add(@case);
             }
@@ -251,7 +263,6 @@ $@"
 
         public override void Initialize()
         {
-            bool containsString = false;
             HashSet<Type> uniqueTypes = new HashSet<Type>();
 
             // Look for the actual FlatBufferUnion.
@@ -269,16 +280,6 @@ $@"
                 else if (!uniqueTypes.Add(item.ClrType))
                 {
                     throw new InvalidFlatBufferDefinitionException($"Unions must consist of unique types. The type '{item.GetCompilableTypeName()}' was repeated.");
-                }
-
-                if (item.ClrType == typeof(string) || item.ClrType == typeof(SharedString))
-                {
-                    if (containsString)
-                    {
-                        throw new InvalidFlatBufferDefinitionException($"Unions may only contain one string type. String and SharedString cannot cohabit the union.");
-                    }
-
-                    containsString = true;
                 }
             }
         }

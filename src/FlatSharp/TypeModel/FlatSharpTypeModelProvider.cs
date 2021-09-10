@@ -39,12 +39,6 @@ namespace FlatSharp.TypeModel
                 return true;
             }
 
-            if (type == typeof(SharedString))
-            {
-                typeModel = new SharedStringTypeModel(container);
-                return true;
-            }
-
             if (type.IsArray)
             {
                 if (typeof(IFlatBufferUnion).IsAssignableFrom(type.GetElementType()))

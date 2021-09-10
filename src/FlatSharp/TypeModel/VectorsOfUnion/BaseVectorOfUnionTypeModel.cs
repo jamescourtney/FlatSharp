@@ -91,6 +91,11 @@ namespace FlatSharp.TypeModel
         /// </summary>
         public override bool SerializesInline => false;
 
+        /// <summary>
+        /// Defer to the union type under us as to whether context is needed.
+        /// </summary>
+        public override TableFieldContextRequirements TableFieldContextRequirements => this.ItemTypeModel.TableFieldContextRequirements;
+
         public override IEnumerable<ITypeModel> Children => new[] { this.ItemTypeModel };
 
         protected virtual string Indexer(string index) => $"[{index}]";
@@ -106,6 +111,11 @@ namespace FlatSharp.TypeModel
             // 2 vectors.
             int baseSize = 2 * (sizeof(int) + SerializationHelpers.GetMaxPadding(sizeof(int)));
 
+            var itemContext = context with
+            {
+                ValueVariableName = "current",
+            };
+
             string body =
             $@"
                 int count = {context.ValueVariableName}.{this.LengthPropertyName};
@@ -113,8 +123,8 @@ namespace FlatSharp.TypeModel
 
                 for (int i = 0; i < count; ++i)
                 {{
-                      var current = {context.ValueVariableName}{this.Indexer("i")};
-                      length += {context.MethodNameMap[this.ItemTypeModel.ClrType]}(current);
+                      var {itemContext.ValueVariableName} = {context.ValueVariableName}{this.Indexer("i")};
+                      length += {itemContext.GetMaxSizeInvocation(this.ItemTypeModel.ClrType)};
                 }}
 
                 return length;";

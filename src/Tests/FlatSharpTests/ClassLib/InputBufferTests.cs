@@ -337,8 +337,8 @@ namespace FlatSharpTests
             [FlatBufferItem(11)]
             public virtual string? L { get; set; }
 
-            [FlatBufferItem(12)]
-            public virtual SharedString? M { get; set; }
+            [FlatBufferItem(12, SharedString = true)]
+            public virtual string? M { get; set; }
         }
 
         [FlatBufferTable]

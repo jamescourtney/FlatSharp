@@ -45,6 +45,7 @@ namespace FlatSharp
         /// <summary>
         /// Writes the given string.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WriteString<TSpanWriter>(
             this TSpanWriter spanWriter,
             Span<byte> span, 
@@ -57,29 +58,9 @@ namespace FlatSharp
         }
 
         /// <summary>
-        /// Writes the given shared string.
-        /// </summary>
-        public static void WriteSharedString<TSpanWriter>(
-            this TSpanWriter writer, 
-            Span<byte> span, 
-            SharedString value, 
-            int offset, 
-            SerializationContext context) where TSpanWriter : ISpanWriter
-        {
-            var manager = context.SharedStringWriter;
-            if (manager != null)
-            {
-                manager.WriteSharedString(writer, span, offset, value, context);
-            }
-            else
-            {
-                writer.WriteString(span, value, offset, context);
-            }
-        }
-
-        /// <summary>
         /// Writes the string to the buffer, returning the absolute offset of the string.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int WriteAndProvisionString<TSpanWriter>(this TSpanWriter spanWriter, Span<byte> span, string value, SerializationContext context)
             where TSpanWriter : ISpanWriter
         {

@@ -201,7 +201,7 @@ namespace FlatSharpEndToEndTests.GrpcTests
             {
                 MultiStringMessage message = new MultiStringMessage
                 {
-                    Value = Enumerable.Range(0, 100).Select(x => (SharedString)Guid.NewGuid().ToString()).ToList()
+                    Value = Enumerable.Range(0, 100).Select(x => Guid.NewGuid().ToString()).ToList()
                 };
 
                 var streamingCall = client.EchoServerStreaming(message);
@@ -222,7 +222,7 @@ namespace FlatSharpEndToEndTests.GrpcTests
             {
                 MultiStringMessage message = new MultiStringMessage
                 {
-                    Value = Enumerable.Range(0, 100).Select(x => (SharedString)Guid.NewGuid().ToString()).ToList()
+                    Value = Enumerable.Range(0, 100).Select(x => Guid.NewGuid().ToString()).ToList()
                 };
 
                 var channel = SChannel.CreateUnbounded<StringMessage>();
@@ -252,7 +252,7 @@ namespace FlatSharpEndToEndTests.GrpcTests
             {
                 MultiStringMessage message = new MultiStringMessage
                 {
-                    Value = Enumerable.Range(0, 100).Select(x => (SharedString)Guid.NewGuid().ToString()).ToList()
+                    Value = Enumerable.Range(0, 100).Select(x => Guid.NewGuid().ToString()).ToList()
                 };
 
                 var channel = SChannel.CreateUnbounded<StringMessage>();
@@ -474,7 +474,7 @@ namespace FlatSharpEndToEndTests.GrpcTests
 
             public override async Task<MultiStringMessage> EchoClientStreaming(IAsyncStreamReader<StringMessage> requestStream, ServerCallContext callContext)
             {
-                List<SharedString> messages = new List<SharedString>();
+                List<string> messages = new List<string>();
                 while (await requestStream.MoveNext(callContext.CancellationToken))
                 {
                     messages.Add(requestStream.Current.Value);

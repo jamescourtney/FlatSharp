@@ -50,14 +50,6 @@ namespace FlatSharp
         }
 
         /// <summary>
-        /// Reads a shared string at the given offset.
-        /// </summary>
-        public static SharedString ReadSharedString<TBuffer>(this TBuffer buffer, int offset) where TBuffer : IInputBuffer
-        {
-            return buffer.ReadString(offset);
-        }
-
-        /// <summary>
         /// Reads a string from the given uoffset.
         /// </summary>
         public static string ReadStringFromUOffset<TBuffer>(this TBuffer buffer, int uoffset) where TBuffer : IInputBuffer

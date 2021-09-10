@@ -69,7 +69,7 @@ namespace FlatSharp
             TSpanWriter spanWriter, 
             Span<byte> data, 
             int offset, 
-            SharedString value, 
+            string value, 
             SerializationContext context) where TSpanWriter : ISpanWriter
         {
             // Find the associative set that must contain our key.
@@ -84,7 +84,7 @@ namespace FlatSharp
             }
 
             var offsets = line.Offsets;
-            SharedString? sharedString = line.String;
+            string? sharedString = line.String;
             if (sharedString is not null)
             {
                 FlushSharedString(spanWriter, data, sharedString, offsets, context);
@@ -135,7 +135,7 @@ namespace FlatSharp
         private struct WriteCacheEntry
         {
             // The string
-            public SharedString? String;
+            public string? String;
 
             public List<int> Offsets;
         }

@@ -34,16 +34,19 @@ namespace FlatSharp
         private readonly int count;
         private readonly int discriminatorVectorOffset;
         private readonly int offsetVectorOffset;
+        private readonly TableFieldContext fieldContext;
 
         protected FlatBufferVectorOfUnion(
             TInputBuffer memory,
             int discriminatorOffset,
-            int offsetVectorOffset)
+            int offsetVectorOffset,
+            TableFieldContext fieldContext)
         {
             this.memory = memory;
 
             uint discriminatorCount = memory.ReadUInt(discriminatorOffset);
             uint offsetCount = memory.ReadUInt(offsetVectorOffset);
+            this.fieldContext = fieldContext;
 
             if (discriminatorCount != offsetCount)
             {
@@ -191,10 +194,15 @@ namespace FlatSharp
                 return this.ParseItem(
                     buffer, 
                     this.discriminatorVectorOffset + index, 
-                    this.offsetVectorOffset + (index * sizeof(int)));
+                    this.offsetVectorOffset + (index * sizeof(int)),
+                    this.fieldContext);
             }
         }
 
-        protected abstract T ParseItem(TInputBuffer buffer, int discriminatorOffset, int offsetOffset);
+        protected abstract T ParseItem(
+            TInputBuffer buffer,
+            int discriminatorOffset,
+            int offsetOffset,
+            in TableFieldContext fieldContext);
     }
 }

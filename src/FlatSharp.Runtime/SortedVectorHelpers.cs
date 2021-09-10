@@ -146,24 +146,11 @@ namespace FlatSharp
             {
                 return (Func<T, int>)(object)GetStringComparerFunc(comparison as string);
             }
-            else if (typeof(T) == typeof(SharedString))
-            {
-                return (Func<T, int>)(object)GetSharedStringComparerFunc(comparison as SharedString);
-            }
             else
             {
                 IComparer<T> comparer = Comparer<T>.Default;
                 return left => comparer.Compare(left, comparison);
             }
-        }
-
-        private static Func<SharedString, int> GetSharedStringComparerFunc(SharedString? right)
-        {
-            Func<string?, int> nonSharedCallback = GetStringComparerFunc(right?.String);
-            return ss =>
-            {
-                return nonSharedCallback(ss?.String);
-            };
         }
 
         private static Func<string?, int> GetStringComparerFunc(string? right)
