@@ -52,6 +52,8 @@ namespace FlatSharp
         /// </summary>
         GreedyMutable = 5,
 
+        Progressive = 6,
+
         /// <summary>
         /// Default options.
         /// </summary>

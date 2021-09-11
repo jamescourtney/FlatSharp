@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2020 James Courtney
+ * Copyright 2021 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,36 +19,46 @@ namespace FlatSharp
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.IO;
     using System.Runtime.CompilerServices;
 
     /// <summary>
     /// A base class that FlatBuffersNet implements to deserialize vectors. FlatBufferVetor{T} is a lazy implementation
     /// which will create a new instance for each item it returns. Calling .ToList() is an effective way to do caching.
     /// </summary>
-    public abstract class FlatBufferVector<T, TInputBuffer> : IList<T>, IReadOnlyList<T>
+    public abstract class FlatBufferVectorOfUnion<T, TInputBuffer> : IList<T>, IReadOnlyList<T>
         where TInputBuffer : IInputBuffer
+        where T : IFlatBufferUnion
     {
         private readonly TInputBuffer memory;
-        private readonly int offset;
-        private readonly int itemSize;
         private readonly int count;
+        private readonly int discriminatorVectorOffset;
+        private readonly int offsetVectorOffset;
         private readonly TableFieldContext fieldContext;
 
-        protected FlatBufferVector(
+        protected FlatBufferVectorOfUnion(
             TInputBuffer memory,
-            int offset,
-            int itemSize,
+            int discriminatorOffset,
+            int offsetVectorOffset,
             TableFieldContext fieldContext)
         {
             this.memory = memory;
-            this.offset = offset;
-            this.itemSize = itemSize;
-            this.fieldContext = fieldContext;
-            this.count = checked((int)this.memory.ReadUInt(this.offset));
 
-            // Advance to the start of the element at index 0. Easiest to do this once
-            // in the .ctor than repeatedly for each index.
-            this.offset = checked(this.offset + sizeof(uint));
+            uint discriminatorCount = memory.ReadUInt(discriminatorOffset);
+            uint offsetCount = memory.ReadUInt(offsetVectorOffset);
+            this.fieldContext = fieldContext;
+
+            if (discriminatorCount != offsetCount)
+            {
+                throw new InvalidDataException($"Union vector had mismatched number of discriminators and offsets.");
+            }
+
+            checked
+            {
+                this.count = (int)offsetCount;
+                this.discriminatorVectorOffset = discriminatorOffset + sizeof(int);
+                this.offsetVectorOffset = offsetVectorOffset + sizeof(int);
+            }
         }
 
         /// <summary>
@@ -58,12 +68,7 @@ namespace FlatSharp
         {
             get
             {
-                if ((uint)index >= (uint)this.count)
-                {
-                    throw new IndexOutOfRangeException();
-                }
-
-                return this.ParseItem(this.memory, GetOffset(this.itemSize, this.offset, index), this.fieldContext);
+                return this.ParseItemHelper(this.memory, index);
             }
             set
             {
@@ -97,30 +102,23 @@ namespace FlatSharp
                 throw new ArgumentNullException(nameof(array));
             }
 
-            var count = this.count;
+            var count = this.Count;
             var memory = this.memory;
-            var offset = this.offset;
-            var itemSize = this.itemSize;
 
             for (int i = 0; i < count; ++i)
             {
-                array[arrayIndex + i] = this.ParseItem(memory, offset, this.fieldContext);
-                offset = checked(offset + itemSize);
+                array[arrayIndex + i] = this.ParseItemHelper(memory, i);
             }
         }
 
         public T[] ToArray()
         {
-            T[] array = new T[this.count];
-
-            var offset = this.offset;
-            var itemSize = this.itemSize;
+            T[] array = new T[this.Count];
             var memory = this.memory;
 
             for (int i = 0; i < array.Length; ++i)
             {
-                array[i] = this.ParseItem(memory, offset, this.fieldContext);
-                offset = checked(offset + itemSize);
+                array[i] = this.ParseItemHelper(memory, i);
             }
 
             return array;
@@ -128,10 +126,10 @@ namespace FlatSharp
 
         public IEnumerator<T> GetEnumerator()
         {
-            int count = this.count;
+            int count = this.Count;
             for (int i = 0; i < count; ++i)
             {
-                yield return this.ParseItem(this.memory, GetOffset(this.itemSize, this.offset, i), this.fieldContext);
+                yield return this.ParseItemHelper(this.memory, i);
             }
         }
 
@@ -143,19 +141,15 @@ namespace FlatSharp
                 return -1;
             }
 
-            int count = this.count;
+            int count = this.Count;
             var memory = this.memory;
-            var offset = this.offset;
-            var itemSize = this.itemSize;
 
             for (int i = 0; i < count; ++i)
             {
-                if (item.Equals(this.ParseItem(memory, offset, this.fieldContext)))
+                if (item.Equals(this.ParseItemHelper(memory, i)))
                 {
                     return i;
                 }
-
-                offset = checked(offset + itemSize);
             }
 
             return -1;
@@ -163,17 +157,22 @@ namespace FlatSharp
 
         public List<T> FlatBufferVectorToList()
         {
-            var list = new List<T>(this.count);
+            var list = new List<T>(this.Count);
             list.AddRange(this);
             return list;
         }
 
-        public void Insert(int index, T item)
+        public IReadOnlyList<T> AsProgressiveVector()
+        {
+            return new FlatBufferProgressiveVector<T>(this);
+        }
+
+        public void Insert(int index, T? item)
         {
             throw new NotMutableException("FlatBufferVector does not support inserting.");
         }
 
-        public bool Remove(T item)
+        public bool Remove(T? item)
         {
             throw new NotMutableException("FlatBufferVector does not support removing.");
         }
@@ -188,12 +187,27 @@ namespace FlatSharp
             return this.GetEnumerator();
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int GetOffset(int itemSize, int baseOffset, int index)
+        private T ParseItemHelper(TInputBuffer buffer, int index)
         {
-            return checked(baseOffset + (itemSize * index));
+            if ((uint)index >= (uint)this.count)
+            {
+                throw new IndexOutOfRangeException("Union vector index out of range.");
+            }
+
+            checked
+            {
+                return this.ParseItem(
+                    buffer, 
+                    this.discriminatorVectorOffset + index, 
+                    this.offsetVectorOffset + (index * sizeof(int)),
+                    this.fieldContext);
+            }
         }
 
-        protected abstract T ParseItem(TInputBuffer buffer, int offset, in TableFieldContext context);
+        protected abstract T ParseItem(
+            TInputBuffer buffer,
+            int discriminatorOffset,
+            int offsetOffset,
+            in TableFieldContext fieldContext);
     }
 }

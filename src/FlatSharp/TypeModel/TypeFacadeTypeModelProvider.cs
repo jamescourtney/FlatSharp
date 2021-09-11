@@ -170,7 +170,7 @@ namespace FlatSharp.TypeModel
                 return $"default({typeName}).{nameof(ITypeFacadeConverter<byte, byte>.ConvertFromUnderlyingType)}({source})";
             }
 
-            public List<TableFieldContext> GetFieldContexts() => this.underlyingModel.GetFieldContexts();
+            public List<(ITypeModel, TableFieldContext)> GetFieldContexts() => this.underlyingModel.GetFieldContexts();
         }
     }
 }

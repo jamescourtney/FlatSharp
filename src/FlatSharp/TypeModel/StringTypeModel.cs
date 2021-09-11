@@ -103,7 +103,7 @@ namespace FlatSharp.TypeModel
         public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
         {
             string body;
-            if (context.AllFieldContexts.Any(x => x.SharedString))
+            if (context.AllFieldContexts.SelectMany(x => x.Value).Any(x => x.SharedString))
             {
                 // If we know this schema includes shared strings, add the if statement here.
                 body = $@"

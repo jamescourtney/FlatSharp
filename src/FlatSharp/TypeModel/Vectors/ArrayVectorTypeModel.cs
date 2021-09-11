@@ -61,8 +61,12 @@ namespace FlatSharp.TypeModel
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
             string body;
-
             FlatSharpInternal.Assert(this.ItemTypeModel is not null, "Flatsharp internal error: ItemTypeModel null");
+
+            if (!context.Options.GreedyDeserialize)
+            {
+                throw new InvalidFlatBufferDefinitionException("Array vectors may only be used with Greedy serializers.");
+            }
 
             (string vectorClassDef, string vectorClassName) = (string.Empty, string.Empty);
 

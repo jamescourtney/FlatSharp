@@ -130,7 +130,7 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// Gets the table field contexts for this type model. Probably only useful for tables.
         /// </summary>
-        List<TableFieldContext> GetFieldContexts();
+        List<(ITypeModel, TableFieldContext)> GetFieldContexts();
 
         /// <summary>
         /// Implements a serialize method for the the type of this type model.

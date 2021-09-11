@@ -18,6 +18,7 @@ namespace FlatSharp.TypeModel
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Text;
 
     /// <summary>
@@ -101,6 +102,8 @@ namespace FlatSharp.TypeModel
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
+            this.ValidatePreallocationSettings(context.AllFieldContexts, context.Options);
+
             (string vectorClassDef, string vectorClassName) = FlatBufferVectorHelpers.CreateFlatBufferVectorSubclass(
                 this.ItemTypeModel.ClrType,
                 context);
@@ -120,23 +123,34 @@ namespace FlatSharp.TypeModel
                         {this.PaddedMemberInlineSize}
                         {fieldContextArg})";
 
-            if (context.Options.PreallocateVectors)
+            if (context.Options.GreedyDeserialize)
             {
-                // We just call .ToList(). Note that when full greedy mode is on, these items will be 
-                // greedily initialized as we traverse the list. Otherwise, they'll be allocated lazily.
                 body = $"({createFlatBufferVector}).FlatBufferVectorToList()";
-
                 if (!context.Options.GenerateMutableObjects)
                 {
-                    // Finally, if we're not in the business of making mutable objects, then convert the list to read only.
                     body += ".AsReadOnly()";
                 }
 
                 body = $"return {body};";
             }
-            else
+            else if (context.Options.Lazy)
             {
                 body = $"return {createFlatBufferVector};";
+            }
+            else
+            {
+                FlatSharpInternal.Assert(context.Options.Progressive, "expecting progressive");
+                body = $@"
+                    var vector = {createFlatBufferVector};
+                    if (vector.Count >= ({context.TableFieldContextVariableName}.{nameof(TableFieldContext.VectorPreallocationLimit)} ?? 1024))
+                    {{
+                        return new FlatBufferProgressiveVector<{this.ItemTypeModel.GetGlobalCompilableTypeName()}>(vector);
+                    }}
+                    else
+                    {{
+                        return vector.FlatBufferVectorToList().AsReadOnly();
+                    }}
+                ";
             }
 
             return new CodeGeneratedMethod(body) { ClassDefinition = vectorClassDef };

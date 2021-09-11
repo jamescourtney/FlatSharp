@@ -25,6 +25,8 @@ namespace FlatSharp.Attributes
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public class FlatBufferItemAttribute : Attribute
     {
+        private long vectorPreallocationLimit;
+
         /// <summary>
         /// Initializes a new FlatBufferItemAttribute.
         /// </summary>
@@ -82,5 +84,22 @@ namespace FlatSharp.Attributes
         /// Indicates if strings within this vector or item should be shared.
         /// </summary>
         public bool SharedString { get; set; }
+
+        /// <summary>
+        /// Indicates the maximum length vector that should be preallocated. A value of <c>null</c> implies
+        /// that FlatSharp will choose. A value of 0 implies that the vector is never preallocated. 
+        /// A negative value implies that there is no limit.
+        /// </summary>
+        public long VectorPreallocationLimit
+        {
+            get => this.vectorPreallocationLimit;
+            set
+            {
+                this.HasVectorPreallocationLimit = true;
+                this.vectorPreallocationLimit = value;
+            }
+        }
+
+        internal bool HasVectorPreallocationLimit { get; set; }
     }
 }

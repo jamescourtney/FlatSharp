@@ -32,7 +32,7 @@ namespace FlatSharp
             IReadOnlyDictionary<Type, string> methodNameMap,
             FlatBufferSerializerOptions options,
             TypeModelContainer typeModelContainer,
-            IReadOnlyList<TableFieldContext> allFieldContexts)
+            IReadOnlyDictionary<ITypeModel, List<TableFieldContext>> allFieldContexts)
         {
             this.ValueVariableName = valueVariableName;
             this.TableFieldContextVariableName = tableFieldContextVariableName;
@@ -70,7 +70,7 @@ namespace FlatSharp
         /// <summary>
         /// All contexts for the entire object graph.
         /// </summary>
-        public IReadOnlyList<TableFieldContext> AllFieldContexts { get; }
+        public IReadOnlyDictionary<ITypeModel, List<TableFieldContext>> AllFieldContexts { get; }
 
         /// <summary>
         /// Gets a get max size invocation for the given type.

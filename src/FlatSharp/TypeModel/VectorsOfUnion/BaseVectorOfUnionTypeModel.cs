@@ -94,7 +94,7 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// Defer to the union type under us as to whether context is needed.
         /// </summary>
-        public override TableFieldContextRequirements TableFieldContextRequirements => this.ItemTypeModel.TableFieldContextRequirements;
+        public override TableFieldContextRequirements TableFieldContextRequirements => this.ItemTypeModel.TableFieldContextRequirements | TableFieldContextRequirements.Parse;
 
         public override IEnumerable<ITypeModel> Children => new[] { this.ItemTypeModel };
 

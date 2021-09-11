@@ -37,6 +37,7 @@
             this.IsDeprecated = attribute.Deprecated;
             this.ForceWrite = attribute.ForceWrite;
             this.IsSharedString = attribute.SharedString;
+            this.VectorPreallocationLimit = attribute.HasVectorPreallocationLimit ? attribute.VectorPreallocationLimit : null;
 
             if (!propertyModel.IsValidTableMember)
             {
@@ -114,6 +115,11 @@
         /// Indicates if strings within this member should be shared.
         /// </summary>
         public bool IsSharedString { get; set; }
+
+        /// <summary>
+        /// Indicates the threshold under which vectors should be preallocated.
+        /// </summary>
+        public long? VectorPreallocationLimit { get; set; }
 
         /// <summary>
         /// Returns a C# literal that is equal to the default value.

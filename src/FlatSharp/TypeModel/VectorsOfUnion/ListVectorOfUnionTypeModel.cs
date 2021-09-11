@@ -51,7 +51,8 @@ namespace FlatSharp.TypeModel
                         {fieldContextArg})";
 
             string body;
-            if (context.Options.PreallocateVectors)
+
+            if (context.Options.GreedyDeserialize)
             {
                 // We just call .ToList(). Note that when full greedy mode is on, these items will be 
                 // greedily initialized as we traverse the list. Otherwise, they'll be allocated lazily.
@@ -65,9 +66,24 @@ namespace FlatSharp.TypeModel
 
                 body = $"return {body};";
             }
-            else
+            else if (context.Options.Lazy)
             {
                 body = $"return {createFlatBufferVector};";
+            }
+            else
+            {
+                FlatSharpInternal.Assert(context.Options.Progressive, "expecting progressive");
+                body = $@"
+                    var vector = {createFlatBufferVector};
+                    if (vector.Count >= ({context.TableFieldContextVariableName}.{nameof(TableFieldContext.VectorPreallocationLimit)} ?? 1024))
+                    {{
+                        return new FlatBufferProgressiveVector<{this.ItemTypeModel.GetGlobalCompilableTypeName()}>(vector);
+                    }}
+                    else
+                    {{
+                        return vector.FlatBufferVectorToList().AsReadOnly();
+                    }}
+                ";
             }
 
             return new CodeGeneratedMethod(body) { ClassDefinition = classDef };

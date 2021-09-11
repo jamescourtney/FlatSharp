@@ -54,6 +54,11 @@
             {
                 throw new InvalidFlatBufferDefinitionException($"Struct member '{this.FriendlyName}' declared the SharedString attribute. SharedString is not valid inside structs.");
             }
+
+            if (attribute.HasVectorPreallocationLimit)
+            {
+                throw new InvalidFlatBufferDefinitionException($"Struct member '{this.FriendlyName}' declared the {nameof(FlatBufferItemAttribute.VectorPreallocationLimit)} attribute. This attribute is not valid inside structs.");
+            }
         }
 
         /// <summary>

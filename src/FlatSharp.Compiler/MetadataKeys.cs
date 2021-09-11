@@ -106,6 +106,11 @@ namespace FlatSharp.Compiler
         public const string RpcInterface = "fs_rpcInterface";
 
         /// <summary>
+        /// Indicates the threshold below which vectors should be preallocated.
+        /// </summary>
+        public const string VectorPreallocation = "fs_preallocate";
+
+        /// <summary>
         /// Marks a table field as deprecated. Deprecated fields do not have their values serialized or parsed.
         /// Valid On:
         /// - Table field

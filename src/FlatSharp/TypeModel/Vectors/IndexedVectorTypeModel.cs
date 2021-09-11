@@ -88,6 +88,8 @@ namespace FlatSharp.TypeModel
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
+            this.ValidatePreallocationSettings(context.AllFieldContexts, context.Options);
+
             string body;
             string keyTypeName = CSharpHelpers.GetGlobalCompilableTypeName(this.keyTypeModel.ClrType);
             string valueTypeName = CSharpHelpers.GetGlobalCompilableTypeName(this.valueTypeModel.ClrType);
@@ -109,16 +111,21 @@ namespace FlatSharp.TypeModel
                     {this.PaddedMemberInlineSize}
                     {fieldContextArg})";
 
-            if (context.Options.PreallocateVectors)
+            string mutable = context.Options.GenerateMutableObjects.ToString().ToLowerInvariant();
+            if (context.Options.GreedyDeserialize)
             {
                 // Eager indexed vector.
-                string mutable = context.Options.GenerateMutableObjects.ToString().ToLowerInvariant();
                 body = $@"return new {nameof(IndexedVector<string, string>)}<{keyTypeName}, {valueTypeName}>({createFlatBufferVector}, {mutable});";
+            }
+            else if (context.Options.Lazy)
+            {
+                // Lazy indexed vector.
+                body = $@"return new {nameof(FlatBufferIndexedVector<string, string, IInputBuffer>)}<{keyTypeName}, {valueTypeName}, {context.InputBufferTypeName}>({createFlatBufferVector});";
             }
             else
             {
-                // Lazy indexed vector.
-                body = $@"return new {nameof(FlatBufferIndexedVector<string, string>)}<{keyTypeName}, {valueTypeName}>({createFlatBufferVector});";
+                FlatSharpInternal.Assert(context.Options.Progressive, "expecting progressive");
+                body = $@"return new {nameof(FlatBufferProgressiveIndexedVector<string, string, IInputBuffer>)}<{keyTypeName}, {valueTypeName}, {context.InputBufferTypeName}>({createFlatBufferVector});";
             }
 
             return new CodeGeneratedMethod(body) { IsMethodInline = true, ClassDefinition = vectorClassDef };

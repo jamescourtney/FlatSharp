@@ -37,7 +37,7 @@ namespace FlatSharp
             IReadOnlyDictionary<Type, string> methodNameMap,
             TypeModelContainer typeModelContainer,
             FlatBufferSerializerOptions options,
-            IReadOnlyList<TableFieldContext> allFieldContexts)
+            IReadOnlyDictionary<ITypeModel, List<TableFieldContext>> allFieldContexts)
         {
             this.SerializationContextVariableName = serializationContextVariableName;
             this.SpanWriterVariableName = spanWriterVariableName;
@@ -105,7 +105,7 @@ namespace FlatSharp
         /// <summary>
         /// All contexts for the entire object graph.
         /// </summary>
-        public IReadOnlyList<TableFieldContext> AllFieldContexts { get; }
+        public IReadOnlyDictionary<ITypeModel, List<TableFieldContext>> AllFieldContexts { get; }
 
         /// <summary>
         /// Gets a serialization invocation for the given type.

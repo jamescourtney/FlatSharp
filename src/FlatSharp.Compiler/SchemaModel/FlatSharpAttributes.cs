@@ -67,6 +67,8 @@ namespace FlatSharp.Compiler
 
         public RpcStreamingType? StreamingType => this.TryParseEnum(MetadataKeys.Streaming, RpcStreamingType.None);
 
+        public long? VectorPreallocate => this.TryParseLong(MetadataKeys.VectorPreallocation);
+
         private bool? TryParseBoolean(string key)
         {
             if (this.parsed.TryGetValue(key, out object? obj))
@@ -128,6 +130,43 @@ namespace FlatSharp.Compiler
                     string suggestions = string.Join(", ", Enum.GetNames(typeof(TEnum)));
                     ErrorContext.Current.RegisterError($"Unable to parse '{key}' value '{value.Value}'. Valid values are: {suggestions}.");
                     result = defaultIfPresent;
+                }
+            }
+            else
+            {
+                result = null;
+            }
+
+            this.parsed[key] = result;
+            return result;
+        }
+
+        private long? TryParseLong(string key)
+        {
+            if (this.parsed.TryGetValue(key, out object? obj))
+            {
+                return (long?)obj;
+            }
+
+            long? result;
+
+            if (this.rawAttributes.TryGetValue(key, out Schema.KeyValue? value))
+            {
+                FlatSharpInternal.Assert(value.Value is not null, "Not expecting null");
+
+                if (value.Value == "0") // seems to indicate that value isn't present.
+                {
+                    ErrorContext.Current.RegisterError($"Metadata key '{key}' was present, but did not include a value. To specify 0, please use \"00\". This is a flatc issue.");
+                    result = 0;
+                }
+                else if (long.TryParse(value.Value, out var temp))
+                {
+                    result = temp;
+                }
+                else
+                {
+                    ErrorContext.Current.RegisterError($"Unable to parse '{key}' value '{value.Value}' as an int64.");
+                    result = 0;
                 }
             }
             else
