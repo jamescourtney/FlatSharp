@@ -86,7 +86,7 @@ namespace FlatSharp
 
         public bool Add(TValue value)
         {
-            return false;
+            throw new NotMutableException();
         }
 
         public bool TryGetValue(TKey key, [NotNullWhen(true)] out TValue? value)

@@ -140,7 +140,7 @@ namespace FlatSharp
         {
             if (!this.mutable)
             {
-                return false;
+                throw new NotMutableException();
             }
 
             TKey key = KeyGetter(value);

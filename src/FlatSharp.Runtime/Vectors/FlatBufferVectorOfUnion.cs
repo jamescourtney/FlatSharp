@@ -17,36 +17,28 @@
 namespace FlatSharp
 {
     using System;
-    using System.Collections;
-    using System.Collections.Generic;
+    using System.ComponentModel;
     using System.IO;
-    using System.Runtime.CompilerServices;
 
     /// <summary>
-    /// A base class that FlatBuffersNet implements to deserialize vectors. FlatBufferVetor{T} is a lazy implementation
-    /// which will create a new instance for each item it returns. Calling .ToList() is an effective way to do caching.
+    /// A class that FlatSharp uses to deserialize vectors of unions.
     /// </summary>
-    public abstract class FlatBufferVectorOfUnion<T, TInputBuffer> : IList<T>, IReadOnlyList<T>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public abstract class FlatBufferVectorOfUnion<T, TInputBuffer> : FlatBufferVectorBase<T, TInputBuffer>
         where TInputBuffer : IInputBuffer
         where T : IFlatBufferUnion
     {
-        private readonly TInputBuffer memory;
-        private readonly int count;
         private readonly int discriminatorVectorOffset;
         private readonly int offsetVectorOffset;
-        private readonly TableFieldContext fieldContext;
 
         protected FlatBufferVectorOfUnion(
             TInputBuffer memory,
             int discriminatorOffset,
             int offsetVectorOffset,
-            TableFieldContext fieldContext)
+            TableFieldContext fieldContext) : base(memory, fieldContext)
         {
-            this.memory = memory;
-
             uint discriminatorCount = memory.ReadUInt(discriminatorOffset);
             uint offsetCount = memory.ReadUInt(offsetVectorOffset);
-            this.fieldContext = fieldContext;
 
             if (discriminatorCount != offsetCount)
             {
@@ -55,159 +47,30 @@ namespace FlatSharp
 
             checked
             {
-                this.count = (int)offsetCount;
+                this.Count = (int)offsetCount;
                 this.discriminatorVectorOffset = discriminatorOffset + sizeof(int);
                 this.offsetVectorOffset = offsetVectorOffset + sizeof(int);
             }
         }
 
-        /// <summary>
-        /// Gets the item at the given index.
-        /// </summary>
-        public T this[int index]
+        protected override void ParseItem(int index, out T item)
         {
-            get
-            {
-                return this.ParseItemHelper(this.memory, index);
-            }
-            set
-            {
-                throw new NotMutableException("FlatBufferVector does not allow mutating items.");
-            }
-        }
-
-        public int Count => this.count;
-
-        public bool IsReadOnly => true;
-
-        public void Add(T item)
-        {
-            throw new NotMutableException("FlatBufferVector does not allow adding items.");
-        }
-
-        public void Clear()
-        {
-            throw new NotMutableException("FlatBufferVector does not support clearing.");
-        }
-
-        public bool Contains(T? item)
-        {
-            return this.IndexOf(item) >= 0;
-        }
-
-        public void CopyTo(T[]? array, int arrayIndex)
-        {
-            if (array is null)
-            {
-                throw new ArgumentNullException(nameof(array));
-            }
-
-            var count = this.Count;
-            var memory = this.memory;
-
-            for (int i = 0; i < count; ++i)
-            {
-                array[arrayIndex + i] = this.ParseItemHelper(memory, i);
-            }
-        }
-
-        public T[] ToArray()
-        {
-            T[] array = new T[this.Count];
-            var memory = this.memory;
-
-            for (int i = 0; i < array.Length; ++i)
-            {
-                array[i] = this.ParseItemHelper(memory, i);
-            }
-
-            return array;
-        }
-
-        public IEnumerator<T> GetEnumerator()
-        {
-            int count = this.Count;
-            for (int i = 0; i < count; ++i)
-            {
-                yield return this.ParseItemHelper(this.memory, i);
-            }
-        }
-
-        public int IndexOf(T? item)
-        {
-            // FlatBuffer vectors are not allowed to have null by definition.
-            if (item is null)
-            {
-                return -1;
-            }
-
-            int count = this.Count;
-            var memory = this.memory;
-
-            for (int i = 0; i < count; ++i)
-            {
-                if (item.Equals(this.ParseItemHelper(memory, i)))
-                {
-                    return i;
-                }
-            }
-
-            return -1;
-        }
-
-        public List<T> FlatBufferVectorToList()
-        {
-            var list = new List<T>(this.Count);
-            list.AddRange(this);
-            return list;
-        }
-
-        public IReadOnlyList<T> AsProgressiveVector()
-        {
-            return new FlatBufferProgressiveVector<T>(this);
-        }
-
-        public void Insert(int index, T? item)
-        {
-            throw new NotMutableException("FlatBufferVector does not support inserting.");
-        }
-
-        public bool Remove(T? item)
-        {
-            throw new NotMutableException("FlatBufferVector does not support removing.");
-        }
-
-        public void RemoveAt(int index)
-        {
-            throw new NotMutableException("FlatBufferVector does not support removing.");
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return this.GetEnumerator();
-        }
-
-        private T ParseItemHelper(TInputBuffer buffer, int index)
-        {
-            if ((uint)index >= (uint)this.count)
-            {
-                throw new IndexOutOfRangeException("Union vector index out of range.");
-            }
-
             checked
             {
-                return this.ParseItem(
-                    buffer, 
-                    this.discriminatorVectorOffset + index, 
+                this.ParseItem(
+                    this.memory,
+                    this.discriminatorVectorOffset + index,
                     this.offsetVectorOffset + (index * sizeof(int)),
-                    this.fieldContext);
+                    this.fieldContext,
+                    out item);
             }
         }
 
-        protected abstract T ParseItem(
+        protected abstract void ParseItem(
             TInputBuffer buffer,
             int discriminatorOffset,
             int offsetOffset,
-            in TableFieldContext fieldContext);
+            in TableFieldContext fieldContext,
+            out T item);
     }
 }

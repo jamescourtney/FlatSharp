@@ -37,6 +37,7 @@ namespace FlatSharp
         }
     }
 
+    [ExcludeFromCodeCoverage]
     public class FlatSharpInternalException : Exception
     {
         public FlatSharpInternalException(

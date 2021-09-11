@@ -35,7 +35,7 @@ namespace FlatSharp.TypeModel
             };
 
             string classDef = $@"
-                public sealed class {className}<{context.InputBufferTypeName}> : FlatBufferVector<{CSharpHelpers.GetGlobalCompilableTypeName(itemType)}, {context.InputBufferTypeName}>
+                public sealed class {className}<{context.InputBufferTypeName}> : FlatBufferVector<{itemType.GetGlobalCompilableTypeName()}, {context.InputBufferTypeName}>
                     where {context.InputBufferTypeName} : {nameof(IInputBuffer)}
                 {{
                     public {className}(
@@ -53,9 +53,13 @@ namespace FlatSharp.TypeModel
                     {{
                     }}
 
-                    protected override {CSharpHelpers.GetGlobalCompilableTypeName(itemType)} ParseItem({context.InputBufferTypeName} memory, int offset, in {nameof(TableFieldContext)} fieldContext)
+                    protected override void ParseItem(
+                        {context.InputBufferTypeName} memory,
+                        int offset,
+                        in {nameof(TableFieldContext)} fieldContext,
+                        out {itemType.GetGlobalCompilableTypeName()} item)
                     {{
-                        return {context.GetParseInvocation(itemType)};
+                        item = {context.GetParseInvocation(itemType)};
                     }}
                 }}
             ";
@@ -97,14 +101,15 @@ namespace FlatSharp.TypeModel
                     {{
                     }}
 
-                    protected override {typeModel.GetGlobalCompilableTypeName()} ParseItem(
+                    protected override void ParseItem(
                         {context.InputBufferTypeName} memory,
                         int discriminatorOffset,
                         int offsetOffset,
-                        in {nameof(TableFieldContext)} {context.TableFieldContextVariableName})
+                        in {nameof(TableFieldContext)} {context.TableFieldContextVariableName},
+                        out {typeModel.GetGlobalCompilableTypeName()} item)
                     {{
                         var {context.OffsetVariableName} = (discriminatorOffset, offsetOffset);
-                        return {context.GetParseInvocation(typeModel.ClrType)};
+                        item = {context.GetParseInvocation(typeModel.ClrType)};
                     }}
                 }}
             ";

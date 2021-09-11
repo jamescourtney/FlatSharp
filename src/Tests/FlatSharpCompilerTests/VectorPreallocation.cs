@@ -79,5 +79,18 @@ namespace FlatSharpTests.Compiler
             var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
             Assert.Contains($"Unable to parse '{MetadataKeys.VectorPreallocation}' value 'aardvark' as an int64.", ex.Message);
         }
+
+        [Fact]
+        public void Invalid_ValueSingle0()
+        {
+            string schema = $@"
+                {MetadataHelpers.AllAttributes}
+                namespace PreallocationTests;
+                table Table {{ V : [ string ] ({MetadataKeys.VectorPreallocation}:""0""); }}
+                ";
+
+            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+            Assert.Contains($"Metadata key '{MetadataKeys.VectorPreallocation}' was present, but did not include a value. If you intended to specify \"0\", please use \"00\".", ex.Message);
+        }
     }
 }
