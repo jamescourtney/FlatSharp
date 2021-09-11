@@ -186,9 +186,9 @@ namespace FlatSharpTests
         }
 
         [Fact]
-        public void TableParse_LazyMutable()
+        public void TableParse_Progressive()
         {
-            var options = new FlatBufferSerializerOptions(FlatBufferDeserializationOption.VectorCacheMutable);
+            var options = new FlatBufferSerializerOptions(FlatBufferDeserializationOption.Progressive);
             var table = this.SerializeAndParse(options, out _);
             
             var newString = Guid.NewGuid().ToString();

@@ -131,21 +131,9 @@ root_type Monster;";
         }
 
         [Fact]
-        public void FlagsOptions_MutableVectorCache()
+        public void FlagsOptions_Progressive()
         {
-            this.TestFlags(FlatBufferDeserializationOption.VectorCacheMutable, $"{MetadataKeys.SerializerKind}:\"{nameof(FlatBufferDeserializationOption.VectorCacheMutable)}\"");
-        }
-
-        [Fact]
-        public void FlagsOptions_VectorCache()
-        {
-            this.TestFlags(FlatBufferDeserializationOption.VectorCache, $"{MetadataKeys.SerializerKind}:\"{nameof(FlatBufferDeserializationOption.VectorCache)}\"");
-        }
-
-        [Fact]
-        public void FlagsOptions_PropertyCache()
-        {
-            this.TestFlags(FlatBufferDeserializationOption.PropertyCache, $"{MetadataKeys.SerializerKind}:\"{nameof(FlatBufferDeserializationOption.PropertyCache)}\"");
+            this.TestFlags(FlatBufferDeserializationOption.Progressive, $"{MetadataKeys.SerializerKind}:\"{nameof(FlatBufferDeserializationOption.Progressive)}\"");
         }
 
         [Fact]

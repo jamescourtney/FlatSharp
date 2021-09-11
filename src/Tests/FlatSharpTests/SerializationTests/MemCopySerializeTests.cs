@@ -60,36 +60,6 @@ namespace FlatSharpTests
         }
 
         [Fact]
-        public void VectorCacheMemoryCopySerialization_NoEffect()
-        {
-            TestTable<Struct> t = new()
-            {
-                Foo = "foobar",
-                Struct = new Struct
-                {
-                    Bar = 12,
-                }
-            };
-
-            FlatBufferSerializer serializer = new FlatBufferSerializer(FlatBufferDeserializationOption.VectorCacheMutable);
-            var compiled = serializer.Compile<TestTable<Struct>>().WithSettings(new SerializerSettings { EnableMemoryCopySerialization = true });
-
-            byte[] data = new byte[1024];
-            Assert.Equal(70, compiled.GetMaxSize(t));
-            int actualBytes = compiled.Write(data, t);
-
-            // First test: Parse the array but don't trim the buffer. This causes the underlying
-            // buffer to be much larger than the actual data.
-            var parsed = compiled.Parse(data);
-            byte[] data2 = new byte[2048];
-            int bytesWritten = compiled.Write(data2, parsed);
-
-            Assert.Equal(35, actualBytes);
-            Assert.Equal(35, bytesWritten);
-            Assert.Equal(70, compiled.GetMaxSize(parsed));
-        }
-
-        [Fact]
         public void LazyMemoryCopySerialization()
         {
             TestTable<WriteThroughStruct> t = new()
@@ -131,7 +101,7 @@ namespace FlatSharpTests
         }
 
         [Fact]
-        public void PropertyCacheMemoryCopySerialization()
+        public void ProgressiveMemoryCopySerialization()
         {
             TestTable<Struct> t = new()
             {
@@ -142,7 +112,7 @@ namespace FlatSharpTests
                 }
             };
 
-            FlatBufferSerializer serializer = new FlatBufferSerializer(FlatBufferDeserializationOption.PropertyCache);
+            FlatBufferSerializer serializer = new FlatBufferSerializer(FlatBufferDeserializationOption.Progressive);
             var compiled = serializer.Compile<TestTable<Struct>>().WithSettings(new SerializerSettings { EnableMemoryCopySerialization = true });
 
             byte[] data = new byte[1024];

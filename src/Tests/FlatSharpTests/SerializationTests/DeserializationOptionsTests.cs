@@ -113,169 +113,9 @@ namespace FlatSharpTests
         }
 
         [Fact]
-        public void DeserializationOption_PropertyCache_IList()
+        public void DeserializationOption_Progressive_IList()
         {
-            var table = this.SerializeAndParse<IList<string>>(FlatBufferDeserializationOption.PropertyCache, Strings);
-
-            Assert.Equal(typeof(FlatBufferVector<,>), table.Vector.GetType().BaseType.GetGenericTypeDefinition());
-            Assert.True(object.ReferenceEquals(table.Vector, table.Vector));
-
-            var vector = table.Vector;
-            Assert.False(object.ReferenceEquals(vector[5], vector[5]));
-            Assert.True(object.ReferenceEquals(table.First, table.First));
-            Assert.True(object.ReferenceEquals(table.Second, table.Second));
-
-            Assert.Equal(Strings.Length, table.Vector.Count);
-            Assert.Throws<NotMutableException>(() => table.Vector[0] = "foobar");
-            Assert.Throws<NotMutableException>(() => table.Vector.Clear());
-            Assert.Throws<NotMutableException>(() => table.First.First = 3);
-            Assert.Throws<NotMutableException>(() => table.First = null);
-        }
-
-        [Fact]
-        public void DeserializationOption_PropertyCache_IReadOnlyList()
-        {
-            var table = this.SerializeAndParse<IReadOnlyList<string>>(FlatBufferDeserializationOption.PropertyCache, Strings);
-
-            Assert.Equal(typeof(FlatBufferVector<,>), table.Vector.GetType().BaseType.GetGenericTypeDefinition());
-            Assert.True(object.ReferenceEquals(table.Vector, table.Vector));
-            Assert.False(object.ReferenceEquals(table.Vector[5], table.Vector[5]));
-            Assert.True(object.ReferenceEquals(table.First, table.First));
-            Assert.True(object.ReferenceEquals(table.Second, table.Second));
-            Assert.Equal(Strings.Length, table.Vector.Count);
-            Assert.Throws<NotMutableException>(() => table.First.First = 3);
-            Assert.Throws<NotMutableException>(() => table.First = null);
-        }
-
-        [Fact]
-        public void DeserializationOption_PropertyCache_Array()
-        {
-            var table = this.SerializeAndParse<string[]>(FlatBufferDeserializationOption.PropertyCache, Strings);
-
-            Assert.True(object.ReferenceEquals(table.Vector, table.Vector));
-            Assert.True(object.ReferenceEquals(table.Vector[5], table.Vector[5]));
-            Assert.True(object.ReferenceEquals(table.First, table.First));
-            Assert.True(object.ReferenceEquals(table.Second, table.Second));
-            Assert.Equal(Strings.Length, table.Vector.Length);
-            Assert.Throws<NotMutableException>(() => table.First.First = 3);
-            Assert.Throws<NotMutableException>(() => table.First = null);
-        }
-
-        [Fact]
-        public void DeserializationOption_PropertyCache_Memory()
-        {
-            var table = this.SerializeAndParse<Memory<byte>>(FlatBufferDeserializationOption.PropertyCache, Bytes);
-
-            // Each span overlaps the input buffer. Means we are not eagerly copying out.
-            Assert.True(table.Vector.Span.Overlaps(InputBuffer));
-            Assert.True(object.ReferenceEquals(table.First, table.First));
-            Assert.True(object.ReferenceEquals(table.Second, table.Second));
-
-            Assert.Equal(Bytes.Length, table.Vector.Length);
-            Assert.Throws<NotMutableException>(() => table.First.First = 3);
-            Assert.Throws<NotMutableException>(() => table.First = null);
-        }
-
-        [Fact]
-        public void DeserializationOption_PropertyCache_ReadOnlyMemory()
-        {
-            var table = this.SerializeAndParse<ReadOnlyMemory<byte>>(FlatBufferDeserializationOption.PropertyCache, Bytes);
-
-            // Each span overlaps the input buffer. Means we are not eagerly copying out.
-            Assert.True(table.Vector.Span.Overlaps(InputBuffer));
-            Assert.True(object.ReferenceEquals(table.First, table.First));
-            Assert.True(object.ReferenceEquals(table.Second, table.Second));
-
-            Assert.Equal(Bytes.Length, table.Vector.Length);
-            Assert.Throws<NotMutableException>(() => table.First.First = 3);
-            Assert.Throws<NotMutableException>(() => table.First = null);
-        }
-
-        [Fact]
-        public void DeserializationOption_VectorCache_IList()
-        {
-            var table = this.SerializeAndParse<IList<string>>(FlatBufferDeserializationOption.VectorCache, Strings);
-
-            Assert.Equal(typeof(ReadOnlyCollection<string>), table.Vector.GetType());
-            Assert.True(object.ReferenceEquals(table.Vector, table.Vector));
-
-            var vector = table.Vector;
-            Assert.True(object.ReferenceEquals(vector[5], vector[5]));
-            Assert.True(object.ReferenceEquals(table.First, table.First));
-            Assert.True(object.ReferenceEquals(table.Second, table.Second));
-
-            Assert.Equal(Strings.Length, table.Vector.Count);
-            Assert.Throws<NotSupportedException>(() => table.Vector[0] = "foobar");
-            Assert.Throws<NotSupportedException>(() => table.Vector.Clear());
-            Assert.Throws<NotMutableException>(() => table.First.First = 3);
-            Assert.Throws<NotMutableException>(() => table.First = null);
-        }
-
-        [Fact]
-        public void DeserializationOption_VectorCache_IReadOnlyList()
-        {
-            var table = this.SerializeAndParse<IReadOnlyList<string>>(FlatBufferDeserializationOption.VectorCache, Strings);
-
-            Assert.Equal(typeof(ReadOnlyCollection<string>), table.Vector.GetType());
-            Assert.True(object.ReferenceEquals(table.Vector, table.Vector));
-            Assert.True(object.ReferenceEquals(table.Vector[5], table.Vector[5]));
-            Assert.True(object.ReferenceEquals(table.First, table.First));
-            Assert.True(object.ReferenceEquals(table.Second, table.Second));
-            Assert.Equal(Strings.Length, table.Vector.Count);
-            Assert.Throws<NotMutableException>(() => table.First.First = 3);
-            Assert.Throws<NotMutableException>(() => table.First = null);
-        }
-
-        [Fact]
-        public void DeserializationOption_VectorCache_Array()
-        {
-            var table = this.SerializeAndParse<string[]>(FlatBufferDeserializationOption.VectorCache, Strings);
-
-            Assert.True(object.ReferenceEquals(table.Vector, table.Vector));
-            Assert.True(object.ReferenceEquals(table.Vector[5], table.Vector[5]));
-            Assert.True(object.ReferenceEquals(table.First, table.First));
-            Assert.True(object.ReferenceEquals(table.Second, table.Second));
-            Assert.Equal(Strings.Length, table.Vector.Length);
-            Assert.Throws<NotMutableException>(() => table.First.First = 3);
-            Assert.Throws<NotMutableException>(() => table.First = null);
-        }
-
-        [Fact]
-        public void DeserializationOption_VectorCache_Memory()
-        {
-            var table = this.SerializeAndParse<Memory<byte>>(FlatBufferDeserializationOption.VectorCache, Bytes);
-
-            // Each span overlaps the input buffer. Means we are not eagerly copying out.
-            Assert.True(table.Vector.Span.Overlaps(InputBuffer));
-            Assert.True(object.ReferenceEquals(table.First, table.First));
-            Assert.True(object.ReferenceEquals(table.Second, table.Second));
-
-            Assert.Equal(Bytes.Length, table.Vector.Length);
-            Assert.Throws<NotMutableException>(() => table.First.First = 3);
-            Assert.Throws<NotMutableException>(() => table.First = null);
-        }
-
-        [Fact]
-        public void DeserializationOption_VectorCache_ReadOnlyMemory()
-        {
-            var table = this.SerializeAndParse<ReadOnlyMemory<byte>>(FlatBufferDeserializationOption.VectorCache, Bytes);
-            string originalHash = this.GetInputBufferHash();
-
-            // Each span overlaps the input buffer. Means we are not eagerly copying out.
-            Assert.True(table.Vector.Span.Overlaps(InputBuffer));
-            Assert.True(object.ReferenceEquals(table.First, table.First));
-            Assert.True(object.ReferenceEquals(table.Second, table.Second));
-
-            Assert.Equal(Bytes.Length, table.Vector.Length);
-            Assert.Throws<NotMutableException>(() => table.First.First = 3);
-            Assert.Throws<NotMutableException>(() => table.First = null);
-            Assert.Equal(originalHash, this.GetInputBufferHash());
-        }
-
-        [Fact]
-        public void DeserializationOption_VectorCacheMutable_IList()
-        {
-            var table = this.SerializeAndParse<IList<string>>(FlatBufferDeserializationOption.VectorCacheMutable, Strings);
+            var table = this.SerializeAndParse<IList<string>>(FlatBufferDeserializationOption.Progressive, Strings);
             string originalHash = this.GetInputBufferHash();
 
             Assert.Equal(typeof(List<string>), table.Vector.GetType());
@@ -297,9 +137,9 @@ namespace FlatSharpTests
         }
 
         [Fact]
-        public void DeserializationOption_VectorCacheMutable_IReadOnlyList()
+        public void DeserializationOption_Progressive_IReadOnlyList()
         {
-            var table = this.SerializeAndParse<IReadOnlyList<string>>(FlatBufferDeserializationOption.VectorCacheMutable, Strings);
+            var table = this.SerializeAndParse<IReadOnlyList<string>>(FlatBufferDeserializationOption.Progressive, Strings);
             string originalHash = this.GetInputBufferHash();
 
             Assert.Equal(typeof(List<string>), table.Vector.GetType());
@@ -316,9 +156,9 @@ namespace FlatSharpTests
         }
 
         [Fact]
-        public void DeserializationOption_VectorCacheMutable_Array()
+        public void DeserializationOption_Progressive_Array()
         {
-            var table = this.SerializeAndParse<string[]>(FlatBufferDeserializationOption.VectorCacheMutable, Strings);
+            var table = this.SerializeAndParse<string[]>(FlatBufferDeserializationOption.Progressive, Strings);
             string originalHash = this.GetInputBufferHash();
 
             Assert.True(object.ReferenceEquals(table.Vector, table.Vector));
@@ -335,9 +175,9 @@ namespace FlatSharpTests
         }
 
         [Fact]
-        public void DeserializationOption_VectorCacheMutable_Memory()
+        public void DeserializationOption_Progressive_Memory()
         {
-            var table = this.SerializeAndParse<Memory<byte>>(FlatBufferDeserializationOption.VectorCacheMutable, Bytes);
+            var table = this.SerializeAndParse<Memory<byte>>(FlatBufferDeserializationOption.Progressive, Bytes);
             string originalHash = this.GetInputBufferHash();
 
             // Each span overlaps the input buffer. Means we are not eagerly copying out.
@@ -358,9 +198,9 @@ namespace FlatSharpTests
         }
 
         [Fact]
-        public void DeserializationOption_VectorCacheMutable_ReadOnlyMemory()
+        public void DeserializationOption_Progressive_ReadOnlyMemory()
         {
-            var table = this.SerializeAndParse<ReadOnlyMemory<byte>>(FlatBufferDeserializationOption.VectorCacheMutable, Bytes);
+            var table = this.SerializeAndParse<ReadOnlyMemory<byte>>(FlatBufferDeserializationOption.Progressive, Bytes);
             string originalHash = this.GetInputBufferHash();
 
             // Each span overlaps the input buffer. Means we are not eagerly copying out.

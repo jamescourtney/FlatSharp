@@ -27,32 +27,19 @@ namespace FlatSharp
         Lazy = 0,
 
         /// <summary>
-        /// Properties are cached as they are read. Deserialized objects are immutable.
+        /// Each object in the deserialized payload is read from the underlying buffer at most once. Reads are done on demand and cached. The returned object is immutable.
         /// </summary>
-        PropertyCache = 1,
-
-        /// <summary>
-        /// Indicates if list vectors should have their data cached after reading. This option will cause more allocations
-        /// on deserializing, but will improve performance in cases of duplicate accesses to the same indices.
-        /// </summary>
-        VectorCache = 2,
-
-        /// <summary>
-        /// Same properties as <see cref="VectorCache"/>, but deserialized objects are mutable.
-        /// </summary>
-        VectorCacheMutable = 3,
+        Progressive = 1,
 
         /// <summary>
         /// The entire object graph is traversed and the deserialized objects do not reference the input buffer. Deserialized objects are immutable.
         /// </summary>
-        Greedy = 4,
+        Greedy = 2,
 
         /// <summary>
         /// Same properties as <see cref="GreedyMutable"/>, but deserialized objects are mutable.
         /// </summary>
-        GreedyMutable = 5,
-
-        Progressive = 6,
+        GreedyMutable = 3,
 
         /// <summary>
         /// Default options.

@@ -36,7 +36,7 @@ namespace FlatSharpTests
         {
             foreach (FlatBufferDeserializationOption option in Enum.GetValues(typeof(FlatBufferDeserializationOption)))
             {
-                if (option == FlatBufferDeserializationOption.VectorCacheMutable || option == FlatBufferDeserializationOption.Lazy)
+                if (option == FlatBufferDeserializationOption.Progressive || option == FlatBufferDeserializationOption.Lazy)
                 {
                     continue;
                 }
@@ -80,7 +80,7 @@ namespace FlatSharpTests
                 Assert.Equal(300, parsed2.Struct.Value);
             }
 
-            Test(FlatBufferDeserializationOption.VectorCacheMutable);
+            Test(FlatBufferDeserializationOption.Progressive);
             Test(FlatBufferDeserializationOption.Lazy);
         }
 
@@ -118,7 +118,7 @@ namespace FlatSharpTests
                 Assert.Equal(300, parsed2.Struct.Value.Prop2);
                 parsed2.Struct.Value = null!;
 
-                if (option == FlatBufferDeserializationOption.VectorCacheMutable)
+                if (option == FlatBufferDeserializationOption.Progressive)
                 {
                     // we are null temporarily until we re-parse.
                     Assert.Null(parsed2.Struct.Value);
@@ -140,7 +140,7 @@ namespace FlatSharpTests
                 Assert.Equal(0, parsed3.Struct.Value.Prop2);
             }
 
-            Test(FlatBufferDeserializationOption.VectorCacheMutable);
+            Test(FlatBufferDeserializationOption.Progressive);
             Test(FlatBufferDeserializationOption.Lazy);
         }
 
@@ -174,7 +174,7 @@ namespace FlatSharpTests
                 Assert.Equal(300, parsed2.Struct[0].Value);
             }
 
-            Test(FlatBufferDeserializationOption.VectorCacheMutable);
+            Test(FlatBufferDeserializationOption.Progressive);
             Test(FlatBufferDeserializationOption.Lazy);
         }
 
@@ -208,7 +208,7 @@ namespace FlatSharpTests
                 Assert.Equal(300, parsed2.Struct[0].Value);
             }
 
-            Test(FlatBufferDeserializationOption.VectorCacheMutable);
+            Test(FlatBufferDeserializationOption.Progressive);
             Test(FlatBufferDeserializationOption.Lazy);
         }
 

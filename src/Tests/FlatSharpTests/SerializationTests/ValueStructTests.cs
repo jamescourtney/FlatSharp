@@ -377,11 +377,11 @@ namespace FlatSharpTests
             [Theory]
             [InlineData(typeof(ValidStruct_Marshallable), true, true, FlatBufferDeserializationOption.Greedy)]
             [InlineData(typeof(ValidStruct_Marshallable), false, false, FlatBufferDeserializationOption.Lazy)]
-            [InlineData(typeof(ValidStruct_Marshallable_OutOfOrder), true, true, FlatBufferDeserializationOption.PropertyCache)]
-            [InlineData(typeof(ValidStruct_Marshallable_OutOfOrder), false, false, FlatBufferDeserializationOption.VectorCache)]
-            [InlineData(typeof(ValidStruct_NotMarshallable_DueToSize), true, false, FlatBufferDeserializationOption.VectorCacheMutable)]
+            [InlineData(typeof(ValidStruct_Marshallable_OutOfOrder), true, true, FlatBufferDeserializationOption.Progressive)]
+            [InlineData(typeof(ValidStruct_Marshallable_OutOfOrder), false, false, FlatBufferDeserializationOption.GreedyMutable)]
+            [InlineData(typeof(ValidStruct_NotMarshallable_DueToSize), true, false, FlatBufferDeserializationOption.Progressive)]
             [InlineData(typeof(ValidStruct_NotMarshallable_DueToSize), false, false, FlatBufferDeserializationOption.Lazy)]
-            [InlineData(typeof(ValidStruct_NotMarshallable_MissingSizeHint), true, false, FlatBufferDeserializationOption.PropertyCache)]
+            [InlineData(typeof(ValidStruct_NotMarshallable_MissingSizeHint), true, false, FlatBufferDeserializationOption.Progressive)]
             [InlineData(typeof(ValidStruct_NotMarshallable_MissingSizeHint), false, false, FlatBufferDeserializationOption.GreedyMutable)]
             public void Parse_Nullable(Type type, bool enableMarshal, bool expectMarshal, FlatBufferDeserializationOption option)
             {
