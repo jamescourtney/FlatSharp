@@ -88,7 +88,7 @@ namespace FlatSharp.TypeModel
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
-            this.ValidatePreallocationSettings(context.AllFieldContexts, context.Options);
+            ValidatePreallocationSettings(this, context.AllFieldContexts, context.Options);
 
             string body;
             string keyTypeName = CSharpHelpers.GetGlobalCompilableTypeName(this.keyTypeModel.ClrType);

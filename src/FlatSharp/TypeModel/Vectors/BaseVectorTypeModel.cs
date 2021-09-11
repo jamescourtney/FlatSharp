@@ -240,24 +240,25 @@ namespace FlatSharp.TypeModel
             return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({variableName});";
         }
 
-        protected void ValidatePreallocationSettings(
+        internal static void ValidatePreallocationSettings(
+            ITypeModel sourceModel,
             IReadOnlyDictionary<ITypeModel, List<TableFieldContext>> contexts,
             FlatBufferSerializerOptions options)
         {
             if (options.GreedyDeserialize)
             {
-                var invalidusage = contexts[this]
-                    .Where(x => x.VectorPreallocationLimit is not null && x.VectorPreallocationLimit.Value >= 0);
+                var invalidusage = contexts[sourceModel]
+                    .Where(x => x.VectorPreallocationLimit is not null && x.VectorPreallocationLimit.Value != long.MaxValue);
 
                 if (invalidusage.Any())
                 {
                     var first = invalidusage.First();
-                    throw new InvalidFlatBufferDefinitionException($"Table field '{first.FullName}' declares vector preallocation limit of '{first.VectorPreallocationLimit}'. Greedy deserialization mode is incompatible with this setting. Set it to null or a negative value.");
+                    throw new InvalidFlatBufferDefinitionException($"Table field '{first.FullName}' declares vector preallocation limit of '{first.VectorPreallocationLimit}'. Greedy deserialization mode is incompatible with this setting. Set it to null or a long.MaxValue.");
                 }
             }
             else if (options.Lazy)
             {
-                var invalidusage = contexts[this]
+                var invalidusage = contexts[sourceModel]
                     .Where(x => x.VectorPreallocationLimit is not null && x.VectorPreallocationLimit.Value != 0);
 
                 if (invalidusage.Any())

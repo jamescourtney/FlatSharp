@@ -28,43 +28,12 @@ namespace FlatSharpTests.Compiler
     
     public class RealExamples
     {
-        [Fact]
-        public void MonsterTest_Greedy()
-        {
-            this.MonsterTest("greedy");
-        }
-
-        [Fact]
-        public void MonsterTest_VectorCache()
-        {
-            this.MonsterTest("vectorcache");
-        }
-
-        [Fact]
-        public void MonsterTest_VectorCacheMutable()
-        {
-            this.MonsterTest("vectorcache");
-        }
-
-        [Fact]
-        public void MonsterTest_Lazy()
-        {
-            this.MonsterTest("lazy");
-        }
-
-        [Fact]
-        public void MonsterTest_PropertyCache()
-        {
-            this.MonsterTest("propertycache");
-        }
-
-        [Fact]
-        public void MonsterTest_GreedyMutable()
-        {
-            this.MonsterTest("greedymutable");
-        }
-
-        private void MonsterTest(string flags)
+        [Theory]
+        [InlineData(FlatBufferDeserializationOption.Greedy, "Array", typeof(string[]))]
+        [InlineData(FlatBufferDeserializationOption.GreedyMutable, "Array", typeof(string[]))]
+        [InlineData(FlatBufferDeserializationOption.Progressive, "IList", typeof(IList<string>))]
+        [InlineData(FlatBufferDeserializationOption.Lazy, "IList", typeof(IList<string>))]
+        public void MonsterTest(FlatBufferDeserializationOption option, string arrayVectorKind, Type arrayVectorType)
         {
             // https://github.com/google/flatbuffers/blob/master/samples/monster.fbs
             string schema = $@"
@@ -87,7 +56,7 @@ struct Vec4 {{
   t:float;
 }}
 
-table Monster ({MetadataKeys.SerializerKind}:""{flags}"") {{
+table Monster ({MetadataKeys.SerializerKind}:""{option}"") {{
   pos:Vec3;
   mana:short = 150;
   hp:short = 100;
@@ -100,7 +69,7 @@ table Monster ({MetadataKeys.SerializerKind}:""{flags}"") {{
   path:[Vec3];
   vec4:Vec4;
   FakeVector1:[string] ({MetadataKeys.VectorKind}:""IReadOnlyList"");
-  FakeVector2:[string] ({MetadataKeys.VectorKind}:""Array"");
+  FakeVector2:[string] ({MetadataKeys.VectorKind}:""{arrayVectorKind}"");
   FakeVector3:[string] ({MetadataKeys.VectorKind}:""IList"");
   FakeVector4:[string];
   FakeMemoryVector:[ubyte] ({MetadataKeys.VectorKind}:""Memory"");
@@ -110,7 +79,7 @@ table Monster ({MetadataKeys.SerializerKind}:""{flags}"") {{
 table Weapon {{
   name:string;
   damage:short;
-}}"; 
+}}";
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
 
@@ -136,6 +105,8 @@ table Weapon {{
             Assert.True(typeof(IFlatBufferUnion<,,,>).MakeGenericType(weaponType, vec3Type, vec4Type, monsterType).IsAssignableFrom(Nullable.GetUnderlyingType(monsterType.GetProperty("equipped").PropertyType)));
             Assert.Equal(typeof(string), monsterType.GetProperty("name").PropertyType);
             Assert.True(monsterType.GetProperty("friendly").GetCustomAttribute<FlatBufferItemAttribute>().Deprecated);
+
+            Assert.Equal(arrayVectorType, monsterType.GetProperty("FakeVector2").PropertyType);
 
             byte[] data = new byte[1024];
             ISerializer monsterSerializer = CompilerTestHelpers.CompilerTestSerializer.Compile(monster);

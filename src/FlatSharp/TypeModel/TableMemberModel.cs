@@ -83,6 +83,14 @@
                     throw new InvalidFlatBufferDefinitionException($"Table property '{this.FriendlyName}' declared the SharedString attribute. This is only supported on strings and vectors of strings.");
                 }
             }
+
+            if (this.VectorPreallocationLimit is not null)
+            {
+                if (propertyModel.SchemaType != FlatBufferSchemaType.Vector)
+                {
+                    throw new InvalidFlatBufferDefinitionException($"Table property '{this.FriendlyName}' declared the {nameof(FlatBufferItemAttribute.VectorPreallocationLimit)} attribute. This is only supported on vectors.");
+                }
+            }
         }
         
         /// <summary>

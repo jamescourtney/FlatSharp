@@ -67,7 +67,7 @@ namespace FlatSharp.Compiler
 
         public RpcStreamingType? StreamingType => this.TryParseEnum(MetadataKeys.Streaming, RpcStreamingType.None);
 
-        public long? VectorPreallocate => this.TryParseLong(MetadataKeys.VectorPreallocation);
+        public long? VectorPreallocate => this.TryParsePreallocate();
 
         private bool? TryParseBoolean(string key)
         {
@@ -141,6 +141,29 @@ namespace FlatSharp.Compiler
             return result;
         }
 
+        private long? TryParsePreallocate()
+        {
+            if (this.rawAttributes.TryGetValue(MetadataKeys.VectorPreallocation, out Schema.KeyValue? value))
+            {
+                if (value.Value == "Never")
+                {
+                    return 0;
+                }
+                else if (value.Value == "Always")
+                {
+                    return long.MaxValue;
+                }
+                else if (value.Value == "Default")
+                {
+                    return null;
+                }
+
+                return this.TryParseLong(MetadataKeys.VectorPreallocation);
+            }
+
+            return null;
+        }
+
         private long? TryParseLong(string key)
         {
             if (this.parsed.TryGetValue(key, out object? obj))
@@ -156,7 +179,7 @@ namespace FlatSharp.Compiler
 
                 if (value.Value == "0") // seems to indicate that value isn't present.
                 {
-                    ErrorContext.Current.RegisterError($"Metadata key '{key}' was present, but did not include a value. To specify 0, please use \"00\". This is a flatc issue.");
+                    ErrorContext.Current.RegisterError($"Metadata key '{key}' was present, but did not include a value. If you intended to specify \"0\", please use \"00\".");
                     result = 0;
                 }
                 else if (long.TryParse(value.Value, out var temp))

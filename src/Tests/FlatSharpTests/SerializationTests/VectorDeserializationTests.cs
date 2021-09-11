@@ -397,17 +397,22 @@ namespace FlatSharpTests
 
         [Fact]
         public void VectorOfUnion_List() => this.VectorOfUnionTest<RootTable<IList<FlatBufferUnion<string, Struct, TableWithKey<int>>>>>(
+            FlatBufferDeserializationOption.Progressive,
             v => v.Vector.ToArray());
 
         [Fact]
         public void VectorOfUnion_ReadOnlyList() => this.VectorOfUnionTest<RootTable<IReadOnlyList<FlatBufferUnion<string, Struct, TableWithKey<int>>>>>(
+            FlatBufferDeserializationOption.Lazy,
             v => v.Vector.ToArray());
 
         [Fact]
         public void VectorOfUnion_Array() => this.VectorOfUnionTest<RootTable<FlatBufferUnion<string, Struct, TableWithKey<int>>[]>>(
+            FlatBufferDeserializationOption.Greedy,
             v => v.Vector);
 
-        private void VectorOfUnionTest<V>(Func<V, FlatBufferUnion<string, Struct, TableWithKey<int>>[]> getItems)
+        private void VectorOfUnionTest<V>(
+            FlatBufferDeserializationOption option,
+            Func<V, FlatBufferUnion<string, Struct, TableWithKey<int>>[]> getItems)
             where V : class, new()
         {
             byte[] data =
@@ -437,22 +442,19 @@ namespace FlatSharpTests
                 4, 0,
             };
 
-            foreach (FlatBufferDeserializationOption item in Enum.GetValues(typeof(FlatBufferDeserializationOption)))
-            {
-                var serializer = new FlatBufferSerializer(item);
-                V parsed = serializer.Parse<V>(data);
-                var items = getItems(parsed);
+            var serializer = new FlatBufferSerializer(option);
+            V parsed = serializer.Parse<V>(data);
+            var items = getItems(parsed);
 
-                Assert.True(items[0].TryGet(out string str));
-                Assert.Equal("foo", str);
+            Assert.True(items[0].TryGet(out string str));
+            Assert.Equal("foo", str);
 
-                Assert.True(items[1].TryGet(out Struct @struct));
-                Assert.Equal(3, @struct.Integer);
+            Assert.True(items[1].TryGet(out Struct @struct));
+            Assert.Equal(3, @struct.Integer);
 
-                Assert.True(items[2].TryGet(out TableWithKey<int> table));
-                Assert.Equal(1, table.Key);
-                Assert.Null(table.Value);
-            }
+            Assert.True(items[2].TryGet(out TableWithKey<int> table));
+            Assert.Equal(1, table.Key);
+            Assert.Null(table.Value);
         }
 
         [FlatBufferTable]

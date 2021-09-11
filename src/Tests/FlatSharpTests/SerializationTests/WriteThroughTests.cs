@@ -179,40 +179,6 @@ namespace FlatSharpTests
         }
 
         [Fact]
-        public void WriteThrough_Vector_Array()
-        {
-            static void Test(FlatBufferDeserializationOption option)
-            {
-                var table = new Table<WriteThroughStruct<short>[]>
-                {
-                    Struct = new WriteThroughStruct<short>[]
-                    {
-                        new WriteThroughStruct<short> { Value = 5 }
-                    }
-                };
-
-                FlatBufferSerializer serializer = new FlatBufferSerializer(option);
-
-                byte[] buffer = new byte[1024];
-                serializer.Serialize(table, buffer);
-
-                // parse
-                var parsed1 = serializer.Parse<Table<WriteThroughStruct<short>[]>>(buffer);
-
-                // mutate
-                parsed1.Struct[0].Value = 300;
-                Assert.Equal(300, parsed1.Struct[0].Value);
-
-                // verify
-                var parsed2 = serializer.Parse<Table<WriteThroughStruct<short>[]>>(buffer);
-                Assert.Equal(300, parsed2.Struct[0].Value);
-            }
-
-            Test(FlatBufferDeserializationOption.Progressive);
-            Test(FlatBufferDeserializationOption.Lazy);
-        }
-
-        [Fact]
         public void WriteThrough_Lazy_ThrowsForOtherProperties()
         {
             var table = new Table<OtherStruct>
