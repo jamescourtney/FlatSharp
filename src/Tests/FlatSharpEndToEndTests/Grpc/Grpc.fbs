@@ -12,7 +12,7 @@ table StringMessage (fs_serializer) {
     Value : string;
 }
 
-table MultiStringMessage (fs_serializer:"VectorCacheMutable") {
+table MultiStringMessage (fs_serializer:"Progressive") {
     Value : [string] (fs_sharedString, required);
 }
 

@@ -27,9 +27,13 @@ namespace Benchmark.FBBench
 
         [Params(
             FlatBufferDeserializationOption.Lazy,
+#if !FLATSHARP_6_0_0_OR_GREATER
             FlatBufferDeserializationOption.PropertyCache,
             FlatBufferDeserializationOption.VectorCache,
             FlatBufferDeserializationOption.VectorCacheMutable,
+#else
+            FlatBufferDeserializationOption.Progressive,
+#endif
             FlatBufferDeserializationOption.Greedy,
             FlatBufferDeserializationOption.GreedyMutable
         )]

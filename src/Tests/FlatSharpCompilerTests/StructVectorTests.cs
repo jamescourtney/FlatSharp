@@ -45,13 +45,13 @@ namespace FlatSharpTests.Compiler
         public void StructVector_SByte() => this.RunTest<sbyte>("byte", 2, FlatBufferDeserializationOption.GreedyMutable);
 
         [Fact]
-        public void StructVector_Bool() => this.RunTest<bool>("bool", 3, FlatBufferDeserializationOption.VectorCache);
+        public void StructVector_Bool() => this.RunTest<bool>("bool", 3, FlatBufferDeserializationOption.Progressive);
 
         [Fact]
-        public void StructVector_UShort() => this.RunTest<ushort>("ushort", 4, FlatBufferDeserializationOption.VectorCacheMutable);
+        public void StructVector_UShort() => this.RunTest<ushort>("ushort", 4, FlatBufferDeserializationOption.Progressive);
 
         [Fact]
-        public void StructVector_Short() => this.RunTest<short>("short", 5, FlatBufferDeserializationOption.PropertyCache);
+        public void StructVector_Short() => this.RunTest<short>("short", 5, FlatBufferDeserializationOption.Progressive);
 
         [Fact]
         public void StructVector_UInt() => this.RunTest<uint>("uint", 6, FlatBufferDeserializationOption.Lazy);
@@ -280,7 +280,7 @@ namespace FlatSharpTests.Compiler
                 CheckRandom<T>(foo.V[i], copy.foo.V[i]);
             }
 
-            bool isMutable = option is FlatBufferDeserializationOption.VectorCacheMutable or FlatBufferDeserializationOption.GreedyMutable;
+            bool isMutable = option is FlatBufferDeserializationOption.GreedyMutable;
 
             if (length == 0)
             {

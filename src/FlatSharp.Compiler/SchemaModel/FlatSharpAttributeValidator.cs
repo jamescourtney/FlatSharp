@@ -105,6 +105,11 @@ namespace FlatSharp.Compiler.SchemaModel
             {
                 RegisterError(MetadataKeys.Streaming, this.StreamingTypeValidator(attributes.StreamingType.Value), attributes.StreamingType.Value);
             }
+
+            if (attributes.VectorPreallocate is not null)
+            {
+                RegisterError(MetadataKeys.VectorPreallocation, this.VectorPreallocateValidator(attributes.VectorPreallocate.Value), attributes.VectorPreallocate.Value);
+            }
         }
 
         public Func<bool, AttributeValidationResult> NonVirtualValidator { get; set; } = (b) => AttributeValidationResult.NeverValid;
@@ -132,5 +137,7 @@ namespace FlatSharp.Compiler.SchemaModel
         public Func<bool, AttributeValidationResult> RpcInterfaceValidator { get; set; } = (b) => AttributeValidationResult.NeverValid;
 
         public Func<RpcStreamingType, AttributeValidationResult> StreamingTypeValidator { get; set; } = (b) => AttributeValidationResult.NeverValid;
+
+        public Func<long, AttributeValidationResult> VectorPreallocateValidator { get; set; } = (b) => AttributeValidationResult.NeverValid;
     }
 }

@@ -38,6 +38,12 @@ namespace FlatSharpTests.Compiler
 
         private void Test(FlatBufferDeserializationOption option)
         {
+            string arrayVectorKind = "Array";
+            if (option == FlatBufferDeserializationOption.Lazy || option == FlatBufferDeserializationOption.Progressive)
+            {
+                arrayVectorKind = "IList";
+            }
+
             string schema = $@"
             {MetadataHelpers.AllAttributes}
 
@@ -70,20 +76,20 @@ namespace FlatSharpTests.Compiler
                 OuterVirtual : OuterStruct;
 
                 StructVectorList : [OuterStruct] ({MetadataKeys.VectorKind}:""IList"");
-                StructVectorArray : [OuterStruct] ({MetadataKeys.VectorKind}:""Array"", {MetadataKeys.NonVirtualProperty});
+                StructVectorArray : [OuterStruct] ({MetadataKeys.VectorKind}:""{arrayVectorKind}"", {MetadataKeys.NonVirtualProperty});
 
                 TableVectorList : [InnerTable] ({MetadataKeys.VectorKind}:""IList"", {MetadataKeys.SortedVector});
-                TableVectorArray : [InnerTable] ({MetadataKeys.VectorKind}:""Array"", {MetadataKeys.NonVirtualProperty});
+                TableVectorArray : [InnerTable] ({MetadataKeys.VectorKind}:""{arrayVectorKind}"", {MetadataKeys.NonVirtualProperty});
                 TableVectorIndexed : [InnerTable] ({MetadataKeys.VectorKind}:""IIndexedVector"");
 
                 MemVector : [ubyte] ({MetadataKeys.VectorKind}:""Memory"");
                 RoMemVector : [ubyte] ({MetadataKeys.VectorKind}:""ReadOnlyMemory"");
                 
                 ScalarVector : [uint] ({MetadataKeys.VectorKind}:""IList"");
-                ScalarArray : [uint] ({MetadataKeys.VectorKind}:""Array"");
+                ScalarArray : [uint] ({MetadataKeys.VectorKind}:""{arrayVectorKind}"");
 
                 UnionVector : [Any] ({MetadataKeys.VectorKind}:""IList"");
-                UnionArray : [Any] ({MetadataKeys.VectorKind}:""Array"");
+                UnionArray : [Any] ({MetadataKeys.VectorKind}:""{arrayVectorKind}"");
             }}
 
             table InnerTable

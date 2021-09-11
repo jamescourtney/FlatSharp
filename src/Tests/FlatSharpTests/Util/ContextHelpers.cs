@@ -36,7 +36,7 @@ namespace FlatSharpTests
                 new ReturnsRandomDictionary(),
                 options ?? new FlatBufferSerializerOptions(),
                 TypeModelContainer.CreateDefault(),
-                new List<TableFieldContext>());
+                new Dictionary<ITypeModel, List<TableFieldContext>>());
         }
 
         public static SerializationCodeGenContext CreateSerializeContext(FlatBufferSerializerOptions? options = null)
@@ -52,7 +52,7 @@ namespace FlatSharpTests
                 new ReturnsRandomDictionary(),
                 TypeModelContainer.CreateDefault(),
                 options ?? new FlatBufferSerializerOptions(),
-                new List<TableFieldContext>());
+                new Dictionary<ITypeModel, List<TableFieldContext>>());
         }
 
         private class ReturnsRandomDictionary : IReadOnlyDictionary<Type, string>

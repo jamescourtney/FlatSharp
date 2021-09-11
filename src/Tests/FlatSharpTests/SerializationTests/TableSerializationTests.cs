@@ -19,6 +19,7 @@ namespace FlatSharpTests
     using System;
     using System.Buffers.Binary;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.IO;
     using System.Linq;
     using System.Runtime;
@@ -186,27 +187,16 @@ namespace FlatSharpTests
         }
 
         [Fact]
-        public void TableParse_LazyMutable()
+        public void TableParse_Progressive()
         {
-            var options = new FlatBufferSerializerOptions(FlatBufferDeserializationOption.VectorCacheMutable);
+            var options = new FlatBufferSerializerOptions(FlatBufferDeserializationOption.Progressive);
             var table = this.SerializeAndParse(options, out _);
-            
-            var newString = Guid.NewGuid().ToString();
-            table.String = newString;
-            Assert.Equal(newString, table.String);
 
-            var newLong = DateTimeOffset.UtcNow.Ticks;
-            table.Struct.Long = newLong;
-            Assert.Equal(newLong, table.Struct.Long);
+            Assert.Throws<NotMutableException>(() => table.String = string.Empty);
+            Assert.Throws<NotMutableException>(() => table.Struct.Long = 0);
+            Assert.Throws<NotMutableException>(() => table.Struct = new());
 
-            var newStruct = new SimpleStruct();
-            table.Struct = newStruct;
-            Assert.Equal(newStruct, table.Struct);
-
-            Assert.Equal(typeof(List<SimpleStruct>), table.StructVector.GetType());
-            int count = table.StructVector.Count;
-            table.StructVector.Add(new SimpleStruct());
-            Assert.Equal(count + 1, table.StructVector.Count);
+            Assert.Equal(typeof(ReadOnlyCollection<SimpleStruct>), table.StructVector.GetType());
         }
 
         [Fact]

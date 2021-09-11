@@ -19,46 +19,25 @@ namespace FlatSharp
     using System;
     using System.Collections;
     using System.Collections.Generic;
-    using System.IO;
-    using System.Runtime.CompilerServices;
+    using System.ComponentModel;
+    using System.Diagnostics.CodeAnalysis;
 
     /// <summary>
-    /// A base class that FlatBuffersNet implements to deserialize vectors. FlatBufferVetor{T} is a lazy implementation
-    /// which will create a new instance for each item it returns. Calling .ToList() is an effective way to do caching.
+    /// A base flat buffer vector, common to standard vectors and unions.
     /// </summary>
-    public abstract class FlatBufferVectorOfUnion<T, TInputBuffer> : IList<T>, IReadOnlyList<T>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public abstract class FlatBufferVectorBase<T, TInputBuffer> : IList<T>, IReadOnlyList<T>
         where TInputBuffer : IInputBuffer
-        where T : IFlatBufferUnion
     {
-        private readonly TInputBuffer memory;
-        private readonly int count;
-        private readonly int discriminatorVectorOffset;
-        private readonly int offsetVectorOffset;
-        private readonly TableFieldContext fieldContext;
+        protected readonly TInputBuffer memory;
+        protected readonly TableFieldContext fieldContext;
 
-        protected FlatBufferVectorOfUnion(
+        protected FlatBufferVectorBase(
             TInputBuffer memory,
-            int discriminatorOffset,
-            int offsetVectorOffset,
             TableFieldContext fieldContext)
         {
             this.memory = memory;
-
-            uint discriminatorCount = memory.ReadUInt(discriminatorOffset);
-            uint offsetCount = memory.ReadUInt(offsetVectorOffset);
             this.fieldContext = fieldContext;
-
-            if (discriminatorCount != offsetCount)
-            {
-                throw new InvalidDataException($"Union vector had mismatched number of discriminators and offsets.");
-            }
-
-            checked
-            {
-                this.count = (int)offsetCount;
-                this.discriminatorVectorOffset = discriminatorOffset + sizeof(int);
-                this.offsetVectorOffset = offsetVectorOffset + sizeof(int);
-            }
         }
 
         /// <summary>
@@ -68,7 +47,13 @@ namespace FlatSharp
         {
             get
             {
-                return this.ParseItemHelper(this.memory, index);
+                if ((uint)index >= this.Count)
+                {
+                    throw new IndexOutOfRangeException();
+                }
+
+                this.ParseItem(index, out T item);
+                return item;
             }
             set
             {
@@ -76,19 +61,9 @@ namespace FlatSharp
             }
         }
 
-        public int Count => this.count;
+        public int Count { get; protected init; }
 
         public bool IsReadOnly => true;
-
-        public void Add(T item)
-        {
-            throw new NotMutableException("FlatBufferVector does not allow adding items.");
-        }
-
-        public void Clear()
-        {
-            throw new NotMutableException("FlatBufferVector does not support clearing.");
-        }
 
         public bool Contains(T? item)
         {
@@ -103,22 +78,19 @@ namespace FlatSharp
             }
 
             var count = this.Count;
-            var memory = this.memory;
-
             for (int i = 0; i < count; ++i)
             {
-                array[arrayIndex + i] = this.ParseItemHelper(memory, i);
+                this.ParseItem(i, out array[arrayIndex + i]);
             }
         }
 
         public T[] ToArray()
         {
             T[] array = new T[this.Count];
-            var memory = this.memory;
 
             for (int i = 0; i < array.Length; ++i)
             {
-                array[i] = this.ParseItemHelper(memory, i);
+                this.ParseItem(i, out array[i]);
             }
 
             return array;
@@ -129,7 +101,8 @@ namespace FlatSharp
             int count = this.Count;
             for (int i = 0; i < count; ++i)
             {
-                yield return this.ParseItemHelper(this.memory, i);
+                this.ParseItem(i, out T parsed);
+                yield return parsed;
             }
         }
 
@@ -142,11 +115,10 @@ namespace FlatSharp
             }
 
             int count = this.Count;
-            var memory = this.memory;
-
             for (int i = 0; i < count; ++i)
             {
-                if (item.Equals(this.ParseItemHelper(memory, i)))
+                this.ParseItem(i, out T parsed);
+                if (item.Equals(parsed))
                 {
                     return i;
                 }
@@ -157,17 +129,36 @@ namespace FlatSharp
 
         public List<T> FlatBufferVectorToList()
         {
-            var list = new List<T>(this.Count);
-            list.AddRange(this);
+            int count = this.Count;
+            var list = new List<T>(count);
+            
+            for (int i = 0; i < count; ++i)
+            {
+                this.ParseItem(i, out T item);
+                list.Add(item);
+            }
+
             return list;
         }
 
-        public void Insert(int index, T? item)
+        protected abstract void ParseItem(int index, out T item);
+
+        public void Add(T item)
+        {
+            throw new NotMutableException("FlatBufferVector does not allow adding items.");
+        }
+
+        public void Clear()
+        {
+            throw new NotMutableException("FlatBufferVector does not support clearing.");
+        }
+
+        public void Insert(int index, T item)
         {
             throw new NotMutableException("FlatBufferVector does not support inserting.");
         }
 
-        public bool Remove(T? item)
+        public bool Remove(T item)
         {
             throw new NotMutableException("FlatBufferVector does not support removing.");
         }
@@ -177,32 +168,10 @@ namespace FlatSharp
             throw new NotMutableException("FlatBufferVector does not support removing.");
         }
 
+        [ExcludeFromCodeCoverage]
         IEnumerator IEnumerable.GetEnumerator()
         {
             return this.GetEnumerator();
         }
-
-        private T ParseItemHelper(TInputBuffer buffer, int index)
-        {
-            if ((uint)index >= (uint)this.count)
-            {
-                throw new IndexOutOfRangeException("Union vector index out of range.");
-            }
-
-            checked
-            {
-                return this.ParseItem(
-                    buffer, 
-                    this.discriminatorVectorOffset + index, 
-                    this.offsetVectorOffset + (index * sizeof(int)),
-                    this.fieldContext);
-            }
-        }
-
-        protected abstract T ParseItem(
-            TInputBuffer buffer,
-            int discriminatorOffset,
-            int offsetOffset,
-            in TableFieldContext fieldContext);
     }
 }

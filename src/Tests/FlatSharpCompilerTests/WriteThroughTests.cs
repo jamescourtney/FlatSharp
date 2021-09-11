@@ -54,15 +54,7 @@ namespace FlatSharpTests.Compiler
                 dynamic parsed = serializer.Parse(data);
                 parsed.Struct.foo = 100;
 
-                try
-                {
-                    parsed.Struct.bar = 22;
-                    Assert.Equal(FlatBufferDeserializationOption.VectorCacheMutable, option);
-                }
-                catch (NotMutableException)
-                {
-                    Assert.Equal(FlatBufferDeserializationOption.Lazy, option);
-                }
+                Assert.Throws<NotMutableException>(() => parsed.Struct.bar = 22);
 
                 dynamic parsed2 = serializer.Parse(data);
                 Assert.Equal(100, (int)parsed2.Struct.foo);
@@ -70,7 +62,7 @@ namespace FlatSharpTests.Compiler
             }
 
             Test(FlatBufferDeserializationOption.Lazy);
-            Test(FlatBufferDeserializationOption.VectorCacheMutable);
+            Test(FlatBufferDeserializationOption.Progressive);
         }
     }
 }

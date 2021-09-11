@@ -167,7 +167,7 @@ namespace FlatSharp.TypeModel
         {
         }
 
-        public virtual List<TableFieldContext> GetFieldContexts()
+        public virtual List<(ITypeModel, TableFieldContext)> GetFieldContexts()
         {
             return new();
         }

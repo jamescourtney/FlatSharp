@@ -37,6 +37,7 @@
             this.IsDeprecated = attribute.Deprecated;
             this.ForceWrite = attribute.ForceWrite;
             this.IsSharedString = attribute.SharedString;
+            this.VectorPreallocationLimit = attribute.HasVectorPreallocationLimit ? attribute.VectorPreallocationLimit : null;
 
             if (!propertyModel.IsValidTableMember)
             {
@@ -82,6 +83,14 @@
                     throw new InvalidFlatBufferDefinitionException($"Table property '{this.FriendlyName}' declared the SharedString attribute. This is only supported on strings and vectors of strings.");
                 }
             }
+
+            if (this.VectorPreallocationLimit is not null)
+            {
+                if (propertyModel.SchemaType != FlatBufferSchemaType.Vector)
+                {
+                    throw new InvalidFlatBufferDefinitionException($"Table property '{this.FriendlyName}' declared the {nameof(FlatBufferItemAttribute.VectorPreallocationLimit)} attribute. This is only supported on vectors.");
+                }
+            }
         }
         
         /// <summary>
@@ -114,6 +123,11 @@
         /// Indicates if strings within this member should be shared.
         /// </summary>
         public bool IsSharedString { get; set; }
+
+        /// <summary>
+        /// Indicates the threshold under which vectors should be preallocated.
+        /// </summary>
+        public long? VectorPreallocationLimit { get; set; }
 
         /// <summary>
         /// Returns a C# literal that is equal to the default value.

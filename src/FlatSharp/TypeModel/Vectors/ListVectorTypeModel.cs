@@ -18,6 +18,7 @@ namespace FlatSharp.TypeModel
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Text;
 
     /// <summary>
@@ -25,6 +26,8 @@ namespace FlatSharp.TypeModel
     /// </summary>
     public class ListVectorTypeModel : BaseVectorTypeModel
     {
+        public const int DefaultPreallocationLimit = 1024;
+
         private bool isReadOnly;
 
         internal ListVectorTypeModel(Type vectorType, TypeModelContainer provider) : base(vectorType, provider)
@@ -101,45 +104,63 @@ namespace FlatSharp.TypeModel
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
+            ValidatePreallocationSettings(this, context.AllFieldContexts, context.Options);
+
             (string vectorClassDef, string vectorClassName) = FlatBufferVectorHelpers.CreateFlatBufferVectorSubclass(
                 this.ItemTypeModel.ClrType,
                 context);
-
-            string body;
-
-            string fieldContextArg = string.Empty;
-            if (!string.IsNullOrEmpty(context.TableFieldContextVariableName))
-            {
-                fieldContextArg = $", {context.TableFieldContextVariableName}";
-            }
 
             string createFlatBufferVector =
                 $@"new {vectorClassName}<{context.InputBufferTypeName}>(
                         {context.InputBufferVariableName}, 
                         {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}), 
-                        {this.PaddedMemberInlineSize}
-                        {fieldContextArg})";
+                        {this.PaddedMemberInlineSize},
+                        {context.TableFieldContextVariableName})";
 
-            if (context.Options.PreallocateVectors)
+            return new CodeGeneratedMethod(CreateParseBody(this.ItemTypeModel, createFlatBufferVector, context)) { ClassDefinition = vectorClassDef };
+        }
+
+        internal static string CreateParseBody(
+            ITypeModel itemTypeModel,
+            string createFlatBufferVector,
+            ParserCodeGenContext context)
+        {
+            FlatSharpInternal.Assert(!string.IsNullOrEmpty(context.TableFieldContextVariableName), "expecting table field context");
+
+            if (context.Options.GreedyDeserialize)
             {
-                // We just call .ToList(). Note that when full greedy mode is on, these items will be 
-                // greedily initialized as we traverse the list. Otherwise, they'll be allocated lazily.
-                body = $"({createFlatBufferVector}).FlatBufferVectorToList()";
-
+                string body = $"({createFlatBufferVector}).FlatBufferVectorToList()";
                 if (!context.Options.GenerateMutableObjects)
                 {
-                    // Finally, if we're not in the business of making mutable objects, then convert the list to read only.
                     body += ".AsReadOnly()";
                 }
 
-                body = $"return {body};";
+                return $"return {body};";
+            }
+            else if (context.Options.Lazy)
+            {
+                return $"return {createFlatBufferVector};";
             }
             else
             {
-                body = $"return {createFlatBufferVector};";
-            }
+                // Note: it is possible to do some analysis here and reduce the complexity of the following.
+                // based on the number of distinct values of the preallocation limit (ie, if they are all 0, the 'if' check
+                // can be elided entirely).
+                // However -- the profit from doing so is minimal and the testing is difficult.
+                FlatSharpInternal.Assert(context.Options.Progressive, "expecting progressive");
 
-            return new CodeGeneratedMethod(body) { ClassDefinition = vectorClassDef };
+                return $@"
+                    var vector = {createFlatBufferVector};
+                    if (vector.Count >= ({context.TableFieldContextVariableName}.{nameof(TableFieldContext.VectorPreallocationLimit)} ?? {DefaultPreallocationLimit}))
+                    {{
+                        return new FlatBufferProgressiveVector<{itemTypeModel.GetGlobalCompilableTypeName()}>(vector);
+                    }}
+                    else
+                    {{
+                        return vector.FlatBufferVectorToList().AsReadOnly();
+                    }}
+                ";
+            }
         }
     }
 }

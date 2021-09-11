@@ -473,7 +473,19 @@ $@"
 
         private void ImplementMethods(ITypeModel rootTypeModel)
         {
-            List<TableFieldContext> allContexts = rootTypeModel.GetAllTableFieldContexts();
+            List<(ITypeModel, TableFieldContext)> allContexts = rootTypeModel.GetAllTableFieldContexts();
+
+            Dictionary<ITypeModel, List<TableFieldContext>> allContextsMap = new();
+            foreach (var item in allContexts)
+            {
+                if (!allContextsMap.TryGetValue(item.Item1, out List<TableFieldContext>? list))
+                {
+                    list = new();
+                    allContextsMap[item.Item1] = list;
+                }
+
+                list.Add(item.Item2);
+            }
 
             foreach (var type in this.writeMethods.Keys)
             {
@@ -494,9 +506,9 @@ $@"
                     ? "fieldContext"
                     : string.Empty;
 
-                var maxSizeContext = new GetMaxSizeCodeGenContext("value", getMaxSizeFieldContextVariableName, this.maxSizeMethods, this.options, this.typeModelContainer, allContexts);
-                var parseContext = new ParserCodeGenContext("buffer", "offset", "TInputBuffer", isOffsetByRef, parseFieldContextVariableName, this.readMethods, this.writeMethods, this.options, this.typeModelContainer, allContexts);
-                var serializeContext = new SerializationCodeGenContext("context", "span", "spanWriter", "value", "offset", serializeFieldContextVariableName, isOffsetByRef, this.writeMethods, this.typeModelContainer, this.options, allContexts);
+                var maxSizeContext = new GetMaxSizeCodeGenContext("value", getMaxSizeFieldContextVariableName, this.maxSizeMethods, this.options, this.typeModelContainer, allContextsMap);
+                var parseContext = new ParserCodeGenContext("buffer", "offset", "TInputBuffer", isOffsetByRef, parseFieldContextVariableName, this.readMethods, this.writeMethods, this.options, this.typeModelContainer, allContextsMap);
+                var serializeContext = new SerializationCodeGenContext("context", "span", "spanWriter", "value", "offset", serializeFieldContextVariableName, isOffsetByRef, this.writeMethods, this.typeModelContainer, this.options, allContextsMap);
 
                 var maxSizeMethod = typeModel.CreateGetMaxSizeMethodBody(maxSizeContext);
                 var parseMethod = typeModel.CreateParseMethodBody(parseContext);

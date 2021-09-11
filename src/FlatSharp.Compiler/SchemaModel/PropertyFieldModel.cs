@@ -51,6 +51,7 @@ namespace FlatSharp.Compiler.SchemaModel
                 SetterKindValidator = _ => AttributeValidationResult.Valid,
                 ForceWriteValidator = _ => this.ValidWhenParentIs<TableSchemaModel>(),
                 WriteThroughValidator = _ => this.ValidWhenParentIs<ReferenceStructSchemaModel>(),
+                VectorPreallocateValidator = _ => this.ValidWhenParentIs<TableSchemaModel>(),
             }.Validate(this.Attributes);
 
             FlatSharpInternal.Assert(this.Field.Type.BaseType.IsKnown(), "Base type was not known");
@@ -233,6 +234,11 @@ namespace FlatSharp.Compiler.SchemaModel
             if (this.Attributes.SharedString == true)
             {
                 attribute.Append($", {nameof(FlatBufferItemAttribute.SharedString)} = true");
+            }
+
+            if (this.Attributes.VectorPreallocate is not null)
+            {
+                attribute.Append($", {nameof(FlatBufferItemAttribute.VectorPreallocationLimit)} = {this.Attributes.VectorPreallocate}");
             }
 
             attribute.Append(")]");

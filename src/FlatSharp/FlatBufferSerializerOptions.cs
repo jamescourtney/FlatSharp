@@ -52,34 +52,22 @@ namespace FlatSharp
         /// </summary>
         public FlatBufferDeserializationOption DeserializationOption { get; }
 
-        /// <summary>
-        /// Indicates if list vectors should have their data cached after reading. This option will cause more allocations
-        /// on deserializing, but will improve performance in cases of duplicate accesses to the same indices.
-        /// </summary>
-        public bool PreallocateVectors =>
-            this.DeserializationOption == FlatBufferDeserializationOption.VectorCacheMutable ||
-            this.DeserializationOption == FlatBufferDeserializationOption.VectorCache ||
-            this.GreedyDeserialize;
+        public bool Progressive =>
+            this.DeserializationOption == FlatBufferDeserializationOption.Progressive;
 
         /// <summary>
         /// Indicates if the serializer should generate mutable objects. Mutable objects are "copy-on-write"
         /// and do not modify the underlying buffer.
         /// </summary>
         public bool GenerateMutableObjects =>
-            this.DeserializationOption == FlatBufferDeserializationOption.VectorCacheMutable ||
             this.DeserializationOption == FlatBufferDeserializationOption.GreedyMutable;
 
         /// <summary>
         /// Indicates if deserialization should be greedy.
         /// </summary>
         public bool GreedyDeserialize =>
-            this.DeserializationOption == FlatBufferDeserializationOption.Greedy ||
-            this.DeserializationOption == FlatBufferDeserializationOption.GreedyMutable;
-
-        /// <summary>
-        /// Indicates if properties should be progressively cached as they are read. Lazy and greedy don't need this logic.
-        /// </summary>
-        public bool PropertyCache => !this.Lazy && !this.GreedyDeserialize;
+            this.DeserializationOption == FlatBufferDeserializationOption.Greedy
+         || this.DeserializationOption == FlatBufferDeserializationOption.GreedyMutable;
 
         /// <summary>
         /// Indicates if properties are always read lazily.
@@ -90,7 +78,7 @@ namespace FlatSharp
         /// Indicates if write through is supported.
         /// </summary>
         public bool SupportsWriteThrough => this.DeserializationOption == FlatBufferDeserializationOption.Lazy ||
-                                            this.DeserializationOption == FlatBufferDeserializationOption.VectorCacheMutable;
+                                            this.DeserializationOption == FlatBufferDeserializationOption.Progressive;
 
         /// <summary>
         /// Indicates if the object is immutable OR changes to the object are guaranteed to be written back to the buffer.
@@ -99,7 +87,7 @@ namespace FlatSharp
         /// VectorCacheMutable is not eligible here, since only some changes are written back.
         /// </remarks>
         public bool CanSerializeWithMemoryCopy => this.DeserializationOption == FlatBufferDeserializationOption.Lazy ||
-                                                  this.DeserializationOption == FlatBufferDeserializationOption.PropertyCache;
+                                                  this.DeserializationOption == FlatBufferDeserializationOption.Progressive;
 
         /// <summary>
         /// Indicates if FlatSharp should intercept app domain load events to look for cross-referenced generated assemblies. 

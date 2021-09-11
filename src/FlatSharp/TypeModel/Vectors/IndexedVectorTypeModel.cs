@@ -88,6 +88,8 @@ namespace FlatSharp.TypeModel
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
+            ValidatePreallocationSettings(this, context.AllFieldContexts, context.Options);
+
             string body;
             string keyTypeName = CSharpHelpers.GetGlobalCompilableTypeName(this.keyTypeModel.ClrType);
             string valueTypeName = CSharpHelpers.GetGlobalCompilableTypeName(this.valueTypeModel.ClrType);
@@ -96,29 +98,30 @@ namespace FlatSharp.TypeModel
                 this.valueTypeModel.ClrType,
                 context);
 
-            string fieldContextArg = string.Empty;
-            if (!string.IsNullOrEmpty(context.TableFieldContextVariableName))
-            {
-                fieldContextArg = $", {context.TableFieldContextVariableName}";
-            }
+            FlatSharpInternal.Assert(!string.IsNullOrEmpty(context.TableFieldContextVariableName), "field context was null/empty");
 
             string createFlatBufferVector =
             $@"new {vectorClassName}<{context.InputBufferTypeName}>(
                     {context.InputBufferVariableName}, 
                     {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}), 
-                    {this.PaddedMemberInlineSize}
-                    {fieldContextArg})";
+                    {this.PaddedMemberInlineSize},
+                    {context.TableFieldContextVariableName})";
 
-            if (context.Options.PreallocateVectors)
+            string mutable = context.Options.GenerateMutableObjects.ToString().ToLowerInvariant();
+            if (context.Options.GreedyDeserialize)
             {
                 // Eager indexed vector.
-                string mutable = context.Options.GenerateMutableObjects.ToString().ToLowerInvariant();
                 body = $@"return new {nameof(IndexedVector<string, string>)}<{keyTypeName}, {valueTypeName}>({createFlatBufferVector}, {mutable});";
+            }
+            else if (context.Options.Lazy)
+            {
+                // Lazy indexed vector.
+                body = $@"return new {nameof(FlatBufferIndexedVector<string, string, IInputBuffer>)}<{keyTypeName}, {valueTypeName}, {context.InputBufferTypeName}>({createFlatBufferVector});";
             }
             else
             {
-                // Lazy indexed vector.
-                body = $@"return new {nameof(FlatBufferIndexedVector<string, string>)}<{keyTypeName}, {valueTypeName}>({createFlatBufferVector});";
+                FlatSharpInternal.Assert(context.Options.Progressive, "expecting progressive");
+                body = $@"return new {nameof(FlatBufferProgressiveIndexedVector<string, string, IInputBuffer>)}<{keyTypeName}, {valueTypeName}, {context.InputBufferTypeName}>({createFlatBufferVector});";
             }
 
             return new CodeGeneratedMethod(body) { IsMethodInline = true, ClassDefinition = vectorClassDef };

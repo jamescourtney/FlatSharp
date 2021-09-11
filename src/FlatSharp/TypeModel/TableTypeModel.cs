@@ -209,17 +209,13 @@ namespace FlatSharp.TypeModel
             }
         }
 
-        public override List<TableFieldContext> GetFieldContexts()
+        public override List<(ITypeModel, TableFieldContext)> GetFieldContexts()
         {
-            List<TableFieldContext> items = new List<TableFieldContext>();
+            List<(ITypeModel, TableFieldContext)> items = new();
             foreach (TableMemberModel member in this.memberTypes.Values)
             {
-                TableFieldContext ctx = new TableFieldContext
-                {
-                    SharedString = member.IsSharedString
-                };
-
-                items.Add(ctx);
+                TableFieldContext ctx = new TableFieldContext(member.FriendlyName, member.IsSharedString, member.VectorPreallocationLimit);
+                items.Add((member.ItemTypeModel, ctx));
             }
 
             return items;
@@ -772,26 +768,23 @@ $@"
 
         public override string? CreateExtraClasses()
         {
-            Dictionary<string, TableFieldContext> fields = new();
+            List<string> tableContextInitializations = new();
 
             foreach (var member in this.memberTypes.Values)
             {
-                TableFieldContext ctx = new TableFieldContext();
-                if (member.IsSharedString)
-                {
-                    ctx.SharedString = true;
-                }
+                string init = $@"
+                    public static readonly {nameof(TableFieldContext)} {member.PropertyInfo.Name} = new {nameof(TableFieldContext)}(
+                        ""{member.FriendlyName}"",
+                        {member.IsSharedString.ToString().ToLowerInvariant()},
+                        {(member.VectorPreallocationLimit is null ? "null" : member.VectorPreallocationLimit.ToString())});";
 
-                fields[member.PropertyInfo.Name] = ctx;
+                tableContextInitializations.Add(init);
             }
-
-            var allFields = fields.Select(kvp => 
-                $"public static readonly {nameof(TableFieldContext)} {kvp.Key} = new {nameof(TableFieldContext)} {{ SharedString = {kvp.Value.SharedString.ToString().ToLowerInvariant()} }};");
 
             return $@"
                 private static class {this.ExtraClassName}
                 {{
-                    {string.Join("\r\n", allFields)}
+                    {string.Join("\r\n", tableContextInitializations)}
                 }}
             ";
         }
