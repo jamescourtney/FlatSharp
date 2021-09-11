@@ -73,7 +73,7 @@ namespace FlatSharp.TypeModel
             if (this.ItemTypeModel.ClrType == typeof(byte))
             {
                 // can handle this as memory.
-                string method = nameof(InputBufferExtensions.ReadByteMemoryBlock);
+                string method = nameof(InputBufferExtensions.ReadByteReadOnlyMemoryBlock);
                 string memoryVectorRead = $"{context.InputBufferVariableName}.{method}({context.OffsetVariableName})";
                 body = $"return {memoryVectorRead}.ToArray();";
             }
@@ -83,18 +83,14 @@ namespace FlatSharp.TypeModel
                     this.ItemTypeModel.ClrType,
                     context);
 
-                string fieldContextArg = string.Empty;
-                if (!string.IsNullOrEmpty(context.TableFieldContextVariableName))
-                {
-                    fieldContextArg = $", {context.TableFieldContextVariableName}";
-                }
+                FlatSharpInternal.Assert(!string.IsNullOrEmpty(context.TableFieldContextVariableName), "expecting table field context");
 
                 string createFlatBufferVector =
                 $@"new {vectorClassName}<{context.InputBufferTypeName}>(
                     {context.InputBufferVariableName}, 
                     {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}), 
-                    {this.PaddedMemberInlineSize}
-                    {fieldContextArg})";
+                    {this.PaddedMemberInlineSize},
+                    {context.TableFieldContextVariableName})";
 
                 body = $"return ({createFlatBufferVector}).ToArray();";
             }

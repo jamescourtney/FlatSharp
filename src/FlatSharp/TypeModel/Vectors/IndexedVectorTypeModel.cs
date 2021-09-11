@@ -98,18 +98,14 @@ namespace FlatSharp.TypeModel
                 this.valueTypeModel.ClrType,
                 context);
 
-            string fieldContextArg = string.Empty;
-            if (!string.IsNullOrEmpty(context.TableFieldContextVariableName))
-            {
-                fieldContextArg = $", {context.TableFieldContextVariableName}";
-            }
+            FlatSharpInternal.Assert(!string.IsNullOrEmpty(context.TableFieldContextVariableName), "field context was null/empty");
 
             string createFlatBufferVector =
             $@"new {vectorClassName}<{context.InputBufferTypeName}>(
                     {context.InputBufferVariableName}, 
                     {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}), 
-                    {this.PaddedMemberInlineSize}
-                    {fieldContextArg})";
+                    {this.PaddedMemberInlineSize},
+                    {context.TableFieldContextVariableName})";
 
             string mutable = context.Options.GenerateMutableObjects.ToString().ToLowerInvariant();
             if (context.Options.GreedyDeserialize)

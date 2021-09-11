@@ -41,18 +41,14 @@ namespace FlatSharp.TypeModel
                 this.ItemTypeModel,
                 context);
 
-            string fieldContextArg = string.Empty;
-            if (!string.IsNullOrEmpty(context.TableFieldContextVariableName))
-            {
-                fieldContextArg = $", {context.TableFieldContextVariableName}";
-            }
+            FlatSharpInternal.Assert(!string.IsNullOrEmpty(context.TableFieldContextVariableName), "expecting table field context");
 
             string createFlatBufferVector =
             $@"new {className}<{context.InputBufferTypeName}>(
                     {context.InputBufferVariableName}, 
                     {context.OffsetVariableName}.offset0 + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}.offset0), 
-                    {context.OffsetVariableName}.offset1 + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}.offset1)
-                    {fieldContextArg})";
+                    {context.OffsetVariableName}.offset1 + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}.offset1),
+                    {context.TableFieldContextVariableName})";
 
             string body = $"return ({createFlatBufferVector}).ToArray();";
 
