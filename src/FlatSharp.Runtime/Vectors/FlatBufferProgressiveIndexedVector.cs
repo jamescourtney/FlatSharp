@@ -31,32 +31,20 @@ namespace FlatSharp
         where TKey : notnull
         where TInputBuffer : IInputBuffer
     {
-        private static readonly Func<TValue, TKey> KeyGetter;
-
         private readonly Dictionary<TKey, TValue?> backingDictionary;
         private readonly FlatBufferProgressiveVector<TValue> backingVector;
-
-        static FlatBufferProgressiveIndexedVector()
-        {
-            KeyGetter = SortedVectorHelpers.GetOrCreateGetKeyCallback<TValue, TKey>();
-        }
 
         public FlatBufferProgressiveIndexedVector(FlatBufferVector<TValue, TInputBuffer> items)
         {
             var dictionary = new Dictionary<TKey, TValue?>();
             foreach (var item in items)
             {
-                dictionary[KeyGetter(item)] = item;
+                dictionary[IndexedVector<TKey, TValue>.GetKey(item)] = item;
             }
 
             this.backingDictionary = dictionary;
             this.backingVector = new FlatBufferProgressiveVector<TValue>(items);
         }
-
-        /// <summary>
-        /// Gets the key from the given value.
-        /// </summary>
-        public static TKey GetKey(TValue value) => KeyGetter(value);
 
         /// <summary>
         /// An indexer for getting values by their keys.
@@ -123,7 +111,7 @@ namespace FlatSharp
             {
                 TValue item = this.backingVector[i];
 
-                yield return new KeyValuePair<TKey, TValue>(KeyGetter(item), item);
+                yield return new KeyValuePair<TKey, TValue>(IndexedVector<TKey, TValue>.GetKey(item), item);
             }
         }
 
