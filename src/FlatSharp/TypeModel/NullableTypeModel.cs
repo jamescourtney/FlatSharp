@@ -51,17 +51,17 @@ namespace FlatSharp.TypeModel
         public override bool IsFixedSize => this.underlyingTypeModel.IsFixedSize;
 
         /// <summary>
-        /// Scalars can be part of Structs.
+        /// Nullables can't be part of Structs.
         /// </summary>
         public override bool IsValidStructMember => false;
 
         /// <summary>
-        /// Scalars can be part of Tables.
+        /// Nullables can be part of Tables.
         /// </summary>
         public override bool IsValidTableMember => this.underlyingTypeModel.IsValidTableMember;
 
         /// <summary>
-        /// Scalars can't be part of Unions.
+        /// Nullables can't be part of Unions.
         /// </summary>
         public override bool IsValidUnionMember => false;
 
@@ -78,7 +78,14 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// Defer to underlying type for serializing.
         /// </summary>
-        public override bool SerializesInline => this.underlyingTypeModel.SerializesInline;
+        public override bool SerializesInline 
+            => this.underlyingTypeModel.SerializesInline;
+
+        /// <summary>
+        /// We need context only if our underlying type does.
+        /// </summary>
+        public override bool SerializeMethodRequiresContext 
+            => this.underlyingTypeModel.SerializeMethodRequiresContext;
 
         /// <summary>
         /// Defer to underlying type model about whether we need this.

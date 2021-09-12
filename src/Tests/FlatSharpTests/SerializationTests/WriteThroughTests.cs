@@ -20,6 +20,7 @@ namespace FlatSharpTests
     using System.Collections.Generic;
     using System.Linq;
     using System.Runtime.CompilerServices;
+    using System.Runtime.InteropServices;
     using FlatSharp;
     using FlatSharp.Attributes;
     using FlatSharp.TypeModel;
@@ -31,6 +32,68 @@ namespace FlatSharpTests
     
     public class WriteThroughTests
     {
+        // Type model tests for write through scenarios.
+        public class TypeModel
+        {
+            [Theory]
+            [InlineData(typeof(OtherStruct))]
+            [InlineData(typeof(ValueStruct))]
+            [InlineData(typeof(ValueStruct?))]
+            public void WriteThrough_Table_RequiedReferenceStructField(Type type)
+            {
+                type = typeof(WriteThroughTable_Required<>).MakeGenericType(type);
+
+                var typeModel = RuntimeTypeModel.CreateFrom(type);
+                Assert.True(((TableTypeModel)typeModel).IndexToMemberMap[0].IsWriteThrough);
+                Assert.True(((TableTypeModel)typeModel).IndexToMemberMap[0].Attribute.WriteThrough);
+            }
+
+            [Theory]
+            [InlineData(typeof(ValueStruct))]
+            [InlineData(typeof(ValueStruct?))]
+            [InlineData(typeof(OtherStruct))]
+            public void WriteThrough_Table_NotRequiredStructField(Type type)
+            {
+                type = typeof(WriteThroughTable_NotRequired<>).MakeGenericType(type);
+
+                var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
+                    RuntimeTypeModel.CreateFrom(type));
+
+                Assert.Equal(
+                    $"Table property '{type.GetCompilableTypeName()}.Item' declared the WriteThrough attribute, but the field is not marked as required. WriteThrough fields must also be required.",
+                    ex.Message);
+            }
+
+            [Theory]
+            [InlineData(typeof(IList<ValueStruct>), true, false)]
+            [InlineData(typeof(IList<OtherStruct>), true, false)]
+            [InlineData(typeof(IList<ValueStruct>), false, false)]
+            [InlineData(typeof(IList<OtherStruct>), false, false)]
+            [InlineData(typeof(ValueStruct), true, true)]
+            [InlineData(typeof(OtherStruct), true, true)]
+            public void WriteThrough_Table_ValidCases(Type innerType, bool required, bool expectWriteThrough)
+            {
+                Type actualType;
+                if (required)
+                {
+                    actualType = typeof(WriteThroughTable_Required<>).MakeGenericType(innerType);
+                }
+                else
+                {
+                    actualType = typeof(WriteThroughTable_NotRequired<>).MakeGenericType(innerType);
+                }
+
+                var typeModel = RuntimeTypeModel.CreateFrom(actualType);
+
+                Assert.Equal(
+                    expectWriteThrough,
+                    ((TableTypeModel)typeModel).IndexToMemberMap[0].IsWriteThrough);
+
+                Assert.True(
+                    ((TableTypeModel)typeModel).IndexToMemberMap[0].Attribute.WriteThrough);
+            }
+        }
+
         [Fact]
         public void WriteThrough_InvalidDeserializationOption()
         {
@@ -51,7 +114,7 @@ namespace FlatSharpTests
         }
 
         [Fact]
-        public void WriteThrough_SimpleInt()
+        public void WriteThrough_SimpleInt_InReferenceStruct()
         {
             static void Test(FlatBufferDeserializationOption option)
             {
@@ -85,7 +148,7 @@ namespace FlatSharpTests
         }
 
         [Fact]
-        public void WriteThrough_NestedStruct()
+        public void WriteThrough_NestedStruct_InReferenceStruct()
         {
             static void Test(FlatBufferDeserializationOption option)
             {
@@ -93,7 +156,8 @@ namespace FlatSharpTests
                 {
                     Struct = new WriteThroughStruct
                     {
-                        Value = new OtherStruct { Prop1 = 10, Prop2 = 10 }
+                        Value = new OtherStruct { Prop1 = 10, Prop2 = 10 },
+                        ValueStruct = new() { Value = 3, }
                     }
                 };
 
@@ -108,14 +172,18 @@ namespace FlatSharpTests
                 // mutate
                 Assert.Equal(10, parsed1.Struct.Value.Prop1);
                 Assert.Equal(10, parsed1.Struct.Value.Prop2);
+                Assert.Equal(3, parsed1.Struct.ValueStruct.Value);
                 parsed1.Struct.Value = new OtherStruct { Prop1 = 300, Prop2 = 300 };
+                parsed1.Struct.ValueStruct = new() { Value = -1 };
                 Assert.Equal(300, parsed1.Struct.Value.Prop1);
                 Assert.Equal(300, parsed1.Struct.Value.Prop2);
+                Assert.Equal(-1, parsed1.Struct.ValueStruct.Value);
 
                 // verify, set to null
                 var parsed2 = serializer.Parse<Table<WriteThroughStruct>>(buffer);
                 Assert.Equal(300, parsed2.Struct.Value.Prop1);
                 Assert.Equal(300, parsed2.Struct.Value.Prop2);
+                Assert.Equal(-1, parsed2.Struct.ValueStruct.Value);
                 parsed2.Struct.Value = null!;
 
                 if (option == FlatBufferDeserializationOption.Progressive)
@@ -205,6 +273,20 @@ namespace FlatSharpTests
             public virtual T? Struct { get; set; }
         }
 
+        [FlatBufferTable]
+        public class WriteThroughTable_Required<T>
+        {
+            [FlatBufferItem(0, WriteThrough = true, Required = true)]
+            public virtual T? Item { get; set; }
+        }
+
+        [FlatBufferTable]
+        public class WriteThroughTable_NotRequired<T>
+        {
+            [FlatBufferItem(0, WriteThrough = true)]
+            public virtual T? Item { get; set; }
+        }
+
         [FlatBufferStruct]
         public class WriteThroughStruct<T>
         {
@@ -217,6 +299,9 @@ namespace FlatSharpTests
         {
             [FlatBufferItem(0, WriteThrough = true)]
             public virtual OtherStruct Value { get; set; }
+
+            [FlatBufferItem(1, WriteThrough = true)]
+            public virtual ValueStruct ValueStruct { get; set; }
         }
 
         [FlatBufferStruct]
@@ -227,6 +312,13 @@ namespace FlatSharpTests
 
             [FlatBufferItem(1)]
             public virtual int Prop2 { get; set; }
+        }
+
+        [FlatBufferStruct]
+        [StructLayout(LayoutKind.Explicit, Size = 4)]
+        public struct ValueStruct
+        {
+            [FieldOffset(0)] public int Value;
         }
     }
 }
