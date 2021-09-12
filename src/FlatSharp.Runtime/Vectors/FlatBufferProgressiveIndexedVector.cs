@@ -36,13 +36,7 @@ namespace FlatSharp
 
         public FlatBufferProgressiveIndexedVector(FlatBufferVector<TValue, TInputBuffer> items)
         {
-            var dictionary = new Dictionary<TKey, TValue?>();
-            foreach (var item in items)
-            {
-                dictionary[IndexedVector<TKey, TValue>.GetKey(item)] = item;
-            }
-
-            this.backingDictionary = dictionary;
+            this.backingDictionary = new Dictionary<TKey, TValue?>();
             this.backingVector = new FlatBufferProgressiveVector<TValue>(items);
         }
 
@@ -107,11 +101,13 @@ namespace FlatSharp
         /// </summary>
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
-            for (int i = 0; i < this.backingVector.Count; ++i)
+            int count = this.backingVector.Count;
+            for (int i = 0; i < count; ++i)
             {
                 TValue item = this.backingVector[i];
-
-                yield return new KeyValuePair<TKey, TValue>(IndexedVector<TKey, TValue>.GetKey(item), item);
+                yield return new KeyValuePair<TKey, TValue>(
+                    IndexedVector<TKey, TValue>.GetKey(item),
+                    item);
             }
         }
 

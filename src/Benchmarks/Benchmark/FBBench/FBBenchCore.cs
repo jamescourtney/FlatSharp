@@ -33,7 +33,7 @@ namespace Benchmark.FBBench
 
     public abstract class FBBenchCore
     {
-        protected FlatBufferBuilder google_flatBufferBuilder = new FlatBufferBuilder(64 * 1024);
+        protected FlatBufferBuilder google_flatBufferBuilder = new FlatBufferBuilder(1024 * 1024);
         protected ByteBuffer google_ByteBuffer;
         public Google.FooBarContainerT google_defaultContainer;
 
@@ -46,18 +46,18 @@ namespace Benchmark.FBBench
         public UnsortedVectorTable<int> unsortedIntContainer;
         public ValueTableVector valueTableVector;
 
-        protected MemoryStream pbdn_writeBuffer = new MemoryStream(64 * 1024);
-        protected MemoryStream pbdn_readBuffer = new MemoryStream(64 * 1024);
+        protected MemoryStream pbdn_writeBuffer = new MemoryStream(1024 * 1024);
+        protected MemoryStream pbdn_readBuffer = new MemoryStream(1024 * 1024);
 
         private FlatBufferSerializer fs_serializer;
 
         private byte[] msgPackWriteData;
 
         protected byte[] fs_readMemory;
-        protected readonly byte[] fs_writeMemory = new byte[64 * 1024];
+        protected readonly byte[] fs_writeMemory = new byte[1024 * 1024];
         public InputBufferKind inputBuffer;
 
-        [Params(30)]
+        [Params(1023, 1025)]
         public virtual int VectorLength { get; set; }
 
         public virtual int TraversalCount { get; set; }

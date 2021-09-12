@@ -26,15 +26,21 @@ namespace FlatSharp
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public class FlatBufferProgressiveVector<T> : IList<T>, IReadOnlyList<T>
+        where T : notnull
     {
+        // Must be a power of 2.
+        private const int ChunkSize = 64;
+
+        // A semi-sparse array. Each row contains ChunkSize items.
+        // This approach allows fast access while not over allocating.
+        private readonly T?[]?[] items;
         private readonly IReadOnlyList<T> innerVector;
-        private readonly Dictionary<int, T> sparseArray;
 
         public FlatBufferProgressiveVector(
             IReadOnlyList<T> innerVector)
         {
             this.innerVector = innerVector;
-            this.sparseArray = new Dictionary<int, T>();
+            this.items = new T[innerVector.Count / ChunkSize][];
         }
 
         /// <summary>
@@ -44,13 +50,19 @@ namespace FlatSharp
         {
             get
             {
-                if (!this.sparseArray.TryGetValue(index, out T? value))
+                ref T?[]? row = ref this.items[index / ChunkSize];
+                if (row is null)
                 {
-                    value = this.innerVector[index];
-                    this.sparseArray[index] = value;
+                    row = new T[ChunkSize];
                 }
 
-                return value;
+                ref T? item = ref row[index & (ChunkSize - 1)];
+                if (item is null)
+                {
+                    item = this.innerVector[index];
+                }
+
+                return item;
             }
             set
             {

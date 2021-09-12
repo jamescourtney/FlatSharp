@@ -87,8 +87,8 @@ namespace FlatSharp.Attributes
 
         /// <summary>
         /// Indicates the maximum length vector that should be preallocated. A value of <c>null</c> implies
-        /// that FlatSharp will choose. A value of 0 implies that the vector is never preallocated. 
-        /// A negative value implies that there is no limit.
+        /// that FlatSharp will choose. A value of 0 implies that the vector is never preallocated.
+        /// To require preallocation, use <see cref="long.MaxValue"/>.
         /// </summary>
         public long VectorPreallocationLimit
         {

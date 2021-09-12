@@ -31,7 +31,7 @@ namespace FlatSharp
             TInputBuffer memory,
             int offset,
             int itemSize,
-            TableFieldContext fieldContext) : base(memory, fieldContext)
+            in TableFieldContext fieldContext) : base(memory, fieldContext)
         {
             this.offset = offset;
             this.itemSize = itemSize;

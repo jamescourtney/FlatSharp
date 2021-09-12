@@ -34,7 +34,7 @@ namespace FlatSharp
 
         protected FlatBufferVectorBase(
             TInputBuffer memory,
-            TableFieldContext fieldContext)
+            in TableFieldContext fieldContext)
         {
             this.memory = memory;
             this.fieldContext = fieldContext;

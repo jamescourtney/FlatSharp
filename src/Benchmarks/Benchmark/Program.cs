@@ -45,15 +45,15 @@ namespace Benchmark
                  .AddDiagnoser(MemoryDiagnoser.Default)
                  .AddJob(job);
 
-            summaries.Add(BenchmarkRunner.Run(typeof(FBBench.FBSerializeBench), config));
+            //summaries.Add(BenchmarkRunner.Run(typeof(FBBench.FBSerializeBench), config));
             summaries.Add(BenchmarkRunner.Run(typeof(FBBench.FBDeserializeBench), config));
-            summaries.Add(BenchmarkRunner.Run(typeof(FBBench.OthersDeserializeBench), config));
+            //summaries.Add(BenchmarkRunner.Run(typeof(FBBench.OthersDeserializeBench), config));
 
 #if !NO_SHARED_STRINGS
-            summaries.Add(BenchmarkRunner.Run(typeof(FBBench.FBSharedStringBench), config));
+            //summaries.Add(BenchmarkRunner.Run(typeof(FBBench.FBSharedStringBench), config));
 #endif
 #if CURRENT_VERSION_ONLY
-            summaries.Add(BenchmarkRunner.Run(typeof(SerializationContextBenchmark), config));
+            //summaries.Add(BenchmarkRunner.Run(typeof(SerializationContextBenchmark), config));
 #endif
 
             foreach (var item in summaries)
