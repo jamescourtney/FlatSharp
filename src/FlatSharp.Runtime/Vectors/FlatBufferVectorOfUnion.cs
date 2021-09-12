@@ -35,7 +35,7 @@ namespace FlatSharp
             TInputBuffer memory,
             int discriminatorOffset,
             int offsetVectorOffset,
-            TableFieldContext fieldContext) : base(memory, fieldContext)
+            in TableFieldContext fieldContext) : base(memory, fieldContext)
         {
             uint discriminatorCount = memory.ReadUInt(discriminatorOffset);
             uint offsetCount = memory.ReadUInt(offsetVectorOffset);

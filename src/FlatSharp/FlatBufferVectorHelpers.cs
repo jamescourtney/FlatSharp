@@ -41,15 +41,8 @@ namespace FlatSharp.TypeModel
                     public {className}(
                         {context.InputBufferTypeName} memory,
                         int offset,
-                        int itemSize) : base(memory, offset, itemSize, default({nameof(TableFieldContext)}))
-                    {{
-                    }}
-
-                    public {className}(
-                        {context.InputBufferTypeName} memory,
-                        int offset,
                         int itemSize,
-                        {nameof(TableFieldContext)} fieldContext) : base(memory, offset, itemSize, fieldContext)
+                        in {nameof(TableFieldContext)} fieldContext) : base(memory, offset, itemSize, fieldContext)
                     {{
                     }}
 
@@ -89,15 +82,8 @@ namespace FlatSharp.TypeModel
                     public {className}(
                         {context.InputBufferTypeName} memory,
                         int discriminatorOffset,
-                        int offsetVectorOffset) : base(memory, discriminatorOffset, offsetVectorOffset, default({nameof(TableFieldContext)}))
-                    {{
-                    }}
-
-                    public {className}(
-                        {context.InputBufferTypeName} memory,
-                        int discriminatorOffset,
                         int offsetVectorOffset,
-                        {nameof(TableFieldContext)} fieldContext) : base(memory, discriminatorOffset, offsetVectorOffset, fieldContext)
+                        in {nameof(TableFieldContext)} fieldContext) : base(memory, discriminatorOffset, offsetVectorOffset, fieldContext)
                     {{
                     }}
 

@@ -22,19 +22,42 @@ namespace FlatSharp
     using System.ComponentModel;
 
     /// <summary>
-    /// A vector implementation that is gradually filled up.
+    /// A vector implementation that is filled on demand. Optimized
+    /// for data locality, random access, and reasonably low memory overhead.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public class FlatBufferProgressiveVector<T> : IList<T>, IReadOnlyList<T>
+        where T : notnull
     {
+        private static readonly ulong[] Empty = new ulong[0];
+
+        // The chunk size here matches the number of bits in the presenceMask array below.
+        private const int ChunkSize = 64;
+
+        // A semi-sparse array. Each row contains ChunkSize items.
+        // This approach allows fast access while not broadly over allocating.
+        // Using "mini arrays" also ensures good sequential access performance.
+        private readonly T?[]?[] items;
+
+        // array of bitmasks indicating presence. This is necessary for value types where we can't test for null.
+        private readonly ulong[] presenceMask; 
         private readonly IReadOnlyList<T> innerVector;
-        private readonly Dictionary<int, T> sparseArray;
 
         public FlatBufferProgressiveVector(
             IReadOnlyList<T> innerVector)
         {
+            this.Count = innerVector.Count;
             this.innerVector = innerVector;
-            this.sparseArray = new Dictionary<int, T>();
+            this.items = new T[(innerVector.Count / ChunkSize) + 1][];
+
+            if (typeof(T).IsValueType)
+            {
+                presenceMask = new ulong[this.items.Length];
+            }
+            else
+            {
+                presenceMask = Empty;
+            }
         }
 
         /// <summary>
@@ -44,13 +67,41 @@ namespace FlatSharp
         {
             get
             {
-                if (!this.sparseArray.TryGetValue(index, out T? value))
+                uint uindex = (uint)index;
+                if (uindex >= this.Count)
                 {
-                    value = this.innerVector[index];
-                    this.sparseArray[index] = value;
+                    throw new IndexOutOfRangeException();
                 }
 
-                return value;
+                uint rowIndex = uindex / ChunkSize;
+                ref T?[]? row = ref this.items[rowIndex];
+                if (row is null)
+                {
+                    row = new T[ChunkSize];
+                }
+
+                uint colIndex = uindex % ChunkSize;
+                ref T? item = ref row[colIndex];
+
+                if (typeof(T).IsValueType)
+                {
+                    ulong mask = 1ul << (int)colIndex;
+                    ref ulong maskValue = ref this.presenceMask[rowIndex];
+                    if ((maskValue & mask) == 0)
+                    {
+                        item = this.innerVector[index];
+                        maskValue |= mask;
+                    }
+                }
+                else
+                {
+                    if (item is null)
+                    {
+                        item = this.innerVector[index];
+                    }
+                }
+
+                return item!;
             }
             set
             {
@@ -58,7 +109,7 @@ namespace FlatSharp
             }
         }
 
-        public int Count => this.innerVector.Count;
+        public int Count { get; }
 
         public bool IsReadOnly => true;
 
