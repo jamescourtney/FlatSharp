@@ -57,7 +57,7 @@ namespace Benchmark.FBBench
         protected readonly byte[] fs_writeMemory = new byte[1024 * 1024];
         public InputBufferKind inputBuffer;
 
-        [Params(1023, 1025)]
+        [Params(30)]
         public virtual int VectorLength { get; set; }
 
         public virtual int TraversalCount { get; set; }

@@ -25,6 +25,10 @@ namespace Benchmark.FBBench
         [Params(1, 5)]
         public override int TraversalCount { get; set; }
 
+        // NB: 1024 is the threshold at which flatsharp switches from "greedy" to "progressive" when in progressive mode.
+        [Params(30, 1023, 1025)]
+        public override int VectorLength { get; set; }
+
         [Params(
             FlatBufferDeserializationOption.Lazy,
 #if FLATSHARP_6_0_0_OR_GREATER
