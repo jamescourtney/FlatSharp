@@ -22,7 +22,8 @@ namespace FlatSharp
     using System.ComponentModel;
 
     /// <summary>
-    /// A vector implementation that is gradually filled up.
+    /// A vector implementation that is filled on demand. Optimized
+    /// for data locality, random access, and reasonably low memory overhead.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public class FlatBufferProgressiveVector<T> : IList<T>, IReadOnlyList<T>
@@ -34,7 +35,8 @@ namespace FlatSharp
         private const int ChunkSize = 64;
 
         // A semi-sparse array. Each row contains ChunkSize items.
-        // This approach allows fast access while not over allocating.
+        // This approach allows fast access while not broadly over allocating.
+        // Using "mini arrays" also ensures good sequential access performance.
         private readonly T?[]?[] items;
 
         // array of bitmasks indicating presence. This is necessary for value types where we can't test for null.
@@ -65,24 +67,25 @@ namespace FlatSharp
         {
             get
             {
-                if ((uint)index >= this.Count)
+                uint uindex = (uint)index;
+                if (uindex >= this.Count)
                 {
                     throw new IndexOutOfRangeException();
                 }
 
-                int rowIndex = index / ChunkSize;
+                uint rowIndex = uindex / ChunkSize;
                 ref T?[]? row = ref this.items[rowIndex];
                 if (row is null)
                 {
                     row = new T[ChunkSize];
                 }
 
-                int colIndex = index % ChunkSize;
+                uint colIndex = uindex % ChunkSize;
                 ref T? item = ref row[colIndex];
 
                 if (typeof(T).IsValueType)
                 {
-                    ulong mask = 1ul << colIndex;
+                    ulong mask = 1ul << (int)colIndex;
                     ref ulong maskValue = ref this.presenceMask[rowIndex];
                     if ((maskValue & mask) == 0)
                     {
