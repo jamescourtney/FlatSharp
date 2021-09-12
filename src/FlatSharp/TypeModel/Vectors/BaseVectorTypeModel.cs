@@ -94,7 +94,8 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// Vectors don't intrinsically care about this, but the elements may.
         /// </summary>
-        public override TableFieldContextRequirements TableFieldContextRequirements => this.ItemTypeModel.TableFieldContextRequirements | TableFieldContextRequirements.Parse;
+        public override TableFieldContextRequirements TableFieldContextRequirements => 
+            this.ItemTypeModel.TableFieldContextRequirements | TableFieldContextRequirements.Parse;
 
         public override IEnumerable<ITypeModel> Children => new[] { this.ItemTypeModel };
 

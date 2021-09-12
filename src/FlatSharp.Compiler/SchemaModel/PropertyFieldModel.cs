@@ -50,7 +50,7 @@ namespace FlatSharp.Compiler.SchemaModel
                 SharedStringValidator = _ => this.ValidWhenParentIs<TableSchemaModel>(),
                 SetterKindValidator = _ => AttributeValidationResult.Valid,
                 ForceWriteValidator = _ => this.ValidWhenParentIs<TableSchemaModel>(),
-                WriteThroughValidator = _ => this.ValidWhenParentIs<ReferenceStructSchemaModel>(),
+                WriteThroughValidator = _ => AttributeValidationResult.Valid,
                 VectorPreallocateValidator = _ => this.ValidWhenParentIs<TableSchemaModel>(),
             }.Validate(this.Attributes);
 

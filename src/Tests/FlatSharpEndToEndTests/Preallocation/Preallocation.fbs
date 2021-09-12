@@ -1,14 +1,23 @@
 ﻿
 attribute "fs_serializer";
+attribute "fs_valueStruct";
 attribute "fs_sharedString";
 attribute "fs_rpcInterface";
 attribute "fs_preallocate";
+attribute "fs_writeThrough";
 
 namespace FlatSharpEndToEndTests.Preallocation;
 
-table Table (fs_serializer:"Progressive")
+table Table (fs_serializer:"Lazy")
 {
-    VectorOfString_Always : [ string ] (fs_preallocate:"Always");
-    VectorOfString_1K : [ string ] (fs_preallocate:"1024");
+    VectorOfString_Always : [ string ] (fs_preallocate:"Never");
+    VectorOfString_1K : [ string ] (fs_preallocate:"Never");
     VectorOfString_Never : [ string ] (fs_preallocate:"Never");
+
+    VectorOfStruct : [ Foobar ] (fs_writeThrough);
+}
+
+struct Foobar (fs_valueStruct)
+{
+    Foo : int;
 }

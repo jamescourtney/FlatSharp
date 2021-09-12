@@ -80,7 +80,7 @@ namespace FlatSharp.TypeModel
             else
             {
                 (vectorClassDef, vectorClassName) = FlatBufferVectorHelpers.CreateFlatBufferVectorSubclass(
-                    this.ItemTypeModel.ClrType,
+                    this.ItemTypeModel,
                     context);
 
                 FlatSharpInternal.Assert(!string.IsNullOrEmpty(context.TableFieldContextVariableName), "expecting table field context");

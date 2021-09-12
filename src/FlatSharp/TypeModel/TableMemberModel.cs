@@ -51,7 +51,25 @@
 
             if (this.IsWriteThrough)
             {
-                throw new InvalidFlatBufferDefinitionException($"Table property '{this.FriendlyName}' declared the WriteThrough attribute. WriteThrough is only supported on struct fields.");
+                if (this.ItemTypeModel.SchemaType == FlatBufferSchemaType.Struct)
+                {
+                    if (!this.IsRequired)
+                    {
+                        throw new InvalidFlatBufferDefinitionException($"Table property '{this.FriendlyName}' declared the WriteThrough attribute, but the field is not marked as required. WriteThrough fields must also be required.");
+                    }
+                }
+                else if (this.ItemTypeModel.SchemaType == FlatBufferSchemaType.Vector)
+                {
+                    FlatSharpInternal.Assert(this.ItemTypeModel.TryGetUnderlyingVectorType(out ITypeModel? underlyingModel), "failed to get underlying vector type");
+                    if (underlyingModel.SchemaType != FlatBufferSchemaType.Struct)
+                    {
+                        throw new InvalidFlatBufferDefinitionException($"Table property '{this.FriendlyName}' declared the WriteThrough on a vector. Vector WriteThrough is only valid for structs.");
+                    }
+                }
+                else
+                {
+                    throw new InvalidFlatBufferDefinitionException($"Table property '{this.FriendlyName}' declared the WriteThrough attribute. WriteThrough is not supported on '{this.ItemTypeModel.SchemaType}' table fields.");
+                }
             }
 
             if (this.IsRequired)
@@ -232,9 +250,19 @@
             }
         }
 
-        public override string CreateWriteThroughBody(string writeValueMethodName, string bufferVariableName, string offsetVariableName, string valueVariableName)
+        public override string CreateWriteThroughBody(
+            string writeValueMethodName,
+            string bufferVariableName,
+            string offsetVariableName,
+            string valueVariableName)
         {
-            throw new NotImplementedException();
+            if (this.ItemTypeModel.SchemaType == FlatBufferSchemaType.Vector)
+            {
+                return "throw new NotMutableException()";
+            }
+
+            //return $"{writeValueMethodName}(default(SpanWriter), {bufferVariableName}, {valueVariableName}, {offsetVariableName});";
+            return "";
         }
     }
 }

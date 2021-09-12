@@ -27,11 +27,11 @@ namespace FlatSharp
     [EditorBrowsable(EditorBrowsableState.Never)]
     public class FlatBufferProgressiveVector<T> : IList<T>, IReadOnlyList<T>
     {
-        private readonly IReadOnlyList<T> innerVector;
+        private readonly IList<T> innerVector;
         private readonly Dictionary<int, T> sparseArray;
 
         public FlatBufferProgressiveVector(
-            IReadOnlyList<T> innerVector)
+            IList<T> innerVector)
         {
             this.innerVector = innerVector;
             this.sparseArray = new Dictionary<int, T>();
@@ -54,7 +54,8 @@ namespace FlatSharp
             }
             set
             {
-                throw new NotMutableException("FlatBufferVector does not allow mutating items.");
+                this.innerVector[index] = value;
+                this.sparseArray[index] = value;
             }
         }
 

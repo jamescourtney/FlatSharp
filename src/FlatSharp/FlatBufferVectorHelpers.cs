@@ -21,9 +21,11 @@ namespace FlatSharp.TypeModel
     internal static class FlatBufferVectorHelpers
     {
         public static (string classDef, string className) CreateFlatBufferVectorSubclass(
-            Type itemType,
+            ITypeModel itemTypeModel,
             ParserCodeGenContext context)
         {
+            Type itemType = itemTypeModel.ClrType;
+
             string className = $"FlatBufferVector_{Guid.NewGuid():n}";
 
             context = context with
@@ -33,6 +35,25 @@ namespace FlatSharp.TypeModel
                 IsOffsetByRef = false,
                 TableFieldContextVariableName = "fieldContext",
             };
+
+            var serializeContext = new SerializationCodeGenContext(
+                "null",
+                "span",
+                "default(SpanWriter)",
+                "item",
+                "0",
+                "this.fieldContext",
+                false,
+                context.SerializeMethodNameMap,
+                context.TypeModelContainer,
+                context.Options,
+                context.AllFieldContexts);
+
+            string writeThroughImpl = serializeContext.GetSerializeInvocation(itemType);
+            if (itemTypeModel.SerializeMethodRequiresContext)
+            {
+                writeThroughImpl = "throw new NotImplementedException()";
+            }
 
             string classDef = $@"
                 public sealed class {className}<{context.InputBufferTypeName}> : FlatBufferVector<{itemType.GetGlobalCompilableTypeName()}, {context.InputBufferTypeName}>
@@ -60,6 +81,13 @@ namespace FlatSharp.TypeModel
                         out {itemType.GetGlobalCompilableTypeName()} item)
                     {{
                         item = {context.GetParseInvocation(itemType)};
+                    }}
+
+                    protected override void WriteThrough(
+                        {itemType.GetGlobalCompilableTypeName()} {serializeContext.ValueVariableName},
+                        Span<byte> {serializeContext.SpanVariableName})
+                    {{
+                        {writeThroughImpl};
                     }}
                 }}
             ";
