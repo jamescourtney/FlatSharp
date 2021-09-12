@@ -63,10 +63,9 @@
                         throw new InvalidFlatBufferDefinitionException($"Table member '{this.FriendlyName}' declared the WriteThrough attribute, but WriteThrough is only supported on virtual fields.");
                     }
 
-                    if (this.ItemTypeModel.SerializeMethodRequiresContext)
-                    {
-                        throw new InvalidFlatBufferDefinitionException($"The type model for table member '{this.FriendlyName}' requires a serialization context for write through, but there is not one available.");
-                    }
+                    FlatSharpInternal.Assert(
+                        !this.ItemTypeModel.SerializeMethodRequiresContext,
+                        "write through struct expected serialization context");
                 }
                 else if (this.ItemTypeModel.SchemaType == FlatBufferSchemaType.Vector)
                 {
@@ -76,10 +75,9 @@
                         throw new InvalidFlatBufferDefinitionException($"Table property '{this.FriendlyName}' declared the WriteThrough on a vector. Vector WriteThrough is only valid for structs.");
                     }
 
-                    if (underlyingModel.SerializeMethodRequiresContext)
-                    {
-                        throw new InvalidFlatBufferDefinitionException($"The type model for '{this.FriendlyName}' requires a serialization context for write through, but there is not one available.");
-                    }
+                    FlatSharpInternal.Assert(
+                        !underlyingModel.SerializeMethodRequiresContext,
+                        "write through struct vector member expects serialization context");
 
                     // Reset writethrough to false. The attribute indicates that the members of the vector
                     // are write-through-able, but the actual vector is not.

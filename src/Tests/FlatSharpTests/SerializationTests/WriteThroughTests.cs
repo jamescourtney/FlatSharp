@@ -65,25 +65,62 @@ namespace FlatSharpTests
             }
 
             [Theory]
-            [InlineData(typeof(IList<ValueStruct>), true, false)]
-            [InlineData(typeof(IList<OtherStruct>), true, false)]
-            [InlineData(typeof(IList<ValueStruct>), false, false)]
-            [InlineData(typeof(IList<OtherStruct>), false, false)]
-            [InlineData(typeof(ValueStruct), true, true)]
-            [InlineData(typeof(OtherStruct), true, true)]
-            public void WriteThrough_Table_ValidCases(Type innerType, bool required, bool expectWriteThrough)
+            [InlineData(typeof(WriteThroughTable_NotRequired<IList<int>>))]
+            [InlineData(typeof(WriteThroughTable_NotRequired<IList<string>>))]
+            [InlineData(typeof(WriteThroughTable_NotRequired<IList<FlatBufferUnion<string>>>))]
+            [InlineData(typeof(WriteThroughTable_NotRequired<IList<Table<int>>>))]
+            public void WriteThrough_Table_VectorOfDisallowed(Type type)
             {
-                Type actualType;
-                if (required)
-                {
-                    actualType = typeof(WriteThroughTable_Required<>).MakeGenericType(innerType);
-                }
-                else
-                {
-                    actualType = typeof(WriteThroughTable_NotRequired<>).MakeGenericType(innerType);
-                }
+                var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(
+                    () => RuntimeTypeModel.CreateFrom(type));
 
-                var typeModel = RuntimeTypeModel.CreateFrom(actualType);
+                Assert.Equal(
+                    $"Table property '{type.GetCompilableTypeName()}.Item' declared the WriteThrough on a vector. Vector WriteThrough is only valid for structs.",
+                    ex.Message);
+            }
+
+
+            [Theory]
+            [InlineData(typeof(WriteThroughTable_Required<string>), FlatBufferSchemaType.String)]
+            [InlineData(typeof(WriteThroughTable_Required<Table<int>>), FlatBufferSchemaType.Table)]
+            [InlineData(typeof(WriteThroughTable_Required<FlatBufferUnion<string>?>), FlatBufferSchemaType.Union)]
+            public void WriteThrough_Table_DisallowedTypes(Type type, FlatBufferSchemaType schema)
+            {
+                var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(
+                    () => RuntimeTypeModel.CreateFrom(type));
+
+                Assert.Equal(
+                    $"Table property '{type.GetCompilableTypeName()}.Item' declared the WriteThrough attribute. WriteThrough is not supported on '{schema}' table fields.",
+                    ex.Message);
+            }
+
+            [Theory]
+            [InlineData(typeof(ValueStruct))]
+            [InlineData(typeof(ValueStruct?))]
+            [InlineData(typeof(OtherStruct))]
+            public void WriteThrough_Table_NonVirtualStructField(Type type)
+            {
+                type = typeof(WriteThroughTable_Required_NonVirtual<>).MakeGenericType(type);
+
+                var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
+                    RuntimeTypeModel.CreateFrom(type));
+
+                Assert.Equal(
+                    $"Table member '{type.GetCompilableTypeName()}.Item' declared the WriteThrough attribute, but WriteThrough is only supported on virtual fields.",
+                    ex.Message);
+            }
+
+            [Theory]
+            [InlineData(typeof(WriteThroughTable_Required<IList<ValueStruct>>), false)]
+            [InlineData(typeof(WriteThroughTable_Required<IList<OtherStruct>>), false)]
+            [InlineData(typeof(WriteThroughTable_NotRequired<IList<ValueStruct>>), false)]
+            [InlineData(typeof(WriteThroughTable_NotRequired<IList<OtherStruct>>), false)]
+            [InlineData(typeof(WriteThroughTable_Required<ValueStruct>), true)]
+            [InlineData(typeof(WriteThroughTable_Required<OtherStruct>), true)]
+            [InlineData(typeof(WriteThroughTable_Required_NonVirtual<IList<ValueStruct>>), false)]
+            public void WriteThrough_Table_ValidCases(Type innerType, bool expectWriteThrough)
+            {
+                var typeModel = RuntimeTypeModel.CreateFrom(innerType);
 
                 Assert.Equal(
                     expectWriteThrough,
@@ -278,6 +315,13 @@ namespace FlatSharpTests
         {
             [FlatBufferItem(0, WriteThrough = true, Required = true)]
             public virtual T? Item { get; set; }
+        }
+
+        [FlatBufferTable]
+        public class WriteThroughTable_Required_NonVirtual<T>
+        {
+            [FlatBufferItem(0, WriteThrough = true, Required = true)]
+            public T? Item { get; set; }
         }
 
         [FlatBufferTable]
