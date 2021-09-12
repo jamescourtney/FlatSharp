@@ -125,5 +125,21 @@ namespace FlatSharp
 
             return sb.ToString();
         }
+
+        public SerializationCodeGenContext GetWriteThroughContext(string spanVariableName, string valueVariableName, string offsetVariableName)
+        {
+            return new SerializationCodeGenContext(
+                "null",
+                spanVariableName,
+                "default(SpanWriter)",
+                valueVariableName,
+                offsetVariableName,
+                this.TableFieldContextVariableName,
+                this.IsOffsetByRef,
+                this.SerializeMethodNameMap,
+                this.TypeModelContainer,
+                this.Options,
+                this.AllFieldContexts);
+        }
     }
 }

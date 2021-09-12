@@ -180,7 +180,7 @@ namespace FlatSharp
                     private static void {GetWriteMethodName(itemModel)}(
                         TInputBuffer buffer,
                         int offset,
-                        {itemModel.ItemTypeModel.GetGlobalCompilableTypeName()} value)
+                        {itemModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType)} value)
                     {{
                         {itemModel.CreateWriteThroughBody(writeValueMethodName, "buffer", "offset", "value")}
                     }}");

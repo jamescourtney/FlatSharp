@@ -27,6 +27,31 @@ namespace FlatSharpEndToEndTests.ValueStructs
     public class ValueStructTestCases
     {
         [Fact]
+        public void WriteThrough_ValueStruct_InVector()
+        {
+            WriteThroughTable t = new WriteThroughTable
+            {
+                Points = new Vec3[]
+                {
+                    new() { X = 1, Y = 2, Z = 3 },
+                    new() { X = 4, Y = 5, Z = 6 },
+                }
+            };
+
+            byte[] data = new byte[1024];
+            WriteThroughTable.Serializer.Write(data, t);
+
+            var parsed = WriteThroughTable.Serializer.Parse(data);
+            var parsed2 = WriteThroughTable.Serializer.Parse(data);
+
+            Assert.Equal(1f, parsed2.Points[0].X);
+
+            parsed.Points[0] = new Vec3 { X = -1, Y = -1, Z = -1 }; // triggers writethrough
+
+            Assert.Equal(-1f, parsed2.Points[0].X);
+        }
+
+        [Fact]
         public void Basics()
         {
             Assert.Equal(148, Unsafe.SizeOf<ValueStruct>());

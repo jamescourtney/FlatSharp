@@ -214,7 +214,7 @@ namespace FlatSharp.TypeModel
             List<(ITypeModel, TableFieldContext)> items = new();
             foreach (TableMemberModel member in this.memberTypes.Values)
             {
-                TableFieldContext ctx = new TableFieldContext(member.FriendlyName, member.IsSharedString, member.VectorPreallocationLimit, member.IsWriteThrough);
+                TableFieldContext ctx = new TableFieldContext(member.FriendlyName, member.IsSharedString, member.VectorPreallocationLimit, member.Attribute.WriteThrough);
                 items.Add((member.ItemTypeModel, ctx));
             }
 
@@ -777,7 +777,7 @@ $@"
                         ""{member.FriendlyName}"",
                         {member.IsSharedString.ToString().ToLowerInvariant()},
                         {(member.VectorPreallocationLimit is null ? "null" : member.VectorPreallocationLimit.ToString())},
-                        {member.IsWriteThrough.ToString().ToLowerInvariant()});";
+                        {member.Attribute.WriteThrough.ToString().ToLowerInvariant()});";
 
                 tableContextInitializations.Add(init);
             }

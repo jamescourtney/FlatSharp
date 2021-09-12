@@ -2,10 +2,23 @@
 attribute "fs_serializer";
 attribute "fs_unsafeStructVector";
 attribute "fs_valueStruct";
+attribute "fs_writeThrough";
 
 namespace FlatSharpEndToEndTests.ValueStructs;
 
 union TestUnion { RefStruct, ValueStruct, InnerValueStruct }
+
+table WriteThroughTable (fs_serializer:"Lazy")
+{
+    Points : [ Vec3 ] (fs_writeThrough);
+}
+
+struct Vec3 (fs_valueStruct)
+{
+    X : float;
+    Y : float;
+    Z : float;
+}
 
 table RootTable (fs_serializer:"GreedyMutable") {
     refStruct : RefStruct;

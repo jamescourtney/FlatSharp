@@ -48,6 +48,7 @@ namespace FlatSharp.TypeModel
             this.CustomAccessor = propertyInfo.GetFlatBufferMetadataOrNull(FlatBufferMetadataKind.Accessor);
             this.IsWriteThrough = attribute.WriteThrough;
             this.IsRequired = attribute.Required;
+            this.Attribute = attribute;
 
             if (setMethod is not null)
             {
@@ -160,6 +161,11 @@ namespace FlatSharp.TypeModel
         public PropertyInfo PropertyInfo { get; }
 
         /// <summary>
+        /// The actual attribute.
+        /// </summary>
+        public FlatBufferItemAttribute Attribute { get; }
+
+        /// <summary>
         /// The type model of the item.
         /// </summary>
         public ITypeModel ItemTypeModel { get; }
@@ -172,7 +178,7 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// Indicates if this member writes through to the underlying buffer.
         /// </summary>
-        public bool IsWriteThrough { get; }
+        public bool IsWriteThrough { get; protected init; }
 
         /// <summary>
         /// Indicates if this member is required.
