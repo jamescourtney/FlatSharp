@@ -21,11 +21,9 @@ namespace FlatSharp.TypeModel
     internal static class FlatBufferVectorHelpers
     {
         public static (string classDef, string className) CreateFlatBufferVectorSubclass(
-            ITypeModel itemTypeModel,
+            Type itemType,
             ParserCodeGenContext context)
         {
-            Type itemType = itemTypeModel.ClrType;
-
             string className = $"FlatBufferVector_{Guid.NewGuid():n}";
 
             context = context with
@@ -36,25 +34,6 @@ namespace FlatSharp.TypeModel
                 TableFieldContextVariableName = "fieldContext",
             };
 
-            var serializeContext = new SerializationCodeGenContext(
-                "null",
-                "span",
-                "default(SpanWriter)",
-                "item",
-                "0",
-                "this.fieldContext",
-                false,
-                context.SerializeMethodNameMap,
-                context.TypeModelContainer,
-                context.Options,
-                context.AllFieldContexts);
-
-            string writeThroughImpl = serializeContext.GetSerializeInvocation(itemType);
-            if (itemTypeModel.SerializeMethodRequiresContext)
-            {
-                writeThroughImpl = "throw new NotImplementedException()";
-            }
-
             string classDef = $@"
                 public sealed class {className}<{context.InputBufferTypeName}> : FlatBufferVector<{itemType.GetGlobalCompilableTypeName()}, {context.InputBufferTypeName}>
                     where {context.InputBufferTypeName} : {nameof(IInputBuffer)}
@@ -62,15 +41,8 @@ namespace FlatSharp.TypeModel
                     public {className}(
                         {context.InputBufferTypeName} memory,
                         int offset,
-                        int itemSize) : base(memory, offset, itemSize, default({nameof(TableFieldContext)}))
-                    {{
-                    }}
-
-                    public {className}(
-                        {context.InputBufferTypeName} memory,
-                        int offset,
                         int itemSize,
-                        {nameof(TableFieldContext)} fieldContext) : base(memory, offset, itemSize, fieldContext)
+                        in {nameof(TableFieldContext)} fieldContext) : base(memory, offset, itemSize, fieldContext)
                     {{
                     }}
 
@@ -81,13 +53,6 @@ namespace FlatSharp.TypeModel
                         out {itemType.GetGlobalCompilableTypeName()} item)
                     {{
                         item = {context.GetParseInvocation(itemType)};
-                    }}
-
-                    protected override void WriteThrough(
-                        {itemType.GetGlobalCompilableTypeName()} {serializeContext.ValueVariableName},
-                        Span<byte> {serializeContext.SpanVariableName})
-                    {{
-                        {writeThroughImpl};
                     }}
                 }}
             ";
@@ -117,15 +82,8 @@ namespace FlatSharp.TypeModel
                     public {className}(
                         {context.InputBufferTypeName} memory,
                         int discriminatorOffset,
-                        int offsetVectorOffset) : base(memory, discriminatorOffset, offsetVectorOffset, default({nameof(TableFieldContext)}))
-                    {{
-                    }}
-
-                    public {className}(
-                        {context.InputBufferTypeName} memory,
-                        int discriminatorOffset,
                         int offsetVectorOffset,
-                        {nameof(TableFieldContext)} fieldContext) : base(memory, discriminatorOffset, offsetVectorOffset, fieldContext)
+                        in {nameof(TableFieldContext)} fieldContext) : base(memory, discriminatorOffset, offsetVectorOffset, fieldContext)
                     {{
                     }}
 
