@@ -26,15 +26,15 @@ namespace Benchmark.FBBench
         public override int TraversalCount { get; set; }
 
         [Params(
-            //FlatBufferDeserializationOption.Lazy,
+            FlatBufferDeserializationOption.Lazy,
 #if !FLATSHARP_6_0_0_OR_GREATER
             FlatBufferDeserializationOption.PropertyCache,
             FlatBufferDeserializationOption.VectorCache,
-            FlatBufferDeserializationOption.VectorCacheMutable
+            FlatBufferDeserializationOption.VectorCacheMutable,
 #else
-            FlatBufferDeserializationOption.Progressive
+            FlatBufferDeserializationOption.Progressive,
 #endif
-            //FlatBufferDeserializationOption.Greedy,
+            FlatBufferDeserializationOption.Greedy
             //FlatBufferDeserializationOption.GreedyMutable
         )]
         public override FlatBufferDeserializationOption DeserializeOption { get; set; }

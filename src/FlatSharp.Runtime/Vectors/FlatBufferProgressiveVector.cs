@@ -28,19 +28,34 @@ namespace FlatSharp
     public class FlatBufferProgressiveVector<T> : IList<T>, IReadOnlyList<T>
         where T : notnull
     {
-        // Must be a power of 2.
+        private static readonly ulong[] Empty = new ulong[0];
+
+        // The chunk size here matches the number of bits in the presenceMask array below.
         private const int ChunkSize = 64;
 
         // A semi-sparse array. Each row contains ChunkSize items.
         // This approach allows fast access while not over allocating.
         private readonly T?[]?[] items;
+
+        // array of bitmasks indicating presence. This is necessary for value types where we can't test for null.
+        private readonly ulong[] presenceMask; 
         private readonly IReadOnlyList<T> innerVector;
 
         public FlatBufferProgressiveVector(
             IReadOnlyList<T> innerVector)
         {
+            this.Count = innerVector.Count;
             this.innerVector = innerVector;
-            this.items = new T[innerVector.Count / ChunkSize][];
+            this.items = new T[(innerVector.Count / ChunkSize) + 1][];
+
+            if (typeof(T).IsValueType)
+            {
+                presenceMask = new ulong[this.items.Length];
+            }
+            else
+            {
+                presenceMask = Empty;
+            }
         }
 
         /// <summary>
@@ -50,19 +65,40 @@ namespace FlatSharp
         {
             get
             {
-                ref T?[]? row = ref this.items[index / ChunkSize];
+                if ((uint)index >= this.Count)
+                {
+                    throw new IndexOutOfRangeException();
+                }
+
+                int rowIndex = index / ChunkSize;
+                ref T?[]? row = ref this.items[rowIndex];
                 if (row is null)
                 {
                     row = new T[ChunkSize];
                 }
 
-                ref T? item = ref row[index & (ChunkSize - 1)];
-                if (item is null)
+                int colIndex = index % ChunkSize;
+                ref T? item = ref row[colIndex];
+
+                if (typeof(T).IsValueType)
                 {
-                    item = this.innerVector[index];
+                    ulong mask = 1ul << colIndex;
+                    ref ulong maskValue = ref this.presenceMask[rowIndex];
+                    if ((maskValue & mask) == 0)
+                    {
+                        item = this.innerVector[index];
+                        maskValue |= mask;
+                    }
+                }
+                else
+                {
+                    if (item is null)
+                    {
+                        item = this.innerVector[index];
+                    }
                 }
 
-                return item;
+                return item!;
             }
             set
             {
@@ -70,7 +106,7 @@ namespace FlatSharp
             }
         }
 
-        public int Count => this.innerVector.Count;
+        public int Count { get; }
 
         public bool IsReadOnly => true;
 

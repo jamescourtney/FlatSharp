@@ -32,7 +32,7 @@ namespace FlatSharpTests
     public class FlatBufferVectorTests
     {
         private static readonly IReadOnlyList<string> ExpectedStringContents = new List<string> { "one", "two", "three", "four", "five" };
-        private static readonly IReadOnlyList<int> ExpectedIntContents = new List<int> { 1, 2, 3, 4, 5 };
+        private static readonly IReadOnlyList<int> ExpectedIntContents = Enumerable.Range(1, 2000).ToList();
 
         private TableVector<string> stringVector;
         private TableVector<string> progressiveStringVector;
@@ -49,7 +49,7 @@ namespace FlatSharpTests
 
             var originalIntVector = new TableVector<int> { Vector = ExpectedIntContents.ToList() };
 
-            Span<byte> buffer = new byte[1024];
+            Span<byte> buffer = new byte[1024 * 1024];
 
             var serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions(FlatBufferDeserializationOption.Lazy));
             var progressiveSerializer = new FlatBufferSerializer(new FlatBufferSerializerOptions(FlatBufferDeserializationOption.Progressive));
@@ -109,6 +109,20 @@ namespace FlatSharpTests
                 Assert.Equal(item, ExpectedStringContents[i]);
                 i++;
             }
+
+            i = 0;
+            foreach (var item in this.intVector.Vector)
+            {
+                Assert.Equal(item, ExpectedIntContents[i]);
+                i++;
+            }
+
+            i = 0;
+            foreach (var item in this.progressiveIntVector.Vector)
+            {
+                Assert.Equal(item, ExpectedIntContents[i]);
+                i++;
+            }
         }
 
         [Fact]
@@ -122,11 +136,14 @@ namespace FlatSharpTests
             Assert.False(this.progressiveStringVector.Vector.Contains("foobar"));
             Assert.False(this.progressiveStringVector.Vector.Contains(null));
 
-            Assert.True(this.intVector.Vector.Contains(1));
-            Assert.False(this.intVector.Vector.Contains(18));
+            Assert.False(this.intVector.Vector.Contains(-1));
+            Assert.False(this.progressiveIntVector.Vector.Contains(-1));
 
-            Assert.True(this.progressiveIntVector.Vector.Contains(1));
-            Assert.False(this.progressiveIntVector.Vector.Contains(18));
+            foreach (var i in ExpectedIntContents)
+            {
+                Assert.True(this.intVector.Vector.Contains(i));
+                Assert.True(this.progressiveIntVector.Vector.Contains(i));
+            }
         }
 
         [Fact]
