@@ -27,16 +27,17 @@ namespace Benchmark.FBBench
 
         [Params(
             FlatBufferDeserializationOption.Lazy,
-#if !FLATSHARP_6_0_0_OR_GREATER
+#if FLATSHARP_6_0_0_OR_GREATER
+            FlatBufferDeserializationOption.Progressive,
+#else
             FlatBufferDeserializationOption.PropertyCache,
             FlatBufferDeserializationOption.VectorCache,
             FlatBufferDeserializationOption.VectorCacheMutable,
-#else
-            FlatBufferDeserializationOption.Progressive,
 #endif
-            FlatBufferDeserializationOption.Greedy
-            //FlatBufferDeserializationOption.GreedyMutable
+            FlatBufferDeserializationOption.Greedy,
+            FlatBufferDeserializationOption.GreedyMutable
         )]
+
         public override FlatBufferDeserializationOption DeserializeOption { get; set; }
 
         [Benchmark]
@@ -45,17 +46,17 @@ namespace Benchmark.FBBench
         [Benchmark]
         public override void FlatSharp_ParseAndTraversePartial() => base.FlatSharp_ParseAndTraversePartial();
 
-        //[Benchmark]
+        [Benchmark]
         public override void FlatSharp_ParseAndTraverse_NonVirtual() => base.FlatSharp_ParseAndTraverse_NonVirtual();
 
-        //[Benchmark]
+        [Benchmark]
         public override void FlatSharp_ParseAndTraversePartial_NonVirtual() => base.FlatSharp_ParseAndTraversePartial_NonVirtual();
 
 #if FLATSHARP_5_7_1_OR_GREATER
-        //[Benchmark]
+        [Benchmark]
         public override void FlatSharp_ParseAndTraverse_ValueStructs() => base.FlatSharp_ParseAndTraverse_ValueStructs();
 
-        //[Benchmark]
+        [Benchmark]
         public override void FlatSharp_ParseAndTraversePartial_ValueStructs() => base.FlatSharp_ParseAndTraversePartial_ValueStructs();
 #endif
     }
