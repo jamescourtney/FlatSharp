@@ -184,6 +184,8 @@ namespace FlatSharpTests
             Assert.Throws<NotMutableException>(() => table.Struct = null);
             Assert.Throws<NotMutableException>(() => table.StructVector = new List<SimpleStruct>());
             Assert.Throws<NotMutableException>(() => table.StructVector.Add(null));
+
+            Assert.IsAssignableFrom<FlatBufferVector<SimpleStruct, ArrayInputBuffer>>(table.StructVector);
         }
 
         [Fact]
@@ -196,7 +198,7 @@ namespace FlatSharpTests
             Assert.Throws<NotMutableException>(() => table.Struct.Long = 0);
             Assert.Throws<NotMutableException>(() => table.Struct = new());
 
-            Assert.Equal(typeof(ReadOnlyCollection<SimpleStruct>), table.StructVector.GetType());
+            Assert.Equal(typeof(FlatBufferProgressiveVector<SimpleStruct>), table.StructVector.GetType());
         }
 
         [Fact]

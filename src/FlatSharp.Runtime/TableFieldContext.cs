@@ -25,11 +25,10 @@ namespace FlatSharp
     [EditorBrowsable(EditorBrowsableState.Never)]
     public struct TableFieldContext
     {
-        public TableFieldContext(string fullName, bool sharedString, long? preallocationThreshold, bool writeThrough)
+        public TableFieldContext(string fullName, bool sharedString, bool writeThrough)
         {
             this.FullName = fullName;
             this.SharedString = sharedString;
-            this.VectorPreallocationLimit = preallocationThreshold;
             this.WriteThrough = writeThrough;
         }
 
@@ -42,11 +41,6 @@ namespace FlatSharp
         /// Indicates if this context enables shared strings.
         /// </summary>
         public readonly bool SharedString;
-
-        /// <summary>
-        /// Indicates the threshold under which vectors will be preallocated. Only valid in Progressive deserialization mode.
-        /// </summary>
-        public readonly long? VectorPreallocationLimit;
 
         /// <summary>
         /// Indicates if this field is flagged as writethrough-enabled.

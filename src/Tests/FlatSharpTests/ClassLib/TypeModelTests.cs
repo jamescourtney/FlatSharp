@@ -302,17 +302,6 @@ namespace FlatSharpTests
         }
 
         [Fact]
-        public void TypeModel_Table_PreAllocatedVector_OnNonVector_NotAllowed()
-        {
-            var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(
-                () => RuntimeTypeModel.CreateFrom(typeof(Table_PreallocatedVector_OnNonVector_NotAllowed)));
-
-            Assert.Contains(
-                "Table property 'FlatSharpTests.TypeModelTests.Table_PreallocatedVector_OnNonVector_NotAllowed.Foo' declared the VectorPreallocationLimit attribute. This is only supported on vectors.",
-                ex.Message);
-        }
-
-        [Fact]
         public void TypeModel_Struct_NonVirtual_NoSetter()
         {
             var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
@@ -572,17 +561,6 @@ namespace FlatSharpTests
 
             Assert.Equal(
                 "Struct member 'FlatSharpTests.TypeModelTests.StructRequiredField<FlatSharpTests.TypeModelTests.GenericStruct<System.Int64>>.Value' declared the Required attribute. Required is not valid inside structs.",
-                ex.Message);
-        }
-
-        [Fact]
-        public void TypeModel_Struct_PreAllocatedVector_NotAllowed()
-        {
-            var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(
-                () => RuntimeTypeModel.CreateFrom(typeof(Struct_PreallocatedVector_NotAllowed)));
-
-            Assert.Contains(
-                "Struct member 'FlatSharpTests.TypeModelTests.Struct_PreallocatedVector_NotAllowed.Foo' declared the VectorPreallocationLimit attribute. This attribute is not valid inside structs.",
                 ex.Message);
         }
 
@@ -1631,20 +1609,6 @@ namespace FlatSharpTests
         {
             [FlatBufferItem(0, Required = true)]
             public T Value { get; set; }
-        }
-
-        [FlatBufferTable]
-        public class Table_PreallocatedVector_OnNonVector_NotAllowed
-        {
-            [FlatBufferItem(0, VectorPreallocationLimit = 1024)]
-            public string Foo { get; set; }
-        }
-
-        [FlatBufferStruct]
-        public class Struct_PreallocatedVector_NotAllowed
-        {
-            [FlatBufferItem(0, VectorPreallocationLimit = 1024)]
-            public int Foo { get; set; }
         }
     }
 }
