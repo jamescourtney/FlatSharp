@@ -43,11 +43,8 @@ namespace Samples.SharedStrings
             ISerializer<Matrix> defaultSerializer = Matrix.Serializer;
 
             // We can create a new serializer based on the current one with shared strings turned on.
-            // These factory delegates configure the Shared String reader / writer. For SharedStringReaders,
-            // it's very important to think about thread safety, since deserialized objects sometimes maintain a reference
-            // to the input buffer object, which can result in race conditions if the deserialized object
-            // is shared between threads. The recommendation is to disable string sharing on parse or to use
-            // a thread safe shared string reader.
+            // These factory delegates configure the writer. FlatSharp deprecated reading shared strings 
+            // in version 6.
             ISerializer<Matrix> sharedStringSerializer = Matrix.Serializer.WithSettings(
                 new SerializerSettings
                 {
@@ -78,37 +75,6 @@ namespace Samples.SharedStrings
             // the custom provider will give smaller outputs while being considerably slower.
             Console.WriteLine($"Serialized size with shared strings: {sharedBytesWritten}");
             Console.WriteLine($"Serialized size with custom shared strings: {customBytesWritten}");
-
-            Matrix nonSharedMatrix = defaultSerializer.Parse(defaultBuffer);
-
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-            Debug.Assert(
-                nonSharedMatrix.Rows[0].Values[0].ColumnName == nonSharedMatrix.Rows[1].Values[0].ColumnName,
-                "Without string sharing, the contents of the strings in the same column in different rows are the same.");
-            Debug.Assert(
-                !object.ReferenceEquals(nonSharedMatrix.Rows[0].Values[0].ColumnName, nonSharedMatrix.Rows[1].Values[0].ColumnName),
-
-                "...but the object references are different, showing these are two different strings.");
-
-            Matrix sharedMatrix = sharedStringSerializer.Parse(sharedBuffer);
-
-            Debug.Assert(
-                sharedMatrix.Rows[0].Values[0].ColumnName == sharedMatrix.Rows[1].Values[0].ColumnName,
-                "With string sharing on, the values of the same column in different rows are still the same.");
-            Debug.Assert(
-                object.ReferenceEquals(sharedMatrix.Rows[0].Values[0].ColumnName, sharedMatrix.Rows[1].Values[0].ColumnName),
-                "...and the object references are also the same, showing that we have only parsed the string once.");
-
-            // same as the above.
-            Matrix customSharedMatrix = customSharedStringSerializer.Parse(customBuffer);
-
-            Debug.Assert(
-                customSharedMatrix.Rows[0].Values[0].ColumnName == customSharedMatrix.Rows[1].Values[0].ColumnName,
-                "With string sharing on, the values of the same column in different rows are still the same.");
-            Debug.Assert(
-                object.ReferenceEquals(customSharedMatrix.Rows[0].Values[0].ColumnName, customSharedMatrix.Rows[1].Values[0].ColumnName),
-                "...and the object references are also the same, showing that we have only parsed the string once.");
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
         }
 
         /// <summary>
