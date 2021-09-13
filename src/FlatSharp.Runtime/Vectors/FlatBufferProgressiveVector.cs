@@ -20,6 +20,8 @@ namespace FlatSharp
     using System.Collections;
     using System.Collections.Generic;
     using System.ComponentModel;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Runtime.CompilerServices;
 
     /// <summary>
     /// A vector implementation that is filled on demand. Optimized
@@ -41,10 +43,10 @@ namespace FlatSharp
 
         // array of bitmasks indicating presence. This is necessary for value types where we can't test for null.
         private readonly ulong[] presenceMask; 
-        private readonly IReadOnlyList<T> innerVector;
+        private readonly IList<T> innerVector;
 
         public FlatBufferProgressiveVector(
-            IReadOnlyList<T> innerVector)
+            IList<T> innerVector)
         {
             this.Count = innerVector.Count;
             this.innerVector = innerVector;
@@ -73,24 +75,18 @@ namespace FlatSharp
                     throw new IndexOutOfRangeException();
                 }
 
-                uint rowIndex = uindex / ChunkSize;
-                ref T?[]? row = ref this.items[rowIndex];
-                if (row is null)
-                {
-                    row = new T[ChunkSize];
-                }
+                var (row, col) = GetAddress(uindex);
 
-                uint colIndex = uindex % ChunkSize;
-                ref T? item = ref row[colIndex];
-
+                ref T? item = ref this.GetCellRef(row, col);
                 if (typeof(T).IsValueType)
                 {
-                    ulong mask = 1ul << (int)colIndex;
-                    ref ulong maskValue = ref this.presenceMask[rowIndex];
-                    if ((maskValue & mask) == 0)
+                    ref ulong maskRef = ref this.GetMaskRef(row);
+                    ulong mask = GetMask(col);
+
+                    if ((maskRef & mask) == 0)
                     {
                         item = this.innerVector[index];
-                        maskValue |= mask;
+                        maskRef |= mask;
                     }
                 }
                 else
@@ -103,16 +99,25 @@ namespace FlatSharp
 
                 return item!;
             }
+
             set
             {
-                throw new NotMutableException("FlatBufferVector does not allow mutating items.");
+                // Let inner vector do the validation.
+                this.innerVector[index] = value;
+
+                var (row, col) = GetAddress((uint)index);
+                this.GetCellRef(row, col) = value; // save.
+
+                if (typeof(T).IsValueType)
+                {
+                    this.GetMaskRef(row) |= GetMask(col);
+                }
             }
         }
 
         public int Count { get; }
 
         public bool IsReadOnly => true;
-
         public void Add(T item)
         {
             throw new NotMutableException("FlatBufferVector does not allow adding items.");
@@ -190,5 +195,36 @@ namespace FlatSharp
         {
             return this.GetEnumerator();
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static (uint row, uint col) GetAddress(uint index)
+        {
+            return (index / ChunkSize, index % ChunkSize);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private ref T? GetCellRef(uint rowAddr, uint colAddr)
+        {
+            ref T?[]? row = ref this.items[rowAddr];
+            if (row is null)
+            {
+                row = new T[ChunkSize];
+            }
+
+            return ref row[colAddr];
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private ref ulong GetMaskRef(uint rowAddr)
+        {
+            return ref this.presenceMask[rowAddr];
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private ulong GetMask(uint colAddr)
+        {
+            return 1ul << (int)colAddr;
+        }
+
     }
 }

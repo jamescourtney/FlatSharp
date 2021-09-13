@@ -94,7 +94,8 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// Vectors don't intrinsically care about this, but the elements may.
         /// </summary>
-        public override TableFieldContextRequirements TableFieldContextRequirements => this.ItemTypeModel.TableFieldContextRequirements | TableFieldContextRequirements.Parse;
+        public override TableFieldContextRequirements TableFieldContextRequirements => 
+            this.ItemTypeModel.TableFieldContextRequirements | TableFieldContextRequirements.Parse;
 
         public override IEnumerable<ITypeModel> Children => new[] { this.ItemTypeModel };
 
@@ -240,31 +241,31 @@ namespace FlatSharp.TypeModel
             return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({variableName});";
         }
 
-        internal static void ValidatePreallocationSettings(
-            ITypeModel sourceModel,
+        internal static void ValidateWriteThrough(
+            bool writeThroughSupported,
+            ITypeModel model,
             IReadOnlyDictionary<ITypeModel, List<TableFieldContext>> contexts,
             FlatBufferSerializerOptions options)
         {
-            if (options.GreedyDeserialize)
+            if (!contexts.TryGetValue(model, out var fieldsForModel))
             {
-                var invalidusage = contexts[sourceModel]
-                    .Where(x => x.VectorPreallocationLimit is not null && x.VectorPreallocationLimit.Value != long.MaxValue);
-
-                if (invalidusage.Any())
-                {
-                    var first = invalidusage.First();
-                    throw new InvalidFlatBufferDefinitionException($"Table field '{first.FullName}' declares vector preallocation limit of '{first.VectorPreallocationLimit}'. Greedy deserialization mode is incompatible with this setting. Set it to null or a long.MaxValue.");
-                }
+                return;
             }
-            else if (options.Lazy)
-            {
-                var invalidusage = contexts[sourceModel]
-                    .Where(x => x.VectorPreallocationLimit is not null && x.VectorPreallocationLimit.Value != 0);
 
-                if (invalidusage.Any())
+            var firstWriteThrough = fieldsForModel
+                .Select(x => (TableFieldContext?)x)
+                .FirstOrDefault(x => x!.Value.WriteThrough);
+
+            if (firstWriteThrough is not null)
+            {
+                if (options.GreedyDeserialize)
                 {
-                    var first = invalidusage.First();
-                    throw new InvalidFlatBufferDefinitionException($"Table field '{first.FullName}' declares vector preallocation limit of '{first.VectorPreallocationLimit}'. Lazy deserialization mode is incompatible with this setting. Set it to null or 0.");
+                    throw new InvalidFlatBufferDefinitionException($"Field '{firstWriteThrough.Value.FullName}' declares the WriteThrough option. WriteThrough is not supported when using Greedy deserialization.");
+                }
+
+                if (!writeThroughSupported)
+                {
+                    throw new InvalidFlatBufferDefinitionException($"Field '{firstWriteThrough.Value.FullName}' declares the WriteThrough option. WriteThrough is only supported for IList vectors.");
                 }
             }
         }

@@ -21,12 +21,13 @@ namespace FlatSharp.TypeModel
     internal static class FlatBufferVectorHelpers
     {
         public static (string classDef, string className) CreateFlatBufferVectorSubclass(
-            Type itemType,
-            ParserCodeGenContext context)
+            ITypeModel itemTypeModel,
+            ParserCodeGenContext parseContext)
         {
+            Type itemType = itemTypeModel.ClrType;
             string className = $"FlatBufferVector_{Guid.NewGuid():n}";
 
-            context = context with
+            parseContext = parseContext with
             {
                 InputBufferTypeName = "TInputBuffer",
                 InputBufferVariableName = "memory",
@@ -34,12 +35,19 @@ namespace FlatSharp.TypeModel
                 TableFieldContextVariableName = "fieldContext",
             };
 
+            var serializeContext = parseContext.GetWriteThroughContext("data", "item", "0");
+            string writeThroughBody = serializeContext.GetSerializeInvocation(itemType);
+            if (itemTypeModel.SerializeMethodRequiresContext)
+            {
+                writeThroughBody = "throw new NotSupportedException(\"write through is not available for this type\")";
+            }
+
             string classDef = $@"
-                public sealed class {className}<{context.InputBufferTypeName}> : FlatBufferVector<{itemType.GetGlobalCompilableTypeName()}, {context.InputBufferTypeName}>
-                    where {context.InputBufferTypeName} : {nameof(IInputBuffer)}
+                public sealed class {className}<{parseContext.InputBufferTypeName}> : FlatBufferVector<{itemType.GetGlobalCompilableTypeName()}, {parseContext.InputBufferTypeName}>
+                    where {parseContext.InputBufferTypeName} : {nameof(IInputBuffer)}
                 {{
                     public {className}(
-                        {context.InputBufferTypeName} memory,
+                        {parseContext.InputBufferTypeName} memory,
                         int offset,
                         int itemSize,
                         in {nameof(TableFieldContext)} fieldContext) : base(memory, offset, itemSize, fieldContext)
@@ -47,12 +55,17 @@ namespace FlatSharp.TypeModel
                     }}
 
                     protected override void ParseItem(
-                        {context.InputBufferTypeName} memory,
+                        {parseContext.InputBufferTypeName} memory,
                         int offset,
                         in {nameof(TableFieldContext)} fieldContext,
                         out {itemType.GetGlobalCompilableTypeName()} item)
                     {{
-                        item = {context.GetParseInvocation(itemType)};
+                        item = {parseContext.GetParseInvocation(itemType)};
+                    }}
+
+                    protected override void WriteThrough({itemType.GetGlobalCompilableTypeName()} {serializeContext.ValueVariableName}, Span<byte> {serializeContext.SpanVariableName})
+                    {{
+                        {writeThroughBody};
                     }}
                 }}
             ";

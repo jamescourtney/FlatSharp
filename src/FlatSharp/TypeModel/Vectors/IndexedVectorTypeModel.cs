@@ -88,14 +88,18 @@ namespace FlatSharp.TypeModel
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
-            ValidatePreallocationSettings(this, context.AllFieldContexts, context.Options);
+            ValidateWriteThrough(
+                writeThroughSupported: false,
+                this,
+                context.AllFieldContexts,
+                context.Options);
 
             string body;
             string keyTypeName = CSharpHelpers.GetGlobalCompilableTypeName(this.keyTypeModel.ClrType);
             string valueTypeName = CSharpHelpers.GetGlobalCompilableTypeName(this.valueTypeModel.ClrType);
 
             (string vectorClassDef, string vectorClassName) = FlatBufferVectorHelpers.CreateFlatBufferVectorSubclass(
-                this.valueTypeModel.ClrType,
+                this.valueTypeModel,
                 context);
 
             FlatSharpInternal.Assert(!string.IsNullOrEmpty(context.TableFieldContextVariableName), "field context was null/empty");

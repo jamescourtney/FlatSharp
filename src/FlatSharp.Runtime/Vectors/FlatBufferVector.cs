@@ -42,6 +42,24 @@ namespace FlatSharp
             this.offset = checked(this.offset + sizeof(uint));
         }
 
+        public override T this[int index]
+        { 
+            get => base[index];
+            set
+            {
+                if (this.fieldContext.WriteThrough)
+                {
+                    int offset = checked(this.offset + (itemSize * index));
+                    Span<byte> span = this.memory.GetByteMemory(offset, this.itemSize).Span;
+                    this.WriteThrough(value, span);
+                }
+                else
+                {
+                    base[index] = value;
+                }
+            }
+        }
+
         protected override void ParseItem(int index, out T item)
         {
             int offset = checked(this.offset + (itemSize * index));
@@ -49,5 +67,7 @@ namespace FlatSharp
         }
 
         protected abstract void ParseItem(TInputBuffer buffer, int offset, in TableFieldContext context, out T item);
+
+        protected abstract void WriteThrough(T item, Span<byte> data);
     }
 }

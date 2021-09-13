@@ -54,11 +54,6 @@
             {
                 throw new InvalidFlatBufferDefinitionException($"Struct member '{this.FriendlyName}' declared the SharedString attribute. SharedString is not valid inside structs.");
             }
-
-            if (attribute.HasVectorPreallocationLimit)
-            {
-                throw new InvalidFlatBufferDefinitionException($"Struct member '{this.FriendlyName}' declared the {nameof(FlatBufferItemAttribute.VectorPreallocationLimit)} attribute. This attribute is not valid inside structs.");
-            }
         }
 
         /// <summary>
@@ -85,17 +80,16 @@
         }
 
         public override string CreateWriteThroughBody(
-            string writeValueMethodName,
-            string bufferVariableName,
-            string offsetVariableName,
-            string valueVariableName)
+            SerializationCodeGenContext context,
+            string vtableLocationVariableName,
+            string vtableMaxIndexVariableName)
         {
-            return $@"
-                {writeValueMethodName}(
-                    default(SpanWriter), 
-                    {bufferVariableName}.{nameof(IInputBuffer.GetByteMemory)}(0, {bufferVariableName}.{nameof(IInputBuffer.Length)}).Span, 
-                    {valueVariableName}, 
-                    {offsetVariableName} + {this.Offset});";
+            context = context with
+            {
+                OffsetVariableName = $"{context.OffsetVariableName} + {this.Offset}"
+            };
+
+            return context.GetSerializeInvocation(this.ItemTypeModel.ClrType) + ";";
         }
     }
 }
