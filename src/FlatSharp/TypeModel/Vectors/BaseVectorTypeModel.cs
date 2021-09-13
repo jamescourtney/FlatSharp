@@ -247,9 +247,14 @@ namespace FlatSharp.TypeModel
             IReadOnlyDictionary<ITypeModel, List<TableFieldContext>> contexts,
             FlatBufferSerializerOptions options)
         {
-            var firstWriteThrough = contexts[model]
+            if (!contexts.TryGetValue(model, out var fieldsForModel))
+            {
+                return;
+            }
+
+            var firstWriteThrough = fieldsForModel
                 .Select(x => (TableFieldContext?)x)
-                .FirstOrDefault(x => x.Value!.WriteThrough);
+                .FirstOrDefault(x => x!.Value.WriteThrough);
 
             if (firstWriteThrough is not null)
             {
