@@ -72,6 +72,7 @@ namespace FlatSharp.Compiler.SchemaModel
             {
                 NonVirtualValidator = _ => AttributeValidationResult.Valid,
                 SetterKindValidator = k => k == SetterKind.Public ? AttributeValidationResult.Valid : AttributeValidationResult.ValueInvalid,
+                WriteThroughValidator = _ => AttributeValidationResult.Valid,
             }.Validate(this.Attributes);
         }
 
@@ -117,11 +118,14 @@ namespace FlatSharp.Compiler.SchemaModel
 
             string typeName = this.Field.Type.ResolveTypeOrElementTypeName(this.Parent.Schema, this.Attributes);
 
-            writer.AppendLine($"public {structName} {this.Field.Name} => new {structName}(this);");
+            writer.AppendLine($"private {structName}? __{this.Field.Name};");
+            writer.AppendLine();
+
+            writer.AppendLine($"public {structName} {this.Field.Name} => (__{this.Field.Name} ??= new {structName}(this));");
             writer.AppendLine();
 
             // class is next.
-            writer.AppendLine($"public partial struct {structName} : System.Collections.Generic.IEnumerable<{typeName}>");
+            writer.AppendLine($"public partial class {structName} : System.Collections.Generic.IEnumerable<{typeName}>");
             using (writer.WithBlock())
             {
                 writer.AppendLine($"private readonly {this.Parent.FullName} item;");
