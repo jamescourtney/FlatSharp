@@ -49,9 +49,11 @@
                 throw new InvalidFlatBufferDefinitionException($"Table property '{this.FriendlyName}' declared default value of type {propertyModel.ClrType.Name}, but the value was of type {this.DefaultValue.GetType().GetCompilableTypeName()}. Please ensure that the property is allowed to have a default value and that the types match.");
             }
 
+            static bool IsValueStruct(ITypeModel model) => model.SchemaType == FlatBufferSchemaType.Struct && model.ClrType.IsValueType;
+
             if (this.IsWriteThrough)
             {
-                if (this.ItemTypeModel.SchemaType == FlatBufferSchemaType.Struct)
+                if (IsValueStruct(this.ItemTypeModel))
                 {
                     if (!this.IsRequired)
                     {
@@ -70,9 +72,9 @@
                 else if (this.ItemTypeModel.SchemaType == FlatBufferSchemaType.Vector)
                 {
                     FlatSharpInternal.Assert(this.ItemTypeModel.TryGetUnderlyingVectorType(out ITypeModel? underlyingModel), "failed to get underlying vector type");
-                    if (underlyingModel.SchemaType != FlatBufferSchemaType.Struct)
+                    if (!IsValueStruct(underlyingModel))
                     {
-                        throw new InvalidFlatBufferDefinitionException($"Table property '{this.FriendlyName}' declared the WriteThrough on a vector. Vector WriteThrough is only valid for structs.");
+                        throw new InvalidFlatBufferDefinitionException($"Table property '{this.FriendlyName}' declared the WriteThrough on a vector. Vector WriteThrough is only valid for value type structs.");
                     }
 
                     FlatSharpInternal.Assert(
@@ -85,7 +87,7 @@
                 }
                 else
                 {
-                    throw new InvalidFlatBufferDefinitionException($"Table property '{this.FriendlyName}' declared the WriteThrough attribute. WriteThrough is not supported on '{this.ItemTypeModel.SchemaType}' table fields.");
+                    throw new InvalidFlatBufferDefinitionException($"Table property '{this.FriendlyName}' declared the WriteThrough attribute. WriteThrough on tables is only supported for value type structs.");
                 }
             }
 
@@ -96,11 +98,9 @@
                     throw new InvalidFlatBufferDefinitionException($"Table property '{this.FriendlyName}' declared the Required attribute. Required is only valid on non-scalar table fields.");
                 }
 
-                // Not currently possible, but defense in depth.
-                if (this.DefaultValue is not null)
-                {
-                    throw new InvalidFlatBufferDefinitionException($"Table property '{this.FriendlyName}' declared the Required attribute and also declared a Default Value. These two items are incompatible.");
-                }
+                FlatSharpInternal.Assert(
+                    this.DefaultValue is null,
+                    $"Table property '{this.FriendlyName}' declared the Required attribute and also declared a Default Value. These two items are incompatible.");
             }
 
             if (this.IsSharedString)
@@ -184,6 +184,22 @@
             }
         }
 
+        public override string CreateWriteThroughBody(
+            SerializationCodeGenContext context,
+            string vtableLocationVariableName,
+            string vtableMaxIndexVariableName)
+        {
+            FlatSharpInternal.Assert(this.ItemTypeModel.PhysicalLayout.Length == 1, "Writethrough not expected for wide vtable items");
+            var adjustedContext = context with
+            {
+                OffsetVariableName = "absoluteLocation",
+            };
+
+            return $@"
+                {GetFindFieldLocationBlock(adjustedContext.OffsetVariableName, context.OffsetVariableName, vtableMaxIndexVariableName, vtableLocationVariableName)}
+                {adjustedContext.GetSerializeInvocation(this.PropertyInfo.PropertyType)};";
+        }
+
         private string CreateSingleWidthReadItemBody(
             ParserCodeGenContext context,
             string vtableLocationVariableName,
@@ -195,19 +211,7 @@
             };
 
             return $@"
-                if ({this.Index} > {vtableMaxIndexVariableName})
-                {{
-                    {this.GetNotPresentStatement()}
-                }}
-
-                ushort relativeOffset = buffer.ReadUShort({vtableLocationVariableName} + {4 + (2 * this.Index)});
-                if (relativeOffset == 0)
-                {{
-                    {this.GetNotPresentStatement()}
-                }}
-
-                int absoluteLocation = {context.OffsetVariableName} + relativeOffset;
-                
+                {GetFindFieldLocationBlock(adjustedContext.OffsetVariableName, context.OffsetVariableName, vtableMaxIndexVariableName, vtableLocationVariableName)}
                 return {adjustedContext.GetParseInvocation(this.PropertyInfo.PropertyType)};";
         }
 
@@ -267,19 +271,29 @@
             }
         }
 
-        public override string CreateWriteThroughBody(
-            string writeValueMethodName,
-            string bufferVariableName,
+        private string GetFindFieldLocationBlock(
+            string locationVariableName,
             string offsetVariableName,
-            string valueVariableName)
+            string vtableMaxIndexVariableName,
+            string vtableLocationVariableName)
         {
-            if (this.ItemTypeModel.SchemaType == FlatBufferSchemaType.Vector)
-            {
-                return "throw new NotMutableException();";
-            }
+            return $@"
+                int {locationVariableName};
+                {{
+                    if ({this.Index} > {vtableMaxIndexVariableName})
+                    {{
+                        {this.GetNotPresentStatement()}
+                    }}
 
-            //return $"{writeValueMethodName}(default(SpanWriter), {bufferVariableName}, {valueVariableName}, {offsetVariableName});";
-            return "";
+                    ushort relativeOffset = buffer.ReadUShort({vtableLocationVariableName} + {4 + (2 * this.Index)});
+                    if (relativeOffset == 0)
+                    {{
+                        {this.GetNotPresentStatement()}
+                    }}
+
+                    {locationVariableName} = {offsetVariableName} + relativeOffset;
+                }}
+            ";
         }
     }
 }

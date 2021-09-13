@@ -21,6 +21,7 @@ namespace FlatSharp
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
+    using System.Runtime.ExceptionServices;
     using System.Threading;
 
     /// <summary>
@@ -230,7 +231,15 @@ namespace FlatSharp
                             BindingFlags.NonPublic | BindingFlags.Instance)!
                         .MakeGenericMethod(itemType);
 
-                serializer = method.Invoke(this, new object[0]);
+                try
+                {
+                    serializer = method.Invoke(this, new object[0]);
+                }
+                catch (TargetInvocationException ex)
+                {
+                    var edi = ExceptionDispatchInfo.Capture(ex.InnerException!);
+                    edi.Throw();
+                }
             }
 
             return (ISerializer)serializer!;

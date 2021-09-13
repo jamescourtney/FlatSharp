@@ -241,6 +241,30 @@ namespace FlatSharp.TypeModel
             return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({variableName});";
         }
 
+        internal static void ValidateWriteThrough(
+            bool writeThroughSupported,
+            ITypeModel model,
+            IReadOnlyDictionary<ITypeModel, List<TableFieldContext>> contexts,
+            FlatBufferSerializerOptions options)
+        {
+            var firstWriteThrough = contexts[model]
+                .Select(x => (TableFieldContext?)x)
+                .FirstOrDefault(x => x.Value!.WriteThrough);
+
+            if (firstWriteThrough is not null)
+            {
+                if (options.GreedyDeserialize)
+                {
+                    throw new InvalidFlatBufferDefinitionException($"Field '{firstWriteThrough.Value.FullName}' declares the WriteThrough option. WriteThrough is not supported when using Greedy deserialization.");
+                }
+
+                if (!writeThroughSupported)
+                {
+                    throw new InvalidFlatBufferDefinitionException($"Field '{firstWriteThrough.Value.FullName}' declares the WriteThrough option. WriteThrough is only supported for IList vectors.");
+                }
+            }
+        }
+
         internal static void ValidatePreallocationSettings(
             ITypeModel sourceModel,
             IReadOnlyDictionary<ITypeModel, List<TableFieldContext>> contexts,

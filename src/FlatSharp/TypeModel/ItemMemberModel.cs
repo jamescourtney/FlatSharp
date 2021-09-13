@@ -210,14 +210,11 @@ namespace FlatSharp.TypeModel
         /// Creates a method body to write the given property back to the buffer. This is contextual depending
         /// on whether this member is table/struct/etc.
         /// </summary>
-        /// <param name="writeValueMethodName">The name of the method that does the write operation.</param>
-        /// <param name="bufferVariableName">The input buffer.</param>
-        /// <param name="offsetVariableName">The offset of the container.</param>
-        /// <param name="valueVariableName">The variable name containing the value.</param>
+        /// <param name="vtableLocationVariableName">For tables, the offset of the vtable.</param>
+        /// <param name="vtableMaxIndexVariableName">For tables, the max index of the vtable.</param>
         public abstract string CreateWriteThroughBody(
-            string writeValueMethodName,
-            string bufferVariableName,
-            string offsetVariableName,
-            string valueVariableName);
+            SerializationCodeGenContext context,
+            string vtableLocationVariableName,
+            string vtableMaxIndexVariableName);
     }
 }

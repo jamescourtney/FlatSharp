@@ -106,6 +106,12 @@ namespace FlatSharp.TypeModel
         {
             ValidatePreallocationSettings(this, context.AllFieldContexts, context.Options);
 
+            ValidateWriteThrough(
+                writeThroughSupported: !this.isReadOnly,
+                this,
+                context.AllFieldContexts,
+                context.Options);
+
             (string vectorClassDef, string vectorClassName) = FlatBufferVectorHelpers.CreateFlatBufferVectorSubclass(
                 this.ItemTypeModel,
                 context);

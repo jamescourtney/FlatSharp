@@ -90,6 +90,12 @@ namespace FlatSharp.TypeModel
         {
             ValidatePreallocationSettings(this, context.AllFieldContexts, context.Options);
 
+            ValidateWriteThrough(
+                writeThroughSupported: false,
+                this,
+                context.AllFieldContexts,
+                context.Options);
+
             string body;
             string keyTypeName = CSharpHelpers.GetGlobalCompilableTypeName(this.keyTypeModel.ClrType);
             string valueTypeName = CSharpHelpers.GetGlobalCompilableTypeName(this.valueTypeModel.ClrType);

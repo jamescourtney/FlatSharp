@@ -85,17 +85,16 @@
         }
 
         public override string CreateWriteThroughBody(
-            string writeValueMethodName,
-            string bufferVariableName,
-            string offsetVariableName,
-            string valueVariableName)
+            SerializationCodeGenContext context,
+            string vtableLocationVariableName,
+            string vtableMaxIndexVariableName)
         {
-            return $@"
-                {writeValueMethodName}(
-                    default(SpanWriter), 
-                    {bufferVariableName}.{nameof(IInputBuffer.GetByteMemory)}(0, {bufferVariableName}.{nameof(IInputBuffer.Length)}).Span, 
-                    {valueVariableName}, 
-                    {offsetVariableName} + {this.Offset});";
+            context = context with
+            {
+                OffsetVariableName = $"{context.OffsetVariableName} + {this.Offset}"
+            };
+
+            return context.GetSerializeInvocation(this.ItemTypeModel.ClrType) + ";";
         }
     }
 }

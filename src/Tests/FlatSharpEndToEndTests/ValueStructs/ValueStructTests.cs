@@ -52,6 +52,31 @@ namespace FlatSharpEndToEndTests.ValueStructs
         }
 
         [Fact]
+        public void WriteThrough_ValueStruct_InTable()
+        {
+            WriteThroughTable t = new WriteThroughTable
+            {
+                Point = new Vec3 { X = 1, Y = 2, Z = 3 }
+            };
+
+            byte[] data = new byte[1024];
+            WriteThroughTable.Serializer.Write(data, t);
+
+            var parsed = WriteThroughTable.Serializer.Parse(data);
+            var parsed2 = WriteThroughTable.Serializer.Parse(data);
+
+            Assert.Equal(1f, parsed2.Point.X);
+            Assert.Equal(2f, parsed2.Point.Y);
+            Assert.Equal(3f, parsed2.Point.Z);
+
+            parsed.Point = new Vec3 { X = -1, Y = -1, Z = -1 }; // triggers writethrough
+
+            Assert.Equal(-1f, parsed2.Point.X);
+            Assert.Equal(-1f, parsed2.Point.Y);
+            Assert.Equal(-1f, parsed2.Point.Z);
+        }
+
+        [Fact]
         public void Basics()
         {
             Assert.Equal(148, Unsafe.SizeOf<ValueStruct>());
@@ -347,7 +372,7 @@ namespace FlatSharpEndToEndTests.ValueStructs
             Assert.Null(parsed.valueStruct);
         }
 
-        private static void AssertStructsEqual(ValueStruct a , ValueStruct b)
+        private static void AssertStructsEqual(ValueStruct a, ValueStruct b)
         {
             Assert.Equal(a.A, b.A);
             Assert.Equal(a.B, b.B);

@@ -55,10 +55,9 @@ namespace FlatSharpTests
         public class TypeModel
         {
             [Theory]
-            [InlineData(typeof(OtherStruct))]
             [InlineData(typeof(ValueStruct))]
             [InlineData(typeof(ValueStruct?))]
-            public void WriteThrough_Table_RequiedReferenceStructField(Type type)
+            public void WriteThrough_Table_RequiredStructField(Type type)
             {
                 type = typeof(WriteThroughTable_Required<>).MakeGenericType(type);
 
@@ -70,7 +69,6 @@ namespace FlatSharpTests
             [Theory]
             [InlineData(typeof(ValueStruct))]
             [InlineData(typeof(ValueStruct?))]
-            [InlineData(typeof(OtherStruct))]
             public void WriteThrough_Table_NotRequiredStructField(Type type)
             {
                 type = typeof(WriteThroughTable_NotRequired<>).MakeGenericType(type);
@@ -86,37 +84,39 @@ namespace FlatSharpTests
             [Theory]
             [InlineData(typeof(WriteThroughTable_NotRequired<IList<int>>))]
             [InlineData(typeof(WriteThroughTable_NotRequired<IList<string>>))]
+            [InlineData(typeof(WriteThroughTable_NotRequired<IList<OtherStruct>>))]
             [InlineData(typeof(WriteThroughTable_NotRequired<IList<FlatBufferUnion<string>>>))]
             [InlineData(typeof(WriteThroughTable_NotRequired<IList<Table<int>>>))]
+            [InlineData(typeof(WriteThroughTable_NotRequired<OtherStruct[]>))]
+            // TODO: [InlineData(typeof(WriteThroughTable_NotRequired<ValueStruct[]>))]
             public void WriteThrough_Table_VectorOfDisallowed(Type type)
             {
                 var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(
                     () => RuntimeTypeModel.CreateFrom(type));
 
                 Assert.Equal(
-                    $"Table property '{type.GetCompilableTypeName()}.Item' declared the WriteThrough on a vector. Vector WriteThrough is only valid for structs.",
+                    $"Table property '{type.GetCompilableTypeName()}.Item' declared the WriteThrough on a vector. Vector WriteThrough is only valid for value type structs.",
                     ex.Message);
             }
 
-
             [Theory]
-            [InlineData(typeof(WriteThroughTable_Required<string>), FlatBufferSchemaType.String)]
-            [InlineData(typeof(WriteThroughTable_Required<Table<int>>), FlatBufferSchemaType.Table)]
-            [InlineData(typeof(WriteThroughTable_Required<FlatBufferUnion<string>?>), FlatBufferSchemaType.Union)]
-            public void WriteThrough_Table_DisallowedTypes(Type type, FlatBufferSchemaType schema)
+            [InlineData(typeof(WriteThroughTable_Required<string>))]
+            [InlineData(typeof(WriteThroughTable_Required<Table<int>>))]
+            [InlineData(typeof(WriteThroughTable_Required<FlatBufferUnion<string>?>))]
+            [InlineData(typeof(WriteThroughTable_Required<OtherStruct>))]
+            public void WriteThrough_Table_DisallowedTypes(Type type)
             {
                 var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(
                     () => RuntimeTypeModel.CreateFrom(type));
 
                 Assert.Equal(
-                    $"Table property '{type.GetCompilableTypeName()}.Item' declared the WriteThrough attribute. WriteThrough is not supported on '{schema}' table fields.",
+                    $"Table property '{type.GetCompilableTypeName()}.Item' declared the WriteThrough attribute. WriteThrough on tables is only supported for value type structs.",
                     ex.Message);
             }
 
             [Theory]
             [InlineData(typeof(ValueStruct))]
             [InlineData(typeof(ValueStruct?))]
-            [InlineData(typeof(OtherStruct))]
             public void WriteThrough_Table_NonVirtualStructField(Type type)
             {
                 type = typeof(WriteThroughTable_Required_NonVirtual<>).MakeGenericType(type);
@@ -131,11 +131,8 @@ namespace FlatSharpTests
 
             [Theory]
             [InlineData(typeof(WriteThroughTable_Required<IList<ValueStruct>>), false)]
-            [InlineData(typeof(WriteThroughTable_Required<IList<OtherStruct>>), false)]
             [InlineData(typeof(WriteThroughTable_NotRequired<IList<ValueStruct>>), false)]
-            [InlineData(typeof(WriteThroughTable_NotRequired<IList<OtherStruct>>), false)]
             [InlineData(typeof(WriteThroughTable_Required<ValueStruct>), true)]
-            [InlineData(typeof(WriteThroughTable_Required<OtherStruct>), true)]
             [InlineData(typeof(WriteThroughTable_Required_NonVirtual<IList<ValueStruct>>), false)]
             public void WriteThrough_Table_ValidCases(Type innerType, bool expectWriteThrough)
             {
@@ -151,7 +148,7 @@ namespace FlatSharpTests
         }
 
         // Tests for writethrough inside of reference structs.
-        public class ReferenceStruct
+        public class ReferenceStructInteriorWriteThrough
         {
             [Fact]
             public void WriteThrough_SimpleInt_InReferenceStruct()
@@ -308,7 +305,78 @@ namespace FlatSharpTests
 
         public class TableField
         {
+            // Tests write through within a table.
+            [Theory]
+            [InlineData(FlatBufferDeserializationOption.Lazy)]
+            [InlineData(FlatBufferDeserializationOption.Progressive)]
+            public void Success_Nullable(FlatBufferDeserializationOption option)
+            {
+                FlatBufferSerializer serializer = new FlatBufferSerializer(option);
 
+                WriteThroughTable_Required<ValueStruct?> table = new()
+                {
+                    Item = new ValueStruct { Value = 1 }
+                };
+
+                byte[] result = new byte[1024];
+
+                var code = serializer.Compile<WriteThroughTable_Required<ValueStruct?>>().CSharp;
+                serializer.Serialize(table, result);
+
+                var parsed = serializer.Parse<WriteThroughTable_Required<ValueStruct?>>(result);
+                Assert.Equal(1, parsed.Item.Value.Value);
+
+                parsed.Item = new ValueStruct { Value = 4 };
+
+                // Re-read and verify the in-struct writethrough succeeded.
+                parsed = serializer.Parse<WriteThroughTable_Required<ValueStruct?>>(result);
+                Assert.Equal(4, parsed.Item.Value.Value);
+
+                var ex = Assert.Throws<InvalidOperationException>(() => parsed.Item = null);
+                Assert.Equal(
+                    "Nullable object must have a value.",
+                    ex.Message);
+            }
+
+            [Theory]
+            [InlineData(FlatBufferDeserializationOption.Lazy)]
+            [InlineData(FlatBufferDeserializationOption.Progressive)]
+            public void Success_NonNullable(FlatBufferDeserializationOption option)
+            {
+                FlatBufferSerializer serializer = new FlatBufferSerializer(option);
+
+                WriteThroughTable_Required<ValueStruct> table = new()
+                {
+                    Item = new ValueStruct { Value = 1 }
+                };
+
+                byte[] result = new byte[1024];
+
+                var code = serializer.Compile<WriteThroughTable_Required<ValueStruct>>().CSharp;
+                serializer.Serialize(table, result);
+
+                var parsed = serializer.Parse<WriteThroughTable_Required<ValueStruct>>(result);
+                Assert.Equal(1, parsed.Item.Value);
+
+                parsed.Item = new ValueStruct { Value = 4 };
+
+                // Re-read and verify the in-struct writethrough succeeded.
+                parsed = serializer.Parse<WriteThroughTable_Required<ValueStruct>>(result);
+                Assert.Equal(4, parsed.Item.Value);
+            }
+
+            [Theory]
+            [InlineData(FlatBufferDeserializationOption.Greedy)]
+            [InlineData(FlatBufferDeserializationOption.GreedyMutable)]
+            public void Failure_Greedy(FlatBufferDeserializationOption option)
+            {
+                FlatBufferSerializer serializer = new FlatBufferSerializer(option);
+                var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() => serializer.Compile<WriteThroughTable_Required<ValueStruct>>());
+
+                Assert.Equal(
+                    "Property 'Item' of Table 'FlatSharpTests.WriteThroughTests.WriteThroughTable_Required<FlatSharpTests.WriteThroughTests.ValueStruct>' specifies the WriteThrough option. However, WriteThrough is only supported when using deserialization option 'Progressive' or 'Lazy'.",
+                    ex.Message);
+            }
         }
 
         public class Vector
@@ -317,47 +385,47 @@ namespace FlatSharpTests
             [Theory]
             [InlineData(FlatBufferDeserializationOption.Lazy)]
             [InlineData(FlatBufferDeserializationOption.Progressive)]
-            public void RefStruct(FlatBufferDeserializationOption option)
+            public void Success(FlatBufferDeserializationOption option)
             {
                 FlatBufferSerializer serializer = new FlatBufferSerializer(option);
 
-                WriteThroughTable_NotRequired<IList<WriteThroughStruct>> table = new()
+                WriteThroughTable_NotRequired<IList<ValueStruct>> table = new()
                 {
-                    Item = new List<WriteThroughStruct>
+                    Item = new List<ValueStruct>
                     { 
-                        new() 
-                        { 
-                            Value = new() { Prop1 = 1, Prop2 = 2, },
-                            ValueStruct = new() { Value = 3 }
-                        },
+                        new() { Value = 1 }
                     }
                 };
 
                 byte[] result = new byte[1024];
                 serializer.Serialize(table, result);
 
-                var parsed = serializer.Parse<WriteThroughTable_NotRequired<IList<WriteThroughStruct>>>(result);
-                Assert.Equal(1, parsed.Item[0].Value.Prop1);
-                Assert.Equal(2, parsed.Item[0].Value.Prop2);
-                Assert.Equal(3, parsed.Item[0].ValueStruct.Value);
+                var parsed = serializer.Parse<WriteThroughTable_NotRequired<IList<ValueStruct>>>(result);
+                Assert.Equal(1, parsed.Item[0].Value);
 
-                parsed.Item[0].Value.Prop1 = 4;
-                Assert.Throws<NotMutableException>(() => parsed.Item[0].Value.Prop2 = 5);
-                parsed.Item[0].ValueStruct = new() { Value = 6 };
+                parsed.Item[0] = new ValueStruct { Value = 4 };
 
                 // Re-read and verify the in-struct writethrough succeeded.
-                parsed = serializer.Parse<WriteThroughTable_NotRequired<IList<WriteThroughStruct>>>(result);
-                Assert.Equal(4, parsed.Item[0].Value.Prop1);
-                Assert.Equal(2, parsed.Item[0].Value.Prop2);
-                Assert.Equal(6, parsed.Item[0].ValueStruct.Value);
+                parsed = serializer.Parse<WriteThroughTable_NotRequired<IList<ValueStruct>>>(result);
+                Assert.Equal(4, parsed.Item[0].Value);
+            }
 
-                // Now update the whole struct using the vector.
-                parsed.Item[0] = table.Item[0];
+            // Tests combinations that get through type model validation but fail in practice.
+            [Theory]
+            [InlineData(FlatBufferDeserializationOption.Greedy, typeof(ValueStruct[]))]
+            [InlineData(FlatBufferDeserializationOption.GreedyMutable, typeof(ValueStruct[]))]
+            [InlineData(FlatBufferDeserializationOption.Greedy, typeof(IList<ValueStruct>))]
+            [InlineData(FlatBufferDeserializationOption.GreedyMutable, typeof(IList<ValueStruct>))]
+            public void Failures(FlatBufferDeserializationOption option, Type vectorType)
+            {
+                FlatBufferSerializer serializer = new FlatBufferSerializer(option);
+                var tableType = typeof(WriteThroughTable_NotRequired<>).MakeGenericType(vectorType);
 
-                parsed = serializer.Parse<WriteThroughTable_NotRequired<IList<WriteThroughStruct>>>(result);
-                Assert.Equal(1, parsed.Item[0].Value.Prop1);
-                Assert.Equal(2, parsed.Item[0].Value.Prop2);
-                Assert.Equal(3, parsed.Item[0].ValueStruct.Value);
+                var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() => serializer.Compile(tableType));
+
+                Assert.Equal(
+                    $"Field '{tableType.GetCompilableTypeName()}.Item' declares the WriteThrough option. WriteThrough is not supported when using Greedy deserialization.",
+                    ex.Message);
             }
         }
 

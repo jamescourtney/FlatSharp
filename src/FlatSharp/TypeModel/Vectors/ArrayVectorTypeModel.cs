@@ -17,7 +17,6 @@
 namespace FlatSharp.TypeModel
 {
     using System;
-    using System.Text;
 
     /// <summary>
     /// Defines a vector type model for an array vector.
@@ -67,6 +66,12 @@ namespace FlatSharp.TypeModel
             {
                 throw new InvalidFlatBufferDefinitionException("Array vectors may only be used with Greedy serializers.");
             }
+
+            ValidateWriteThrough(
+                writeThroughSupported: false,
+                this,
+                context.AllFieldContexts,
+                context.Options);
 
             (string vectorClassDef, string vectorClassName) = (string.Empty, string.Empty);
 
