@@ -297,7 +297,7 @@ namespace FlatSharpTests
                 () => RuntimeTypeModel.CreateFrom(typeof(TableWriteThrough_NotSupported)));
 
             Assert.Equal(
-                "Table property 'FlatSharpTests.TypeModelTests.TableWriteThrough_NotSupported.Property' declared the WriteThrough attribute. WriteThrough is only supported on struct fields.",
+                "Table property 'FlatSharpTests.TypeModelTests.TableWriteThrough_NotSupported.Property' declared the WriteThrough attribute. WriteThrough on tables is only supported for value type structs.",
                 ex.Message);
         }
 

@@ -106,8 +106,14 @@ namespace FlatSharp.TypeModel
         {
             ValidatePreallocationSettings(this, context.AllFieldContexts, context.Options);
 
+            ValidateWriteThrough(
+                writeThroughSupported: !this.isReadOnly,
+                this,
+                context.AllFieldContexts,
+                context.Options);
+
             (string vectorClassDef, string vectorClassName) = FlatBufferVectorHelpers.CreateFlatBufferVectorSubclass(
-                this.ItemTypeModel.ClrType,
+                this.ItemTypeModel,
                 context);
 
             string createFlatBufferVector =
@@ -151,7 +157,8 @@ namespace FlatSharp.TypeModel
 
                 return $@"
                     var vector = {createFlatBufferVector};
-                    if (vector.Count >= ({context.TableFieldContextVariableName}.{nameof(TableFieldContext.VectorPreallocationLimit)} ?? {DefaultPreallocationLimit}))
+                    if ({context.TableFieldContextVariableName}.{nameof(TableFieldContext.WriteThrough)} ||
+                        vector.Count >= ({context.TableFieldContextVariableName}.{nameof(TableFieldContext.VectorPreallocationLimit)} ?? {DefaultPreallocationLimit}))
                     {{
                         return new FlatBufferProgressiveVector<{itemTypeModel.GetGlobalCompilableTypeName()}>(vector);
                     }}

@@ -48,6 +48,7 @@ namespace FlatSharp.TypeModel
             this.CustomAccessor = propertyInfo.GetFlatBufferMetadataOrNull(FlatBufferMetadataKind.Accessor);
             this.IsWriteThrough = attribute.WriteThrough;
             this.IsRequired = attribute.Required;
+            this.Attribute = attribute;
 
             if (setMethod is not null)
             {
@@ -160,6 +161,11 @@ namespace FlatSharp.TypeModel
         public PropertyInfo PropertyInfo { get; }
 
         /// <summary>
+        /// The actual attribute.
+        /// </summary>
+        public FlatBufferItemAttribute Attribute { get; }
+
+        /// <summary>
         /// The type model of the item.
         /// </summary>
         public ITypeModel ItemTypeModel { get; }
@@ -172,7 +178,7 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// Indicates if this member writes through to the underlying buffer.
         /// </summary>
-        public bool IsWriteThrough { get; }
+        public bool IsWriteThrough { get; protected init; }
 
         /// <summary>
         /// Indicates if this member is required.
@@ -204,14 +210,11 @@ namespace FlatSharp.TypeModel
         /// Creates a method body to write the given property back to the buffer. This is contextual depending
         /// on whether this member is table/struct/etc.
         /// </summary>
-        /// <param name="writeValueMethodName">The name of the method that does the write operation.</param>
-        /// <param name="bufferVariableName">The input buffer.</param>
-        /// <param name="offsetVariableName">The offset of the container.</param>
-        /// <param name="valueVariableName">The variable name containing the value.</param>
+        /// <param name="vtableLocationVariableName">For tables, the offset of the vtable.</param>
+        /// <param name="vtableMaxIndexVariableName">For tables, the max index of the vtable.</param>
         public abstract string CreateWriteThroughBody(
-            string writeValueMethodName,
-            string bufferVariableName,
-            string offsetVariableName,
-            string valueVariableName);
+            SerializationCodeGenContext context,
+            string vtableLocationVariableName,
+            string vtableMaxIndexVariableName);
     }
 }

@@ -51,6 +51,12 @@ namespace FlatSharp.TypeModel
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
+            ValidateWriteThrough(
+                writeThroughSupported: false,
+                this,
+                context.AllFieldContexts,
+                context.Options);
+
             string method = nameof(InputBufferExtensions.ReadByteMemoryBlock);
             if (this.isReadOnly)
             {

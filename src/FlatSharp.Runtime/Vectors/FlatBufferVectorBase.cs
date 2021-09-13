@@ -34,7 +34,7 @@ namespace FlatSharp
 
         protected FlatBufferVectorBase(
             TInputBuffer memory,
-            in TableFieldContext fieldContext)
+            TableFieldContext fieldContext)
         {
             this.memory = memory;
             this.fieldContext = fieldContext;
@@ -43,7 +43,7 @@ namespace FlatSharp
         /// <summary>
         /// Gets the item at the given index.
         /// </summary>
-        public T this[int index]
+        public virtual T this[int index]
         {
             get
             {

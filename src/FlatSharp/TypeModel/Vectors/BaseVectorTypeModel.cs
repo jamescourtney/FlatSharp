@@ -94,7 +94,8 @@ namespace FlatSharp.TypeModel
         /// <summary>
         /// Vectors don't intrinsically care about this, but the elements may.
         /// </summary>
-        public override TableFieldContextRequirements TableFieldContextRequirements => this.ItemTypeModel.TableFieldContextRequirements | TableFieldContextRequirements.Parse;
+        public override TableFieldContextRequirements TableFieldContextRequirements => 
+            this.ItemTypeModel.TableFieldContextRequirements | TableFieldContextRequirements.Parse;
 
         public override IEnumerable<ITypeModel> Children => new[] { this.ItemTypeModel };
 
@@ -238,6 +239,35 @@ namespace FlatSharp.TypeModel
             }
 
             return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({variableName});";
+        }
+
+        internal static void ValidateWriteThrough(
+            bool writeThroughSupported,
+            ITypeModel model,
+            IReadOnlyDictionary<ITypeModel, List<TableFieldContext>> contexts,
+            FlatBufferSerializerOptions options)
+        {
+            if (!contexts.TryGetValue(model, out var fieldsForModel))
+            {
+                return;
+            }
+
+            var firstWriteThrough = fieldsForModel
+                .Select(x => (TableFieldContext?)x)
+                .FirstOrDefault(x => x!.Value.WriteThrough);
+
+            if (firstWriteThrough is not null)
+            {
+                if (options.GreedyDeserialize)
+                {
+                    throw new InvalidFlatBufferDefinitionException($"Field '{firstWriteThrough.Value.FullName}' declares the WriteThrough option. WriteThrough is not supported when using Greedy deserialization.");
+                }
+
+                if (!writeThroughSupported)
+                {
+                    throw new InvalidFlatBufferDefinitionException($"Field '{firstWriteThrough.Value.FullName}' declares the WriteThrough option. WriteThrough is only supported for IList vectors.");
+                }
+            }
         }
 
         internal static void ValidatePreallocationSettings(

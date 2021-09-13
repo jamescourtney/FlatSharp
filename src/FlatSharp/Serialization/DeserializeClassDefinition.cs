@@ -119,10 +119,10 @@ namespace FlatSharp
                 if (!this.options.SupportsWriteThrough)
                 {
                     throw new InvalidFlatBufferDefinitionException(
-                        $"Property '{itemModel.PropertyInfo.Name}' of {this.typeModel.SchemaType} '{this.typeModel.GetCompilableTypeName()}' specifies the WriteThrough option. However, WriteThrough is only supported when using deserialization option 'VectorCacheMutable' or 'Lazy'.");
+                        $"Property '{itemModel.PropertyInfo.Name}' of {this.typeModel.SchemaType} '{this.typeModel.GetCompilableTypeName()}' specifies the WriteThrough option. However, WriteThrough is only supported when using deserialization option 'Progressive' or 'Lazy'.");
                 }
 
-                this.AddWriteThroughMethod(itemModel, context.SerializeMethodNameMap[itemModel.ItemTypeModel.ClrType]);
+                this.AddWriteThroughMethod(itemModel, context);
             }
         }
 
@@ -172,17 +172,24 @@ namespace FlatSharp
                 }}");
         }
 
-        private void AddWriteThroughMethod(ItemMemberModel itemModel, string writeValueMethodName)
+        private void AddWriteThroughMethod(ItemMemberModel itemModel, ParserCodeGenContext parserContext)
         {
+            var context = parserContext.GetWriteThroughContext(
+                $"buffer.{nameof(IInputBuffer.GetByteMemory)}(0, buffer.{nameof(IInputBuffer.Length)}).Span",
+                "value",
+                "offset");
+
             this.readMethods.Add(
                 $@"
                     {GetAggressiveInliningAttribute()}
                     private static void {GetWriteMethodName(itemModel)}(
                         TInputBuffer buffer,
                         int offset,
-                        {itemModel.ItemTypeModel.GetGlobalCompilableTypeName()} value)
+                        {itemModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType)} value,
+                        int vtableOffset,
+                        int vtableMaxIndex)
                     {{
-                        {itemModel.CreateWriteThroughBody(writeValueMethodName, "buffer", "offset", "value")}
+                        {itemModel.CreateWriteThroughBody(context, "vtableOffset", "vtableMaxIndex")}
                     }}");
         }
 
@@ -322,7 +329,7 @@ namespace FlatSharp
                 // Finally, if we are writethrough enabled, we need to do that too.
                 if (writeThrough)
                 {
-                    setterLines.Add($"{GetWriteMethodName(itemModel)}({this.GetBufferReference()}, {OffsetVariableName}, value);");
+                    setterLines.Add($"{GetWriteMethodName(itemModel)}({this.GetBufferReference()}, {OffsetVariableName}, value, {this.vtableOffsetAccessor}, {this.vtableMaxIndexAccessor});");
                 }
             }
             else
