@@ -51,7 +51,7 @@ namespace Samples.TypeFacades
             };
 
             FlatBufferSerializer serializer = new FlatBufferSerializer(
-                new FlatBufferSerializerOptions(FlatBufferDeserializationOption.PropertyCache),
+                new FlatBufferSerializerOptions(FlatBufferDeserializationOption.Progressive),
                 container);
 
             byte[] destination = new byte[1024];

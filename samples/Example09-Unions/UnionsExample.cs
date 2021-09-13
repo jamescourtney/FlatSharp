@@ -41,7 +41,7 @@ namespace Samples.Unions
                 Pet = new Pet(brick)
             };
 
-            UsePet(person.Pet);
+            UsePet(person.Pet.Value);
         }
 
         // These two methods do the same thing. They are coded separately to

@@ -161,7 +161,7 @@ namespace Samples.GrpcExample
 
                 MultiMessage request = new()
                 {
-                    Message = new List<SharedString>
+                    Message = new List<string>
                     {
                         "foo", "bar", "baz", "bat"
                     }
@@ -217,7 +217,7 @@ namespace Samples.GrpcExample
             {
                 MultiMessage response = new()
                 {
-                    Message = new List<SharedString>()
+                    Message = new List<string>()
                 };
 
                 while (await requestStream.MoveNext(callContext.CancellationToken))

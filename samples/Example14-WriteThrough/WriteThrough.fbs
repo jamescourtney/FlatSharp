@@ -22,12 +22,16 @@
 
 namespace Samples.WriteThrough;
 
+attribute "fs_serializer";
+attribute "fs_writeThrough";
+attribute "fs_defaultCtor";
+
 // A bloom filter is a probabilistic data structure 
 // used for answering the question "might this item be in the collection?"
 // with a high degree of confidence. This sample uses FlatSharp to store a
 // large Bloom Filter and make efficient in-place updates to it using the WriteThrough option.
 
-table BloomFilter (fs_serializer:Lazy, fs_defaultCtor:None)
+table BloomFilter (fs_serializer:"Lazy", fs_defaultCtor:"None")
 {
 	// Our bloom filter is a vector of blocks.
 	Blocks : [Block] (required);

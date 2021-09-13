@@ -16,17 +16,18 @@
 
 namespace Samples.SchemaFilesExample2;
 
+attribute "fs_serializer";
+attribute "fs_vector";
+
 enum Fruit : byte { Apples, Pears, Bananas }
 
 // FooBarContainer's serializer is generated at build time here, which means we don't need
 // to use FlatBufferSerializer to make one for us at runtime. It also means we don't need
 // a reference to the "FlatSharp" nuget package. Only "FlatSharp.Runtime" is required.
 // Runtime vs build-time generated serializers perform equally well.
-table FooBarContainer 
-    // Valid values are: "greedy", "greedymutable", "vectorcache", "vectorcachemutable", "propertycache", and "lazy"
-    (fs_serializer:greedymutable) 
+table FooBarContainer (fs_serializer:"greedymutable") // Valid values are: "greedy", "greedymutable", "progressive", and "lazy"
 {
-  list:[FooBar] (fs_vector:IList);  // Can also be IReadOnlyList,Array,Memory,ReadOnlyMemory
+  list:[FooBar] (fs_vector:"IList");  // Can also be IReadOnlyList,Array,Memory,ReadOnlyMemory
   initialized:bool;
   fruit:Fruit;
   location:string;
@@ -39,7 +40,7 @@ table FooBar (fs_serializer) { // default options used when none are specified.
   postfix:ubyte; 
 }
 
-table OtherTable (fs_serializer:lazy) {
+table OtherTable (fs_serializer:"lazy") {
   name:string;
 }
 

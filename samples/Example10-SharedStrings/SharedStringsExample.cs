@@ -53,7 +53,6 @@ namespace Samples.SharedStrings
                 {
                     // This can be null to disable shared string reading:
                     // SharedStringReaderFactory = null,
-                    SharedStringReaderFactory = () => SharedStringReader.CreateThreadSafe(),
                     SharedStringWriterFactory = () => new SharedStringWriter(),
                 });
 
@@ -62,7 +61,6 @@ namespace Samples.SharedStrings
             ISerializer<Matrix> customSharedStringSerializer = Matrix.Serializer.WithSettings(
                 new SerializerSettings
                 {
-                    SharedStringReaderFactory = () => new PerfectSharedStringReader(),
                     SharedStringWriterFactory = () => new PerfectSharedStringWriter(),
                 });
 
@@ -131,37 +129,13 @@ namespace Samples.SharedStrings
     }
 
     /// <summary>
-    /// this is a perfect shared string reader implementation, which guarantees a given shared string in a flatbuffer
-    /// is only parsed once. This implementation is thread safe by virtue of the concurrent dictionary,
-    /// but is considerably slower than FlatSharp's Shared String implementation, which does not guarantee
-    /// shared strings are read only once.
-    /// </summary>
-    public class PerfectSharedStringReader : ISharedStringReader
-    {
-        private readonly ConcurrentDictionary<int, SharedString> offsetStringMap = new ConcurrentDictionary<int, SharedString>();
-
-        public SharedString ReadSharedString<TInputBuffer>(TInputBuffer buffer, int offset) where TInputBuffer : IInputBuffer
-        {
-            if (this.offsetStringMap.TryGetValue(offset, out SharedString? str))
-            {
-                return str;
-            }
-
-            str = buffer.ReadStringFromUOffset(offset);
-            this.offsetStringMap[offset] = str;
-            return str;
-        }
-    }
-
-
-    /// <summary>
     /// this is a "perfect" shared string writer implementation, which guarantees a single string is written only once.
     /// this class will give optimal compression results, but will be considerably slower than FlatSharp's default implementation,
     /// which uses a hashtable with flush-on-evict semantics and may write shared strings more than once.
     /// </summary>
     public class PerfectSharedStringWriter : ISharedStringWriter
     {
-        private readonly Dictionary<SharedString, List<int>> stringOffsetMap = new Dictionary<SharedString, List<int>>();
+        private readonly Dictionary<string, List<int>> stringOffsetMap = new Dictionary<string, List<int>>();
 
         /// <summary>
         /// Called when FlatSharp has finished a serialize operation. This is the signal to flush any strings that the 
@@ -171,7 +145,7 @@ namespace Samples.SharedStrings
         {
             foreach (var kvp in this.stringOffsetMap)
             {
-                SharedString str = kvp.Key;
+                string str = kvp.Key;
                 List<int> offsets = kvp.Value;
 
                 // Write the string.
@@ -197,7 +171,7 @@ namespace Samples.SharedStrings
         /// <summary>
         /// Writes a shared string by storing the string mapped to the offsets at which the string occurs in the buffer.
         /// </summary>
-        public void WriteSharedString<TSpanWriter>(TSpanWriter spanWriter, Span<byte> data, int offset, SharedString value, SerializationContext context)
+        public void WriteSharedString<TSpanWriter>(TSpanWriter spanWriter, Span<byte> data, int offset, string value, SerializationContext context)
             where TSpanWriter : ISpanWriter
         {
             if (!this.stringOffsetMap.TryGetValue(value, out List<int>? offsets))
