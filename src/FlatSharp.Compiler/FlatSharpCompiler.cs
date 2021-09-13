@@ -278,8 +278,6 @@ namespace FlatSharp.Compiler
 
             try
             {
-                Console.WriteLine("Arguments: " + p.StartInfo.Arguments);
-
                 p.Start();
                 string stdout = p.StandardOutput.ReadToEnd();
                 string stderr = p.StandardError.ReadToEnd();
