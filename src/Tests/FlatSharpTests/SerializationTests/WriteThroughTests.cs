@@ -29,9 +29,28 @@ namespace FlatSharpTests
     /// <summary>
     /// Tests various types of vectors (List/ReadOnlyList/Memory/ReadOnlyMemory/Array) for primitive types.
     /// </summary>
-    
+
     public class WriteThroughTests
     {
+        [Fact]
+        public void WriteThrough_InvalidDeserializationOption()
+        {
+            foreach (FlatBufferDeserializationOption option in Enum.GetValues(typeof(FlatBufferDeserializationOption)))
+            {
+                if (option == FlatBufferDeserializationOption.Progressive || option == FlatBufferDeserializationOption.Lazy)
+                {
+                    continue;
+                }
+
+                var serializer = new FlatBufferSerializer(option);
+                var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() => serializer.Compile<Table<WriteThroughStruct<bool>>>());
+
+                Assert.Equal(
+                    "Property 'Value' of Struct 'FlatSharpTests.WriteThroughTests.WriteThroughStruct<System.Boolean>' specifies the WriteThrough option. However, WriteThrough is only supported when using deserialization option 'Progressive' or 'Lazy'.",
+                    ex.Message);
+            }
+        }
+
         // Type model tests for write through scenarios.
         public class TypeModel
         {
@@ -131,176 +150,215 @@ namespace FlatSharpTests
             }
         }
 
-        [Fact]
-        public void WriteThrough_InvalidDeserializationOption()
+        // Tests for writethrough inside of reference structs.
+        public class ReferenceStruct
         {
-            foreach (FlatBufferDeserializationOption option in Enum.GetValues(typeof(FlatBufferDeserializationOption)))
+            [Fact]
+            public void WriteThrough_SimpleInt_InReferenceStruct()
             {
-                if (option == FlatBufferDeserializationOption.Progressive || option == FlatBufferDeserializationOption.Lazy)
+                static void Test(FlatBufferDeserializationOption option)
                 {
-                    continue;
-                }
-
-                var serializer = new FlatBufferSerializer(option);
-                var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() => serializer.Compile<Table<WriteThroughStruct<bool>>>());
-
-                Assert.Equal(
-                    "Property 'Value' of Struct 'FlatSharpTests.WriteThroughTests.WriteThroughStruct<System.Boolean>' specifies the WriteThrough option. However, WriteThrough is only supported when using deserialization option 'Progressive' or 'Lazy'.",
-                    ex.Message);
-            }
-        }
-
-        [Fact]
-        public void WriteThrough_SimpleInt_InReferenceStruct()
-        {
-            static void Test(FlatBufferDeserializationOption option)
-            {
-                var table = new Table<WriteThroughStruct<int>>
-                {
-                    Struct = new WriteThroughStruct<int>
+                    var table = new Table<WriteThroughStruct<int>>
                     {
-                        Value = 5
-                    }
-                };
+                        Struct = new WriteThroughStruct<int>
+                        {
+                            Value = 5
+                        }
+                    };
 
-                FlatBufferSerializer serializer = new FlatBufferSerializer(option);
+                    FlatBufferSerializer serializer = new FlatBufferSerializer(option);
 
-                byte[] buffer = new byte[1024];
-                serializer.Serialize(table, buffer);
+                    byte[] buffer = new byte[1024];
+                    serializer.Serialize(table, buffer);
 
-                // parse
-                var parsed1 = serializer.Parse<Table<WriteThroughStruct<int>>>(buffer);
+                    // parse
+                    var parsed1 = serializer.Parse<Table<WriteThroughStruct<int>>>(buffer);
 
-                // mutate
-                parsed1.Struct.Value = 300;
-                Assert.Equal(300, parsed1.Struct.Value);
+                    // mutate
+                    parsed1.Struct.Value = 300;
+                    Assert.Equal(300, parsed1.Struct.Value);
 
-                // verify
-                var parsed2 = serializer.Parse<Table<WriteThroughStruct<int>>>(buffer);
-                Assert.Equal(300, parsed2.Struct.Value);
+                    // verify
+                    var parsed2 = serializer.Parse<Table<WriteThroughStruct<int>>>(buffer);
+                    Assert.Equal(300, parsed2.Struct.Value);
+                }
+
+                Test(FlatBufferDeserializationOption.Progressive);
+                Test(FlatBufferDeserializationOption.Lazy);
             }
 
-            Test(FlatBufferDeserializationOption.Progressive);
-            Test(FlatBufferDeserializationOption.Lazy);
-        }
-
-        [Fact]
-        public void WriteThrough_NestedStruct_InReferenceStruct()
-        {
-            static void Test(FlatBufferDeserializationOption option)
+            [Fact]
+            public void WriteThrough_NestedStruct_InReferenceStruct()
             {
-                var table = new Table<WriteThroughStruct>
+                static void Test(FlatBufferDeserializationOption option)
                 {
-                    Struct = new WriteThroughStruct
+                    var table = new Table<WriteThroughStruct>
                     {
-                        Value = new OtherStruct { Prop1 = 10, Prop2 = 10 },
-                        ValueStruct = new() { Value = 3, }
+                        Struct = new WriteThroughStruct
+                        {
+                            Value = new OtherStruct { Prop1 = 10, Prop2 = 10 },
+                            ValueStruct = new() { Value = 3, }
+                        }
+                    };
+
+                    FlatBufferSerializer serializer = new FlatBufferSerializer(option);
+
+                    byte[] buffer = new byte[1024];
+                    serializer.Serialize(table, buffer);
+
+                    // parse
+                    var parsed1 = serializer.Parse<Table<WriteThroughStruct>>(buffer);
+
+                    // mutate
+                    Assert.Equal(10, parsed1.Struct.Value.Prop1);
+                    Assert.Equal(10, parsed1.Struct.Value.Prop2);
+                    Assert.Equal(3, parsed1.Struct.ValueStruct.Value);
+                    parsed1.Struct.Value = new OtherStruct { Prop1 = 300, Prop2 = 300 };
+                    parsed1.Struct.ValueStruct = new() { Value = -1 };
+                    Assert.Equal(300, parsed1.Struct.Value.Prop1);
+                    Assert.Equal(300, parsed1.Struct.Value.Prop2);
+                    Assert.Equal(-1, parsed1.Struct.ValueStruct.Value);
+
+                    // verify, set to null
+                    var parsed2 = serializer.Parse<Table<WriteThroughStruct>>(buffer);
+                    Assert.Equal(300, parsed2.Struct.Value.Prop1);
+                    Assert.Equal(300, parsed2.Struct.Value.Prop2);
+                    Assert.Equal(-1, parsed2.Struct.ValueStruct.Value);
+                    parsed2.Struct.Value = null!;
+
+                    if (option == FlatBufferDeserializationOption.Progressive)
+                    {
+                        // we are null temporarily until we re-parse.
+                        Assert.Null(parsed2.Struct.Value);
                     }
-                };
+                    else if (option == FlatBufferDeserializationOption.Lazy)
+                    {
+                        // lazy write through clears it out.
+                        Assert.Equal(0, parsed2.Struct.Value.Prop1);
+                        Assert.Equal(0, parsed2.Struct.Value.Prop2);
+                    }
+                    else
+                    {
+                        Assert.False(true);
+                    }
 
-                FlatBufferSerializer serializer = new FlatBufferSerializer(option);
-
-                byte[] buffer = new byte[1024];
-                serializer.Serialize(table, buffer);
-
-                // parse
-                var parsed1 = serializer.Parse<Table<WriteThroughStruct>>(buffer);
-
-                // mutate
-                Assert.Equal(10, parsed1.Struct.Value.Prop1);
-                Assert.Equal(10, parsed1.Struct.Value.Prop2);
-                Assert.Equal(3, parsed1.Struct.ValueStruct.Value);
-                parsed1.Struct.Value = new OtherStruct { Prop1 = 300, Prop2 = 300 };
-                parsed1.Struct.ValueStruct = new() { Value = -1 };
-                Assert.Equal(300, parsed1.Struct.Value.Prop1);
-                Assert.Equal(300, parsed1.Struct.Value.Prop2);
-                Assert.Equal(-1, parsed1.Struct.ValueStruct.Value);
-
-                // verify, set to null
-                var parsed2 = serializer.Parse<Table<WriteThroughStruct>>(buffer);
-                Assert.Equal(300, parsed2.Struct.Value.Prop1);
-                Assert.Equal(300, parsed2.Struct.Value.Prop2);
-                Assert.Equal(-1, parsed2.Struct.ValueStruct.Value);
-                parsed2.Struct.Value = null!;
-
-                if (option == FlatBufferDeserializationOption.Progressive)
-                {
-                    // we are null temporarily until we re-parse.
-                    Assert.Null(parsed2.Struct.Value);
-                }
-                else if (option == FlatBufferDeserializationOption.Lazy)
-                {
-                    // lazy write through clears it out.
-                    Assert.Equal(0, parsed2.Struct.Value.Prop1);
-                    Assert.Equal(0, parsed2.Struct.Value.Prop2);
-                }
-                else
-                {
-                    Assert.False(true);
+                    // verify, set to null
+                    var parsed3 = serializer.Parse<Table<WriteThroughStruct>>(buffer);
+                    Assert.Equal(0, parsed3.Struct.Value.Prop1);
+                    Assert.Equal(0, parsed3.Struct.Value.Prop2);
                 }
 
-                // verify, set to null
-                var parsed3 = serializer.Parse<Table<WriteThroughStruct>>(buffer);
-                Assert.Equal(0, parsed3.Struct.Value.Prop1);
-                Assert.Equal(0, parsed3.Struct.Value.Prop2);
+                Test(FlatBufferDeserializationOption.Progressive);
+                Test(FlatBufferDeserializationOption.Lazy);
             }
 
-            Test(FlatBufferDeserializationOption.Progressive);
-            Test(FlatBufferDeserializationOption.Lazy);
-        }
-
-        [Fact]
-        public void WriteThrough_Vector_List()
-        {
-            static void Test(FlatBufferDeserializationOption option)
+            [Fact]
+            public void WriteThrough_Vector_List()
             {
-                var table = new Table<IList<WriteThroughStruct<long>>>
+                static void Test(FlatBufferDeserializationOption option)
                 {
-                    Struct = new List<WriteThroughStruct<long>>
+                    var table = new Table<IList<WriteThroughStruct<long>>>
+                    {
+                        Struct = new List<WriteThroughStruct<long>>
                     {
                         new WriteThroughStruct<long> { Value = 5 }
                     }
+                    };
+
+                    FlatBufferSerializer serializer = new FlatBufferSerializer(option);
+
+                    byte[] buffer = new byte[1024];
+                    serializer.Serialize(table, buffer);
+
+                    // parse
+                    var parsed1 = serializer.Parse<Table<IList<WriteThroughStruct<long>>>>(buffer);
+
+                    // mutate
+                    parsed1.Struct[0].Value = 300;
+                    Assert.Equal(300, parsed1.Struct[0].Value);
+
+                    // verify
+                    var parsed2 = serializer.Parse<Table<IList<WriteThroughStruct<long>>>>(buffer);
+                    Assert.Equal(300, parsed2.Struct[0].Value);
+                }
+
+                Test(FlatBufferDeserializationOption.Progressive);
+                Test(FlatBufferDeserializationOption.Lazy);
+            }
+
+            [Fact]
+            public void WriteThrough_Lazy_ThrowsForOtherProperties()
+            {
+                var table = new Table<OtherStruct>
+                {
+                    Struct = new OtherStruct { Prop1 = 1, Prop2 = 2 }
                 };
 
-                FlatBufferSerializer serializer = new FlatBufferSerializer(option);
+                var serializer = new FlatBufferSerializer(FlatBufferDeserializationOption.Lazy);
 
                 byte[] buffer = new byte[1024];
                 serializer.Serialize(table, buffer);
+                string csharp = serializer.Compile<Table<OtherStruct>>().CSharp;
 
-                // parse
-                var parsed1 = serializer.Parse<Table<IList<WriteThroughStruct<long>>>>(buffer);
+                var parsed = serializer.Parse<Table<OtherStruct>>(buffer);
 
-                // mutate
-                parsed1.Struct[0].Value = 300;
-                Assert.Equal(300, parsed1.Struct[0].Value);
-
-                // verify
-                var parsed2 = serializer.Parse<Table<IList<WriteThroughStruct<long>>>>(buffer);
-                Assert.Equal(300, parsed2.Struct[0].Value);
+                Assert.Throws<NotMutableException>(() => parsed.Struct.Prop2 = 4);
             }
-
-            Test(FlatBufferDeserializationOption.Progressive);
-            Test(FlatBufferDeserializationOption.Lazy);
         }
 
-        [Fact]
-        public void WriteThrough_Lazy_ThrowsForOtherProperties()
+        public class TableField
         {
-            var table = new Table<OtherStruct>
+
+        }
+
+        public class Vector
+        {
+            // Tests write through within a struct and write through of a whole struct.
+            [Theory]
+            [InlineData(FlatBufferDeserializationOption.Lazy)]
+            [InlineData(FlatBufferDeserializationOption.Progressive)]
+            public void RefStruct(FlatBufferDeserializationOption option)
             {
-                Struct = new OtherStruct { Prop1 = 1, Prop2 = 2 }
-            };
+                FlatBufferSerializer serializer = new FlatBufferSerializer(option);
 
-            var serializer = new FlatBufferSerializer(FlatBufferDeserializationOption.Lazy);
+                WriteThroughTable_NotRequired<IList<WriteThroughStruct>> table = new()
+                {
+                    Item = new List<WriteThroughStruct>
+                    { 
+                        new() 
+                        { 
+                            Value = new() { Prop1 = 1, Prop2 = 2, },
+                            ValueStruct = new() { Value = 3 }
+                        },
+                    }
+                };
 
-            byte[] buffer = new byte[1024];
-            serializer.Serialize(table, buffer);
-            string csharp = serializer.Compile<Table<OtherStruct>>().CSharp;
+                byte[] result = new byte[1024];
+                serializer.Serialize(table, result);
 
-            var parsed = serializer.Parse<Table<OtherStruct>>(buffer);
+                var parsed = serializer.Parse<WriteThroughTable_NotRequired<IList<WriteThroughStruct>>>(result);
+                Assert.Equal(1, parsed.Item[0].Value.Prop1);
+                Assert.Equal(2, parsed.Item[0].Value.Prop2);
+                Assert.Equal(3, parsed.Item[0].ValueStruct.Value);
 
-            Assert.Throws<NotMutableException>(() => parsed.Struct.Prop1 = 2);
-            Assert.Throws<NotMutableException>(() => parsed.Struct.Prop2 = 4);
+                parsed.Item[0].Value.Prop1 = 4;
+                Assert.Throws<NotMutableException>(() => parsed.Item[0].Value.Prop2 = 5);
+                parsed.Item[0].ValueStruct = new() { Value = 6 };
+
+                // Re-read and verify the in-struct writethrough succeeded.
+                parsed = serializer.Parse<WriteThroughTable_NotRequired<IList<WriteThroughStruct>>>(result);
+                Assert.Equal(4, parsed.Item[0].Value.Prop1);
+                Assert.Equal(2, parsed.Item[0].Value.Prop2);
+                Assert.Equal(6, parsed.Item[0].ValueStruct.Value);
+
+                // Now update the whole struct using the vector.
+                parsed.Item[0] = table.Item[0];
+
+                parsed = serializer.Parse<WriteThroughTable_NotRequired<IList<WriteThroughStruct>>>(result);
+                Assert.Equal(1, parsed.Item[0].Value.Prop1);
+                Assert.Equal(2, parsed.Item[0].Value.Prop2);
+                Assert.Equal(3, parsed.Item[0].ValueStruct.Value);
+            }
         }
 
         [FlatBufferTable]
@@ -351,10 +409,10 @@ namespace FlatSharpTests
         [FlatBufferStruct]
         public class OtherStruct
         {
-            [FlatBufferItem(0)]
+            [FlatBufferItem(0, WriteThrough = true)]
             public virtual int Prop1 { get; set; }
 
-            [FlatBufferItem(1)]
+            [FlatBufferItem(1, WriteThrough = false)]
             public virtual int Prop2 { get; set; }
         }
 
