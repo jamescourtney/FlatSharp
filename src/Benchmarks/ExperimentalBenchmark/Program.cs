@@ -26,46 +26,51 @@ namespace BenchmarkCore
 {
     [MemoryDiagnoser]
     [ThreadingDiagnoser]
-    [MediumRunJob(BenchmarkDotNet.Jobs.RuntimeMoniker.NetCoreApp50, BenchmarkDotNet.Environments.Jit.RyuJit, BenchmarkDotNet.Environments.Platform.AnyCpu)]
+    [ShortRunJob(BenchmarkDotNet.Jobs.RuntimeMoniker.NetCoreApp50, BenchmarkDotNet.Environments.Jit.RyuJit, BenchmarkDotNet.Environments.Platform.AnyCpu)]
     public class Benchmark
     {
         private readonly byte[] data = new byte[10 * 1024 * 1024];
 
         private ArrayInputBuffer inputBuffer;
-        private ValueTable valueTable;
-        private ValueTable_Unsafe unsafeValueTable;
-        private Table table;
+
+        [Params(FlatBufferDeserializationOption.Lazy, FlatBufferDeserializationOption.Progressive, FlatBufferDeserializationOption.Greedy)]
+        public FlatBufferDeserializationOption Option { get; set; }
+
+        [Params(1000)]
+        public int Length { get; set; }
+
+        [Params(1, 5)]
+        public int TravCount { get; set; }
+
+        private FlatBufferSerializer serializer;
+
+        private int[] indexesToAccess;
 
         [GlobalSetup]
         public void Setup()
         {
-            ValueTable t = new ValueTable();
-            t.Points = new List<Vec3Value>();
-
-            for (int i = 0; i < 20_000; ++i)
+            ValueTable t = new ValueTable { Points = new List<Vec3>() };
+            for (int i = 0; i < this.Length; ++i)
             {
-                var value = new Vec3Value();
-
-                for (int ii = 0; ii < value.X_Length; ++ii)
-                {
-                    value.X(ii) = (byte)ii;
-                }
-
-                t.Points.Add(value);
+                t.Points.Add(new Vec3 { X = i, Y = i * 2, Z = i * 3 });
             }
 
-            ValueTable.Serializer.Write(data, t);
-            inputBuffer = new ArrayInputBuffer(data);
+            this.indexesToAccess = new int[this.Length / 10];
+            Random r = new Random();
+            for (int i = 0; i < this.indexesToAccess.Length; ++i)
+            {
+                this.indexesToAccess[i] = r.Next(this.indexesToAccess.Length);
+            }
 
-            valueTable = new ValueTable(ValueTable.Serializer.Parse(data));
-            unsafeValueTable = new ValueTable_Unsafe(ValueTable_Unsafe.Serializer.Parse(data));
-            table = new Table(Table.Serializer.Parse(data));
+            this.serializer = new FlatBufferSerializer(this.Option);
+            this.serializer.Serialize(t, this.data);
+            this.inputBuffer = new ArrayInputBuffer(this.data);
         }
 
         [Benchmark]
-        public int ParseAndTraverse_Value()
+        public int ParseAndTraverse_Full()
         {
-            var t = ValueTable.Serializer.Parse(this.inputBuffer);
+            var t = this.serializer.Parse<ValueTable, ArrayInputBuffer>(this.inputBuffer);
 
             int sum = 0;
 
@@ -75,13 +80,13 @@ namespace BenchmarkCore
                 return 0;
             }
 
-            int count = points.Count;
-            for (int i = 0; i < count; ++i)
+            for (int c = 0; c < this.TravCount; ++c)
             {
-                var point = points[i];
-                for (int ii = 0; ii < point.X_Length; ++ii)
+                int count = points.Count;
+                for (int i = 0; i < count; ++i)
                 {
-                    sum += (int)point.X(ii);
+                    var point = points[i];
+                    sum += (point.X + point.Y + point.Z);
                 }
             }
 
@@ -89,15 +94,9 @@ namespace BenchmarkCore
         }
 
         [Benchmark]
-        public int Serialize_Value()
+        public int ParseAndTraverse_Sparse()
         {
-            return ValueTable.Serializer.Write(this.data, this.valueTable);
-        }
-
-        [Benchmark]
-        public int ParseAndTraverse_Value_Unsafe()
-        {
-            var t = ValueTable_Unsafe.Serializer.Parse(this.inputBuffer);
+            var t = this.serializer.Parse<ValueTable, ArrayInputBuffer>(this.inputBuffer);
 
             int sum = 0;
 
@@ -107,55 +106,16 @@ namespace BenchmarkCore
                 return 0;
             }
 
-            int count = points.Count;
-            for (int i = 0; i < count; ++i)
+            for (int c = 0; c < this.TravCount; ++c)
             {
-                var point = points[i];
-                for (int ii = 0; ii < point.X_Length; ++ii)
+                foreach (var i in this.indexesToAccess)
                 {
-                    sum += (int)point.X(ii);
+                    var point = points[i];
+                    sum += (point.X + point.Y + point.Z);
                 }
             }
 
             return sum;
-        }
-
-        [Benchmark]
-        public int Serialize_Value_Unsafe()
-        {
-            return ValueTable_Unsafe.Serializer.Write(this.data, this.unsafeValueTable);
-        }
-
-        [Benchmark]
-        public int ParseAndTraverse_Ref()
-        {
-            var t = Table.Serializer.Parse(this.inputBuffer);
-
-            int sum = 0;
-
-            var points = t.Points;
-            if (points is null)
-            {
-                return 0;
-            }
-
-            int count = points.Count;
-            for (int i = 0; i < count; ++i)
-            {
-                var vec = points[i].X;
-                for (int ii = 0; ii < vec.Count; ++ii)
-                {
-                    sum += (int)vec[ii];
-                }
-            }
-
-            return sum;
-        }
-
-        [Benchmark]
-        public int Serialize_Ref()
-        {
-            return Table.Serializer.Write(this.data, this.table);
         }
     }
 

@@ -33,8 +33,6 @@ namespace FlatSharp.TypeModel
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
-            BaseVectorTypeModel.ValidatePreallocationSettings(this, context.AllFieldContexts, context.Options);
-
             var (classDef, className) = FlatBufferVectorHelpers.CreateFlatBufferVectorOfUnionSubclass(
                 this.ItemTypeModel,
                 context);

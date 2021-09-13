@@ -47,7 +47,5 @@ namespace FlatSharp.Compiler
         bool? WriteThrough { get; }
 
         RpcStreamingType? StreamingType { get; }
-
-        long? VectorPreallocate { get; }
     }
 }

@@ -104,8 +104,6 @@ namespace FlatSharp.TypeModel
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
-            ValidatePreallocationSettings(this, context.AllFieldContexts, context.Options);
-
             ValidateWriteThrough(
                 writeThroughSupported: !this.isReadOnly,
                 this,
@@ -149,24 +147,8 @@ namespace FlatSharp.TypeModel
             }
             else
             {
-                // Note: it is possible to do some analysis here and reduce the complexity of the following.
-                // based on the number of distinct values of the preallocation limit (ie, if they are all 0, the 'if' check
-                // can be elided entirely).
-                // However -- the profit from doing so is minimal and the testing is difficult.
                 FlatSharpInternal.Assert(context.Options.Progressive, "expecting progressive");
-
-                return $@"
-                    var vector = {createFlatBufferVector};
-                    if ({context.TableFieldContextVariableName}.{nameof(TableFieldContext.WriteThrough)} ||
-                        vector.Count >= ({context.TableFieldContextVariableName}.{nameof(TableFieldContext.VectorPreallocationLimit)} ?? {DefaultPreallocationLimit}))
-                    {{
-                        return new FlatBufferProgressiveVector<{itemTypeModel.GetGlobalCompilableTypeName()}>(vector);
-                    }}
-                    else
-                    {{
-                        return vector.FlatBufferVectorToList().AsReadOnly();
-                    }}
-                ";
+                return $"return new FlatBufferProgressiveVector<{itemTypeModel.GetGlobalCompilableTypeName()}>({createFlatBufferVector});";
             }
         }
     }

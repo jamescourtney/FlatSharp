@@ -67,8 +67,6 @@ namespace FlatSharp.Compiler
 
         public RpcStreamingType? StreamingType => this.TryParseEnum(MetadataKeys.Streaming, RpcStreamingType.None);
 
-        public long? VectorPreallocate => this.TryParsePreallocate();
-
         private bool? TryParseBoolean(string key)
         {
             if (this.parsed.TryGetValue(key, out object? obj))
@@ -141,29 +139,7 @@ namespace FlatSharp.Compiler
             return result;
         }
 
-        private long? TryParsePreallocate()
-        {
-            if (this.rawAttributes.TryGetValue(MetadataKeys.VectorPreallocation, out Schema.KeyValue? value))
-            {
-                if (value.Value == "Never")
-                {
-                    return 0;
-                }
-                else if (value.Value == "Always")
-                {
-                    return long.MaxValue;
-                }
-                else if (value.Value == "Default")
-                {
-                    return null;
-                }
-
-                return this.TryParseLong(MetadataKeys.VectorPreallocation);
-            }
-
-            return null;
-        }
-
+        /* Works fine -- just not used.
         private long? TryParseLong(string key)
         {
             if (this.parsed.TryGetValue(key, out object? obj))
@@ -200,5 +176,6 @@ namespace FlatSharp.Compiler
             this.parsed[key] = result;
             return result;
         }
+        */
     }
 }

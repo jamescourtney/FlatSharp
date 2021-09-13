@@ -43,7 +43,6 @@ namespace FlatSharp.Compiler
                 this.VectorKind = other.VectorKind;
                 this.WriteThrough = other.WriteThrough;
                 this.StreamingType = other.StreamingType;
-                this.VectorPreallocate = other.VectorPreallocate;
             }
         }
 
@@ -74,7 +73,5 @@ namespace FlatSharp.Compiler
         public bool? WriteThrough { get; set; }
 
         public RpcStreamingType? StreamingType { get; set; }
-
-        public long? VectorPreallocate { get; set; }
     }
 }

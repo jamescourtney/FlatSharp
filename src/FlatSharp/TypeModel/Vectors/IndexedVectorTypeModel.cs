@@ -88,8 +88,6 @@ namespace FlatSharp.TypeModel
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
-            ValidatePreallocationSettings(this, context.AllFieldContexts, context.Options);
-
             ValidateWriteThrough(
                 writeThroughSupported: false,
                 this,

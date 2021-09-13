@@ -119,7 +119,7 @@ namespace FlatSharpTests
             var table = this.SerializeAndParse<IList<string>>(FlatBufferDeserializationOption.Progressive, Strings);
             string originalHash = this.GetInputBufferHash();
 
-            Assert.Equal(typeof(ReadOnlyCollection<string>), table.Vector.GetType());
+            Assert.Equal(typeof(FlatBufferProgressiveVector<string>), table.Vector.GetType());
             Assert.True(object.ReferenceEquals(table.Vector, table.Vector));
 
             var vector = table.Vector;
@@ -128,8 +128,8 @@ namespace FlatSharpTests
             Assert.True(object.ReferenceEquals(table.Second, table.Second));
             Assert.Equal(Strings.Length, table.Vector.Count);
 
-            Assert.Throws<NotSupportedException>(() => table.Vector[0] = "foobar");
-            Assert.Throws<NotSupportedException>(() => table.Vector.Clear());
+            Assert.Throws<NotMutableException>(() => table.Vector[0] = "foobar");
+            Assert.Throws<NotMutableException>(() => table.Vector.Clear());
             Assert.Throws<NotMutableException>(() => table.First.First = 3);
             Assert.Throws<NotMutableException>(() => table.First = null);
 
@@ -142,7 +142,7 @@ namespace FlatSharpTests
             var table = this.SerializeAndParse<IReadOnlyList<string>>(FlatBufferDeserializationOption.Progressive, Strings);
             string originalHash = this.GetInputBufferHash();
 
-            Assert.Equal(typeof(ReadOnlyCollection<string>), table.Vector.GetType());
+            Assert.Equal(typeof(FlatBufferProgressiveVector<string>), table.Vector.GetType());
             Assert.True(object.ReferenceEquals(table.Vector, table.Vector));
             Assert.True(object.ReferenceEquals(table.Vector[5], table.Vector[5]));
             Assert.True(object.ReferenceEquals(table.First, table.First));

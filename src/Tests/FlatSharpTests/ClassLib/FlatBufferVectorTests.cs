@@ -235,7 +235,7 @@ namespace FlatSharpTests
         [FlatBufferTable]
         public class TableVector<T>
         {
-            [FlatBufferItem(0, VectorPreallocationLimit = 0)]
+            [FlatBufferItem(0)]
             public virtual IList<T>? Vector { get; set; }
         }
     }
