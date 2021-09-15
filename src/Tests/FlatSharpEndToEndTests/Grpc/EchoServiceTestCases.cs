@@ -33,6 +33,19 @@ namespace FlatSharpEndToEndTests.GrpcTests
         [Fact]
         public async Task GrpcSerializersOverridable_EnableSharedStrings()
         {
+            EchoService.Serializer<MultiStringMessage>.Value = MultiStringMessage.Serializer.WithSettings(
+                new SerializerSettings
+                {
+                    SharedStringWriterFactory = () => new SharedStringWriter()
+                });
+
+            int length = await this.SharedStringsTest_Common();
+            Assert.True(length <= 2048);
+        }
+        
+        [Fact]
+        public async Task GrpcSerializersOverridable_NoSharedStrings()
+        {
             try
             {
                 Assert.Throws<ArgumentNullException>(
@@ -41,23 +54,16 @@ namespace FlatSharpEndToEndTests.GrpcTests
                 EchoService.Serializer<MultiStringMessage>.Value = MultiStringMessage.Serializer.WithSettings(
                     new SerializerSettings
                     {
-                        SharedStringWriterFactory = () => new SharedStringWriter()
+                        SharedStringWriterFactory = null
                     });
 
                 int length = await this.SharedStringsTest_Common();
-                Assert.True(length <= 2048);
+                Assert.True(length >= 100_000);
             }
             finally
             {
                 EchoService.Serializer<MultiStringMessage>.Value = MultiStringMessage.Serializer;
             }
-        }
-        
-        [Fact]
-        public async Task GrpcSerializersOverridable_NoSharedStrings()
-        {
-            int length = await this.SharedStringsTest_Common();
-            Assert.True(length >= 100_000);
         }
 
         private async Task<int> SharedStringsTest_Common()
