@@ -26,7 +26,7 @@ namespace BenchmarkCore
 {
     [MemoryDiagnoser]
     [ThreadingDiagnoser]
-    [ShortRunJob(BenchmarkDotNet.Jobs.RuntimeMoniker.NetCoreApp50, BenchmarkDotNet.Environments.Jit.RyuJit, BenchmarkDotNet.Environments.Platform.AnyCpu)]
+    [ShortRunJob(BenchmarkDotNet.Jobs.RuntimeMoniker.Net50, BenchmarkDotNet.Environments.Jit.RyuJit, BenchmarkDotNet.Environments.Platform.AnyCpu)]
     public class Benchmark
     {
         private readonly byte[] data = new byte[10 * 1024 * 1024];

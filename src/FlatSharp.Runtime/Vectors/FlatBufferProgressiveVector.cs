@@ -34,7 +34,7 @@ namespace FlatSharp
         private static readonly ulong[] Empty = new ulong[0];
 
         // The chunk size here matches the number of bits in the presenceMask array below.
-        private const int ChunkSize = 64;
+        private const uint ChunkSize = 64;
 
         // A semi-sparse array. Each row contains ChunkSize items.
         // This approach allows fast access while not broadly over allocating.
@@ -63,7 +63,7 @@ namespace FlatSharp
         }
 
         /// <summary>
-        /// Gets the item at the given index.
+        /// Gets or sets the item at the given index.
         /// </summary>
         public T this[int index]
         {
@@ -75,42 +75,53 @@ namespace FlatSharp
                     throw new IndexOutOfRangeException();
                 }
 
-                var (row, col) = GetAddress(uindex);
+                GetAddress(uindex, out uint rowIndex, out uint colIndex);
 
-                ref T? item = ref this.GetCellRef(row, col);
+                T?[]?[] items = this.items;
+                T?[]? row = GetOrCreateRow(items, rowIndex);
+
                 if (typeof(T).IsValueType)
                 {
-                    ref ulong maskRef = ref this.GetMaskRef(row);
-                    ulong mask = GetMask(col);
+                    ref T item = ref row[colIndex]!;
+                    ref ulong currentMask = ref this.presenceMask[rowIndex];
+                    ulong mask = GetMask(colIndex);
 
-                    if ((maskRef & mask) == 0)
+                    if ((currentMask & mask) == 0)
                     {
                         item = this.innerVector[index];
-                        maskRef |= mask;
+                        currentMask |= mask;
                     }
+
+                    return item;
                 }
                 else
                 {
+                    T? item = row[colIndex];
                     if (item is null)
                     {
                         item = this.innerVector[index];
+                        row[colIndex] = item;
                     }
-                }
 
-                return item!;
+                    return item;
+                }
             }
 
             set
             {
-                // Let inner vector do the validation.
+                // Let inner vector do the validation of the index.
                 this.innerVector[index] = value;
 
-                var (row, col) = GetAddress((uint)index);
-                this.GetCellRef(row, col) = value; // save.
+                GetAddress((uint)index, out uint rowIndex, out uint colIndex);
+
+                T?[]?[] items = this.items;
+                T?[] row = GetOrCreateRow(items, rowIndex);
+                row[colIndex] = value;
 
                 if (typeof(T).IsValueType)
                 {
-                    this.GetMaskRef(row) |= GetMask(col);
+                    ulong[] masks = this.presenceMask;
+                    masks[rowIndex] |= GetMask(colIndex);
                 }
             }
         }
@@ -197,34 +208,29 @@ namespace FlatSharp
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static (uint row, uint col) GetAddress(uint index)
+        private static void GetAddress(uint index, out uint rowIndex, out uint colIndex)
         {
-            return (index / ChunkSize, index % ChunkSize);
+            rowIndex = index / ChunkSize;
+            colIndex = index % ChunkSize;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private ref T? GetCellRef(uint rowAddr, uint colAddr)
+        private static T?[] GetOrCreateRow(T?[]?[] items, uint rowIndex)
         {
-            ref T?[]? row = ref this.items[rowAddr];
+            T?[]? row = items[rowIndex];
             if (row is null)
             {
                 row = new T[ChunkSize];
+                items[rowIndex] = row;
             }
 
-            return ref row[colAddr];
+            return row;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private ref ulong GetMaskRef(uint rowAddr)
+        private ulong GetMask(uint colIndex)
         {
-            return ref this.presenceMask[rowAddr];
+            return 1ul << (int)colIndex;
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private ulong GetMask(uint colAddr)
-        {
-            return 1ul << (int)colAddr;
-        }
-
     }
 }
