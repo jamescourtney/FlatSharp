@@ -2,7 +2,7 @@
   <Import Project="..\..\common.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;netcoreapp3.1;net5.0</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <PlatformTarget>x64</PlatformTarget>
     <AssemblyName>FlatSharpCompilerTests</AssemblyName>
