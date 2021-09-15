@@ -19,9 +19,9 @@
       <CompilerInvocation>dotnet $(CompilerPath)</CompilerInvocation>
     </PropertyGroup>
 
-    <!-- finally assume it's netcore2.1 -->
+    <!-- finally assume it's netcore3.1 -->
     <PropertyGroup Condition=" '$(CompilerInvocation)' == '' ">
-      <CompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\tools\netcoreapp2.1\FlatSharp.Compiler.dll'))</CompilerPath>
+      <CompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\tools\netcoreapp3.1\FlatSharp.Compiler.dll'))</CompilerPath>
       <CompilerInvocation>dotnet $(CompilerPath)</CompilerInvocation>
     </PropertyGroup>
 
