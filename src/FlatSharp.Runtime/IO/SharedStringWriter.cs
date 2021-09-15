@@ -25,7 +25,7 @@ namespace FlatSharp
     /// </summary>
     public class SharedStringWriter : ISharedStringWriter
     {
-        private const int DefaultCapacity = 257;
+        private const int DefaultCapacity = 1019;
         private readonly WriteCacheEntry[] sharedStringOffsetCache;
 
         /// <summary>

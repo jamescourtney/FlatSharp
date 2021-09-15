@@ -47,6 +47,7 @@ namespace FlatSharp
 
             var tableAttribute = typeof(T).GetCustomAttribute<Attributes.FlatBufferTableAttribute>();
             this.fileIdentifier = tableAttribute?.FileIdentifier;
+            this.sharedStringWriter = new ThreadLocal<ISharedStringWriter>(() => new SharedStringWriter());
         }
 
         private GeneratedSerializerWrapper(GeneratedSerializerWrapper<T> template, SerializerSettings settings)
