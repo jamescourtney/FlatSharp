@@ -25,6 +25,7 @@ namespace Benchmark
     using BenchmarkDotNet.Loggers;
     using BenchmarkDotNet.Reports;
     using BenchmarkDotNet.Running;
+    using System;
     using System.Collections.Generic;
 
     public class Program
@@ -35,13 +36,13 @@ namespace Benchmark
 
             Job job = Job.ShortRun
                 .WithAnalyzeLaunchVariance(true)
-                .WithLaunchCount(1)
-                .WithWarmupCount(5)
-                .WithIterationCount(9)
+                .WithLaunchCount(3)
+                .WithWarmupCount(3)
+                .WithIterationCount(3)
                 .WithRuntime(CoreRuntime.Core50);
 
             var config = DefaultConfig.Instance
-                 .AddColumn(new[] { StatisticColumn.P25, StatisticColumn.P50, StatisticColumn.P67, StatisticColumn.P80, StatisticColumn.P90, StatisticColumn.P95 })
+                 .AddColumn(new[] { StatisticColumn.P25, StatisticColumn.P95 })
                  .AddDiagnoser(MemoryDiagnoser.Default)
                  .AddJob(job);
 
