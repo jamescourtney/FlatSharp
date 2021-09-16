@@ -32,12 +32,12 @@ namespace FlatSharp
         where TInputBuffer : IInputBuffer
     {
         private readonly Dictionary<TKey, TValue?> backingDictionary;
-        private readonly FlatBufferProgressiveVector<TValue> backingVector;
+        private readonly FlatBufferProgressiveVector<TValue, TInputBuffer> backingVector;
 
         public FlatBufferProgressiveIndexedVector(FlatBufferVector<TValue, TInputBuffer> items)
         {
             this.backingDictionary = new Dictionary<TKey, TValue?>();
-            this.backingVector = new FlatBufferProgressiveVector<TValue>(items);
+            this.backingVector = new FlatBufferProgressiveVector<TValue, TInputBuffer>(items);
         }
 
         /// <summary>

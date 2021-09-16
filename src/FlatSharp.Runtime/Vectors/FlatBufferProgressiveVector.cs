@@ -28,38 +28,25 @@ namespace FlatSharp
     /// for data locality, random access, and reasonably low memory overhead.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public class FlatBufferProgressiveVector<T> : IList<T>, IReadOnlyList<T>
+    public class FlatBufferProgressiveVector<T, TInputBuffer> : IList<T>, IReadOnlyList<T>
         where T : notnull
+        where TInputBuffer : IInputBuffer
     {
-        private static readonly ulong[] Empty = new ulong[0];
-
         // The chunk size here matches the number of bits in the presenceMask array below.
-        private const uint ChunkSize = 64;
+        private const uint ChunkSize = 32;
 
         // A semi-sparse array. Each row contains ChunkSize items.
         // This approach allows fast access while not broadly over allocating.
         // Using "mini arrays" also ensures good sequential access performance.
         private readonly T?[]?[] items;
-
-        // array of bitmasks indicating presence. This is necessary for value types where we can't test for null.
-        private readonly ulong[] presenceMask; 
-        private readonly IList<T> innerVector;
+        private readonly FlatBufferVectorBase<T, TInputBuffer> innerVector;
 
         public FlatBufferProgressiveVector(
-            IList<T> innerVector)
+            FlatBufferVectorBase<T, TInputBuffer> innerVector)
         {
             this.Count = innerVector.Count;
             this.innerVector = innerVector;
             this.items = new T[(innerVector.Count / ChunkSize) + 1][];
-
-            if (typeof(T).IsValueType)
-            {
-                presenceMask = new ulong[this.items.Length];
-            }
-            else
-            {
-                presenceMask = Empty;
-            }
         }
 
         /// <summary>
@@ -78,33 +65,19 @@ namespace FlatSharp
                 GetAddress(uindex, out uint rowIndex, out uint colIndex);
 
                 T?[]?[] items = this.items;
-                T?[]? row = GetOrCreateRow(items, rowIndex);
+                T?[]? row = this.GetOrCreateRow(items, rowIndex);
+                T? item = row[colIndex];
 
-                if (typeof(T).IsValueType)
+                if (!typeof(T).IsValueType)
                 {
-                    ref T item = ref row[colIndex]!;
-                    ref ulong currentMask = ref this.presenceMask[rowIndex];
-                    ulong mask = GetMask(colIndex);
-
-                    if ((currentMask & mask) == 0)
-                    {
-                        item = this.innerVector[index];
-                        currentMask |= mask;
-                    }
-
-                    return item;
-                }
-                else
-                {
-                    T? item = row[colIndex];
                     if (item is null)
                     {
                         item = this.innerVector[index];
                         row[colIndex] = item;
                     }
-
-                    return item;
                 }
+
+                return item!;
             }
 
             set
@@ -115,14 +88,8 @@ namespace FlatSharp
                 GetAddress((uint)index, out uint rowIndex, out uint colIndex);
 
                 T?[]?[] items = this.items;
-                T?[] row = GetOrCreateRow(items, rowIndex);
+                T?[] row = this.GetOrCreateRow(items, rowIndex);
                 row[colIndex] = value;
-
-                if (typeof(T).IsValueType)
-                {
-                    ulong[] masks = this.presenceMask;
-                    masks[rowIndex] |= GetMask(colIndex);
-                }
             }
         }
 
@@ -215,22 +182,28 @@ namespace FlatSharp
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static T?[] GetOrCreateRow(T?[]?[] items, uint rowIndex)
+        private T?[] GetOrCreateRow(T?[]?[] items, uint rowIndex)
         {
             T?[]? row = items[rowIndex];
+
             if (row is null)
             {
                 row = new T[ChunkSize];
                 items[rowIndex] = row;
+
+                // For value types -- we can't rely on null to tell
+                // us if the value is allocated or not, so just greedily
+                // allocate the whole chunk. Chunks are relatively
+                // small, so the overhead here is not enormous, and there
+                // is no extra allocation since this is a value type.
+                if (typeof(T).IsValueType)
+                {
+                    int rowStartIndex = checked((int)(ChunkSize * rowIndex));
+                    this.innerVector.CopyRangeTo(rowStartIndex, row, ChunkSize);
+                }
             }
 
             return row;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private ulong GetMask(uint colIndex)
-        {
-            return 1ul << (int)colIndex;
         }
     }
 }

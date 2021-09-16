@@ -84,6 +84,24 @@ namespace FlatSharp
             }
         }
 
+        internal void CopyRangeTo(int startIndex, T?[] array, uint count)
+        {
+            if (startIndex < 0)
+            {
+                throw new ArgumentOutOfRangeException();
+            }
+
+            // might have more elements than we do.
+            count = Math.Min(
+                checked((uint)(this.Count - startIndex)),
+                count);
+
+            for (int i = 0; i < count; ++i)
+            {
+                this.ParseItem(i + startIndex, out array[i]);
+            }
+        }
+
         public T[] ToArray()
         {
             T[] array = new T[this.Count];

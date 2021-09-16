@@ -198,7 +198,7 @@ namespace FlatSharpTests
             Assert.Throws<NotMutableException>(() => table.Struct.Long = 0);
             Assert.Throws<NotMutableException>(() => table.Struct = new());
 
-            Assert.Equal(typeof(FlatBufferProgressiveVector<SimpleStruct>), table.StructVector.GetType());
+            Assert.Equal(typeof(FlatBufferProgressiveVector<SimpleStruct, ArrayInputBuffer>), table.StructVector.GetType());
         }
 
         [Fact]
