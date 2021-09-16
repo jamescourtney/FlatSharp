@@ -252,20 +252,18 @@ namespace FlatSharp.TypeModel
                 return;
             }
 
-            var firstWriteThrough = fieldsForModel
-                .Select(x => (TableFieldContext?)x)
-                .FirstOrDefault(x => x!.Value.WriteThrough);
+            var firstWriteThrough = fieldsForModel.Where(x => x.WriteThrough).FirstOrDefault();
 
             if (firstWriteThrough is not null)
             {
                 if (options.GreedyDeserialize)
                 {
-                    throw new InvalidFlatBufferDefinitionException($"Field '{firstWriteThrough.Value.FullName}' declares the WriteThrough option. WriteThrough is not supported when using Greedy deserialization.");
+                    throw new InvalidFlatBufferDefinitionException($"Field '{firstWriteThrough.FullName}' declares the WriteThrough option. WriteThrough is not supported when using Greedy deserialization.");
                 }
 
                 if (!writeThroughSupported)
                 {
-                    throw new InvalidFlatBufferDefinitionException($"Field '{firstWriteThrough.Value.FullName}' declares the WriteThrough option. WriteThrough is only supported for IList vectors.");
+                    throw new InvalidFlatBufferDefinitionException($"Field '{firstWriteThrough.FullName}' declares the WriteThrough option. WriteThrough is only supported for IList vectors.");
                 }
             }
         }

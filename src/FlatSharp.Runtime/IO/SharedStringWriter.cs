@@ -40,12 +40,15 @@ namespace FlatSharp
             }
 
             this.sharedStringOffsetCache = new WriteCacheEntry[hashTableCapacity];
+            this.Reset();
         }
+
+        public bool IsDirty { get; private set; }
 
         /// <summary>
         /// Resets the internal state to prepare for a new write operation.
         /// </summary>
-        public void PrepareWrite()
+        public void Reset()
         {
             var cache = this.sharedStringOffsetCache;
             for (int i = 0; i < cache.Length; ++i)
@@ -60,16 +63,18 @@ namespace FlatSharp
 
                 entry.Offsets.Clear();
             }
+
+            this.IsDirty = false;
         }
 
         /// <summary>
         /// Writes a shared string.
         /// </summary>
         public void WriteSharedString<TSpanWriter>(
-            TSpanWriter spanWriter, 
-            Span<byte> data, 
-            int offset, 
-            string value, 
+            TSpanWriter spanWriter,
+            Span<byte> data,
+            int offset,
+            string value,
             SerializationContext context) where TSpanWriter : ISpanWriter
         {
             // Find the associative set that must contain our key.
@@ -92,6 +97,8 @@ namespace FlatSharp
 
             line.String = value;
             offsets.Add(offset);
+
+            this.IsDirty = true;
         }
 
         /// <summary>
@@ -110,15 +117,19 @@ namespace FlatSharp
                     FlushSharedString(writer, data, str, item.Offsets, context);
                     item.String = null;
                 }
+
+                item.Offsets.Clear();
             }
+
+            this.IsDirty = false;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void FlushSharedString<TSpanWriter>(
-            TSpanWriter spanWriter, 
-            Span<byte> span, 
-            string value, 
-            List<int> offsets, 
+            TSpanWriter spanWriter,
+            Span<byte> span,
+            string value,
+            List<int> offsets,
             SerializationContext context) where TSpanWriter : ISpanWriter
         {
             int stringOffset = spanWriter.WriteAndProvisionString(span, value, context);

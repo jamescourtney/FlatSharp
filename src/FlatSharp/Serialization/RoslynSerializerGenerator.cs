@@ -577,7 +577,7 @@ $@"
             string tableFieldContextParameter = string.Empty;
             if (typeModel.TableFieldContextRequirements.HasFlag(TableFieldContextRequirements.GetMaxSize))
             {
-                tableFieldContextParameter = $", in {nameof(TableFieldContext)} {context.TableFieldContextVariableName}";
+                tableFieldContextParameter = $", {nameof(TableFieldContext)} {context.TableFieldContextVariableName}";
             }
 
             string declaration =
@@ -596,7 +596,7 @@ $@"
             string tableFieldContextParameter = string.Empty;
             if (typeModel.TableFieldContextRequirements.HasFlag(TableFieldContextRequirements.Parse))
             {
-                tableFieldContextParameter = $", in {nameof(TableFieldContext)} {context.TableFieldContextVariableName}";
+                tableFieldContextParameter = $", {nameof(TableFieldContext)} {context.TableFieldContextVariableName}";
             }
 
             string clrType = typeModel.GetGlobalCompilableTypeName();
@@ -627,7 +627,7 @@ $@"
 
             if (typeModel.TableFieldContextRequirements.HasFlag(TableFieldContextRequirements.Serialize))
             {
-                tableFieldContextParameter = $", in {nameof(TableFieldContext)} {context.TableFieldContextVariableName}";
+                tableFieldContextParameter = $", {nameof(TableFieldContext)} {context.TableFieldContextVariableName}";
             }
 
             string declaration =
