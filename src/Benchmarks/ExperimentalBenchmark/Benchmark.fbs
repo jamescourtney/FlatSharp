@@ -11,7 +11,7 @@ table ValueTable {
 	Points : [Vec3];
 }
 
-struct Vec3 (fs_valueStruct)
+struct Vec3 (fs_nonVirtual)
 {
 	X : int;
 	Y : int;
