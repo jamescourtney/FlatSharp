@@ -54,10 +54,10 @@ namespace Benchmark
 #endif
 
 #if FLATSHARP_6_0_0_OR_GREATER
-            //summaries.Add(BenchmarkRunner.Run(typeof(FBBench.FBSharedStringBench), config));
+            summaries.Add(BenchmarkRunner.Run(typeof(FBBench.FBSharedStringBench), config));
 #endif
 #if CURRENT_VERSION_ONLY
-            //summaries.Add(BenchmarkRunner.Run(typeof(SerializationContextBenchmark), config));
+            summaries.Add(BenchmarkRunner.Run(typeof(SerializationContextBenchmark), config));
 #endif
 
             foreach (var item in summaries)
