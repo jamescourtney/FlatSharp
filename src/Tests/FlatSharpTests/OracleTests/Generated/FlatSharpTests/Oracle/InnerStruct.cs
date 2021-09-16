@@ -37,7 +37,7 @@ public struct InnerStruct : IFlatbufferObject
       builder,
       _o.A);
   }
-};
+}
 
 public class InnerStructT
 {

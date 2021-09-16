@@ -13,7 +13,7 @@ public struct LocationHolder : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_1_12_0(); }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_2_0_0(); }
   public static LocationHolder GetRootAsLocationHolder(ByteBuffer _bb) { return GetRootAsLocationHolder(_bb, new LocationHolder()); }
   public static LocationHolder GetRootAsLocationHolder(ByteBuffer _bb, LocationHolder obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
@@ -29,6 +29,17 @@ public struct LocationHolder : IFlatbufferObject
   public byte[] GetFakeArray() { return __p.__vector_as_array<byte>(6); }
   public FlatSharpTests.Oracle.Location? LocationVector(int j) { int o = __p.__offset(8); return o != 0 ? (FlatSharpTests.Oracle.Location?)(new FlatSharpTests.Oracle.Location()).__assign(__p.__vector(o) + j * 12, __p.bb) : null; }
   public int LocationVectorLength { get { int o = __p.__offset(8); return o != 0 ? __p.__vector_len(o) : 0; } }
+
+  public static Offset<FlatSharpTests.Oracle.LocationHolder> CreateLocationHolder(FlatBufferBuilder builder,
+      FlatSharpTests.Oracle.LocationT SingleLocation = null,
+      StringOffset FakeOffset = default(StringOffset),
+      VectorOffset LocationVectorOffset = default(VectorOffset)) {
+    builder.StartTable(3);
+    LocationHolder.AddLocationVector(builder, LocationVectorOffset);
+    LocationHolder.AddFake(builder, FakeOffset);
+    LocationHolder.AddSingleLocation(builder, FlatSharpTests.Oracle.Location.Pack(builder, SingleLocation));
+    return LocationHolder.EndLocationHolder(builder);
+  }
 
   public static void StartLocationHolder(FlatBufferBuilder builder) { builder.StartTable(3); }
   public static void AddSingleLocation(FlatBufferBuilder builder, Offset<FlatSharpTests.Oracle.Location> SingleLocationOffset) { builder.AddStruct(0, SingleLocationOffset.Value, 0); }
@@ -59,13 +70,13 @@ public struct LocationHolder : IFlatbufferObject
       for (var _j = _o.LocationVector.Count - 1; _j >= 0; --_j) { FlatSharpTests.Oracle.Location.Pack(builder, _o.LocationVector[_j]); }
       _LocationVector = builder.EndVector();
     }
-    StartLocationHolder(builder);
-    AddSingleLocation(builder, FlatSharpTests.Oracle.Location.Pack(builder, _o.SingleLocation));
-    AddFake(builder, _Fake);
-    AddLocationVector(builder, _LocationVector);
-    return EndLocationHolder(builder);
+    return CreateLocationHolder(
+      builder,
+      _o.SingleLocation,
+      _Fake,
+      _LocationVector);
   }
-};
+}
 
 public class LocationHolderT
 {
