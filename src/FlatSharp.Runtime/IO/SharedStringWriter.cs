@@ -40,7 +40,7 @@ namespace FlatSharp
             }
 
             this.sharedStringOffsetCache = new WriteCacheEntry[hashTableCapacity];
-            this.Reset();
+            this.IsDirty = true; // force reset to be called the first time.
         }
 
         public bool IsDirty { get; private set; }
