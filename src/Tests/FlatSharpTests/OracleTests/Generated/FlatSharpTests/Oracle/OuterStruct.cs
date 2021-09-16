@@ -37,12 +37,13 @@ public struct OuterStruct : IFlatbufferObject
   }
   public static Offset<FlatSharpTests.Oracle.OuterStruct> Pack(FlatBufferBuilder builder, OuterStructT _o) {
     if (_o == null) return default(Offset<FlatSharpTests.Oracle.OuterStruct>);
+    var _Inner_A = _o.Inner.A;
     return CreateOuterStruct(
       builder,
-      _o.Inner.A,
+      _Inner_A,
       _o.A);
   }
-};
+}
 
 public class OuterStructT
 {

@@ -24,8 +24,11 @@ public class UnionUnion {
 
   public T As<T>() where T : class { return this.Value as T; }
   public FlatSharpTests.Oracle.BasicTypesT AsBasicTypes() { return this.As<FlatSharpTests.Oracle.BasicTypesT>(); }
+  public static UnionUnion FromBasicTypes(FlatSharpTests.Oracle.BasicTypesT _basictypes) { return new UnionUnion{ Type = Union.BasicTypes, Value = _basictypes }; }
   public FlatSharpTests.Oracle.LocationT AsLocation() { return this.As<FlatSharpTests.Oracle.LocationT>(); }
+  public static UnionUnion FromLocation(FlatSharpTests.Oracle.LocationT _location) { return new UnionUnion{ Type = Union.Location, Value = _location }; }
   public string AsstringValue() { return this.As<string>(); }
+  public static UnionUnion FromstringValue(string _stringvalue) { return new UnionUnion{ Type = Union.stringValue, Value = _stringvalue }; }
 
   public static int Pack(FlatBuffers.FlatBufferBuilder builder, UnionUnion _o) {
     switch (_o.Type) {

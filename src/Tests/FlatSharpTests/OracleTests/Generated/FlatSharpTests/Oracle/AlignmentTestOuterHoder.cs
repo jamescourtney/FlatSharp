@@ -13,7 +13,7 @@ public struct AlignmentTestOuterHoder : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_1_12_0(); }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_2_0_0(); }
   public static AlignmentTestOuterHoder GetRootAsAlignmentTestOuterHoder(ByteBuffer _bb) { return GetRootAsAlignmentTestOuterHoder(_bb, new AlignmentTestOuterHoder()); }
   public static AlignmentTestOuterHoder GetRootAsAlignmentTestOuterHoder(ByteBuffer _bb, AlignmentTestOuterHoder obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
@@ -41,7 +41,7 @@ public struct AlignmentTestOuterHoder : IFlatbufferObject
     AddValue(builder, FlatSharpTests.Oracle.AlignmentTestOuter.Pack(builder, _o.Value));
     return EndAlignmentTestOuterHoder(builder);
   }
-};
+}
 
 public class AlignmentTestOuterHoderT
 {

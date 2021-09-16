@@ -50,14 +50,14 @@ namespace FlatSharp.TypeModel
                         {parseContext.InputBufferTypeName} memory,
                         int offset,
                         int itemSize,
-                        in {nameof(TableFieldContext)} fieldContext) : base(memory, offset, itemSize, fieldContext)
+                        {nameof(TableFieldContext)} fieldContext) : base(memory, offset, itemSize, fieldContext)
                     {{
                     }}
 
                     protected override void ParseItem(
                         {parseContext.InputBufferTypeName} memory,
                         int offset,
-                        in {nameof(TableFieldContext)} fieldContext,
+                        {nameof(TableFieldContext)} fieldContext,
                         out {itemType.GetGlobalCompilableTypeName()} item)
                     {{
                         item = {parseContext.GetParseInvocation(itemType)};
@@ -96,7 +96,7 @@ namespace FlatSharp.TypeModel
                         {context.InputBufferTypeName} memory,
                         int discriminatorOffset,
                         int offsetVectorOffset,
-                        in {nameof(TableFieldContext)} fieldContext) : base(memory, discriminatorOffset, offsetVectorOffset, fieldContext)
+                        {nameof(TableFieldContext)} fieldContext) : base(memory, discriminatorOffset, offsetVectorOffset, fieldContext)
                     {{
                     }}
 
@@ -104,7 +104,7 @@ namespace FlatSharp.TypeModel
                         {context.InputBufferTypeName} memory,
                         int discriminatorOffset,
                         int offsetOffset,
-                        in {nameof(TableFieldContext)} {context.TableFieldContextVariableName},
+                        {nameof(TableFieldContext)} {context.TableFieldContextVariableName},
                         out {typeModel.GetGlobalCompilableTypeName()} item)
                     {{
                         var {context.OffsetVariableName} = (discriminatorOffset, offsetOffset);

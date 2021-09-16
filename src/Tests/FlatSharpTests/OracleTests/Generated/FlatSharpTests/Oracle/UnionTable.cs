@@ -13,7 +13,7 @@ public struct UnionTable : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_1_12_0(); }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_2_0_0(); }
   public static UnionTable GetRootAsUnionTable(ByteBuffer _bb) { return GetRootAsUnionTable(_bb, new UnionTable()); }
   public static UnionTable GetRootAsUnionTable(ByteBuffer _bb, UnionTable obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
@@ -22,6 +22,9 @@ public struct UnionTable : IFlatbufferObject
   public FlatSharpTests.Oracle.Union ValueType { get { int o = __p.__offset(4); return o != 0 ? (FlatSharpTests.Oracle.Union)__p.bb.Get(o + __p.bb_pos) : FlatSharpTests.Oracle.Union.NONE; } }
   public TTable? Value<TTable>() where TTable : struct, IFlatbufferObject { int o = __p.__offset(6); return o != 0 ? (TTable?)__p.__union<TTable>(o + __p.bb_pos) : null; }
   public string ValueAsString() { int o = __p.__offset(6); return o != 0 ? __p.__string(o + __p.bb_pos) : null; }
+  public FlatSharpTests.Oracle.BasicTypes ValueAsBasicTypes() { return Value<FlatSharpTests.Oracle.BasicTypes>().Value; }
+  public FlatSharpTests.Oracle.Location ValueAsLocation() { return Value<FlatSharpTests.Oracle.Location>().Value; }
+  public string ValueAsstringValue() { return ValueAsString(); }
 
   public static Offset<FlatSharpTests.Oracle.UnionTable> CreateUnionTable(FlatBufferBuilder builder,
       FlatSharpTests.Oracle.Union Value_type = FlatSharpTests.Oracle.Union.NONE,
@@ -69,7 +72,7 @@ public struct UnionTable : IFlatbufferObject
       _Value_type,
       _Value);
   }
-};
+}
 
 public class UnionTableT
 {

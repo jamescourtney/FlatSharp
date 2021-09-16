@@ -70,7 +70,7 @@ namespace FlatSharp
             TInputBuffer buffer,
             int discriminatorOffset,
             int offsetOffset,
-            in TableFieldContext fieldContext,
+            TableFieldContext fieldContext,
             out T item);
     }
 }

@@ -63,9 +63,7 @@ namespace Benchmark.FBBench
 
         public virtual int TraversalCount { get; set; }
 
-        public virtual FlatBufferDeserializationOption DeserializeOption { get; set; }
-
-        protected virtual ArrayInputBuffer GetInputBuffer(byte[] data) => new ArrayInputBuffer(data);
+        public virtual FlatBufferDeserializationOption DeserializeOption { get; set; } = FlatBufferDeserializationOption.Default;
 
         [GlobalSetup]
         public virtual void GlobalSetup()

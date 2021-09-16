@@ -13,7 +13,7 @@ public struct StructVectorsTable : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_1_12_0(); }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_2_0_0(); }
   public static StructVectorsTable GetRootAsStructVectorsTable(ByteBuffer _bb) { return GetRootAsStructVectorsTable(_bb, new StructVectorsTable()); }
   public static StructVectorsTable GetRootAsStructVectorsTable(ByteBuffer _bb, StructVectorsTable obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
@@ -41,7 +41,7 @@ public struct StructVectorsTable : IFlatbufferObject
     AddVec(builder, FlatSharpTests.Oracle.StructVectors.Pack(builder, _o.Vec));
     return EndStructVectorsTable(builder);
   }
-};
+}
 
 public class StructVectorsTableT
 {

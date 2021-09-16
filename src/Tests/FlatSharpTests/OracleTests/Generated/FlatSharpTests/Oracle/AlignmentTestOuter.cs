@@ -60,6 +60,9 @@ public struct AlignmentTestOuter : IFlatbufferObject
   }
   public static Offset<FlatSharpTests.Oracle.AlignmentTestOuter> Pack(FlatBufferBuilder builder, AlignmentTestOuterT _o) {
     if (_o == null) return default(Offset<FlatSharpTests.Oracle.AlignmentTestOuter>);
+    var _g_a = _o.G.A;
+    var _g_b = _o.G.B;
+    var _g_c = _o.G.C;
     return CreateAlignmentTestOuter(
       builder,
       _o.A,
@@ -68,11 +71,11 @@ public struct AlignmentTestOuter : IFlatbufferObject
       _o.D,
       _o.E,
       _o.F,
-      _o.G.A,
-      _o.G.B,
-      _o.G.C);
+      _g_a,
+      _g_b,
+      _g_c);
   }
-};
+}
 
 public class AlignmentTestOuterT
 {

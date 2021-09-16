@@ -26,9 +26,15 @@ namespace FlatSharp
     public interface ISharedStringWriter
     {
         /// <summary>
+        /// Indicates that there are pending items to be flushed in this shared string writer. Each call to WriteSharedString is expected to set this to true,
+        /// while each call to FlushWrites and Reset is expected to set this to false.
+        /// </summary>
+        bool IsDirty { get; }
+
+        /// <summary>
         /// Invoked before a new write operation begins.
         /// </summary>
-        void PrepareWrite();
+        void Reset();
 
         /// <summary>
         /// Writes the given string to the span.

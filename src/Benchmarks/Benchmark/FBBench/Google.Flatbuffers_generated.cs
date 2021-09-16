@@ -50,7 +50,7 @@ public struct Foo : IFlatbufferObject
       _o.Prefix,
       _o.Length);
   }
-};
+}
 
 public class FooT
 {
@@ -106,17 +106,21 @@ public struct Bar : IFlatbufferObject
   }
   public static Offset<Benchmark.FBBench.Google.Bar> Pack(FlatBufferBuilder builder, BarT _o) {
     if (_o == null) return default(Offset<Benchmark.FBBench.Google.Bar>);
+    var _parent_id = _o.Parent.Id;
+    var _parent_count = _o.Parent.Count;
+    var _parent_prefix = _o.Parent.Prefix;
+    var _parent_length = _o.Parent.Length;
     return CreateBar(
       builder,
-      _o.Parent.Id,
-      _o.Parent.Count,
-      _o.Parent.Prefix,
-      _o.Parent.Length,
+      _parent_id,
+      _parent_count,
+      _parent_prefix,
+      _parent_length,
       _o.Time,
       _o.Ratio,
       _o.Size);
   }
-};
+}
 
 public class BarT
 {
@@ -137,7 +141,7 @@ public struct FooBar : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_1_12_0(); }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_2_0_0(); }
   public static FooBar GetRootAsFooBar(ByteBuffer _bb) { return GetRootAsFooBar(_bb, new FooBar()); }
   public static FooBar GetRootAsFooBar(ByteBuffer _bb, FooBar obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
@@ -153,6 +157,19 @@ public struct FooBar : IFlatbufferObject
   public byte[] GetNameArray() { return __p.__vector_as_array<byte>(6); }
   public double Rating { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetDouble(o + __p.bb_pos) : (double)0.0; } }
   public byte Postfix { get { int o = __p.__offset(10); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
+
+  public static Offset<Benchmark.FBBench.Google.FooBar> CreateFooBar(FlatBufferBuilder builder,
+      Benchmark.FBBench.Google.BarT sibling = null,
+      StringOffset nameOffset = default(StringOffset),
+      double rating = 0.0,
+      byte postfix = 0) {
+    builder.StartTable(4);
+    FooBar.AddRating(builder, rating);
+    FooBar.AddName(builder, nameOffset);
+    FooBar.AddSibling(builder, Benchmark.FBBench.Google.Bar.Pack(builder, sibling));
+    FooBar.AddPostfix(builder, postfix);
+    return FooBar.EndFooBar(builder);
+  }
 
   public static void StartFooBar(FlatBufferBuilder builder) { builder.StartTable(4); }
   public static void AddSibling(FlatBufferBuilder builder, Offset<Benchmark.FBBench.Google.Bar> siblingOffset) { builder.AddStruct(0, siblingOffset.Value, 0); }
@@ -177,14 +194,14 @@ public struct FooBar : IFlatbufferObject
   public static Offset<Benchmark.FBBench.Google.FooBar> Pack(FlatBufferBuilder builder, FooBarT _o) {
     if (_o == null) return default(Offset<Benchmark.FBBench.Google.FooBar>);
     var _name = _o.Name == null ? default(StringOffset) : builder.CreateString(_o.Name);
-    StartFooBar(builder);
-    AddSibling(builder, Benchmark.FBBench.Google.Bar.Pack(builder, _o.Sibling));
-    AddName(builder, _name);
-    AddRating(builder, _o.Rating);
-    AddPostfix(builder, _o.Postfix);
-    return EndFooBar(builder);
+    return CreateFooBar(
+      builder,
+      _o.Sibling,
+      _name,
+      _o.Rating,
+      _o.Postfix);
   }
-};
+}
 
 public class FooBarT
 {
@@ -205,7 +222,7 @@ public struct FooBarContainer : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_1_12_0(); }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_2_0_0(); }
   public static FooBarContainer GetRootAsFooBarContainer(ByteBuffer _bb) { return GetRootAsFooBarContainer(_bb, new FooBarContainer()); }
   public static FooBarContainer GetRootAsFooBarContainer(ByteBuffer _bb, FooBarContainer obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
@@ -276,7 +293,7 @@ public struct FooBarContainer : IFlatbufferObject
       _o.Fruit,
       _location);
   }
-};
+}
 
 public class FooBarContainerT
 {
@@ -297,7 +314,7 @@ public struct SortedVectorContainer : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_1_12_0(); }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_2_0_0(); }
   public static SortedVectorContainer GetRootAsSortedVectorContainer(ByteBuffer _bb) { return GetRootAsSortedVectorContainer(_bb, new SortedVectorContainer()); }
   public static SortedVectorContainer GetRootAsSortedVectorContainer(ByteBuffer _bb, SortedVectorContainer obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
@@ -362,7 +379,7 @@ public struct SortedVectorContainer : IFlatbufferObject
       _StringVector,
       _IntVector);
   }
-};
+}
 
 public class SortedVectorContainerT
 {
@@ -379,7 +396,7 @@ public struct SortedVectorStringKey : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_1_12_0(); }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_2_0_0(); }
   public static SortedVectorStringKey GetRootAsSortedVectorStringKey(ByteBuffer _bb) { return GetRootAsSortedVectorStringKey(_bb, new SortedVectorStringKey()); }
   public static SortedVectorStringKey GetRootAsSortedVectorStringKey(ByteBuffer _bb, SortedVectorStringKey obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
@@ -448,7 +465,7 @@ public struct SortedVectorStringKey : IFlatbufferObject
       builder,
       _Key);
   }
-};
+}
 
 public class SortedVectorStringKeyT
 {
@@ -463,7 +480,7 @@ public struct SortedVectorIntKey : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_1_12_0(); }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_2_0_0(); }
   public static SortedVectorIntKey GetRootAsSortedVectorIntKey(ByteBuffer _bb) { return GetRootAsSortedVectorIntKey(_bb, new SortedVectorIntKey()); }
   public static SortedVectorIntKey GetRootAsSortedVectorIntKey(ByteBuffer _bb, SortedVectorIntKey obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
@@ -523,7 +540,7 @@ public struct SortedVectorIntKey : IFlatbufferObject
       builder,
       _o.Key);
   }
-};
+}
 
 public class SortedVectorIntKeyT
 {
