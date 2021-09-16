@@ -49,13 +49,15 @@ namespace Benchmark
 
             summaries.Add(BenchmarkRunner.Run(typeof(FBBench.FBSerializeBench), config));
             summaries.Add(BenchmarkRunner.Run(typeof(FBBench.FBDeserializeBench), config));
+#if RUN_COMPARISON_BENCHMARKS
             summaries.Add(BenchmarkRunner.Run(typeof(FBBench.OthersDeserializeBench), config));
+#endif
 
-#if !NO_SHARED_STRINGS
-            summaries.Add(BenchmarkRunner.Run(typeof(FBBench.FBSharedStringBench), config));
+#if FLATSHARP_6_0_0_OR_GREATER
+            //summaries.Add(BenchmarkRunner.Run(typeof(FBBench.FBSharedStringBench), config));
 #endif
 #if CURRENT_VERSION_ONLY
-            summaries.Add(BenchmarkRunner.Run(typeof(SerializationContextBenchmark), config));
+            //summaries.Add(BenchmarkRunner.Run(typeof(SerializationContextBenchmark), config));
 #endif
 
             foreach (var item in summaries)
