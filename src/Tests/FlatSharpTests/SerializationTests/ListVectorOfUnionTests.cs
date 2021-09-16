@@ -41,7 +41,7 @@ namespace FlatSharpTests
 
         [Theory]
         [InlineData(FlatBufferDeserializationOption.Lazy, 1023, typeof(FlatBufferVectorOfUnion<FlatBufferUnion<string>, ArrayInputBuffer>))]
-        [InlineData(FlatBufferDeserializationOption.Progressive, 1023, typeof(FlatBufferProgressiveVector<FlatBufferUnion<string>>))]
+        [InlineData(FlatBufferDeserializationOption.Progressive, 1023, typeof(FlatBufferProgressiveVector<FlatBufferUnion<string>, ArrayInputBuffer>))]
         [InlineData(FlatBufferDeserializationOption.Greedy, 1023, typeof(ReadOnlyCollection<FlatBufferUnion<string>>))]
         [InlineData(FlatBufferDeserializationOption.GreedyMutable, 1023, typeof(List<FlatBufferUnion<string>>))]
         public void Table_PreallocationLimit_Null(
