@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+attribute "fs_serializer";
+attribute "fs_vector";
+
 namespace Samples.IOOptionsExample;
 
 enum Gender : ubyte { Male, Female }
@@ -45,5 +48,5 @@ table Person (fs_serializer) {
 	Cats:[Cat];
 	Dogs:[Dog];
 
-	Signature:[ubyte] (fs_vector:ReadOnlyMemory);
+	Signature:[ubyte] (fs_vector:"ReadOnlyMemory");
 }

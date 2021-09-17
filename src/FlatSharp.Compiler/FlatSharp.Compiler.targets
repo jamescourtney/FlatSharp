@@ -25,7 +25,7 @@
       <CompilerInvocation>dotnet $(CompilerPath)</CompilerInvocation>
     </PropertyGroup>
 
-    <Message Text="$(TargetFramework) $(TargetFrameworkIdentifier): $(CompilerInvocation) --nullable-annotations $(FlatSharpNullable) --input &quot;%(FlatSharpSchema.fullpath)&quot; --output $(IntermediateOutputPath)" Importance="high" />
+    <Message Text="$(TargetFramework) $(TargetFrameworkIdentifier): $(CompilerInvocation) --nullable-warnings $(FlatSharpNullable) --input &quot;%(FlatSharpSchema.fullpath)&quot; --output $(IntermediateOutputPath)" Importance="high" />
     <Exec 
         Command="$(CompilerInvocation) --nullable-warnings $(FlatSharpNullable) --input &quot;%(FlatSharpSchema.fullpath)&quot; --output $(IntermediateOutputPath) "
         CustomErrorRegularExpression=".*" 

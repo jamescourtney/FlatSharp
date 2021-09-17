@@ -25,16 +25,33 @@ namespace Samples.WriteThrough
     using FlatSharp;
 
     /// <summary>
-    /// FlatSharp supports Write-Through in limited cases:
-    /// - Serialization method is VectorCacheMutable or Lazy.
-    /// - Struct field has been opted into write-through.
-    /// 
     /// Write Through allows you to make updates to an already-serialized FlatBuffer in-place without a full parse or re-serialize.
     /// This is extremely performant, especially for large buffers as it avoids series of copies and allows in-place updates.
+    /// 
+    /// FlatSharp supports Write-Through in limited cases:
+    /// 
+    /// For reference structs, Write-Through is supported on fields inside the struct.
+    /// - Serialization method is Progressive or Lazy.
+    /// - Struct field has been opted into write-through.
+    /// - Struct field is virtual.
+    /// 
+    /// For value structs, Write-Through is supported when:
+    /// - Serialization method is Progressive or Lazy.
+    /// - Table field is required and enabled for write through.
+    /// - Vector field is enabled for write through.
     /// </summary>
     public class WriteThroughSample
     {
         public static void Run()
+        {
+            ReferenceStructWriteThrough();
+            ValueStructWriteThrough();
+        }
+
+        /// <summary>
+        /// Write through using reference structs. In this case, we use a Bloom Filter.
+        /// </summary>
+        public static void ReferenceStructWriteThrough()
         {
             byte[] rawData;
 
@@ -78,6 +95,61 @@ namespace Samples.WriteThrough
             for (int i = 0; i < 1000; ++i)
             {
                 Debug.Assert(!writeThroughFilter.MightContain(Guid.NewGuid().ToString()));
+            }
+        }
+
+        /// <summary>
+        /// Shows value struct write through. In this case, we define a path and add points to it.
+        /// </summary>
+        public static void ValueStructWriteThrough()
+        {
+            byte[] data;
+
+            {
+                // Build our "empty" path with capacity for 10K points.
+                // Note that the vector has 10,000 items in it, but we
+                // track the "Used" length ourselves. This is because
+                // writethrough cannot add to the end of a list. You can
+                // only update items that are already in the list.
+                Path path = new Path()
+                {
+                    NumPoints = new MutableInt { Value = 0 },
+                    Points = new List<Point>(),
+                };
+
+                // Give capacity for 10,000 points.
+                for (int i = 0; i < 10000; ++i)
+                {
+                    path.Points.Add(new Point());
+                }
+
+                data = new byte[Path.Serializer.GetMaxSize(path)];
+                Path.Serializer.Write(data, path);
+            }
+
+            Path parsed = Path.Serializer.Parse(data);
+            
+            // Add 100 points.
+            for (int i = 0; i < 100; ++i)
+            {
+                int next = parsed.NumPoints.Value;
+
+                // Update the vector and the length. Both of these write through to the underlying buffer.
+                parsed.Points![next] = new Point { X = i, Y = i, Z = i };
+
+                // This is inefficient -- it would be better to write the new length once after the end of the loop.
+                parsed.NumPoints = new MutableInt { Value = next + 1 };
+            }
+
+            // Reparse the buffer to show that we actually wrote some points.
+            parsed = Path.Serializer.Parse(data);
+            Debug.Assert(parsed.NumPoints.Value == 100, "100 points, right?");
+            
+            // Print the last point we wrote, followed by the next empty slot in the vector.
+            for (int i = 99; i <= 100; ++i)
+            {
+                Point point = parsed.Points![i];
+                Console.WriteLine($"Point {i}: ({point.X}, {point.Y}, {point.Z})");
             }
         }
     }

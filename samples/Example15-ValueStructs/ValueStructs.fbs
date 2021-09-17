@@ -16,6 +16,9 @@
 
 namespace Samples.ValueStructs;
 
+attribute "fs_serializer";
+attribute "fs_valueStruct";
+
 table Path (fs_serializer:"Lazy")
 {
     Points : [Point];
