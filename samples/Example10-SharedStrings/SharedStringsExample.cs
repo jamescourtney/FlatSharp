@@ -104,6 +104,11 @@ namespace Samples.SharedStrings
         private readonly Dictionary<string, List<int>> stringOffsetMap = new Dictionary<string, List<int>>();
 
         /// <summary>
+        /// Must be true if there are any strings waiting to be flushed.
+        /// </summary>
+        public bool IsDirty => this.stringOffsetMap.Count > 0;
+
+        /// <summary>
         /// Called when FlatSharp has finished a serialize operation. This is the signal to flush any strings that the 
         /// string writer is hanging onto.
         /// </summary>
@@ -129,7 +134,7 @@ namespace Samples.SharedStrings
         /// Prepares to write. In this case, we just need to clear the internal map for a new write operation,
         /// since the same SharedStringWriter is reused.
         /// </summary>
-        public void PrepareWrite()
+        public void Reset()
         {
             this.stringOffsetMap.Clear();
         }

@@ -27,12 +27,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FlatSharp" Version="6.0.0-beta2" />
-    <PackageReference Include="FlatSharp.Compiler" Version="6.0.0-beta2">
+    <PackageReference Include="FlatSharp" Version="6.0.0" />
+    <PackageReference Include="FlatSharp.Compiler" Version="6.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="FlatSharp.Runtime" Version="6.0.0-beta2" />
+    <PackageReference Include="FlatSharp.Runtime" Version="6.0.0" />
     <PackageReference Include="Grpc" Version="2.38.1" />
   </ItemGroup>
 
