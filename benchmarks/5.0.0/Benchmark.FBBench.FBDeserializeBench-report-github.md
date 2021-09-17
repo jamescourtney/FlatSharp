@@ -1,62 +1,62 @@
 ``` ini
 
-BenchmarkDotNet=v0.12.1, OS=Windows 10.0.17763.1757 (1809/October2018Update/Redstone5)
-AMD EPYC 7452, 1 CPU, 4 logical and 2 physical cores
-.NET Core SDK=5.0.103
-  [Host]   : .NET Core 5.0.3 (CoreCLR 5.0.321.7212, CoreFX 5.0.321.7212), X64 RyuJIT
-  ShortRun : .NET Core 5.0.3 (CoreCLR 5.0.321.7212, CoreFX 5.0.321.7212), X64 RyuJIT
+BenchmarkDotNet=v0.13.1, OS=Windows 10.0.19042.1237 (20H2/October2020Update)
+AMD Ryzen 9 5950X, 1 CPU, 32 logical and 16 physical cores
+.NET SDK=5.0.201
+  [Host]   : .NET 5.0.4 (5.0.421.11614), X64 RyuJIT
+  ShortRun : .NET 5.0.4 (5.0.421.11614), X64 RyuJIT
 
-Job=ShortRun  AnalyzeLaunchVariance=True  Runtime=.NET Core 5.0  
-IterationCount=7  LaunchCount=7  WarmupCount=5  
+Job=ShortRun  AnalyzeLaunchVariance=True  Runtime=.NET 5.0  
+IterationCount=5  LaunchCount=7  WarmupCount=3  
 
 ```
-|                                       Method | TraversalCount |  DeserializeOption | VectorLength |      Mean |     Error |    StdDev |    Median |       P25 |       P50 |       P67 |       P80 |       P90 |       P95 |
-|--------------------------------------------- |--------------- |------------------- |------------- |----------:|----------:|----------:|----------:|----------:|----------:|----------:|----------:|----------:|----------:|
-|                   **FlatSharp_ParseAndTraverse** |              **1** |               **Lazy** |           **30** |  **4.739 μs** | **0.1008 μs** | **0.1942 μs** |  **4.711 μs** |  **4.600 μs** |  **4.711 μs** |  **4.766 μs** |  **4.779 μs** |  **4.899 μs** |  **5.169 μs** |
-|            FlatSharp_ParseAndTraversePartial |              1 |               Lazy |           30 |  3.388 μs | 0.0556 μs | 0.1098 μs |  3.415 μs |  3.285 μs |  3.415 μs |  3.450 μs |  3.477 μs |  3.514 μs |  3.556 μs |
-|        FlatSharp_ParseAndTraverse_NonVirtual |              1 |               Lazy |           30 |  4.091 μs | 0.0938 μs | 0.1830 μs |  4.163 μs |  3.935 μs |  4.163 μs |  4.205 μs |  4.222 μs |  4.268 μs |  4.280 μs |
-| FlatSharp_ParseAndTraversePartial_NonVirtual |              1 |               Lazy |           30 |  4.305 μs | 0.2886 μs | 0.5421 μs |  4.079 μs |  3.952 μs |  4.079 μs |  4.460 μs |  4.616 μs |  4.782 μs |  5.147 μs |
-|                   **FlatSharp_ParseAndTraverse** |              **1** |      **PropertyCache** |           **30** |  **5.194 μs** | **0.0733 μs** | **0.1378 μs** |  **5.146 μs** |  **5.098 μs** |  **5.146 μs** |  **5.212 μs** |  **5.304 μs** |  **5.341 μs** |  **5.490 μs** |
-|            FlatSharp_ParseAndTraversePartial |              1 |      PropertyCache |           30 |  4.141 μs | 0.1744 μs | 0.3402 μs |  4.074 μs |  3.863 μs |  4.074 μs |  4.164 μs |  4.472 μs |  4.669 μs |  4.805 μs |
-|        FlatSharp_ParseAndTraverse_NonVirtual |              1 |      PropertyCache |           30 |  4.482 μs | 0.1064 μs | 0.2075 μs |  4.485 μs |  4.295 μs |  4.485 μs |  4.598 μs |  4.675 μs |  4.751 μs |  4.794 μs |
-| FlatSharp_ParseAndTraversePartial_NonVirtual |              1 |      PropertyCache |           30 |  4.337 μs | 0.0861 μs | 0.1638 μs |  4.349 μs |  4.236 μs |  4.349 μs |  4.401 μs |  4.507 μs |  4.543 μs |  4.567 μs |
-|                   **FlatSharp_ParseAndTraverse** |              **1** |        **VectorCache** |           **30** |  **6.156 μs** | **0.0650 μs** | **0.1268 μs** |  **6.152 μs** |  **6.068 μs** |  **6.152 μs** |  **6.201 μs** |  **6.224 μs** |  **6.272 μs** |  **6.409 μs** |
-|            FlatSharp_ParseAndTraversePartial |              1 |        VectorCache |           30 |  4.796 μs | 0.1375 μs | 0.2682 μs |  4.788 μs |  4.681 μs |  4.788 μs |  4.976 μs |  5.008 μs |  5.130 μs |  5.199 μs |
-|        FlatSharp_ParseAndTraverse_NonVirtual |              1 |        VectorCache |           30 |  5.186 μs | 0.1140 μs | 0.2276 μs |  5.176 μs |  5.021 μs |  5.176 μs |  5.223 μs |  5.442 μs |  5.462 μs |  5.599 μs |
-| FlatSharp_ParseAndTraversePartial_NonVirtual |              1 |        VectorCache |           30 |  5.023 μs | 0.0828 μs | 0.1653 μs |  4.987 μs |  4.892 μs |  4.987 μs |  5.083 μs |  5.174 μs |  5.219 μs |  5.317 μs |
-|                   **FlatSharp_ParseAndTraverse** |              **1** | **VectorCacheMutable** |           **30** |  **5.792 μs** | **0.1192 μs** | **0.2325 μs** |  **5.861 μs** |  **5.548 μs** |  **5.861 μs** |  **5.939 μs** |  **6.009 μs** |  **6.072 μs** |  **6.115 μs** |
-|            FlatSharp_ParseAndTraversePartial |              1 | VectorCacheMutable |           30 |  4.254 μs | 0.0252 μs | 0.0486 μs |  4.253 μs |  4.214 μs |  4.253 μs |  4.280 μs |  4.299 μs |  4.315 μs |  4.334 μs |
-|        FlatSharp_ParseAndTraverse_NonVirtual |              1 | VectorCacheMutable |           30 |  4.566 μs | 0.0539 μs | 0.1026 μs |  4.597 μs |  4.486 μs |  4.597 μs |  4.626 μs |  4.648 μs |  4.687 μs |  4.697 μs |
-| FlatSharp_ParseAndTraversePartial_NonVirtual |              1 | VectorCacheMutable |           30 |  4.494 μs | 0.0681 μs | 0.1313 μs |  4.500 μs |  4.401 μs |  4.500 μs |  4.542 μs |  4.562 μs |  4.694 μs |  4.724 μs |
-|                   **FlatSharp_ParseAndTraverse** |              **1** |             **Greedy** |           **30** |  **5.052 μs** | **0.1187 μs** | **0.2314 μs** |  **5.016 μs** |  **4.904 μs** |  **5.016 μs** |  **5.097 μs** |  **5.223 μs** |  **5.294 μs** |  **5.369 μs** |
-|            FlatSharp_ParseAndTraversePartial |              1 |             Greedy |           30 |  4.747 μs | 0.1225 μs | 0.2360 μs |  4.745 μs |  4.556 μs |  4.745 μs |  4.814 μs |  4.883 μs |  5.130 μs |  5.206 μs |
-|        FlatSharp_ParseAndTraverse_NonVirtual |              1 |             Greedy |           30 |  4.661 μs | 0.2336 μs | 0.4557 μs |  4.577 μs |  4.409 μs |  4.577 μs |  4.640 μs |  4.736 μs |  4.867 μs |  5.630 μs |
-| FlatSharp_ParseAndTraversePartial_NonVirtual |              1 |             Greedy |           30 |  4.417 μs | 0.0563 μs | 0.1085 μs |  4.398 μs |  4.346 μs |  4.398 μs |  4.447 μs |  4.509 μs |  4.555 μs |  4.594 μs |
-|                   **FlatSharp_ParseAndTraverse** |              **1** |      **GreedyMutable** |           **30** |  **4.836 μs** | **0.0444 μs** | **0.0834 μs** |  **4.819 μs** |  **4.782 μs** |  **4.819 μs** |  **4.853 μs** |  **4.897 μs** |  **4.944 μs** |  **4.990 μs** |
-|            FlatSharp_ParseAndTraversePartial |              1 |      GreedyMutable |           30 |  4.458 μs | 0.1238 μs | 0.2444 μs |  4.388 μs |  4.326 μs |  4.388 μs |  4.457 μs |  4.540 μs |  4.640 μs |  4.912 μs |
-|        FlatSharp_ParseAndTraverse_NonVirtual |              1 |      GreedyMutable |           30 |  4.394 μs | 0.0441 μs | 0.0849 μs |  4.383 μs |  4.339 μs |  4.383 μs |  4.431 μs |  4.476 μs |  4.515 μs |  4.534 μs |
-| FlatSharp_ParseAndTraversePartial_NonVirtual |              1 |      GreedyMutable |           30 |  4.429 μs | 0.0247 μs | 0.0488 μs |  4.424 μs |  4.394 μs |  4.424 μs |  4.449 μs |  4.458 μs |  4.488 μs |  4.509 μs |
-|                   **FlatSharp_ParseAndTraverse** |              **5** |               **Lazy** |           **30** | **22.766 μs** | **0.2994 μs** | **0.5697 μs** | **22.940 μs** | **22.267 μs** | **22.940 μs** | **23.145 μs** | **23.228 μs** | **23.311 μs** | **23.394 μs** |
-|            FlatSharp_ParseAndTraversePartial |              5 |               Lazy |           30 | 16.858 μs | 0.4354 μs | 0.8285 μs | 16.971 μs | 15.843 μs | 16.971 μs | 17.330 μs | 17.427 μs | 17.627 μs | 17.869 μs |
-|        FlatSharp_ParseAndTraverse_NonVirtual |              5 |               Lazy |           30 | 19.588 μs | 0.3584 μs | 0.6905 μs | 19.918 μs | 19.111 μs | 19.918 μs | 20.044 μs | 20.150 μs | 20.277 μs | 20.346 μs |
-| FlatSharp_ParseAndTraversePartial_NonVirtual |              5 |               Lazy |           30 | 19.919 μs | 0.4058 μs | 0.7818 μs | 19.954 μs | 19.161 μs | 19.954 μs | 20.534 μs | 20.668 μs | 20.735 μs | 20.830 μs |
-|                   **FlatSharp_ParseAndTraverse** |              **5** |      **PropertyCache** |           **30** | **25.419 μs** | **0.3172 μs** | **0.6111 μs** | **25.430 μs** | **24.820 μs** | **25.430 μs** | **25.744 μs** | **25.894 μs** | **26.145 μs** | **26.432 μs** |
-|            FlatSharp_ParseAndTraversePartial |              5 |      PropertyCache |           30 | 18.959 μs | 0.1542 μs | 0.3043 μs | 19.017 μs | 18.721 μs | 19.017 μs | 19.130 μs | 19.225 μs | 19.307 μs | 19.385 μs |
-|        FlatSharp_ParseAndTraverse_NonVirtual |              5 |      PropertyCache |           30 | 19.624 μs | 0.2588 μs | 0.5048 μs | 19.605 μs | 19.312 μs | 19.605 μs | 19.771 μs | 19.870 μs | 20.511 μs | 20.558 μs |
-| FlatSharp_ParseAndTraversePartial_NonVirtual |              5 |      PropertyCache |           30 | 19.770 μs | 0.3302 μs | 0.6362 μs | 19.524 μs | 19.308 μs | 19.524 μs | 20.021 μs | 20.411 μs | 20.745 μs | 20.882 μs |
-|                   **FlatSharp_ParseAndTraverse** |              **5** |        **VectorCache** |           **30** |  **9.670 μs** | **0.1185 μs** | **0.2226 μs** |  **9.701 μs** |  **9.479 μs** |  **9.701 μs** |  **9.801 μs** |  **9.896 μs** |  **9.919 μs** |  **9.934 μs** |
-|            FlatSharp_ParseAndTraversePartial |              5 |        VectorCache |           30 |  6.296 μs | 0.1131 μs | 0.2206 μs |  6.234 μs |  6.156 μs |  6.234 μs |  6.285 μs |  6.354 μs |  6.722 μs |  6.807 μs |
-|        FlatSharp_ParseAndTraverse_NonVirtual |              5 |        VectorCache |           30 |  5.535 μs | 0.1009 μs | 0.1870 μs |  5.467 μs |  5.394 μs |  5.467 μs |  5.585 μs |  5.760 μs |  5.799 μs |  5.806 μs |
-| FlatSharp_ParseAndTraversePartial_NonVirtual |              5 |        VectorCache |           30 |  5.413 μs | 0.0982 μs | 0.1893 μs |  5.434 μs |  5.341 μs |  5.434 μs |  5.456 μs |  5.480 μs |  5.503 μs |  5.556 μs |
-|                   **FlatSharp_ParseAndTraverse** |              **5** | **VectorCacheMutable** |           **30** |  **9.050 μs** | **0.0627 μs** | **0.1209 μs** |  **9.072 μs** |  **8.980 μs** |  **9.072 μs** |  **9.119 μs** |  **9.152 μs** |  **9.186 μs** |  **9.209 μs** |
-|            FlatSharp_ParseAndTraversePartial |              5 | VectorCacheMutable |           30 |  5.902 μs | 0.0729 μs | 0.1387 μs |  5.889 μs |  5.815 μs |  5.889 μs |  5.918 μs |  5.939 μs |  5.975 μs |  6.016 μs |
-|        FlatSharp_ParseAndTraverse_NonVirtual |              5 | VectorCacheMutable |           30 |  5.039 μs | 0.0748 μs | 0.1459 μs |  5.024 μs |  4.959 μs |  5.024 μs |  5.096 μs |  5.156 μs |  5.253 μs |  5.269 μs |
-| FlatSharp_ParseAndTraversePartial_NonVirtual |              5 | VectorCacheMutable |           30 |  4.966 μs | 0.0501 μs | 0.0964 μs |  4.964 μs |  4.908 μs |  4.964 μs |  5.005 μs |  5.040 μs |  5.110 μs |  5.126 μs |
-|                   **FlatSharp_ParseAndTraverse** |              **5** |             **Greedy** |           **30** |  **7.928 μs** | **0.0664 μs** | **0.1280 μs** |  **7.940 μs** |  **7.856 μs** |  **7.940 μs** |  **7.983 μs** |  **8.036 μs** |  **8.073 μs** |  **8.113 μs** |
-|            FlatSharp_ParseAndTraversePartial |              5 |             Greedy |           30 |  6.116 μs | 0.1089 μs | 0.2098 μs |  6.021 μs |  5.958 μs |  6.021 μs |  6.156 μs |  6.362 μs |  6.426 μs |  6.466 μs |
-|        FlatSharp_ParseAndTraverse_NonVirtual |              5 |             Greedy |           30 |  5.272 μs | 0.0727 μs | 0.1418 μs |  5.247 μs |  5.195 μs |  5.247 μs |  5.294 μs |  5.351 μs |  5.415 μs |  5.490 μs |
-| FlatSharp_ParseAndTraversePartial_NonVirtual |              5 |             Greedy |           30 |  5.128 μs | 0.0966 μs | 0.1883 μs |  5.077 μs |  4.976 μs |  5.077 μs |  5.229 μs |  5.311 μs |  5.385 μs |  5.432 μs |
-|                   **FlatSharp_ParseAndTraverse** |              **5** |      **GreedyMutable** |           **30** |  **7.482 μs** | **0.1085 μs** | **0.2090 μs** |  **7.428 μs** |  **7.341 μs** |  **7.428 μs** |  **7.495 μs** |  **7.613 μs** |  **7.792 μs** |  **7.938 μs** |
-|            FlatSharp_ParseAndTraversePartial |              5 |      GreedyMutable |           30 |  5.618 μs | 0.0610 μs | 0.1160 μs |  5.599 μs |  5.562 μs |  5.599 μs |  5.643 μs |  5.663 μs |  5.715 μs |  5.810 μs |
-|        FlatSharp_ParseAndTraverse_NonVirtual |              5 |      GreedyMutable |           30 |  4.935 μs | 0.0639 μs | 0.1261 μs |  4.918 μs |  4.848 μs |  4.918 μs |  4.984 μs |  5.048 μs |  5.127 μs |  5.146 μs |
-| FlatSharp_ParseAndTraversePartial_NonVirtual |              5 |      GreedyMutable |           30 |  4.770 μs | 0.0647 μs | 0.1291 μs |  4.753 μs |  4.709 μs |  4.753 μs |  4.772 μs |  4.810 μs |  4.852 μs |  4.865 μs |
+|                                       Method | TraversalCount |  DeserializeOption | VectorLength |      Mean |     Error |    StdDev |    Median |       P25 |       P95 |  Gen 0 |  Gen 1 | Allocated |
+|--------------------------------------------- |--------------- |------------------- |------------- |----------:|----------:|----------:|----------:|----------:|----------:|-------:|-------:|----------:|
+|                   **FlatSharp_ParseAndTraverse** |              **1** |               **Lazy** |           **30** |  **2.082 μs** | **0.0308 μs** | **0.0488 μs** |  **2.079 μs** |  **2.020 μs** |  **2.157 μs** | **0.4692** |      **-** |      **8 KB** |
+|            FlatSharp_ParseAndTraversePartial |              1 |               Lazy |           30 |  1.599 μs | 0.0169 μs | 0.0268 μs |  1.583 μs |  1.579 μs |  1.649 μs | 0.4692 |      - |      8 KB |
+|        FlatSharp_ParseAndTraverse_NonVirtual |              1 |               Lazy |           30 |  1.763 μs | 0.0251 μs | 0.0383 μs |  1.744 μs |  1.736 μs |  1.839 μs | 0.4692 |      - |      8 KB |
+| FlatSharp_ParseAndTraversePartial_NonVirtual |              1 |               Lazy |           30 |  1.747 μs | 0.0131 μs | 0.0200 μs |  1.745 μs |  1.733 μs |  1.792 μs | 0.4692 |      - |      8 KB |
+|                   **FlatSharp_ParseAndTraverse** |              **1** |      **PropertyCache** |           **30** |  **2.347 μs** | **0.0217 μs** | **0.0345 μs** |  **2.339 μs** |  **2.321 μs** |  **2.425 μs** | **0.5989** |      **-** |     **10 KB** |
+|            FlatSharp_ParseAndTraversePartial |              1 |      PropertyCache |           30 |  1.770 μs | 0.0175 μs | 0.0267 μs |  1.771 μs |  1.755 μs |  1.827 μs | 0.5989 |      - |     10 KB |
+|        FlatSharp_ParseAndTraverse_NonVirtual |              1 |      PropertyCache |           30 |  1.873 μs | 0.0898 μs | 0.1371 μs |  1.808 μs |  1.788 μs |  2.153 μs | 0.4692 |      - |      8 KB |
+| FlatSharp_ParseAndTraversePartial_NonVirtual |              1 |      PropertyCache |           30 |  1.768 μs | 0.0245 μs | 0.0381 μs |  1.770 μs |  1.730 μs |  1.821 μs | 0.4692 |      - |      8 KB |
+|                   **FlatSharp_ParseAndTraverse** |              **1** |        **VectorCache** |           **30** |  **2.617 μs** | **0.0570 μs** | **0.0904 μs** |  **2.624 μs** |  **2.527 μs** |  **2.786 μs** | **0.6180** | **0.0191** |     **10 KB** |
+|            FlatSharp_ParseAndTraversePartial |              1 |        VectorCache |           30 |  2.025 μs | 0.0113 μs | 0.0179 μs |  2.028 μs |  2.009 μs |  2.056 μs | 0.6180 | 0.0191 |     10 KB |
+|        FlatSharp_ParseAndTraverse_NonVirtual |              1 |        VectorCache |           30 |  2.097 μs | 0.0321 μs | 0.0509 μs |  2.075 μs |  2.057 μs |  2.186 μs | 0.4883 | 0.0114 |      8 KB |
+| FlatSharp_ParseAndTraversePartial_NonVirtual |              1 |        VectorCache |           30 |  2.048 μs | 0.0232 μs | 0.0374 μs |  2.051 μs |  2.020 μs |  2.118 μs | 0.4883 | 0.0114 |      8 KB |
+|                   **FlatSharp_ParseAndTraverse** |              **1** | **VectorCacheMutable** |           **30** |  **2.743 μs** | **0.1712 μs** | **0.2665 μs** |  **2.639 μs** |  **2.558 μs** |  **3.268 μs** | **0.6180** | **0.0191** |     **10 KB** |
+|            FlatSharp_ParseAndTraversePartial |              1 | VectorCacheMutable |           30 |  2.176 μs | 0.1459 μs | 0.2357 μs |  2.082 μs |  2.050 μs |  2.681 μs | 0.6180 | 0.0191 |     10 KB |
+|        FlatSharp_ParseAndTraverse_NonVirtual |              1 | VectorCacheMutable |           30 |  2.342 μs | 0.1549 μs | 0.2412 μs |  2.254 μs |  2.180 μs |  2.809 μs | 0.4845 | 0.0114 |      8 KB |
+| FlatSharp_ParseAndTraversePartial_NonVirtual |              1 | VectorCacheMutable |           30 |  2.048 μs | 0.0764 μs | 0.1212 μs |  2.003 μs |  1.972 μs |  2.332 μs | 0.4845 | 0.0114 |      8 KB |
+|                   **FlatSharp_ParseAndTraverse** |              **1** |             **Greedy** |           **30** |  **2.317 μs** | **0.0192 μs** | **0.0311 μs** |  **2.315 μs** |  **2.296 μs** |  **2.357 μs** | **0.5150** | **0.0153** |      **8 KB** |
+|            FlatSharp_ParseAndTraversePartial |              1 |             Greedy |           30 |  2.058 μs | 0.0163 μs | 0.0259 μs |  2.056 μs |  2.039 μs |  2.097 μs | 0.5150 | 0.0153 |      8 KB |
+|        FlatSharp_ParseAndTraverse_NonVirtual |              1 |             Greedy |           30 |  1.882 μs | 0.0268 μs | 0.0409 μs |  1.878 μs |  1.850 μs |  1.941 μs | 0.4158 | 0.0095 |      7 KB |
+| FlatSharp_ParseAndTraversePartial_NonVirtual |              1 |             Greedy |           30 |  1.843 μs | 0.0154 μs | 0.0244 μs |  1.845 μs |  1.818 μs |  1.878 μs | 0.4158 | 0.0095 |      7 KB |
+|                   **FlatSharp_ParseAndTraverse** |              **1** |      **GreedyMutable** |           **30** |  **2.375 μs** | **0.0621 μs** | **0.0967 μs** |  **2.387 μs** |  **2.257 μs** |  **2.488 μs** | **0.5150** | **0.0153** |      **8 KB** |
+|            FlatSharp_ParseAndTraversePartial |              1 |      GreedyMutable |           30 |  2.067 μs | 0.0454 μs | 0.0720 μs |  2.019 μs |  2.003 μs |  2.160 μs | 0.5150 | 0.0153 |      8 KB |
+|        FlatSharp_ParseAndTraverse_NonVirtual |              1 |      GreedyMutable |           30 |  1.917 μs | 0.0981 μs | 0.1468 μs |  1.819 μs |  1.812 μs |  2.221 μs | 0.4120 | 0.0076 |      7 KB |
+| FlatSharp_ParseAndTraversePartial_NonVirtual |              1 |      GreedyMutable |           30 |  1.867 μs | 0.0725 μs | 0.1129 μs |  1.809 μs |  1.781 μs |  2.065 μs | 0.4139 | 0.0095 |      7 KB |
+|                   **FlatSharp_ParseAndTraverse** |              **5** |               **Lazy** |           **30** | **10.606 μs** | **0.3032 μs** | **0.4808 μs** | **10.398 μs** | **10.275 μs** | **11.470 μs** | **2.3346** |      **-** |     **38 KB** |
+|            FlatSharp_ParseAndTraversePartial |              5 |               Lazy |           30 |  7.869 μs | 0.0848 μs | 0.1346 μs |  7.897 μs |  7.751 μs |  8.024 μs | 2.3346 |      - |     38 KB |
+|        FlatSharp_ParseAndTraverse_NonVirtual |              5 |               Lazy |           30 |  8.566 μs | 0.2680 μs | 0.4173 μs |  8.412 μs |  8.352 μs |  9.635 μs | 2.3041 |      - |     38 KB |
+| FlatSharp_ParseAndTraversePartial_NonVirtual |              5 |               Lazy |           30 |  8.562 μs | 0.3824 μs | 0.6175 μs |  8.291 μs |  8.229 μs |  9.993 μs | 2.3041 |      - |     38 KB |
+|                   **FlatSharp_ParseAndTraverse** |              **5** |      **PropertyCache** |           **30** | **11.901 μs** | **0.6931 μs** | **1.0790 μs** | **11.354 μs** | **11.071 μs** | **14.175 μs** | **2.9449** |      **-** |     **48 KB** |
+|            FlatSharp_ParseAndTraversePartial |              5 |      PropertyCache |           30 |  8.314 μs | 0.0302 μs | 0.0478 μs |  8.321 μs |  8.274 μs |  8.379 μs | 2.9449 |      - |     48 KB |
+|        FlatSharp_ParseAndTraverse_NonVirtual |              5 |      PropertyCache |           30 |  8.552 μs | 0.1622 μs | 0.2525 μs |  8.586 μs |  8.340 μs |  9.101 μs | 2.3041 |      - |     38 KB |
+| FlatSharp_ParseAndTraversePartial_NonVirtual |              5 |      PropertyCache |           30 |  8.829 μs | 0.3986 μs | 0.6323 μs |  8.588 μs |  8.493 μs | 10.195 μs | 2.3041 |      - |     38 KB |
+|                   **FlatSharp_ParseAndTraverse** |              **5** |        **VectorCache** |           **30** |  **4.835 μs** | **0.0500 μs** | **0.0778 μs** |  **4.844 μs** |  **4.798 μs** |  **4.943 μs** | **0.6180** | **0.0153** |     **10 KB** |
+|            FlatSharp_ParseAndTraversePartial |              5 |        VectorCache |           30 |  3.172 μs | 0.0477 μs | 0.0742 μs |  3.164 μs |  3.111 μs |  3.325 μs | 0.6180 | 0.0191 |     10 KB |
+|        FlatSharp_ParseAndTraverse_NonVirtual |              5 |        VectorCache |           30 |  2.443 μs | 0.0206 μs | 0.0321 μs |  2.436 μs |  2.409 μs |  2.493 μs | 0.4883 | 0.0114 |      8 KB |
+| FlatSharp_ParseAndTraversePartial_NonVirtual |              5 |        VectorCache |           30 |  2.438 μs | 0.0788 μs | 0.1250 μs |  2.416 μs |  2.314 μs |  2.673 μs | 0.4883 | 0.0114 |      8 KB |
+|                   **FlatSharp_ParseAndTraverse** |              **5** | **VectorCacheMutable** |           **30** |  **4.802 μs** | **0.1925 μs** | **0.3109 μs** |  **4.645 μs** |  **4.595 μs** |  **5.358 μs** | **0.6180** | **0.0153** |     **10 KB** |
+|            FlatSharp_ParseAndTraversePartial |              5 | VectorCacheMutable |           30 |  3.002 μs | 0.0292 μs | 0.0446 μs |  3.012 μs |  2.957 μs |  3.070 μs | 0.6180 | 0.0191 |     10 KB |
+|        FlatSharp_ParseAndTraverse_NonVirtual |              5 | VectorCacheMutable |           30 |  2.271 μs | 0.0387 μs | 0.0626 μs |  2.230 μs |  2.223 μs |  2.379 μs | 0.4845 | 0.0114 |      8 KB |
+| FlatSharp_ParseAndTraversePartial_NonVirtual |              5 | VectorCacheMutable |           30 |  2.206 μs | 0.0319 μs | 0.0514 μs |  2.221 μs |  2.197 μs |  2.248 μs | 0.4845 | 0.0114 |      8 KB |
+|                   **FlatSharp_ParseAndTraverse** |              **5** |             **Greedy** |           **30** |  **4.285 μs** | **0.0489 μs** | **0.0789 μs** |  **4.283 μs** |  **4.249 μs** |  **4.416 μs** | **0.5112** | **0.0153** |      **8 KB** |
+|            FlatSharp_ParseAndTraversePartial |              5 |             Greedy |           30 |  2.980 μs | 0.0367 μs | 0.0571 μs |  2.979 μs |  2.958 μs |  3.052 μs | 0.5150 | 0.0153 |      8 KB |
+|        FlatSharp_ParseAndTraverse_NonVirtual |              5 |             Greedy |           30 |  2.272 μs | 0.0087 μs | 0.0138 μs |  2.271 μs |  2.260 μs |  2.293 μs | 0.4158 | 0.0076 |      7 KB |
+| FlatSharp_ParseAndTraversePartial_NonVirtual |              5 |             Greedy |           30 |  2.202 μs | 0.0199 μs | 0.0310 μs |  2.201 μs |  2.186 μs |  2.271 μs | 0.4158 | 0.0076 |      7 KB |
+|                   **FlatSharp_ParseAndTraverse** |              **5** |      **GreedyMutable** |           **30** |  **4.062 μs** | **0.1021 μs** | **0.1649 μs** |  **4.029 μs** |  **3.964 μs** |  **4.311 μs** | **0.5112** | **0.0153** |      **8 KB** |
+|            FlatSharp_ParseAndTraversePartial |              5 |      GreedyMutable |           30 |  2.929 μs | 0.0586 μs | 0.0963 μs |  2.917 μs |  2.860 μs |  3.124 μs | 0.5150 | 0.0153 |      8 KB |
+|        FlatSharp_ParseAndTraverse_NonVirtual |              5 |      GreedyMutable |           30 |  2.217 μs | 0.0544 μs | 0.0878 μs |  2.221 μs |  2.150 μs |  2.381 μs | 0.4120 | 0.0076 |      7 KB |
+| FlatSharp_ParseAndTraversePartial_NonVirtual |              5 |      GreedyMutable |           30 |  2.036 μs | 0.0513 μs | 0.0813 μs |  1.988 μs |  1.982 μs |  2.176 μs | 0.4120 | 0.0076 |      7 KB |
