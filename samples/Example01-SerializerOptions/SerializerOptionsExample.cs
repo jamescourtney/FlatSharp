@@ -55,7 +55,7 @@ namespace Samples.SerializerOptions
     ///    
     /// Question 3: Do I have large vectors?
     ///    Array allocations can be expensive, especially for large arrays. If you are deserializing large vectors, you should use some form of lazy parsing
-    ///    (options.Lazy or options.Progressive). These options will not preallocate giant arrays (though they may allocate some smaller arrays.
+    ///    (options.Lazy or options.Progressive). These options will not preallocate giant arrays (though they may allocate some smaller arrays).
     /// 
     /// The right way to handle this is to benchmark, and make your choices based on that. What performs best depends on your access patterns. Objectively,
     /// all of these configurations are quite fast.
