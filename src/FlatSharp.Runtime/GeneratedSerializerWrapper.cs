@@ -47,6 +47,7 @@ namespace FlatSharp
 
             var tableAttribute = typeof(T).GetCustomAttribute<Attributes.FlatBufferTableAttribute>();
             this.fileIdentifier = tableAttribute?.FileIdentifier;
+            this.sharedStringWriter = new ThreadLocal<ISharedStringWriter>(() => new SharedStringWriter());
         }
 
         private GeneratedSerializerWrapper(GeneratedSerializerWrapper<T> template, SerializerSettings settings)
@@ -164,7 +165,7 @@ namespace FlatSharp
             var serializationContext = SerializationContext.ThreadLocalContext.Value!;
             serializationContext.Reset(destination.Length);
 
-            var sharedStringWriter = this.sharedStringWriter?.Value;
+            ISharedStringWriter? sharedStringWriter = this.sharedStringWriter?.Value;
             serializationContext.SharedStringWriter = sharedStringWriter;
 
             serializationContext.Offset = 4; // first 4 bytes are reserved for uoffset to the first table.
@@ -182,12 +183,18 @@ namespace FlatSharp
 
             try
             {
-                sharedStringWriter?.PrepareWrite();
+                if (sharedStringWriter?.IsDirty == true)
+                {
+                    sharedStringWriter.Reset();
+                    Debug.Assert(!sharedStringWriter.IsDirty);
+                }
+
                 this.innerSerializer.Write(writer, destination, item, 0, serializationContext);
 
-                if (sharedStringWriter != null)
+                if (sharedStringWriter?.IsDirty == true)
                 {
                     writer.FlushSharedStrings(sharedStringWriter, destination, serializationContext);
+                    Debug.Assert(!sharedStringWriter.IsDirty);
                 }
 
                 serializationContext.InvokePostSerializeActions(destination);

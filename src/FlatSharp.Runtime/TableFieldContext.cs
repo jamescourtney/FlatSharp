@@ -23,7 +23,7 @@ namespace FlatSharp
     /// A contextual containing information about the table field.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public struct TableFieldContext
+    public sealed class TableFieldContext
     {
         public TableFieldContext(string fullName, bool sharedString, bool writeThrough)
         {

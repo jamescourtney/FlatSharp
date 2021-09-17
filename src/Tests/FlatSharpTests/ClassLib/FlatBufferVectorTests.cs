@@ -215,7 +215,12 @@ namespace FlatSharpTests
             {
                 Assert.Equal(i, this.stringVector.Vector.IndexOf(ExpectedStringContents[i]));
                 Assert.Equal(i, this.progressiveStringVector.Vector.IndexOf(ExpectedStringContents[i]));
+            }
+
+            for (int i = 0; i < ExpectedIntContents.Count; ++i)
+            {
                 Assert.Equal(i, this.intVector.Vector.IndexOf(ExpectedIntContents[i]));
+                Assert.Equal(i, this.progressiveIntVector.Vector.IndexOf(ExpectedIntContents[i]));
             }
 
             Assert.Equal(-1, this.stringVector.Vector.IndexOf("foobar"));

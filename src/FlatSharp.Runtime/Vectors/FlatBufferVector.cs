@@ -66,7 +66,7 @@ namespace FlatSharp
             this.ParseItem(this.memory, offset, this.fieldContext, out item);
         }
 
-        protected abstract void ParseItem(TInputBuffer buffer, int offset, in TableFieldContext context, out T item);
+        protected abstract void ParseItem(TInputBuffer buffer, int offset, TableFieldContext context, out T item);
 
         protected abstract void WriteThrough(T item, Span<byte> data);
     }

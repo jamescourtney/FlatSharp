@@ -148,7 +148,7 @@ namespace FlatSharp.TypeModel
             else
             {
                 FlatSharpInternal.Assert(context.Options.Progressive, "expecting progressive");
-                return $"return new FlatBufferProgressiveVector<{itemTypeModel.GetGlobalCompilableTypeName()}>({createFlatBufferVector});";
+                return $"return new FlatBufferProgressiveVector<{itemTypeModel.GetGlobalCompilableTypeName()}, {context.InputBufferTypeName}>({createFlatBufferVector});";
             }
         }
     }

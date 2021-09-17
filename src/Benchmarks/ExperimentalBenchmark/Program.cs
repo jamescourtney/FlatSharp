@@ -15,6 +15,10 @@
  */
 
 using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Diagnosers;
+using BenchmarkDotNet.Environments;
+using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Running;
 using FlatSharp;
 using System;
@@ -24,16 +28,17 @@ using System.Runtime.InteropServices;
 
 namespace BenchmarkCore
 {
-    [MemoryDiagnoser]
-    [ThreadingDiagnoser]
-    [ShortRunJob(BenchmarkDotNet.Jobs.RuntimeMoniker.Net50, BenchmarkDotNet.Environments.Jit.RyuJit, BenchmarkDotNet.Environments.Platform.AnyCpu)]
     public class Benchmark
     {
         private readonly byte[] data = new byte[10 * 1024 * 1024];
 
         private ArrayInputBuffer inputBuffer;
 
-        [Params(FlatBufferDeserializationOption.Lazy, FlatBufferDeserializationOption.Progressive, FlatBufferDeserializationOption.Greedy)]
+        [Params(
+            FlatBufferDeserializationOption.Lazy,
+            FlatBufferDeserializationOption.Progressive,
+            FlatBufferDeserializationOption.Greedy
+        )]
         public FlatBufferDeserializationOption Option { get; set; }
 
         [Params(1000)]
@@ -61,7 +66,7 @@ namespace BenchmarkCore
             {
                 this.indexesToAccess[i] = r.Next(this.indexesToAccess.Length);
             }
-
+             
             this.serializer = new FlatBufferSerializer(this.Option);
             this.serializer.Serialize(t, this.data);
             this.inputBuffer = new ArrayInputBuffer(this.data);
@@ -123,10 +128,18 @@ namespace BenchmarkCore
     {
         public static void Main(string[] args)
         {
-            //Vec3Value v = default;
-            //v.X(3) = 5;
+            Job job = Job.ShortRun
+                .WithAnalyzeLaunchVariance(true)
+                .WithLaunchCount(7)
+                .WithWarmupCount(3)
+                .WithIterationCount(3)
+                .WithRuntime(CoreRuntime.Core50);
 
-            BenchmarkRunner.Run<Benchmark>();
+            var config = DefaultConfig.Instance
+                 .AddDiagnoser(MemoryDiagnoser.Default)
+                 .AddJob(job);
+
+            BenchmarkRunner.Run(typeof(Benchmark), config);
         }
     }
 }

@@ -42,7 +42,7 @@ public struct FiveByteStruct : IFlatbufferObject
       _o.Int,
       _o.Byte);
   }
-};
+}
 
 public class FiveByteStructT
 {
