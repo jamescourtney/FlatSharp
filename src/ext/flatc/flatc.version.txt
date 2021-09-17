@@ -1,0 +1,11 @@
+Flatc binaries are copyright Google Inc, and are distributed in accordance with the Apache 2 License, which is included adjacent to this file.
+
+The specific version of flatc included was obtained from the artifacts of the CI build of Flatbuffers:
+
+Commit:
+https://github.com/google/flatbuffers/commit/550d2f9048ce2a9d572da14a36043cf3f5b87bdd
+
+Binaries:
+https://github.com/google/flatbuffers/actions/runs/1195811226
+
+You are encouraged to verify the hashes of the files included in this package with those from the linked CI run.

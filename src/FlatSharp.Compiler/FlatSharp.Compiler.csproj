@@ -16,6 +16,12 @@
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net5.0' ">
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Properties\**" />
+    <EmbeddedResource Remove="Properties\**" />
+    <None Remove="Properties\**" />
+  </ItemGroup>
   
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.8.0" />
@@ -34,14 +40,18 @@
       <Link>flatc\macos\flatc</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="..\ext\flatc\LICENSE.txt">
+      <Link>flatc\LICENSE.txt</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ext\flatc\flatc.version.txt">
+      <Link>flatc\flatc.version.txt</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
     <ProjectReference Include="..\FlatSharp\FlatSharp.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Properties\" />
   </ItemGroup>
 </Project>
