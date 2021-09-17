@@ -19,7 +19,6 @@ namespace Samples.IOOptionsExample
     using System;
     using System.Collections.Generic;
     using FlatSharp;
-    using FlatSharp.Unsafe;
 
     /// <summary>
     /// This sample shows some different IO Options when using FlatSharp.
@@ -59,14 +58,13 @@ namespace Samples.IOOptionsExample
                 Name = "Nikola Tesla"
             };
 
-            // SpanWriter is the core code that writes data to a span. Flatsharp provides a couple:
+            // SpanWriter is the core code that writes data to a span. Flatsharp provides one:
+            // However, you can always implement ISpanWriter yourself.
             SpanWriter spanWriter = new SpanWriter();
-            var unsafeSpanWriter = new UnsafeSpanWriter();
 
             byte[] buffer = new byte[Person.Serializer.GetMaxSize(person)];
 
             int bytesWritten = Person.Serializer.Write(spanWriter, buffer, person);
-            bytesWritten = Person.Serializer.Write(unsafeSpanWriter, buffer, person);
 
             // For reading data, we use InputBuffer. There are more options here:
 
@@ -76,18 +74,6 @@ namespace Samples.IOOptionsExample
 
             // ReadOnlyMemory input buffer will fail to Parse any objects that have Memory<T> in them (that is -- non read only memory).
             var p3 = Person.Serializer.Parse(new ReadOnlyMemoryInputBuffer(new ReadOnlyMemory<byte>(buffer)));
-
-            // The unsafe variants are available in the FlatSharp.Unsafe package and use pointers and other unsafe code to squeeze
-            // out some more performance. These unsafe inputs generally have the most benefit when running on .NET Framework due
-            // to legacy code requirements.
-            var p4 = Person.Serializer.Parse(new UnsafeArrayInputBuffer(buffer));
-            using (var unsafeMemoryInput = new UnsafeMemoryInputBuffer(new Memory<byte>(buffer)))
-            {
-                // Unsafe memory input buffer must be disposed of because it pins the memory in place.
-                // The lifetime of the buffer must be tied to the lifetime of the deserialized object
-                // unless using lazy deserialization.
-                var p5 = Person.Serializer.Parse(unsafeMemoryInput);
-            }
         }
     }
 }

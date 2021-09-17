@@ -17,7 +17,6 @@
  namespace FlatSharpTests
 {
     using FlatSharp;
-    using FlatSharp.Unsafe;
     using Xunit;
     using System;
     using System.Collections.Generic;
@@ -56,12 +55,7 @@
             
             var simple = FlatBufferSerializer.Default.Parse<BasicTypes>(realBuffer);
 
-#pragma warning disable CS0618 // Type or member is obsolete
-            var simpleUnsafe = FlatBufferSerializer.Default.Parse<BasicTypes>(new UnsafeMemoryInputBuffer(realBuffer));
-            var simpleUnsafeArray = FlatBufferSerializer.Default.Parse<BasicTypes>(new UnsafeArrayInputBuffer(realBuffer));
-#pragma warning restore CS0618 // Type or member is obsolete
-
-            foreach (var parsed in new[] { simple, simpleUnsafe, simpleUnsafeArray })
+            foreach (var parsed in new[] { simple })
             {
                 Assert.True(parsed.Bool);
                 Assert.Equal(oracle.Byte, parsed.Byte);
@@ -248,8 +242,8 @@
             var oracle = Oracle.UnionTable.GetRootAsUnionTable(new FlatBuffers.ByteBuffer(realBuffer)).Value<Oracle.BasicTypes>().Value;
             var unionTable = FlatBufferSerializer.Default.Parse<UnionTable>(realBuffer);
 
-            Assert.Equal(1, unionTable.Union.Discriminator);
-            BasicTypes parsed = unionTable.Union.Item1;
+            Assert.Equal(1, unionTable.Union.Value.Discriminator);
+            BasicTypes parsed = unionTable.Union.Value.Item1;
             Assert.NotNull(parsed);
 
             Assert.True(parsed.Bool);
@@ -289,8 +283,8 @@
             byte[] realBuffer = builder.DataBuffer.ToSizedArray();
             var unionTable = FlatBufferSerializer.Default.Parse<UnionTable>(realBuffer);
 
-            Assert.Equal(2, unionTable.Union.Discriminator);
-            Location parsed = unionTable.Union.Item2;
+            Assert.Equal(2, unionTable.Union.Value.Discriminator);
+            Location parsed = unionTable.Union.Value.Item2;
             Assert.NotNull(parsed);
 
             Assert.Equal(1.0f, parsed.X);
@@ -313,8 +307,8 @@
             byte[] realBuffer = builder.DataBuffer.ToSizedArray();
             var unionTable = FlatBufferSerializer.Default.Parse<UnionTable>(realBuffer);
 
-            Assert.Equal(3, unionTable.Union.Discriminator);
-            string parsed = unionTable.Union.Item3;
+            Assert.Equal(3, unionTable.Union.Value.Discriminator);
+            string parsed = unionTable.Union.Value.Item3;
             Assert.Equal("foobar", parsed);
         }
 

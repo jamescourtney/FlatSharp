@@ -35,13 +35,7 @@ namespace FlatSharpTests
         public void NestedStructs_GreedyMutable() => this.RunTest(FlatBufferDeserializationOption.GreedyMutable);
 
         [Fact]
-        public void NestedStructs_VectorCacheMutable() => this.RunTest(FlatBufferDeserializationOption.VectorCacheMutable);
-
-        [Fact]
-        public void NestedStructs_VectorCache() => this.RunTest(FlatBufferDeserializationOption.VectorCache);
-
-        [Fact]
-        public void NestedStructs_PropertyCache() => this.RunTest(FlatBufferDeserializationOption.PropertyCache);
+        public void NestedStructs_VectorCache() => this.RunTest(FlatBufferDeserializationOption.Progressive);
 
         [Fact]
         public void NestedStructs_Lazy() => this.RunTest(FlatBufferDeserializationOption.Lazy);

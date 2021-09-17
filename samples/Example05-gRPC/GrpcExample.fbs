@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+attribute "fs_serializer";
+attribute "fs_rpcInterface";
+attribute "fs_sharedString";
+
 namespace Samples.GrpcExample;
 
 table SingleMessage (fs_serializer:"Lazy")
@@ -27,7 +31,7 @@ table MultiMessage (fs_serializer:"Lazy")
 }
 
 // Specify the fs_rpcInterface attribute to generate an interface for this service.
-rpc_service EchoService (fs_rpcInterface:"IEchoService")
+rpc_service EchoService (fs_rpcInterface)
 {
      EchoUnary (SingleMessage) : SingleMessage;
      EchoClientStreaming (SingleMessage) : MultiMessage (streaming : "client");

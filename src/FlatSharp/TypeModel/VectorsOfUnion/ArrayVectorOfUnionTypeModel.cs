@@ -32,17 +32,23 @@ namespace FlatSharp.TypeModel
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
+            if (!context.Options.GreedyDeserialize)
+            {
+                throw new InvalidFlatBufferDefinitionException("Array vectors may only be used with Greedy serializers.");
+            }
+
             var (classDef, className) = FlatBufferVectorHelpers.CreateFlatBufferVectorOfUnionSubclass(
-                this.ItemTypeModel.ClrType,
                 this.ItemTypeModel,
-                context.InputBufferTypeName,
-                context.MethodNameMap[this.ItemTypeModel.ClrType]);
+                context);
+
+            FlatSharpInternal.Assert(!string.IsNullOrEmpty(context.TableFieldContextVariableName), "expecting table field context");
 
             string createFlatBufferVector =
             $@"new {className}<{context.InputBufferTypeName}>(
                     {context.InputBufferVariableName}, 
                     {context.OffsetVariableName}.offset0 + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}.offset0), 
-                    {context.OffsetVariableName}.offset1 + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}.offset1))";
+                    {context.OffsetVariableName}.offset1 + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}.offset1),
+                    {context.TableFieldContextVariableName})";
 
             string body = $"return ({createFlatBufferVector}).ToArray();";
 

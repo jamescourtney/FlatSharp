@@ -49,6 +49,11 @@
             {
                 throw new InvalidFlatBufferDefinitionException($"Struct member '{this.FriendlyName}' declared the Required attribute. Required is not valid inside structs.");
             }
+
+            if (attribute.SharedString)
+            {
+                throw new InvalidFlatBufferDefinitionException($"Struct member '{this.FriendlyName}' declared the SharedString attribute. SharedString is not valid inside structs.");
+            }
         }
 
         /// <summary>
@@ -62,27 +67,29 @@
         public int Length { get; }
 
         public override string CreateReadItemBody(
-            string parseItemMethodName, 
-            string bufferVariableName, 
-            string offsetVariableName, 
-            string vtableLocationVariableName, 
+            ParserCodeGenContext context,
+            string vtableLocationVariableName,
             string vtableMaxIndexVariableName)
         {
-            return $"return {parseItemMethodName}({bufferVariableName}, {offsetVariableName} + {this.Offset});";
+            context = context with
+            {
+                OffsetVariableName = $"{context.OffsetVariableName} + {this.Offset}",
+            };
+
+            return $"return {context.GetParseInvocation(this.ItemTypeModel.ClrType)};";
         }
 
         public override string CreateWriteThroughBody(
-            string writeValueMethodName,
-            string bufferVariableName,
-            string offsetVariableName,
-            string valueVariableName)
+            SerializationCodeGenContext context,
+            string vtableLocationVariableName,
+            string vtableMaxIndexVariableName)
         {
-            return $@"
-                {writeValueMethodName}(
-                    default(SpanWriter), 
-                    {bufferVariableName}.{nameof(IInputBuffer.GetByteMemory)}(0, {bufferVariableName}.{nameof(IInputBuffer.Length)}).Span, 
-                    {valueVariableName}, 
-                    {offsetVariableName} + {this.Offset});";
+            context = context with
+            {
+                OffsetVariableName = $"{context.OffsetVariableName} + {this.Offset}"
+            };
+
+            return context.GetSerializeInvocation(this.ItemTypeModel.ClrType) + ";";
         }
     }
 }

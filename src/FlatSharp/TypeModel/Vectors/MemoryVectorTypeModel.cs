@@ -17,6 +17,7 @@
 namespace FlatSharp.TypeModel
 {
     using System;
+    using System.Collections.Generic;
 
     /// <summary>
     /// Defines a vector type model for a memory vector of byte.
@@ -50,6 +51,12 @@ namespace FlatSharp.TypeModel
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
+            ValidateWriteThrough(
+                writeThroughSupported: false,
+                this,
+                context.AllFieldContexts,
+                context.Options);
+
             string method = nameof(InputBufferExtensions.ReadByteMemoryBlock);
             if (this.isReadOnly)
             {

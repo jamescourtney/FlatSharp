@@ -13,25 +13,19 @@
       <FlatSharpNullable Condition=" '$(Nullable)' == 'enable' ">true</FlatSharpNullable>
     </PropertyGroup>
     
-    <!-- Try legacy .net framework-->
-    <PropertyGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
-      <CompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\tools\net47\FlatSharp.Compiler.exe'))</CompilerPath>
-      <CompilerInvocation>$(CompilerPath)</CompilerInvocation>
-    </PropertyGroup>
-
-    <!-- next try .net5.0. Note that this can have various prefixes (net5.0-windows, etc) -->
+    <!-- try .net5.0. Note that this can have various prefixes (net5.0-windows, etc) -->
     <PropertyGroup Condition="$(TargetFramework.StartsWith('net5.0'))">
       <CompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\tools\net5.0\FlatSharp.Compiler.dll'))</CompilerPath>
       <CompilerInvocation>dotnet $(CompilerPath)</CompilerInvocation>
     </PropertyGroup>
 
-    <!-- finally assume it's netcore2.1 -->
+    <!-- finally assume it's netcore3.1 -->
     <PropertyGroup Condition=" '$(CompilerInvocation)' == '' ">
-      <CompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\tools\netcoreapp2.1\FlatSharp.Compiler.dll'))</CompilerPath>
+      <CompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\tools\netcoreapp3.1\FlatSharp.Compiler.dll'))</CompilerPath>
       <CompilerInvocation>dotnet $(CompilerPath)</CompilerInvocation>
     </PropertyGroup>
 
-    <Message Text="$(TargetFramework) $(TargetFrameworkIdentifier): $(CompilerInvocation) --nullable-annotations $(FlatSharpNullable) --input &quot;%(FlatSharpSchema.fullpath)&quot; --output $(IntermediateOutputPath)" Importance="high" />
+    <Message Text="$(TargetFramework) $(TargetFrameworkIdentifier): $(CompilerInvocation) --nullable-warnings $(FlatSharpNullable) --input &quot;%(FlatSharpSchema.fullpath)&quot; --output $(IntermediateOutputPath)" Importance="high" />
     <Exec 
         Command="$(CompilerInvocation) --nullable-warnings $(FlatSharpNullable) --input &quot;%(FlatSharpSchema.fullpath)&quot; --output $(IntermediateOutputPath) "
         CustomErrorRegularExpression=".*" 

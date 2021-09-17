@@ -56,7 +56,7 @@ public struct StructVectors : IFlatbufferObject
       _AlignmentVec_Byte,
       _HashVec);
   }
-};
+}
 
 public class StructVectorsT
 {

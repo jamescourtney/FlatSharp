@@ -16,6 +16,9 @@
 
 namespace Samples.SortedVectors.Fbs;
 
+attribute "fs_serializer";
+attribute "fs_sortedVector";
+
 table UserList (fs_serializer) {
     Users:[User] (fs_sortedVector); // Declare the vector to be sorted.
 }

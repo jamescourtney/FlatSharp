@@ -56,6 +56,8 @@ namespace FlatSharpTests.Compiler
 
     /// Logical types, vector layouts, and schemas
 
+    {MetadataHelpers.AllAttributes}
+
     namespace org.apache.arrow.flatbuf;
 
     enum MetadataVersion : short

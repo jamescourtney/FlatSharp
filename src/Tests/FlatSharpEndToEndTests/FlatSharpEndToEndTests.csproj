@@ -29,19 +29,20 @@
   <ItemGroup>
     <ProjectReference Include="..\..\FlatSharp.Compiler\FlatSharp.Compiler.csproj" />
     <ProjectReference Include="..\..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
-    <ProjectReference Include="..\..\FlatSharp.Unsafe\FlatSharp.Unsafe.csproj" />
     <ProjectReference Include="..\..\FlatSharp\FlatSharp.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <Compile Remove="Grpc\Grpc.fbs.generated.cs" />
     <Compile Include="Grpc\Grpc.fbs.generated.cs" />
     <Compile Remove="ValueStructs\ValueStructs.fbs.generated.cs" />
     <Compile Include="ValueStructs\ValueStructs.fbs.generated.cs" />
+    <Compile Remove="Preallocation\Preallocation.fbs.generated.cs" />
+    <Compile Include="Preallocation\Preallocation.fbs.generated.cs" />
   </ItemGroup>
 
   <Target Name="FBS" BeforeTargets="BeforeBuild">
     <Exec Command="dotnet ..\..\FlatSharp.Compiler\bin\$(Configuration)\net5.0\FlatSharp.Compiler.dll --nullable-warnings true -i Grpc\Grpc.fbs -o Grpc\" />
     <Exec Command="dotnet ..\..\FlatSharp.Compiler\bin\$(Configuration)\net5.0\FlatSharp.Compiler.dll --nullable-warnings true -i ValueStructs\ValueStructs.fbs -o ValueStructs\" />
+    <Exec Command="dotnet ..\..\FlatSharp.Compiler\bin\$(Configuration)\net5.0\FlatSharp.Compiler.dll --nullable-warnings true -i Preallocation\Preallocation.fbs -o Preallocation\" />
   </Target>
 </Project>

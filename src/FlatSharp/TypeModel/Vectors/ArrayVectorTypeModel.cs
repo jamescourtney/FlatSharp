@@ -17,7 +17,6 @@
 namespace FlatSharp.TypeModel
 {
     using System;
-    using System.Text;
 
     /// <summary>
     /// Defines a vector type model for an array vector.
@@ -61,30 +60,42 @@ namespace FlatSharp.TypeModel
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
             string body;
-
             FlatSharpInternal.Assert(this.ItemTypeModel is not null, "Flatsharp internal error: ItemTypeModel null");
+
+            if (!context.Options.GreedyDeserialize)
+            {
+                throw new InvalidFlatBufferDefinitionException("Array vectors may only be used with Greedy serializers.");
+            }
+
+            ValidateWriteThrough(
+                writeThroughSupported: false,
+                this,
+                context.AllFieldContexts,
+                context.Options);
 
             (string vectorClassDef, string vectorClassName) = (string.Empty, string.Empty);
 
             if (this.ItemTypeModel.ClrType == typeof(byte))
             {
                 // can handle this as memory.
-                string method = nameof(InputBufferExtensions.ReadByteMemoryBlock);
+                string method = nameof(InputBufferExtensions.ReadByteReadOnlyMemoryBlock);
                 string memoryVectorRead = $"{context.InputBufferVariableName}.{method}({context.OffsetVariableName})";
                 body = $"return {memoryVectorRead}.ToArray();";
             }
             else
             {
                 (vectorClassDef, vectorClassName) = FlatBufferVectorHelpers.CreateFlatBufferVectorSubclass(
-                    this.ItemTypeModel.ClrType,
-                    context.InputBufferTypeName,
-                    context.MethodNameMap[this.ItemTypeModel.ClrType]);
+                    this.ItemTypeModel,
+                    context);
+
+                FlatSharpInternal.Assert(!string.IsNullOrEmpty(context.TableFieldContextVariableName), "expecting table field context");
 
                 string createFlatBufferVector =
                 $@"new {vectorClassName}<{context.InputBufferTypeName}>(
                     {context.InputBufferVariableName}, 
                     {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}), 
-                    {this.PaddedMemberInlineSize})";
+                    {this.PaddedMemberInlineSize},
+                    {context.TableFieldContextVariableName})";
 
                 body = $"return ({createFlatBufferVector}).ToArray();";
             }

@@ -30,6 +30,7 @@ namespace FlatSharpTests.Compiler
         public void NullableAnnotations()
         {
             string schema = $@"
+            {MetadataHelpers.AllAttributes}
             namespace NullableAnnotationTests;
 
             table Table ({MetadataKeys.SerializerKind}) {{

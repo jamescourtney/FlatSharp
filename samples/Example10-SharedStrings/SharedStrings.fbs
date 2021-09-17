@@ -16,6 +16,9 @@
 
 namespace Samples.SharedStrings;
 
+attribute "fs_serializer";
+attribute "fs_sharedString";
+
 table Matrix (fs_serializer) {
 	Rows:[Row];
 }

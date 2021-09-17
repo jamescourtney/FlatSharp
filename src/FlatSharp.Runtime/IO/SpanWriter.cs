@@ -26,11 +26,6 @@ namespace FlatSharp
     /// </summary>
     public struct SpanWriter : ISpanWriter
     {
-        /// <summary>
-        /// A default instance. Spanwriter is stateless and threadsafe.
-        /// </summary>
-        public static SpanWriter Instance => default;
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteByte(Span<byte> span, byte value, int offset)
         {

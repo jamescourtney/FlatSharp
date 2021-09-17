@@ -26,7 +26,6 @@ namespace FlatSharpTests
     using System.Text;
     using FlatSharp;
     using FlatSharp.Attributes;
-    using FlatSharp.Unsafe;
     using Xunit;
 
     /// <summary>
@@ -58,19 +57,19 @@ namespace FlatSharpTests
         }
 
         [Fact]
-        public void SafeMemoryInputBuffer()
+        public void MemoryInputBuffer()
         {
             this.InputBufferTest(new MemoryInputBuffer(Input));
             this.StringInputBufferTest(new MemoryInputBuffer(StringInput));
             this.TestDeserializeBoth(b => new MemoryInputBuffer(b));
             this.TestReadByteArray(b => new MemoryInputBuffer(b));
             this.TableSerializationTest(
-                SpanWriter.Instance,
+                default(SpanWriter),
                 (s, b) => s.Parse<PrimitiveTypesTable>(b.AsMemory()));
         }
 
         [Fact]
-        public void SafeReadOnlyMemoryInputBuffer()
+        public void ReadOnlyMemoryInputBuffer()
         {
             this.InputBufferTest(new ReadOnlyMemoryInputBuffer(Input));
             this.StringInputBufferTest(new ReadOnlyMemoryInputBuffer(StringInput));
@@ -82,7 +81,7 @@ namespace FlatSharpTests
             Assert.Equal("ReadOnlyMemory inputs may not deserialize writable memory.", ex.Message);
 
             this.TableSerializationTest(
-                SpanWriter.Instance,
+                default(SpanWriter),
                 (s, b) => s.Parse<PrimitiveTypesTable>((ReadOnlyMemory<byte>)b.AsMemory()));
         }
 
@@ -94,36 +93,20 @@ namespace FlatSharpTests
             this.TestDeserializeBoth(b => new ArrayInputBuffer(b));
             this.TestReadByteArray(b => new ArrayInputBuffer(b));
             this.TableSerializationTest(
-                SpanWriter.Instance,
+                default(SpanWriter),
                 (s, b) => s.Parse<PrimitiveTypesTable>(b));
         }
 
-        [Fact, Obsolete]
-        public void UnsafeArrayInputBuffer()
+        [Fact]
+        public void ArraySegmentInputBuffer()
         {
-            this.InputBufferTest(new UnsafeArrayInputBuffer(Input));
-            this.StringInputBufferTest(new UnsafeArrayInputBuffer(StringInput));
-            this.TestDeserializeBoth(b => new UnsafeArrayInputBuffer(b));
-            this.TestReadByteArray(b => new UnsafeArrayInputBuffer(b));
+            this.InputBufferTest(new ArraySegmentInputBuffer(new ArraySegment<byte>(Input)));
+            this.StringInputBufferTest(new ArraySegmentInputBuffer(new ArraySegment<byte>(StringInput)));
+            this.TestDeserializeBoth(b => new ArraySegmentInputBuffer(new ArraySegment<byte>(b)));
+            this.TestReadByteArray(b => new ArraySegmentInputBuffer(new ArraySegment<byte>(b)));
             this.TableSerializationTest(
-                new UnsafeSpanWriter(),
-                (s, b) => s.Parse<PrimitiveTypesTable>(new UnsafeArrayInputBuffer(b)));
-        }
-
-        [Fact, Obsolete]
-        public void UnsafeMemoryInputBuffer()
-        {
-            using (var buffer = new UnsafeMemoryInputBuffer(new Memory<byte>(Input)))
-            {
-                this.InputBufferTest(buffer);
-            }
-
-            using (var buffer = new UnsafeMemoryInputBuffer(new Memory<byte>(StringInput)))
-            {
-                this.StringInputBufferTest(buffer);
-            }
-
-            this.TestDeserializeBoth(b => new UnsafeMemoryInputBuffer(b));
+                default(SpanWriter),
+                (s, b) => s.Parse<PrimitiveTypesTable>(new ArraySegment<byte>(b)));
         }
 
         [Fact]
@@ -303,7 +286,7 @@ namespace FlatSharpTests
             FlatBufferSerializer.Default.Serialize(table, dest);
 
             TBuffer buffer = bufferBuilder(dest);
-            var parsed = FlatBufferSerializer.Default.Parse<TType>(buffer);
+            var parsed = FlatBufferSerializer.Default.Parse<TType, TBuffer>(buffer);
             for (int i = 1; i <= 5; ++i)
             {
                 Assert.Equal(i + 5, parsed.Memory.Span[i - 1]);
@@ -354,8 +337,8 @@ namespace FlatSharpTests
             [FlatBufferItem(11)]
             public virtual string? L { get; set; }
 
-            [FlatBufferItem(12)]
-            public virtual SharedString? M { get; set; }
+            [FlatBufferItem(12, SharedString = true)]
+            public virtual string? M { get; set; }
         }
 
         [FlatBufferTable]

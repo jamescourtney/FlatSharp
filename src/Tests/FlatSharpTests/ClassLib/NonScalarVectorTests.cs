@@ -24,18 +24,27 @@ namespace FlatSharpTests
     using Xunit;
 
     /// <summary>
-    /// Tests various types of vectors (List/ReadOnlyList/Memory/ReadOnlyMemory/Array) for primitive types.
+    /// Tests various types of vectors (List/ReadOnlyList/Memory/ReadOnlyMemory/Array) for non-primitive types.
     /// </summary>
     
     public class NonScalarVectorTests
     {
         private static readonly Random r = new Random();
+
+        public static IEnumerable<object[]> EnumValues()
+        {
+            foreach (var item in Enum.GetValues(typeof(FlatBufferDeserializationOption)))
+            {
+                yield return new object[] { item };
+            }
+        }
         
-        [Fact]
-        public void StringVector()
+        [Theory]
+        [MemberData(nameof(EnumValues))]
+        public void StringVector(FlatBufferDeserializationOption option)
         {
             this.TestType(
-                false,
+                option,
                 () =>
                 {
                     byte[] b = new byte[20];
@@ -44,24 +53,12 @@ namespace FlatSharpTests
                 });
         }
 
-        [Fact]
-        public void StringVector_Cache()
+        [Theory]
+        [MemberData(nameof(EnumValues))]
+        public void TableVector(FlatBufferDeserializationOption option)
         {
             this.TestType(
-                true,
-                () =>
-                {
-                    byte[] b = new byte[20];
-                    r.NextBytes(b);
-                    return Convert.ToBase64String(b);
-                });
-        }
-
-        [Fact]
-        public void TableVector()
-        {
-            this.TestType(
-                false,
+                option,
                 () =>
                 {
                     byte[] b = new byte[20];
@@ -70,44 +67,21 @@ namespace FlatSharpTests
                 });
         }
 
-        [Fact]
-        public void TableVector_Cache()
+        [Theory]
+        [MemberData(nameof(EnumValues))]
+        public void StructVector(FlatBufferDeserializationOption option)
         {
             this.TestType(
-                true,
-                () =>
-                {
-                    byte[] b = new byte[20];
-                    r.NextBytes(b);
-                    return new InnerTable { Value = Convert.ToBase64String(b) };
-                });
-        }
-
-        [Fact]
-        public void StructVector()
-        {
-            this.TestType(
-                false,
+                option,
                 () =>
                 {
                     return new InnerStruct { Value = r.Next() };
                 });
         }
 
-        [Fact]
-        public void StructVector_Cache()
+        private void TestType<T>(FlatBufferDeserializationOption option, Func<T> generator) where T : IEquatable<T>
         {
-            this.TestType(
-                true,
-                () =>
-                {
-                    return new InnerStruct { Value = r.Next() };
-                });
-        }
-
-        private void TestType<T>(bool listCache, Func<T> generator) where T : IEquatable<T>
-        {
-            var options = new FlatBufferSerializerOptions(listCache ? FlatBufferDeserializationOption.VectorCache : FlatBufferDeserializationOption.Lazy);
+            var options = new FlatBufferSerializerOptions(option);
             FlatBufferSerializer serializer = new FlatBufferSerializer(options);
 
             {
@@ -126,7 +100,7 @@ namespace FlatSharpTests
                     Assert.Equal<T>(memoryTable.Vector[i], resultVector[i]);
 
                     // reference equality should correspond to the serializer.
-                    Assert.Equal(listCache, object.ReferenceEquals(resultVector[i], resultVector[i])); 
+                    Assert.Equal(option != FlatBufferDeserializationOption.Lazy, object.ReferenceEquals(resultVector[i], resultVector[i])); 
                 }
             }
 
@@ -145,10 +119,11 @@ namespace FlatSharpTests
                     Assert.Equal(memoryTable.Vector[i], resultVector[i]);
 
                     // reference equality should correspond to the serializer.
-                    Assert.Equal(listCache, object.ReferenceEquals(resultVector[i], resultVector[i]));
+                    Assert.Equal(option != FlatBufferDeserializationOption.Lazy, object.ReferenceEquals(resultVector[i], resultVector[i]));
                 }
             }
 
+            if (option != FlatBufferDeserializationOption.Lazy && option != FlatBufferDeserializationOption.Progressive)
             {
                 var memoryTable = new RootTable<T[]>
                 {

@@ -26,7 +26,6 @@ namespace FlatSharpTests.Compiler
     using FlatSharp.TypeModel;
     using Xunit;
 
-    
     public class MetadataTests
     {
         [Fact]
@@ -43,15 +42,6 @@ namespace FlatSharpTests.Compiler
             var (prop, type, attribute) = this.CompileAndGetProperty("", "[OtherTable]", $"{MetadataKeys.Deprecated},{MetadataKeys.SortedVector}");
             Assert.True(attribute.Deprecated);
             Assert.True(attribute.SortedVector);
-        }
-
-        [Fact]
-        public void VectorTypeUnquoted()
-        {
-            var (prop, type, attribute) = this.CompileAndGetProperty("", "[string]", $"{MetadataKeys.VectorKind}:Array");
-            Assert.False(attribute.Deprecated);
-            Assert.False(attribute.SortedVector);
-            Assert.Equal(typeof(string[]), prop.PropertyType);
         }
 
         [Fact]
@@ -113,13 +103,6 @@ namespace FlatSharpTests.Compiler
             Assert.Equal(FlatBufferDeserializationOption.Lazy, type.GetNestedType("GeneratedSerializer", BindingFlags.NonPublic).GetCustomAttribute<FlatSharpGeneratedSerializerAttribute>().DeserializationOption);
         }
 
-        [Fact]
-        public void PrecompiledSerializerUnquoted()
-        {
-            var (prop, type, attribute) = this.CompileAndGetProperty($"{MetadataKeys.SerializerKind}:VectorCacheMutable", "string", "");
-            Assert.Equal(FlatBufferDeserializationOption.VectorCacheMutable, type.GetNestedType("GeneratedSerializer", BindingFlags.NonPublic).GetCustomAttribute<FlatSharpGeneratedSerializerAttribute>().DeserializationOption);
-        }
-
         private (PropertyInfo, Type, FlatBufferItemAttribute) CompileAndGetProperty(string typeMetadata, string fieldType, string fieldMetadata)
         {
             if (!string.IsNullOrEmpty(typeMetadata))
@@ -132,10 +115,10 @@ namespace FlatSharpTests.Compiler
                 fieldMetadata = $"({fieldMetadata})";
             }
 
-            string schema = $@"table MyTable {typeMetadata} {{ Field:{fieldType} {fieldMetadata}; Fake:string; }} table OtherTable {{ String:string (key); }}";
+            string schema = $@"{MetadataHelpers.AllAttributes} namespace ns; table MyTable {typeMetadata} {{ Field:{fieldType} {fieldMetadata}; Fake:string; }} table OtherTable {{ String:string (key); }}";
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
-            var type = asm.GetType("MyTable");
+            var type = asm.GetType("ns.MyTable");
             var propInfo = type.GetProperty("Field");
             var attribute = propInfo.GetCustomAttribute<FlatBufferItemAttribute>();
 

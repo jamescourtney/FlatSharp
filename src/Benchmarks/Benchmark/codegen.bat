@@ -1,1 +1,1 @@
-..\Google.FlatBuffers\flatc.exe --gen-onefile --csharp --gen-object-api -o FBBench\ FBBench\Google.Flatbuffers.fbs
+..\..\ext\flatc\windows\flatc.exe --gen-onefile --csharp --gen-object-api -o FBBench\ FBBench\Google.Flatbuffers.fbs

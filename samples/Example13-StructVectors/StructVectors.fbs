@@ -16,6 +16,11 @@
 
 namespace Samples.StructVectors;
 
+attribute "fs_serializer";
+attribute "fs_nonVirtual";
+attribute "fs_valueStruct";
+attribute "fs_unsafeStructVector";
+
 table Transaction (fs_serializer) {
    Amount : double;
    Sender : string;

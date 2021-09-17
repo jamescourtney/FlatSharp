@@ -105,22 +105,24 @@ namespace FlatSharp
 
         public string ClassName { get; }
 
-        public void AddProperty(ItemMemberModel itemModel, string readValueMethodName, string writeValueMethodName)
+        public void AddProperty(
+            ItemMemberModel itemModel,
+            ParserCodeGenContext context)
         {
             this.AddFieldDefinitions(itemModel);
-            this.AddPropertyDefinitions(itemModel, writeValueMethodName);
+            this.AddPropertyDefinitions(itemModel, context.SerializeMethodNameMap[itemModel.ItemTypeModel.ClrType]);
             this.AddCtorStatements(itemModel);
-            this.AddReadMethod(itemModel, readValueMethodName);
+            this.AddReadMethod(itemModel, context);
 
             if (itemModel.IsWriteThrough)
             {
                 if (!this.options.SupportsWriteThrough)
                 {
                     throw new InvalidFlatBufferDefinitionException(
-                        $"Property '{itemModel.PropertyInfo.Name}' of {this.typeModel.SchemaType} '{this.typeModel.GetCompilableTypeName()}' specifies the WriteThrough option. However, WriteThrough is only supported when using deserialization option 'VectorCacheMutable' or 'Lazy'.");
+                        $"Property '{itemModel.PropertyInfo.Name}' of {this.typeModel.SchemaType} '{this.typeModel.GetCompilableTypeName()}' specifies the WriteThrough option. However, WriteThrough is only supported when using deserialization option 'Progressive' or 'Lazy'.");
                 }
 
-                this.AddWriteThroughMethod(itemModel, writeValueMethodName);
+                this.AddWriteThroughMethod(itemModel, context);
             }
         }
 
@@ -140,12 +142,19 @@ namespace FlatSharp
             this.instanceFieldDefinitions[GetFieldName(itemModel)] = $"private {typeName} {GetFieldName(itemModel)};";
         }
 
-        private void AddReadMethod(ItemMemberModel itemModel, string readValueMethodName)
+        private void AddReadMethod(
+            ItemMemberModel itemModel,
+            ParserCodeGenContext ctx)
         {
+            ctx = ctx with
+            {
+                InputBufferTypeName = "TInputBuffer",
+                OffsetVariableName = "offset",
+                InputBufferVariableName = "buffer",
+            };
+
             string body = itemModel.CreateReadItemBody(
-                readValueMethodName,
-                "buffer",
-                "offset",
+                ctx,
                 "vtableOffset",
                 "maxVtableIndex");
 
@@ -159,21 +168,28 @@ namespace FlatSharp
                     int vtableOffset, 
                     int maxVtableIndex)
                 {{
-                    {body};
+                    {body}
                 }}");
         }
 
-        private void AddWriteThroughMethod(ItemMemberModel itemModel, string writeValueMethodName)
+        private void AddWriteThroughMethod(ItemMemberModel itemModel, ParserCodeGenContext parserContext)
         {
+            var context = parserContext.GetWriteThroughContext(
+                $"buffer.{nameof(IInputBuffer.GetByteMemory)}(0, buffer.{nameof(IInputBuffer.Length)}).Span",
+                "value",
+                "offset");
+
             this.readMethods.Add(
                 $@"
                     {GetAggressiveInliningAttribute()}
                     private static void {GetWriteMethodName(itemModel)}(
                         TInputBuffer buffer,
                         int offset,
-                        {itemModel.ItemTypeModel.GetGlobalCompilableTypeName()} value)
+                        {itemModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType)} value,
+                        int vtableOffset,
+                        int vtableMaxIndex)
                     {{
-                        {itemModel.CreateWriteThroughBody(writeValueMethodName, "buffer", "offset", "value")}
+                        {itemModel.CreateWriteThroughBody(context, "vtableOffset", "vtableMaxIndex")}
                     }}");
         }
 
@@ -258,28 +274,11 @@ namespace FlatSharp
 
             Type interfaceType = typeof(IFlatBufferDeserializedObject);
 
-#pragma warning disable CS0618 // Type or member is obsolete
-            string addressableStructImplementation = string.Empty;
-            if (this.typeModel.SchemaType == FlatBufferSchemaType.Struct &&
-                this.typeModel.PhysicalLayout.Length == 1 &&
-                !this.options.GreedyDeserialize)
-            {
-                interfaceType = typeof(IFlatBufferAddressableStruct);
-                addressableStructImplementation = $@"
-                    int {nameof(IFlatBufferAddressableStruct)}.{nameof(IFlatBufferAddressableStruct.Size)} => {this.typeModel.PhysicalLayout[0].InlineSize};
-                    int {nameof(IFlatBufferAddressableStruct)}.{nameof(IFlatBufferAddressableStruct.Offset)} => this.{OffsetVariableName};
-                    int {nameof(IFlatBufferAddressableStruct)}.{nameof(IFlatBufferAddressableStruct.Alignment)} => {this.typeModel.PhysicalLayout[0].Alignment};
-                ";
-            }
-#pragma warning restore CS0618 // Type or member is obsolete
-
             return
             $@"
                 private sealed class {this.ClassName}<TInputBuffer> 
-                    : {typeModel.GetGlobalCompilableTypeName()} 
-#pragma warning disable CS0618 // Type or member is obsolete
+                    : {typeModel.GetGlobalCompilableTypeName()}
                     , {interfaceType.GetGlobalCompilableTypeName()}
-#pragma warning restore CS0618 // Type or member is obsolete
                     where TInputBuffer : IInputBuffer
                 {{
                     private static readonly {typeof(FlatBufferDeserializationContext).GetGlobalCompilableTypeName()} __CtorContext 
@@ -300,8 +299,6 @@ namespace FlatSharp
                     {typeof(FlatBufferDeserializationContext).GetGlobalCompilableTypeName()} {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.DeserializationContext)} => __CtorContext;
                     {typeof(IInputBuffer).GetGlobalCompilableTypeName()}? {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.InputBuffer)} => {this.GetBufferReference()};
                     bool {typeof(IFlatBufferDeserializedObject).GetGlobalCompilableTypeName()}.{nameof(IFlatBufferDeserializedObject.CanSerializeWithMemoryCopy)} => {this.options.CanSerializeWithMemoryCopy.ToString().ToLowerInvariant()};
-
-                    {addressableStructImplementation}
 
                     {string.Join("\r\n", this.propertyOverrides)}
                     {string.Join("\r\n", this.readMethods)}
@@ -332,7 +329,7 @@ namespace FlatSharp
                 // Finally, if we are writethrough enabled, we need to do that too.
                 if (writeThrough)
                 {
-                    setterLines.Add($"{GetWriteMethodName(itemModel)}({this.GetBufferReference()}, {OffsetVariableName}, value);");
+                    setterLines.Add($"{GetWriteMethodName(itemModel)}({this.GetBufferReference()}, {OffsetVariableName}, value, {this.vtableOffsetAccessor}, {this.vtableMaxIndexAccessor});");
                 }
             }
             else

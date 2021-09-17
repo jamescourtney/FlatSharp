@@ -91,6 +91,11 @@ namespace FlatSharp.TypeModel
         /// </summary>
         public override bool SerializesInline => false;
 
+        /// <summary>
+        /// Defer to the union type under us as to whether context is needed.
+        /// </summary>
+        public override TableFieldContextRequirements TableFieldContextRequirements => this.ItemTypeModel.TableFieldContextRequirements | TableFieldContextRequirements.Parse;
+
         public override IEnumerable<ITypeModel> Children => new[] { this.ItemTypeModel };
 
         protected virtual string Indexer(string index) => $"[{index}]";
@@ -106,6 +111,11 @@ namespace FlatSharp.TypeModel
             // 2 vectors.
             int baseSize = 2 * (sizeof(int) + SerializationHelpers.GetMaxPadding(sizeof(int)));
 
+            var itemContext = context with
+            {
+                ValueVariableName = "current",
+            };
+
             string body =
             $@"
                 int count = {context.ValueVariableName}.{this.LengthPropertyName};
@@ -113,9 +123,8 @@ namespace FlatSharp.TypeModel
 
                 for (int i = 0; i < count; ++i)
                 {{
-                      var current = {context.ValueVariableName}{this.Indexer("i")};
-                      {this.GetThrowIfNullStatement("current")}
-                      length += {context.MethodNameMap[this.ItemTypeModel.ClrType]}(current);
+                      var {itemContext.ValueVariableName} = {context.ValueVariableName}{this.Indexer("i")};
+                      length += {itemContext.GetMaxSizeInvocation(this.ItemTypeModel.ClrType)};
                 }}
 
                 return length;";
@@ -149,7 +158,6 @@ namespace FlatSharp.TypeModel
                 for (int i = 0; i < count; ++i)
                 {{
                       var current = {context.ValueVariableName}{this.Indexer("i")};
-                      {this.GetThrowIfNullStatement("current")}
 
                       var tuple = (discriminatorVectorOffset, offsetVectorOffset);
                       {innerContext.GetSerializeInvocation(itemTypeModel.ClrType)};
@@ -165,7 +173,7 @@ namespace FlatSharp.TypeModel
         {
             string parameters = parameters = $"{context.ItemVariableName}, {context.MethodNameMap[this.ItemTypeModel.ClrType]}";
 
-            string body =  $"return {nameof(VectorCloneHelpers)}.{nameof(VectorCloneHelpers.Clone)}<{this.ItemTypeModel.GetCompilableTypeName()}>({parameters});";
+            string body =  $"return {nameof(VectorCloneHelpers)}.{nameof(VectorCloneHelpers.CloneVectorOfUnion)}<{this.ItemTypeModel.GetCompilableTypeName()}>({parameters});";
             return new CodeGeneratedMethod(body)
             {
                 IsMethodInline = true,
@@ -185,11 +193,5 @@ namespace FlatSharp.TypeModel
         /// Returns the type of union.
         /// </summary>
         public abstract Type OnInitialize();
-
-        private string GetThrowIfNullStatement(string variableName)
-        {
-            FlatSharpInternal.Assert(!this.ItemTypeModel.IsNonNullableClrValueType(), "Unions are reference types");
-            return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({variableName});";
-        }
     }
 }

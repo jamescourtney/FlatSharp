@@ -21,41 +21,22 @@ namespace FlatSharpTests.Compiler
     using System.Linq;
     using System.Reflection;
     using FlatSharp;
+    using FlatSharp.Attributes;
     using FlatSharp.Compiler;
     using Xunit;
 
     public class SharedStringCompilerTests
     {
-        // [Fact]
-        private void SharedStringInlineTypeTest()
-        {
-            string schema = $@"
-            namespace SharedStringTests;
-            table Table {{
-                foo:SharedString;
-                bar:[SharedString] ({MetadataKeys.VectorKind}:array);
-                baz:[SharedString] ({MetadataKeys.VectorKindLegacy}:ilist);
-            }}"; 
-
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
-
-            Type tableType = asm.GetTypes().Single(x => x.FullName == "SharedStringTests.Table");
-            var property = tableType.GetProperty("foo");
-
-            Assert.Equal(typeof(SharedString), property.PropertyType);
-            Assert.Equal(typeof(SharedString[]), tableType.GetProperty("bar").PropertyType);
-            Assert.Equal(typeof(IList<SharedString>), tableType.GetProperty("baz").PropertyType);
-        }
-
         [Fact]
         public void SharedStringMetadataTypeTest()
         {
             string schema = $@"
+            {MetadataHelpers.AllAttributes}
             namespace SharedStringTests;
             table Table {{
                 foo:string ({MetadataKeys.SharedString});
-                bar:[string] ({MetadataKeys.VectorKind}:array, {MetadataKeys.SharedString});
-                baz:[string] ({MetadataKeys.VectorKind}:ilist, {MetadataKeys.SharedStringLegacy});
+                bar:[string] ({MetadataKeys.VectorKind}:""array"", {MetadataKeys.SharedString});
+                baz:[string] ({MetadataKeys.VectorKind}:""ilist"", {MetadataKeys.SharedString});
             }}";
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
@@ -63,9 +44,14 @@ namespace FlatSharpTests.Compiler
             Type tableType = asm.GetTypes().Single(x => x.FullName == "SharedStringTests.Table");
             var property = tableType.GetProperty("foo");
 
-            Assert.Equal(typeof(SharedString), property.PropertyType);
-            Assert.Equal(typeof(SharedString[]), tableType.GetProperty("bar").PropertyType);
-            Assert.Equal(typeof(IList<SharedString>), tableType.GetProperty("baz").PropertyType);
+            Assert.Equal(typeof(string), property.PropertyType);
+            Assert.True(property.GetCustomAttribute<FlatBufferItemAttribute>().SharedString);
+
+            Assert.Equal(typeof(string[]), tableType.GetProperty("bar").PropertyType);
+            Assert.True(tableType.GetProperty("bar").GetCustomAttribute<FlatBufferItemAttribute>().SharedString);
+
+            Assert.Equal(typeof(IList<string>), tableType.GetProperty("baz").PropertyType);
+            Assert.True(tableType.GetProperty("baz").GetCustomAttribute<FlatBufferItemAttribute>().SharedString);
         }
     }
 }

@@ -98,6 +98,11 @@ namespace FlatSharp.TypeModel
         public virtual bool SerializeMethodRequiresContext => true;
 
         /// <summary>
+        /// All methods require a <see cref="TableFieldContext"/> argument.
+        /// </summary>
+        public virtual TableFieldContextRequirements TableFieldContextRequirements => TableFieldContextRequirements.None;
+
+        /// <summary>
         /// Gets the maximum inline size of this item when padded for alignment, when stored in a table or vector.
         /// </summary>
         public virtual int MaxInlineSize => this.PhysicalLayout.Sum(x => x.InlineSize + SerializationHelpers.GetMaxPadding(x.Alignment));
@@ -133,14 +138,9 @@ namespace FlatSharp.TypeModel
 
         public abstract CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context);
 
-        public virtual string FormatDefaultValueAsLiteral(object? defaultValue) => this.GetTypeDefaultExpression();
+        public virtual string? CreateExtraClasses() => null;
 
-        [ExcludeFromCodeCoverage]
-        public virtual bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
-        {
-            literal = null;
-            return false;
-        }
+        public virtual string FormatDefaultValueAsLiteral(object? defaultValue) => this.GetTypeDefaultExpression();
 
         [ExcludeFromCodeCoverage]
         public virtual bool TryGetUnderlyingVectorType([NotNullWhen(true)] out ITypeModel? typeModel)
@@ -165,6 +165,11 @@ namespace FlatSharp.TypeModel
 
         public virtual void AdjustTableMember(TableMemberModel source)
         {
+        }
+
+        public virtual List<(ITypeModel, TableFieldContext)> GetFieldContexts()
+        {
+            return new();
         }
 
         public IEnumerable<Type> GetReferencedTypes()

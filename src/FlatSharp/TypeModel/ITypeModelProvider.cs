@@ -31,13 +31,5 @@ namespace FlatSharp.TypeModel
             TypeModelContainer container, 
             Type type,
             [NotNullWhen(true)] out ITypeModel? typeModel);
-
-        /// <summary>
-        /// Attempts to resolve the given alias from an FBS schema as a type model element.
-        /// </summary>
-        bool TryResolveFbsAlias(
-            TypeModelContainer container, 
-            string alias,
-            [NotNullWhen(true)] out ITypeModel? typeModel);
     }
 }

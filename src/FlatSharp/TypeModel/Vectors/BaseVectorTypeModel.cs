@@ -20,6 +20,7 @@ namespace FlatSharp.TypeModel
     using System.Collections.Generic;
     using System.Collections.Immutable;
     using System.Diagnostics.CodeAnalysis;
+    using System.Linq;
 
     /// <summary>
     /// Defines a vector type model.
@@ -90,6 +91,12 @@ namespace FlatSharp.TypeModel
         /// </summary>
         public override bool SerializesInline => false;
 
+        /// <summary>
+        /// Vectors don't intrinsically care about this, but the elements may.
+        /// </summary>
+        public override TableFieldContextRequirements TableFieldContextRequirements => 
+            this.ItemTypeModel.TableFieldContextRequirements | TableFieldContextRequirements.Parse;
+
         public override IEnumerable<ITypeModel> Children => new[] { this.ItemTypeModel };
 
         /// <summary>
@@ -124,9 +131,14 @@ namespace FlatSharp.TypeModel
             }
             else
             {
+                var itemContext = context with
+                {
+                    ValueVariableName = "current",
+                };
+
                 string loopBody = $@"
                     {this.GetThrowIfNullStatement("current")}
-                    runningSum += {context.MethodNameMap[this.ItemTypeModel.ClrType]}(current);";
+                    runningSum += {itemContext.GetMaxSizeInvocation(this.ItemTypeModel.ClrType)};";
 
                 body = $@"
                 int count = {lengthProperty};
@@ -227,6 +239,33 @@ namespace FlatSharp.TypeModel
             }
 
             return $"{nameof(SerializationHelpers)}.{nameof(SerializationHelpers.EnsureNonNull)}({variableName});";
+        }
+
+        internal static void ValidateWriteThrough(
+            bool writeThroughSupported,
+            ITypeModel model,
+            IReadOnlyDictionary<ITypeModel, List<TableFieldContext>> contexts,
+            FlatBufferSerializerOptions options)
+        {
+            if (!contexts.TryGetValue(model, out var fieldsForModel))
+            {
+                return;
+            }
+
+            var firstWriteThrough = fieldsForModel.Where(x => x.WriteThrough).FirstOrDefault();
+
+            if (firstWriteThrough is not null)
+            {
+                if (options.GreedyDeserialize)
+                {
+                    throw new InvalidFlatBufferDefinitionException($"Field '{firstWriteThrough.FullName}' declares the WriteThrough option. WriteThrough is not supported when using Greedy deserialization.");
+                }
+
+                if (!writeThroughSupported)
+                {
+                    throw new InvalidFlatBufferDefinitionException($"Field '{firstWriteThrough.FullName}' declares the WriteThrough option. WriteThrough is only supported for IList vectors.");
+                }
+            }
         }
     }
 }

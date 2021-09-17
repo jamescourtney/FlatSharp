@@ -22,19 +22,46 @@
 
 namespace Samples.WriteThrough;
 
+attribute "fs_serializer";
+attribute "fs_writeThrough";
+attribute "fs_defaultCtor";
+attribute "fs_valueStruct";
+
 // A bloom filter is a probabilistic data structure 
 // used for answering the question "might this item be in the collection?"
 // with a high degree of confidence. This sample uses FlatSharp to store a
 // large Bloom Filter and make efficient in-place updates to it using the WriteThrough option.
 
-table BloomFilter (fs_serializer:Lazy, fs_defaultCtor:None)
+table BloomFilter (fs_serializer:"Lazy", fs_defaultCtor:"None")
 {
-	// Our bloom filter is a vector of blocks.
 	Blocks : [Block] (required);
 }
 
 // We define a block as 128 bytes.
 struct Block
 {
-    Data : [ulong:16]  (fs_writeThrough);
+    // For reference structs, write through happens within the struct.
+    Data : [ulong : 16]  (fs_writeThrough);
+}
+
+// Defines a path, which is a set of points.
+table Path (fs_serializer:"Progressive")
+{
+    // For value structs, write through happens through the containing table field or vector.
+    Points : [ Point ] (fs_writeThrough);
+
+    // The number of items in the "points" vector.
+    NumPoints : MutableInt (fs_writeThrough, required);
+}
+
+struct MutableInt (fs_valueStruct)
+{
+    Value : int;
+}
+
+struct Point (fs_valueStruct)
+{
+    X : float;
+    Y : float;
+    Z : float;
 }

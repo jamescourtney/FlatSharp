@@ -32,10 +32,14 @@ namespace FlatSharpTests
     public class IndexedVectorTests
     {
         private List<string> stringKeys;
+
         private TableVector<string> stringVectorSource;
         private TableVector<string> stringVectorParsed;
+        private TableVector<string> stringVectorProgressive;
+
         private TableVector<int> intVectorSource;
         private TableVector<int> intVectorParsed;
+        private TableVector<int> intVectorProgressive;
 
         public IndexedVectorTests()
         {
@@ -58,11 +62,15 @@ namespace FlatSharpTests
             Span<byte> buffer = new byte[1024];
 
             var serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions(FlatBufferDeserializationOption.Lazy));
+            var progressiveSerializer = new FlatBufferSerializer(new FlatBufferSerializerOptions(FlatBufferDeserializationOption.Progressive));
+
             int bytesWritten = serializer.Serialize(this.stringVectorSource, buffer);
             this.stringVectorParsed = serializer.Parse<TableVector<string>>(buffer.Slice(0, bytesWritten).ToArray());
+            this.stringVectorProgressive = progressiveSerializer.Parse<TableVector<string>>(buffer.Slice(0, bytesWritten).ToArray());
 
             bytesWritten = serializer.Serialize(this.intVectorSource, buffer);
             this.intVectorParsed = serializer.Parse<TableVector<int>>(buffer.Slice(0, bytesWritten).ToArray());
+            this.intVectorProgressive = progressiveSerializer.Parse<TableVector<int>>(buffer.Slice(0, bytesWritten).ToArray());
         }
 
         [Fact]
@@ -72,11 +80,15 @@ namespace FlatSharpTests
             Assert.Throws<KeyNotFoundException>(() => this.stringVectorSource.Vector[string.Empty]);
             Assert.Throws<ArgumentNullException>(() => this.stringVectorParsed.Vector[null]);
             Assert.Throws<KeyNotFoundException>(() => this.stringVectorParsed.Vector[string.Empty]);
+            Assert.Throws<ArgumentNullException>(() => this.stringVectorProgressive.Vector[null]);
+            Assert.Throws<KeyNotFoundException>(() => this.stringVectorProgressive.Vector[string.Empty]);
 
             Assert.Throws<KeyNotFoundException>(() => this.intVectorSource.Vector[int.MinValue]);
             Assert.Throws<KeyNotFoundException>(() => this.intVectorSource.Vector[int.MaxValue]);
             Assert.Throws<KeyNotFoundException>(() => this.intVectorParsed.Vector[int.MinValue]);
             Assert.Throws<KeyNotFoundException>(() => this.intVectorParsed.Vector[int.MaxValue]);
+            Assert.Throws<KeyNotFoundException>(() => this.intVectorProgressive.Vector[int.MinValue]);
+            Assert.Throws<KeyNotFoundException>(() => this.intVectorProgressive.Vector[int.MaxValue]);
         }
 
         [Fact]
@@ -88,12 +100,17 @@ namespace FlatSharpTests
             Assert.Throws<NotMutableException>(() => this.stringVectorSource.Vector.AddOrReplace(null));
             Assert.Throws<NotMutableException>(() => this.stringVectorSource.Vector.Clear());
             Assert.Throws<NotMutableException>(() => this.stringVectorSource.Vector.Remove(null));
-            Assert.False(this.stringVectorSource.Vector.Add(null));
+            Assert.Throws<NotMutableException>(() => this.stringVectorSource.Vector.Add(null));
 
             Assert.Throws<NotMutableException>(() => this.stringVectorParsed.Vector.AddOrReplace(null));
             Assert.Throws<NotMutableException>(() => this.stringVectorParsed.Vector.Clear());
             Assert.Throws<NotMutableException>(() => this.stringVectorParsed.Vector.Remove(null));
-            Assert.False(this.stringVectorParsed.Vector.Add(null));
+            Assert.Throws<NotMutableException>(() => this.stringVectorParsed.Vector.Add(null));
+
+            Assert.Throws<NotMutableException>(() => this.stringVectorProgressive.Vector.AddOrReplace(null));
+            Assert.Throws<NotMutableException>(() => this.stringVectorProgressive.Vector.Clear());
+            Assert.Throws<NotMutableException>(() => this.stringVectorProgressive.Vector.Remove(null));
+            Assert.Throws<NotMutableException>(() => this.stringVectorProgressive.Vector.Add(null));
         }
 
         [Fact]
@@ -101,6 +118,7 @@ namespace FlatSharpTests
         {
             EnumeratorTest(this.stringVectorParsed.Vector);
             EnumeratorTest(this.stringVectorSource.Vector);
+            EnumeratorTest(this.stringVectorProgressive.Vector);
         }
 
         private void EnumeratorTest(IIndexedVector<string, VectorMember<string>> vector)
@@ -144,6 +162,26 @@ namespace FlatSharpTests
             Assert.True(this.stringVectorParsed.Vector.ContainsKey("5"));
             Assert.False(this.stringVectorParsed.Vector.ContainsKey("20"));
             Assert.Throws<ArgumentNullException>(() => this.stringVectorParsed.Vector.ContainsKey(null));
+
+            Assert.True(this.stringVectorProgressive.Vector.ContainsKey("1"));
+            Assert.True(this.stringVectorProgressive.Vector.ContainsKey("5"));
+            Assert.False(this.stringVectorProgressive.Vector.ContainsKey("20"));
+            Assert.Throws<ArgumentNullException>(() => this.stringVectorProgressive.Vector.ContainsKey(null));
+        }
+
+        [Fact]
+        public void IndexedVector_Caching() 
+        {
+            foreach (var key in this.stringKeys)
+            {
+                Assert.True(this.stringVectorParsed.Vector.TryGetValue(key, out var value));
+                Assert.True(this.stringVectorParsed.Vector.TryGetValue(key, out var value2));
+                Assert.NotSame(value, value2);
+
+                Assert.True(this.stringVectorProgressive.Vector.TryGetValue(key, out value));
+                Assert.True(this.stringVectorProgressive.Vector.TryGetValue(key, out value2));
+                Assert.Same(value, value2);
+            }
         }
 
         [Fact]

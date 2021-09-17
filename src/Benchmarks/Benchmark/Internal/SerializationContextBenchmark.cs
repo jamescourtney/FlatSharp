@@ -21,8 +21,6 @@ namespace Benchmark
     using System;
     using System.Collections.Generic;
 
-    [ShortRunJob(BenchmarkDotNet.Jobs.RuntimeMoniker.NetCoreApp50)]
-    [CsvExporter(BenchmarkDotNet.Exporters.Csv.CsvSeparator.Comma)]
     public class SerializationContextBenchmark
     {
         private static readonly SerializationContext context = new SerializationContext();

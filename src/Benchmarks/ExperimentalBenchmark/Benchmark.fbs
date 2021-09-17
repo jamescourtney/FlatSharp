@@ -1,32 +1,19 @@
 ﻿
+attribute "fs_serializer";
+attribute "fs_nonVirtual";
+attribute "fs_valueStruct";
+attribute "fs_unsafeStructVector";
+attribute "fs_nonVirtual";
+
 namespace BenchmarkCore;
 
-table ValueTable (fs_serializer:Lazy) {
-	Points : [Vec3Value];
-}
-
-table ValueTable_Unsafe (fs_serializer:Lazy) {
-	Points : [Vec3Value_Unsafe];
-}
-
-table Table (fs_serializer:Lazy) {
+table ValueTable {
 	Points : [Vec3];
 }
 
-struct Vec3 (fs_nonVirtual) {
-	temp : ulong;
-	imp : ubyte;
-	X : [ubyte : 32];
-}
-
-struct Vec3Value (fs_valueStruct) {
-	temp : ulong;
-	imp : ubyte;
-	X : [ubyte : 32];
-}
-
-struct Vec3Value_Unsafe (fs_valueStruct) {
-	temp : ulong;
-	imp : ubyte;
-	X : [ubyte : 32] (fs_unsafeStructVector);
+struct Vec3 (fs_nonVirtual)
+{
+	X : int;
+	Y : int;
+	Z : int;
 }

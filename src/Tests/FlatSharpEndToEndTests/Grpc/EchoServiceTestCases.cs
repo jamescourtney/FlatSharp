@@ -33,6 +33,19 @@ namespace FlatSharpEndToEndTests.GrpcTests
         [Fact]
         public async Task GrpcSerializersOverridable_EnableSharedStrings()
         {
+            EchoService.Serializer<MultiStringMessage>.Value = MultiStringMessage.Serializer.WithSettings(
+                new SerializerSettings
+                {
+                    SharedStringWriterFactory = () => new SharedStringWriter()
+                });
+
+            int length = await this.SharedStringsTest_Common();
+            Assert.True(length <= 2048);
+        }
+        
+        [Fact]
+        public async Task GrpcSerializersOverridable_NoSharedStrings()
+        {
             try
             {
                 Assert.Throws<ArgumentNullException>(
@@ -41,23 +54,16 @@ namespace FlatSharpEndToEndTests.GrpcTests
                 EchoService.Serializer<MultiStringMessage>.Value = MultiStringMessage.Serializer.WithSettings(
                     new SerializerSettings
                     {
-                        SharedStringWriterFactory = () => new SharedStringWriter()
+                        SharedStringWriterFactory = null
                     });
 
                 int length = await this.SharedStringsTest_Common();
-                Assert.True(length <= 2048);
+                Assert.True(length >= 100_000);
             }
             finally
             {
                 EchoService.Serializer<MultiStringMessage>.Value = MultiStringMessage.Serializer;
             }
-        }
-        
-        [Fact]
-        public async Task GrpcSerializersOverridable_NoSharedStrings()
-        {
-            int length = await this.SharedStringsTest_Common();
-            Assert.True(length >= 100_000);
         }
 
         private async Task<int> SharedStringsTest_Common()
@@ -201,7 +207,7 @@ namespace FlatSharpEndToEndTests.GrpcTests
             {
                 MultiStringMessage message = new MultiStringMessage
                 {
-                    Value = Enumerable.Range(0, 100).Select(x => (SharedString)Guid.NewGuid().ToString()).ToList()
+                    Value = Enumerable.Range(0, 100).Select(x => Guid.NewGuid().ToString()).ToList()
                 };
 
                 var streamingCall = client.EchoServerStreaming(message);
@@ -222,7 +228,7 @@ namespace FlatSharpEndToEndTests.GrpcTests
             {
                 MultiStringMessage message = new MultiStringMessage
                 {
-                    Value = Enumerable.Range(0, 100).Select(x => (SharedString)Guid.NewGuid().ToString()).ToList()
+                    Value = Enumerable.Range(0, 100).Select(x => Guid.NewGuid().ToString()).ToList()
                 };
 
                 var channel = SChannel.CreateUnbounded<StringMessage>();
@@ -252,7 +258,7 @@ namespace FlatSharpEndToEndTests.GrpcTests
             {
                 MultiStringMessage message = new MultiStringMessage
                 {
-                    Value = Enumerable.Range(0, 100).Select(x => (SharedString)Guid.NewGuid().ToString()).ToList()
+                    Value = Enumerable.Range(0, 100).Select(x => Guid.NewGuid().ToString()).ToList()
                 };
 
                 var channel = SChannel.CreateUnbounded<StringMessage>();
@@ -474,7 +480,7 @@ namespace FlatSharpEndToEndTests.GrpcTests
 
             public override async Task<MultiStringMessage> EchoClientStreaming(IAsyncStreamReader<StringMessage> requestStream, ServerCallContext callContext)
             {
-                List<SharedString> messages = new List<SharedString>();
+                List<string> messages = new List<string>();
                 while (await requestStream.MoveNext(callContext.CancellationToken))
                 {
                     messages.Add(requestStream.Current.Value);

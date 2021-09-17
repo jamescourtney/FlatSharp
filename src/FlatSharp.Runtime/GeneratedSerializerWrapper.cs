@@ -31,7 +31,6 @@ namespace FlatSharp
         private readonly IGeneratedSerializer<T> innerSerializer;
         private readonly Lazy<string?> lazyCSharp;
         private readonly ThreadLocal<ISharedStringWriter>? sharedStringWriter;
-        private readonly Func<ISharedStringReader>? sharedStringReaderFactory;
         private readonly bool enableMemoryCopySerialization;
         private readonly string? fileIdentifier;
 
@@ -48,6 +47,7 @@ namespace FlatSharp
 
             var tableAttribute = typeof(T).GetCustomAttribute<Attributes.FlatBufferTableAttribute>();
             this.fileIdentifier = tableAttribute?.FileIdentifier;
+            this.sharedStringWriter = new ThreadLocal<ISharedStringWriter>(() => new SharedStringWriter());
         }
 
         private GeneratedSerializerWrapper(GeneratedSerializerWrapper<T> template, SerializerSettings settings)
@@ -59,7 +59,6 @@ namespace FlatSharp
             this.fileIdentifier = template.fileIdentifier;
 
             this.enableMemoryCopySerialization = settings.EnableMemoryCopySerialization;
-            this.sharedStringReaderFactory = settings.SharedStringReaderFactory;
 
             Func<ISharedStringWriter>? writerFactory = settings.SharedStringWriterFactory;
             if (writerFactory is not null)
@@ -109,7 +108,7 @@ namespace FlatSharp
             };
         }
 
-        public T Parse(IInputBuffer buffer)
+        public T Parse<TInputBuffer>(TInputBuffer buffer) where TInputBuffer : IInputBuffer
         {
             if (buffer.Length >= int.MaxValue / 2)
             {
@@ -121,13 +120,14 @@ namespace FlatSharp
                 throw new ArgumentException("Buffer is too small to be valid!");
             }
 
-            buffer.SharedStringReader = this.sharedStringReaderFactory?.Invoke();
+            // In case buffer is a reference type or is a boxed value, this allows it the opportunity to "wrap" itself in a value struct for efficiency.
             return buffer.InvokeParse(this.innerSerializer, 0);
         }
 
-        object ISerializer.Parse(IInputBuffer buffer) => this.Parse(buffer);
+        object ISerializer.Parse<TInputBuffer>(TInputBuffer buffer) => this.Parse(buffer);
 
-        public int Write(ISpanWriter writer, Span<byte> destination, T item)
+        public int Write<TSpanWriter>(TSpanWriter writer, Span<byte> destination, T item)
+            where TSpanWriter : ISpanWriter
         {
             if (item is null)
             {
@@ -165,7 +165,7 @@ namespace FlatSharp
             var serializationContext = SerializationContext.ThreadLocalContext.Value!;
             serializationContext.Reset(destination.Length);
 
-            var sharedStringWriter = this.sharedStringWriter?.Value;
+            ISharedStringWriter? sharedStringWriter = this.sharedStringWriter?.Value;
             serializationContext.SharedStringWriter = sharedStringWriter;
 
             serializationContext.Offset = 4; // first 4 bytes are reserved for uoffset to the first table.
@@ -173,22 +173,28 @@ namespace FlatSharp
             string? fileId = this.fileIdentifier;
             if (!string.IsNullOrEmpty(fileId))
             {
+                destination[7] = (byte)fileId[3];
                 destination[4] = (byte)fileId[0];
                 destination[5] = (byte)fileId[1];
                 destination[6] = (byte)fileId[2];
-                destination[7] = (byte)fileId[3];
 
                 serializationContext.Offset = 8;
             }
 
             try
             {
-                sharedStringWriter?.PrepareWrite();
-                writer.InvokeWrite(this.innerSerializer, destination, item, 0, serializationContext);
+                if (sharedStringWriter?.IsDirty == true)
+                {
+                    sharedStringWriter.Reset();
+                    Debug.Assert(!sharedStringWriter.IsDirty);
+                }
 
-                if (sharedStringWriter != null)
+                this.innerSerializer.Write(writer, destination, item, 0, serializationContext);
+
+                if (sharedStringWriter?.IsDirty == true)
                 {
                     writer.FlushSharedStrings(sharedStringWriter, destination, serializationContext);
+                    Debug.Assert(!sharedStringWriter.IsDirty);
                 }
 
                 serializationContext.InvokePostSerializeActions(destination);
@@ -207,7 +213,7 @@ namespace FlatSharp
             return serializationContext.Offset;
         }
 
-        int ISerializer.Write(ISpanWriter writer, Span<byte> destination, object item)
+        int ISerializer.Write<TSpanWriter>(TSpanWriter writer, Span<byte> destination, object item)
         {
             return item switch
             {

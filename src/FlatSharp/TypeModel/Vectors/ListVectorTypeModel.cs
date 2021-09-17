@@ -18,6 +18,7 @@ namespace FlatSharp.TypeModel
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Text;
 
     /// <summary>
@@ -25,6 +26,8 @@ namespace FlatSharp.TypeModel
     /// </summary>
     public class ListVectorTypeModel : BaseVectorTypeModel
     {
+        public const int DefaultPreallocationLimit = 1024;
+
         private bool isReadOnly;
 
         internal ListVectorTypeModel(Type vectorType, TypeModelContainer provider) : base(vectorType, provider)
@@ -39,7 +42,7 @@ namespace FlatSharp.TypeModel
 
             FlatSharpInternal.Assert(
                 genericDef == typeof(IList<>) || genericDef == typeof(IReadOnlyList<>),
-                "Cannot build a vector from type: { this.ClrType}. Only List, ReadOnlyList, Memory, ReadOnlyMemory, and Arrays are supported.");
+                $"Cannot build a vector from type: {this.ClrType}. Only List, ReadOnlyList, Memory, ReadOnlyMemory, and Arrays are supported.");
 
             this.isReadOnly = genericDef == typeof(IReadOnlyList<>);
             return this.ClrType.GetGenericArguments()[0];
@@ -101,39 +104,52 @@ namespace FlatSharp.TypeModel
 
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
-            (string vectorClassDef, string vectorClassName) = FlatBufferVectorHelpers.CreateFlatBufferVectorSubclass(
-                this.ItemTypeModel.ClrType,
-                context.InputBufferTypeName,
-                context.MethodNameMap[this.ItemTypeModel.ClrType]);
+            ValidateWriteThrough(
+                writeThroughSupported: !this.isReadOnly,
+                this,
+                context.AllFieldContexts,
+                context.Options);
 
-            string body;
+            (string vectorClassDef, string vectorClassName) = FlatBufferVectorHelpers.CreateFlatBufferVectorSubclass(
+                this.ItemTypeModel,
+                context);
 
             string createFlatBufferVector =
                 $@"new {vectorClassName}<{context.InputBufferTypeName}>(
                         {context.InputBufferVariableName}, 
                         {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}), 
-                        {this.PaddedMemberInlineSize})";
+                        {this.PaddedMemberInlineSize},
+                        {context.TableFieldContextVariableName})";
 
-            if (context.Options.PreallocateVectors)
+            return new CodeGeneratedMethod(CreateParseBody(this.ItemTypeModel, createFlatBufferVector, context)) { ClassDefinition = vectorClassDef };
+        }
+
+        internal static string CreateParseBody(
+            ITypeModel itemTypeModel,
+            string createFlatBufferVector,
+            ParserCodeGenContext context)
+        {
+            FlatSharpInternal.Assert(!string.IsNullOrEmpty(context.TableFieldContextVariableName), "expecting table field context");
+
+            if (context.Options.GreedyDeserialize)
             {
-                // We just call .ToList(). Note that when full greedy mode is on, these items will be 
-                // greedily initialized as we traverse the list. Otherwise, they'll be allocated lazily.
-                body = $"({createFlatBufferVector}).FlatBufferVectorToList()";
-
+                string body = $"({createFlatBufferVector}).FlatBufferVectorToList()";
                 if (!context.Options.GenerateMutableObjects)
                 {
-                    // Finally, if we're not in the business of making mutable objects, then convert the list to read only.
                     body += ".AsReadOnly()";
                 }
 
-                body = $"return {body};";
+                return $"return {body};";
+            }
+            else if (context.Options.Lazy)
+            {
+                return $"return {createFlatBufferVector};";
             }
             else
             {
-                body = $"return {createFlatBufferVector};";
+                FlatSharpInternal.Assert(context.Options.Progressive, "expecting progressive");
+                return $"return new FlatBufferProgressiveVector<{itemTypeModel.GetGlobalCompilableTypeName()}, {context.InputBufferTypeName}>({createFlatBufferVector});";
             }
-
-            return new CodeGeneratedMethod(body) { ClassDefinition = vectorClassDef };
         }
     }
 }

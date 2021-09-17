@@ -32,6 +32,7 @@ namespace FlatSharpTests.Compiler
         public void ValueStruct_BasicDefinition()
         {
             string schema = $@"
+                {MetadataHelpers.AllAttributes}
                 namespace ValueStructTests;
                 table Table ({MetadataKeys.SerializerKind}:""GreedyMutable"") {{ Struct:Struct; }}
                 struct Struct ({MetadataKeys.ValueStruct}) {{ foo:int; }} 
@@ -53,10 +54,11 @@ namespace FlatSharpTests.Compiler
         public void ValueStruct_Nested()
         {
             string schema = $@"
+                {MetadataHelpers.AllAttributes}
                 namespace ValueStructTests;
-                table Table ({MetadataKeys.SerializerKind}:""GreedyMutable"") {{ StructVector:[Struct]; Struct : Struct; }}
-                struct Struct ({MetadataKeys.ValueStruct}) {{ A:int; B : Inner; C : ubyte; }} 
+                table Table ({MetadataKeys.SerializerKind}:""GreedyMutable"") {{ StructVector:[Struct]; Item : Struct; }}
                 struct Inner ({MetadataKeys.ValueStruct}) {{ B : ulong; }}
+                struct Struct ({MetadataKeys.ValueStruct}) {{ A:int; B : Inner; C : ubyte; }} 
                 ";
 
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
@@ -77,7 +79,7 @@ namespace FlatSharpTests.Compiler
             PropertyInfo structVectorProperty = tableType.GetProperty("StructVector");
             Assert.Equal(typeof(IList<>).MakeGenericType(structType), structVectorProperty.PropertyType);
 
-            PropertyInfo structProperty = tableType.GetProperty("Struct");
+            PropertyInfo structProperty = tableType.GetProperty("Item");
             Assert.Equal(typeof(Nullable<>).MakeGenericType(structType), structProperty.PropertyType);
 
             FieldInfo structA = structType.GetField("A");
@@ -97,6 +99,7 @@ namespace FlatSharpTests.Compiler
         public void ValueStruct_Vectors()
         {
             string schema = $@"
+                {MetadataHelpers.AllAttributes}
                 namespace ValueStructTests;
                 struct StructA ({MetadataKeys.ValueStruct}) {{ 
                     Safe : [int : 12];
@@ -105,7 +108,9 @@ namespace FlatSharpTests.Compiler
                     NotSafe : [int : 12] ({MetadataKeys.UnsafeValueStructVector});
                 }}";
 
-            string csharp = FlatSharpCompiler.TestHookCreateCSharp(schema, new());
+            (Assembly asm, string csharp) = FlatSharpCompiler.CompileAndLoadAssemblyWithCode(
+                schema,
+                new());
 
             Assert.Contains("throw new IndexOutOfRangeException()", csharp);
 
@@ -113,11 +118,11 @@ namespace FlatSharpTests.Compiler
             // Syntax for unsafe struct vectors is an indexed unsafe field reference access.
 
             // Todo: is there a better way to test this? Attribute? Roslyn? Something else?
-            Assert.Contains("case 9: return ref item.__flatsharp_Safe_9", csharp);
-            Assert.DoesNotContain("case 9: return ref item.__flatsharp_NotSafe_9", csharp);
+            Assert.Contains("case 9: return ref item.__flatsharp__Safe_9", csharp);
+            Assert.DoesNotContain("case 9: return ref item.__flatsharp__NotSafe_9", csharp);
 
-            Assert.DoesNotContain("return ref global::System.Runtime.CompilerServices.Unsafe.Add(ref item.__flatsharp_Safe_0, index)", csharp);
-            Assert.Contains("return ref global::System.Runtime.CompilerServices.Unsafe.Add(ref item.__flatsharp_NotSafe_0, index)", csharp);
+            Assert.DoesNotContain("return ref System.Runtime.CompilerServices.Unsafe.Add(ref item.__flatsharp__Safe_0, index)", csharp);
+            Assert.Contains("return ref System.Runtime.CompilerServices.Unsafe.Add(ref item.__flatsharp__NotSafe_0, index)", csharp);
         }
 
         [Theory]
@@ -136,6 +141,7 @@ namespace FlatSharpTests.Compiler
             }
 
             string schema = $@"
+                {MetadataHelpers.AllAttributes}
                 namespace ValueStructTests;
                 table Table {{ A : StructA; }}
                 struct StructA ({MetadataKeys.ValueStruct}{attribute}) {{ 
@@ -155,26 +161,28 @@ namespace FlatSharpTests.Compiler
         public void ValueStruct_WriteThrough_NotAllowed_OnStruct()
         {
             string schema = $@"
+                {MetadataHelpers.AllAttributes}
                 namespace ValueStructTests;
                 struct StructB ({MetadataKeys.ValueStruct}, {MetadataKeys.WriteThrough}) {{
                     A : int;
                 }}";
 
             var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.Contains($"Value struct 'StructB' declares the {MetadataKeys.WriteThrough} attribute. Write through is not supported on value type structs.", ex.Message);
+            Assert.Contains($"The attribute 'fs_writeThrough' is never valid on ValueStruct elements.", ex.Message);
         }
 
         [Fact]
         public void ValueStruct_WriteThrough_NotAllowed_OnField()
         {
             string schema = $@"
+                {MetadataHelpers.AllAttributes}
                 namespace ValueStructTests;
                 struct StructB ({MetadataKeys.ValueStruct}) {{
                     A : int ({MetadataKeys.WriteThrough});
                 }}";
 
             var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.Contains($"Value struct field 'StructB.A' declares the {MetadataKeys.WriteThrough} attribute. Write through is not supported on value type structs.", ex.Message);
+            Assert.Contains($"The attribute 'fs_writeThrough' is never valid on ValueStructField elements.", ex.Message);
         }
     }
 }

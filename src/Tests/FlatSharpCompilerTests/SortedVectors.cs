@@ -34,8 +34,10 @@ namespace FlatSharpTests.Compiler
         public void SortedVector_StringKey()
         {
             string schema = $@"
+{MetadataHelpers.AllAttributes}
+namespace ns;
 table Monster ({MetadataKeys.SerializerKind}) {{
-  Vector:[VectorMember] ({MetadataKeys.VectorKind}:IReadOnlyList, {MetadataKeys.SortedVector});
+  Vector:[VectorMember] ({MetadataKeys.VectorKind}:""IReadOnlyList"", {MetadataKeys.SortedVector});
 }}
 
 table VectorMember {{
@@ -47,7 +49,7 @@ table VectorMember {{
             // place elsewhere.
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
 
-            var memberType = asm.GetType("VectorMember");
+            var memberType = asm.GetType("ns.VectorMember");
 
             var prop = memberType.GetProperty("Key");
             Assert.NotNull(prop);
@@ -64,20 +66,22 @@ table VectorMember {{
         public void SortedVector_IntKey()
         {
             string schema = $@"
+{MetadataHelpers.AllAttributes}
+namespace ns;
 table Monster ({MetadataKeys.SerializerKind}) {{
-  Vector:[VectorMember] ({MetadataKeys.VectorKind}:IReadOnlyList, {MetadataKeys.SortedVector});
+  Vector:[VectorMember] ({MetadataKeys.VectorKind}:""IReadOnlyList"", {MetadataKeys.SortedVector});
 }}
 
 table VectorMember {{
     Data:string;
-    Key:int32 (Key);
+    Key:int32 (key);
 }}
 ";
             // We are just verifying that the schema can be generated and compiled. The testing of the logic portion of the sorted vector code takes
             // place elsewhere.
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
 
-            var memberType = asm.GetType("VectorMember");
+            var memberType = asm.GetType("ns.VectorMember");
 
             var prop = memberType.GetProperty("Key");
             Assert.NotNull(prop);
@@ -98,12 +102,14 @@ table VectorMember {{
         public void SortedVector_InvalidKeys_NoSerializer()
         {
             string schema = $@"
-enum TestEnum : ubyte {{ One = 1, Two = 2 }}
+{MetadataHelpers.AllAttributes}
+namespace ns;
+enum TestEnum : ubyte {{ A = 0, One = 1, Two = 2 }}
 
 union TestUnion {{ VectorMember }}
 
 table Monster {{
-  Vector:[VectorMember] ({MetadataKeys.VectorKind}:IReadOnlyList, {MetadataKeys.SortedVector});
+  Vector:[VectorMember] ({MetadataKeys.VectorKind}:""IReadOnlyList"", {MetadataKeys.SortedVector});
 }}
 struct FakeStruct {{ StructData:int32; }}
 
@@ -121,7 +127,7 @@ table VectorMember {{
             // place elsewhere.
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
 
-            var memberType = asm.GetType("VectorMember");
+            var memberType = asm.GetType("ns.VectorMember");
             foreach (var prop in memberType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
                 if (prop.Name == "Vector")
@@ -148,12 +154,14 @@ table VectorMember {{
         public void SortedVector_InvalidKeys_WithSerializer()
         {
             string schema = $@"
+{MetadataHelpers.AllAttributes}
+namespace ns;
 enum TestEnum : ubyte {{ One = 1, Two = 2 }}
 
 union TestUnion {{ VectorMember }}
 
 table Monster ({MetadataKeys.SerializerKind}) {{
-  Vector:[VectorMember] ({MetadataKeys.VectorKind}:IReadOnlyList, {MetadataKeys.SortedVector}, {MetadataKeys.Key});
+  Vector:[VectorMember] ({MetadataKeys.VectorKind}:""IReadOnlyList"", {MetadataKeys.SortedVector}, {MetadataKeys.Key});
 }}
 struct FakeStruct {{ Data:int32 ({MetadataKeys.Key}); }}
 
@@ -169,9 +177,6 @@ table VectorMember {{
 ";
             Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
         }
-
-        [Fact]
-        public void SortedVector_IndexedVector_KeyTypesCorrect_SharedString() => this.SortedVector_IndexedVector_KeyTypesCorrect<SharedString>("string", MetadataKeys.SharedString);
 
         [Fact]
         public void SortedVector_IndexedVector_KeyTypesCorrect_String() => this.SortedVector_IndexedVector_KeyTypesCorrect<string>("string");
@@ -213,8 +218,10 @@ table VectorMember {{
         public void SortedVector_IndexedVector_InvalidKey()
         {
             string schema = $@"
+            {MetadataHelpers.AllAttributes}
+            namespace ns;
             table Monster ({MetadataKeys.SerializerKind}) {{
-              Vector:[VectorMember] ({MetadataKeys.VectorKind}:IIndexedVector);
+              Vector:[VectorMember] ({MetadataKeys.VectorKind}:""IIndexedVector"");
             }}
             table VectorMember {{
                 Data:DoesNotExist ({MetadataKeys.Key});
@@ -222,7 +229,7 @@ table VectorMember {{
 
             var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
             Assert.Contains(
-                "Key type for table 'VectorMember' was not a known built-in type. Keys may be scalars or strings.",
+                "error: 'key' field must be string or scalar type",
                 ex.Message);
         }
 
@@ -230,13 +237,15 @@ table VectorMember {{
         public void SortedVector_IndexedVector_UnknownTableType()
         {
             string schema = $@"
+            {MetadataHelpers.AllAttributes}
+            namespace ns;
             table Monster ({MetadataKeys.SerializerKind}) {{
-              Vector:[WhoKnows] ({MetadataKeys.VectorKind}:IIndexedVector);
+              Vector:[WhoKnows] ({MetadataKeys.VectorKind}:""IIndexedVector"");
             }}";
 
             var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
             Assert.Contains(
-                $"Unable to resolve type WhoKnows.",
+                $"error: type referenced but not defined (check namespace): WhoKnows",
                 ex.Message);
         }
 
@@ -244,16 +253,18 @@ table VectorMember {{
         public void SortedVector_IndexedVector_NoKey()
         {
             string schema = $@"
+            {MetadataHelpers.AllAttributes}
+            namespace ns;
             table Monster ({MetadataKeys.SerializerKind}) {{
-              Vector:[VectorMember] ({MetadataKeys.VectorKind}:IIndexedVector);
+              Vector:[VectorMember] ({MetadataKeys.VectorKind}:""IIndexedVector"");
             }}
             table VectorMember {{
                 Data:string;
             }}";
 
-            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+            var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
             Assert.Contains(
-                "Table 'VectorMember' has no property with the 'key' metadata.",
+                "Indexed vector values must have a property with the key attribute defined. Table = 'ns.VectorMember'",
                 ex.Message);
         }
 
@@ -261,8 +272,10 @@ table VectorMember {{
         public void SortedVector_IndexedVector_MultipleKeys()
         {
             string schema = $@"
+            {MetadataHelpers.AllAttributes}
+            namespace ns;
             table Monster ({MetadataKeys.SerializerKind}) {{
-              Vector:[VectorMember] ({MetadataKeys.VectorKind}:IIndexedVector);
+              Vector:[VectorMember] ({MetadataKeys.VectorKind}:""IIndexedVector"");
             }}
             table VectorMember {{
                 Data:string ({MetadataKeys.Key});
@@ -271,19 +284,22 @@ table VectorMember {{
 
             var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
             Assert.Contains(
-                "Table 'VectorMember' declares more than one property with the 'key' metadata.",
+                "error: only one field may be set as 'key'",
                 ex.Message);
         }
 
         private void SortedVector_IndexedVector_KeyTypesCorrect<TKeyType>(string type, string metadata = null)
         {
             string schema = $@"
-table Monster ({MetadataKeys.SerializerKind}) {{
-  Vector:[VectorMember] ({MetadataKeys.VectorKind}:IIndexedVector);
-}}
-table VectorMember {{
-    Data:{type} ({MetadataKeys.Key} {(!string.IsNullOrEmpty(metadata) ? ", " : "")}{metadata});
-}}";
+            {MetadataHelpers.AllAttributes}
+            namespace ns;
+            table Monster ({MetadataKeys.SerializerKind}) {{
+              Vector:[VectorMember] ({MetadataKeys.VectorKind}:""IIndexedVector"");
+            }}
+            table VectorMember {{
+                Data:{type} ({MetadataKeys.Key} {(!string.IsNullOrEmpty(metadata) ? ", " : "")}{metadata});
+            }}";
+
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
             var monsterType = asm.GetTypes().Single(t => t.Name == "Monster");
             var vectorMemberType = asm.GetTypes().Single(t => t.Name == "VectorMember");

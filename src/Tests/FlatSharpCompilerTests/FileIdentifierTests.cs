@@ -28,82 +28,23 @@ namespace FlatSharpTests.Compiler
     public class FileIdentifierTests
     {
         [Fact]
-        public void Multiple_Root_Types_Different_Namespaces()
+        public void Table_Root_Type()
         {
             string schema = $@"
             namespace FileIdTests.A;
             table Table {{ foo:int; }}
-            root_type Table;
+            struct Struct {{ foo:int; }}
 
-            namespace FileIdTests.B;
-            table TableB {{ foo:int; }}
-            root_type TableB;
-            file_identifier ""food"";
-            ";
-
-            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.StartsWith("Message='Duplicate root types: 'Table' and 'TableB'.', Scope=$", ex.Errors[0]);
-        }
-
-        [Fact]
-        public void Multiple_Root_Types_Same_Namespace()
-        {
-            string schema = $@"
-            namespace FileIdTests.A;
-            table Table {{ foo:int; }}
-            file_identifier ""food"";
-            root_type Table;
+            file_identifier ""abcd"";
             root_type Table;
             ";
 
-            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.StartsWith("Message='Duplicate root types: 'Table' and 'Table'.', Scope=$", ex.Errors[0]);
-        }
+            var asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
+            Type tabletype = asm.GetType("FileIdTests.A.Table");
 
-        [Fact]
-        public void Multiple_File_Identifiers_Different_Namespaces()
-        {
-            string schema = $@"
-            namespace FileIdTests.A;
-            table Table {{ foo:int; }}
-            file_identifier ""doof"";
-
-            namespace FileIdTests.B;
-            table TableB {{ foo:int; }}
-            root_type TableB;
-            file_identifier ""food"";
-            ";
-
-            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.StartsWith("Message='Duplicate file identifiers: 'doof' and 'food'.', Scope=$", ex.Errors[0]);
-        }
-
-        [Fact]
-        public void Multiple_File_Identifiers_Same_Namespace()
-        {
-            string schema = $@"
-            namespace FileIdTests.A;
-            table Table {{ foo:int; }}
-            file_identifier ""food"";
-            file_identifier ""doof"";
-            root_type Table;
-            ";
-
-            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.StartsWith("Message='Duplicate file identifiers: 'food' and 'doof'.', Scope=$", ex.Errors[0]);
-        }
-
-        [Fact]
-        public void Unknown_Root_Type_No_File_Identifier()
-        {
-            string schema = $@"
-            namespace FileIdTests.A;
-            table Table {{ foo:int; }}
-            root_type Something;
-            ";
-
-            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.StartsWith("Message='Unable to resolve root_type 'Something'.', Scope=$", ex.Errors[0]);
+            FlatBufferTableAttribute table = tabletype.GetCustomAttribute<FlatBufferTableAttribute>();
+            Assert.NotNull(table);
+            Assert.Equal("abcd", table.FileIdentifier);
         }
 
         [Fact]
@@ -117,7 +58,7 @@ namespace FlatSharpTests.Compiler
             ";
 
             var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.StartsWith("Message='root_type 'Struct' does not reference a table.', Scope=$", ex.Errors[0]);
+            Assert.Contains("error: root type must be a table", ex.Errors[0]);
         }
 
         [Fact]
@@ -131,35 +72,7 @@ namespace FlatSharpTests.Compiler
             ";
 
             var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.StartsWith("Message='root_type 'Enum' does not reference a table.', Scope=$", ex.Errors[0]);
-        }
-
-        [Fact]
-        public void Unknown_Root_Type_With_File_Identifier()
-        {
-            string schema = $@"
-            namespace FileIdTests.A;
-            table Table {{ foo:int; }}
-            root_type Something;
-            file_identifier ""abcd"";
-            ";
-
-            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.StartsWith("Message='Unable to resolve root_type 'Something'.', Scope=$", ex.Errors[0]);
-        }
-
-        [Fact]
-        public void File_Identifier_With_No_Root_Type()
-        {
-            string schema = $@"
-            namespace FileIdTests.A;
-            table Table {{ foo:int; }}
-            file_identifier ""abcd"";
-            ";
-
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
-            Assert.Null(
-                asm.GetType("FileIdTests.A.Table").GetCustomAttribute<FlatBufferTableAttribute>().FileIdentifier);
+            Assert.Contains("error: unknown root type: Enum", ex.Errors[0]);
         }
 
         [Fact]
@@ -174,79 +87,6 @@ namespace FlatSharpTests.Compiler
             Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
             Assert.Null(
                 asm.GetType("FileIdTests.A.Table").GetCustomAttribute<FlatBufferTableAttribute>().FileIdentifier);
-        }
-
-        [Fact]
-        public void File_Identifier_With_Manually_Specified_Id()
-        {
-            string schema = $@"
-            namespace FileIdTests.A;
-            table Table ({MetadataKeys.FileIdentifier}:""AbCd"") {{ foo:int; }}
-            file_identifier ""AbCd"";
-            root_type Table;
-            ";
-
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
-            Assert.Equal(
-                "AbCd",
-                asm.GetType("FileIdTests.A.Table").GetCustomAttribute<FlatBufferTableAttribute>().FileIdentifier);
-        }
-
-        [Fact]
-        public void File_Identifier_With_Manually_Specified_Id_Conflict()
-        {
-            string schema = $@"
-            namespace FileIdTests.A;
-            table Table ({MetadataKeys.FileIdentifier}:""AbCd"") {{ foo:int; }}
-            file_identifier ""abcd"";
-            root_type Table;
-            ";
-
-            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.StartsWith("Message='root_type 'Table' has conflicting file identifiers: 'AbCd' and 'abcd'.', Scope=$", ex.Errors[0]);
-        }
-
-        [Fact]
-        public void Manually_Specified_Id_With_No_File_Id()
-        {
-            string schema = $@"
-            namespace FileIdTests.A;
-            table Table ({MetadataKeys.FileIdentifier}:""AbCd"") {{ foo:int; }}
-            root_type Table;
-            ";
-
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
-            Assert.Equal(
-                "AbCd",
-                asm.GetType("FileIdTests.A.Table").GetCustomAttribute<FlatBufferTableAttribute>().FileIdentifier);
-        }
-
-        [Fact]
-        public void Manually_Specified_Id_With_No_File_Id_Unquoted()
-        {
-            string schema = $@"
-            namespace FileIdTests.A;
-            table Table ({MetadataKeys.FileIdentifier}:AbCd) {{ foo:int; }}
-            root_type Table;
-            ";
-
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
-            Assert.Equal(
-                "AbCd",
-                asm.GetType("FileIdTests.A.Table").GetCustomAttribute<FlatBufferTableAttribute>().FileIdentifier);
-        }
-
-        [Fact]
-        public void Manually_Specified_Id_TooLong()
-        {
-            string schema = $@"
-            namespace FileIdTests.A;
-            table Table ({MetadataKeys.FileIdentifier}:AbCdefg) {{ foo:int; }}
-            root_type Table;
-            ";
-
-            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.Equal("Message='File identifier 'AbCdefg' is invalid. FileIdentifiers must be exactly 4 ASCII characters.', Scope=$.", ex.Errors[0]);
         }
     }
 }

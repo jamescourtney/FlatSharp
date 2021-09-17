@@ -32,20 +32,15 @@ namespace FlatSharpTests
         [Fact]
         public void Test_NonSharedStringVector()
         {
-            var t = new StringsVector<string>
+            var t = new RegularStringsVector
             {
                 StringVector = new List<string> { "string", "string", "string" },
             };
 
             byte[] destination = new byte[1024];
 
-            var serializer = FlatBufferSerializer.Default.Compile<StringsVector<string>>()
-                .WithSettings(new SerializerSettings
-                {
-                    SharedStringWriterFactory = () => new SharedStringWriter(3)
-                });
-
-            int bytesWritten = serializer.Write(SpanWriter.Instance, destination, t);
+            var serializer = FlatBufferSerializer.Default.Compile<RegularStringsVector>();
+            int bytesWritten = serializer.Write(default(SpanWriter), destination, t);
 
             byte[] expectedBytes = new byte[]
             {
@@ -75,7 +70,7 @@ namespace FlatSharpTests
         [Fact]
         public void Test_TableNonSharedStrings()
         {
-            var t = new StringsTable<string>
+            var t = new RegularStringsTable
             {
                 String1 = "string",
                 String2 = "string",
@@ -84,13 +79,8 @@ namespace FlatSharpTests
 
             byte[] destination = new byte[1024];
 
-            var serializer = FlatBufferSerializer.Default.Compile<StringsTable<string>>()
-                .WithSettings(new SerializerSettings
-                {
-                    SharedStringWriterFactory = () => new SharedStringWriter(5)
-                });
-
-            int bytesWritten = serializer.Write(SpanWriter.Instance, destination, t);
+            var serializer = FlatBufferSerializer.Default.Compile<RegularStringsTable>();
+            int bytesWritten = serializer.Write(default(SpanWriter), destination, t);
 
             byte[] expectedBytes = new byte[]
             {
@@ -119,22 +109,17 @@ namespace FlatSharpTests
         [Fact]
         public void Test_VectorSharedStrings()
         {
-            var t = new StringsVector<SharedString>
+            var t = new SharedStringsVector
             {
-                StringVector = new List<SharedString> { "string", "string", "string" },
+                StringVector = new List<string> { "string", "string", "string" },
             };
 
             byte[] destination = new byte[1024];
 
             int maxBytes = FlatBufferSerializer.Default.GetMaxSize(t);
+            var serializer = FlatBufferSerializer.Default.Compile<SharedStringsVector>();
 
-            var serializer = FlatBufferSerializer.Default.Compile<StringsVector<SharedString>>()
-                .WithSettings(new SerializerSettings
-                {
-                    SharedStringWriterFactory = () => new SharedStringWriter(5)
-                });
-
-            int bytesWritten = serializer.Write(SpanWriter.Instance, destination, t);
+            int bytesWritten = serializer.Write(default(SpanWriter), destination, t);
 
             Assert.True(bytesWritten <= maxBytes);
 
@@ -160,7 +145,7 @@ namespace FlatSharpTests
         [Fact]
         public void Test_TableSharedStrings()
         {
-            var t = new StringsTable<SharedString>
+            var t = new SharedStringsTable
             {
                 String1 = "string",
                 String2 = "string",
@@ -169,13 +154,8 @@ namespace FlatSharpTests
 
             byte[] destination = new byte[1024];
 
-            var serializer = FlatBufferSerializer.Default.Compile<StringsTable<SharedString>>()
-                .WithSettings(new SerializerSettings
-                {
-                    SharedStringWriterFactory = () => new SharedStringWriter(5)
-                });
-
-            int bytesWritten = serializer.Write(SpanWriter.Instance, destination, t);
+            var serializer = FlatBufferSerializer.Default.Compile<SharedStringsTable>();
+            int bytesWritten = serializer.Write(default(SpanWriter), destination, t);
 
             byte[] expectedBytes = new byte[]
             {
@@ -198,7 +178,7 @@ namespace FlatSharpTests
         [Fact]
         public void Test_TableSharedStringsWithNull()
         {
-            var t = new StringsTable<SharedString>
+            var t = new SharedStringsTable
             {
                 String1 = null,
                 String2 = "string",
@@ -207,13 +187,8 @@ namespace FlatSharpTests
 
             byte[] destination = new byte[1024];
 
-            var serializer = FlatBufferSerializer.Default.Compile<StringsTable<SharedString>>()
-                .WithSettings(new SerializerSettings
-                {
-                    SharedStringWriterFactory = () => new SharedStringWriter(5)
-                });
-
-            int bytesWritten = serializer.Write(SpanWriter.Instance, destination, t);
+            var serializer = FlatBufferSerializer.Default.Compile<SharedStringsTable>();
+            int bytesWritten = serializer.Write(default(SpanWriter), destination, t);
 
             byte[] expectedBytes = new byte[]
             {
@@ -236,7 +211,7 @@ namespace FlatSharpTests
         [Fact]
         public void Test_TableSharedStringsWithEviction()
         {
-            var t = new StringsTable<SharedString>
+            var t = new SharedStringsTable
             {
                 String1 = "string",
                 String2 = "foo",
@@ -244,13 +219,13 @@ namespace FlatSharpTests
             };
 
             byte[] destination = new byte[1024];
-            var serializer = FlatBufferSerializer.Default.Compile<StringsTable<SharedString>>()
+            var serializer = FlatBufferSerializer.Default.Compile<SharedStringsTable>()
                 .WithSettings(new SerializerSettings
                 {
                     SharedStringWriterFactory = () => new SharedStringWriter(1)
                 });
 
-            int bytesWritten = serializer.Write(SpanWriter.Instance, destination, t);
+            int bytesWritten = serializer.Write(default(SpanWriter), destination, t);
 
             byte[] expectedBytes = new byte[]
             {
@@ -281,7 +256,7 @@ namespace FlatSharpTests
         [Fact]
         public void Test_TableSharedStringsWithoutEviction()
         {
-            var t = new StringsTable<SharedString>
+            var t = new SharedStringsTable
             {
                 String1 = "string",
                 String2 = "foo",
@@ -289,13 +264,9 @@ namespace FlatSharpTests
             };
 
             byte[] destination = new byte[1024];
-            var serializer = FlatBufferSerializer.Default.Compile<StringsTable<SharedString>>()
-                .WithSettings(new SerializerSettings
-                {
-                    SharedStringWriterFactory = () => new SharedStringWriter(100)
-                });
+            var serializer = FlatBufferSerializer.Default.Compile<SharedStringsTable>();
 
-            int bytesWritten = serializer.Write(SpanWriter.Instance, destination, t);
+            int bytesWritten = serializer.Write(default(SpanWriter), destination, t);
 
             byte[] stringBytes = Encoding.UTF8.GetBytes("string");
 
@@ -305,124 +276,44 @@ namespace FlatSharpTests
             Assert.Equal(-1, secondIndex);
         }
 
-        /// <summary>
-        /// Tests reading shared strings.
-        /// </summary>
-        [Fact]
-        public void Test_ReadSharedStrings()
+        [FlatBufferTable]
+        public class SharedStringsVector : object
         {
-            var t = new StringsTable<SharedString>
-            {
-                String1 = "string",
-                String2 = "foo",
-                String3 = "string",
-            };
-
-            byte[] destination = new byte[1024];
-            var serializer = FlatBufferSerializer.Default.Compile<StringsTable<SharedString>>()
-                .WithSettings(new SerializerSettings
-                {
-                    SharedStringWriterFactory = () => new SharedStringWriter(100),
-                    SharedStringReaderFactory = () => SharedStringReader.Create(100),
-                });
-
-            int bytesWritten = serializer.Write(SpanWriter.Instance, destination, t);
-
-            var table = serializer.Parse(destination);
-            Assert.Equal("string", (string)table.String1);
-            Assert.Equal("foo", (string)table.String2);
-            Assert.Equal("string", (string)table.String3);
-
-            Assert.True(object.ReferenceEquals(table.String1.String, table.String3.String));
-        }
-
-
-        /// <summary>
-        /// Tests reading shared strings.
-        /// </summary>
-        [Fact]
-        public void Test_ReadSharedStrings_NoFactories()
-        {
-            var t = new StringsTable<SharedString>
-            {
-                String1 = "string",
-                String2 = "foo",
-                String3 = "string",
-            };
-
-            byte[] destination = new byte[1024];
-            var serializer = FlatBufferSerializer.Default.Compile<StringsTable<SharedString>>();
-
-            int bytesWritten = serializer.Write(SpanWriter.Instance, destination, t);
-
-            var table = serializer.Parse(destination);
-            Assert.Equal("string", (string)table.String1);
-            Assert.Equal("foo", (string)table.String2);
-            Assert.Equal("string", (string)table.String3);
-
-            Assert.False(object.ReferenceEquals(table.String1.String, table.String3.String));
-        }
-
-        [Fact]
-        public void Test_SharedStringEqualityOverloads()
-        {
-            void AssertEqual(SharedString sharedStr, string str)
-            {
-                Assert.True(sharedStr == str);
-                Assert.True(str == sharedStr);
-                Assert.False(sharedStr != str);
-                Assert.False(str != sharedStr);
-
-                Assert.True(sharedStr?.Equals(str) ?? true);
-                Assert.True(sharedStr?.Equals((object)str) ?? true);
-                Assert.True(sharedStr?.Equals((object)(SharedString)str) ?? true);
-                Assert.True(sharedStr?.Equals((SharedString)str) ?? true);
-            }
-
-            void AssertNotEqual(SharedString sharedStr, string str)
-            {
-                Assert.True(sharedStr != str);
-                Assert.True(str != sharedStr);
-                Assert.False(sharedStr == str);
-                Assert.False(str == sharedStr);
-
-                Assert.False(sharedStr?.Equals(str) ?? false);
-                Assert.False(sharedStr?.Equals((object)str) ?? false);
-                Assert.False(sharedStr?.Equals((object)(SharedString)str) ?? false);
-                Assert.False(sharedStr?.Equals((SharedString)str) ?? false);
-            }
-
-            const string foo = "foo";
-            const string bar = "bar";
-
-            SharedString sharedFoo = foo;
-
-            // sharedstring == string
-            AssertEqual(sharedFoo, foo);
-            AssertNotEqual(sharedFoo, bar);
-            AssertNotEqual(null, foo);
-            AssertNotEqual(sharedFoo, null);
-            AssertEqual(null, null);
+            [FlatBufferItem(0, SharedString = true)]
+            public virtual IList<string>? StringVector { get; set; }
         }
 
         [FlatBufferTable]
-        public class StringsVector<T> : object
+        public class RegularStringsVector : object
         {
             [FlatBufferItem(0)]
-            public virtual IList<T>? StringVector { get; set; }
+            public virtual IList<string>? StringVector { get; set; }
         }
 
         [FlatBufferTable]
-        public class StringsTable<T> : object
+        public class SharedStringsTable : object
+        {
+            [FlatBufferItem(0, SharedString = true)]
+            public virtual string? String1 { get; set; }
+
+            [FlatBufferItem(1, SharedString = true)]
+            public virtual string? String2 { get; set; }
+
+            [FlatBufferItem(2, SharedString = true)]
+            public virtual string? String3 { get; set; }
+        }
+
+        [FlatBufferTable]
+        public class RegularStringsTable : object
         {
             [FlatBufferItem(0)]
-            public virtual T? String1 { get; set; }
+            public virtual string? String1 { get; set; }
 
             [FlatBufferItem(1)]
-            public virtual T? String2 { get; set; }
+            public virtual string? String2 { get; set; }
 
             [FlatBufferItem(2)]
-            public virtual T? String3 { get; set; }
+            public virtual string? String3 { get; set; }
         }
     }
 }

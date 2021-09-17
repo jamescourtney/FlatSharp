@@ -79,11 +79,8 @@ namespace FlatSharp.Attributes
         public bool Required { get; set; }
 
         /// <summary>
-        /// A C# expression that gets the value of the current property from the enclosing object.
-        /// This is a very advanced feature and is only intended to be used by the FlatSharp compiler.
+        /// Indicates if strings within this vector or item should be shared.
         /// </summary>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        [Obsolete("The custom getter property is obsolete. Please use FlatBufferMetadataAttribute instead")]
-        public string? CustomGetter { get; set; }
+        public bool SharedString { get; set; }
     }
 }

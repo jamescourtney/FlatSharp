@@ -30,7 +30,6 @@ namespace Samples.ValueStructs
     /// 
     /// However, value structs are not as fully featured as reference structs and can require some care when programming. 
     /// In particular, the following are unsupported:
-    /// - WriteThrough
     /// - Deserialization modes (value structs are individually deserialized greedily.).
     /// - IFlatBufferDeserializedObject and other convenience interfaces.
     /// 

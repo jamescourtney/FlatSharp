@@ -124,9 +124,7 @@ namespace FlatSharp.TypeModel
             for (int index = 0; index < this.Members.Count; ++index)
             {
                 var value = this.Members[index];
-                PropertyInfo propertyInfo = value.PropertyInfo;
-                Type propertyType = propertyInfo.PropertyType;
-                classDef.AddProperty(value, context.MethodNameMap[propertyType], context.SerializeMethodNameMap[propertyType]);
+                classDef.AddProperty(value, context);
             }
 
             return new CodeGeneratedMethod($"return {className}<{context.InputBufferTypeName}>.GetOrCreate({context.InputBufferVariableName}, {context.OffsetVariableName});")

@@ -47,7 +47,7 @@ public struct AlignmentTestInner : IFlatbufferObject
       _o.B,
       _o.C);
   }
-};
+}
 
 public class AlignmentTestInnerT
 {

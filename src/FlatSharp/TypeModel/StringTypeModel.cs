@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 
 namespace FlatSharp.TypeModel
 {
@@ -80,6 +81,11 @@ namespace FlatSharp.TypeModel
         public override IEnumerable<ITypeModel> Children => new ITypeModel[0];
 
         /// <summary>
+        /// Strings need the argrument due to shared strings on the write path. Nothing needed on the read or getmaxsize paths.
+        /// </summary>
+        public override TableFieldContextRequirements TableFieldContextRequirements => TableFieldContextRequirements.Serialize;
+
+        /// <summary>
         /// Gets the type of span comparer for this type.
         /// </summary>
         public Type SpanComparerType => typeof(StringSpanComparer);
@@ -96,7 +102,47 @@ namespace FlatSharp.TypeModel
 
         public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
         {
-            return new CodeGeneratedMethod($"{context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteString)}({context.SpanVariableName}, {context.ValueVariableName}, {context.OffsetVariableName}, {context.SerializationContextVariableName});");
+            string body;
+            if (context.AllFieldContexts.SelectMany(x => x.Value).Any(x => x.SharedString))
+            {
+                // If we know this schema includes shared strings, add the if statement here.
+                body = $@"
+                if ({context.TableFieldContextVariableName}.{nameof(TableFieldContext.SharedString)})
+                {{
+                    var sharedStringWriter = {context.SerializationContextVariableName}.{nameof(SerializationContext.SharedStringWriter)};
+                    if (!(sharedStringWriter is null))
+                    {{
+                        sharedStringWriter.{nameof(ISharedStringWriter.WriteSharedString)}(
+                            {context.SpanWriterVariableName}, 
+                            {context.SpanVariableName},
+                            {context.OffsetVariableName},
+                            {context.ValueVariableName},
+                            {context.SerializationContextVariableName});
+
+                        return;
+                    }}
+                }}
+                
+                {context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteString)}(
+                    {context.SpanVariableName},
+                    {context.ValueVariableName},
+                    {context.OffsetVariableName},
+                    {context.SerializationContextVariableName});
+            ";
+            }
+            else
+            {
+                // otherwise, we can omit that code entirely.
+                body = $@"
+                {context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteString)}(
+                    {context.SpanVariableName},
+                    {context.ValueVariableName},
+                    {context.OffsetVariableName},
+                    {context.SerializationContextVariableName});
+            ";
+            }
+
+            return new CodeGeneratedMethod(body);
         }
 
         public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)

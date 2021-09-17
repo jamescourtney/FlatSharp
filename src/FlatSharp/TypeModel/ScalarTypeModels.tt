@@ -62,18 +62,6 @@ namespace FlatSharp.TypeModel
         public <#= className #>(TypeModelContainer container) : base(container, typeof(<#=typeName#>), sizeof(<#=typeName#>)) 
         {
         }
-		
-        public override bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
-		{
-			if (!<#= pair.typeName #>.TryParse(value, out _))
-			{
-			     literal = null;
-				 return false;
-			}
-
-			literal = $"(<#= pair.typeName #>)({value}<#= pair.literalSpecifier #>)";
-			return true;
-		}
 
         public override bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType)
         {
@@ -113,36 +101,6 @@ namespace FlatSharp.TypeModel
 		<# } #>
 
 			return false;
-		}
-		
-        public bool TryResolveFbsAlias(
-			TypeModelContainer container, 
-			string alias, 
-            [NotNullWhen(true)] out ITypeModel? typeModel)
-		{
-			typeModel = null;
-			switch (alias)
-			{
-		<#
-			foreach (var pair in types)
-			{
-				var casedName = pair.casedName;
-				var typeName = pair.typeName;
-				var className = $"{casedName}TypeModel";
-				foreach (var alias in pair.fbsAliases)
-				{
-		#>
-				case "<#= alias #>":
-		<# 
-			} 
-		#>
-					typeModel = new <#= className #>(container);
-					break;
-
-		<# } #>
-			}
-
-			return typeModel is not null;
 		}
 	}
 }

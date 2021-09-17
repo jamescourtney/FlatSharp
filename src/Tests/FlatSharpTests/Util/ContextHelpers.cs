@@ -31,9 +31,12 @@ namespace FlatSharpTests
                 "b",
                 "c",
                 false,
+                "d",
                 new ReturnsRandomDictionary(),
                 new ReturnsRandomDictionary(),
-                options ?? new FlatBufferSerializerOptions());
+                options ?? new FlatBufferSerializerOptions(),
+                TypeModelContainer.CreateDefault(),
+                new Dictionary<ITypeModel, List<TableFieldContext>>());
         }
 
         public static SerializationCodeGenContext CreateSerializeContext(FlatBufferSerializerOptions? options = null)
@@ -44,10 +47,12 @@ namespace FlatSharpTests
                 "c",
                 "d",
                 "e",
+                "f",
                 false,
                 new ReturnsRandomDictionary(),
                 TypeModelContainer.CreateDefault(),
-                options ?? new FlatBufferSerializerOptions());
+                options ?? new FlatBufferSerializerOptions(),
+                new Dictionary<ITypeModel, List<TableFieldContext>>());
         }
 
         private class ReturnsRandomDictionary : IReadOnlyDictionary<Type, string>

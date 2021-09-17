@@ -23,13 +23,13 @@ namespace FlatSharpTests.Compiler
     using FlatSharp.Compiler;
     using Xunit;
 
-    
     public class UnionTests
     {
         [Fact]
         public void TestUnionCustomClassGeneration()
         {
             string schema = $@"
+{MetadataHelpers.AllAttributes}
 namespace Foobar;
 
 table A {{ Value:int32; }}
@@ -48,19 +48,21 @@ table D ({MetadataKeys.SerializerKind}) {{ Union:TestUnion; }}
             Type cType = asm.GetType("Foobar.C");
             Type dType = asm.GetType("Foobar.D");
 
-            Assert.Equal(unionType, dType.GetProperty("Union").PropertyType);
+            Assert.Equal(unionType, Nullable.GetUnderlyingType(dType.GetProperty("Union").PropertyType));
 
             // Custom union derives from FlatBufferUnion
-            Assert.True(typeof(FlatBufferUnion<,,>).MakeGenericType(aType, bType, cType).IsAssignableFrom(unionType));
+            Assert.True(typeof(IFlatBufferUnion<,,>).MakeGenericType(aType, bType, cType).IsAssignableFrom(unionType));
             Type[] types = new[] { aType, bType, cType };
-            string[] expectedAliases = new[] { "First", "B", "C" };
+            string[] expectedAliases = new[] { "First", "B", "Foobar_C" };
 
             // Validate nested enum
             Type nestedEnum = unionType.GetNestedTypes().Single();
             Assert.True(nestedEnum.IsEnum);
             Assert.Equal("ItemKind", nestedEnum.Name);
             Assert.Equal(typeof(byte), Enum.GetUnderlyingType(nestedEnum));
-            Assert.Equal(types.Length, Enum.GetValues(nestedEnum).Length);
+            Assert.Equal(types.Length + 1, Enum.GetValues(nestedEnum).Length);
+
+            Assert.Equal("NONE", Enum.GetName(nestedEnum, (byte)0));
             for (int i = 0; i < types.Length; ++i)
             {
                 Assert.Equal(expectedAliases[i], Enum.GetName(nestedEnum, (byte)(i + 1)));
@@ -105,53 +107,6 @@ table D ({MetadataKeys.SerializerKind}) {{ Union:TestUnion; }}
                 Assert.Equal(i + 1, kindValue);
                 Assert.Equal(expectedAliases[i], kind.ToString());
             }
-        }
-
-        [Fact]
-        public void TestUnionWithStringGeneration()
-        {
-            string schema = $@"
-namespace Foobar;
-
-table A {{ Value:int32; }}
-table B {{ Value:int32; }}
-struct C {{ Value:int32; }}
-
-union TestUnion {{ First:A, B, Foobar.C, string }}
-
-table D ({MetadataKeys.SerializerKind}) {{ Union:TestUnion; }}
-
-";
-            // Simply ensure that the union is generated as FlatBufferUnion and no custom class is created.
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
-            Type unionType = asm.GetType("Foobar.TestUnion");
-
-            Type dType = asm.GetType("Foobar.D");
-
-            Assert.Equal(unionType, dType.GetProperty("Union").PropertyType);
-        }
-
-        [Fact]
-        public void TestUnionWithAliasedStringGeneration()
-        {
-            string schema = $@"
-namespace Foobar;
-
-table A {{ Value:int32; }}
-table B {{ Value:int32; }}
-struct C {{ Value:int32; }}
-
-union TestUnion {{ First:A, B, Foobar.C, StringAlias:string }}
-
-table D ({MetadataKeys.SerializerKind}) {{ Union:TestUnion; }}
-
-";
-            // Simply ensure that the union is generated as FlatBufferUnion and no custom class is created.
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
-            Type unionType = asm.GetType("Foobar.TestUnion");
-            Type dType = asm.GetType("Foobar.D");
-
-            Assert.Equal(unionType, dType.GetProperty("Union").PropertyType);
         }
     }
 }

@@ -158,6 +158,7 @@ namespace FlatSharpTests
             RuntimeTypeModel.CreateFrom(typeof(Table_ForceWrite<float>));
             RuntimeTypeModel.CreateFrom(typeof(Table_ForceWrite<double>));
             RuntimeTypeModel.CreateFrom(typeof(Table_ForceWrite<TaggedEnum>));
+            RuntimeTypeModel.CreateFrom(typeof(Table_ForceWrite<FlatBufferUnion<string>>));
 
             // This is a special case and is allowed since memory is a struct
             // and is therefore non-null. It will be written as a 0 byte vector.
@@ -180,7 +181,7 @@ namespace FlatSharpTests
             ValidateError<double?>();
             ValidateError<GenericStruct<int>>();
             ValidateError<int[]>();
-            ValidateError<FlatBufferUnion<string>>();
+            ValidateError<FlatBufferUnion<string>?>();
             ValidateError<Table_ForceWrite<int>>();
             ValidateError<Memory<byte>?>();
         }
@@ -296,7 +297,7 @@ namespace FlatSharpTests
                 () => RuntimeTypeModel.CreateFrom(typeof(TableWriteThrough_NotSupported)));
 
             Assert.Equal(
-                "Table property 'FlatSharpTests.TypeModelTests.TableWriteThrough_NotSupported.Property' declared the WriteThrough attribute. WriteThrough is only supported on struct fields.",
+                "Table property 'FlatSharpTests.TypeModelTests.TableWriteThrough_NotSupported.Property' declared the WriteThrough attribute. WriteThrough on tables is only supported for value type structs.",
                 ex.Message);
         }
 
@@ -580,14 +581,6 @@ namespace FlatSharpTests
         }
 
         [Fact]
-        public void TypeModel_IndexedVector_UnionNotAllowed()
-        {
-            var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
-                RuntimeTypeModel.CreateFrom(typeof(GenericTable<IIndexedVector<string, FlatBufferUnion<string, GenericTable<string>>>>)));
-            Assert.Equal("Indexed vector values must be flatbuffer tables. Type = 'FlatSharp.FlatBufferUnion<System.String, FlatSharpTests.TypeModelTests.GenericTable<System.String>>'", ex.Message);
-        }
-
-        [Fact]
         public void TypeModel_MemoryVector_UnionNotAllowed()
         {
             var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
@@ -656,14 +649,6 @@ namespace FlatSharpTests
             var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(
                 () => RuntimeTypeModel.CreateFrom(typeof(IIndexedVector<int, IList<string>>)));
             Assert.Equal("Indexed vector values must be flatbuffer tables. Type = 'System.Collections.Generic.IList<System.String>'", ex.Message);
-        }
-
-        [Fact]
-        public void TypeModel_Vector_IndexedVector_Union_NotAllowed()
-        {
-            var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(
-                () => RuntimeTypeModel.CreateFrom(typeof(IIndexedVector<int, FlatBufferUnion<string, GenericTable<string>>>)));
-            Assert.Equal("Indexed vector values must be flatbuffer tables. Type = 'FlatSharp.FlatBufferUnion<System.String, FlatSharpTests.TypeModelTests.GenericTable<System.String>>'", ex.Message);
         }
 
         [Fact]
@@ -940,12 +925,6 @@ namespace FlatSharpTests
         }
 
         [Fact]
-        public void TypeModel_SortedVector_OfTableWithSharedStringKeyKey_Allowed()
-        {
-            RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<SharedString>[]>));
-        }
-
-        [Fact]
         public void TypeModel_SortedVector_OfTableWithMultipleKeys_NotAllowed()
         {
             var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
@@ -999,15 +978,15 @@ namespace FlatSharpTests
         public void TypeModel_Union_UnionsNotAllowed()
         {
             var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
-                RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, FlatBufferUnion<string, GenericStruct<int>>>>)));
-            Assert.Equal("Unions may not store 'FlatSharp.FlatBufferUnion<System.String, FlatSharpTests.TypeModelTests.GenericStruct<System.Int32>>'.", ex.Message);
+                RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, FlatBufferUnion<string, GenericStruct<int>>?>?>)));
+            Assert.Equal("Unions may not store 'System.Nullable<FlatSharp.FlatBufferUnion<System.String, FlatSharpTests.TypeModelTests.GenericStruct<System.Int32>>>'.", ex.Message);
         }
 
         [Fact]
         public void TypeModel_Union_ScalarsNotAllowed()
         {
             var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
-                RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, int>>)));
+                RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, int>?>)));
             Assert.Equal("Unions may not store 'System.Int32'.", ex.Message);
         }
 
@@ -1023,7 +1002,7 @@ namespace FlatSharpTests
         public void TypeModel_Union_EnumsNotAllowed()
         {
             var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
-                RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, TaggedEnum>>)));
+                RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, TaggedEnum>?>)));
             Assert.Equal("Unions may not store 'FlatSharpTests.TypeModelTests.TaggedEnum'.", ex.Message);
         }
 
@@ -1031,20 +1010,8 @@ namespace FlatSharpTests
         public void TypeModel_Union_OptionalEnumsNotAllowed()
         {
             var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
-                RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, TaggedEnum?>>)));
+                RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, TaggedEnum?>?>)));
             Assert.Equal("Unions may not store 'System.Nullable<FlatSharpTests.TypeModelTests.TaggedEnum>'.", ex.Message);
-        }
-
-        [Fact]
-        public void TypeModel_Union_StringAndSharedStringNotAllowed()
-        {
-            var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
-                RuntimeTypeModel.CreateFrom(typeof(FlatBufferUnion<string, SharedString>)));
-            Assert.Equal("Unions may only contain one string type. String and SharedString cannot cohabit the union.", ex.Message);
-
-            ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
-                RuntimeTypeModel.CreateFrom(typeof(FlatBufferUnion<string, GenericTable<string>, SharedString>)));
-            Assert.Equal("Unions may only contain one string type. String and SharedString cannot cohabit the union.", ex.Message);
         }
 
         [Fact]
@@ -1061,19 +1028,16 @@ namespace FlatSharpTests
             ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
                 FlatBufferSerializer.Default.Compile<string>());
             Assert.Equal("Can only compile [FlatBufferTable] elements as root types. Type 'System.String' is a String.", ex.Message);
-
-            ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
-                FlatBufferSerializer.Default.Compile<FlatBufferUnion<string>>());
-            Assert.Equal("Can only compile [FlatBufferTable] elements as root types. Type 'FlatSharp.FlatBufferUnion<System.String>' is a Union.", ex.Message);
         }
 
         [Fact]
         public void TypeModel_Union_StructsTablesStringsAllowed()
         {
-            var tableModel = (TableTypeModel)RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, GenericTable<string>, GenericStruct<int>>>));
+            var tableModel = (TableTypeModel)RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, GenericTable<string>, GenericStruct<int>>?>));
             Assert.Equal(1, tableModel.IndexToMemberMap.Count);
 
-            var model = (UnionTypeModel)tableModel.IndexToMemberMap[0].ItemTypeModel;
+            var nullableModel= (NullableTypeModel)tableModel.IndexToMemberMap[0].ItemTypeModel;
+            var model = (UnionTypeModel)nullableModel.Children.Single();
 
             Assert.Equal(3, model.UnionElementTypeModel.Length);
             Assert.IsType<StringTypeModel>(model.UnionElementTypeModel[0]);

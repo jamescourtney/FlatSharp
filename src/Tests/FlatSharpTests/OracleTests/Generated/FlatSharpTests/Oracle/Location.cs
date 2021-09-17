@@ -45,7 +45,7 @@ public struct Location : IFlatbufferObject
       _o.Y,
       _o.Z);
   }
-};
+}
 
 public class LocationT
 {

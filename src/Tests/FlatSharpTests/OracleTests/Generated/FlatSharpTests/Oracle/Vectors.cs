@@ -13,7 +13,7 @@ public struct Vectors : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_1_12_0(); }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_2_0_0(); }
   public static Vectors GetRootAsVectors(ByteBuffer _bb) { return GetRootAsVectors(_bb, new Vectors()); }
   public static Vectors GetRootAsVectors(ByteBuffer _bb, Vectors obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
@@ -130,7 +130,7 @@ public struct Vectors : IFlatbufferObject
       _ByteVector1,
       _ByteVector2);
   }
-};
+}
 
 public class VectorsT
 {

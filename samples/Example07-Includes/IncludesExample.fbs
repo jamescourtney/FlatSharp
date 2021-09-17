@@ -16,6 +16,8 @@
 
 include "A.fbs";
 
+attribute "fs_serializer";
+
 namespace Samples.IncludesExample;
 
 table Request (fs_serializer) {

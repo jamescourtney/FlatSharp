@@ -27,6 +27,56 @@ namespace FlatSharpEndToEndTests.ValueStructs
     public class ValueStructTestCases
     {
         [Fact]
+        public void WriteThrough_ValueStruct_InVector()
+        {
+            WriteThroughTable t = new WriteThroughTable
+            {
+                Points = new Vec3[]
+                {
+                    new() { X = 1, Y = 2, Z = 3 },
+                    new() { X = 4, Y = 5, Z = 6 },
+                }
+            };
+
+            byte[] data = new byte[1024];
+            WriteThroughTable.Serializer.Write(data, t);
+
+            var parsed = WriteThroughTable.Serializer.Parse(data);
+            var parsed2 = WriteThroughTable.Serializer.Parse(data);
+
+            Assert.Equal(1f, parsed2.Points[0].X);
+
+            parsed.Points[0] = new Vec3 { X = -1, Y = -1, Z = -1 }; // triggers writethrough
+
+            Assert.Equal(-1f, parsed2.Points[0].X);
+        }
+
+        [Fact]
+        public void WriteThrough_ValueStruct_InTable()
+        {
+            WriteThroughTable t = new WriteThroughTable
+            {
+                Point = new Vec3 { X = 1, Y = 2, Z = 3 }
+            };
+
+            byte[] data = new byte[1024];
+            WriteThroughTable.Serializer.Write(data, t);
+
+            var parsed = WriteThroughTable.Serializer.Parse(data);
+            var parsed2 = WriteThroughTable.Serializer.Parse(data);
+
+            Assert.Equal(1f, parsed2.Point.X);
+            Assert.Equal(2f, parsed2.Point.Y);
+            Assert.Equal(3f, parsed2.Point.Z);
+
+            parsed.Point = new Vec3 { X = -1, Y = -1, Z = -1 }; // triggers writethrough
+
+            Assert.Equal(-1f, parsed2.Point.X);
+            Assert.Equal(-1f, parsed2.Point.Y);
+            Assert.Equal(-1f, parsed2.Point.Z);
+        }
+
+        [Fact]
         public void Basics()
         {
             Assert.Equal(148, Unsafe.SizeOf<ValueStruct>());
@@ -74,11 +124,11 @@ namespace FlatSharpEndToEndTests.ValueStructs
 
             RootTable table = new()
             {
-                RefStruct = rs,
-                Union = new TestUnion(vs),
-                ValueStruct = vs,
-                ValueStructVector = Enumerable.Range(0, 10).Select(x => vs).ToList(),
-                VectorOfUnion = Enumerable.Range(0, 10).Select(x => new TestUnion(vs)).ToList(),
+                refStruct = rs,
+                union = new TestUnion(vs),
+                valueStruct = vs,
+                valueStructVector = Enumerable.Range(0, 10).Select(x => vs).ToList(),
+                vectorOfUnion = Enumerable.Range(0, 10).Select(x => new TestUnion(vs)).ToList(),
             };
 
             ISerializer<RootTable> serializer = RootTable.Serializer;
@@ -87,32 +137,32 @@ namespace FlatSharpEndToEndTests.ValueStructs
             int written = serializer.Write(buffer, table);
             RootTable parsed = serializer.Parse(buffer[..written]);
 
-            Assert.NotNull(parsed.RefStruct);
-            Assert.NotNull(parsed.ValueStruct);
-            Assert.NotNull(parsed.ValueStructVector);
-            Assert.NotNull(parsed.Union);
-            Assert.NotNull(parsed.VectorOfUnion);
+            Assert.NotNull(parsed.refStruct);
+            Assert.NotNull(parsed.valueStruct);
+            Assert.NotNull(parsed.valueStructVector);
+            Assert.NotNull(parsed.union);
+            Assert.NotNull(parsed.vectorOfUnion);
 
-            Assert.Equal(table.VectorOfUnion.Count, parsed.VectorOfUnion.Count);
-            Assert.Equal(table.ValueStructVector.Count, parsed.ValueStructVector.Count);
+            Assert.Equal(table.vectorOfUnion.Count, parsed.vectorOfUnion.Count);
+            Assert.Equal(table.valueStructVector.Count, parsed.valueStructVector.Count);
 
-            Assert.Equal(table.RefStruct.A, parsed.RefStruct.A);
-            AssertStructsEqual(table.RefStruct.VS, parsed.RefStruct.VS);
+            Assert.Equal(table.refStruct.A, parsed.refStruct.A);
+            AssertStructsEqual(table.refStruct.VS, parsed.refStruct.VS);
 
-            AssertStructsEqual(table.ValueStruct.Value, parsed.ValueStruct.Value);
-            AssertStructsEqual(table.Union.ValueStruct, parsed.Union.ValueStruct);
+            AssertStructsEqual(table.valueStruct.Value, parsed.valueStruct.Value);
+            AssertStructsEqual(table.union.Value.ValueStruct, parsed.union.Value.ValueStruct);
 
-            for (int i = 0; i < table.VectorOfUnion.Count; ++i)
+            for (int i = 0; i < table.vectorOfUnion.Count; ++i)
             {
-                var t = table.VectorOfUnion[i];
-                var p = parsed.VectorOfUnion[i];
+                var t = table.vectorOfUnion[i];
+                var p = parsed.vectorOfUnion[i];
                 AssertStructsEqual(t.ValueStruct, p.ValueStruct);
             }
 
-            for (int i = 0; i < table.ValueStructVector.Count; ++i)
+            for (int i = 0; i < table.valueStructVector.Count; ++i)
             {
-                var t = table.ValueStructVector[i];
-                var p = parsed.ValueStructVector[i];
+                var t = table.valueStructVector[i];
+                var p = parsed.valueStructVector[i];
                 AssertStructsEqual(t, p);
             }
         }
@@ -310,7 +360,7 @@ namespace FlatSharpEndToEndTests.ValueStructs
         {
             RootTable t = new();
 
-            Assert.Null(t.ValueStruct);
+            Assert.Null(t.valueStruct);
 
             ISerializer<RootTable> serializer = RootTable.Serializer;
             int maxBytes = serializer.GetMaxSize(t);
@@ -318,11 +368,11 @@ namespace FlatSharpEndToEndTests.ValueStructs
             int written = serializer.Write(buffer, t);
             RootTable parsed = serializer.Parse(buffer[..written]);
 
-            Assert.Null(parsed.RefStruct);
-            Assert.Null(parsed.ValueStruct);
+            Assert.Null(parsed.refStruct);
+            Assert.Null(parsed.valueStruct);
         }
 
-        private static void AssertStructsEqual(ValueStruct a , ValueStruct b)
+        private static void AssertStructsEqual(ValueStruct a, ValueStruct b)
         {
             Assert.Equal(a.A, b.A);
             Assert.Equal(a.B, b.B);

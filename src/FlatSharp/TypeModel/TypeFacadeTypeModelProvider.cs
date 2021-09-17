@@ -16,6 +16,7 @@
 
 namespace FlatSharp.TypeModel
 {
+    using FlatSharp;
     using FlatSharp.Runtime;
     using System;
     using System.Collections.Generic;
@@ -45,12 +46,6 @@ namespace FlatSharp.TypeModel
                 return true;
             }
 
-            typeModel = null;
-            return false;
-        }
-
-        public bool TryResolveFbsAlias(TypeModelContainer container, string alias, [NotNullWhen(true)] out ITypeModel? typeModel)
-        {
             typeModel = null;
             return false;
         }
@@ -92,6 +87,8 @@ namespace FlatSharp.TypeModel
             public ConstructorInfo? PreferredSubclassConstructor => this.underlyingModel.PreferredSubclassConstructor;
 
             public bool SerializeMethodRequiresContext => underlyingModel.SerializeMethodRequiresContext;
+
+            public TableFieldContextRequirements TableFieldContextRequirements => underlyingModel.TableFieldContextRequirements;
 
             public void AdjustTableMember(TableMemberModel source) => this.underlyingModel.AdjustTableMember(source);
 
@@ -140,17 +137,13 @@ namespace FlatSharp.TypeModel
                 };
             }
 
+            public string? CreateExtraClasses() => null;
+
             public void Initialize()
             {
             }
 
             public string FormatDefaultValueAsLiteral(object? defaultValue) => this.GetTypeDefaultExpression();
-
-            public bool TryFormatStringAsLiteral(string value, [NotNullWhen(true)] out string? literal)
-            {
-                literal = null;
-                return false;
-            }
 
             public bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType) 
                 => this.underlyingModel.TryGetSpanComparerType(out comparerType);
@@ -176,6 +169,8 @@ namespace FlatSharp.TypeModel
                 string typeName = CSharpHelpers.GetGlobalCompilableTypeName(typeof(TConverter));
                 return $"default({typeName}).{nameof(ITypeFacadeConverter<byte, byte>.ConvertFromUnderlyingType)}({source})";
             }
+
+            public List<(ITypeModel, TableFieldContext)> GetFieldContexts() => this.underlyingModel.GetFieldContexts();
         }
     }
 }

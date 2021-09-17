@@ -43,17 +43,13 @@ namespace Samples.SharedStrings
             ISerializer<Matrix> defaultSerializer = Matrix.Serializer;
 
             // We can create a new serializer based on the current one with shared strings turned on.
-            // These factory delegates configure the Shared String reader / writer. For SharedStringReaders,
-            // it's very important to think about thread safety, since deserialized objects sometimes maintain a reference
-            // to the input buffer object, which can result in race conditions if the deserialized object
-            // is shared between threads. The recommendation is to disable string sharing on parse or to use
-            // a thread safe shared string reader.
+            // These factory delegates configure the writer. FlatSharp deprecated reading shared strings 
+            // in version 6.
             ISerializer<Matrix> sharedStringSerializer = Matrix.Serializer.WithSettings(
                 new SerializerSettings
                 {
                     // This can be null to disable shared string reading:
                     // SharedStringReaderFactory = null,
-                    SharedStringReaderFactory = () => SharedStringReader.CreateThreadSafe(),
                     SharedStringWriterFactory = () => new SharedStringWriter(),
                 });
 
@@ -62,7 +58,6 @@ namespace Samples.SharedStrings
             ISerializer<Matrix> customSharedStringSerializer = Matrix.Serializer.WithSettings(
                 new SerializerSettings
                 {
-                    SharedStringReaderFactory = () => new PerfectSharedStringReader(),
                     SharedStringWriterFactory = () => new PerfectSharedStringWriter(),
                 });
 
@@ -80,37 +75,6 @@ namespace Samples.SharedStrings
             // the custom provider will give smaller outputs while being considerably slower.
             Console.WriteLine($"Serialized size with shared strings: {sharedBytesWritten}");
             Console.WriteLine($"Serialized size with custom shared strings: {customBytesWritten}");
-
-            Matrix nonSharedMatrix = defaultSerializer.Parse(defaultBuffer);
-
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-            Debug.Assert(
-                nonSharedMatrix.Rows[0].Values[0].ColumnName == nonSharedMatrix.Rows[1].Values[0].ColumnName,
-                "Without string sharing, the contents of the strings in the same column in different rows are the same.");
-            Debug.Assert(
-                !object.ReferenceEquals(nonSharedMatrix.Rows[0].Values[0].ColumnName, nonSharedMatrix.Rows[1].Values[0].ColumnName),
-
-                "...but the object references are different, showing these are two different strings.");
-
-            Matrix sharedMatrix = sharedStringSerializer.Parse(sharedBuffer);
-
-            Debug.Assert(
-                sharedMatrix.Rows[0].Values[0].ColumnName == sharedMatrix.Rows[1].Values[0].ColumnName,
-                "With string sharing on, the values of the same column in different rows are still the same.");
-            Debug.Assert(
-                object.ReferenceEquals(sharedMatrix.Rows[0].Values[0].ColumnName, sharedMatrix.Rows[1].Values[0].ColumnName),
-                "...and the object references are also the same, showing that we have only parsed the string once.");
-
-            // same as the above.
-            Matrix customSharedMatrix = customSharedStringSerializer.Parse(customBuffer);
-
-            Debug.Assert(
-                customSharedMatrix.Rows[0].Values[0].ColumnName == customSharedMatrix.Rows[1].Values[0].ColumnName,
-                "With string sharing on, the values of the same column in different rows are still the same.");
-            Debug.Assert(
-                object.ReferenceEquals(customSharedMatrix.Rows[0].Values[0].ColumnName, customSharedMatrix.Rows[1].Values[0].ColumnName),
-                "...and the object references are also the same, showing that we have only parsed the string once.");
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
         }
 
         /// <summary>
@@ -131,37 +95,18 @@ namespace Samples.SharedStrings
     }
 
     /// <summary>
-    /// this is a perfect shared string reader implementation, which guarantees a given shared string in a flatbuffer
-    /// is only parsed once. This implementation is thread safe by virtue of the concurrent dictionary,
-    /// but is considerably slower than FlatSharp's Shared String implementation, which does not guarantee
-    /// shared strings are read only once.
-    /// </summary>
-    public class PerfectSharedStringReader : ISharedStringReader
-    {
-        private readonly ConcurrentDictionary<int, SharedString> offsetStringMap = new ConcurrentDictionary<int, SharedString>();
-
-        public SharedString ReadSharedString<TInputBuffer>(TInputBuffer buffer, int offset) where TInputBuffer : IInputBuffer
-        {
-            if (this.offsetStringMap.TryGetValue(offset, out SharedString? str))
-            {
-                return str;
-            }
-
-            str = buffer.ReadStringFromUOffset(offset);
-            this.offsetStringMap[offset] = str;
-            return str;
-        }
-    }
-
-
-    /// <summary>
     /// this is a "perfect" shared string writer implementation, which guarantees a single string is written only once.
     /// this class will give optimal compression results, but will be considerably slower than FlatSharp's default implementation,
     /// which uses a hashtable with flush-on-evict semantics and may write shared strings more than once.
     /// </summary>
     public class PerfectSharedStringWriter : ISharedStringWriter
     {
-        private readonly Dictionary<SharedString, List<int>> stringOffsetMap = new Dictionary<SharedString, List<int>>();
+        private readonly Dictionary<string, List<int>> stringOffsetMap = new Dictionary<string, List<int>>();
+
+        /// <summary>
+        /// Must be true if there are any strings waiting to be flushed.
+        /// </summary>
+        public bool IsDirty => this.stringOffsetMap.Count > 0;
 
         /// <summary>
         /// Called when FlatSharp has finished a serialize operation. This is the signal to flush any strings that the 
@@ -171,7 +116,7 @@ namespace Samples.SharedStrings
         {
             foreach (var kvp in this.stringOffsetMap)
             {
-                SharedString str = kvp.Key;
+                string str = kvp.Key;
                 List<int> offsets = kvp.Value;
 
                 // Write the string.
@@ -189,7 +134,7 @@ namespace Samples.SharedStrings
         /// Prepares to write. In this case, we just need to clear the internal map for a new write operation,
         /// since the same SharedStringWriter is reused.
         /// </summary>
-        public void PrepareWrite()
+        public void Reset()
         {
             this.stringOffsetMap.Clear();
         }
@@ -197,7 +142,7 @@ namespace Samples.SharedStrings
         /// <summary>
         /// Writes a shared string by storing the string mapped to the offsets at which the string occurs in the buffer.
         /// </summary>
-        public void WriteSharedString<TSpanWriter>(TSpanWriter spanWriter, Span<byte> data, int offset, SharedString value, SerializationContext context)
+        public void WriteSharedString<TSpanWriter>(TSpanWriter spanWriter, Span<byte> data, int offset, string value, SerializationContext context)
             where TSpanWriter : ISpanWriter
         {
             if (!this.stringOffsetMap.TryGetValue(value, out List<int>? offsets))

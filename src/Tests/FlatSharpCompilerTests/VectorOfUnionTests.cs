@@ -38,6 +38,11 @@ namespace FlatSharpTests.Compiler
             {
                 foreach (FlatBufferDeserializationOption option in Enum.GetValues(typeof(FlatBufferDeserializationOption)))
                 {
+                    if (vectorKind == "Array" && option != FlatBufferDeserializationOption.Greedy && option != FlatBufferDeserializationOption.GreedyMutable)
+                    {
+                        continue;
+                    }
+
                     this.RunTest(vectorKind, option);
                 }
             }
@@ -46,13 +51,14 @@ namespace FlatSharpTests.Compiler
         private void RunTest(string vectorKind, FlatBufferDeserializationOption option)
         {
             string schema = $@"
+            {MetadataHelpers.AllAttributes}
             namespace VectorOfUnionTests;
-
-            table Table ({MetadataKeys.SerializerKind}:{option}) {{
-                Vector:[Union] (fs_vector:{vectorKind});
-            }}
             
-            union Union {{ StringValue:string, Foo, Table2 }}
+            union Union {{ Foo, Table2 }}
+
+            table Table ({MetadataKeys.SerializerKind}:""{option}"") {{
+                Vector:[Union] (fs_vector:""{vectorKind}"");
+            }}
 
             struct Foo {{
               A:int;

@@ -34,38 +34,20 @@ namespace FlatSharp.TypeModel
         public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
         {
             var (classDef, className) = FlatBufferVectorHelpers.CreateFlatBufferVectorOfUnionSubclass(
-                this.ItemTypeModel.ClrType,
                 this.ItemTypeModel,
-                context.InputBufferTypeName,
-                context.MethodNameMap[this.ItemTypeModel.ClrType]);
+                context);
 
             string createFlatBufferVector =
                 $@"new {className}<{context.InputBufferTypeName}>(
                         {context.InputBufferVariableName}, 
                         {context.OffsetVariableName}.offset0 + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}.offset0), 
-                        {context.OffsetVariableName}.offset1 + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}.offset1))";
+                        {context.OffsetVariableName}.offset1 + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}.offset1),
+                        {context.TableFieldContextVariableName})";
 
-            string body;
-            if (context.Options.PreallocateVectors)
-            {
-                // We just call .ToList(). Note that when full greedy mode is on, these items will be 
-                // greedily initialized as we traverse the list. Otherwise, they'll be allocated lazily.
-                body = $"({createFlatBufferVector}).FlatBufferVectorToList()";
-
-                if (!context.Options.GenerateMutableObjects)
-                {
-                    // Finally, if we're not in the business of making mutable objects, then convert the list to read only.
-                    body += ".AsReadOnly()";
-                }
-
-                body = $"return {body};";
-            }
-            else
-            {
-                body = $"return {createFlatBufferVector};";
-            }
-
-            return new CodeGeneratedMethod(body) { ClassDefinition = classDef };
+            return new CodeGeneratedMethod(ListVectorTypeModel.CreateParseBody(
+                this.ItemTypeModel,
+                createFlatBufferVector,
+                context)) { ClassDefinition = classDef };
         }
 
         public override Type OnInitialize()
