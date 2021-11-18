@@ -2,7 +2,7 @@
   <Import Project="..\common.props" />
   
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
     <AssemblyName>FlatSharp.Compiler</AssemblyName>
     <RootNamespace>FlatSharp.Compiler</RootNamespace>
     <OutputType>Exe</OutputType>
@@ -13,7 +13,7 @@
     <NoWarn>CS3021;3021</NoWarn>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net5.0' ">
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net5.0' OR '$(TargetFramework)' == 'net6.0' ">
     <Nullable>enable</Nullable>
   </PropertyGroup>
 

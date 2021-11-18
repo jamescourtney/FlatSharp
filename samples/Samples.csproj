@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <OutputType>exe</OutputType>
     <LangVersion>9.0</LangVersion>
     <Nullable>enable</Nullable>
@@ -33,7 +33,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="FlatSharp.Runtime" Version="6.0.0" />
-    <PackageReference Include="Grpc" Version="2.38.1" />
+    <PackageReference Include="Grpc" Version="2.42.0" />
   </ItemGroup>
 
 </Project>
