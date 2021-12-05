@@ -2,9 +2,9 @@ name: Code Coverage
 
 on:
   push:
-    branches: [ master, flatSharp6 ]
+    branches: [ master ]
   pull_request:
-    branches: [ master, flatSharp6 ]
+    branches: [ master ]
   workflow_dispatch:
 
 jobs:
@@ -16,10 +16,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     
-    - name: Setup .NET 5
+    - name: Setup .NET 6
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 5.0.x
+        dotnet-version: 6.0.x
         
     - name: Install CodeCov
       working-directory: src
