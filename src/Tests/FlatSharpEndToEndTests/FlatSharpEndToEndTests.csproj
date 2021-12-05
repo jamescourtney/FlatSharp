@@ -2,7 +2,7 @@
   <Import Project="..\..\common.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>net5.0</TargetFrameworks>
+    <TargetFrameworks>net6.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <AssemblyName>FlatSharpEndToEndTests</AssemblyName>
     <RootNamespace>FlatSharpTests</RootNamespace>

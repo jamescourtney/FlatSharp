@@ -2,9 +2,9 @@ name: Code Coverage
 
 on:
   push:
-    branches: [ master, flatSharp6 ]
+    branches: [ master ]
   pull_request:
-    branches: [ master, flatSharp6 ]
+    branches: [ master ]
   workflow_dispatch:
 
 jobs:
@@ -16,6 +16,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     
+    - name: Setup .NET 6
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+        
     - name: Setup .NET 5
       uses: actions/setup-dotnet@v1
       with:
@@ -35,7 +40,7 @@ jobs:
       
     - name: Test
       working-directory: src/Tests/Coverage
-      run: dotnet test -c Debug /p:AltCoverForce=true /p:AltCover=true /p:AltCoverAttributeFilter=ExcludeFromCodeCoverage /p:AltCoverStrongNameKey=..\..\..\misc\strongname.snk -f net5.0
+      run: dotnet test -c Debug /p:AltCoverForce=true /p:AltCover=true /p:AltCoverAttributeFilter=ExcludeFromCodeCoverage /p:AltCoverStrongNameKey=..\..\..\misc\strongname.snk -f net6.0
       
     - name: Upload
       working-directory: src/Tests/Coverage

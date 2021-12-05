@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#if !NETCOREAPP3_1_OR_GREATER
+#if (NETCOREAPP && !NETCOREAPP3_1_OR_GREATER) || (NETSTANDARD && !NETSTANDARD2_1_OR_GREATER)
 
 namespace System.Diagnostics.CodeAnalysis
 {
