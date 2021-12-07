@@ -12,15 +12,8 @@
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <license type="expression">Apache-2.0</license>
     <developmentDependency>true</developmentDependency>
-     <dependencies>
-      <group targetFramework=".NETCoreApp3.1" />
-      <group targetFramework="net5.0" />
-    </dependencies>
   </metadata>
   <files>
-    <file src="_._" target="lib/netcoreapp3.1/" />
-    <file src="_._" target="lib/net5.0/" />
-    
     <file src="FlatSharp.Compiler.targets" target="build/netcoreapp3.1/FlatSharp.Compiler.targets" />
     <file src="FlatSharp.Compiler.targets" target="build/net5.0/FlatSharp.Compiler.targets" />
     

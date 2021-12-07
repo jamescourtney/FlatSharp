@@ -2,7 +2,7 @@
   <Import Project="..\..\common.props" />
 
   <PropertyGroup>
-    <TargetFrameworks Condition=" '$(AppVeyorBuild)' != 'true' ">netcoreapp2.1;net47;netcoreapp3.1;net472;net5.0;net6.0</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(AppVeyorBuild)' != 'true' ">net47;net472;netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
     <TargetFrameworks Condition=" '$(AppVeyorBuild)' == 'true' ">netcoreapp2.1;net47;netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <AssemblyName>FlatSharpTests</AssemblyName>
@@ -11,6 +11,9 @@
     <DelaySign>false</DelaySign>
     <SignAssembly>true</SignAssembly>
     <Nullable>annotations</Nullable>
+	  
+	<!-- .NET core 2.1 is out of support. -->
+	<NoWarn>NETSDK1138</NoWarn> 
   </PropertyGroup>
 
   <ItemGroup>
