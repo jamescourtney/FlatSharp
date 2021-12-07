@@ -14,9 +14,7 @@
     <developmentDependency>true</developmentDependency>
   </metadata>
   <files>
-    <file src="FlatSharp.Compiler.targets" target="build/netcoreapp3.1/FlatSharp.Compiler.targets" />
-    <file src="FlatSharp.Compiler.targets" target="build/net5.0/FlatSharp.Compiler.targets" />
-    
+    <file src="FlatSharp.Compiler.targets" target="build/FlatSharp.Compiler.targets" />
     <file src="FlatSharp.Compiler.targets" target="tools/" />
     
     <file src="$OutDir$\netcoreapp3.1\**" target="tools/netcoreapp3.1" />
