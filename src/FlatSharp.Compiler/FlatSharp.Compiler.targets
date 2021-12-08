@@ -15,13 +15,13 @@
     
     <!-- try .net5.0. Note that this can have various prefixes (net5.0-windows, etc) -->
     <PropertyGroup Condition="$(TargetFramework.StartsWith('net5.0'))">
-      <CompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\tools\net5.0\FlatSharp.Compiler.dll'))</CompilerPath>
+      <CompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\tools\net5.0\FlatSharp.Compiler.dll'))</CompilerPath>
       <CompilerInvocation>dotnet $(CompilerPath)</CompilerInvocation>
     </PropertyGroup>
 
     <!-- finally assume it's netcore3.1 -->
     <PropertyGroup Condition=" '$(CompilerInvocation)' == '' ">
-      <CompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\tools\netcoreapp3.1\FlatSharp.Compiler.dll'))</CompilerPath>
+      <CompilerPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\tools\netcoreapp3.1\FlatSharp.Compiler.dll'))</CompilerPath>
       <CompilerInvocation>dotnet $(CompilerPath)</CompilerInvocation>
     </PropertyGroup>
 
