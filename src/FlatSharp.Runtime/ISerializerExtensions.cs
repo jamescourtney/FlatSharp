@@ -17,6 +17,7 @@
 namespace FlatSharp
 {
     using System;
+    using System.Buffers;
     using System.Diagnostics.CodeAnalysis;
 
     /// <summary>
@@ -175,6 +176,34 @@ namespace FlatSharp
         public static int Write(this ISerializer serializer, Span<byte> buffer, object item)
         {
             return serializer.Write(default(SpanWriter), buffer, item);
+        }
+
+        /// <summary>
+        /// Writes the given item into the given buffer writer using the default SpanWriter.
+        /// </summary>
+        /// <returns>The number of bytes written.</returns>
+        public static int Write<T>(this ISerializer<T> serializer, IBufferWriter<byte> bufferWriter, T item) where T : class
+        {
+            int maxSize = serializer.GetMaxSize(item);
+            Span<byte> buffer = bufferWriter.GetSpan(maxSize);
+            int bytesWritten = serializer.Write(default(SpanWriter), buffer, item);
+            bufferWriter.Advance(bytesWritten);
+
+            return bytesWritten;
+        }
+
+        /// <summary>
+        /// Writes the given item into the given buffer writer using the default SpanWriter.
+        /// </summary>
+        /// <returns>The number of bytes written.</returns>
+        public static int Write(this ISerializer serializer, IBufferWriter<byte> bufferWriter, object item)
+        {
+            int maxSize = serializer.GetMaxSize(item);
+            Span<byte> buffer = bufferWriter.GetSpan(maxSize);
+            int bytesWritten = serializer.Write(default(SpanWriter), buffer, item);
+            bufferWriter.Advance(bytesWritten);
+
+            return bytesWritten;
         }
     }
 }

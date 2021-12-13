@@ -32,11 +32,7 @@ namespace FlatSharp.Compiler.SchemaModel
             return Grpc.Core.Marshallers.Create<T>(
                 (item, sc) =>
                 {{
-                    var serializer = Serializer<T>.Value;
-                    var bufferWriter = sc.GetBufferWriter();
-                    var span = bufferWriter.GetSpan(serializer.GetMaxSize(item));
-                    int bytesWritten = serializer.Write(default(SpanWriter), span, item);
-                    bufferWriter.Advance(bytesWritten);
+                    Serializer<T>.Value.Write(sc.GetBufferWriter(), item);
                     sc.Complete();
                 }},
                 dc => Serializer<T>.Value.Parse(new ArrayInputBuffer(dc.PayloadAsNewBuffer())));

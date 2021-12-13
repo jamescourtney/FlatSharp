@@ -436,6 +436,16 @@ $@"
         private void ImplementInterfaceMethod(Type rootType)
         {
             {
+                string typeName = typeof(FlatBufferDeserializationOption).GetCompilableTypeName();
+
+                string methodText =
+$@"
+                public {typeName} DeserializationOption => {typeName}.{this.options.DeserializationOption};
+";
+                this.methodDeclarations.Add(CSharpSyntaxTree.ParseText(methodText, ParseOptions).GetRoot());
+            }
+
+            {
                 string methodText =
 $@"
                 public void Write<TSpanWriter>(TSpanWriter writer, Span<byte> target, {CSharpHelpers.GetGlobalCompilableTypeName(rootType)} root, int offset, SerializationContext context)

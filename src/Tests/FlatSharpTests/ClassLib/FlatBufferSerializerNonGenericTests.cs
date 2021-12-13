@@ -17,6 +17,7 @@
 namespace FlatSharpTests
 {
     using System;
+    using System.Buffers;
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.IO;
@@ -60,6 +61,7 @@ namespace FlatSharpTests
             Assert.Same(serializer, parsedSerializer2);
         }
 
+#if NETCOREAPP3_1_OR_GREATER
         [Fact]
         public void NonGenericSerializer_FromInstance()
         {
@@ -73,12 +75,14 @@ namespace FlatSharpTests
             Assert.Throws<ArgumentNullException>(() => serializer.GetMaxSize(null));
             Assert.Throws<ArgumentException>(() => serializer.GetMaxSize(new SomeOtherTable()));
 
-            Memory<byte> data = new byte[1024];
-            Assert.True(serializer.Write(data, new SomeTable { A = 3 }) > 0);
-            Assert.Throws<ArgumentNullException>(() => serializer.Write(data, null));
-            Assert.Throws<ArgumentException>(() => serializer.Write(data, new SomeOtherTable()));
+            var bw = new ArrayBufferWriter<byte>();
+            Assert.Throws<ArgumentNullException>(() => serializer.Write(bw, null));
+            Assert.Throws<ArgumentException>(() => serializer.Write(bw, new SomeOtherTable()));
+            int written = serializer.Write(bw, new SomeTable { A = 3 });
+            Assert.True(written > 0);
+            Assert.Equal(written, bw.WrittenCount);
 
-            object parsed = serializer.Parse(data);
+            object parsed = serializer.Parse(bw.WrittenMemory);
             Assert.True(typeof(SomeTable).IsAssignableFrom(parsed.GetType()));
             Assert.NotEqual(typeof(SomeTable), parsed.GetType());
             Assert.IsAssignableFrom<IFlatBufferDeserializedObject>(parsed);
@@ -87,6 +91,7 @@ namespace FlatSharpTests
             Assert.Equal(typeof(SomeTable), deserialized.TableOrStructType);
             Assert.NotNull(deserialized.InputBuffer); // lazy
             Assert.Equal(FlatBufferDeserializationOption.Lazy, deserialized.DeserializationContext.DeserializationOption);
+            Assert.Equal(FlatBufferDeserializationOption.Lazy, serializer.DeserializationOption);
 
             ISerializer parsedSerializer = flatBufferSerializer.Compile(deserialized);
             ISerializer parsedSerializer2 = flatBufferSerializer.Compile(parsed);
@@ -99,8 +104,10 @@ namespace FlatSharpTests
             ISerializer serializer3 = flatBufferSerializer2.Compile(parsed);
             Assert.Equal(typeof(SomeTable), serializer3.RootType);
             Assert.NotSame(serializer, serializer3);
-            serializer3.Write(data, parsed);
+            bw = new ArrayBufferWriter<byte>();
+            serializer3.Write(bw, parsed);
         }
+#endif
 
         [FlatBufferTable]
         public class SomeTable

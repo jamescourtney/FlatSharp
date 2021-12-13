@@ -75,6 +75,8 @@ namespace FlatSharp
 
         public byte[]? AssemblyBytes { get; }
 
+        public FlatBufferDeserializationOption DeserializationOption => this.innerSerializer.DeserializationOption;
+
         public int GetMaxSize(T item)
         {
             if (item is null)
