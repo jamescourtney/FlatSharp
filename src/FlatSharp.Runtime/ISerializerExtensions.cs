@@ -23,7 +23,6 @@ namespace FlatSharp
     /// <summary>
     /// Serializer extension methods.
     /// </summary>
-    [ExcludeFromCodeCoverage] // This file is not interesting.
     public static class ISerializerExtensions
     {
         /// <summary>
