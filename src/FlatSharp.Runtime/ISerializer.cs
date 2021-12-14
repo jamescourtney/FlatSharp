@@ -33,18 +33,26 @@ namespace FlatSharp
 
         /// <summary>
         /// Gets the C# code that FlatSharp generated to produce this serializer.
+        /// This will only be set for runtime-generated serializers.
         /// </summary>
         string? CSharp { get; }
 
         /// <summary>
         /// Gets the Assembly FlatSharp generated to produce this serializer.
+        /// This will only be set for runtime-generated serializers.
         /// </summary>
         Assembly? Assembly { get; }
 
         /// <summary>
         /// Gets the raw data of the <see cref="Assembly"/> property. Can be saved to disk and decompiled, referenced, etc.
+        /// This will only be set for runtime-generated serializers.
         /// </summary>
         byte[]? AssemblyBytes { get; }
+
+        /// <summary>
+        /// Gets the type of deserializer in use. This can be used to distinguish between Greedy and Lazy modes.
+        /// </summary>
+        FlatBufferDeserializationOption DeserializationOption { get; }
 
         /// <summary>
         /// Writes the given item to the buffer using the given spanwriter.

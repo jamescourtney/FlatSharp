@@ -24,6 +24,11 @@ namespace FlatSharp
     public interface IGeneratedSerializer<T>
     {
         /// <summary>
+        /// Gets the option used to create this generated serializer.
+        /// </summary>
+        FlatBufferDeserializationOption DeserializationOption { get; }
+
+        /// <summary>
         /// Writes the given item to the buffer using the given spanwriter.
         /// </summary>
         /// <param name="writer">The span writer.</param>
