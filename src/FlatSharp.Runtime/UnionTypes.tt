@@ -27,6 +27,8 @@
 
 namespace FlatSharp
 {
+	using System.Diagnostics.CodeAnalysis;
+
 	public interface IFlatBufferUnion
 	{
 		byte Discriminator { get; }
@@ -49,7 +51,7 @@ namespace FlatSharp
 			<# } #>
 			}
 
-			[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+			[ExcludeFromCodeCoverage]
 			public struct FlatBufferUnion<<#= genericList #>> : IFlatBufferUnion<<#= genericList #>>
 
 			<# foreach (var genericType in range) { #>
@@ -93,7 +95,7 @@ namespace FlatSharp
 					}
 				}
 
-				public bool TryGet([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T<#= genericType #>? item)
+				public bool TryGet([NotNullWhen(true)] out T<#= genericType #>? item)
 				{
 					if (this.discriminator == <#= genericType #>)
 					{
