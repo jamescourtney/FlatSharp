@@ -16,10 +16,6 @@
 
 #if NETSTANDARD2_0
 
-global using NotNullWhenAttribute = FlatSharp.Polyfills.NotNullWhenAttribute;
-global using DoesNotReturnIfAttribute = FlatSharp.Polyfills.DoesNotReturnIfAttribute;
-global using NotNullIfNotNullAttribute = FlatSharp.Polyfills.NotNullIfNotNullAttribute;
-
 namespace FlatSharp.Polyfills
 {
     [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
