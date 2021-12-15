@@ -159,7 +159,7 @@ public static class SortedVectorHelpers
         byte[] rightData = SerializationHelpers.Encoding.GetBytes(right);
         return left =>
         {
-            if (left == null)
+            if (left is null)
             {
                 throw new InvalidOperationException("Sorted FlatBuffer vectors may not have null-valued keys.");
             }
@@ -167,17 +167,24 @@ public static class SortedVectorHelpers
             var enc = SerializationHelpers.Encoding;
             int maxLength = enc.GetMaxByteCount(left.Length);
 
-#if NETSTANDARD
-            byte[] leftBytes = enc.GetBytes(left);
-            int leftLength = leftBytes.Length;
-            Span<byte> leftSpan = leftBytes;
+
+#if NETSTANDARD2_0
+            return StringSpanComparer.Instance.Compare(true, enc.GetBytes(left), true, rightData);
 #else
-            Span<byte> leftSpan = maxLength < 1024 ? stackalloc byte[maxLength] : new byte[maxLength];
+            byte[]? array = null;
+
+            Span<byte> leftSpan = maxLength < 1024 ? stackalloc byte[maxLength] : (array = ArrayPool<byte>.Shared.Rent(maxLength));
             int leftLength = enc.GetBytes(left, leftSpan);
             leftSpan = leftSpan.Slice(0, leftLength);
-#endif
+            int value = StringSpanComparer.Instance.Compare(true, leftSpan, true, rightData);
 
-            return StringSpanComparer.Instance.Compare(true, leftSpan, true, rightData);
+            if (array is not null)
+            {
+                ArrayPool<byte>.Shared.Return(array);
+            }
+
+            return value;
+#endif
         };
     }
 
