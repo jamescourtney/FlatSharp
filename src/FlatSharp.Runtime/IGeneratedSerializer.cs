@@ -14,43 +14,40 @@
  * limitations under the License.
  */
 
-namespace FlatSharp
+namespace FlatSharp;
+
+/// <summary>
+/// An interface implemented dynamically by FlatSharp for reading and writing data from a buffer.
+/// </summary>
+public interface IGeneratedSerializer<T>
 {
-    using System;
+    /// <summary>
+    /// Gets the option used to create this generated serializer.
+    /// </summary>
+    FlatBufferDeserializationOption DeserializationOption { get; }
 
     /// <summary>
-    /// An interface implemented dynamically by FlatSharp for reading and writing data from a buffer.
+    /// Writes the given item to the buffer using the given spanwriter.
     /// </summary>
-    public interface IGeneratedSerializer<T>
-    {
-        /// <summary>
-        /// Gets the option used to create this generated serializer.
-        /// </summary>
-        FlatBufferDeserializationOption DeserializationOption { get; }
+    /// <param name="writer">The span writer.</param>
+    /// <param name="destination">The span to write to.</param>
+    /// <param name="item">The object to serialize.</param>
+    /// <param name="offset">The offset to begin writing at.</param>
+    /// <param name="context">The serialization context.</param>
+    void Write<TSpanWriter>(
+        TSpanWriter writer,
+        Span<byte> destination,
+        T item,
+        int offset,
+        SerializationContext context) where TSpanWriter : ISpanWriter;
 
-        /// <summary>
-        /// Writes the given item to the buffer using the given spanwriter.
-        /// </summary>
-        /// <param name="writer">The span writer.</param>
-        /// <param name="destination">The span to write to.</param>
-        /// <param name="item">The object to serialize.</param>
-        /// <param name="offset">The offset to begin writing at.</param>
-        /// <param name="context">The serialization context.</param>
-        void Write<TSpanWriter>(
-            TSpanWriter writer,
-            Span<byte> destination,
-            T item,
-            int offset,
-            SerializationContext context) where TSpanWriter : ISpanWriter;
+    /// <summary>
+    /// Computes the maximum size necessary to serialize the given instance of <typeparamref name="T"/>.
+    /// </summary>
+    int GetMaxSize(T item);
 
-        /// <summary>
-        /// Computes the maximum size necessary to serialize the given instance of <typeparamref name="T"/>.
-        /// </summary>
-        int GetMaxSize(T item);
-
-        /// <summary>
-        /// Parses the given buffer as an instance of <typeparamref name="T"/> from the given offset.
-        /// </summary>
-        T Parse<TInputBuffer>(TInputBuffer buffer, int offset) where TInputBuffer : IInputBuffer;
-    }
+    /// <summary>
+    /// Parses the given buffer as an instance of <typeparamref name="T"/> from the given offset.
+    /// </summary>
+    T Parse<TInputBuffer>(TInputBuffer buffer, int offset) where TInputBuffer : IInputBuffer;
 }

@@ -13,21 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-namespace FlatSharp
-{
-    using System;
-    using System.ComponentModel;
 
+namespace FlatSharp;
+
+/// <summary>
+/// An analog of IComparer for Spans. The implementation performs comparison consistent with the type the span represents.
+/// </summary>
+[EditorBrowsable(EditorBrowsableState.Never)]
+public interface ISpanComparer
+{
     /// <summary>
-    /// An analog of IComparer for Spans. The implementation performs comparison consistent with the type the span represents.
+    /// Compares the two spans.
     /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public interface ISpanComparer
-    {
-        /// <summary>
-        /// Compares the two spans.
-        /// </summary>
-        int Compare(bool leftExists, ReadOnlySpan<byte> left, bool rightExists, ReadOnlySpan<byte> right);
-    }
+    int Compare(bool leftExists, ReadOnlySpan<byte> left, bool rightExists, ReadOnlySpan<byte> right);
 }

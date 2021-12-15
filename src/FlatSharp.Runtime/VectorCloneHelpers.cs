@@ -14,214 +14,213 @@
  * limitations under the License.
  */
 
-namespace FlatSharp
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
+
+namespace FlatSharp;
+
+/// <summary>
+/// Helper methods for deep-cloning vectors.
+/// </summary>
+[EditorBrowsable(EditorBrowsableState.Never)]
+public static class VectorCloneHelpers
 {
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.Diagnostics.CodeAnalysis;
+    [return: NotNullIfNotNull("item")]
+    public delegate T? CloneCallback<T>(T? item);
 
-    /// <summary>
-    /// Helper methods for deep-cloning vectors.
-    /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public static class VectorCloneHelpers
+    [return: NotNullIfNotNull("source")]
+    public static IList<T>? Clone<T>(IList<T>? source)
+        where T : struct
     {
-        [return: NotNullIfNotNull("item")]
-        public delegate T? CloneCallback<T>(T? item);
-
-        [return: NotNullIfNotNull("source")]
-        public static IList<T>? Clone<T>(IList<T>? source)
-            where T : struct
+        if (source is null)
         {
-            if (source is null)
-            {
-                return null;
-            }
-
-            int count = source.Count;
-            List<T> newList = new List<T>(count);
-
-            for (int i = 0; i < count; ++i)
-            {
-                newList.Add(source[i]);
-            }
-
-            return newList;
+            return null;
         }
 
-        [return: NotNullIfNotNull("source")]
-        public static IList<T>? CloneVectorOfUnion<T>(IList<T>? source, CloneCallback<T> cloneItem)
-            where T : struct, IFlatBufferUnion
+        int count = source.Count;
+        List<T> newList = new List<T>(count);
+
+        for (int i = 0; i < count; ++i)
         {
-            if (source is null)
-            {
-                return null;
-            }
-
-            int count = source.Count;
-            List<T> newList = new List<T>(count);
-
-            for (int i = 0; i < count; ++i)
-            {
-                newList.Add(cloneItem(source[i]));
-            }
-
-            return newList;
+            newList.Add(source[i]);
         }
 
-        [return: NotNullIfNotNull("source")]
-        public static IReadOnlyList<T>? Clone<T>(IReadOnlyList<T>? source)
-            where T : struct
+        return newList;
+    }
+
+    [return: NotNullIfNotNull("source")]
+    public static IList<T>? CloneVectorOfUnion<T>(IList<T>? source, CloneCallback<T> cloneItem)
+        where T : struct, IFlatBufferUnion
+    {
+        if (source is null)
         {
-            if (source is null)
-            {
-                return null;
-            }
-
-            int count = source.Count;
-            List<T> newList = new List<T>(count);
-
-            for (int i = 0; i < count; ++i)
-            {
-                newList.Add(source[i]);
-            }
-
-            return newList;
+            return null;
         }
 
-        [return: NotNullIfNotNull("source")]
-        public static IReadOnlyList<T>? CloneVectorOfUnion<T>(IReadOnlyList<T>? source, CloneCallback<T> cloneItem)
-            where T : struct, IFlatBufferUnion
+        int count = source.Count;
+        List<T> newList = new List<T>(count);
+
+        for (int i = 0; i < count; ++i)
         {
-            if (source is null)
-            {
-                return null;
-            }
-
-            int count = source.Count;
-            List<T> newList = new List<T>(count);
-
-            for (int i = 0; i < count; ++i)
-            {
-                newList.Add(cloneItem(source[i]));
-            }
-
-            return newList;
+            newList.Add(cloneItem(source[i]));
         }
 
-        [return: NotNullIfNotNull("source")]
-        public static IReadOnlyList<T>? Clone<T>(IReadOnlyList<T>? source, CloneCallback<T> cloneItem)
-            where T : class
+        return newList;
+    }
+
+    [return: NotNullIfNotNull("source")]
+    public static IReadOnlyList<T>? Clone<T>(IReadOnlyList<T>? source)
+        where T : struct
+    {
+        if (source is null)
         {
-            if (source is null)
-            {
-                return null;
-            }
-
-            int count = source.Count;
-            List<T> newList = new List<T>(count);
-            for (int i = 0; i < count; ++i)
-            {
-                var item = cloneItem(source[i]);
-                newList.Add(item);
-            }
-
-            return newList;
+            return null;
         }
 
-        [return: NotNullIfNotNull("source")]
-        public static IList<T>? Clone<T>(IList<T>? source, CloneCallback<T> cloneItem)
-            where T : class
+        int count = source.Count;
+        List<T> newList = new List<T>(count);
+
+        for (int i = 0; i < count; ++i)
         {
-            if (source is null)
-            {
-                return null;
-            }
-
-            int count = source.Count;
-            List<T> newList = new List<T>(count);
-            for (int i = 0; i < count; ++i)
-            {
-                var item = cloneItem(source[i]);
-                newList.Add(item);
-            }
-
-            return newList;
+            newList.Add(source[i]);
         }
 
-        [return: NotNullIfNotNull("source")]
-        public static T[]? Clone<T>(T[]? source)
-            where T : struct
+        return newList;
+    }
+
+    [return: NotNullIfNotNull("source")]
+    public static IReadOnlyList<T>? CloneVectorOfUnion<T>(IReadOnlyList<T>? source, CloneCallback<T> cloneItem)
+        where T : struct, IFlatBufferUnion
+    {
+        if (source is null)
         {
-            if (source is null)
-            {
-                return null;
-            }
-
-            int count = source.Length;
-            T[] clone = new T[count];
-
-            source.CopyTo(clone, 0);
-            return clone;
+            return null;
         }
 
-        [return: NotNullIfNotNull("source")]
-        public static T[]? CloneVectorOfUnion<T>(T[]? source, CloneCallback<T> cloneItem)
-            where T : struct, IFlatBufferUnion
+        int count = source.Count;
+        List<T> newList = new List<T>(count);
+
+        for (int i = 0; i < count; ++i)
         {
-            if (source is null)
-            {
-                return null;
-            }
-
-            int count = source.Length;
-            T[] clone = new T[count];
-            for (int i = 0; i < count; ++i)
-            {
-                clone[i] = cloneItem(source[i]);
-            }
-
-            return clone;
+            newList.Add(cloneItem(source[i]));
         }
 
-        [return: NotNullIfNotNull("source")]
-        public static T[]? Clone<T>(T[]? source, CloneCallback<T> cloneItem)
-            where T : class
+        return newList;
+    }
+
+    [return: NotNullIfNotNull("source")]
+    public static IReadOnlyList<T>? Clone<T>(IReadOnlyList<T>? source, CloneCallback<T> cloneItem)
+        where T : class
+    {
+        if (source is null)
         {
-            if (source is null)
-            {
-                return null;
-            }
-
-            int count = source.Length;
-            T[] clone = new T[count];
-            for (int i = 0; i < count; ++i)
-            {
-                clone[i] = cloneItem(source[i]);
-            }
-
-            return clone;
+            return null;
         }
 
-        [return: NotNullIfNotNull("source")]
-        public static IIndexedVector<TKey, TValue>? Clone<TKey, TValue>(IIndexedVector<TKey, TValue>? source, Func<TValue, TValue> cloneItem)
-            where TKey : notnull
-            where TValue : class
+        int count = source.Count;
+        List<T> newList = new List<T>(count);
+        for (int i = 0; i < count; ++i)
         {
-            if (source is null)
-            {
-                return null;
-            }
-
-            IndexedVector<TKey, TValue> vector = new IndexedVector<TKey, TValue>(source.Count);
-            foreach (var pair in source)
-            {
-                var item = cloneItem(pair.Value);
-                vector.Add(item);
-            }
-
-            return vector;
+            var item = cloneItem(source[i]);
+            newList.Add(item);
         }
+
+        return newList;
+    }
+
+    [return: NotNullIfNotNull("source")]
+    public static IList<T>? Clone<T>(IList<T>? source, CloneCallback<T> cloneItem)
+        where T : class
+    {
+        if (source is null)
+        {
+            return null;
+        }
+
+        int count = source.Count;
+        List<T> newList = new List<T>(count);
+        for (int i = 0; i < count; ++i)
+        {
+            var item = cloneItem(source[i]);
+            newList.Add(item);
+        }
+
+        return newList;
+    }
+
+    [return: NotNullIfNotNull("source")]
+    public static T[]? Clone<T>(T[]? source)
+        where T : struct
+    {
+        if (source is null)
+        {
+            return null;
+        }
+
+        int count = source.Length;
+        T[] clone = new T[count];
+
+        source.CopyTo(clone, 0);
+        return clone;
+    }
+
+    [return: NotNullIfNotNull("source")]
+    public static T[]? CloneVectorOfUnion<T>(T[]? source, CloneCallback<T> cloneItem)
+        where T : struct, IFlatBufferUnion
+    {
+        if (source is null)
+        {
+            return null;
+        }
+
+        int count = source.Length;
+        T[] clone = new T[count];
+        for (int i = 0; i < count; ++i)
+        {
+            clone[i] = cloneItem(source[i]);
+        }
+
+        return clone;
+    }
+
+    [return: NotNullIfNotNull("source")]
+    public static T[]? Clone<T>(T[]? source, CloneCallback<T> cloneItem)
+        where T : class
+    {
+        if (source is null)
+        {
+            return null;
+        }
+
+        int count = source.Length;
+        T[] clone = new T[count];
+        for (int i = 0; i < count; ++i)
+        {
+            clone[i] = cloneItem(source[i]);
+        }
+
+        return clone;
+    }
+
+    [return: NotNullIfNotNull("source")]
+    public static IIndexedVector<TKey, TValue>? Clone<TKey, TValue>(IIndexedVector<TKey, TValue>? source, Func<TValue, TValue> cloneItem)
+        where TKey : notnull
+        where TValue : class
+    {
+        if (source is null)
+        {
+            return null;
+        }
+
+        IndexedVector<TKey, TValue> vector = new IndexedVector<TKey, TValue>(source.Count);
+        foreach (var pair in source)
+        {
+            var item = cloneItem(pair.Value);
+            vector.Add(item);
+        }
+
+        return vector;
     }
 }

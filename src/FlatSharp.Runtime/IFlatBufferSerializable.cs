@@ -14,30 +14,27 @@
  * limitations under the License.
  */
 
-namespace FlatSharp
+namespace FlatSharp;
+
+/// <summary>
+/// An object that can supply an <see cref="ISerializer"/> instance that can serialize and parse it.
+/// </summary>
+public interface IFlatBufferSerializable
 {
-    using System;
-
     /// <summary>
-    /// An object that can supply an <see cref="ISerializer"/> instance that can serialize and parse it.
+    /// Gets a <see cref="ISerializer"/> instance that can serialize this object.
     /// </summary>
-    public interface IFlatBufferSerializable
-    {
-        /// <summary>
-        /// Gets a <see cref="ISerializer"/> instance that can serialize this object.
-        /// </summary>
-        ISerializer Serializer { get; }
-    }
+    ISerializer Serializer { get; }
+}
 
+/// <summary>
+/// An object that can supply an <see cref="ISerializer{T}"/> instance that can serialize and parse it.
+/// </summary>
+public interface IFlatBufferSerializable<T> : IFlatBufferSerializable
+    where T : class
+{
     /// <summary>
-    /// An object that can supply an <see cref="ISerializer{T}"/> instance that can serialize and parse it.
+    /// Gets a <see cref="ISerializer{T}"/> instance that can serialize this object.
     /// </summary>
-    public interface IFlatBufferSerializable<T> : IFlatBufferSerializable
-        where T : class
-    {
-        /// <summary>
-        /// Gets a <see cref="ISerializer{T}"/> instance that can serialize this object.
-        /// </summary>
-        new ISerializer<T> Serializer { get; }
-    }
+    new ISerializer<T> Serializer { get; }
 }

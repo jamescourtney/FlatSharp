@@ -39,56 +39,52 @@
 	};
 #>
 
-namespace FlatSharp
+namespace FlatSharp;
+
+<#
+	foreach (var pair in types)
+	{
+		var casedName = pair.casedName;
+		var typeName = pair.typeName;
+		var className = $"{casedName}SpanComparer";
+#>
+	
+[EditorBrowsable(EditorBrowsableState.Never)]
+public struct <#=className#> : ISpanComparer
 {
-	using System;
-	using System.ComponentModel;
+	private readonly <#=typeName#> defaultValue;
 
-	<#
-		foreach (var pair in types)
-		{
-			var casedName = pair.casedName;
-			var typeName = pair.typeName;
-			var className = $"{casedName}SpanComparer";
-	#>
-	
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public struct <#=className#> : ISpanComparer
+	public <#=className#>(<#=typeName#> defaultValue)
+	{
+		this.defaultValue = defaultValue;
+	}
+
+    public int Compare(bool leftExists, ReadOnlySpan<byte> left, bool rightExists, ReadOnlySpan<byte> right)
     {
-		private readonly <#=typeName#> defaultValue;
+		<#=typeName#> leftValue = leftExists ? ScalarSpanReader.Read<#=casedName#>(left) : this.defaultValue;
+		<#=typeName#> rightValue = rightExists ? ScalarSpanReader.Read<#=casedName#>(right) : this.defaultValue;
 
-		public <#=className#>(<#=typeName#> defaultValue)
-		{
-			this.defaultValue = defaultValue;
-		}
-
-        public int Compare(bool leftExists, ReadOnlySpan<byte> left, bool rightExists, ReadOnlySpan<byte> right)
-        {
-			<#=typeName#> leftValue = leftExists ? ScalarSpanReader.Read<#=casedName#>(left) : this.defaultValue;
-			<#=typeName#> rightValue = rightExists ? ScalarSpanReader.Read<#=casedName#>(right) : this.defaultValue;
-
-			return leftValue.CompareTo(rightValue);
-        }
+		return leftValue.CompareTo(rightValue);
     }
-	
-    [EditorBrowsable(EditorBrowsableState.Never)]
-	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage] // Not currently used.
-	public struct Nullable<#=className#> : ISpanComparer
-    {
-		public Nullable<#=className#>(<#=typeName#>? notUsed)
-		{
-		}
-		
-        public int Compare(bool leftExists, ReadOnlySpan<byte> left, bool rightExists, ReadOnlySpan<byte> right)
-        {
-			if (!leftExists || !rightExists)
-			{
-				return leftExists.CompareTo(rightExists);
-			}
-
-			return ScalarSpanReader.Read<#=casedName#>(left).CompareTo(ScalarSpanReader.Read<#=casedName#>(right));
-        }
-    }
-
-	<# } #>
 }
+	
+[EditorBrowsable(EditorBrowsableState.Never)]
+[ExcludeFromCodeCoverage] // Not currently used.
+public struct Nullable<#=className#> : ISpanComparer
+{
+	public Nullable<#=className#>(<#=typeName#>? notUsed)
+	{
+	}
+		
+    public int Compare(bool leftExists, ReadOnlySpan<byte> left, bool rightExists, ReadOnlySpan<byte> right)
+    {
+		if (!leftExists || !rightExists)
+		{
+			return leftExists.CompareTo(rightExists);
+		}
+
+		return ScalarSpanReader.Read<#=casedName#>(left).CompareTo(ScalarSpanReader.Read<#=casedName#>(right));
+    }
+}
+
+<# } #>

@@ -14,19 +14,16 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Attributes
-{
-    using System;
+namespace FlatSharp.Attributes;
 
+/// <summary>
+/// Marks a class as being a FlatBuffer table.
+/// </summary>
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
+public class FlatBufferTableAttribute : Attribute
+{
     /// <summary>
-    /// Marks a class as being a FlatBuffer table.
+    /// Specifies the file identifier for serialized tables. Must be precisely 4 ASCII characters.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
-    public class FlatBufferTableAttribute : Attribute
-    {
-        /// <summary>
-        /// Specifies the file identifier for serialized tables. Must be precisely 4 ASCII characters.
-        /// </summary>
-        public string? FileIdentifier { get; set; }
-    }
+    public string? FileIdentifier { get; set; }
 }

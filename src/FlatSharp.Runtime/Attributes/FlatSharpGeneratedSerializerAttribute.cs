@@ -14,24 +14,21 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Attributes
+namespace FlatSharp.Attributes;
+
+/// <summary>
+/// Stores the set of flags used to generate a serializer.
+/// </summary>
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
+public class FlatSharpGeneratedSerializerAttribute : Attribute
 {
-    using System;
+    public FlatSharpGeneratedSerializerAttribute(FlatBufferDeserializationOption deserializeOption)
+    {
+        this.DeserializationOption = deserializeOption;
+    }
 
     /// <summary>
-    /// Stores the set of flags used to generate a serializer.
+    /// The flags specified when this serializer was generated.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
-    public class FlatSharpGeneratedSerializerAttribute : Attribute
-    {
-        public FlatSharpGeneratedSerializerAttribute(FlatBufferDeserializationOption deserializeOption)
-        {
-            this.DeserializationOption = deserializeOption;
-        }
-
-        /// <summary>
-        /// The flags specified when this serializer was generated.
-        /// </summary>
-        public FlatBufferDeserializationOption DeserializationOption { get; }
-    }
+    public FlatBufferDeserializationOption DeserializationOption { get; }
 }

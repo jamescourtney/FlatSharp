@@ -14,25 +14,24 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Runtime
+namespace FlatSharp.Runtime;
+
+/// <summary>
+/// Converts back and forth between a Facade Type (<typeparamref name="TFacadeType"/>) and an
+/// underlying type used for storage (<typeparamref name="TUnderlyingType"/>).
+/// </summary>
+/// <typeparam name="TUnderlyingType">The underlying type used for literal storage in the FlatBuffer.</typeparam>
+/// <typeparam name="TFacadeType">The facade type.</typeparam>
+public interface ITypeFacadeConverter<TUnderlyingType, TFacadeType>
 {
     /// <summary>
-    /// Converts back and forth between a Facade Type (<typeparamref name="TFacadeType"/>) and an
-    /// underlying type used for storage (<typeparamref name="TUnderlyingType"/>).
+    /// Converts from the facade type to the underlying type. Note that the conversion must return non-null in all situations.
     /// </summary>
-    /// <typeparam name="TUnderlyingType">The underlying type used for literal storage in the FlatBuffer.</typeparam>
-    /// <typeparam name="TFacadeType">The facade type.</typeparam>
-    public interface ITypeFacadeConverter<TUnderlyingType, TFacadeType>
-    {
-        /// <summary>
-        /// Converts from the facade type to the underlying type. Note that the conversion must return non-null in all situations.
-        /// </summary>
-        TUnderlyingType ConvertToUnderlyingType(TFacadeType item);
+    TUnderlyingType ConvertToUnderlyingType(TFacadeType item);
 
-        /// <summary>
-        /// Converts from the underlying type into the facade type. This method will only be invoked when the underlying type
-        /// has a non-default value.
-        /// </summary>
-        TFacadeType ConvertFromUnderlyingType(TUnderlyingType item);
-    }
+    /// <summary>
+    /// Converts from the underlying type into the facade type. This method will only be invoked when the underlying type
+    /// has a non-default value.
+    /// </summary>
+    TFacadeType ConvertFromUnderlyingType(TUnderlyingType item);
 }

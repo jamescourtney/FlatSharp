@@ -14,27 +14,26 @@
  * limitations under the License.
  */
 
-namespace FlatSharp
+namespace FlatSharp;
+
+/// <summary>
+/// A context that FlatSharp-deserialized classes will pass to their parent 
+/// object on construction, if the parent object defines a constructor that accepts this object.
+/// </summary>
+public class FlatBufferDeserializationContext
+
 {
     /// <summary>
-    /// A context that FlatSharp-deserialized classes will pass to their parent 
-    /// object on construction, if the parent object defines a constructor that accepts this object.
+    /// Initializes a new FlatSharpConstructorContext with the given deserialization option.
     /// </summary>
-    public class FlatBufferDeserializationContext
-
+    public FlatBufferDeserializationContext(
+        FlatBufferDeserializationOption deserializationOption)
     {
-        /// <summary>
-        /// Initializes a new FlatSharpConstructorContext with the given deserialization option.
-        /// </summary>
-        public FlatBufferDeserializationContext(
-            FlatBufferDeserializationOption deserializationOption)
-        {
-            this.DeserializationOption = deserializationOption;
-        }
-
-        /// <summary>
-        /// The deserialization options used to create the current subclass.
-        /// </summary>
-        public FlatBufferDeserializationOption DeserializationOption { get; }
+        this.DeserializationOption = deserializationOption;
     }
+
+    /// <summary>
+    /// The deserialization options used to create the current subclass.
+    /// </summary>
+    public FlatBufferDeserializationOption DeserializationOption { get; }
 }

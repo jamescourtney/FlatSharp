@@ -14,90 +14,88 @@
  * limitations under the License.
  */
 
-namespace FlatSharp
+using System.Text;
+
+namespace FlatSharp;
+
+/// <summary>
+/// Defines a buffer that FlatSharp can parse from. Implementations will be fastest when using a struct.
+/// </summary>
+public interface IInputBuffer
 {
-    using System;
-    using System.Text;
+    /// <summary>
+    /// Gets the length of this input buffer.
+    /// </summary>
+    int Length { get; }
 
     /// <summary>
-    /// Defines a buffer that FlatSharp can parse from. Implementations will be fastest when using a struct.
+    /// Reads the byte at the given offset.
     /// </summary>
-    public interface IInputBuffer
-    {
-        /// <summary>
-        /// Gets the length of this input buffer.
-        /// </summary>
-        int Length { get; }
+    byte ReadByte(int offset);
 
-        /// <summary>
-        /// Reads the byte at the given offset.
-        /// </summary>
-        byte ReadByte(int offset);
+    /// <summary>
+    /// Reads the sbyte at the given offset.
+    /// </summary>
+    sbyte ReadSByte(int offset);
 
-        /// <summary>
-        /// Reads the sbyte at the given offset.
-        /// </summary>
-        sbyte ReadSByte(int offset);
+    /// <summary>
+    /// Reads the ushort at the given offset.
+    /// </summary>
+    ushort ReadUShort(int offset);
 
-        /// <summary>
-        /// Reads the ushort at the given offset.
-        /// </summary>
-        ushort ReadUShort(int offset);
+    /// <summary>
+    /// Reads the short at the given offset.
+    /// </summary>
+    short ReadShort(int offset);
 
-        /// <summary>
-        /// Reads the short at the given offset.
-        /// </summary>
-        short ReadShort(int offset);
+    /// <summary>
+    /// Reads the uint at the given offset.
+    /// </summary>
+    uint ReadUInt(int offset);
 
-        /// <summary>
-        /// Reads the uint at the given offset.
-        /// </summary>
-        uint ReadUInt(int offset);
+    /// <summary>
+    /// Reads the int at the given offset.
+    /// </summary>
+    int ReadInt(int offset);
 
-        /// <summary>
-        /// Reads the int at the given offset.
-        /// </summary>
-        int ReadInt(int offset);
+    /// <summary>
+    /// Reads the ulong at the given offset.
+    /// </summary>
+    ulong ReadULong(int offset);
 
-        /// <summary>
-        /// Reads the ulong at the given offset.
-        /// </summary>
-        ulong ReadULong(int offset);
+    /// <summary>
+    /// Reads the long at the given offset.
+    /// </summary>
+    long ReadLong(int offset);
 
-        /// <summary>
-        /// Reads the long at the given offset.
-        /// </summary>
-        long ReadLong(int offset);
+    /// <summary>
+    /// Reads the float at the given offset.
+    /// </summary>
+    float ReadFloat(int offset);
 
-        /// <summary>
-        /// Reads the float at the given offset.
-        /// </summary>
-        float ReadFloat(int offset);
+    /// <summary>
+    /// Reads the double at the given offset.
+    /// </summary>
+    double ReadDouble(int offset);
 
-        /// <summary>
-        /// Reads the double at the given offset.
-        /// </summary>
-        double ReadDouble(int offset);
+    /// <summary>
+    /// Reads the string of the given length at the given offset with the given encoding.
+    /// </summary>
+    string ReadString(int offset, int byteLength, Encoding encoding);
 
-        /// <summary>
-        /// Reads the string of the given length at the given offset with the given encoding.
-        /// </summary>
-        string ReadString(int offset, int byteLength, Encoding encoding);
+    /// <summary>
+    /// Reads the byte memory at the given offset with the given length.
+    /// </summary>
+    Memory<byte> GetByteMemory(int start, int length);
 
-        /// <summary>
-        /// Reads the byte memory at the given offset with the given length.
-        /// </summary>
-        Memory<byte> GetByteMemory(int start, int length);
+    /// <summary>
+    /// Reads the read only byte memory at the given offset with the given length.
+    /// </summary>
+    ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length);
 
-        /// <summary>
-        /// Reads the read only byte memory at the given offset with the given length.
-        /// </summary>
-        ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length);
-
-        /// <summary>
-        /// Invokes the parse method on the <see cref="IGeneratedSerializer{T}"/> parameter. Allows passing
-        /// generic parameters.
-        /// </summary>
-        TItem InvokeParse<TItem>(IGeneratedSerializer<TItem> serializer, int offset);
-    }
+    /// <summary>
+    /// Invokes the parse method on the <see cref="IGeneratedSerializer{T}"/> parameter. Allows passing
+    /// generic parameters.
+    /// </summary>
+    TItem InvokeParse<TItem>(IGeneratedSerializer<TItem> serializer, int offset);
 }

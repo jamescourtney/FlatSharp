@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2018 James Courtney
+ * Copyright 2021 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,11 @@
  * limitations under the License.
  */
 
-namespace FlatSharp;
-
-/// <summary>
-/// Raised in serialization when the provided buffer was too small.
-/// </summary>
-public sealed class BufferTooSmallException : Exception
-{
-    public BufferTooSmallException() : base($"The provided buffer was too small to hold the serialized data.")
-    {
-    }
-
-    /// <summary>
-    /// The maximum amount of size needed for this message.
-    /// </summary>
-    public int SizeNeeded { get; internal set; }
-}
+global using System;
+global using System.Collections;
+global using System.Collections.Generic;
+global using System.ComponentModel;
+global using System.Diagnostics;
+global using System.Diagnostics.CodeAnalysis;
+global using System.Reflection;
+global using System.Runtime.CompilerServices;

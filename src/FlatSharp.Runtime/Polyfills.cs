@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-#if (NETCOREAPP && !NETCOREAPP3_1_OR_GREATER) || (NETSTANDARD && !NETSTANDARD2_1_OR_GREATER)
+#if NETSTANDARD2_0
 
-namespace System.Diagnostics.CodeAnalysis
+global using NotNullWhenAttribute = FlatSharp.Polyfills.NotNullWhenAttribute;
+global using DoesNotReturnIfAttribute = FlatSharp.Polyfills.DoesNotReturnIfAttribute;
+global using NotNullIfNotNullAttribute = FlatSharp.Polyfills.NotNullIfNotNullAttribute;
+
+namespace FlatSharp.Polyfills
 {
-    using System;
-
     [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
     internal class NotNullWhenAttribute : Attribute
     {
@@ -29,9 +31,9 @@ namespace System.Diagnostics.CodeAnalysis
     }
 
     [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
-    internal class DoesNotReturnIf : Attribute
+    internal class DoesNotReturnIfAttribute : Attribute
     {
-        public DoesNotReturnIf(bool value)
+        public DoesNotReturnIfAttribute(bool value)
         {
         }
     }
@@ -43,11 +45,6 @@ namespace System.Diagnostics.CodeAnalysis
         public NotNullIfNotNullAttribute(string parameterName)
         {
         }
-    }
-
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter | AttributeTargets.ReturnValue, AllowMultiple = true, Inherited = false)]
-    internal class AllowNullAttribute : Attribute
-    {
     }
 }
 #endif

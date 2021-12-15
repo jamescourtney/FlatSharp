@@ -14,60 +14,57 @@
  * limitations under the License.
  */
 
-namespace FlatSharp
+namespace FlatSharp;
+
+/// <summary>
+/// A base flat buffer vector for non-unions.
+/// </summary>
+public abstract class FlatBufferVector<T, TInputBuffer> : FlatBufferVectorBase<T, TInputBuffer>
+    where TInputBuffer : IInputBuffer
 {
-    using System;
+    private readonly int offset;
+    private readonly int itemSize;
 
-    /// <summary>
-    /// A base flat buffer vector for non-unions.
-    /// </summary>
-    public abstract class FlatBufferVector<T, TInputBuffer> : FlatBufferVectorBase<T, TInputBuffer>
-        where TInputBuffer : IInputBuffer
+    protected FlatBufferVector(
+        TInputBuffer memory,
+        int offset,
+        int itemSize,
+        in TableFieldContext fieldContext) : base(memory, fieldContext)
     {
-        private readonly int offset;
-        private readonly int itemSize;
+        this.offset = offset;
+        this.itemSize = itemSize;
+        this.Count = checked((int)this.memory.ReadUInt(this.offset));
 
-        protected FlatBufferVector(
-            TInputBuffer memory,
-            int offset,
-            int itemSize,
-            in TableFieldContext fieldContext) : base(memory, fieldContext)
+        // Advance to the start of the element at index 0. Easiest to do this once
+        // in the .ctor than repeatedly for each index.
+        this.offset = checked(this.offset + sizeof(uint));
+    }
+
+    public override T this[int index]
+    {
+        get => base[index];
+        set
         {
-            this.offset = offset;
-            this.itemSize = itemSize;
-            this.Count = checked((int)this.memory.ReadUInt(this.offset));
-
-            // Advance to the start of the element at index 0. Easiest to do this once
-            // in the .ctor than repeatedly for each index.
-            this.offset = checked(this.offset + sizeof(uint));
-        }
-
-        public override T this[int index]
-        { 
-            get => base[index];
-            set
+            if (this.fieldContext.WriteThrough)
             {
-                if (this.fieldContext.WriteThrough)
-                {
-                    int offset = checked(this.offset + (itemSize * index));
-                    Span<byte> span = this.memory.GetByteMemory(offset, this.itemSize).Span;
-                    this.WriteThrough(value, span);
-                }
-                else
-                {
-                    base[index] = value;
-                }
+                int offset = checked(this.offset + (itemSize * index));
+                Span<byte> span = this.memory.GetByteMemory(offset, this.itemSize).Span;
+                this.WriteThrough(value, span);
+            }
+            else
+            {
+                base[index] = value;
             }
         }
-
-        protected override void ParseItem(int index, out T item)
-        {
-            int offset = checked(this.offset + (itemSize * index));
-            this.ParseItem(this.memory, offset, this.fieldContext, out item);
-        }
-
-        protected abstract void ParseItem(TInputBuffer buffer, int offset, TableFieldContext context, out T item);
-
-        protected abstract void WriteThrough(T item, Span<byte> data);
     }
+
+    protected override void ParseItem(int index, out T item)
+    {
+        int offset = checked(this.offset + (itemSize * index));
+        this.ParseItem(this.memory, offset, this.fieldContext, out item);
+    }
+
+    protected abstract void ParseItem(TInputBuffer buffer, int offset, TableFieldContext context, out T item);
+
+    protected abstract void WriteThrough(T item, Span<byte> data);
 }
