@@ -141,12 +141,13 @@ public sealed class IndexedVector<TKey, TValue> : IIndexedVector<TKey, TValue>
         TKey key = KeyGetter(value);
 
 #if NETSTANDARD2_0
-        if (this.backingDictionary.ContainsKey(key))
+        var dictionary = this.backingDictionary;
+        if (dictionary.ContainsKey(key))
         {
             return false;
         }
 
-        this.backingDictionary[key] = value;
+        dictionary[key] = value;
         return true;
 #else
         return this.backingDictionary.TryAdd(key, value);
