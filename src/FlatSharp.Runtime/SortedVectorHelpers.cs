@@ -171,17 +171,24 @@ namespace FlatSharp
                 var enc = SerializationHelpers.Encoding;
                 int maxLength = enc.GetMaxByteCount(left.Length);
 
-#if NETSTANDARD
-               byte[] leftBytes = enc.GetBytes(left);
-               int leftLength = leftBytes.Length;
-               Span<byte> leftSpan = leftBytes;
+#if NETSTANDARD2_0
+                return StringSpanComparer.Instance.Compare(true, enc.GetBytes(left), true, rightData);
 #else
-               Span<byte> leftSpan = maxLength < 1024 ? stackalloc byte[maxLength] : new byte[maxLength];
-               int leftLength = enc.GetBytes(left, leftSpan);
-               leftSpan = leftSpan.Slice(0, leftLength);
-#endif
+                byte[]? pooledArray = null;
 
-               return StringSpanComparer.Instance.Compare(true, leftSpan, true, rightData);
+                Span<byte> leftSpan = maxLength < 1024 ? stackalloc byte[maxLength] : (pooledArray = ArrayPool<byte>.Shared.Rent(maxLength));
+                int leftLength = enc.GetBytes(left, leftSpan);
+                leftSpan = leftSpan.Slice(0, leftLength);
+
+                int comp = StringSpanComparer.Instance.Compare(true, leftSpan, true, rightData);
+
+                if (pooledArray is not null)
+                {
+                    ArrayPool<byte>.Shared.Return(pooledArray);
+                }
+
+                return comp;
+#endif
             };
         }
 
