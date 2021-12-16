@@ -165,6 +165,8 @@ $@"
             this.ImplementInterfaceMethod(typeof(TRoot));
             this.ImplementMethods(rootModel);
 
+            string? compilerVersion = typeof(RoslynSerializerGenerator).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version;
+
             string code = $@"
                 [{nameof(FlatSharpGeneratedSerializerAttribute)}({nameof(FlatBufferDeserializationOption)}.{this.options.DeserializationOption})]
                 {visibility} sealed class {GeneratedSerializerClassName} : {nameof(IGeneratedSerializer<byte>)}<{typeof(TRoot).GetGlobalCompilableTypeName()}>
@@ -182,6 +184,22 @@ $@"
                         this.Parse<ArraySegmentInputBuffer>(default!, 0);
 
                         throw new InvalidOperationException(""__AotHelper is not intended to be invoked"");
+                    }}
+
+                    public {GeneratedSerializerClassName}()
+                    {{
+                        string? runtimeVersion = System.Reflection.CustomAttributeExtensions.GetCustomAttribute<System.Reflection.AssemblyFileVersionAttribute>(typeof(SpanWriter).Assembly)?.Version;
+                        string compilerVersion = ""{compilerVersion}"";
+
+                        if (runtimeVersion != compilerVersion)
+                        {{
+                            throw new InvalidOperationException($""FlatSharp runtime version didn't match compiler version. Ensure all FlatSharp NuGet packages use the same version. Runtime = '{{runtimeVersion}}', Compiler = '{{compilerVersion}}'."");
+                        }}
+
+                        if (string.IsNullOrEmpty(runtimeVersion))
+                        {{
+                            throw new InvalidOperationException($""Unable to find FlatSharp.Runtime version. Ensure all FlatSharp NuGet packages use the same version. Runtime = '{{runtimeVersion}}', Compiler = '{{compilerVersion}}'."");
+                        }}
                     }}
 
                     {string.Join("\r\n", this.methodDeclarations.Select(x => x.ToFullString()))}
