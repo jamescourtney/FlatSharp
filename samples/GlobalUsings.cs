@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2020 James Courtney
+ * Copyright 2021 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,9 @@
  * limitations under the License.
  */
 
-namespace Samples.IncludesExample;
-
-/// <summary>
-/// This example shows how different flatbuffer files can include each other. In this example,
-/// IncludesExample.fbs references A, which references B, which is in a subdirectory.
-/// We can create a complete serializer package and gRPC service just from the declarations in IncludesExample.cs.
-/// There is no code sample here -- just FBS files.
-/// </summary>
-public class IncludesExample
-{
-    public static void Run()
-    {
-    }
-}
+global using System;
+global using System.Collections.Generic;
+global using System.Diagnostics;
+global using System.Linq;
+global using FlatSharp;
+global using FlatSharp.Attributes;

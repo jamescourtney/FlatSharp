@@ -20,11 +20,11 @@ enum DogBreed : byte { Golden, Lab, Corgi }
 enum CatBreed : byte { Calico, Shorthair, Bengal }
 enum FishKind : byte { Coelacanth, Dorado, Piranha }
 
-// FlatSharp generates a "Pet" class that derives from the "FlatBufferUnion" class. The derived class
-// is syntax sugar and just contains some quality-of-life improvements.
+// FlatSharp generates a "Pet" union.
 // In this example, the "Doggo" label is applied, so all of the union's properties in C# will
 // refer to "Doggo". For fish and Cat, the names are left as-is.
-union Pet { Doggo:Dog, Cat, Fish }
+// If you want to include strings in your union, you need to indicate a label for the string (this is a flatc quirk).
+union Pet { Doggo : Dog, Cat, Fish }
 
 table Dog { Breed:DogBreed; Name:string; }
 table Cat { Breed:CatBreed; Name:string; }
