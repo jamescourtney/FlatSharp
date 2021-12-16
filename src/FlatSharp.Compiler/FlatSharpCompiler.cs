@@ -87,7 +87,7 @@ namespace FlatSharp.Compiler
 
                         byte[] bfbs = GetBfbs(options);
 
-                        using (var hash = SHA256Managed.Create())
+                        using (var hash = SHA256.Create())
                         {
                             inputHash += "." + Convert.ToBase64String(hash.ComputeHash(bfbs));
                         }

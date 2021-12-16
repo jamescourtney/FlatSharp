@@ -2,7 +2,7 @@
   <Import Project="..\common.props" />
   
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
     <AssemblyName>FlatSharp.Compiler</AssemblyName>
     <RootNamespace>FlatSharp.Compiler</RootNamespace>
     <OutputType>Exe</OutputType>
@@ -10,8 +10,8 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <NuspecProperties>$(NuspecProperties);OutDir=$(MSBuildThisFileDirectory)\bin\$(Configuration)</NuspecProperties>
     <Nullable>annotations</Nullable>
-	
-	<!-- NU5127: Nuget package doesn't contain any frameworks. This is intentional. -->
+
+    <!-- NU5127: Nuget package doesn't contain any frameworks. This is intentional. -->
     <NoWarn>CS3021;3021;NU5127</NoWarn>
   </PropertyGroup>
 
