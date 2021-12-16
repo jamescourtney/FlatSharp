@@ -17,6 +17,7 @@
 namespace FlatSharp
 {
     using System;
+    using System.Buffers;
     using System.Buffers.Binary;
     using System.Runtime.CompilerServices;
     using System.Text;
@@ -101,9 +102,11 @@ namespace FlatSharp
         public int GetStringBytes(Span<byte> destination, string value, Encoding encoding)
         {
 #if NETSTANDARD2_0
-            var bytes = encoding.GetBytes(value);
-            bytes.CopyTo(destination);
-            int bytesWritten = bytes.Length;
+            int length = value.Length;
+            byte[] buffer = ArrayPool<byte>.Shared.Rent(encoding.GetMaxByteCount(length));
+            int bytesWritten = encoding.GetBytes(value, 0, length, buffer, 0);
+            buffer.AsSpan().Slice(0, bytesWritten).CopyTo(destination);
+            ArrayPool<byte>.Shared.Return(buffer);
 #else
             int bytesWritten = encoding.GetBytes(value, destination);
 #endif

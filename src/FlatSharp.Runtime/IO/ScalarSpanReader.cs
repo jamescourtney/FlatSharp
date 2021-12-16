@@ -17,6 +17,7 @@
 namespace FlatSharp
 {
     using System;
+    using System.Buffers;
     using System.Buffers.Binary;
     using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices;
@@ -102,7 +103,11 @@ namespace FlatSharp
         public static string ReadString(ReadOnlySpan<byte> span, Encoding encoding)
         {
 #if NETSTANDARD2_0
-            return encoding.GetString(span.ToArray());
+            byte[] array = ArrayPool<byte>.Shared.Rent(span.Length);
+            span.CopyTo(array);
+            string s = encoding.GetString(array, 0, span.Length);
+            ArrayPool<byte>.Shared.Return(array);
+            return s;
 #else
             return encoding.GetString(span);
 #endif
