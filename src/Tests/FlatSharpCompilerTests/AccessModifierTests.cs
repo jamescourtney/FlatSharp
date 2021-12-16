@@ -37,7 +37,6 @@ namespace FlatSharpTests.Compiler
             }
         }
 
-#if NET5_0_OR_GREATER
         [Fact]
         public void TestAccessModifierCombinations_Init()
         {
@@ -49,7 +48,6 @@ namespace FlatSharpTests.Compiler
                 }
             }
         }
-#endif
 
         private void Test(SetterKind setterKind, FlatBufferDeserializationOption option)
         {
@@ -69,7 +67,28 @@ namespace FlatSharpTests.Compiler
                 ForcedNonVirtual:int ({MetadataKeys.NonVirtualProperty}:""true"", {MetadataKeys.Setter}:""{(setterKind != SetterKind.None ? setterKind : SetterKind.Public)}"");
             }}";
 
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
+            bool isInit = setterKind == SetterKind.PublicInit
+                       || setterKind == SetterKind.ProtectedInit
+                       || setterKind == SetterKind.ProtectedInternalInit;
+
+            Assembly asm;
+            try
+            {
+                asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
+            }
+            catch (InvalidFbsFileException ex) when (isInit)
+            {
+#if NET5_0_OR_GREATER
+                throw;
+#else
+                // 3.1 should bail.
+                Assert.Contains(
+                    $"The attribute '{MetadataKeys.Setter}' value {setterKind} is not supported in the current .NET Runtime. It requires .NET 5 or later.",
+                    ex.Message);
+                return;
+#endif
+            }
+
 
             foreach (var typeName in new[] { "VirtualTests.VirtualTable", "VirtualTests.VirtualStruct" })
             {
@@ -87,9 +106,7 @@ namespace FlatSharpTests.Compiler
                 Assert.True(forcedVirtualProperty.GetMethod.IsPublic);
                 Assert.True(forcedNonVirtualProperty.GetMethod.IsPublic);
 
-                if (setterKind == SetterKind.PublicInit ||
-                    setterKind == SetterKind.ProtectedInit ||
-                    setterKind == SetterKind.ProtectedInternalInit)
+                if (isInit)
                 {
                     Assert.Contains(defaultProperty.SetMethod.ReturnParameter.GetRequiredCustomModifiers(), x => x.FullName == "System.Runtime.CompilerServices.IsExternalInit");
                     Assert.Contains(forcedVirtualProperty.SetMethod.ReturnParameter.GetRequiredCustomModifiers(), x => x.FullName == "System.Runtime.CompilerServices.IsExternalInit");

@@ -48,7 +48,20 @@ namespace FlatSharp.Compiler.SchemaModel
                 VectorTypeValidator = _ => this.ValidWhenParentIs<TableSchemaModel>(),
                 SortedVectorValidator = _ => this.ValidWhenParentIs<TableSchemaModel>(),
                 SharedStringValidator = _ => this.ValidWhenParentIs<TableSchemaModel>(),
-                SetterKindValidator = _ => AttributeValidationResult.Valid,
+                SetterKindValidator = kind =>
+                {
+                    switch (this.Attributes.SetterKind)
+                    {
+#if !NET5_0_OR_GREATER
+                        case SetterKind.PublicInit:
+                        case SetterKind.ProtectedInit:
+                        case SetterKind.ProtectedInternalInit:
+                            return AttributeValidationResult.NeedsAtLeastDotNet5;
+#endif
+                        default:
+                            return AttributeValidationResult.Valid;
+                    }
+                },
                 ForceWriteValidator = _ => this.ValidWhenParentIs<TableSchemaModel>(),
                 WriteThroughValidator = _ => AttributeValidationResult.Valid,
             }.Validate(this.Attributes);
@@ -111,8 +124,8 @@ namespace FlatSharp.Compiler.SchemaModel
             var attributes = new FlatSharpAttributes(field.Attributes);
 
             var opts = parent.ElementType == FlatBufferSchemaElementType.Table
-                                           ? (FlatBufferSchemaElementType.TableField)
-                                           : (FlatBufferSchemaElementType.StructField);
+                                           ? FlatBufferSchemaElementType.TableField
+                                           : FlatBufferSchemaElementType.StructField;
 
             model = new PropertyFieldModel(parent, field, index, opts, string.Empty, attributes);
             return true;

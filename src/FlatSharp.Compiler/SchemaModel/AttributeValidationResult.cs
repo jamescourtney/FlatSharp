@@ -16,9 +16,6 @@
 
 namespace FlatSharp.Compiler.SchemaModel
 {
-    using FlatSharp.Attributes;
-    using System;
-
     public class AttributeValidationResult
     {
         private const string ElementTypeSubs = "__ELEMENT_TYPE__";
@@ -27,10 +24,17 @@ namespace FlatSharp.Compiler.SchemaModel
 
         public static readonly AttributeValidationResult Valid = new(null, true);
 
-        public static readonly AttributeValidationResult NeverValid = new AttributeValidationResult($"The attribute {AttributeNameSubs} is never valid on {ElementTypeSubs} elements.", false);
+        public static readonly AttributeValidationResult NeverValid = new(
+            $"The attribute {AttributeNameSubs} is never valid on {ElementTypeSubs} elements.",
+            false);
 
-        public static readonly AttributeValidationResult ValueInvalid = new AttributeValidationResult($"The attribute {AttributeNameSubs} value {AttributeValueSubs} is not valid on {ElementTypeSubs} elements.", false);
+        public static readonly AttributeValidationResult ValueInvalid = new(
+            $"The attribute {AttributeNameSubs} value {AttributeValueSubs} is not valid on {ElementTypeSubs} elements.",
+            false);
 
+        public static readonly AttributeValidationResult NeedsAtLeastDotNet5 = new(
+            $"The attribute {AttributeNameSubs} value {AttributeValueSubs} is not supported in the current .NET Runtime. It requires .NET 5 or later.",
+            false);
 
         private AttributeValidationResult(string? message, bool isValid)
         {
