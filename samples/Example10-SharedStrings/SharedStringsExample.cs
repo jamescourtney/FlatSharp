@@ -14,144 +14,132 @@
  * limitations under the License.
  */
 
-using FlatSharp;
-using FlatSharp.Attributes;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+namespace Samples.SharedStrings;
 
-namespace Samples.SharedStrings
+/// <summary>
+/// This file shows how to use FlatSharp to provide automatic string deduplication. In this example,
+/// we define a collection of rows where each value is a (Key, Value) pair. We use string deduplication
+/// to share the column names so that we don't serialize the column name for each cell.
+/// </summary>
+public class SharedStringsExample
 {
-    /// <summary>
-    /// This file shows how to use FlatSharp to provide automatic string deduplication. In this example,
-    /// we define a collection of rows where each value is a (Key, Value) pair. We use string deduplication
-    /// to share the column names so that we don't serialize the column name for each cell.
-    /// </summary>
-    public class SharedStringsExample
+    public static void Run()
     {
-        public static void Run()
+        // Create a matrix of 10000 rows.
+        Matrix matrix = new Matrix()
         {
-            // Create a matrix of 1000 rows.
-            Matrix matrix = new Matrix()
+            Rows = Enumerable.Range(0, 10000).Select(CreateRow).ToArray(),
+        };
+
+        // Shared strings are enabled by default.
+        ISerializer<Matrix> defaultSerializer = Matrix.Serializer;
+
+        // We can create a new serializer based on the current one with shared strings turned off.
+        // These factory delegates configure the writer.
+        ISerializer<Matrix> noSharedStringsSerializer = Matrix.Serializer.WithSettings(
+            new SerializerSettings
             {
-                Rows = Enumerable.Range(0, 100).Select(x => CreateRow()).ToArray(),
-            };
+                // This can be null to disable shared string writing:
+                SharedStringWriterFactory = null,
+            });
 
-            // String deduplication is off by default.
-            ISerializer<Matrix> defaultSerializer = Matrix.Serializer;
+        // We can also create our own shared string providers (defined at the bottom of this file).
+        ISerializer<Matrix> customSharedStringSerializer = Matrix.Serializer.WithSettings(
+            new SerializerSettings
+            {
+                SharedStringWriterFactory = () => new PerfectSharedStringWriter(),
+            });
 
-            // We can create a new serializer based on the current one with shared strings turned on.
-            // These factory delegates configure the writer. FlatSharp deprecated reading shared strings 
-            // in version 6.
-            ISerializer<Matrix> sharedStringSerializer = Matrix.Serializer.WithSettings(
-                new SerializerSettings
-                {
-                    // This can be null to disable shared string reading:
-                    // SharedStringReaderFactory = null,
-                    SharedStringWriterFactory = () => new SharedStringWriter(),
-                });
+        byte[] unsharedBuffer = new byte[noSharedStringsSerializer.GetMaxSize(matrix)];
+        byte[] sharedBuffer = new byte[defaultSerializer.GetMaxSize(matrix)];
+        byte[] customBuffer = new byte[customSharedStringSerializer.GetMaxSize(matrix)];
 
-            // We can also create our own shared string providers (defined at the bottom of this file).
-            // These two use normal dictionaries internally.
-            ISerializer<Matrix> customSharedStringSerializer = Matrix.Serializer.WithSettings(
-                new SerializerSettings
-                {
-                    SharedStringWriterFactory = () => new PerfectSharedStringWriter(),
-                });
+        int unsharedBytesWritten = noSharedStringsSerializer.Write(unsharedBuffer, matrix);
+        int defaultSharedBytesWritten = defaultSerializer.Write(sharedBuffer, matrix);
+        int customSharedBytesWritten = customSharedStringSerializer.Write(customBuffer, matrix);
 
-            byte[] defaultBuffer = new byte[defaultSerializer.GetMaxSize(matrix)];
-            byte[] sharedBuffer = new byte[sharedStringSerializer.GetMaxSize(matrix)];
-            byte[] customBuffer = new byte[customSharedStringSerializer.GetMaxSize(matrix)];
+        Console.WriteLine($"Serialized size without shared strings: {unsharedBytesWritten}");
 
-            int defaultBytesWritten = defaultSerializer.Write(defaultBuffer, matrix);
-            int sharedBytesWritten = sharedStringSerializer.Write(sharedBuffer, matrix);
-            int customBytesWritten = customSharedStringSerializer.Write(customBuffer, matrix);
+        // These will be the same since there are so few shared strings. For large numbers,
+        // the custom provider will give smaller outputs while being considerably slower.
+        Console.WriteLine($"Serialized size with shared strings: {defaultSharedBytesWritten}");
+        Console.WriteLine($"Serialized size with custom shared strings: {customSharedBytesWritten}");
+    }
 
-            Console.WriteLine($"Serialized size without shared strings: {defaultBytesWritten}");
-
-            // These will be the same since there are so few shared strings. For large numbers,
-            // the custom provider will give smaller outputs while being considerably slower.
-            Console.WriteLine($"Serialized size with shared strings: {sharedBytesWritten}");
-            Console.WriteLine($"Serialized size with custom shared strings: {customBytesWritten}");
-        }
-
-        /// <summary>
-        /// Creates a row with three well-defined column names and random values.
-        /// </summary>
-        public static Row CreateRow()
+    /// <summary>
+    /// Creates a row with three well-defined column names and random values.
+    /// </summary>
+    public static Row CreateRow(int row)
+    {
+        return new Row()
         {
-            return new Row()
+            Values = new Cell[]
             {
-                Values = new Cell[]
-                {
-                    new Cell { ColumnName = "ColumnA", Value = Guid.NewGuid().ToString() },
-                    new Cell { ColumnName = "ColumnB", Value = Guid.NewGuid().ToString() },
-                    new Cell { ColumnName = "ColumnC", Value = Guid.NewGuid().ToString() }
-                }
-            };
+                new Cell { ColumnName = "Column" + (row++ % 100), Value = Guid.NewGuid().ToString() },
+                new Cell { ColumnName = "Column" + (row++ % 100), Value = Guid.NewGuid().ToString() },
+                new Cell { ColumnName = "Column" + (row++ % 100), Value = Guid.NewGuid().ToString() },
+            }
+        };
+    }
+}
+
+/// <summary>
+/// this is a "perfect" shared string writer implementation, which guarantees a single string is written only once.
+/// this class will give optimal compression results, but will be considerably slower than FlatSharp's default implementation,
+/// which uses a hashtable with flush-on-evict semantics and may write shared strings more than once.
+/// </summary>
+public class PerfectSharedStringWriter : ISharedStringWriter
+{
+    private readonly Dictionary<string, List<int>> stringOffsetMap = new Dictionary<string, List<int>>();
+
+    /// <summary>
+    /// Must be true if there are any strings waiting to be flushed.
+    /// </summary>
+    public bool IsDirty => this.stringOffsetMap.Count > 0;
+
+    /// <summary>
+    /// Called when FlatSharp has finished a serialize operation. This is the signal to flush any strings that the 
+    /// string writer is hanging onto.
+    /// </summary>
+    public void FlushWrites<TSpanWriter>(TSpanWriter writer, Span<byte> data, SerializationContext context) where TSpanWriter : ISpanWriter
+    {
+        foreach (var kvp in this.stringOffsetMap)
+        {
+            string str = kvp.Key;
+            List<int> offsets = kvp.Value;
+
+            // Write the string.
+            int stringOffset = writer.WriteAndProvisionString(data, str, context);
+
+            // Update all the pointers that need to point to that string.
+            foreach (var offset in offsets)
+            {
+                writer.WriteUOffset(data, offset, stringOffset);
+            }
         }
     }
 
     /// <summary>
-    /// this is a "perfect" shared string writer implementation, which guarantees a single string is written only once.
-    /// this class will give optimal compression results, but will be considerably slower than FlatSharp's default implementation,
-    /// which uses a hashtable with flush-on-evict semantics and may write shared strings more than once.
+    /// Prepares to write. In this case, we just need to clear the internal map for a new write operation,
+    /// since the same SharedStringWriter is reused.
     /// </summary>
-    public class PerfectSharedStringWriter : ISharedStringWriter
+    public void Reset()
     {
-        private readonly Dictionary<string, List<int>> stringOffsetMap = new Dictionary<string, List<int>>();
+        this.stringOffsetMap.Clear();
+    }
 
-        /// <summary>
-        /// Must be true if there are any strings waiting to be flushed.
-        /// </summary>
-        public bool IsDirty => this.stringOffsetMap.Count > 0;
-
-        /// <summary>
-        /// Called when FlatSharp has finished a serialize operation. This is the signal to flush any strings that the 
-        /// string writer is hanging onto.
-        /// </summary>
-        public void FlushWrites<TSpanWriter>(TSpanWriter writer, Span<byte> data, SerializationContext context) where TSpanWriter : ISpanWriter
+    /// <summary>
+    /// Writes a shared string by storing the string mapped to the offsets at which the string occurs in the buffer.
+    /// </summary>
+    public void WriteSharedString<TSpanWriter>(TSpanWriter spanWriter, Span<byte> data, int offset, string value, SerializationContext context)
+        where TSpanWriter : ISpanWriter
+    {
+        if (!this.stringOffsetMap.TryGetValue(value, out List<int>? offsets))
         {
-            foreach (var kvp in this.stringOffsetMap)
-            {
-                string str = kvp.Key;
-                List<int> offsets = kvp.Value;
-
-                // Write the string.
-                int stringOffset = writer.WriteAndProvisionString(data, str, context);
-
-                // Update all the pointers that need to point to that string.
-                foreach (var offset in offsets)
-                {
-                    writer.WriteUOffset(data, offset, stringOffset);
-                }
-            }
+            offsets = new List<int>();
+            this.stringOffsetMap[value] = offsets;
         }
 
-        /// <summary>
-        /// Prepares to write. In this case, we just need to clear the internal map for a new write operation,
-        /// since the same SharedStringWriter is reused.
-        /// </summary>
-        public void Reset()
-        {
-            this.stringOffsetMap.Clear();
-        }
-
-        /// <summary>
-        /// Writes a shared string by storing the string mapped to the offsets at which the string occurs in the buffer.
-        /// </summary>
-        public void WriteSharedString<TSpanWriter>(TSpanWriter spanWriter, Span<byte> data, int offset, string value, SerializationContext context)
-            where TSpanWriter : ISpanWriter
-        {
-            if (!this.stringOffsetMap.TryGetValue(value, out List<int>? offsets))
-            {
-                offsets = new List<int>();
-                this.stringOffsetMap[value] = offsets;
-            }
-
-            offsets.Add(offset);
-        }
+        offsets.Add(offset);
     }
 }

@@ -14,54 +14,87 @@
  * limitations under the License.
  */
 
-using FlatSharp;
-using FlatSharp.Attributes;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+namespace Samples.Unions;
 
-namespace Samples.Unions
+/// <summary>
+/// This example shows how to use FlatSharp with unions. FlatBuffer unions are 
+/// discriminated unions, which means exactly one of the fields may be set.
+/// 
+/// FlatSharp suppo
+/// </summary>
+public class UnionsExample
 {
-    /// <summary>
-    /// This example shows how to use FlatSharp with unions. FlatBuffer unions are discriminated unions, which means exactly one of the fields may be set.
-    /// FlatSharp can 
-    /// </summary>
-    public class UnionsExample
+    public static void Run()
     {
-        public static void Run()
+        Cat simon = new Cat { Breed = CatBreed.Bengal, Name = "Simon" };
+        Dog george = new Dog { Breed = DogBreed.Corgi, Name = "George" };
+        Fish brick = new Fish { Kind = FishKind.Coelacanth, Name = "Brick" };
+
+        // A person can only have one pet. It can be a cat, dog, or fish.
+        // This person has a fish named brick. You could model a person with multiple
+        // pets as a vector of unions.
+        Person person = new Person
         {
-            Cat simon = new Cat { Breed = CatBreed.Bengal, Name = "Simon" };
-            Dog george = new Dog { Breed = DogBreed.Corgi, Name = "George" };
-            Fish brick = new Fish { Kind = FishKind.Coelacanth, Name = "Brick" };
+            Pet = new Pet(brick)
+        };
 
-            Person person = new Person
-            {
-                // The difference between Person.Pet and Person.BasicPet is that Person.Pet is
-                // a custom convenience class that derives from FlatBufferUnion. In 
-                Pet = new Pet(brick)
-            };
+        Pet pet = person.Pet.Value;
 
-            UsePet(person.Pet.Value);
+        // Each union has an internal enum with the general cases.
+        if (pet.Kind == Pet.ItemKind.Doggo)
+        {
+            Dog dog = pet.Doggo;
+            string? lowerName = dog.Name?.ToLowerInvariant();
         }
 
-        // These two methods do the same thing. They are coded separately to
-        // demonstrate the usability you get with FlatSharp's compiled union
-        // types.
+        // Similiarly, FlatSharp unions also include a method called "Switch".
+        // You can use this instead of a switch statement. The advantage is that
+        // if a union element is added later, your code will fail to compile, so
+        // it helps you to handle all of the cases.
+        string breed = pet.Switch(
+            caseDefault: () => "unknown",
+            caseDoggo: d => d.Breed.ToString(),
+            caseCat: c => c.Breed.ToString(),
+            caseFish: f => f.Kind.ToString());
+    }
 
-        public static void UsePet(Pet pet)
+    /// <summary>
+    /// You can also use unions from C#. However, the semantics are not as nice.
+    /// </summary>
+    [FlatBufferTable]
+    public class PersonCS
+    {
+        [FlatBufferItem(0)]
+        public virtual FlatBufferUnion<Dog, Cat, Fish>? Pet { get; set; }
+
+        public void UsePet()
         {
-            // Enum members
-            if (pet.Kind == Pet.ItemKind.Doggo)
+            if (this.Pet is null)
             {
-                Dog dog = pet.Doggo;
-                string? lowerName = dog.Name?.ToLowerInvariant();
+                return;
             }
 
-            string breed = pet.Switch(
-                caseDefault: () => "unknown",
-                caseDoggo: d => d.Breed.ToString(),
-                caseCat: c => c.Breed.ToString(),
-                caseFish: f => f.Kind.ToString());
+            var union = this.Pet.Value;
+
+            if (union.TryGet(out Dog? dog))
+            {
+                // Woof woof
+            }
+            else if (union.TryGet(out Cat? cat))
+            {
+                // Meow meow
+            }
+            else if (union.TryGet(out Fish? fish))
+            {
+                // gurgle gurgle
+            }
+
+            // C# unions still support the switch method above:
+            union.Switch(
+                defaultCase: () => { },
+                case1: (Dog d) => { },
+                case2: (Cat c) => { },
+                case3: (Fish f) => { });
         }
     }
 }

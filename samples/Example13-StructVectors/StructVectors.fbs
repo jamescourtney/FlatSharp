@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2020 James Courtney
+ * Copyright 2021 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,8 +41,7 @@ struct Sha256_Value (fs_valueStruct) {
    Value : [ ubyte : 32 ];
 }
 
-// A value (struct-based) struct using unsafe code for fast access to the value array. 
-// Requires compiling with <AllowUnsafeBlocks>. Use at your own risk!
+// A value (struct-based) struct using unsafe code for fast access to the value array.
 struct Sha256_FastValue (fs_valueStruct) {
    Value : [ ubyte : 32 ] (fs_unsafeStructVector);
 }

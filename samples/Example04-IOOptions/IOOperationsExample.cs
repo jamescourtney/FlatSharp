@@ -60,7 +60,7 @@ namespace Samples.IOOptionsExample
 
             // SpanWriter is the core code that writes data to a span. Flatsharp provides one:
             // However, you can always implement ISpanWriter yourself.
-            SpanWriter spanWriter = new SpanWriter();
+            SpanWriter spanWriter = default(SpanWriter);
 
             byte[] buffer = new byte[Person.Serializer.GetMaxSize(person)];
 
