@@ -195,6 +195,11 @@ $@"
                         {{
                             throw new InvalidOperationException($""FlatSharp runtime version didn't match compiler version. Ensure all FlatSharp NuGet packages use the same version. Runtime = '{{runtimeVersion}}', Compiler = '{{compilerVersion}}'."");
                         }}
+
+                        if (string.IsNullOrEmpty(runtimeVersion))
+                        {{
+                            throw new InvalidOperationException($""Unable to find FlatSharp.Runtime version. Ensure all FlatSharp NuGet packages use the same version. Runtime = '{{runtimeVersion}}', Compiler = '{{compilerVersion}}'."");
+                        }}
                     }}
 
                     {string.Join("\r\n", this.methodDeclarations.Select(x => x.ToFullString()))}
