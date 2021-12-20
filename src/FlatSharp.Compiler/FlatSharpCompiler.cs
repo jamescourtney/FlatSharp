@@ -20,6 +20,7 @@ namespace FlatSharp.Compiler
     using FlatSharp.TypeModel;
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Linq;
@@ -263,25 +264,53 @@ namespace FlatSharp.Compiler
             Directory.CreateDirectory(outputDir);
             FileInfo info = new FileInfo(options.InputFile);
 
-            System.Diagnostics.Process p = new System.Diagnostics.Process
+            using var p = new Process
             {
-                StartInfo = new System.Diagnostics.ProcessStartInfo
+                StartInfo = new ProcessStartInfo
                 {
                     CreateNoWindow = true,
                     RedirectStandardError = true,
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
                     FileName = flatcPath,
-                    Arguments = $"-b --schema --bfbs-comments --bfbs-builtins --bfbs-filenames \"{info.DirectoryName}\" --no-warnings -o \"{outputDir}\" \"{info.FullName}\"",
                 }
             };
 
+            foreach (var arg in new[]
+            {
+                "-b",
+                "--schema",
+                "--bfbs-comments",
+                "--bfbs-builtins",
+                "--bfbs-filenames",
+                info.DirectoryName,
+                "--no-warnings",
+                "-o",
+                outputDir,
+                info.FullName
+            })
+            {
+                p.StartInfo.ArgumentList.Add(arg);
+            }
+
             try
             {
-                p.Start();
-                string stdout = p.StandardOutput.ReadToEnd();
-                string stderr = p.StandardError.ReadToEnd();
+                p.EnableRaisingEvents = true;
 
+                var lines = new List<string>();
+
+                void OnDataReceived(object sender, DataReceivedEventArgs args)
+                {
+                    if (args.Data is { } line)
+                        lines.Add(line);
+                }
+
+                p.OutputDataReceived += OnDataReceived;
+                p.ErrorDataReceived += OnDataReceived;
+
+                p.Start();
+                p.BeginOutputReadLine();
+                p.BeginErrorReadLine();
                 p.WaitForExit();
 
                 if (p.ExitCode == 0)
@@ -291,15 +320,8 @@ namespace FlatSharp.Compiler
                 }
                 else
                 {
-                    string[] lines = stdout.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-
-                    foreach (var line in lines)
-                    {
-                        if (!string.IsNullOrEmpty(line))
-                        {
-                            ErrorContext.Current.RegisterError(line);
-                        }
-                    }
+                    foreach (var line in lines.Where(line => line.Length > 0))
+                        ErrorContext.Current.RegisterError(line);
 
                     ErrorContext.Current.ThrowIfHasErrors();
                     throw new InvalidFbsFileException("Unknown error when invoking flatc. Process exited with error, but didn't write any errors.");
