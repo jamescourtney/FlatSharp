@@ -283,7 +283,7 @@ namespace FlatSharp.Compiler
                 "--bfbs-comments",
                 "--bfbs-builtins",
                 "--bfbs-filenames",
-                info.DirectoryName,
+                info.DirectoryName!, // Files always have a directory name, dammit!
                 "--no-warnings",
                 "-o",
                 outputDir,
