@@ -302,7 +302,9 @@ namespace FlatSharp.Compiler
                 void OnDataReceived(object sender, DataReceivedEventArgs args)
                 {
                     if (args.Data is { } line)
+                    {
                         lines.Add(line);
+                    }
                 }
 
                 p.OutputDataReceived += OnDataReceived;
@@ -321,7 +323,9 @@ namespace FlatSharp.Compiler
                 else
                 {
                     foreach (var line in lines.Where(line => line.Length > 0))
+                    {
                         ErrorContext.Current.RegisterError(line);
+                    }
 
                     ErrorContext.Current.ThrowIfHasErrors();
                     throw new InvalidFbsFileException("Unknown error when invoking flatc. Process exited with error, but didn't write any errors.");
