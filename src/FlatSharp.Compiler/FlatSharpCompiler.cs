@@ -301,9 +301,9 @@ namespace FlatSharp.Compiler
 
                 void OnDataReceived(object sender, DataReceivedEventArgs args)
                 {
-                    if (args.Data is { } line)
+                    if (!string.IsNullOrEmpty(args.Data))
                     {
-                        lines.Add(line);
+                        lines.Add(args.Data);
                     }
                 }
 
@@ -322,7 +322,7 @@ namespace FlatSharp.Compiler
                 }
                 else
                 {
-                    foreach (var line in lines.Where(line => line.Length > 0))
+                    foreach (var line in lines)
                     {
                         ErrorContext.Current.RegisterError(line);
                     }
