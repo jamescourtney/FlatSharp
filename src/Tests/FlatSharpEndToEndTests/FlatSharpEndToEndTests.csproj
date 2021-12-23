@@ -2,7 +2,7 @@
   <Import Project="..\..\common.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0</TargetFrameworks>
+    <TargetFramework>net6.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <AssemblyName>FlatSharpEndToEndTests</AssemblyName>
     <RootNamespace>FlatSharpTests</RootNamespace>
@@ -40,9 +40,15 @@
     <Compile Include="Preallocation\Preallocation.fbs.generated.cs" />
   </ItemGroup>
 
-  <Target Name="FBS" BeforeTargets="BeforeBuild">
-    <Exec Command="dotnet ..\..\FlatSharp.Compiler\bin\$(Configuration)\net5.0\FlatSharp.Compiler.dll --nullable-warnings true -i Grpc\Grpc.fbs -o Grpc\" />
-    <Exec Command="dotnet ..\..\FlatSharp.Compiler\bin\$(Configuration)\net5.0\FlatSharp.Compiler.dll --nullable-warnings true -i ValueStructs\ValueStructs.fbs -o ValueStructs\" />
-    <Exec Command="dotnet ..\..\FlatSharp.Compiler\bin\$(Configuration)\net5.0\FlatSharp.Compiler.dll --nullable-warnings true -i Preallocation\Preallocation.fbs -o Preallocation\" />
+  <Target Name="FBS" BeforeTargets="CoreCompile">
+    <PropertyGroup>
+      <FlatSharpCompilerDll>..\..\FlatSharp.Compiler\bin\$(Configuration)\$(TargetFramework)\FlatSharp.Compiler.dll</FlatSharpCompilerDll>
+    </PropertyGroup>
+    <ItemGroup>
+      <InputFile Include="Grpc\Grpc.fbs" />
+      <InputFile Include="ValueStructs\ValueStructs.fbs" />
+      <InputFile Include="Preallocation\Preallocation.fbs" />
+    </ItemGroup>
+    <Exec Command="dotnet $(FlatSharpCompilerDll) --nullable-warnings true -i %(InputFile.Identity) -o %(InputFile.RelativeDir)" />
   </Target>
 </Project>
