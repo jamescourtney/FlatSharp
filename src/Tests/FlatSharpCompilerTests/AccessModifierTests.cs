@@ -72,23 +72,22 @@ namespace FlatSharpTests.Compiler
                        || setterKind == SetterKind.ProtectedInternalInit;
 
             Assembly asm;
+#if NET5_0_OR_GREATER
+            asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
+#else
             try
             {
                 asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
             }
             catch (InvalidFbsFileException ex) when (isInit)
             {
-#if NET5_0_OR_GREATER
-                throw;
-#else
                 // 3.1 should bail.
                 Assert.Contains(
                     $"The attribute '{MetadataKeys.Setter}' value {setterKind} is not supported in the current .NET Runtime. It requires .NET 5 or later.",
                     ex.Message);
                 return;
-#endif
             }
-
+#endif
 
             foreach (var typeName in new[] { "VirtualTests.VirtualTable", "VirtualTests.VirtualStruct" })
             {
