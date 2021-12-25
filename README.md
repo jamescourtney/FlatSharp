@@ -1,8 +1,8 @@
 ## FlatSharp
-![Master](https://github.com/jamescourtney/FlatSharp/actions/workflows/dotnet.yml/badge.svg?branch=master)
-[![codecov](https://codecov.io/gh/jamescourtney/FlatSharp/branch/master/graph/badge.svg?token=6EUECHZGT4)](https://codecov.io/gh/jamescourtney/FlatSharp)
+![Main](https://github.com/jamescourtney/FlatSharp/actions/workflows/dotnet.yml/badge.svg?branch=main)
+[![codecov](https://codecov.io/gh/jamescourtney/FlatSharp/branch/main/graph/badge.svg?token=6EUECHZGT4)](https://codecov.io/gh/jamescourtney/FlatSharp)
 
-FlatSharp is Google's FlatBuffers serialization format implemented in C#, for C#. FlatBuffers is a zero-copy binary serialization format intended for high-performance scenarios. FlatSharp leverages the latest and greatest from .NET in the form of ```Memory<T>``` and ```Span<T>```. As such, FlatSharp's safe-code implementations are often faster than other implementations using unsafe code. FlatSharp aims to provide 4 core priorities:
+FlatSharp is Google's FlatBuffers serialization format implemented in C#, for C#. FlatBuffers is a zero-copy binary serialization format intended for high-performance scenarios. FlatSharp leverages the latest and greatest from .NET in the form of `Memory<T>` and `Span<T>`. As such, FlatSharp's safe-code implementations are often faster than other implementations using unsafe code. FlatSharp aims to provide 4 core priorities:
 
 - Full safety (no unsafe code or IL generation -- more on that below).
 - Speed
@@ -11,7 +11,7 @@ FlatSharp is Google's FlatBuffers serialization format implemented in C#, for C#
 
 All FlatSharp packages are published on nuget.org:
 - **FlatSharp.Runtime**: The runtime library. You always need this.
-- **FlatSharp**: Support for runtime schemas with C# attributes. Includes ```FlatBufferSerializer```.
+- **FlatSharp**: Support for runtime schemas with C# attributes. Includes `FlatBufferSerializer`.
 - **FlatSharp.Compiler**: Build time compiler for generating C# from an FBS schema.
 
 As of version 3.3.1, FlatSharp is in production use at Microsoft. 
@@ -111,12 +111,12 @@ FlatSharp supports some interesting features not covered here. Detailed document
 - [Write-Through -- update buffers in place](samples/Example14-WriteThrough/)
 
 ### Internals
-FlatSharp works by generating subclasses of your data contracts based on the schema that you define. That is, when you attempt to deserialize a ```MonsterTable``` object, you actually get back a subclass of ```MonsterTable```, which has properties defined in such a way as to index into the buffer, according to the deserialization mode specified (greedy, lazy, etc).
+FlatSharp works by generating subclasses of your data contracts based on the schema that you define. That is, when you attempt to deserialize a `MonsterTable` object, you actually get back a subclass of `MonsterTable`, which has properties defined in such a way as to index into the buffer, according to the deserialization mode specified (greedy, lazy, etc).
 
 ### Security
 Serializers are a common vector for security issues. FlatSharp takes the following approach to security:
 - All core operations are overflow-checked
-- No unsafe code (with the exception of the Unsafe package)
+- No unsafe code
 - No IL generation
 - Use standard .NET libraries for reading and writing from memory
 
@@ -169,8 +169,8 @@ There are two main ways to use FlatSharp: Precompilation with .fbs files and run
 
 Scenario | FlatSharp.Runtime | FlatSharp | FlatSharp.Compiler
 ------------ | ------------- | -------- | -----------------
-Ahead of Time Compilation | ✔️ | ❌ | ✔️
-Runtime Compilation | ✔️ | ✔️ | ❌
+Ahead of Time Compilation | ✅ | ❌ | ✅
+Runtime Compilation | ✅ | ✅ | ❌
 
 ### License
 FlatSharp is licensed under Apache 2.0.
