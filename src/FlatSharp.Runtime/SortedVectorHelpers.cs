@@ -115,6 +115,11 @@ namespace FlatSharp
         public static TTable? BinarySearchByFlatBufferKey<TTable, TKey>(this IList<TTable> sortedVector, TKey key)
             where TTable : class
         {
+            if (key is null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             if (key is string str)
             {
                 using SimpleStringComparer cmp = new SimpleStringComparer(str);
@@ -140,6 +145,11 @@ namespace FlatSharp
         public static TTable? BinarySearchByFlatBufferKey<TTable, TKey>(this TTable[] sortedVector, TKey key)
             where TTable : class
         {
+            if (key is null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             if (key is string str)
             {
                 using SimpleStringComparer cmp = new SimpleStringComparer(str);
@@ -165,6 +175,11 @@ namespace FlatSharp
         public static TTable? BinarySearchByFlatBufferKey<TTable, TKey>(this IReadOnlyList<TTable> sortedVector, TKey key)
            where TTable : class
         {
+            if (key is null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             if (key is string str)
             {
                 using SimpleStringComparer cmp = new SimpleStringComparer(str);
@@ -191,24 +206,33 @@ namespace FlatSharp
             where TTable : class
             where TComparer : struct, ISimpleComparer<TKey>
         {
-            // String searches take two forms:
-            // For greedy deserialized buffers, we don't have the raw bytes, so we search inefficiently. This involves
-            // a string -> byte[] copy for each binary search jump.
-            // For lazy buffers (this first case), we can interrogate the underlying buffer directly.
-            if (typeof(TKey) == typeof(string) && 
-                realVector is IFlatBufferDeserializedVector vector && 
-                vector.ItemSize == sizeof(int) && 
-                comparer is SimpleStringComparer ssc)
+            try
             {
-                ushort keyIndex = KeyLookup<TTable, string>.KeyAttribute.Index;
+                // String searches take two forms:
+                // For greedy deserialized buffers, we don't have the raw bytes, so we search inefficiently. This involves
+                // a string -> byte[] copy for each binary search jump.
+                // For lazy buffers (this first case), we can interrogate the underlying buffer directly.
+                if (typeof(TKey) == typeof(string) &&
+                    realVector is IFlatBufferDeserializedVector vector &&
+                    vector.ItemSize == sizeof(int) &&
+                    comparer is SimpleStringComparer ssc)
+                {
+                    ushort keyIndex = KeyLookup<TTable, string>.KeyAttribute.Index;
 
-                return GenericBinarySearch<RawIndexableVector<TTable>, TTable, ReadOnlyMemory<byte>, SimpleStringComparer>(
-                    new RawIndexableVector<TTable>(vector, keyIndex),
-                    ssc);
+                    return GenericBinarySearch<RawIndexableVector<TTable>, TTable, ReadOnlyMemory<byte>, SimpleStringComparer>(
+                        new RawIndexableVector<TTable>(vector, keyIndex),
+                        ssc);
+                }
+                else
+                {
+                    return GenericBinarySearch<TIndexable, TTable, TKey, TComparer>(indexable, comparer);
+                }
             }
-            else
+            catch (TypeInitializationException ex) when (ex.InnerException is not null)
             {
-                return GenericBinarySearch<TIndexable, TTable, TKey, TComparer>(indexable, comparer);
+                // KeyLookup uses a static .ctor to do its work. However, when that fails,
+                // it manifests as a TypeInitializationException. We rethrow the inner exception here.
+                throw ex.InnerException;
             }
         }
 
