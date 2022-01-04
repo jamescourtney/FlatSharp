@@ -35,7 +35,7 @@ namespace FlatSharp
 
         static IndexedVector()
         {
-            KeyGetter = SortedVectorHelpers.GetOrCreateGetKeyCallback<TValue, TKey>();
+            KeyGetter = SortedVectorHelpers.KeyLookup<TValue, TKey>.KeyGetter;
         }
 
         public IndexedVector()

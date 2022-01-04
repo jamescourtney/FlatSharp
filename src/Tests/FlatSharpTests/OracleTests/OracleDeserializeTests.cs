@@ -385,8 +385,10 @@
             Assert.Equal("foobar", str);
         }
 
-        [Fact]
-        public void SortedVectors()
+        [Theory]
+        [InlineData(FlatBufferDeserializationOption.Greedy)]
+        [InlineData(FlatBufferDeserializationOption.Lazy)]
+        public void SortedVectors(FlatBufferDeserializationOption option)
         {
             var builder = new FlatBuffers.FlatBufferBuilder(1024 * 1024);
 
@@ -432,7 +434,8 @@
             builder.Finish(table.Value);
             byte[] serialized = builder.SizedByteArray();
 
-            var parsed = FlatBufferSerializer.Default.Parse<SortedVectorTest<SortedVectorItem<int>>>(serialized);
+            var serializer = new FlatBufferSerializer(option);
+            var parsed = serializer.Parse<SortedVectorTest<SortedVectorItem<int>>>(serialized);
 
             VerifySorted(parsed.StringVector, new Utf8StringComparer(), strings, new List<string> { Guid.NewGuid().ToString(), "banana" });
             VerifySorted(parsed.IntVector, Comparer<int>.Default, ints, new List<int> { -1, -3, 0 });

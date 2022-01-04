@@ -34,12 +34,10 @@ namespace FlatSharp
     using System;
     using System.Buffers;
     using System.Buffers.Binary;
-    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.Linq;
     using System.Reflection;
-
     using FlatSharp.Attributes;
 
     /// <summary>
@@ -117,7 +115,22 @@ namespace FlatSharp
         public static TTable? BinarySearchByFlatBufferKey<TTable, TKey>(this IList<TTable> sortedVector, TKey key)
             where TTable : class
         {
-            return GenericBinarySearch(sortedVector.Count, i => sortedVector[i], key);
+            if (key is string str)
+            {
+                using SimpleStringComparer cmp = new SimpleStringComparer(str);
+
+                return BinarySearchByFlatBufferKey<ListIndexable<TTable, string?>, TTable, string?, SimpleStringComparer>(
+                    new ListIndexable<TTable, string?>(sortedVector),
+                    sortedVector,
+                    cmp);
+            }
+            else
+            {
+                return BinarySearchByFlatBufferKey<ListIndexable<TTable, TKey>, TTable, TKey, NaiveComparer<TKey>>(
+                    new ListIndexable<TTable, TKey>(sortedVector),
+                    sortedVector,
+                    new NaiveComparer<TKey>(key));
+            }
         }
 
         /// <summary>
@@ -127,7 +140,22 @@ namespace FlatSharp
         public static TTable? BinarySearchByFlatBufferKey<TTable, TKey>(this TTable[] sortedVector, TKey key)
             where TTable : class
         {
-            return GenericBinarySearch(sortedVector.Length, i => sortedVector[i], key);
+            if (key is string str)
+            {
+                using SimpleStringComparer cmp = new SimpleStringComparer(str);
+
+                return BinarySearchByFlatBufferKey<ArrayIndexable<TTable, string?>, TTable, string?, SimpleStringComparer>(
+                    new ArrayIndexable<TTable, string?>(sortedVector),
+                    sortedVector,
+                    cmp);
+            }
+            else
+            {
+                return BinarySearchByFlatBufferKey<ArrayIndexable<TTable, TKey>, TTable, TKey, NaiveComparer<TKey>>(
+                    new ArrayIndexable<TTable, TKey>(sortedVector),
+                    sortedVector,
+                    new NaiveComparer<TKey>(key));
+            }
         }
 
         /// <summary>
@@ -137,126 +165,74 @@ namespace FlatSharp
         public static TTable? BinarySearchByFlatBufferKey<TTable, TKey>(this IReadOnlyList<TTable> sortedVector, TKey key)
            where TTable : class
         {
-            return GenericBinarySearch(sortedVector.Count, i => sortedVector[i], key);
-        }
-
-        private static Func<T, int> GetComparerFunc<T>(T comparison)
-        {
-            if (typeof(T) == typeof(string))
+            if (key is string str)
             {
-                return (Func<T, int>)(object)GetStringComparerFunc(comparison as string);
+                using SimpleStringComparer cmp = new SimpleStringComparer(str);
+
+                return BinarySearchByFlatBufferKey<ReadOnlyListIndexable<TTable, string?>, TTable, string?, SimpleStringComparer>(
+                    new ReadOnlyListIndexable<TTable, string?>(sortedVector),
+                    sortedVector,
+                    cmp);
             }
             else
             {
-                IComparer<T> comparer = Comparer<T>.Default;
-                return left => comparer.Compare(left, comparison);
+                return BinarySearchByFlatBufferKey<ReadOnlyListIndexable<TTable, TKey>, TTable, TKey, NaiveComparer<TKey>>(
+                    new ReadOnlyListIndexable<TTable, TKey>(sortedVector),
+                    sortedVector,
+                    new NaiveComparer<TKey>(key));
             }
         }
 
-        private static Func<string?, int> GetStringComparerFunc(string? right)
+        private static TTable? BinarySearchByFlatBufferKey<TIndexable, TTable, TKey, TComparer>(
+            TIndexable indexable,
+            object realVector,
+            TComparer comparer)
+            where TIndexable : struct, IIndexable<TTable, TKey>
+            where TTable : class
+            where TComparer : struct, ISimpleComparer<TKey>
         {
-            if (right == null)
+            // String searches take two forms:
+            // For greedy deserialized buffers, we don't have the raw bytes, so we search inefficiently. This involves
+            // a string -> byte[] copy for each binary search jump.
+            // For lazy buffers (this first case), we can interrogate the underlying buffer directly.
+            if (typeof(TKey) == typeof(string) && 
+                realVector is IFlatBufferDeserializedVector vector && 
+                vector.ItemSize == sizeof(int) && 
+                comparer is SimpleStringComparer ssc)
             {
-                throw new ArgumentNullException("key");
+                ushort keyIndex = KeyLookup<TTable, string>.KeyAttribute.Index;
+
+                return GenericBinarySearch<RawIndexableVector<TTable>, TTable, ReadOnlyMemory<byte>, SimpleStringComparer>(
+                    new RawIndexableVector<TTable>(vector, keyIndex),
+                    ssc);
             }
-
-            byte[] rightData = SerializationHelpers.Encoding.GetBytes(right);
-            return left =>
+            else
             {
-                if (left == null)
-                {
-                    throw new InvalidOperationException("Sorted FlatBuffer vectors may not have null-valued keys.");
-                }
-
-                var enc = SerializationHelpers.Encoding;
-                int maxLength = enc.GetMaxByteCount(left.Length);
-
-#if NETSTANDARD2_0
-                return StringSpanComparer.Instance.Compare(true, enc.GetBytes(left), true, rightData);
-#else
-                byte[]? pooledArray = null;
-
-                Span<byte> leftSpan = maxLength < 1024 ? stackalloc byte[maxLength] : (pooledArray = ArrayPool<byte>.Shared.Rent(maxLength));
-                int leftLength = enc.GetBytes(left, leftSpan);
-                leftSpan = leftSpan.Slice(0, leftLength);
-
-                int comp = StringSpanComparer.Instance.Compare(true, leftSpan, true, rightData);
-
-                if (pooledArray is not null)
-                {
-                    ArrayPool<byte>.Shared.Return(pooledArray);
-                }
-
-                return comp;
-#endif
-            };
+                return GenericBinarySearch<TIndexable, TTable, TKey, TComparer>(indexable, comparer);
+            }
         }
 
-        /// <summary>
-        /// Cache TTable -> (TKey, Func{TTable, TKey})
-        /// </summary>
-        private static ConcurrentDictionary<Type, (Type, object)> KeyGetterCallbacks = new ConcurrentDictionary<Type, (Type, object)>();
-
-        /// <summary>
-        /// Reflects on TTable to return a delegate that accesses the flat buffer key property. The type of the property must precisely match TKey.
-        /// </summary>
-        internal static Func<TTable, TKey> GetOrCreateGetKeyCallback<TTable, TKey>()
-        {
-            if (!KeyGetterCallbacks.TryGetValue(typeof(TTable), out (Type, object) value))
-            {
-                var keys = typeof(TTable)
-                    .GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                    .Where(p => p.GetCustomAttribute<FlatBufferItemAttribute>()?.Key == true)
-                    .ToArray();
-
-                if (keys.Length == 0)
-                {
-                    throw new InvalidOperationException($"Table '{typeof(TTable).Name}' does not declare a property with the Key attribute set.");
-                }
-                else if (keys.Length > 1)
-                {
-                    throw new InvalidOperationException($"Table '{typeof(TTable).Name}' declares more than one property with the Key attribute set.");
-                }
-
-                PropertyInfo keyProperty = keys[0];
-                if (keyProperty.GetMethod is null)
-                {
-                    throw new InvalidOperationException($"Table '{typeof(TTable).Name}' declares key property '{keyProperty.Name}' without a get method.");
-                }
-
-                var keyGetterDelegate = (Func<TTable, TKey>)Delegate.CreateDelegate(typeof(Func<TTable, TKey>), keyProperty.GetMethod);
-                value = (keyProperty.PropertyType, keyGetterDelegate);
-                KeyGetterCallbacks[typeof(TTable)] = value;
-            }
-
-            if (value.Item2 is Func<TTable, TKey> callback)
-            {
-                return callback;
-            }
-
-            throw new InvalidOperationException($"Key type was: '{typeof(TKey)}', but the key for table '{typeof(TTable).Name}' is of type '{value.Item1.Name}'.");
-        }
-
-        private static TTable? GenericBinarySearch<TTable, TKey>(int count, Func<int, TTable> itemAtIndex, TKey key)
+        private static TTable? GenericBinarySearch<TVector, TTable, TKey, TComparer>(
+            TVector vector,
+            TComparer comparer)
+            where TVector : struct, IIndexable<TTable, TKey>
+            where TComparer : struct, ISimpleComparer<TKey>
             where TTable : class
         {
-            Func<TKey, int> compare = GetComparerFunc<TKey>(key);
-            Func<TTable, TKey> keyGetter = GetOrCreateGetKeyCallback<TTable, TKey>();
-
             int min = 0;
-            int max = count - 1;
+            int max = vector.Count - 1;
 
             while (min <= max)
             {
                 // (min + max) / 2, written to avoid overflows.
                 int mid = min + ((max - min) >> 1);
 
-                var midElement = itemAtIndex(mid);
-                int comparison = compare(keyGetter(midElement));
+                TKey midKey = vector.KeyAt(mid);
+                int comparison = comparer.CompareTo(midKey);
 
                 if (comparison == 0)
                 {
-                    return midElement;
+                    return vector[mid];
                 }
 
                 if (comparison < 0)
@@ -495,5 +471,236 @@ namespace FlatSharp
             }
         }
 
+        internal static class KeyLookup<TTable, TKey>
+        {
+            static KeyLookup()
+            {
+                var keys = typeof(TTable)
+                   .GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                   .Where(p => p.GetCustomAttribute<FlatBufferItemAttribute>()?.Key == true)
+                   .ToArray();
+
+                if (keys.Length == 0)
+                {
+                    throw new InvalidOperationException($"Table '{typeof(TTable).Name}' does not declare a property with the Key attribute set.");
+                }
+                else if (keys.Length > 1)
+                {
+                    throw new InvalidOperationException($"Table '{typeof(TTable).Name}' declares more than one property with the Key attribute set.");
+                }
+
+                PropertyInfo keyProperty = keys[0];
+                if (keyProperty.GetMethod is null)
+                {
+                    throw new InvalidOperationException($"Table '{typeof(TTable).Name}' declares key property '{keyProperty.Name}' without a get method.");
+                }
+
+                if (keyProperty.PropertyType != typeof(TKey))
+                {
+                    throw new InvalidOperationException($"Key type was: '{typeof(TKey)}', but the key for table '{typeof(TTable).Name}' is of type '{keyProperty.PropertyType}'.");
+                }
+
+                KeyGetter = (Func<TTable, TKey>)Delegate.CreateDelegate(typeof(Func<TTable, TKey>), keyProperty.GetMethod);
+                KeyAttribute = keyProperty.GetCustomAttribute<FlatBufferItemAttribute>()!;
+            }
+
+            public static Func<TTable, TKey> KeyGetter { get; }
+
+            public static FlatBufferItemAttribute KeyAttribute { get; }
+        }
+
+        private interface IIndexable<T, TKey>
+        {
+            int Count { get; }
+
+            T this[int index] { get; }
+
+            TKey KeyAt(int index);
+        }
+
+        private struct ArrayIndexable<T, TKey> : IIndexable<T, TKey>
+        {
+            private readonly T[] items;
+
+            public ArrayIndexable(T[] items)
+            {
+                this.items = items;
+            }
+
+            public TKey KeyAt(int index) => KeyLookup<T, TKey>.KeyGetter(this[index]);
+
+            public T this[int index] => this.items[index];
+
+            public int Count => this.items.Length;
+        }
+
+        private struct ListIndexable<T, TKey> : IIndexable<T, TKey>
+        {
+            private readonly IList<T> items;
+
+            public ListIndexable(IList<T> items)
+            {
+                this.items = items;
+            }
+
+            public T this[int index] => this.items[index];
+
+            public TKey KeyAt(int index) => KeyLookup<T, TKey>.KeyGetter(this[index]);
+
+            public int Count => this.items.Count;
+        }
+
+        private struct ReadOnlyListIndexable<T, TKey> : IIndexable<T, TKey>
+        {
+            private readonly IReadOnlyList<T> items;
+
+            public ReadOnlyListIndexable(IReadOnlyList<T> items)
+            {
+                this.items = items;
+            }
+
+            public T this[int index] => this.items[index];
+
+            public TKey KeyAt(int index) => KeyLookup<T, TKey>.KeyGetter(this[index]);
+
+            public int Count => this.items.Count;
+        }
+
+        private struct RawIndexableVector<TTable> : IIndexable<TTable, ReadOnlyMemory<byte>>
+        {
+            private readonly IFlatBufferDeserializedVector vector;
+
+            // Save the input buffer here. Since input buffers are usually structs, we can only box it once if we save it here. Otherwise,
+            // we'll have to box each time we access it, which causes lots of allocations.
+            private readonly IInputBuffer inputBuffer;
+            private readonly ushort keyIndex;
+
+            public RawIndexableVector(IFlatBufferDeserializedVector vector, ushort keyIndex)
+            {
+                this.vector = vector;
+                this.inputBuffer = vector.InputBuffer;
+                this.keyIndex = keyIndex;
+            }
+
+            public TTable this[int index] => (TTable)this.vector.ItemAt(index);
+
+            public ReadOnlyMemory<byte> KeyAt(int index)
+            {
+                IFlatBufferDeserializedVector vector = this.vector;
+                IInputBuffer buffer = this.inputBuffer;
+
+                // Read uoffset.
+                int offset = vector.OffsetOf(index);
+
+                // Increment uoffset to move to start of table.
+                offset += buffer.ReadUOffset(offset);
+
+                // Follow soffset to start of vtable.
+                int vtableStart = offset - buffer.ReadInt(offset);
+
+                // Offset within the table.
+                int tableOffset = buffer.ReadUShort(vtableStart + 4 + (2 * this.keyIndex));
+
+                if (tableOffset == 0)
+                {
+                    throw new InvalidOperationException("Sorted FlatBuffer vectors may not have null-valued keys.");
+                }
+
+                offset += tableOffset;
+
+                // Start of the string.
+                offset += buffer.ReadUOffset(offset);
+
+                // Length of the string.
+                int stringLength = (int)buffer.ReadUInt(offset);
+
+                return buffer.GetReadOnlyByteMemory(offset + sizeof(int), stringLength);
+            }
+
+            public int Count => this.vector.Count;
+        }
+
+        private interface ISimpleComparer<T> : IDisposable
+        {
+            int CompareTo(T right);
+        }
+
+        private struct NaiveComparer<T> : ISimpleComparer<T>
+        {
+            private readonly T right;
+
+            public NaiveComparer(T right)
+            {
+                // Enforce generic constraints we can't express otherwise.
+                FlatSharpInternal.Assert(typeof(T) != typeof(string), "Naive comparer doesn't work for strings");
+                FlatSharpInternal.Assert(typeof(T).IsValueType, "Naive comparer only works for value types");
+
+                this.right = right;
+            }
+
+            public int CompareTo(T left)
+            {
+                return Comparer<T>.Default.Compare(left, this.right);
+            }
+
+            public void Dispose()
+            {
+            }
+        }
+
+        private struct SimpleStringComparer : ISimpleComparer<string?>, ISimpleComparer<ReadOnlyMemory<byte>>
+        {
+            private readonly byte[] pooledArray;
+            private readonly int length;
+
+            public SimpleStringComparer(string right)
+            {
+                var enc = SerializationHelpers.Encoding;
+                int maxLength = enc.GetMaxByteCount(right.Length);
+
+                this.pooledArray = ArrayPool<byte>.Shared.Rent(maxLength);
+                this.length = enc.GetBytes(right, 0, right.Length, this.pooledArray, 0);
+            }
+
+            public int CompareTo(string? left)
+            {
+                if (left is null)
+                {
+                    throw new InvalidOperationException("Sorted FlatBuffer vectors may not have null-valued keys.");
+                }
+
+                var enc = SerializationHelpers.Encoding;
+
+#if NETSTANDARD2_0
+                return StringSpanComparer.Instance.Compare(true, enc.GetBytes(left), true, this.pooledArray.AsSpan().Slice(0, this.length));
+#else
+                int maxLength = enc.GetMaxByteCount(left.Length);
+                byte[]? temp = null;
+
+                Span<byte> leftSpan = maxLength < 1024 ? stackalloc byte[maxLength] : (temp = ArrayPool<byte>.Shared.Rent(maxLength));
+                int leftLength = enc.GetBytes(left, leftSpan);
+                leftSpan = leftSpan.Slice(0, leftLength);
+
+                int comp = StringSpanComparer.Instance.Compare(true, leftSpan, true, this.pooledArray.AsSpan().Slice(0, this.length));
+
+                if (temp is not null)
+                {
+                    ArrayPool<byte>.Shared.Return(temp);
+                }
+
+                return comp;
+#endif
+            }
+
+            public int CompareTo(ReadOnlyMemory<byte> left)
+            {
+                return StringSpanComparer.Instance.Compare(true, left.Span, true, this.pooledArray.AsSpan().Slice(0, this.length));
+            }
+
+            public void Dispose()
+            {
+                ArrayPool<byte>.Shared.Return(this.pooledArray);
+            }
+        }
     }
 }
