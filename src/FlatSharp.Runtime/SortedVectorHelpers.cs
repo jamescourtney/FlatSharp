@@ -436,11 +436,6 @@ namespace FlatSharp
         {
             checked
             {
-                if (leftIndex == rightIndex)
-                {
-                    return;
-                }
-
                 var temp = keyOffsets[leftIndex];
                 keyOffsets[leftIndex] = keyOffsets[rightIndex];
                 keyOffsets[rightIndex] = temp;
@@ -478,7 +473,7 @@ namespace FlatSharp
 
                 // Absolute offset of the field within the table.
                 int fieldOffset = tableOffset + ScalarSpanReader.ReadUShort(buffer.Slice(vtableOffset + 2 * (2 + vtableIndex)));
-                if (inlineItemSize != null)
+                if (inlineItemSize is not null)
                 {
                     return (fieldOffset, inlineItemSize.Value, tableOffset);
                 }
@@ -495,6 +490,9 @@ namespace FlatSharp
             }
         }
 
+        /// <summary>
+        /// Holds lookup information for keys. Faster than dictionary.
+        /// </summary>
         internal static class KeyLookup<TTable, TKey>
         {
             static KeyLookup()
@@ -533,6 +531,9 @@ namespace FlatSharp
             public static FlatBufferItemAttribute KeyAttribute { get; }
         }
 
+        /// <summary>
+        /// Helper interface to express something with an indexer.
+        /// </summary>
         private interface IIndexable<T, TKey>
         {
             int Count { get; }
@@ -694,18 +695,21 @@ namespace FlatSharp
                 }
 
                 var enc = SerializationHelpers.Encoding;
+                int comp;
+                byte[]? temp = null;
+                int maxLength = enc.GetMaxByteCount(left.Length);
 
 #if NETSTANDARD2_0
-                return StringSpanComparer.Instance.Compare(true, enc.GetBytes(left), true, this.pooledArray.AsSpan().Slice(0, this.length));
+                temp = ArrayPool<byte>.Shared.Rent(maxLength);
+                int tempLength = enc.GetBytes(left, 0, left.Length, temp, 0);
+                Span<byte> leftSpan = temp.AsSpan().Slice(0, tempLength);
 #else
-                int maxLength = enc.GetMaxByteCount(left.Length);
-                byte[]? temp = null;
-
                 Span<byte> leftSpan = maxLength < 1024 ? stackalloc byte[maxLength] : (temp = ArrayPool<byte>.Shared.Rent(maxLength));
                 int leftLength = enc.GetBytes(left, leftSpan);
                 leftSpan = leftSpan.Slice(0, leftLength);
+#endif
 
-                int comp = StringSpanComparer.Instance.Compare(true, leftSpan, true, this.pooledArray.AsSpan().Slice(0, this.length));
+                comp = StringSpanComparer.Instance.Compare(true, leftSpan, true, this.pooledArray.AsSpan().Slice(0, this.length));
 
                 if (temp is not null)
                 {
@@ -713,7 +717,6 @@ namespace FlatSharp
                 }
 
                 return comp;
-#endif
             }
 
             public int CompareTo(ReadOnlyMemory<byte> left)

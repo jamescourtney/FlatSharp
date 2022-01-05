@@ -555,7 +555,8 @@ namespace FlatSharpTests
                     string s = "";
                     for (int i = 0; i < length; ++i)
                     {
-                        s += (char)rng.Next();
+                        // pick unicode characters in the basic multilingual plane.
+                        s += (char)rng.Next(0x0, 0xD7FF);
                     }
 
                     return s;
@@ -732,7 +733,7 @@ namespace FlatSharpTests
             IComparer<TKey> comparer)
         {
             Random rng = new Random();
-            foreach (int length in Enumerable.Range(0, 20).Concat(Enumerable.Range(1, 25).Select(x => x * 25)))
+            foreach (int length in Enumerable.Range(0, 15).Concat(Enumerable.Range(1, 5).Select(x => x * 100)))
             {
                 TableWithKey<TKey>[] values = new TableWithKey<TKey>[length];
                 for (int i = 0; i < values.Length; ++i)
@@ -756,22 +757,59 @@ namespace FlatSharpTests
             byte[] data = new byte[1024 * 1024];
             FlatBufferSerializer.Default.Serialize(root, data);
 
-            var parsed = FlatBufferSerializer.Default.Parse<RootTableSorted<TableWithKey<TKey>[]>>(data);
-            Assert.Equal(parsed.Vector.Length, root.Vector.Length);
-
-            if (parsed.Vector.Length > 0)
+            void RunTest<TVector>(
+                FlatBufferDeserializationOption option,
+                Func<TVector, int> getLength,
+                Func<TVector, int, TableWithKey<TKey>> indexer,
+                Func<TVector, TKey, TableWithKey<TKey>?> find)
             {
-                TableWithKey<TKey> previous = parsed.Vector[0];
-                for (int i = 0; i < parsed.Vector.Length; ++i)
+                var serializer = new FlatBufferSerializer(option);
+                var parsed = serializer.Parse<RootTableSorted<TVector>>(data);
+                var vector = parsed.Vector;
+                int length = getLength(vector);
+
+                Assert.Equal(root.Vector.Length, length);
+
+                if (length > 0)
                 {
-                    Assert.True(comparer.Compare(previous.Key, parsed.Vector[i].Key) <= 0);
-                    previous = parsed.Vector[i];
+                    TableWithKey<TKey> previous = indexer(vector, 0);
+                    for (int i = 0; i < length; ++i)
+                    {
+                        var item = indexer(vector, i);
+                        Assert.True(comparer.Compare(previous.Key, item.Key) <= 0);
+                        previous = item;
+                    }
+
+                    foreach (var originalItem in root.Vector)
+                    {
+                        var item = find(vector, originalItem.Key);
+                        Assert.NotNull(item);
+
+                        if (originalItem.Key.ToString() != item.Key.ToString())
+                        {
+                        }
+
+                        Assert.Equal(originalItem.Key.ToString(), item.Key.ToString());
+                    }
+                }
+            }
+
+            HashSet<FlatBufferDeserializationOption> usedOptions = new();
+            foreach (FlatBufferDeserializationOption option in Enum.GetValues(typeof(FlatBufferDeserializationOption)))
+            {
+                if (!usedOptions.Add(option))
+                {
+                    continue;
                 }
 
-                foreach (var originalItem in root.Vector)
+                if ( option == FlatBufferDeserializationOption.Greedy
+                  || option == FlatBufferDeserializationOption.GreedyMutable)
                 {
-                    Assert.NotNull(parsed.Vector.BinarySearchByFlatBufferKey(originalItem.Key));
+                    RunTest<TableWithKey<TKey>[]>(option, x => x.Length, (x, i) => x[i], (x, k) => x.BinarySearchByFlatBufferKey(k));
                 }
+
+                RunTest<IList<TableWithKey<TKey>>>(option, x => x.Count, (x, i) => x[i], (x, k) => x.BinarySearchByFlatBufferKey(k));
+                RunTest<IReadOnlyList<TableWithKey<TKey>>>(option, x => x.Count, (x, i) => x[i], (x, k) => x.BinarySearchByFlatBufferKey(k));
             }
         }
 
