@@ -584,7 +584,7 @@ namespace FlatSharpTests
             public void Test() => this.SortedVectorTest<string>(
                 rng =>
                 {
-                    int length = rng.Next(0, 30);
+                    int length = rng.Next(0, 2048);
                     byte[] data = new byte[length];
                     rng.NextBytes(data);
                     return Convert.ToBase64String(data);

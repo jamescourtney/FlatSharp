@@ -414,21 +414,18 @@ namespace FlatSharp
             int rightIndex,
             Span<(int, int, int)> keyOffsets) where TSpanComparer : ISpanComparer
         {
-            if (leftIndex != rightIndex)
+            (int leftOffset, int leftLength, _) = keyOffsets[leftIndex];
+            (int rightOffset, int rightLength, _) = keyOffsets[rightIndex];
+
+            bool leftExists = leftOffset != 0;
+            bool rightExists = rightOffset != 0;
+
+            var leftSpan = vector.Slice(leftOffset, leftLength);
+            var rightSpan = vector.Slice(rightOffset, rightLength);
+
+            if (comparer.Compare(leftExists, leftSpan, rightExists, rightSpan) > 0)
             {
-                (int leftOffset, int leftLength, _) = keyOffsets[leftIndex];
-                (int rightOffset, int rightLength, _) = keyOffsets[rightIndex];
-
-                bool leftExists = leftOffset != 0;
-                bool rightExists = rightOffset != 0;
-
-                var leftSpan = vector.Slice(leftOffset, leftLength);
-                var rightSpan = vector.Slice(rightOffset, rightLength);
-
-                if (comparer.Compare(leftExists, leftSpan, rightExists, rightSpan) > 0)
-                {
-                    SwapVectorPositions(leftIndex, rightIndex, keyOffsets);
-                }
+                SwapVectorPositions(leftIndex, rightIndex, keyOffsets);
             }
         }
 
