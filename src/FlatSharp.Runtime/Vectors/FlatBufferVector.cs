@@ -66,11 +66,7 @@ namespace FlatSharp
 
         int IFlatBufferDeserializedVector.OffsetOf(int index)
         {
-            if ((uint)index >= this.Count)
-            {
-                throw new IndexOutOfRangeException();
-            }
-
+            this.CheckIndex(index);
             return checked(this.offset + (this.itemSize * index));
         }
 
