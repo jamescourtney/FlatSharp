@@ -36,6 +36,7 @@ namespace FlatSharp
     using System.Buffers.Binary;
     using System.Collections.Generic;
     using System.ComponentModel;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Reflection;
     using FlatSharp.Attributes;
@@ -115,10 +116,7 @@ namespace FlatSharp
         public static TTable? BinarySearchByFlatBufferKey<TTable, TKey>(this IList<TTable> sortedVector, TKey key)
             where TTable : class
         {
-            if (key is null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
+            CheckKeyNotNull(key);
 
             if (key is string str)
             {
@@ -145,10 +143,7 @@ namespace FlatSharp
         public static TTable? BinarySearchByFlatBufferKey<TTable, TKey>(this TTable[] sortedVector, TKey key)
             where TTable : class
         {
-            if (key is null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
+            CheckKeyNotNull(key);
 
             if (key is string str)
             {
@@ -175,10 +170,7 @@ namespace FlatSharp
         public static TTable? BinarySearchByFlatBufferKey<TTable, TKey>(this IReadOnlyList<TTable> sortedVector, TKey key)
            where TTable : class
         {
-            if (key is null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
+            CheckKeyNotNull(key);
 
             if (key is string str)
             {
@@ -195,6 +187,14 @@ namespace FlatSharp
                     new ReadOnlyListIndexable<TTable, TKey>(sortedVector),
                     sortedVector,
                     new NaiveComparer<TKey>(key));
+            }
+        }
+
+        private static void CheckKeyNotNull<TKey>(TKey key)
+        {
+            if (key is null)
+            {
+                throw new ArgumentNullException(nameof(key));
             }
         }
 
@@ -668,8 +668,10 @@ namespace FlatSharp
                 return Comparer<T>.Default.Compare(left, this.right);
             }
 
+            [ExcludeFromCodeCoverage]
             public void Dispose()
             {
+                // No-op.
             }
         }
 
