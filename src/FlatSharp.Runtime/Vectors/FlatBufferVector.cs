@@ -21,7 +21,7 @@ namespace FlatSharp
     /// <summary>
     /// A base flat buffer vector for non-unions.
     /// </summary>
-    public abstract class FlatBufferVector<T, TInputBuffer> : FlatBufferVectorBase<T, TInputBuffer>
+    public abstract class FlatBufferVector<T, TInputBuffer> : FlatBufferVectorBase<T, TInputBuffer>, IFlatBufferDeserializedVector
         where TInputBuffer : IInputBuffer
     {
         private readonly int offset;
@@ -60,9 +60,21 @@ namespace FlatSharp
             }
         }
 
+        IInputBuffer IFlatBufferDeserializedVector.InputBuffer => this.memory;
+
+        int IFlatBufferDeserializedVector.ItemSize => this.itemSize;
+
+        int IFlatBufferDeserializedVector.OffsetOf(int index)
+        {
+            this.CheckIndex(index);
+            return checked(this.offset + (this.itemSize * index));
+        }
+
+        object IFlatBufferDeserializedVector.ItemAt(int index) => this[index]!;
+
         protected override void ParseItem(int index, out T item)
         {
-            int offset = checked(this.offset + (itemSize * index));
+            int offset = checked(this.offset + (this.itemSize * index));
             this.ParseItem(this.memory, offset, this.fieldContext, out item);
         }
 

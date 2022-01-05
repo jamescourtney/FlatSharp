@@ -13,24 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
+using FlatSharp;
+using FlatSharp.Attributes;
+using Xunit;
 
-namespace FlatSharpTests
+namespace FlatSharpTests;
+
+/// <summary>
+/// Binary format testing for vector serialization.
+/// </summary>
+
+public class VectorSerializationTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.IO;
-    using System.Linq;
-    using System.Runtime.InteropServices;
-    using FlatSharp;
-    using FlatSharp.Attributes;
-    using Xunit;
+    private static readonly Dictionary<FlatBufferDeserializationOption, FlatBufferSerializer> SerializerLookup;
 
-    /// <summary>
-    /// Binary format testing for vector serialization.
-    /// </summary>
-    
-    public class VectorSerializationTests
+    static VectorSerializationTests()
+    {
+        SerializerLookup = new();
+        foreach (FlatBufferDeserializationOption option in Enum.GetValues(typeof(FlatBufferDeserializationOption)))
+        {
+            SerializerLookup[option] = new FlatBufferSerializer(option);
+        }
+    }
+
+    public class SimpleTests
     {
         [Fact]
         public void EmptyString()
@@ -480,108 +493,198 @@ namespace FlatSharpTests
         }
 
         [Fact]
-        public void SortedVector_StringKey_Null()
+        public void SortedVector_BinarySearch_ErrorCases()
         {
-            var root = new RootTableSorted<IList<TableWithKey<string>>>();
-
-            root.Vector = new List<TableWithKey<string>>
+            IList<TableWithKey<string>> testList = new List<TableWithKey<string>>
             {
                 new TableWithKey<string> { Key = null, Value = "0" },
                 new TableWithKey<string> { Key = "notnull", Value = "3" },
                 new TableWithKey<string> { Key = "alsonotnull", Value = "3" },
             };
 
+            var root = new RootTable<IList<TableWithKey<string>>>()
+            {
+                Vector = testList
+            };
+
             byte[] data = new byte[1024];
-            Assert.Throws<InvalidOperationException>(() => FlatBufferSerializer.Default.Serialize(root, data));
-            Assert.Throws<InvalidOperationException>(() => root.Vector.BinarySearchByFlatBufferKey("AAA"));
-            Assert.Throws<InvalidOperationException>(() => root.Vector.BinarySearchByFlatBufferKey(3));
-            Assert.Throws<ArgumentNullException>(() => root.Vector.BinarySearchByFlatBufferKey((string)null));
-        }
 
-        [Fact]
-        public void SortedVector_Bool() => this.SortedVectorTest<bool>(rng => rng.Next() % 2 == 0, Comparer<bool>.Default);
+            // Serialize succeeds here because the "root" is unsorted.
+            FlatBufferSerializer.Default.Serialize(root, data);
 
-        [Fact]
-        public void SortedVector_Byte() => this.SortedVectorStructTest<byte>();
-
-        [Fact]
-        public void SortedVector_SByte() => this.SortedVectorStructTest<sbyte>();
-
-        [Fact]
-        public void SortedVector_UShort() => this.SortedVectorStructTest<ushort>();
-
-        [Fact]
-        public void SortedVector_Short() => this.SortedVectorStructTest<short>();
-
-        [Fact]
-        public void SortedVector_Uint() => this.SortedVectorStructTest<uint>();
-
-        [Fact]
-        public void SortedVector_Int() => this.SortedVectorStructTest<int>();
-
-        [Fact]
-        public void SortedVector_Ulong() => this.SortedVectorStructTest<ulong>();
-
-        [Fact]
-        public void SortedVector_Long() => this.SortedVectorStructTest<long>();
-
-        [Fact]
-        public void SortedVector_Double() => this.SortedVectorStructTest<double>();
-
-        [Fact]
-        public void SortedVector_Float() => this.SortedVectorStructTest<float>();
-
-        [Fact]
-        public void SortedVector_String_Base64()
-        {
-            this.SortedVectorTest<string>(
-                rng =>
+            // Fail to serialize sorted vector due to null key.
+            // Fail to search through greedy sorted vector due to null key.
+            {
+                var rootSorted = new RootTableSorted<IList<TableWithKey<string>>>()
                 {
-                    int length = rng.Next(0, 30);
-                    byte[] data = new byte[length];
-                    rng.NextBytes(data);
-                    return Convert.ToBase64String(data);
-                },
-                new Utf8StringComparer());
-        }
+                    Vector = testList
+                };
 
-        [Fact]
-        public void SortedVector_String_RandomChars()
-        {
-            this.SortedVectorTest<string>(
-                rng =>
+                var parsed_greedy = FlatBufferSerializer.Default.Parse<RootTableSorted<TableWithKey<string>[]>>(data);
+                Assert.Throws<InvalidOperationException>(() => FlatBufferSerializer.Default.Serialize(rootSorted, new byte[1024]));
+                Assert.Throws<InvalidOperationException>(() => parsed_greedy.Vector.BinarySearchByFlatBufferKey("AAA"));
+                Assert.Throws<InvalidOperationException>(() => parsed_greedy.Vector.BinarySearchByFlatBufferKey(3));
+                Assert.Throws<ArgumentNullException>(() => parsed_greedy.Vector.BinarySearchByFlatBufferKey((string)null));
+            }
+
+            // Fail to binary search through lazy sorted vector with null key.
+            {
+                // Serialize succeeds here because the "root" is unsorted.
+                FlatBufferSerializer.Default.Serialize(root, data);
+                var lazyCopy = SerializerLookup[FlatBufferDeserializationOption.Lazy].Parse<RootTable<IList<TableWithKey<string>>>>(data);
+
+                Assert.Throws<InvalidOperationException>(() => lazyCopy.Vector.BinarySearchByFlatBufferKey("AAA"));
+                Assert.Throws<InvalidOperationException>(() => lazyCopy.Vector.BinarySearchByFlatBufferKey(3));
+                Assert.Throws<ArgumentNullException>(() => lazyCopy.Vector.BinarySearchByFlatBufferKey((string)null));
+            }
+
+            // Two keys / one key errors
+            {
+                // Can't have more than one key on something we serialize as that trips up type model validation.
+                IReadOnlyList<TableWithTwoKeys<string>> list = new List<TableWithTwoKeys<string>>
                 {
-                    int length = rng.Next(0, 30);
-                    string s = "";
-                    for (int i = 0; i < length; ++i)
-                    {
-                        s += (char)rng.Next();
-                    }
+                    new TableWithTwoKeys<string>() { Key = "a", Value = "a" },
+                    new TableWithTwoKeys<string>() { Key = "b", Value = "b" },
+                };
 
-                    return s;
-                },
-                new Utf8StringComparer());
+                var ex = Assert.Throws<InvalidOperationException>(() => list.BinarySearchByFlatBufferKey("foo"));
+            }
+            {
+                var parsed = SerializerLookup[FlatBufferDeserializationOption.Lazy].Parse<RootTable<IReadOnlyList<TableWithNoKey<string>>>>(data);
+                var ex = Assert.Throws<InvalidOperationException>(() => parsed.Vector.BinarySearchByFlatBufferKey("foo"));
+            }
         }
+    }
 
+    public class SortedVector_Bool : VectorSerializationTests
+    {
         [Fact]
-        public void SortedVector_String_Empty()
+        public void Test() => this.SortedVectorTest<bool>(rng => rng.Next() % 2 == 0, Comparer<bool>.Default);
+    }
+
+    public class SortedVector_Byte : VectorSerializationTests
+    {
+        [Fact]
+        public void Test() => this.SortedVectorStructTest<byte>();
+    }
+
+    public class SortedVector_SByte : VectorSerializationTests
+    {
+        [Fact]
+        public void Test() => this.SortedVectorStructTest<sbyte>();
+    }
+
+    public class SortedVector_UShort : VectorSerializationTests
+    {
+        [Fact]
+        public void Test() => this.SortedVectorStructTest<ushort>();
+    }
+
+    public class SortedVector_Short : VectorSerializationTests
+    {
+        [Fact]
+        public void Test() => this.SortedVectorStructTest<short>();
+    }
+
+    public class SortedVector_Uint : VectorSerializationTests
+    {
+        [Fact]
+        public void Test() => this.SortedVectorStructTest<uint>();
+    }
+
+    public class SortedVector_Int : VectorSerializationTests
+    {
+        [Fact]
+        public void Test() => this.SortedVectorStructTest<int>();
+    }
+
+    public class SortedVector_Ulong : VectorSerializationTests
+    {
+        [Fact]
+        public void Test() => this.SortedVectorStructTest<ulong>();
+    }
+
+    public class SortedVector_Long : VectorSerializationTests
+    {
+        [Fact]
+        public void Test() => this.SortedVectorStructTest<long>();
+    }
+
+    public class SortedVector_Double : VectorSerializationTests
+    {
+        [Fact]
+        public void Test() => this.SortedVectorStructTest<double>();
+    }
+
+    public class SortedVector_Float : VectorSerializationTests
+    {
+        [Fact]
+        public void Test() => this.SortedVectorStructTest<float>();
+    }
+
+    public class SortedVector_String_Base64 : VectorSerializationTests
+    {
+        [Fact]
+        public void Test() => this.SortedVectorTest<string>(
+            rng =>
+            {
+                int length = rng.Next(0, 2048);
+                byte[] data = new byte[length];
+                rng.NextBytes(data);
+                return Convert.ToBase64String(data);
+            },
+            new Utf8StringComparer());
+    }
+
+    public class SortedVector_String_RandomChars : VectorSerializationTests
+    {
+        [Fact]
+        public void Test()
         {
             int i = 0;
+            StringBuilder s = new StringBuilder();
+
             this.SortedVectorTest<string>(
                 rng =>
                 {
-                    string s = "";
+                    s.Clear();
                     for (int j = 0; j < Math.Min(i, 100); ++j)
                     {
-                        s += "a";
+                        s.Append("a");
                     }
 
                     ++i;
-                    return s;
+                    return s.ToString();
                 },
                 new Utf8StringComparer());
         }
+    }
 
+    public class SortedVector_String_Empty : VectorSerializationTests
+    {
+        [Fact]
+        public void Test()
+        {
+            StringBuilder sb = new();
+            this.SortedVectorTest<string>(
+                rng =>
+                {
+                    sb.Clear();
+                    int length = rng.Next(0, 2048);
+                    for (int i = 0; i < length; ++i)
+                    {
+                        // pick unicode characters in the basic multilingual plane.
+                        sb.Append((char)rng.Next(0x0, 0xD7FF));
+                    }
+
+                    return sb.ToString();
+                },
+                new Utf8StringComparer());
+        }
+    }
+
+    public class IndexedVectorTests
+    {
         [Fact]
         public void IndexedVector_Simple()
         {
@@ -713,68 +816,102 @@ namespace FlatSharpTests
                 }
             }
         }
+    }
 
-        private void SortedVectorStructTest<TKey>() where TKey : struct
-        {
-            this.SortedVectorTest(
-                rng =>
-                {
-                    byte[] data = new byte[8];
-                    rng.NextBytes(data);
-                    TKey value = MemoryMarshal.Cast<byte, TKey>(data.AsSpan())[0];
-                    return value;
-                },
-                Comparer<TKey>.Default);
-        }
-
-        private void SortedVectorTest<TKey>(
-            Func<Random, TKey> createValue,
-            IComparer<TKey> comparer)
-        {
-            Random rng = new Random();
-            foreach (int length in Enumerable.Range(0, 20).Concat(Enumerable.Range(1, 25).Select(x => x * 25)))
+    protected void SortedVectorStructTest<TKey>() where TKey : struct
+    {
+        this.SortedVectorTest(
+            rng =>
             {
-                TableWithKey<TKey>[] values = new TableWithKey<TKey>[length];
-                for (int i = 0; i < values.Length; ++i)
-                {
-                    values[i] = new TableWithKey<TKey> { Key = createValue(rng), Value = i.ToString() };
-                }
+                byte[] data = new byte[8];
+                rng.NextBytes(data);
+                TKey value = MemoryMarshal.Cast<byte, TKey>(data.AsSpan())[0];
+                return value;
+            },
+            Comparer<TKey>.Default);
+    }
 
-                this.SortedVectorTest(values, comparer);
+    protected void SortedVectorTest<TKey>(
+        Func<Random, TKey> createValue,
+        IComparer<TKey> comparer)
+    {
+        Random rng = new Random();
+        foreach (int length in Enumerable.Range(0, 20).Concat(Enumerable.Range(1, 5).Select(x => x * 100)))
+        {
+            TableWithKey<TKey>[] values = new TableWithKey<TKey>[length];
+            for (int i = 0; i < values.Length; ++i)
+            {
+                values[i] = new TableWithKey<TKey> { Key = createValue(rng), Value = i.ToString() };
             }
+
+            this.SortedVectorTest(values, comparer);
         }
+    }
 
-        private void SortedVectorTest<TKey>(
-            TableWithKey<TKey>[] values,
-            IComparer<TKey> comparer)
+    protected void SortedVectorTest<TKey>(
+        TableWithKey<TKey>[] values,
+        IComparer<TKey> comparer)
+    {
+        RootTableSorted<TableWithKey<TKey>[]> root = new RootTableSorted<TableWithKey<TKey>[]>
         {
-            RootTableSorted<TableWithKey<TKey>[]> root = new RootTableSorted<TableWithKey<TKey>[]>
+            Vector = values
+        };
+
+        byte[] data = new byte[FlatBufferSerializer.Default.GetMaxSize(root)];
+        FlatBufferSerializer.Default.Serialize(root, data);
+
+        void RunTest<TVector>(
+            FlatBufferSerializer serializer,
+            Func<TVector, int> getLength,
+            Func<TVector, int, TableWithKey<TKey>> indexer,
+            Func<TVector, TKey, TableWithKey<TKey>?> find)
+        {
+            var parsed = serializer.Parse<RootTableSorted<TVector>>(data);
+            var vector = parsed.Vector;
+            int length = getLength(vector);
+
+            Assert.Equal(root.Vector.Length, length);
+
+            if (length > 0)
             {
-                Vector = values
-            };
-
-            byte[] data = new byte[1024 * 1024];
-            FlatBufferSerializer.Default.Serialize(root, data);
-
-            var parsed = FlatBufferSerializer.Default.Parse<RootTableSorted<TableWithKey<TKey>[]>>(data);
-            Assert.Equal(parsed.Vector.Length, root.Vector.Length);
-
-            if (parsed.Vector.Length > 0)
-            {
-                TableWithKey<TKey> previous = parsed.Vector[0];
-                for (int i = 0; i < parsed.Vector.Length; ++i)
+                TableWithKey<TKey> previous = indexer(vector, 0);
+                for (int i = 0; i < length; ++i)
                 {
-                    Assert.True(comparer.Compare(previous.Key, parsed.Vector[i].Key) <= 0);
-                    previous = parsed.Vector[i];
+                    var item = indexer(vector, i);
+                    Assert.True(comparer.Compare(previous.Key, item.Key) <= 0);
+                    previous = item;
                 }
 
                 foreach (var originalItem in root.Vector)
                 {
-                    Assert.NotNull(parsed.Vector.BinarySearchByFlatBufferKey(originalItem.Key));
+                    var item = find(vector, originalItem.Key);
+                    Assert.NotNull(item);
+
+                    if (originalItem.Key.ToString() != item.Key.ToString())
+                    {
+                    }
+
+                    Assert.Equal(originalItem.Key.ToString(), item.Key.ToString());
                 }
             }
         }
 
+        foreach (var kvp in SerializerLookup)
+        {
+            // Arrays only supported in greedy mode.
+            if (kvp.Key == FlatBufferDeserializationOption.Greedy
+             || kvp.Key == FlatBufferDeserializationOption.GreedyMutable)
+            {
+                RunTest<TableWithKey<TKey>[]>(kvp.Value, x => x.Length, (x, i) => x[i], (x, k) => x.BinarySearchByFlatBufferKey(k));
+            }
+
+            RunTest<IList<TableWithKey<TKey>>>(kvp.Value, x => x.Count, (x, i) => x[i], (x, k) => x.BinarySearchByFlatBufferKey(k));
+            RunTest<IReadOnlyList<TableWithKey<TKey>>>(kvp.Value, x => x.Count, (x, i) => x[i], (x, k) => x.BinarySearchByFlatBufferKey(k));
+        }
+    }
+
+    public class VectorOfUnionTests
+    {
         [Fact]
         public void VectorOfUnion_List() => this.VectorOfUnionTest<RootTable<IList<FlatBufferUnion<string, Struct, TableWithKey<int>>>>>(
             (l, v) => v.Vector = l.ToList());
@@ -833,64 +970,84 @@ namespace FlatSharpTests
 
             Assert.True(data.SequenceEqual(expectedData));
         }
+    }
 
-        [FlatBufferTable]
-        public class RootTable<TVector>
-        {
-            [FlatBufferItem(0)]
-            public virtual TVector? Vector { get; set; }
-        }
+    [FlatBufferTable]
+    public class RootTable<TVector>
+    {
+        [FlatBufferItem(0)]
+        public virtual TVector? Vector { get; set; }
+    }
 
-        [FlatBufferTable]
-        public class RootTableSorted<TVector>
-        {
-            [FlatBufferItem(0, SortedVector = true)]
-            public virtual TVector? Vector { get; set; }
-        }
+    [FlatBufferTable]
+    public class RootTableSorted<TVector>
+    {
+        [FlatBufferItem(0, SortedVector = true)]
+        public virtual TVector? Vector { get; set; }
+    }
 
-        [FlatBufferTable]
-        public class TableWithKey<TKey>
-        {
-            [FlatBufferItem(0)]
-            public virtual string? Value { get; set; }
+    [FlatBufferTable]
+    public class TableWithKey<TKey>
+    {
+        [FlatBufferItem(0)]
+        public virtual string? Value { get; set; }
 
-            [FlatBufferItem(1, Key = true)]
-            public virtual TKey? Key { get; set; }
-        }
+        [FlatBufferItem(1, Key = true)]
+        public virtual TKey? Key { get; set; }
+    }
 
-        [FlatBufferTable]
-        public class RootTable2<TVector>
-        {
-            [FlatBufferItem(0, DefaultValue = (byte)201)]
-            public virtual byte AlignmentImp { get; set; }
+    [FlatBufferTable]
+    public class TableWithNoKey<TKey>
+    {
+        [FlatBufferItem(0)]
+        public virtual string? Value { get; set; }
 
-            [FlatBufferItem(1)]
-            public virtual TVector? Vector { get; set; }
-        }
+        [FlatBufferItem(1)]
+        public virtual TKey? Key { get; set; }
+    }
 
-        [FlatBufferStruct]
-        public class Struct
-        {
-            [FlatBufferItem(0)]
-            public virtual int Integer { get; set; }
-        }
+    [FlatBufferTable]
+    public class TableWithTwoKeys<TKey>
+    {
+        [FlatBufferItem(0, Key = true)]
+        public virtual string? Value { get; set; }
 
-        [FlatBufferStruct]
-        public class NineByteStruct
-        {
-            [FlatBufferItem(0)]
-            public virtual long Long { get; set; }
+        [FlatBufferItem(1, Key = true)]
+        public virtual TKey? Key { get; set; }
+    }
 
-            [FlatBufferItem(1)]
-            public virtual byte Byte { get; set; }
-        }
-      
-        [FlatBufferStruct, StructLayout(LayoutKind.Explicit, Size = 9)]
-        public struct ValueNineByteStruct
-        {
-            [FieldOffset(0)] public long Long;
+    [FlatBufferTable]
+    public class RootTable2<TVector>
+    {
+        [FlatBufferItem(0, DefaultValue = (byte)201)]
+        public virtual byte AlignmentImp { get; set; }
 
-            [FieldOffset(8)] public byte Byte;
-        }
+        [FlatBufferItem(1)]
+        public virtual TVector? Vector { get; set; }
+    }
+
+    [FlatBufferStruct]
+    public class Struct
+    {
+        [FlatBufferItem(0)]
+        public virtual int Integer { get; set; }
+    }
+
+    [FlatBufferStruct]
+    public class NineByteStruct
+    {
+        [FlatBufferItem(0)]
+        public virtual long Long { get; set; }
+
+        [FlatBufferItem(1)]
+        public virtual byte Byte { get; set; }
+    }
+
+    [FlatBufferStruct, StructLayout(LayoutKind.Explicit, Size = 9)]
+    public struct ValueNineByteStruct
+    {
+        [FieldOffset(0)] public long Long;
+
+        [FieldOffset(8)] public byte Byte;
     }
 }

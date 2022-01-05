@@ -4,16 +4,14 @@ attribute "fs_nonVirtual";
 attribute "fs_valueStruct";
 attribute "fs_unsafeStructVector";
 attribute "fs_nonVirtual";
+attribute "fs_sortedVector";
 
 namespace BenchmarkCore;
 
-table ValueTable {
-	Points : [Vec3];
+table Table {
+    Items : [ VecTable ] (fs_sortedVector);
 }
 
-struct Vec3 (fs_nonVirtual)
-{
-	X : int;
-	Y : int;
-	Z : int;
+table VecTable {
+    Key : string (key);
 }

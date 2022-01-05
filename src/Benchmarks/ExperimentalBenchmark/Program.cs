@@ -23,104 +23,85 @@ using BenchmarkDotNet.Running;
 using FlatSharp;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
 
 namespace BenchmarkCore
 {
     public class Benchmark
-    {
-        private readonly byte[] data = new byte[10 * 1024 * 1024];
-
-        private ArrayInputBuffer inputBuffer;
-
+    { 
         [Params(
             FlatBufferDeserializationOption.Lazy,
-            FlatBufferDeserializationOption.Progressive,
-            FlatBufferDeserializationOption.Greedy
+            FlatBufferDeserializationOption.GreedyMutable
         )]
         public FlatBufferDeserializationOption Option { get; set; }
 
-        [Params(1000)]
+        [Params(10000)]
         public int Length { get; set; }
 
-        [Params(1, 5)]
+        [Params(1)]
         public int TravCount { get; set; }
 
         private FlatBufferSerializer serializer;
 
-        private int[] indexesToAccess;
+        private Table tableToWrite;
+
+        private byte[] tableToRead;
+
+        private List<string> keys;
+
+        private string EmptyGuid = Guid.Empty.ToString();
 
         [GlobalSetup]
         public void Setup()
         {
-            ValueTable t = new ValueTable { Points = new List<Vec3>() };
+            this.serializer = new FlatBufferSerializer(this.Option);
+
+            this.tableToWrite = new()
+            {
+                Items = new List<VecTable>()
+            };
+
+            this.keys = new();
+
             for (int i = 0; i < this.Length; ++i)
             {
-                t.Points.Add(new Vec3 { X = i, Y = i * 2, Z = i * 3 });
+                string key = Guid.NewGuid().ToString();
+
+                this.keys.Add(key);
+                this.tableToWrite.Items.Add(new VecTable
+                {
+                    Key = key,
+                });
             }
 
-            this.indexesToAccess = new int[this.Length / 10];
-            Random r = new Random();
-            for (int i = 0; i < this.indexesToAccess.Length; ++i)
-            {
-                this.indexesToAccess[i] = r.Next(this.indexesToAccess.Length);
-            }
-             
-            this.serializer = new FlatBufferSerializer(this.Option);
-            this.serializer.Serialize(t, this.data);
-            this.inputBuffer = new ArrayInputBuffer(this.data);
+            int bytesNeeded = this.serializer.GetMaxSize(this.tableToWrite);
+            this.tableToRead = new byte[bytesNeeded];
+            this.serializer.Serialize(this.tableToWrite, this.tableToRead);
         }
 
         [Benchmark]
-        public int ParseAndTraverse_Full()
+        public void Serialize()
         {
-            var t = this.serializer.Parse<ValueTable, ArrayInputBuffer>(this.inputBuffer);
-
-            int sum = 0;
-
-            var points = t.Points;
-            if (points is null)
-            {
-                return 0;
-            }
-
-            for (int c = 0; c < this.TravCount; ++c)
-            {
-                int count = points.Count;
-                for (int i = 0; i < count; ++i)
-                {
-                    var point = points[i];
-                    sum += (point.X + point.Y + point.Z);
-                }
-            }
-
-            return sum;
+            this.serializer.Serialize(this.tableToWrite, this.tableToRead);
         }
 
         [Benchmark]
-        public int ParseAndTraverse_Sparse()
+        public int ParseAndTraverse()
         {
-            var t = this.serializer.Parse<ValueTable, ArrayInputBuffer>(this.inputBuffer);
+            var t = this.serializer.Parse<Table>(this.tableToRead);
+            var items = t.Items;
+            var keys = this.keys;
 
-            int sum = 0;
-
-            var points = t.Points;
-            if (points is null)
+            int found = 0;
+            foreach (var key in keys)
             {
-                return 0;
-            }
-
-            for (int c = 0; c < this.TravCount; ++c)
-            {
-                foreach (var i in this.indexesToAccess)
+                var findResult = items.BinarySearchByFlatBufferKey(key);
+                if (findResult != null)
                 {
-                    var point = points[i];
-                    sum += (point.X + point.Y + point.Z);
+                    found++;
                 }
             }
 
-            return sum;
+            return found;
         }
     }
 
@@ -130,10 +111,11 @@ namespace BenchmarkCore
         {
             Job job = Job.ShortRun
                 .WithAnalyzeLaunchVariance(true)
-                .WithLaunchCount(7)
+                .WithLaunchCount(1)
                 .WithWarmupCount(3)
-                .WithIterationCount(3)
-                .WithRuntime(CoreRuntime.Core50);
+                .WithIterationCount(5)
+                .WithRuntime(CoreRuntime.Core60)
+                .WithEnvironmentVariable(new EnvironmentVariable("DOTNET_TieredPGO", "1"));
 
             var config = DefaultConfig.Instance
                  .AddDiagnoser(MemoryDiagnoser.Default)

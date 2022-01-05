@@ -398,7 +398,7 @@ namespace FlatSharp
         private static string GetAggressiveInliningAttribute()
         {
             string inlining = "System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining";
-            string attribute = $"[{typeof(System.Runtime.CompilerServices.MethodImplAttribute).FullName}({inlining})]";
+            string attribute = $"[{typeof(MethodImplAttribute).FullName}({inlining})]";
             return attribute;
         }
 

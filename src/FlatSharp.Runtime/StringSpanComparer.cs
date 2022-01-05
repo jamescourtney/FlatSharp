@@ -13,51 +13,72 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-namespace FlatSharp
+
+using System;
+using System.Buffers.Binary;
+using System.ComponentModel;
+using System.Numerics;
+
+namespace FlatSharp;
+
+/// <summary>
+/// Implements string comparison for flatbuffers.
+/// </summary>
+/// <remarks>
+/// Based on the FlatBuffer comparison here: https://github.com/google/flatbuffers/blob/3a70e0b30890ca265a33f099912762eb51ac505f/net/FlatBuffers/Table.cs
+/// </remarks>
+[EditorBrowsable(EditorBrowsableState.Never)]
+public struct StringSpanComparer : ISpanComparer
 {
-    using System;
-    using System.ComponentModel;
-
     /// <summary>
-    /// Implements string comparison for flatbuffers.
+    /// Singleton access.
     /// </summary>
-    /// <remarks>
-    /// Based on the FlatBuffer comparison here: https://github.com/google/flatbuffers/blob/3a70e0b30890ca265a33f099912762eb51ac505f/net/FlatBuffers/Table.cs
-    /// </remarks>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public struct StringSpanComparer : ISpanComparer
+    public static StringSpanComparer Instance => default;
+
+    public StringSpanComparer(string? notUsed)
     {
-        /// <summary>
-        /// Singleton access.
-        /// </summary>
-        public static StringSpanComparer Instance => default;
+    }
 
-        public StringSpanComparer(string? notUsed)
+    public int Compare(bool leftExists, ReadOnlySpan<byte> x, bool rightExists, ReadOnlySpan<byte> y)
+    {
+        if (!leftExists || !rightExists)
         {
+            throw new InvalidOperationException($"Strings may not be null when used as sorted vector keys.");
         }
 
-        public int Compare(bool leftExists, ReadOnlySpan<byte> x, bool rightExists, ReadOnlySpan<byte> y)
+        int i = 0;
+        int minLength = x.Length;
+        if (y.Length < minLength)
         {
-            if (!leftExists || !rightExists)
-            {
-                throw new InvalidOperationException($"Strings may not be null when used as sorted vector keys.");
-            }
-
-            int minLength = Math.Min(x.Length, y.Length);
-
-            for (int i = 0; i < minLength; ++i)
-            {
-                byte xByte = x[i];
-                byte yByte = y[i];
-
-                if (xByte != yByte)
-                {
-                    return xByte - yByte;
-                }
-            }
-
-            return x.Length - y.Length;
+            minLength = y.Length;
         }
+
+        while (i + sizeof(ulong) <= minLength)
+        {
+            // Use BE since we read from left to right.
+            ulong left = BinaryPrimitives.ReadUInt64BigEndian(x.Slice(i, sizeof(ulong)));
+            ulong right = BinaryPrimitives.ReadUInt64BigEndian(y.Slice(i, sizeof(ulong)));
+
+            int cmp = left.CompareTo(right);
+            if (cmp != 0)
+            {
+                return cmp;
+            }
+
+            i += sizeof(ulong);
+        }
+
+        for (; i < minLength; ++i)
+        {
+            byte xByte = x[i];
+            byte yByte = y[i];
+
+            if (xByte != yByte)
+            {
+                return xByte - yByte;
+            }
+        }
+
+        return x.Length - y.Length;
     }
 }

@@ -20,7 +20,6 @@ namespace FlatSharp
     using System.Collections;
     using System.Collections.Generic;
     using System.ComponentModel;
-    using System.Diagnostics.CodeAnalysis;
     using System.Runtime.CompilerServices;
 
     /// <summary>
@@ -28,7 +27,7 @@ namespace FlatSharp
     /// for data locality, random access, and reasonably low memory overhead.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public class FlatBufferProgressiveVector<T, TInputBuffer> : IList<T>, IReadOnlyList<T>
+    public class FlatBufferProgressiveVector<T, TInputBuffer> : IList<T>, IReadOnlyList<T>, IFlatBufferDeserializedVector
         where T : notnull
         where TInputBuffer : IInputBuffer
     {
@@ -96,6 +95,15 @@ namespace FlatSharp
         public int Count { get; }
 
         public bool IsReadOnly => true;
+
+        IInputBuffer IFlatBufferDeserializedVector.InputBuffer => ((IFlatBufferDeserializedVector)this.innerVector).InputBuffer;
+
+        int IFlatBufferDeserializedVector.ItemSize => ((IFlatBufferDeserializedVector)this.innerVector).ItemSize;
+
+        int IFlatBufferDeserializedVector.OffsetOf(int index) => ((IFlatBufferDeserializedVector)this.innerVector).OffsetOf(index);
+
+        object IFlatBufferDeserializedVector.ItemAt(int index) => this[index]!;
+
         public void Add(T item)
         {
             throw new NotMutableException("FlatBufferVector does not allow adding items.");

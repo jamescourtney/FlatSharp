@@ -47,11 +47,7 @@ namespace FlatSharp
         {
             get
             {
-                if ((uint)index >= this.Count)
-                {
-                    throw new IndexOutOfRangeException();
-                }
-
+                this.CheckIndex(index);
                 this.ParseItem(index, out T item);
                 return item;
             }
@@ -160,6 +156,14 @@ namespace FlatSharp
         }
 
         protected abstract void ParseItem(int index, out T item);
+
+        protected void CheckIndex(int index)
+        {
+            if ((uint)index >= this.Count)
+            {
+                throw new IndexOutOfRangeException();
+            }
+        }
 
         public void Add(T item)
         {
