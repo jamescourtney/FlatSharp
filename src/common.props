@@ -9,15 +9,15 @@
   
   <PropertyGroup>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>6.0.4</Version>
-    <PackageVersion>6.0.4</PackageVersion>
+    <Version>6.0.5</Version>
+    <PackageVersion>6.0.5</PackageVersion>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <Authors>James Courtney</Authors>
-    <Description>FlatSharp is an idiomatic implementation of the FlatBuffer binary format.</Description>
+    <Description>FlatSharp is a fast, idiomatic implementation of the FlatBuffer binary format.</Description>
     <Copyright>2021</Copyright>
     <RepositoryUrl>https://github.com/jamescourtney/FlatSharp/</RepositoryUrl>
     <PackageTags>flatbuffers serialization flatbuffer flatsharp</PackageTags>
-    <PackageReleaseNotes>FlatSharp version 6! Release notes at https://github.com/jamescourtney/FlatSharp/ </PackageReleaseNotes>
+    <PackageReleaseNotes>Release notes at https://github.com/jamescourtney/FlatSharp/releases</PackageReleaseNotes>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>    
     <NuspecProperties>version=$(PackageVersion);releaseNotes=$(PackageReleaseNotes)</NuspecProperties>
