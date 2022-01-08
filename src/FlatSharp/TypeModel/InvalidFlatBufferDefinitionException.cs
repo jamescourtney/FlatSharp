@@ -14,17 +14,14 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.TypeModel
-{
-    using System;
+namespace FlatSharp.TypeModel;
 
-    /// <summary>
-    /// Thrown when a type was not valid for FlatBuffers.
-    /// </summary>
-    public class InvalidFlatBufferDefinitionException : Exception
+/// <summary>
+/// Thrown when a type was not valid for FlatBuffers.
+/// </summary>
+public class InvalidFlatBufferDefinitionException : Exception
+{
+    public InvalidFlatBufferDefinitionException(string message) : base(message)
     {
-        public InvalidFlatBufferDefinitionException(string message) : base(message)
-        {
-        }
     }
 }

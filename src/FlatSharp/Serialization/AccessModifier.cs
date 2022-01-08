@@ -14,31 +14,30 @@
  * limitations under the License.
  */
 
-namespace FlatSharp
+namespace FlatSharp;
+
+/// <summary>
+/// Defines access modifiers
+/// </summary>
+public enum AccessModifier
 {
     /// <summary>
-    /// Defines access modifiers
+    /// A public setter.
     /// </summary>
-    public enum AccessModifier
-    {
-        /// <summary>
-        /// A public setter.
-        /// </summary>
-        Public = 0,
+    Public = 0,
 
-        /// <summary>
-        /// A protected internal setter.
-        /// </summary>
-        ProtectedInternal = 1,
+    /// <summary>
+    /// A protected internal setter.
+    /// </summary>
+    ProtectedInternal = 1,
 
-        /// <summary>
-        /// A protected setter.
-        /// </summary>
-        Protected = 2,
+    /// <summary>
+    /// A protected setter.
+    /// </summary>
+    Protected = 2,
 
-        /// <summary>
-        /// A private access modifier.
-        /// </summary>
-        Private = 3,
-    }
+    /// <summary>
+    /// A private access modifier.
+    /// </summary>
+    Private = 3,
 }

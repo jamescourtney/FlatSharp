@@ -14,80 +14,77 @@
  * limitations under the License.
  */
 
-namespace FlatSharp
+using System.Text;
+using FlatSharp.TypeModel;
+
+namespace FlatSharp;
+
+/// <summary>
+/// Code gen context for serialization methods.
+/// </summary>
+public record GetMaxSizeCodeGenContext
 {
-    using FlatSharp.TypeModel;
-    using System;
-    using System.Collections.Generic;
-    using System.Text;
+    public GetMaxSizeCodeGenContext(
+        string valueVariableName,
+        string tableFieldContextVariableName,
+        IReadOnlyDictionary<Type, string> methodNameMap,
+        FlatBufferSerializerOptions options,
+        TypeModelContainer typeModelContainer,
+        IReadOnlyDictionary<ITypeModel, List<TableFieldContext>> allFieldContexts)
+    {
+        this.ValueVariableName = valueVariableName;
+        this.TableFieldContextVariableName = tableFieldContextVariableName;
+        this.MethodNameMap = methodNameMap;
+        this.Options = options;
+        this.TypeModelContainer = typeModelContainer;
+        this.AllFieldContexts = allFieldContexts;
+    }
 
     /// <summary>
-    /// Code gen context for serialization methods.
+    /// The variable name of the current value to serialize.
     /// </summary>
-    public record GetMaxSizeCodeGenContext
+    public string ValueVariableName { get; init; }
+
+    /// <summary>
+    /// The variable name of the table field context. Optional.
+    /// </summary>
+    public string TableFieldContextVariableName { get; init; }
+
+    /// <summary>
+    /// The type model container.
+    /// </summary>
+    public TypeModelContainer TypeModelContainer { get; init; }
+
+    /// <summary>
+    /// A mapping of type to serialize method name for that type.
+    /// </summary>
+    public IReadOnlyDictionary<Type, string> MethodNameMap { get; }
+
+    /// <summary>
+    /// Serialization options.
+    /// </summary>
+    public FlatBufferSerializerOptions Options { get; }
+
+    /// <summary>
+    /// All contexts for the entire object graph.
+    /// </summary>
+    public IReadOnlyDictionary<ITypeModel, List<TableFieldContext>> AllFieldContexts { get; }
+
+    /// <summary>
+    /// Gets a get max size invocation for the given type.
+    /// </summary>
+    public string GetMaxSizeInvocation(Type type)
     {
-        public GetMaxSizeCodeGenContext(
-            string valueVariableName,
-            string tableFieldContextVariableName,
-            IReadOnlyDictionary<Type, string> methodNameMap,
-            FlatBufferSerializerOptions options,
-            TypeModelContainer typeModelContainer,
-            IReadOnlyDictionary<ITypeModel, List<TableFieldContext>> allFieldContexts)
+        ITypeModel typeModel = this.TypeModelContainer.CreateTypeModel(type);
+
+        StringBuilder sb = new($"{this.MethodNameMap[type]}({this.ValueVariableName}");
+
+        if (typeModel.TableFieldContextRequirements.HasFlag(TableFieldContextRequirements.GetMaxSize))
         {
-            this.ValueVariableName = valueVariableName;
-            this.TableFieldContextVariableName = tableFieldContextVariableName;
-            this.MethodNameMap = methodNameMap;
-            this.Options = options;
-            this.TypeModelContainer = typeModelContainer;
-            this.AllFieldContexts = allFieldContexts;
+            sb.Append($", {this.TableFieldContextVariableName}");
         }
 
-        /// <summary>
-        /// The variable name of the current value to serialize.
-        /// </summary>
-        public string ValueVariableName { get; init; }
-
-        /// <summary>
-        /// The variable name of the table field context. Optional.
-        /// </summary>
-        public string TableFieldContextVariableName { get; init; }
-
-        /// <summary>
-        /// The type model container.
-        /// </summary>
-        public TypeModelContainer TypeModelContainer { get; init; }
-
-        /// <summary>
-        /// A mapping of type to serialize method name for that type.
-        /// </summary>
-        public IReadOnlyDictionary<Type, string> MethodNameMap { get; }
-
-        /// <summary>
-        /// Serialization options.
-        /// </summary>
-        public FlatBufferSerializerOptions Options { get; }
-
-        /// <summary>
-        /// All contexts for the entire object graph.
-        /// </summary>
-        public IReadOnlyDictionary<ITypeModel, List<TableFieldContext>> AllFieldContexts { get; }
-
-        /// <summary>
-        /// Gets a get max size invocation for the given type.
-        /// </summary>
-        public string GetMaxSizeInvocation(Type type)
-        {
-            ITypeModel typeModel = this.TypeModelContainer.CreateTypeModel(type);
-
-            StringBuilder sb = new($"{this.MethodNameMap[type]}({this.ValueVariableName}");
-
-            if (typeModel.TableFieldContextRequirements.HasFlag(TableFieldContextRequirements.GetMaxSize))
-            {
-                sb.Append($", {this.TableFieldContextVariableName}");
-            }
-
-            sb.Append(")");
-            return sb.ToString();
-        }
+        sb.Append(")");
+        return sb.ToString();
     }
 }

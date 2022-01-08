@@ -14,46 +14,43 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.TypeModel
+namespace FlatSharp.TypeModel;
+
+public partial class DoubleTypeModel
 {
-    using System.Diagnostics.CodeAnalysis;
-
-    public partial class DoubleTypeModel
+    public override string FormatDefaultValueAsLiteral(object? defaultValue)
     {
-        public override string FormatDefaultValueAsLiteral(object? defaultValue)
+        if (defaultValue is double d)
         {
-            if (defaultValue is double d)
-            {
-                return $"{d:G17}d";
-            }
-
-            return base.FormatDefaultValueAsLiteral(defaultValue);
+            return $"{d:G17}d";
         }
+
+        return base.FormatDefaultValueAsLiteral(defaultValue);
     }
+}
 
-    public partial class FloatTypeModel
+public partial class FloatTypeModel
+{
+    public override string FormatDefaultValueAsLiteral(object? defaultValue)
     {
-        public override string FormatDefaultValueAsLiteral(object? defaultValue)
+        if (defaultValue is float f)
         {
-            if (defaultValue is float f)
-            {
-                return $"{f:G17}f";
-            }
-
-            return base.FormatDefaultValueAsLiteral(defaultValue);
+            return $"{f:G17}f";
         }
+
+        return base.FormatDefaultValueAsLiteral(defaultValue);
     }
+}
 
-    public partial class BoolTypeModel
+public partial class BoolTypeModel
+{
+    public override string FormatDefaultValueAsLiteral(object? defaultValue)
     {
-        public override string FormatDefaultValueAsLiteral(object? defaultValue)
+        if (defaultValue is bool b)
         {
-            if (defaultValue is bool b)
-            {
-                return b.ToString().ToLower();
-            }
-
-            return base.FormatDefaultValueAsLiteral(defaultValue);
+            return b.ToString().ToLower();
         }
+
+        return base.FormatDefaultValueAsLiteral(defaultValue);
     }
 }

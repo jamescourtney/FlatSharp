@@ -13,36 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-namespace FlatSharp.TypeModel
+
+namespace FlatSharp.TypeModel;
+
+internal static class FlatBufferVectorHelpers
 {
-    using System;
-
-    internal static class FlatBufferVectorHelpers
+    public static (string classDef, string className) CreateFlatBufferVectorSubclass(
+        ITypeModel itemTypeModel,
+        ParserCodeGenContext parseContext)
     {
-        public static (string classDef, string className) CreateFlatBufferVectorSubclass(
-            ITypeModel itemTypeModel,
-            ParserCodeGenContext parseContext)
+        Type itemType = itemTypeModel.ClrType;
+        string className = $"FlatBufferVector_{Guid.NewGuid():n}";
+
+        parseContext = parseContext with
         {
-            Type itemType = itemTypeModel.ClrType;
-            string className = $"FlatBufferVector_{Guid.NewGuid():n}";
+            InputBufferTypeName = "TInputBuffer",
+            InputBufferVariableName = "memory",
+            IsOffsetByRef = false,
+            TableFieldContextVariableName = "fieldContext",
+        };
 
-            parseContext = parseContext with
-            {
-                InputBufferTypeName = "TInputBuffer",
-                InputBufferVariableName = "memory",
-                IsOffsetByRef = false,
-                TableFieldContextVariableName = "fieldContext",
-            };
+        var serializeContext = parseContext.GetWriteThroughContext("data", "item", "0");
+        string writeThroughBody = serializeContext.GetSerializeInvocation(itemType);
+        if (itemTypeModel.SerializeMethodRequiresContext)
+        {
+            writeThroughBody = "throw new NotSupportedException(\"write through is not available for this type\")";
+        }
 
-            var serializeContext = parseContext.GetWriteThroughContext("data", "item", "0");
-            string writeThroughBody = serializeContext.GetSerializeInvocation(itemType);
-            if (itemTypeModel.SerializeMethodRequiresContext)
-            {
-                writeThroughBody = "throw new NotSupportedException(\"write through is not available for this type\")";
-            }
-
-            string classDef = $@"
+        string classDef = $@"
                 public sealed class {className}<{parseContext.InputBufferTypeName}> : FlatBufferVector<{itemType.GetGlobalCompilableTypeName()}, {parseContext.InputBufferTypeName}>
                     where {parseContext.InputBufferTypeName} : {nameof(IInputBuffer)}
                 {{
@@ -70,25 +68,25 @@ namespace FlatSharp.TypeModel
                 }}
             ";
 
-            return (classDef, className);
-        }
+        return (classDef, className);
+    }
 
-        public static (string classDef, string className) CreateFlatBufferVectorOfUnionSubclass(
-            ITypeModel typeModel,
-            ParserCodeGenContext context)
+    public static (string classDef, string className) CreateFlatBufferVectorOfUnionSubclass(
+        ITypeModel typeModel,
+        ParserCodeGenContext context)
+    {
+        string className = $"FlatBufferUnionVector_{Guid.NewGuid():n}";
+
+        context = context with
         {
-            string className = $"FlatBufferUnionVector_{Guid.NewGuid():n}";
+            InputBufferTypeName = "TInputBuffer",
+            InputBufferVariableName = "memory",
+            IsOffsetByRef = true,
+            TableFieldContextVariableName = "fieldContext",
+            OffsetVariableName = "temp",
+        };
 
-            context = context with
-            {
-                InputBufferTypeName = "TInputBuffer",
-                InputBufferVariableName = "memory",
-                IsOffsetByRef = true,
-                TableFieldContextVariableName = "fieldContext",
-                OffsetVariableName = "temp",
-            };
-
-            string classDef = $@"
+        string classDef = $@"
                 public sealed class {className}<{context.InputBufferTypeName}> : FlatBufferVectorOfUnion<{typeModel.GetGlobalCompilableTypeName()}, {context.InputBufferTypeName}>
                     where {context.InputBufferTypeName} : {nameof(IInputBuffer)}
                 {{
@@ -113,7 +111,6 @@ namespace FlatSharp.TypeModel
                 }}
             ";
 
-            return (classDef, className);
-        }
+        return (classDef, className);
     }
 }

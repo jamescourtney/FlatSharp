@@ -14,158 +14,154 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.TypeModel
+using System.Collections.Immutable;
+
+namespace FlatSharp.TypeModel;
+
+/// <summary>
+/// Defines a FlatSharp type model for nullable value types.
+/// </summary>
+public class NullableTypeModel : RuntimeTypeModel
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.Immutable;
-    using System.Diagnostics.CodeAnalysis;
+    private Type underlyingType;
+    private ITypeModel underlyingTypeModel;
+
+    internal NullableTypeModel(TypeModelContainer container, Type type) : base(type, container)
+    {
+        this.underlyingType = null!;
+        this.underlyingTypeModel = null!;
+    }
 
     /// <summary>
-    /// Defines a FlatSharp type model for nullable value types.
+    /// Gets the schema type.
     /// </summary>
-    public class NullableTypeModel : RuntimeTypeModel
+    public override FlatBufferSchemaType SchemaType => this.underlyingTypeModel.SchemaType;
+
+    /// <summary>
+    /// Layout when in a vtable.
+    /// </summary>
+    public override ImmutableArray<PhysicalLayoutElement> PhysicalLayout => this.underlyingTypeModel.PhysicalLayout;
+
+    /// <summary>
+    /// Scalars are fixed size.
+    /// </summary>
+    public override bool IsFixedSize => this.underlyingTypeModel.IsFixedSize;
+
+    /// <summary>
+    /// Nullables can't be part of Structs.
+    /// </summary>
+    public override bool IsValidStructMember => false;
+
+    /// <summary>
+    /// Nullables can be part of Tables.
+    /// </summary>
+    public override bool IsValidTableMember => this.underlyingTypeModel.IsValidTableMember;
+
+    /// <summary>
+    /// Nullables can't be part of Unions.
+    /// </summary>
+    public override bool IsValidUnionMember => false;
+
+    /// <summary>
+    /// Optionals can't be part of unions.
+    /// </summary>
+    public override bool IsValidVectorMember => false;
+
+    /// <summary>
+    /// Optionals can't be keys.
+    /// </summary>
+    public override bool IsValidSortedVectorKey => false;
+
+    /// <summary>
+    /// Defer to underlying type for serializing.
+    /// </summary>
+    public override bool SerializesInline
+        => this.underlyingTypeModel.SerializesInline;
+
+    /// <summary>
+    /// We need context only if our underlying type does.
+    /// </summary>
+    public override bool SerializeMethodRequiresContext
+        => this.underlyingTypeModel.SerializeMethodRequiresContext;
+
+    /// <summary>
+    /// Defer to underlying type model about whether we need this.
+    /// </summary>
+    public override TableFieldContextRequirements TableFieldContextRequirements => this.underlyingTypeModel.TableFieldContextRequirements;
+
+    public override IEnumerable<ITypeModel> Children => new[] { this.underlyingTypeModel };
+
+    /// <summary>
+    /// Validates a default value.
+    /// </summary>
+    public override bool ValidateDefaultValue(object defaultValue) => false;
+
+    public override void Initialize()
     {
-        private Type underlyingType;
-        private ITypeModel underlyingTypeModel;
+        base.Initialize();
 
-        internal NullableTypeModel(TypeModelContainer container, Type type) : base(type, container)
+        Type? under = Nullable.GetUnderlyingType(this.ClrType);
+        FlatSharpInternal.Assert(under is not null, "Nullable type model created for a type that is not Nullable<T>.");
+
+        this.underlyingType = under;
+        this.underlyingTypeModel = this.typeModelContainer.CreateTypeModel(this.underlyingType);
+    }
+
+    public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
+    {
+        var ctx = context with { ValueVariableName = $"{context.ValueVariableName}.Value" };
+
+        string body = $@"
+            if ({context.ValueVariableName}.HasValue)
+            {{
+                return {ctx.GetMaxSizeInvocation(this.underlyingType)};
+            }}
+
+            return 0;
+        ";
+
+        return new CodeGeneratedMethod(body)
         {
-            this.underlyingType = null!;
-            this.underlyingTypeModel = null!;
-        }
+            IsMethodInline = true
+        };
+    }
 
-        /// <summary>
-        /// Gets the schema type.
-        /// </summary>
-        public override FlatBufferSchemaType SchemaType => this.underlyingTypeModel.SchemaType;
+    public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
+    {
+        string innerParse = context.GetParseInvocation(this.underlyingType);
+        string body = $"return {innerParse};";
 
-        /// <summary>
-        /// Layout when in a vtable.
-        /// </summary>
-        public override ImmutableArray<PhysicalLayoutElement> PhysicalLayout => this.underlyingTypeModel.PhysicalLayout;
-
-        /// <summary>
-        /// Scalars are fixed size.
-        /// </summary>
-        public override bool IsFixedSize => this.underlyingTypeModel.IsFixedSize;
-
-        /// <summary>
-        /// Nullables can't be part of Structs.
-        /// </summary>
-        public override bool IsValidStructMember => false;
-
-        /// <summary>
-        /// Nullables can be part of Tables.
-        /// </summary>
-        public override bool IsValidTableMember => this.underlyingTypeModel.IsValidTableMember;
-
-        /// <summary>
-        /// Nullables can't be part of Unions.
-        /// </summary>
-        public override bool IsValidUnionMember => false;
-
-        /// <summary>
-        /// Optionals can't be part of unions.
-        /// </summary>
-        public override bool IsValidVectorMember => false;
-
-        /// <summary>
-        /// Optionals can't be keys.
-        /// </summary>
-        public override bool IsValidSortedVectorKey => false;
-
-        /// <summary>
-        /// Defer to underlying type for serializing.
-        /// </summary>
-        public override bool SerializesInline 
-            => this.underlyingTypeModel.SerializesInline;
-
-        /// <summary>
-        /// We need context only if our underlying type does.
-        /// </summary>
-        public override bool SerializeMethodRequiresContext 
-            => this.underlyingTypeModel.SerializeMethodRequiresContext;
-
-        /// <summary>
-        /// Defer to underlying type model about whether we need this.
-        /// </summary>
-        public override TableFieldContextRequirements TableFieldContextRequirements => this.underlyingTypeModel.TableFieldContextRequirements;
-
-        public override IEnumerable<ITypeModel> Children => new[] { this.underlyingTypeModel };
-
-        /// <summary>
-        /// Validates a default value.
-        /// </summary>
-        public override bool ValidateDefaultValue(object defaultValue) => false;
-
-        public override void Initialize()
+        return new CodeGeneratedMethod(body)
         {
-            base.Initialize();
+            IsMethodInline = true,
+        };
+    }
 
-            Type? under = Nullable.GetUnderlyingType(this.ClrType);
-            FlatSharpInternal.Assert(under is not null, "Nullable type model created for a type that is not Nullable<T>.");
+    public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
+    {
+        // NULL FORGIVENESS
+        string body = (context with { ValueVariableName = $"{context.ValueVariableName}!.Value" }).GetSerializeInvocation(this.underlyingType);
 
-            this.underlyingType = under;
-            this.underlyingTypeModel = this.typeModelContainer.CreateTypeModel(this.underlyingType);
-        }
-
-        public override CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context)
+        return new CodeGeneratedMethod($"{body};")
         {
-            var ctx = context with { ValueVariableName = $"{context.ValueVariableName}.Value" };
+            IsMethodInline = true,
+        };
+    }
 
-            string body = $@"
-                if ({context.ValueVariableName}.HasValue)
-                {{
-                    return {ctx.GetMaxSizeInvocation(this.underlyingType)};
-                }}
+    public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
+    {
+        string body = $@"
+            if ({context.ItemVariableName}.HasValue)
+            {{
+                return {context.MethodNameMap[this.underlyingType]}({context.ItemVariableName}.Value);
+            }}
 
-                return 0;
-            ";
+            return null;
+        ";
 
-            return new CodeGeneratedMethod(body)
-            {
-                IsMethodInline = true
-            };
-        }
-
-        public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
+        return new CodeGeneratedMethod(body)
         {
-            string innerParse = context.GetParseInvocation(this.underlyingType);
-            string body = $"return {innerParse};";
-
-            return new CodeGeneratedMethod(body)
-            {
-                IsMethodInline = true,
-            };
-        }
-
-        public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
-        {
-            // NULL FORGIVENESS
-            string body = (context with { ValueVariableName = $"{context.ValueVariableName}!.Value" }).GetSerializeInvocation(this.underlyingType);
-
-            return new CodeGeneratedMethod($"{body};")
-            {
-                IsMethodInline = true,
-            };
-        }
-
-        public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
-        {
-            string body = $@"
-                if ({context.ItemVariableName}.HasValue)
-                {{
-                    return {context.MethodNameMap[this.underlyingType]}({context.ItemVariableName}.Value);
-                }}
-
-                return null;
-            ";
-
-            return new CodeGeneratedMethod(body)
-            {
-                IsMethodInline = true,
-            };
-        }
+            IsMethodInline = true,
+        };
     }
 }

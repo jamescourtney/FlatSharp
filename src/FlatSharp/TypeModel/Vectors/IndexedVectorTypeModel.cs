@@ -14,148 +14,144 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.TypeModel
+namespace FlatSharp.TypeModel;
+
+/// <summary>
+/// Defines a vector type model for a sorted vector that looks like a Dictionary.
+/// </summary>
+public class IndexedVectorTypeModel : BaseVectorTypeModel
 {
-    using System;
-    using System.Collections.Generic;
+    private ITypeModel keyTypeModel;
+    private ITypeModel valueTypeModel;
+    private TableMemberModel keyMemberModel;
 
-    /// <summary>
-    /// Defines a vector type model for a sorted vector that looks like a Dictionary.
-    /// </summary>
-    public class IndexedVectorTypeModel : BaseVectorTypeModel
+    internal IndexedVectorTypeModel(Type vectorType, TypeModelContainer provider) : base(vectorType, provider)
     {
-        private ITypeModel keyTypeModel;
-        private ITypeModel valueTypeModel;
-        private TableMemberModel keyMemberModel;
+        this.keyTypeModel = null!;
+        this.valueTypeModel = null!;
+        this.keyMemberModel = null!;
+    }
 
-        internal IndexedVectorTypeModel(Type vectorType, TypeModelContainer provider) : base(vectorType, provider)
+    public override string LengthPropertyName => nameof(IIndexedVector<string, string>.Count);
+
+    public override Type OnInitialize()
+    {
+        FlatSharpInternal.Assert(
+            this.ClrType.IsGenericType && this.ClrType.GetGenericTypeDefinition() == typeof(IIndexedVector<,>),
+            $"Indexed vectors must be of type IIndexedVector. Type = {this.GetCompilableTypeName()}.");
+
+        Type keyType = this.ClrType.GetGenericArguments()[0];
+        Type valueType = this.ClrType.GetGenericArguments()[1];
+
+        this.keyTypeModel = this.typeModelContainer.CreateTypeModel(keyType);
+        this.valueTypeModel = this.typeModelContainer.CreateTypeModel(valueType);
+
+        if (this.valueTypeModel.SchemaType != FlatBufferSchemaType.Table)
         {
-            this.keyTypeModel = null!;
-            this.valueTypeModel = null!;
-            this.keyMemberModel = null!;
+            throw new InvalidFlatBufferDefinitionException(
+                $"Indexed vector values must be flatbuffer tables. Type = '{this.valueTypeModel.GetCompilableTypeName()}'");
         }
 
-        public override string LengthPropertyName => nameof(IIndexedVector<string, string>.Count);
-
-        public override Type OnInitialize()
+        if (!this.valueTypeModel.TryGetTableKeyMember(out TableMemberModel? tempKeyMemberModel))
         {
-            FlatSharpInternal.Assert(
-                this.ClrType.IsGenericType && this.ClrType.GetGenericTypeDefinition() == typeof(IIndexedVector<,>),
-                $"Indexed vectors must be of type IIndexedVector. Type = {this.GetCompilableTypeName()}.");
-
-            Type keyType = this.ClrType.GetGenericArguments()[0];
-            Type valueType = this.ClrType.GetGenericArguments()[1];
-
-            this.keyTypeModel = this.typeModelContainer.CreateTypeModel(keyType);
-            this.valueTypeModel = this.typeModelContainer.CreateTypeModel(valueType);
-
-            if (this.valueTypeModel.SchemaType != FlatBufferSchemaType.Table)
-            {
-                throw new InvalidFlatBufferDefinitionException(
-                    $"Indexed vector values must be flatbuffer tables. Type = '{this.valueTypeModel.GetCompilableTypeName()}'");
-            }
-
-            if (!this.valueTypeModel.TryGetTableKeyMember(out TableMemberModel? tempKeyMemberModel))
-            {
-                throw new InvalidFlatBufferDefinitionException(
-                    $"Indexed vector values must have a property with the key attribute defined. Table = '{this.valueTypeModel.GetCompilableTypeName()}'");
-            }
-            else
-            {
-                this.keyMemberModel = tempKeyMemberModel;
-            }
-
-            if (!this.keyMemberModel.ItemTypeModel.TryGetSpanComparerType(out _))
-            {
-                throw new InvalidFlatBufferDefinitionException(
-                    $"FlatSharp indexed vector keys must supply a span comparer. KeyType = '{this.keyMemberModel.ItemTypeModel.GetCompilableTypeName()}'.");
-            }
-
-            if (keyMemberModel.ItemTypeModel.ClrType != this.keyTypeModel.ClrType)
-            {
-                throw new InvalidFlatBufferDefinitionException(
-                    $"FlatSharp indexed vector keys must have the same type as the key of the value. KeyType = {this.keyTypeModel.GetCompilableTypeName()}, Value Key Type = '{this.valueTypeModel.GetCompilableTypeName()}'.");
-            }
-
-            return valueType;
+            throw new InvalidFlatBufferDefinitionException(
+                $"Indexed vector values must have a property with the key attribute defined. Table = '{this.valueTypeModel.GetCompilableTypeName()}'");
+        }
+        else
+        {
+            this.keyMemberModel = tempKeyMemberModel;
         }
 
-        public override void AdjustTableMember(TableMemberModel source)
+        if (!this.keyMemberModel.ItemTypeModel.TryGetSpanComparerType(out _))
         {
-            // Force the vector to be sorted.
-            source.IsSortedVector = true;
+            throw new InvalidFlatBufferDefinitionException(
+                $"FlatSharp indexed vector keys must supply a span comparer. KeyType = '{this.keyMemberModel.ItemTypeModel.GetCompilableTypeName()}'.");
         }
 
-        public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
+        if (keyMemberModel.ItemTypeModel.ClrType != this.keyTypeModel.ClrType)
         {
-            ValidateWriteThrough(
-                writeThroughSupported: false,
-                this,
-                context.AllFieldContexts,
-                context.Options);
-
-            string body;
-            string keyTypeName = CSharpHelpers.GetGlobalCompilableTypeName(this.keyTypeModel.ClrType);
-            string valueTypeName = CSharpHelpers.GetGlobalCompilableTypeName(this.valueTypeModel.ClrType);
-
-            (string vectorClassDef, string vectorClassName) = FlatBufferVectorHelpers.CreateFlatBufferVectorSubclass(
-                this.valueTypeModel,
-                context);
-
-            FlatSharpInternal.Assert(!string.IsNullOrEmpty(context.TableFieldContextVariableName), "field context was null/empty");
-
-            string createFlatBufferVector =
-            $@"new {vectorClassName}<{context.InputBufferTypeName}>(
-                    {context.InputBufferVariableName}, 
-                    {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}), 
-                    {this.PaddedMemberInlineSize},
-                    {context.TableFieldContextVariableName})";
-
-            string mutable = context.Options.GenerateMutableObjects.ToString().ToLowerInvariant();
-            if (context.Options.GreedyDeserialize)
-            {
-                // Eager indexed vector.
-                body = $@"return new {nameof(IndexedVector<string, string>)}<{keyTypeName}, {valueTypeName}>({createFlatBufferVector}, {mutable});";
-            }
-            else if (context.Options.Lazy)
-            {
-                // Lazy indexed vector.
-                body = $@"return new {nameof(FlatBufferIndexedVector<string, string, IInputBuffer>)}<{keyTypeName}, {valueTypeName}, {context.InputBufferTypeName}>({createFlatBufferVector});";
-            }
-            else
-            {
-                FlatSharpInternal.Assert(context.Options.Progressive, "expecting progressive");
-                body = $@"return new {nameof(FlatBufferProgressiveIndexedVector<string, string, IInputBuffer>)}<{keyTypeName}, {valueTypeName}, {context.InputBufferTypeName}>({createFlatBufferVector});";
-            }
-
-            return new CodeGeneratedMethod(body) { IsMethodInline = true, ClassDefinition = vectorClassDef };
+            throw new InvalidFlatBufferDefinitionException(
+                $"FlatSharp indexed vector keys must have the same type as the key of the value. KeyType = {this.keyTypeModel.GetCompilableTypeName()}, Value Key Type = '{this.valueTypeModel.GetCompilableTypeName()}'.");
         }
 
-        protected override string CreateLoop(
-            FlatBufferSerializerOptions options,
-            string vectorVariableName,
-            string numberofItemsVariableName,
-            string expectedVariableName,
-            string body)
+        return valueType;
+    }
+
+    public override void AdjustTableMember(TableMemberModel source)
+    {
+        // Force the vector to be sorted.
+        source.IsSortedVector = true;
+    }
+
+    public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
+    {
+        ValidateWriteThrough(
+            writeThroughSupported: false,
+            this,
+            context.AllFieldContexts,
+            context.Options);
+
+        string body;
+        string keyTypeName = CSharpHelpers.GetGlobalCompilableTypeName(this.keyTypeModel.ClrType);
+        string valueTypeName = CSharpHelpers.GetGlobalCompilableTypeName(this.valueTypeModel.ClrType);
+
+        (string vectorClassDef, string vectorClassName) = FlatBufferVectorHelpers.CreateFlatBufferVectorSubclass(
+            this.valueTypeModel,
+            context);
+
+        FlatSharpInternal.Assert(!string.IsNullOrEmpty(context.TableFieldContextVariableName), "field context was null/empty");
+
+        string createFlatBufferVector =
+        $@"new {vectorClassName}<{context.InputBufferTypeName}>(
+            {context.InputBufferVariableName}, 
+            {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}), 
+            {this.PaddedMemberInlineSize},
+            {context.TableFieldContextVariableName})";
+
+        string mutable = context.Options.GenerateMutableObjects.ToString().ToLowerInvariant();
+        if (context.Options.GreedyDeserialize)
         {
-            return $@"
-                foreach (var kvp in {vectorVariableName})
-                {{
-                    var {expectedVariableName} = kvp.Value;
-                    {body}
-                }}";
+            // Eager indexed vector.
+            body = $@"return new {nameof(IndexedVector<string, string>)}<{keyTypeName}, {valueTypeName}>({createFlatBufferVector}, {mutable});";
+        }
+        else if (context.Options.Lazy)
+        {
+            // Lazy indexed vector.
+            body = $@"return new {nameof(FlatBufferIndexedVector<string, string, IInputBuffer>)}<{keyTypeName}, {valueTypeName}, {context.InputBufferTypeName}>({createFlatBufferVector});";
+        }
+        else
+        {
+            FlatSharpInternal.Assert(context.Options.Progressive, "expecting progressive");
+            body = $@"return new {nameof(FlatBufferProgressiveIndexedVector<string, string, IInputBuffer>)}<{keyTypeName}, {valueTypeName}, {context.InputBufferTypeName}>({createFlatBufferVector});";
         }
 
-        public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
-        {
-            string parameters = $"{context.ItemVariableName}, {context.MethodNameMap[this.ItemTypeModel.ClrType]}";
-            string genericArgs = $"{this.keyTypeModel.GetCompilableTypeName()}, {this.ItemTypeModel.GetCompilableTypeName()}";
+        return new CodeGeneratedMethod(body) { IsMethodInline = true, ClassDefinition = vectorClassDef };
+    }
 
-            string body = $"return {nameof(VectorCloneHelpers)}.{nameof(VectorCloneHelpers.Clone)}<{genericArgs}>({parameters});";
-            return new CodeGeneratedMethod(body)
-            {
-                IsMethodInline = true,
-            };
-        }
+    protected override string CreateLoop(
+        FlatBufferSerializerOptions options,
+        string vectorVariableName,
+        string numberofItemsVariableName,
+        string expectedVariableName,
+        string body)
+    {
+        return $@"
+            foreach (var kvp in {vectorVariableName})
+            {{
+                var {expectedVariableName} = kvp.Value;
+                {body}
+            }}";
+    }
+
+    public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
+    {
+        string parameters = $"{context.ItemVariableName}, {context.MethodNameMap[this.ItemTypeModel.ClrType]}";
+        string genericArgs = $"{this.keyTypeModel.GetCompilableTypeName()}, {this.ItemTypeModel.GetCompilableTypeName()}";
+
+        string body = $"return {nameof(VectorCloneHelpers)}.{nameof(VectorCloneHelpers.Clone)}<{genericArgs}>({parameters});";
+        return new CodeGeneratedMethod(body)
+        {
+            IsMethodInline = true,
+        };
     }
 }

@@ -13,86 +13,82 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-namespace FlatSharp.TypeModel
+
+namespace FlatSharp.TypeModel;
+
+/// <summary>
+/// Defines a vector type model for a memory vector of byte.
+/// </summary>
+public class MemoryVectorTypeModel : BaseVectorTypeModel
 {
-    using System;
-    using System.Collections.Generic;
+    private bool isReadOnly;
 
-    /// <summary>
-    /// Defines a vector type model for a memory vector of byte.
-    /// </summary>
-    public class MemoryVectorTypeModel : BaseVectorTypeModel
+    internal MemoryVectorTypeModel(Type vectorType, TypeModelContainer provider) : base(vectorType, provider)
     {
-        private bool isReadOnly;
+    }
 
-        internal MemoryVectorTypeModel(Type vectorType, TypeModelContainer provider) : base(vectorType, provider)
+    public override string LengthPropertyName => nameof(Memory<byte>.Length);
+
+    public override Type OnInitialize()
+    {
+        if (this.ClrType != typeof(Memory<byte>) && this.ClrType != typeof(ReadOnlyMemory<byte>))
         {
+            throw new InvalidFlatBufferDefinitionException($"Memory vectors may only be ReadOnlyMemory<byte> or Memory<byte>.");
         }
 
-        public override string LengthPropertyName => nameof(Memory<byte>.Length);
+        this.isReadOnly = this.ClrType == typeof(ReadOnlyMemory<byte>);
+        return typeof(byte);
+    }
 
-        public override Type OnInitialize()
+    protected override string CreateLoop(FlatBufferSerializerOptions options, string vectorVariableName, string numberOfItemsVariableName, string expectedVariableName, string body)
+    {
+        FlatSharpInternal.Assert(false, "Not expecting to do loop get max size for memory vector");
+        throw new Exception();
+    }
+
+    public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
+    {
+        ValidateWriteThrough(
+            writeThroughSupported: false,
+            this,
+            context.AllFieldContexts,
+            context.Options);
+
+        string method = nameof(InputBufferExtensions.ReadByteMemoryBlock);
+        if (this.isReadOnly)
         {
-            if (this.ClrType != typeof(Memory<byte>) && this.ClrType != typeof(ReadOnlyMemory<byte>))
-            {
-                throw new InvalidFlatBufferDefinitionException($"Memory vectors may only be ReadOnlyMemory<byte> or Memory<byte>.");
-            }
-
-            this.isReadOnly = this.ClrType == typeof(ReadOnlyMemory<byte>);
-            return typeof(byte);
+            method = nameof(InputBufferExtensions.ReadByteReadOnlyMemoryBlock);
         }
 
-        protected override string CreateLoop(FlatBufferSerializerOptions options, string vectorVariableName, string numberOfItemsVariableName, string expectedVariableName, string body)
+        string memoryVectorRead = $"{context.InputBufferVariableName}.{method}({context.OffsetVariableName})";
+
+        string body;
+        if (context.Options.GreedyDeserialize)
         {
-            FlatSharpInternal.Assert(false, "Not expecting to do loop get max size for memory vector");
-            throw new Exception();
+            body = $"return {memoryVectorRead}.ToArray().AsMemory();";
+        }
+        else
+        {
+            body = $"return {memoryVectorRead};";
         }
 
-        public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
+        return new CodeGeneratedMethod(body);
+    }
+
+    public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
+    {
+        string body =
+            $"{context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteReadOnlyByteMemoryBlock)}({context.SpanVariableName}, {context.ValueVariableName}, {context.OffsetVariableName}, {context.SerializationContextVariableName});";
+
+        return new CodeGeneratedMethod(body);
+    }
+
+    public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
+    {
+        string body = $"return {context.ItemVariableName}.ToArray().AsMemory();";
+        return new CodeGeneratedMethod(body)
         {
-            ValidateWriteThrough(
-                writeThroughSupported: false,
-                this,
-                context.AllFieldContexts,
-                context.Options);
-
-            string method = nameof(InputBufferExtensions.ReadByteMemoryBlock);
-            if (this.isReadOnly)
-            {
-                method = nameof(InputBufferExtensions.ReadByteReadOnlyMemoryBlock);
-            }
-
-            string memoryVectorRead = $"{context.InputBufferVariableName}.{method}({context.OffsetVariableName})";
-
-            string body;
-            if (context.Options.GreedyDeserialize)
-            {
-                body = $"return {memoryVectorRead}.ToArray().AsMemory();";
-            }
-            else
-            {
-                body = $"return {memoryVectorRead};";
-            }
-
-            return new CodeGeneratedMethod(body);
-        }
-
-        public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
-        {
-            string body = 
-                $"{context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteReadOnlyByteMemoryBlock)}({context.SpanVariableName}, {context.ValueVariableName}, {context.OffsetVariableName}, {context.SerializationContextVariableName});";
-
-            return new CodeGeneratedMethod(body);
-        }
-
-        public override CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context)
-        {
-            string body = $"return {context.ItemVariableName}.ToArray().AsMemory();";
-            return new CodeGeneratedMethod(body)
-            {
-                IsMethodInline = true,
-            };
-        }
+            IsMethodInline = true,
+        };
     }
 }

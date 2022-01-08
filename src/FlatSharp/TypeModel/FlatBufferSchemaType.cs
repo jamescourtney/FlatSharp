@@ -14,41 +14,40 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.TypeModel
+namespace FlatSharp.TypeModel;
+
+/// <summary>
+/// Defines flat buffer schema type elements.
+/// </summary>
+public enum FlatBufferSchemaType
 {
     /// <summary>
-    /// Defines flat buffer schema type elements.
+    /// A flat buffer table.
     /// </summary>
-    public enum FlatBufferSchemaType
-    {
-        /// <summary>
-        /// A flat buffer table.
-        /// </summary>
-        Table = 1,
+    Table = 1,
 
-        /// <summary>
-        /// A flat buffer struct.
-        /// </summary>
-        Struct = 2,
+    /// <summary>
+    /// A flat buffer struct.
+    /// </summary>
+    Struct = 2,
 
-        /// <summary>
-        /// A vector.
-        /// </summary>
-        Vector = 3,
+    /// <summary>
+    /// A vector.
+    /// </summary>
+    Vector = 3,
 
-        /// <summary>
-        /// A scalar.
-        /// </summary>
-        Scalar = 4,
+    /// <summary>
+    /// A scalar.
+    /// </summary>
+    Scalar = 4,
 
-        /// <summary>
-        /// A string.
-        /// </summary>
-        String = 5,
+    /// <summary>
+    /// A string.
+    /// </summary>
+    String = 5,
 
-        /// <summary>
-        /// A union.
-        /// </summary>
-        Union = 6,
-    }
+    /// <summary>
+    /// A union.
+    /// </summary>
+    Union = 6,
 }

@@ -14,167 +14,164 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.TypeModel
+using System.Collections.Immutable;
+using System.Linq;
+
+namespace FlatSharp.TypeModel;
+
+/// <summary>
+/// Defines a type model for an object that can be parsed and serialized to/from a FlatBuffer. While generally most useful to the 
+/// FlatSharp codegen, this can be used to introspect on how FlatSharp interprets your schema.
+/// </summary>
+public abstract class RuntimeTypeModel : ITypeModel
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.Immutable;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Linq;
-    using System.Reflection;
+    protected readonly TypeModelContainer typeModelContainer;
+
+    internal RuntimeTypeModel(Type clrType, TypeModelContainer typeModelContainer)
+    {
+        this.ClrType = clrType;
+        this.typeModelContainer = typeModelContainer;
+    }
 
     /// <summary>
-    /// Defines a type model for an object that can be parsed and serialized to/from a FlatBuffer. While generally most useful to the 
-    /// FlatSharp codegen, this can be used to introspect on how FlatSharp interprets your schema.
+    /// Initializes this runtime type model instance.
     /// </summary>
-    public abstract class RuntimeTypeModel : ITypeModel
+    public virtual void Initialize() 
     {
-        protected readonly TypeModelContainer typeModelContainer;
+    }
 
-        internal RuntimeTypeModel(Type clrType, TypeModelContainer typeModelContainer)
-        {
-            this.ClrType = clrType;
-            this.typeModelContainer = typeModelContainer;
-        }
+    /// <summary>
+    /// The type of the item in the CLR.
+    /// </summary>
+    public Type ClrType { get; }
 
-        /// <summary>
-        /// Initializes this runtime type model instance.
-        /// </summary>
-        public virtual void Initialize() { }
+    /// <summary>
+    /// Gets the schema type.
+    /// </summary>
+    public abstract FlatBufferSchemaType SchemaType { get; }
 
-        /// <summary>
-        /// The type of the item in the CLR.
-        /// </summary>
-        public Type ClrType { get; }
+    /// <summary>
+    /// Gets the layout of this type model's vtable.
+    /// </summary>
+    public abstract ImmutableArray<PhysicalLayoutElement> PhysicalLayout { get; }
 
-        /// <summary>
-        /// Gets the schema type.
-        /// </summary>
-        public abstract FlatBufferSchemaType SchemaType { get; }
+    /// <summary>
+    /// Indicates if this item is fixed size or not.
+    /// </summary>
+    public abstract bool IsFixedSize { get; }
 
-        /// <summary>
-        /// Gets the layout of this type model's vtable.
-        /// </summary>
-        public abstract ImmutableArray<PhysicalLayoutElement> PhysicalLayout { get; }
+    /// <summary>
+    /// Indicates if this type model can be part of a struct.
+    /// </summary>
+    public abstract bool IsValidStructMember { get; }
 
-        /// <summary>
-        /// Indicates if this item is fixed size or not.
-        /// </summary>
-        public abstract bool IsFixedSize { get; }
+    /// <summary>
+    /// Indicates if this type model can be part of a table.
+    /// </summary>
+    public abstract bool IsValidTableMember { get; }
 
-        /// <summary>
-        /// Indicates if this type model can be part of a struct.
-        /// </summary>
-        public abstract bool IsValidStructMember { get; }
+    /// <summary>
+    /// Indicates if this type model can be part of a vector.
+    /// </summary>
+    public abstract bool IsValidVectorMember { get; }
 
-        /// <summary>
-        /// Indicates if this type model can be part of a table.
-        /// </summary>
-        public abstract bool IsValidTableMember { get; }
+    /// <summary>
+    /// Indicates if this type model can be part of a union.
+    /// </summary>
+    public abstract bool IsValidUnionMember { get; }
 
-        /// <summary>
-        /// Indicates if this type model can be part of a vector.
-        /// </summary>
-        public abstract bool IsValidVectorMember { get; }
+    /// <summary>
+    /// Indicates if this type model can be a sorted vector key.
+    /// </summary>
+    public abstract bool IsValidSortedVectorKey { get; }
 
-        /// <summary>
-        /// Indicates if this type model can be part of a union.
-        /// </summary>
-        public abstract bool IsValidUnionMember { get; }
+    /// <summary>
+    /// When true, indicates that this type model's serialize method writes inline, rather than by offset.
+    /// </summary>
+    public abstract bool SerializesInline { get; }
 
-        /// <summary>
-        /// Indicates if this type model can be a sorted vector key.
-        /// </summary>
-        public abstract bool IsValidSortedVectorKey { get; }
+    /// <summary>
+    /// Serialization method requires a <see cref="SerializationContext"/> argument.
+    /// </summary>
+    public virtual bool SerializeMethodRequiresContext => true;
 
-        /// <summary>
-        /// When true, indicates that this type model's serialize method writes inline, rather than by offset.
-        /// </summary>
-        public abstract bool SerializesInline { get; }
+    /// <summary>
+    /// All methods require a <see cref="TableFieldContext"/> argument.
+    /// </summary>
+    public virtual TableFieldContextRequirements TableFieldContextRequirements => TableFieldContextRequirements.None;
 
-        /// <summary>
-        /// Serialization method requires a <see cref="SerializationContext"/> argument.
-        /// </summary>
-        public virtual bool SerializeMethodRequiresContext => true;
+    /// <summary>
+    /// Gets the maximum inline size of this item when padded for alignment, when stored in a table or vector.
+    /// </summary>
+    public virtual int MaxInlineSize => this.PhysicalLayout.Sum(x => x.InlineSize + SerializationHelpers.GetMaxPadding(x.Alignment));
 
-        /// <summary>
-        /// All methods require a <see cref="TableFieldContext"/> argument.
-        /// </summary>
-        public virtual TableFieldContextRequirements TableFieldContextRequirements => TableFieldContextRequirements.None;
+    /// <summary>
+    /// Most things don't have an explicit constructor.
+    /// </summary>
+    public virtual ConstructorInfo? PreferredSubclassConstructor => null;
 
-        /// <summary>
-        /// Gets the maximum inline size of this item when padded for alignment, when stored in a table or vector.
-        /// </summary>
-        public virtual int MaxInlineSize => this.PhysicalLayout.Sum(x => x.InlineSize + SerializationHelpers.GetMaxPadding(x.Alignment));
+    public abstract IEnumerable<ITypeModel> Children { get; }
 
-        /// <summary>
-        /// Most things don't have an explicit constructor.
-        /// </summary>
-        public virtual ConstructorInfo? PreferredSubclassConstructor => null;
-        
-        public abstract IEnumerable<ITypeModel> Children { get; }
+    /// <summary>
+    /// Validates a default value.
+    /// </summary>
+    public virtual bool ValidateDefaultValue(object defaultValue)
+    {
+        return false;
+    }
 
-        /// <summary>
-        /// Validates a default value.
-        /// </summary>
-        public virtual bool ValidateDefaultValue(object defaultValue)
-        {
-            return false;
-        }
+    /// <summary>
+    /// Gets or creates a runtime type model from the given type. This is only used in test cases any more.
+    /// </summary>
+    internal static ITypeModel CreateFrom(Type type)
+    {
+        return TypeModelContainer.CreateDefault().CreateTypeModel(type);
+    }
 
-        /// <summary>
-        /// Gets or creates a runtime type model from the given type. This is only used in test cases any more.
-        /// </summary>
-        internal static ITypeModel CreateFrom(Type type)
-        {
-            return TypeModelContainer.CreateDefault().CreateTypeModel(type);
-        }
+    public abstract CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context);
 
-        public abstract CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context);
+    public abstract CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context);
 
-        public abstract CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context);
+    public abstract CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context);
 
-        public abstract CodeGeneratedMethod CreateGetMaxSizeMethodBody(GetMaxSizeCodeGenContext context);
+    public abstract CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context);
 
-        public abstract CodeGeneratedMethod CreateCloneMethodBody(CloneCodeGenContext context);
+    public virtual string? CreateExtraClasses() => null;
 
-        public virtual string? CreateExtraClasses() => null;
+    public virtual string FormatDefaultValueAsLiteral(object? defaultValue) => this.GetTypeDefaultExpression();
 
-        public virtual string FormatDefaultValueAsLiteral(object? defaultValue) => this.GetTypeDefaultExpression();
+    [ExcludeFromCodeCoverage]
+    public virtual bool TryGetUnderlyingVectorType([NotNullWhen(true)] out ITypeModel? typeModel)
+    {
+        typeModel = null;
+        return false;
+    }
 
-        [ExcludeFromCodeCoverage]
-        public virtual bool TryGetUnderlyingVectorType([NotNullWhen(true)] out ITypeModel? typeModel)
-        {
-            typeModel = null;
-            return false;
-        }
+    [ExcludeFromCodeCoverage]
+    public virtual bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType)
+    {
+        comparerType = null;
+        return false;
+    }
 
-        [ExcludeFromCodeCoverage]
-        public virtual bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType)
-        {
-            comparerType = null;
-            return false;
-        }
+    [ExcludeFromCodeCoverage]
+    public virtual bool TryGetTableKeyMember([NotNullWhen(true)] out TableMemberModel? tableMember)
+    {
+        tableMember = null;
+        return false;
+    }
 
-        [ExcludeFromCodeCoverage]
-        public virtual bool TryGetTableKeyMember([NotNullWhen(true)] out TableMemberModel? tableMember)
-        {
-            tableMember = null;
-            return false;
-        }
+    public virtual void AdjustTableMember(TableMemberModel source)
+    {
+    }
 
-        public virtual void AdjustTableMember(TableMemberModel source)
-        {
-        }
+    public virtual List<(ITypeModel, TableFieldContext)> GetFieldContexts()
+    {
+        return new();
+    }
 
-        public virtual List<(ITypeModel, TableFieldContext)> GetFieldContexts()
-        {
-            return new();
-        }
-
-        public IEnumerable<Type> GetReferencedTypes()
-        {
-            return new[] { this.ClrType };
-        }
+    public IEnumerable<Type> GetReferencedTypes()
+    {
+        return new[] { this.ClrType };
     }
 }

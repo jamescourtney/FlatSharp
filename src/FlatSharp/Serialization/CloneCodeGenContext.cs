@@ -14,30 +14,26 @@
  * limitations under the License.
  */
 
-namespace FlatSharp
+namespace FlatSharp;
+
+/// <summary>
+/// Code gen context for serialization methods.
+/// </summary>
+public class CloneCodeGenContext
 {
-    using System;
-    using System.Collections.Generic;
+    public CloneCodeGenContext(string itemVariableName, IReadOnlyDictionary<Type, string> methodNameMap)
+    {
+        this.ItemVariableName = itemVariableName;
+        this.MethodNameMap = methodNameMap;
+    }
 
     /// <summary>
-    /// Code gen context for serialization methods.
+    /// The variable name of the current value to serialize.
     /// </summary>
-    public class CloneCodeGenContext
-    {
-        public CloneCodeGenContext(string itemVariableName, IReadOnlyDictionary<Type, string> methodNameMap)
-        {
-            this.ItemVariableName = itemVariableName;
-            this.MethodNameMap = methodNameMap;
-        }
+    public string ItemVariableName { get; private set; }
 
-        /// <summary>
-        /// The variable name of the current value to serialize.
-        /// </summary>
-        public string ItemVariableName { get; private set; }
-
-        /// <summary>
-        /// A mapping of type to clone method name for that type.
-        /// </summary>
-        public IReadOnlyDictionary<Type, string> MethodNameMap { get; private set; }
-    }
+    /// <summary>
+    /// A mapping of type to clone method name for that type.
+    /// </summary>
+    public IReadOnlyDictionary<Type, string> MethodNameMap { get; private set; }
 }

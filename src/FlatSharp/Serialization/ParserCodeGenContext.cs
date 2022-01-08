@@ -14,132 +14,129 @@
  * limitations under the License.
  */
 
-namespace FlatSharp
+using System.Text;
+using FlatSharp.TypeModel;
+
+namespace FlatSharp;
+
+/// <summary>
+/// Code gen context for parse methods.
+/// </summary>
+public record ParserCodeGenContext
 {
-    using FlatSharp.TypeModel;
-    using System;
-    using System.Collections.Generic;
-    using System.Text;
+    public ParserCodeGenContext(
+        string inputBufferVariableName,
+        string offsetVariableName,
+        string inputBufferTypeName,
+        bool isOffsetByRef,
+        string tableFieldContextVariableName,
+        IReadOnlyDictionary<Type, string> methodNameMap,
+        IReadOnlyDictionary<Type, string> serializeMethodNameMap,
+        FlatBufferSerializerOptions options,
+        TypeModelContainer typeModelContainer,
+        IReadOnlyDictionary<ITypeModel, List<TableFieldContext>> allFieldContexts)
+    {
+        this.InputBufferVariableName = inputBufferVariableName;
+        this.OffsetVariableName = offsetVariableName;
+        this.InputBufferTypeName = inputBufferTypeName;
+        this.MethodNameMap = methodNameMap;
+        this.SerializeMethodNameMap = serializeMethodNameMap;
+        this.IsOffsetByRef = isOffsetByRef;
+        this.Options = options;
+        this.TypeModelContainer = typeModelContainer;
+        this.TableFieldContextVariableName = tableFieldContextVariableName;
+        this.AllFieldContexts = allFieldContexts;
+    }
 
     /// <summary>
-    /// Code gen context for parse methods.
+    /// The variable name of the span. Represents a <see cref="System.Span{System.Byte}"/> value.
     /// </summary>
-    public record ParserCodeGenContext
+    public string InputBufferVariableName { get; init; }
+
+    /// <summary>
+    /// The type of the input buffer.
+    /// </summary>
+    public string InputBufferTypeName { get; init; }
+
+    /// <summary>
+    /// The variable name of the span writer. Represents a <see cref="SpanWriter"/> value.
+    /// </summary>
+    public string OffsetVariableName { get; init; }
+
+    /// <summary>
+    /// Indicates if the offset variable is passed by reference.
+    /// </summary>
+    public bool IsOffsetByRef { get; init; }
+
+    /// <summary>
+    /// The variable name of the table field context parameter. Represents a <see cref="TableFieldContext"/> value.
+    /// </summary>
+    public string TableFieldContextVariableName { get; init; }
+
+    /// <summary>
+    /// A mapping of type to serialize method name for that type.
+    /// </summary>
+    public IReadOnlyDictionary<Type, string> MethodNameMap { get; }
+
+    /// <summary>
+    /// A mapping of type to serialize method name for that type.
+    /// </summary>
+    public IReadOnlyDictionary<Type, string> SerializeMethodNameMap { get; }
+
+    /// <summary>
+    /// Serialization options.
+    /// </summary>
+    public FlatBufferSerializerOptions Options { get; }
+
+    /// <summary>
+    /// The type model container.
+    /// </summary>
+    public TypeModelContainer TypeModelContainer { get; }
+
+    /// <summary>
+    /// All contexts for the entire object graph.
+    /// </summary>
+    public IReadOnlyDictionary<ITypeModel, List<TableFieldContext>> AllFieldContexts { get; }
+
+    /// <summary>
+    /// Gets a parse invocation for the given type.
+    /// </summary>
+    public string GetParseInvocation(Type type)
     {
-        public ParserCodeGenContext(
-            string inputBufferVariableName,
-            string offsetVariableName,
-            string inputBufferTypeName,
-            bool isOffsetByRef,
-            string tableFieldContextVariableName,
-            IReadOnlyDictionary<Type, string> methodNameMap,
-            IReadOnlyDictionary<Type, string> serializeMethodNameMap,
-            FlatBufferSerializerOptions options,
-            TypeModelContainer typeModelContainer,
-            IReadOnlyDictionary<ITypeModel, List<TableFieldContext>> allFieldContexts)
+        ITypeModel typeModel = this.TypeModelContainer.CreateTypeModel(type);
+        StringBuilder sb = new($"{this.MethodNameMap[type]}({this.InputBufferVariableName}, ");
+
+        if (this.IsOffsetByRef)
         {
-            this.InputBufferVariableName = inputBufferVariableName;
-            this.OffsetVariableName = offsetVariableName;
-            this.InputBufferTypeName = inputBufferTypeName;
-            this.MethodNameMap = methodNameMap;
-            this.SerializeMethodNameMap = serializeMethodNameMap;
-            this.IsOffsetByRef = isOffsetByRef;
-            this.Options = options;
-            this.TypeModelContainer = typeModelContainer;
-            this.TableFieldContextVariableName = tableFieldContextVariableName;
-            this.AllFieldContexts = allFieldContexts;
+            sb.Append("ref ");
         }
 
-        /// <summary>
-        /// The variable name of the span. Represents a <see cref="System.Span{System.Byte}"/> value.
-        /// </summary>
-        public string InputBufferVariableName { get; init; }
+        sb.Append(this.OffsetVariableName);
 
-        /// <summary>
-        /// The type of the input buffer.
-        /// </summary>
-        public string InputBufferTypeName { get; init; }
-
-        /// <summary>
-        /// The variable name of the span writer. Represents a <see cref="SpanWriter"/> value.
-        /// </summary>
-        public string OffsetVariableName { get; init; }
-
-        /// <summary>
-        /// Indicates if the offset variable is passed by reference.
-        /// </summary>
-        public bool IsOffsetByRef { get; init; }
-
-        /// <summary>
-        /// The variable name of the table field context parameter. Represents a <see cref="TableFieldContext"/> value.
-        /// </summary>
-        public string TableFieldContextVariableName { get; init; }
-
-        /// <summary>
-        /// A mapping of type to serialize method name for that type.
-        /// </summary>
-        public IReadOnlyDictionary<Type, string> MethodNameMap { get; }
-
-        /// <summary>
-        /// A mapping of type to serialize method name for that type.
-        /// </summary>
-        public IReadOnlyDictionary<Type, string> SerializeMethodNameMap { get; }
-
-        /// <summary>
-        /// Serialization options.
-        /// </summary>
-        public FlatBufferSerializerOptions Options { get; }
-
-        /// <summary>
-        /// The type model container.
-        /// </summary>
-        public TypeModelContainer TypeModelContainer { get; }
-
-        /// <summary>
-        /// All contexts for the entire object graph.
-        /// </summary>
-        public IReadOnlyDictionary<ITypeModel, List<TableFieldContext>> AllFieldContexts { get; }
-
-        /// <summary>
-        /// Gets a parse invocation for the given type.
-        /// </summary>
-        public string GetParseInvocation(Type type)
+        if (typeModel.TableFieldContextRequirements.HasFlag(TableFieldContextRequirements.Parse))
         {
-            ITypeModel typeModel = this.TypeModelContainer.CreateTypeModel(type);
-            StringBuilder sb = new($"{this.MethodNameMap[type]}({this.InputBufferVariableName}, ");
-
-            if (this.IsOffsetByRef)
-            {
-                sb.Append("ref ");
-            }
-
-            sb.Append(this.OffsetVariableName);
-
-            if (typeModel.TableFieldContextRequirements.HasFlag(TableFieldContextRequirements.Parse))
-            {
-                sb.Append(", ");
-                sb.Append(this.TableFieldContextVariableName);
-            }
-
-            sb.Append(")");
-
-            return sb.ToString();
+            sb.Append(", ");
+            sb.Append(this.TableFieldContextVariableName);
         }
 
-        public SerializationCodeGenContext GetWriteThroughContext(string spanVariableName, string valueVariableName, string offsetVariableName)
-        {
-            return new SerializationCodeGenContext(
-                "null",
-                spanVariableName,
-                "default(SpanWriter)",
-                valueVariableName,
-                offsetVariableName,
-                this.TableFieldContextVariableName,
-                this.IsOffsetByRef,
-                this.SerializeMethodNameMap,
-                this.TypeModelContainer,
-                this.Options,
-                this.AllFieldContexts);
-        }
+        sb.Append(")");
+
+        return sb.ToString();
+    }
+
+    public SerializationCodeGenContext GetWriteThroughContext(string spanVariableName, string valueVariableName, string offsetVariableName)
+    {
+        return new SerializationCodeGenContext(
+            "null",
+            spanVariableName,
+            "default(SpanWriter)",
+            valueVariableName,
+            offsetVariableName,
+            this.TableFieldContextVariableName,
+            this.IsOffsetByRef,
+            this.SerializeMethodNameMap,
+            this.TypeModelContainer,
+            this.Options,
+            this.AllFieldContexts);
     }
 }

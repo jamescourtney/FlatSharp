@@ -14,38 +14,35 @@
  * limitations under the License.
  */
 
-namespace FlatSharp
+namespace FlatSharp;
+
+/// <summary>
+/// An exception thrown when Roslyn fails to compile the generated C# code.
+/// </summary>
+public sealed class FlatSharpCompilationException : Exception
 {
-    using System;
+    public FlatSharpCompilationException(string[] compilerErrors, string cSharp)
+        : base("FlatSharp failed to generate proper C# for your schema.")
+    {
+        this.CompilerErrors = compilerErrors;
+        this.CSharp = cSharp;
+    }
+
+    public override string Message
+    {
+        get
+        {
+            return $"{base.Message}\r\n\r\n{string.Join("\r\n", this.CompilerErrors)}\r\n";
+        }
+    }
 
     /// <summary>
-    /// An exception thrown when Roslyn fails to compile the generated C# code.
+    /// The list of individual errors from the C# compiler.
     /// </summary>
-    public sealed class FlatSharpCompilationException : Exception
-    {
-        public FlatSharpCompilationException(string[] compilerErrors, string cSharp) 
-            : base("FlatSharp failed to generate proper C# for your schema.")
-        {
-            this.CompilerErrors = compilerErrors;
-            this.CSharp = cSharp;
-        }
+    public string[] CompilerErrors { get; }
 
-        public override string Message
-        {
-            get
-            {
-                return $"{base.Message}\r\n\r\n{string.Join("\r\n", this.CompilerErrors)}\r\n";
-            }
-        }
-
-        /// <summary>
-        /// The list of individual errors from the C# compiler.
-        /// </summary>
-        public string[] CompilerErrors { get; }
-
-        /// <summary>
-        /// The generated C# that failed to compile.
-        /// </summary>
-        public string CSharp { get; }
-    }
+    /// <summary>
+    /// The generated C# that failed to compile.
+    /// </summary>
+    public string CSharp { get; }
 }

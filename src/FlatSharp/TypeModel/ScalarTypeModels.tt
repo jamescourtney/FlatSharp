@@ -23,84 +23,79 @@
 <#@ output extension=".cs" #>
 
 <#
-	(string casedName, string typeName, string literalSpecifier, string[] fbsAliases, string writeNameClass, string readNameClass)[] types = 
-	{
-		("Bool", "bool", "", new[] { "bool" }, "SpanWriterExtensions", "InputBufferExtensions"),
-		("Byte", "byte", "", new[] { "ubyte", "uint8" }, null, null),
-		("SByte", "sbyte", "", new[] { "byte", "int8" }, null, null),
-		("UShort", "ushort", "", new[] { "ushort", "uint16" }, null, null),
-		("Short", "short", "", new[] { "short", "int16" }, null, null),
-		("Int", "int", "", new[] { "int", "int32" }, null, null),
-		("UInt", "uint", "u", new[] { "uint", "uint32" }, null, null),
-		("Long", "long", "L", new[] { "long", "int64" }, null, null),
-		("ULong", "ulong", "ul", new[] { "ulong", "uint64" }, null, null),
-		("Float", "float", "f", new[] { "float", "float32" }, null, null),
-		("Double", "double", "d", new[] { "double", "float64" }, null, null),
-	}; 
+    (string casedName, string typeName, string literalSpecifier, string[] fbsAliases, string writeNameClass, string readNameClass)[] types = 
+    {
+        ("Bool", "bool", "", new[] { "bool" }, "SpanWriterExtensions", "InputBufferExtensions"),
+        ("Byte", "byte", "", new[] { "ubyte", "uint8" }, null, null),
+        ("SByte", "sbyte", "", new[] { "byte", "int8" }, null, null),
+        ("UShort", "ushort", "", new[] { "ushort", "uint16" }, null, null),
+        ("Short", "short", "", new[] { "short", "int16" }, null, null),
+        ("Int", "int", "", new[] { "int", "int32" }, null, null),
+        ("UInt", "uint", "u", new[] { "uint", "uint32" }, null, null),
+        ("Long", "long", "L", new[] { "long", "int64" }, null, null),
+        ("ULong", "ulong", "ul", new[] { "ulong", "uint64" }, null, null),
+        ("Float", "float", "f", new[] { "float", "float32" }, null, null),
+        ("Double", "double", "d", new[] { "double", "float64" }, null, null),
+    }; 
 #>
 
-namespace FlatSharp.TypeModel
-{
-	using System;
-	using System.ComponentModel;
-	using System.Diagnostics.CodeAnalysis;
+namespace FlatSharp.TypeModel;
 
-	<#
-		foreach (var pair in types)
-		{
-			var casedName = pair.casedName;
-			var typeName = pair.typeName;
-			var className = $"{casedName}TypeModel";
-	#>
-	
-    /// <summary>
-    /// Type Model for <see cref="<#= typeName #>"/>.
-    /// </summary>
-	[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    public partial class <#= className #> : ScalarTypeModel
+<#
+    foreach (var pair in types)
     {
-        public <#= className #>(TypeModelContainer container) : base(container, typeof(<#=typeName#>), sizeof(<#=typeName#>)) 
-        {
-        }
+        var casedName = pair.casedName;
+        var typeName = pair.typeName;
+        var className = $"{casedName}TypeModel";
+#>
+    
+/// <summary>
+/// Type Model for <see cref="<#= typeName #>"/>.
+/// </summary>
+[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+public partial class <#= className #> : ScalarTypeModel
+{
+    public <#= className #>(TypeModelContainer container) : base(container, typeof(<#=typeName#>), sizeof(<#=typeName#>)) 
+    {
+    }
 
-        public override bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType)
+    public override bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType)
+    {
+        comparerType = typeof(<#= casedName #>SpanComparer);
+        return true;
+    }
+
+    protected override string InputBufferReadMethodName => nameof(<#= pair.readNameClass ?? "IInputBuffer" #>.Read<#= casedName #>);
+
+    protected override string SpanWriterWriteMethodName => nameof(<#= pair.writeNameClass ?? "ISpanWriter" #>.Write<#= casedName #>);
+}
+
+<# } #>
+
+public class ScalarTypeModelProvider : ITypeModelProvider
+{
+    public bool TryCreateTypeModel(
+        TypeModelContainer container, 
+        Type type, 
+        [NotNullWhen(true)] out ITypeModel? typeModel)
+    {
+        typeModel = null;
+    <#
+        foreach (var pair in types)
         {
-            comparerType = typeof(<#= casedName #>SpanComparer);
+            var casedName = pair.casedName;
+            var typeName = pair.typeName;
+            var className = $"{casedName}TypeModel";
+    #>
+
+        if (type == typeof(<#= typeName #>))
+        {
+            typeModel = new <#= className #>(container); 
             return true;
         }
 
-        protected override string InputBufferReadMethodName => nameof(<#= pair.readNameClass ?? "IInputBuffer" #>.Read<#= casedName #>);
+    <# } #>
 
-        protected override string SpanWriterWriteMethodName => nameof(<#= pair.writeNameClass ?? "ISpanWriter" #>.Write<#= casedName #>);
+        return false;
     }
-
-	<# } #>
-
-	public class ScalarTypeModelProvider : ITypeModelProvider
-	{
-        public bool TryCreateTypeModel(
-			TypeModelContainer container, 
-			Type type, 
-            [NotNullWhen(true)] out ITypeModel? typeModel)
-		{
-			typeModel = null;
-		<#
-			foreach (var pair in types)
-			{
-				var casedName = pair.casedName;
-				var typeName = pair.typeName;
-				var className = $"{casedName}TypeModel";
-		#>
-
-			if (type == typeof(<#= typeName #>))
-			{
-				typeModel = new <#= className #>(container); 
-				return true;
-			}
-
-		<# } #>
-
-			return false;
-		}
-	}
 }
