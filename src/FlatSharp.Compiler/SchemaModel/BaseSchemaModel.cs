@@ -14,67 +14,66 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Compiler.SchemaModel
+namespace FlatSharp.Compiler.SchemaModel;
+
+public abstract class BaseSchemaModel
 {
-    public abstract class BaseSchemaModel
+    protected BaseSchemaModel(
+        Schema.Schema schema,
+        string name,
+        FlatSharpAttributes attributes)
     {
-        protected BaseSchemaModel(
-            Schema.Schema schema,
-            string name,
-            FlatSharpAttributes attributes)
+        this.Attributes = attributes;
+        this.Schema = schema;
+        this.FullName = name;
+
+        (string ns, string typeName) = Helpers.ParseName(name);
+
+        this.Namespace = ns;
+        this.Name = typeName;
+
+        this.AttributeValidator = new FlatSharpAttributeValidator(this.ElementType, name);
+    }
+
+    public Schema.Schema Schema { get; }
+
+    public FlatSharpAttributes Attributes { get; }
+
+    public FlatSharpAttributeValidator AttributeValidator { get; }
+
+    public string Namespace { get; }
+
+    public string Name { get; }
+
+    public string FullName { get; }
+
+    public abstract string DeclaringFile { get; }
+
+    public abstract FlatBufferSchemaElementType ElementType { get; }
+
+    private void Validate()
+    {
+        this.AttributeValidator.Validate(this.Attributes);
+        this.OnValidate();
+    }
+
+    public void WriteCode(CodeWriter writer, CompileContext context)
+    {
+        if (context.CompilePass < CodeWritingPass.LastPass || context.RootFile == this.DeclaringFile)
         {
-            this.Attributes = attributes;
-            this.Schema = schema;
-            this.FullName = name;
+            this.Validate();
 
-            (string ns, string typeName) = Helpers.ParseName(name);
-
-            this.Namespace = ns;
-            this.Name = typeName;
-
-            this.AttributeValidator = new FlatSharpAttributeValidator(this.ElementType, name);
-        }
-
-        public Schema.Schema Schema { get; }
-
-        public FlatSharpAttributes Attributes { get; }
-
-        public FlatSharpAttributeValidator AttributeValidator { get; }
-
-        public string Namespace { get; }
-
-        public string Name { get; }
-
-        public string FullName { get; }
-
-        public abstract string DeclaringFile { get; }
-
-        public abstract FlatBufferSchemaElementType ElementType { get; }
-
-        private void Validate()
-        {
-            this.AttributeValidator.Validate(this.Attributes);
-            this.OnValidate();
-        }
-
-        public void WriteCode(CodeWriter writer, CompileContext context)
-        {
-            if (context.CompilePass < CodeWritingPass.LastPass || context.RootFile == this.DeclaringFile)
+            writer.AppendLine($"namespace {this.Namespace}");
+            using (writer.WithBlock())
             {
-                this.Validate();
-
-                writer.AppendLine($"namespace {this.Namespace}");
-                using (writer.WithBlock())
-                {
-                    this.OnWriteCode(writer, context);
-                }
+                this.OnWriteCode(writer, context);
             }
         }
+    }
 
-        protected abstract void OnWriteCode(CodeWriter writer, CompileContext context);
+    protected abstract void OnWriteCode(CodeWriter writer, CompileContext context);
 
-        protected virtual void OnValidate()
-        {
-        }
+    protected virtual void OnValidate()
+    {
     }
 }

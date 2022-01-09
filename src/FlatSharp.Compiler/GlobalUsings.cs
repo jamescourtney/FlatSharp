@@ -1,5 +1,6 @@
-﻿/*
- * Copyright 2020 James Courtney
+﻿
+/*
+ * Copyright 2021 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,25 +15,15 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Compiler;
+global using System;
+global using System.Collections;
+global using System.Collections.Generic;
+global using System.ComponentModel;
+global using System.Diagnostics;
+global using System.Diagnostics.CodeAnalysis;
+global using System.Reflection;
+global using System.Runtime.CompilerServices;
 
-/// <summary>
-/// Defines styles for generating default constructors.
-/// </summary>
-public enum DefaultConstructorKind
-{
-    /// <summary>
-    /// A public default constructor.
-    /// </summary>
-    Public = 0,
-
-    /// <summary>
-    /// A public default constructor with the 'Obsolete' attribute applied.
-    /// </summary>
-    PublicObsolete = 1,
-
-    /// <summary>
-    /// No default constructor.
-    /// </summary>
-    None = 2,
-}
+#if NETSTANDARD2_0
+global using FlatSharp.Polyfills;
+#endif

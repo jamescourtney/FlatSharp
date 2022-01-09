@@ -14,38 +14,36 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Compiler
+using FlatSharp.Attributes;
+namespace FlatSharp.Compiler.SchemaModel;
+
+public interface IFlatSharpAttributes
 {
-    using FlatSharp.Attributes;
+    DefaultConstructorKind? DefaultCtorKind { get; }
 
-    public interface IFlatSharpAttributes
-    {
-        DefaultConstructorKind? DefaultCtorKind { get; }
+    FlatBufferDeserializationOption? DeserializationOption { get; }
 
-        FlatBufferDeserializationOption? DeserializationOption { get; }
+    bool? ForceWrite { get; }
 
-        bool? ForceWrite { get; }
+    MemoryMarshalBehavior? MemoryMarshalBehavior { get; }
 
-        MemoryMarshalBehavior? MemoryMarshalBehavior { get; }
+    bool? NonVirtual { get; }
 
-        bool? NonVirtual { get; }
+    bool? RpcInterface { get; }
 
-        bool? RpcInterface { get; }
+    SetterKind? SetterKind { get; }
 
-        SetterKind? SetterKind { get; }
+    bool? SharedString { get; }
 
-        bool? SharedString { get; }
+    bool? SortedVector { get; }
 
-        bool? SortedVector { get; }
+    bool? UnsafeStructVector { get; }
 
-        bool? UnsafeStructVector { get; }
+    bool? ValueStruct { get; }
 
-        bool? ValueStruct { get; }
+    VectorType? VectorKind { get; }
 
-        VectorType? VectorKind { get; }
+    bool? WriteThrough { get; }
 
-        bool? WriteThrough { get; }
-
-        RpcStreamingType? StreamingType { get; }
-    }
+    RpcStreamingType? StreamingType { get; }
 }

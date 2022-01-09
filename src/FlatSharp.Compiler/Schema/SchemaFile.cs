@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Compiler.Schema
-{
-    using FlatSharp.Attributes;
-    using System.Collections.Generic;
+using FlatSharp.Attributes;
+
+namespace FlatSharp.Compiler.Schema;
 
 /*
 /// File specific information.
@@ -31,14 +30,13 @@ table SchemaFile {
 }
 
 */
-    [FlatBufferTable]
-    public class SchemaFile
-    {
-        [FlatBufferItem(0, Required = true, Key = true)]
-        public virtual string FileName { get; set; } = string.Empty;
+[FlatBufferTable]
+public class SchemaFile
+{
+    [FlatBufferItem(0, Required = true, Key = true)]
+    public virtual string FileName { get; set; } = string.Empty;
 
-        // Must be a table.
-        [FlatBufferItem(1)]
-        public virtual IList<string>? IncludedFileNames { get; set; }
-    }
+    // Must be a table.
+    [FlatBufferItem(1)]
+    public virtual IList<string>? IncludedFileNames { get; set; }
 }

@@ -14,22 +14,21 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Compiler.SchemaModel
+namespace FlatSharp.Compiler.SchemaModel;
+
+public enum FlatBufferSchemaElementType
 {
-    public enum FlatBufferSchemaElementType
-    {
-        Unknown = 0,
-        Table = 1,
-        Struct = 2,
-        ValueStruct = 3,
-        Enum = 4,
-        Union = 5,
-        RpcService = 6,
-        TableField = 7,
-        StructField = 8,
-        ValueStructField = 9,
-        StructVector = 10,
-        ValueStructVector = 11,
-        RpcCall = 12,
-    }
+    Unknown = 0,
+    Table = 1,
+    Struct = 2,
+    ValueStruct = 3,
+    Enum = 4,
+    Union = 5,
+    RpcService = 6,
+    TableField = 7,
+    StructField = 8,
+    ValueStructField = 9,
+    StructVector = 10,
+    ValueStructVector = 11,
+    RpcCall = 12,
 }

@@ -14,22 +14,21 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Compiler
+using CommandLine;
+
+namespace FlatSharp.Compiler;
+
+public record CompilerOptions
 {
-    using CommandLine;
+    [Option('i', "input", HelpText = "FBS input file", Required = true)]
+    public string InputFile { get; set; } = string.Empty;
 
-    public record CompilerOptions
-    {
-        [Option('i', "input", HelpText = "FBS input file", Required = true)]
-        public string InputFile { get; set; } = string.Empty;
+    [Option('o', "output", HelpText = "Output directory", Required = true)]
+    public string? OutputDirectory { get; set; }
 
-        [Option('o', "output", HelpText = "Output directory", Required = true)]
-        public string? OutputDirectory { get; set; }
+    [Option("nullable-warnings", Default = false)]
+    public bool? NullableWarnings { get; set; }
 
-        [Option("nullable-warnings", Default = false)]
-        public bool? NullableWarnings { get; set; }
-
-        [Option("flatc-path", Hidden = true)]
-        public string? FlatcPath { get; set; }
-    }
+    [Option("flatc-path", Hidden = true)]
+    public string? FlatcPath { get; set; }
 }

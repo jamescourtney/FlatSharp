@@ -14,47 +14,41 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Compiler
+using System.Linq;
+using System.Threading;
+
+namespace FlatSharp.Compiler;
+
+internal class ErrorContext
 {
-    using FlatSharp.TypeModel;
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Linq;
-    using System.Threading;
+    private static readonly ThreadLocal<ErrorContext> ThreadLocalContext = new ThreadLocal<ErrorContext>(() => new ErrorContext());
 
-    internal class ErrorContext
+    public static ErrorContext Current => ThreadLocalContext.Value!;
+
+    private readonly LinkedList<(string scope, int? lineNumber, string? context)> contextStack = new LinkedList<(string, int?, string?)>();
+    private readonly List<string> errors = new List<string>();
+
+    private ErrorContext()
     {
-        private static readonly ThreadLocal<ErrorContext> ThreadLocalContext = new ThreadLocal<ErrorContext>(() => new ErrorContext());
+    }
 
-        public static ErrorContext Current => ThreadLocalContext.Value!;
+    public IEnumerable<string> Errors => this.errors;
 
-        private readonly LinkedList<(string scope, int? lineNumber, string? context)> contextStack = new LinkedList<(string, int?, string?)>();
-        private readonly List<string> errors = new List<string>();
-
-        private ErrorContext()
+    public void ThrowIfHasErrors()
+    {
+        if (this.Errors.Any())
         {
+            throw new InvalidFbsFileException(this.Errors);
         }
+    }
 
-        public IEnumerable<string> Errors => this.errors;
-         
-        public void ThrowIfHasErrors()
-        {
-            if (this.Errors.Any())
-            {
-                throw new InvalidFbsFileException(this.Errors);
-            }
-        }
+    public void Clear()
+    {
+        this.errors.Clear();
+    }
 
-        public void Clear()
-        {
-            this.errors.Clear();
-        }
-
-        public void RegisterError(string message)
-        {
-            this.errors.Add(message);
-        }
+    public void RegisterError(string message)
+    {
+        this.errors.Add(message);
     }
 }

@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Compiler.Schema
+using FlatSharp.Attributes;
+
+namespace FlatSharp.Compiler.Schema;
+
+[FlatBufferTable]
+public class KeyValue
 {
-    using FlatSharp.Attributes;
+    [FlatBufferItem(0, Required = true, Key = true)]
+    public virtual string Key { get; set; } = string.Empty;
 
-    [FlatBufferTable]
-    public class KeyValue
-    {
-        [FlatBufferItem(0, Required = true, Key = true)]
-        public virtual string Key { get; set; } = string.Empty;
-
-        [FlatBufferItem(1)]
-        public virtual string? Value { get; set; }
-    }
+    [FlatBufferItem(1)]
+    public virtual string? Value { get; set; }
 }

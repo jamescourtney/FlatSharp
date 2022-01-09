@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Compiler
+namespace FlatSharp.Compiler;
+
+public enum RpcStreamingType
 {
-    public enum RpcStreamingType
-    {
-        Unary = 0,
-        None = 0,
+    Unary = 0,
+    None = 0,
 
-        Client = 1,
-        Server = 2,
+    Client = 1,
+    Server = 2,
 
-        Bidirectional = 3,
-        Bidi = 3,
-        Duplex = 3,
-    }
+    Bidirectional = 3,
+    Bidi = 3,
+    Duplex = 3,
 }

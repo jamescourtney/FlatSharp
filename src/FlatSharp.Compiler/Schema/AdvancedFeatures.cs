@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Compiler.Schema
-{
-    using System;
-    using FlatSharp.Attributes;
+using FlatSharp.Attributes;
+
+namespace FlatSharp.Compiler.Schema;
 
 /*
 /// New schema language features that are not supported by old code generators.
@@ -28,20 +27,19 @@ enum AdvancedFeatures : ulong (bit_flags) {
     DefaultVectorsAndStrings,
 } 
 */
-    [FlatBufferEnum(typeof(ulong))]
-    [Flags]
-    public enum AdvancedFeatures : ulong
-    {
-        None = 0,
+[FlatBufferEnum(typeof(ulong))]
+[Flags]
+public enum AdvancedFeatures : ulong
+{
+    None = 0,
 
-        AdvancedArrayFeatures = 1,
-        AdvancedUnionFeatures = 2,
-        OptionalScalars = 4,
-        DefaultVectorsAndStrings = 8,
+    AdvancedArrayFeatures = 1,
+    AdvancedUnionFeatures = 2,
+    OptionalScalars = 4,
+    DefaultVectorsAndStrings = 8,
 
-        All = AdvancedArrayFeatures 
-            | AdvancedUnionFeatures 
-            | OptionalScalars 
-            | DefaultVectorsAndStrings,
-    }
+    All = AdvancedArrayFeatures
+        | AdvancedUnionFeatures
+        | OptionalScalars
+        | DefaultVectorsAndStrings,
 }

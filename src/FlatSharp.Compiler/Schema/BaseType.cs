@@ -14,161 +14,158 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Compiler.Schema
+using FlatSharp.Attributes;
+
+namespace FlatSharp.Compiler.Schema;
+
+[FlatBufferEnum(typeof(byte))]
+public enum BaseType : byte
 {
-    using FlatSharp.Attributes;
-    using System;
-    using System.Diagnostics.CodeAnalysis;
+    None,
+    UType,
+    Bool,
+    Byte,
+    UByte,
+    Short,
+    UShort,
+    Int,
+    UInt,
+    Long,
+    ULong,
+    Float,
+    Double,
+    String,
+    Vector,
+    Obj,     // Used for tables & structs.
+    Union,
+    Array,
 
-    [FlatBufferEnum(typeof(byte))]
-    public enum BaseType : byte
+    // Add any new type above this value.
+    MaxBaseType
+}
+
+public static class BaseTypeExtensions
+{
+    public static bool IsKnown(this BaseType type)
     {
-        None,
-        UType,
-        Bool,
-        Byte,
-        UByte,
-        Short,
-        UShort,
-        Int,
-        UInt,
-        Long,
-        ULong,
-        Float,
-        Double,
-        String,
-        Vector,
-        Obj,     // Used for tables & structs.
-        Union,
-        Array,
-
-        // Add any new type above this value.
-        MaxBaseType
+        return type > BaseType.None && type < BaseType.MaxBaseType;
     }
 
-    public static class BaseTypeExtensions
+    public static bool TryGetBuiltInTypeName(this BaseType type, [NotNullWhen(true)] out string? typeName)
     {
-        public static bool IsKnown(this BaseType type)
+        switch (type)
         {
-            return type > BaseType.None && type < BaseType.MaxBaseType;
+            case BaseType.Bool:
+                typeName = "bool";
+                return true;
+
+            case BaseType.Byte:
+                typeName = "sbyte";
+                return true;
+
+            case BaseType.UByte:
+                typeName = "byte";
+                return true;
+
+            case BaseType.Short:
+                typeName = "short";
+                return true;
+
+            case BaseType.UShort:
+                typeName = "ushort";
+                return true;
+
+            case BaseType.Int:
+                typeName = "int";
+                return true;
+
+            case BaseType.UInt:
+                typeName = "uint";
+                return true;
+
+            case BaseType.Long:
+                typeName = "long";
+                return true;
+
+            case BaseType.ULong:
+                typeName = "ulong";
+                return true;
+
+            case BaseType.Float:
+                typeName = "float";
+                return true;
+
+            case BaseType.Double:
+                typeName = "double";
+                return true;
+
+            case BaseType.String:
+                typeName = "string";
+                return true;
         }
 
-        public static bool TryGetBuiltInTypeName(this BaseType type, [NotNullWhen(true)] out string? typeName)
+        typeName = null;
+        return false;
+    }
+
+    public static bool IsScalar(this BaseType type)
+    {
+        switch (type)
         {
-            switch (type)
-            {
-                case BaseType.Bool:
-                    typeName = "bool";
-                    return true;
-
-                case BaseType.Byte:
-                    typeName = "sbyte";
-                    return true;
-
-                case BaseType.UByte:
-                    typeName = "byte";
-                    return true;
-
-                case BaseType.Short:
-                    typeName = "short";
-                    return true;
-
-                case BaseType.UShort:
-                    typeName = "ushort";
-                    return true;
-
-                case BaseType.Int:
-                    typeName = "int";
-                    return true;
-
-                case BaseType.UInt:
-                    typeName = "uint";
-                    return true;
-
-                case BaseType.Long:
-                    typeName = "long";
-                    return true;
-
-                case BaseType.ULong:
-                    typeName = "ulong";
-                    return true;
-
-                case BaseType.Float:
-                    typeName = "float";
-                    return true;
-                    
-                case BaseType.Double:
-                    typeName = "double";
-                    return true;
-
-                case BaseType.String:
-                    typeName = "string";
-                    return true;
-            }
-
-            typeName = null;
-            return false;
+            case BaseType.Bool:
+            case BaseType.Float:
+            case BaseType.Double:
+                return true;
         }
 
-        public static bool IsScalar(this BaseType type)
-        {
-            switch (type)
-            {
-                case BaseType.Bool:
-                case BaseType.Float:
-                case BaseType.Double:
-                    return true;
-            }
+        return type.IsInteger();
+    }
 
-            return type.IsInteger();
+    public static bool IsInteger(this BaseType type)
+    {
+        switch (type)
+        {
+            case BaseType.Byte:
+            case BaseType.UByte:
+            case BaseType.Short:
+            case BaseType.UShort:
+            case BaseType.Int:
+            case BaseType.UInt:
+            case BaseType.Long:
+            case BaseType.ULong:
+                return true;
         }
 
-        public static bool IsInteger(this BaseType type)
+        return false;
+    }
+
+    public static int GetScalarSize(this BaseType type)
+    {
+        FlatSharpInternal.Assert(type.IsScalar(), "Type " + type + " was not a scalar");
+
+        switch (type)
         {
-            switch (type)
-            {
-                case BaseType.Byte:
-                case BaseType.UByte:
-                case BaseType.Short:
-                case BaseType.UShort:
-                case BaseType.Int:
-                case BaseType.UInt:
-                case BaseType.Long:
-                case BaseType.ULong:
-                    return true;
-            }
+            case BaseType.Bool:
+            case BaseType.Byte:
+            case BaseType.UByte:
+                return 1;
 
-            return false;
-        }
+            case BaseType.Short:
+            case BaseType.UShort:
+                return 2;
 
-        public static int GetScalarSize(this BaseType type)
-        {
-            FlatSharpInternal.Assert(type.IsScalar(), "Type " + type + " was not a scalar");
+            case BaseType.Int:
+            case BaseType.UInt:
+            case BaseType.Float:
+                return 4;
 
-            switch (type)
-            {
-                case BaseType.Bool:
-                case BaseType.Byte:
-                case BaseType.UByte:
-                    return 1;
+            case BaseType.Long:
+            case BaseType.ULong:
+            case BaseType.Double:
+                return 8;
 
-                case BaseType.Short:
-                case BaseType.UShort:
-                    return 2;
-
-                case BaseType.Int:
-                case BaseType.UInt:
-                case BaseType.Float:
-                    return 4;
-
-                case BaseType.Long:
-                case BaseType.ULong:
-                case BaseType.Double:
-                    return 8;
-
-                default:
-                    throw new InvalidOperationException("impossible");
-            }
+            default:
+                throw new InvalidOperationException("impossible");
         }
     }
 }
