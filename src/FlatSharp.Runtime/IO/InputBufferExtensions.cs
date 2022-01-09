@@ -14,141 +14,136 @@
  * limitations under the License.
  */
 
-namespace FlatSharp
+using System.IO;
+
+namespace FlatSharp;
+
+/// <summary>
+/// Extensions for input buffers.
+/// </summary>
+public static class InputBufferExtensions
 {
-    using System;
-    using System.Diagnostics;
-    using System.Diagnostics.CodeAnalysis;
-    using System.IO;
-    using System.Runtime.CompilerServices;
+    /// <summary>
+    /// Reads a bool.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool ReadBool<TBuffer>(this TBuffer buffer, int offset) where TBuffer : IInputBuffer
+    {
+        return buffer.ReadByte(offset) != SerializationHelpers.False;
+    }
 
     /// <summary>
-    /// Extensions for input buffers.
+    /// Reads a string at the given offset.
     /// </summary>
-    public static class InputBufferExtensions
+    public static string ReadString<TBuffer>(this TBuffer buffer, int offset) where TBuffer : IInputBuffer
     {
-        /// <summary>
-        /// Reads a bool.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool ReadBool<TBuffer>(this TBuffer buffer, int offset) where TBuffer : IInputBuffer
+        checked
         {
-            return buffer.ReadByte(offset) != SerializationHelpers.False;
+            // Strings are stored by reference.
+            offset += buffer.ReadUOffset(offset);
+            return buffer.ReadStringFromUOffset(offset);
+        }
+    }
+
+    /// <summary>
+    /// Reads a string from the given uoffset.
+    /// </summary>
+    public static string ReadStringFromUOffset<TBuffer>(this TBuffer buffer, int uoffset) where TBuffer : IInputBuffer
+    {
+        checked
+        {
+            int numberOfBytes = (int)buffer.ReadUInt(uoffset);
+            return buffer.ReadString(uoffset + sizeof(int), numberOfBytes, SerializationHelpers.Encoding);
+        }
+    }
+
+    /// <summary>
+    /// Reads the given uoffset.
+    /// </summary>
+    public static int ReadUOffset<TBuffer>(this TBuffer buffer, int offset) where TBuffer : IInputBuffer
+    {
+        uint uoffset = buffer.ReadUInt(offset);
+        if (uoffset < sizeof(uint))
+        {
+            ThrowUOffsetLessThanMinimumException(uoffset);
         }
 
-        /// <summary>
-        /// Reads a string at the given offset.
-        /// </summary>
-        public static string ReadString<TBuffer>(this TBuffer buffer, int offset) where TBuffer : IInputBuffer
+        return checked((int)uoffset);
+    }
+
+    /// <summary>
+    /// Left as no inlining. Literal strings seem to prevent JIT inlining.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void ThrowUOffsetLessThanMinimumException(uint uoffset)
+    {
+        throw new InvalidDataException($"FlatBuffer was in an invalid format: Decoded uoffset_t had value less than {sizeof(uint)}. Value = {uoffset}");
+    }
+
+    /// <summary>
+    /// Validates a vtable and reads the initial bytes of a vtable.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void InitializeVTable<TBuffer>(
+        this TBuffer buffer,
+        int tableOffset,
+        out int vtableOffset,
+        out int maxVTableIndex) where TBuffer : IInputBuffer
+    {
+        checked
         {
-            checked
+            vtableOffset = tableOffset - buffer.ReadInt(tableOffset);
+            ushort vtableLength = buffer.ReadUShort(vtableOffset);
+
+            if (vtableLength < 4)
             {
-                // Strings are stored by reference.
-                offset += buffer.ReadUOffset(offset);
-                return buffer.ReadStringFromUOffset(offset);
-            }
-        }
-
-        /// <summary>
-        /// Reads a string from the given uoffset.
-        /// </summary>
-        public static string ReadStringFromUOffset<TBuffer>(this TBuffer buffer, int uoffset) where TBuffer : IInputBuffer
-        {
-            checked
-            {
-                int numberOfBytes = (int)buffer.ReadUInt(uoffset);
-                return buffer.ReadString(uoffset + sizeof(int), numberOfBytes, SerializationHelpers.Encoding);
-            }
-        }
-
-        /// <summary>
-        /// Reads the given uoffset.
-        /// </summary>
-        public static int ReadUOffset<TBuffer>(this TBuffer buffer, int offset) where TBuffer : IInputBuffer
-        {
-            uint uoffset = buffer.ReadUInt(offset);
-            if (uoffset < sizeof(uint))
-            {
-                ThrowUOffsetLessThanMinimumException(uoffset);
+                ThrowInvalidVtableException();
             }
 
-            return checked((int)uoffset);
+            // Can be negative when all indexes are absent. This is by design.
+            maxVTableIndex = (vtableLength / 2) - 3;
         }
+    }
 
-        /// <summary>
-        /// Left as no inlining. Literal strings seem to prevent JIT inlining.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static void ThrowUOffsetLessThanMinimumException(uint uoffset)
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void ThrowInvalidVtableException()
+    {
+        throw new InvalidDataException("FlatBuffer was in an invalid format: VTable was not long enough to be valid.");
+    }
+
+    // Seems to break JIT in .NET Core 2.1. Framework 4.7 and Core 3.1 work as expected.
+    // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Memory<byte> ReadByteMemoryBlock<TBuffer>(this TBuffer buffer, int uoffset) where TBuffer : IInputBuffer
+    {
+        checked
         {
-            throw new InvalidDataException($"FlatBuffer was in an invalid format: Decoded uoffset_t had value less than {sizeof(uint)}. Value = {uoffset}");
+            // The local value stores a uoffset_t, so follow that now.
+            uoffset = uoffset + buffer.ReadUOffset(uoffset);
+            return buffer.GetByteMemory(uoffset + sizeof(uint), (int)buffer.ReadUInt(uoffset));
         }
+    }
 
-        /// <summary>
-        /// Validates a vtable and reads the initial bytes of a vtable.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void InitializeVTable<TBuffer>(
-            this TBuffer buffer, 
-            int tableOffset,
-            out int vtableOffset,
-            out int maxVTableIndex) where TBuffer : IInputBuffer
+    // Seems to break JIT in .NET Core 2.1. Framework 4.7 and Core 3.1 work as expected.
+    // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ReadOnlyMemory<byte> ReadByteReadOnlyMemoryBlock<TBuffer>(this TBuffer buffer, int uoffset) where TBuffer : IInputBuffer
+    {
+        checked
         {
-            checked
-            {
-                vtableOffset = tableOffset - buffer.ReadInt(tableOffset);
-                ushort vtableLength = buffer.ReadUShort(vtableOffset);
-
-                if (vtableLength < 4)
-                {
-                    ThrowInvalidVtableException();
-                }
-
-                // Can be negative when all indexes are absent. This is by design.
-                maxVTableIndex = (vtableLength / 2) - 3;
-            }
+            // The local value stores a uoffset_t, so follow that now.
+            uoffset = uoffset + buffer.ReadUOffset(uoffset);
+            return buffer.GetReadOnlyByteMemory(uoffset + sizeof(uint), (int)buffer.ReadUInt(uoffset));
         }
+    }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static void ThrowInvalidVtableException()
-        {
-            throw new InvalidDataException("FlatBuffer was in an invalid format: VTable was not long enough to be valid.");
-        }
-
-        // Seems to break JIT in .NET Core 2.1. Framework 4.7 and Core 3.1 work as expected.
-        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Memory<byte> ReadByteMemoryBlock<TBuffer>(this TBuffer buffer, int uoffset) where TBuffer : IInputBuffer
-        {
-            checked
-            {
-                // The local value stores a uoffset_t, so follow that now.
-                uoffset = uoffset + buffer.ReadUOffset(uoffset);
-                return buffer.GetByteMemory(uoffset + sizeof(uint), (int)buffer.ReadUInt(uoffset));
-            }
-        }
-
-        // Seems to break JIT in .NET Core 2.1. Framework 4.7 and Core 3.1 work as expected.
-        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ReadOnlyMemory<byte> ReadByteReadOnlyMemoryBlock<TBuffer>(this TBuffer buffer, int uoffset) where TBuffer : IInputBuffer
-        {
-            checked
-            {
-                // The local value stores a uoffset_t, so follow that now.
-                uoffset = uoffset + buffer.ReadUOffset(uoffset);
-                return buffer.GetReadOnlyByteMemory(uoffset + sizeof(uint), (int)buffer.ReadUInt(uoffset));
-            }
-        }
-
-        [ExcludeFromCodeCoverage] // Not currently used.
-        [Conditional("DEBUG")]
-        public static void CheckAlignment<TBuffer>(this TBuffer buffer, int offset, int size) where TBuffer : IInputBuffer
-        {
+    [ExcludeFromCodeCoverage] // Not currently used.
+    [Conditional("DEBUG")]
+    public static void CheckAlignment<TBuffer>(this TBuffer buffer, int offset, int size) where TBuffer : IInputBuffer
+    {
 #if DEBUG
-            if (offset % size != 0)
-            {
-                throw new InvalidOperationException($"BugCheck: attempted to read unaligned data at index: {offset}, expected alignment: {size}");
-            }
-#endif
+        if (offset % size != 0)
+        {
+            throw new InvalidOperationException($"BugCheck: attempted to read unaligned data at index: {offset}, expected alignment: {size}");
         }
+#endif
     }
 }

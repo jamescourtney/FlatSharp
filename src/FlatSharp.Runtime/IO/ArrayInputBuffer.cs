@@ -14,119 +14,115 @@
  * limitations under the License.
  */
 
-namespace FlatSharp
+using System.Text;
+
+namespace FlatSharp;
+
+/// <summary>
+/// An implementation of <see cref="IInputBuffer"/> for managed arrays.
+/// </summary>
+public struct ArrayInputBuffer : IInputBuffer
 {
-    using System;
-    using System.ComponentModel;
-    using System.Runtime.CompilerServices;
-    using System.Text;
+    private readonly byte[] memory;
 
-    /// <summary>
-    /// An implementation of <see cref="IInputBuffer"/> for managed arrays.
-    /// </summary>
-    public struct ArrayInputBuffer : IInputBuffer
+    public ArrayInputBuffer(byte[] buffer)
     {
-        private readonly byte[] memory;
+        this.memory = buffer;
+    }
 
-        public ArrayInputBuffer(byte[] buffer)
+    public int Length => this.memory.Length;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public byte ReadByte(int offset)
+    {
+        return ScalarSpanReader.ReadByte(this.memory.AsSpan().Slice(offset));
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public sbyte ReadSByte(int offset)
+    {
+        return ScalarSpanReader.ReadSByte(this.memory.AsSpan().Slice(offset));
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ushort ReadUShort(int offset)
+    {
+        this.CheckAlignment(offset, sizeof(ushort));
+        return ScalarSpanReader.ReadUShort(this.memory.AsSpan().Slice(offset));
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public short ReadShort(int offset)
+    {
+        this.CheckAlignment(offset, sizeof(short));
+        return ScalarSpanReader.ReadShort(this.memory.AsSpan().Slice(offset));
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public uint ReadUInt(int offset)
+    {
+        this.CheckAlignment(offset, sizeof(uint));
+        return ScalarSpanReader.ReadUInt(this.memory.AsSpan().Slice(offset));
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public int ReadInt(int offset)
+    {
+        this.CheckAlignment(offset, sizeof(int));
+        return ScalarSpanReader.ReadInt(this.memory.AsSpan().Slice(offset));
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ulong ReadULong(int offset)
+    {
+        this.CheckAlignment(offset, sizeof(ulong));
+        return ScalarSpanReader.ReadULong(this.memory.AsSpan().Slice(offset));
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public long ReadLong(int offset)
+    {
+        this.CheckAlignment(offset, sizeof(long));
+        return ScalarSpanReader.ReadLong(this.memory.AsSpan().Slice(offset));
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public float ReadFloat(int offset)
+    {
+        this.CheckAlignment(offset, sizeof(float));
+        return ScalarSpanReader.ReadFloat(this.memory.AsSpan().Slice(offset));
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public double ReadDouble(int offset)
+    {
+        this.CheckAlignment(offset, sizeof(double));
+        return ScalarSpanReader.ReadDouble(this.memory.AsSpan().Slice(offset));
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public string ReadString(int offset, int byteLength, Encoding encoding)
+    {
+        return ScalarSpanReader.ReadString(this.memory.AsSpan().Slice(offset, byteLength), encoding);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Memory<byte> GetByteMemory(int start, int length)
+    {
+        checked
         {
-            this.memory = buffer;
+            return new Memory<byte>(this.memory, start, length);
         }
+    }
 
-        public int Length => this.memory.Length;
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length)
+    {
+        return this.GetByteMemory(start, length);
+    }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public byte ReadByte(int offset)
-        {
-            return ScalarSpanReader.ReadByte(this.memory.AsSpan().Slice(offset));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public sbyte ReadSByte(int offset)
-        {
-            return ScalarSpanReader.ReadSByte(this.memory.AsSpan().Slice(offset));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ushort ReadUShort(int offset)
-        {
-            this.CheckAlignment(offset, sizeof(ushort));
-            return ScalarSpanReader.ReadUShort(this.memory.AsSpan().Slice(offset));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public short ReadShort(int offset)
-        {
-            this.CheckAlignment(offset, sizeof(short));
-            return ScalarSpanReader.ReadShort(this.memory.AsSpan().Slice(offset));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public uint ReadUInt(int offset)
-        {
-            this.CheckAlignment(offset, sizeof(uint));
-            return ScalarSpanReader.ReadUInt(this.memory.AsSpan().Slice(offset));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int ReadInt(int offset)
-        {
-            this.CheckAlignment(offset, sizeof(int));
-            return ScalarSpanReader.ReadInt(this.memory.AsSpan().Slice(offset));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ulong ReadULong(int offset)
-        {
-            this.CheckAlignment(offset, sizeof(ulong));
-            return ScalarSpanReader.ReadULong(this.memory.AsSpan().Slice(offset));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public long ReadLong(int offset)
-        {
-            this.CheckAlignment(offset, sizeof(long));
-            return ScalarSpanReader.ReadLong(this.memory.AsSpan().Slice(offset));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float ReadFloat(int offset)
-        {
-            this.CheckAlignment(offset, sizeof(float));
-            return ScalarSpanReader.ReadFloat(this.memory.AsSpan().Slice(offset));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public double ReadDouble(int offset)
-        {
-            this.CheckAlignment(offset, sizeof(double));
-            return ScalarSpanReader.ReadDouble(this.memory.AsSpan().Slice(offset));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public string ReadString(int offset, int byteLength, Encoding encoding)
-        {
-            return ScalarSpanReader.ReadString(this.memory.AsSpan().Slice(offset, byteLength), encoding);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Memory<byte> GetByteMemory(int start, int length)
-        {
-            checked
-            {
-                return new Memory<byte>(this.memory, start, length);
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length)
-        {
-            return this.GetByteMemory(start, length);
-        }
-
-        public T InvokeParse<T>(IGeneratedSerializer<T> serializer, int offset)
-        {
-            return serializer.Parse(this, offset);
-        }
+    public T InvokeParse<T>(IGeneratedSerializer<T> serializer, int offset)
+    {
+        return serializer.Parse(this, offset);
     }
 }

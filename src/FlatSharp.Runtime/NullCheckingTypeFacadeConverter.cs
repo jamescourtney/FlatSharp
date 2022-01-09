@@ -14,33 +14,29 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Runtime
+namespace FlatSharp.Runtime;
+
+/// <summary>
+/// Adds a null check to Facade converters for underlying reference types.
+/// </summary>
+[EditorBrowsable(EditorBrowsableState.Never)]
+public struct NullCheckingTypeFacadeConverter<TUnderlyingType, TType, TConverter>
+    : ITypeFacadeConverter<TUnderlyingType, TType>
+    where TConverter : struct, ITypeFacadeConverter<TUnderlyingType, TType>
 {
-    using System;
-    using System.ComponentModel;
-
-    /// <summary>
-    /// Adds a null check to Facade converters for underlying reference types.
-    /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public struct NullCheckingTypeFacadeConverter<TUnderlyingType, TType, TConverter> 
-        : ITypeFacadeConverter<TUnderlyingType, TType>
-        where TConverter : struct, ITypeFacadeConverter<TUnderlyingType, TType>
+    public TUnderlyingType ConvertToUnderlyingType(TType item)
     {
-        public TUnderlyingType ConvertToUnderlyingType(TType item)
+        var underlyingValue = default(TConverter).ConvertToUnderlyingType(item);
+        if (underlyingValue is null)
         {
-            var underlyingValue = default(TConverter).ConvertToUnderlyingType(item);
-            if (underlyingValue is null)
-            {
-                throw new InvalidOperationException($"{nameof(ITypeFacadeConverter<int, int>)} '{typeof(TConverter).FullName}' returned null when converting to the underlying type '{typeof(TUnderlyingType).FullName}'. Facade converters may not return null when converting to the underlying type.");
-            }
-
-            return underlyingValue;
+            throw new InvalidOperationException($"{nameof(ITypeFacadeConverter<int, int>)} '{typeof(TConverter).FullName}' returned null when converting to the underlying type '{typeof(TUnderlyingType).FullName}'. Facade converters may not return null when converting to the underlying type.");
         }
 
-        public TType ConvertFromUnderlyingType(TUnderlyingType item)
-        {
-            return default(TConverter).ConvertFromUnderlyingType(item);
-        }
+        return underlyingValue;
+    }
+
+    public TType ConvertFromUnderlyingType(TUnderlyingType item)
+    {
+        return default(TConverter).ConvertFromUnderlyingType(item);
     }
 }

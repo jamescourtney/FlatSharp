@@ -14,21 +14,18 @@
  * limitations under the License.
  */
 
-namespace FlatSharp
+namespace FlatSharp;
+
+/// <summary>
+/// An exception raised from a flatbuffer-deserialized object when the given property cannot be mutated.
+/// </summary>
+public class NotMutableException : Exception
 {
-    using System;
-
-    /// <summary>
-    /// An exception raised from a flatbuffer-deserialized object when the given property cannot be mutated.
-    /// </summary>
-    public class NotMutableException : Exception
+    public NotMutableException()
     {
-        public NotMutableException()
-        {
-        }
+    }
 
-        public NotMutableException(string message) : base(message)
-        {
-        }
+    public NotMutableException(string message) : base(message)
+    {
     }
 }

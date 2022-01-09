@@ -14,220 +14,216 @@
  * limitations under the License.
  */
 
-namespace FlatSharp
+using System.Threading;
+
+namespace FlatSharp;
+
+/// <summary>
+/// An implementation of <see cref="ISerializer{T}"/> that wraps a <see cref="IGeneratedSerializer{T}"/>.
+/// </summary>
+internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where T : class
 {
-    using System;
-    using System.Diagnostics;
-    using System.Reflection;
-    using System.Threading;
+    private const int FileIdentifierSize = 4;
 
-    /// <summary>
-    /// An implementation of <see cref="ISerializer{T}"/> that wraps a <see cref="IGeneratedSerializer{T}"/>.
-    /// </summary>
-    internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where T : class
+    private readonly IGeneratedSerializer<T> innerSerializer;
+    private readonly Lazy<string?> lazyCSharp;
+    private readonly ThreadLocal<ISharedStringWriter>? sharedStringWriter;
+    private readonly bool enableMemoryCopySerialization;
+    private readonly string? fileIdentifier;
+
+    public GeneratedSerializerWrapper(
+        IGeneratedSerializer<T>? innerSerializer,
+        Assembly? generatedAssembly,
+        Func<string?> generatedCSharp,
+        byte[]? generatedAssemblyBytes)
     {
-        private const int FileIdentifierSize = 4;
+        this.lazyCSharp = new Lazy<string?>(generatedCSharp);
+        this.Assembly = generatedAssembly;
+        this.AssemblyBytes = generatedAssemblyBytes;
+        this.innerSerializer = innerSerializer ?? throw new ArgumentNullException(nameof(innerSerializer));
 
-        private readonly IGeneratedSerializer<T> innerSerializer;
-        private readonly Lazy<string?> lazyCSharp;
-        private readonly ThreadLocal<ISharedStringWriter>? sharedStringWriter;
-        private readonly bool enableMemoryCopySerialization;
-        private readonly string? fileIdentifier;
+        var tableAttribute = typeof(T).GetCustomAttribute<Attributes.FlatBufferTableAttribute>();
+        this.fileIdentifier = tableAttribute?.FileIdentifier;
+        this.sharedStringWriter = new ThreadLocal<ISharedStringWriter>(() => new SharedStringWriter());
+    }
 
-        public GeneratedSerializerWrapper(
-            IGeneratedSerializer<T>? innerSerializer,
-            Assembly? generatedAssembly,
-            Func<string?> generatedCSharp,
-            byte[]? generatedAssemblyBytes)
+    private GeneratedSerializerWrapper(GeneratedSerializerWrapper<T> template, SerializerSettings settings)
+    {
+        this.lazyCSharp = template.lazyCSharp;
+        this.Assembly = template.Assembly;
+        this.AssemblyBytes = template.AssemblyBytes;
+        this.innerSerializer = template.innerSerializer;
+        this.fileIdentifier = template.fileIdentifier;
+
+        this.enableMemoryCopySerialization = settings.EnableMemoryCopySerialization;
+
+        Func<ISharedStringWriter>? writerFactory = settings.SharedStringWriterFactory;
+        if (writerFactory is not null)
         {
-            this.lazyCSharp = new Lazy<string?>(generatedCSharp);
-            this.Assembly = generatedAssembly;
-            this.AssemblyBytes = generatedAssemblyBytes;
-            this.innerSerializer = innerSerializer ?? throw new ArgumentNullException(nameof(innerSerializer));
+            this.sharedStringWriter = new ThreadLocal<ISharedStringWriter>(writerFactory);
+        }
+    }
 
-            var tableAttribute = typeof(T).GetCustomAttribute<Attributes.FlatBufferTableAttribute>();
-            this.fileIdentifier = tableAttribute?.FileIdentifier;
-            this.sharedStringWriter = new ThreadLocal<ISharedStringWriter>(() => new SharedStringWriter());
+    Type ISerializer.RootType => typeof(T);
+
+    public string? CSharp => this.lazyCSharp.Value;
+
+    public Assembly? Assembly { get; }
+
+    public byte[]? AssemblyBytes { get; }
+
+    public FlatBufferDeserializationOption DeserializationOption => this.innerSerializer.DeserializationOption;
+
+    public int GetMaxSize(T item)
+    {
+        if (item is null)
+        {
+            throw new ArgumentNullException(nameof(item), "The root table may not be null.");
         }
 
-        private GeneratedSerializerWrapper(GeneratedSerializerWrapper<T> template, SerializerSettings settings)
+        if (this.enableMemoryCopySerialization &&
+            item is IFlatBufferDeserializedObject deserializedObj &&
+            deserializedObj.CanSerializeWithMemoryCopy)
         {
-            this.lazyCSharp = template.lazyCSharp;
-            this.Assembly = template.Assembly;
-            this.AssemblyBytes = template.AssemblyBytes;
-            this.innerSerializer = template.innerSerializer;
-            this.fileIdentifier = template.fileIdentifier;
-
-            this.enableMemoryCopySerialization = settings.EnableMemoryCopySerialization;
-
-            Func<ISharedStringWriter>? writerFactory = settings.SharedStringWriterFactory;
-            if (writerFactory is not null)
-            {
-                this.sharedStringWriter = new ThreadLocal<ISharedStringWriter>(writerFactory);
-            }
+            IInputBuffer? inputBuffer = deserializedObj.InputBuffer;
+            FlatSharpInternal.Assert(inputBuffer is not null, "Input buffer was null");
+            return inputBuffer.Length;
         }
 
-        Type ISerializer.RootType => typeof(T);
+        return sizeof(uint)                                      // uoffset to first table
+             + SerializationHelpers.GetMaxPadding(sizeof(uint))  // alignment error
+             + this.innerSerializer.GetMaxSize(item)             // size of item
+             + FileIdentifierSize;                               // file identifier. Not present on every table, but cheaper to add as constant
+                                                                 // than to introduce an 'if'.
+    }
 
-        public string? CSharp => this.lazyCSharp.Value;
-
-        public Assembly? Assembly { get; }
-
-        public byte[]? AssemblyBytes { get; }
-
-        public FlatBufferDeserializationOption DeserializationOption => this.innerSerializer.DeserializationOption;
-
-        public int GetMaxSize(T item)
+    int ISerializer.GetMaxSize(object item)
+    {
+        return item switch
         {
-            if (item is null)
-            {
-                throw new ArgumentNullException(nameof(item), "The root table may not be null.");
-            }
+            T t => this.GetMaxSize(t),
+            null => throw new ArgumentNullException(nameof(item)),
+            _ => throw new ArgumentException($"Argument was not of the correct type. Type = {item.GetType().FullName}, Expected Type = {typeof(T).FullName}")
+        };
+    }
 
-            if (this.enableMemoryCopySerialization &&
-                item is IFlatBufferDeserializedObject deserializedObj &&
-                deserializedObj.CanSerializeWithMemoryCopy)
-            {
-                IInputBuffer? inputBuffer = deserializedObj.InputBuffer;
-                FlatSharpInternal.Assert(inputBuffer is not null, "Input buffer was null");
-                return inputBuffer.Length;
-            }
-
-            return sizeof(uint)                                      // uoffset to first table
-                 + SerializationHelpers.GetMaxPadding(sizeof(uint))  // alignment error
-                 + this.innerSerializer.GetMaxSize(item)             // size of item
-                 + FileIdentifierSize;                               // file identifier. Not present on every table, but cheaper to add as constant
-                                                                     // than to introduce an 'if'.
+    public T Parse<TInputBuffer>(TInputBuffer buffer) where TInputBuffer : IInputBuffer
+    {
+        if (buffer.Length >= int.MaxValue / 2)
+        {
+            throw new ArgumentOutOfRangeException("Buffer must be <= 1GB in size.");
         }
 
-        int ISerializer.GetMaxSize(object item)
+        if (buffer.Length <= 2 * sizeof(uint))
         {
-            return item switch
+            throw new ArgumentException("Buffer is too small to be valid!");
+        }
+
+        // In case buffer is a reference type or is a boxed value, this allows it the opportunity to "wrap" itself in a value struct for efficiency.
+        return buffer.InvokeParse(this.innerSerializer, 0);
+    }
+
+    object ISerializer.Parse<TInputBuffer>(TInputBuffer buffer) => this.Parse(buffer);
+
+    public int Write<TSpanWriter>(TSpanWriter writer, Span<byte> destination, T item)
+        where TSpanWriter : ISpanWriter
+    {
+        if (item is null)
+        {
+            throw new ArgumentNullException(nameof(item), "The root table may not be null.");
+        }
+
+        if (destination.Length <= 8)
+        {
+            throw new BufferTooSmallException
             {
-                T t => this.GetMaxSize(t),
-                null => throw new ArgumentNullException(nameof(item)),
-                _ => throw new ArgumentException($"Argument was not of the correct type. Type = {item.GetType().FullName}, Expected Type = {typeof(T).FullName}")
+                SizeNeeded = this.GetMaxSize(item)
             };
         }
 
-        public T Parse<TInputBuffer>(TInputBuffer buffer) where TInputBuffer : IInputBuffer
+        if (this.enableMemoryCopySerialization &&
+            item is IFlatBufferDeserializedObject deserializedObj &&
+            deserializedObj.CanSerializeWithMemoryCopy)
         {
-            if (buffer.Length >= int.MaxValue / 2)
+            IInputBuffer? inputBuffer = deserializedObj.InputBuffer;
+            FlatSharpInternal.Assert(inputBuffer is not null, "Input buffer was null");
+
+            if (destination.Length < inputBuffer.Length)
             {
-                throw new ArgumentOutOfRangeException("Buffer must be <= 1GB in size.");
+                throw new BufferTooSmallException { SizeNeeded = inputBuffer.Length };
             }
 
-            if (buffer.Length <= 2 * sizeof(uint))
-            {
-                throw new ArgumentException("Buffer is too small to be valid!");
-            }
-
-            // In case buffer is a reference type or is a boxed value, this allows it the opportunity to "wrap" itself in a value struct for efficiency.
-            return buffer.InvokeParse(this.innerSerializer, 0);
+            inputBuffer.GetReadOnlyByteMemory(0, inputBuffer.Length).Span.CopyTo(destination);
+            return inputBuffer.Length;
         }
-
-        object ISerializer.Parse<TInputBuffer>(TInputBuffer buffer) => this.Parse(buffer);
-
-        public int Write<TSpanWriter>(TSpanWriter writer, Span<byte> destination, T item)
-            where TSpanWriter : ISpanWriter
-        {
-            if (item is null)
-            {
-                throw new ArgumentNullException(nameof(item), "The root table may not be null.");
-            }
-
-            if (destination.Length <= 8)
-            {
-                throw new BufferTooSmallException
-                {
-                    SizeNeeded = this.GetMaxSize(item)
-                };
-            }
-
-            if (this.enableMemoryCopySerialization &&
-                item is IFlatBufferDeserializedObject deserializedObj &&
-                deserializedObj.CanSerializeWithMemoryCopy)
-            {
-                IInputBuffer? inputBuffer = deserializedObj.InputBuffer;
-                FlatSharpInternal.Assert(inputBuffer is not null, "Input buffer was null");
-
-                if (destination.Length < inputBuffer.Length)
-                {
-                    throw new BufferTooSmallException { SizeNeeded = inputBuffer.Length };
-                }
-
-                inputBuffer.GetReadOnlyByteMemory(0, inputBuffer.Length).Span.CopyTo(destination);
-                return inputBuffer.Length;
-            }
 
 #if DEBUG
-            int expectedMaxSize = this.GetMaxSize(item);
+        int expectedMaxSize = this.GetMaxSize(item);
 #endif
 
-            var serializationContext = SerializationContext.ThreadLocalContext.Value!;
-            serializationContext.Reset(destination.Length);
+        var serializationContext = SerializationContext.ThreadLocalContext.Value!;
+        serializationContext.Reset(destination.Length);
 
-            ISharedStringWriter? sharedStringWriter = this.sharedStringWriter?.Value;
-            serializationContext.SharedStringWriter = sharedStringWriter;
+        ISharedStringWriter? sharedStringWriter = this.sharedStringWriter?.Value;
+        serializationContext.SharedStringWriter = sharedStringWriter;
 
-            serializationContext.Offset = 4; // first 4 bytes are reserved for uoffset to the first table.
+        serializationContext.Offset = 4; // first 4 bytes are reserved for uoffset to the first table.
 
-            string? fileId = this.fileIdentifier;
-            if (!string.IsNullOrEmpty(fileId))
+        string? fileId = this.fileIdentifier;
+        if (!string.IsNullOrEmpty(fileId))
+        {
+            destination[7] = (byte)fileId[3];
+            destination[4] = (byte)fileId[0];
+            destination[5] = (byte)fileId[1];
+            destination[6] = (byte)fileId[2];
+
+            serializationContext.Offset = 8;
+        }
+
+        try
+        {
+            if (sharedStringWriter?.IsDirty == true)
             {
-                destination[7] = (byte)fileId[3];
-                destination[4] = (byte)fileId[0];
-                destination[5] = (byte)fileId[1];
-                destination[6] = (byte)fileId[2];
-
-                serializationContext.Offset = 8;
+                sharedStringWriter.Reset();
+                Debug.Assert(!sharedStringWriter.IsDirty);
             }
 
-            try
+            this.innerSerializer.Write(writer, destination, item, 0, serializationContext);
+
+            if (sharedStringWriter?.IsDirty == true)
             {
-                if (sharedStringWriter?.IsDirty == true)
-                {
-                    sharedStringWriter.Reset();
-                    Debug.Assert(!sharedStringWriter.IsDirty);
-                }
-
-                this.innerSerializer.Write(writer, destination, item, 0, serializationContext);
-
-                if (sharedStringWriter?.IsDirty == true)
-                {
-                    writer.FlushSharedStrings(sharedStringWriter, destination, serializationContext);
-                    Debug.Assert(!sharedStringWriter.IsDirty);
-                }
-
-                serializationContext.InvokePostSerializeActions(destination);
+                writer.FlushSharedStrings(sharedStringWriter, destination, serializationContext);
+                Debug.Assert(!sharedStringWriter.IsDirty);
             }
-            catch (BufferTooSmallException ex)
-            {
-                ex.SizeNeeded = this.GetMaxSize(item);
-                throw;
-            }
+
+            serializationContext.InvokePostSerializeActions(destination);
+        }
+        catch (BufferTooSmallException ex)
+        {
+            ex.SizeNeeded = this.GetMaxSize(item);
+            throw;
+        }
 
 #if DEBUG
-            Trace.WriteLine($"Serialized Size: {serializationContext.Offset + 1}, Max Size: {expectedMaxSize}");
-            Debug.Assert(serializationContext.Offset <= expectedMaxSize - 1);
+        Trace.WriteLine($"Serialized Size: {serializationContext.Offset + 1}, Max Size: {expectedMaxSize}");
+        Debug.Assert(serializationContext.Offset <= expectedMaxSize - 1);
 #endif
 
-            return serializationContext.Offset;
-        }
+        return serializationContext.Offset;
+    }
 
-        int ISerializer.Write<TSpanWriter>(TSpanWriter writer, Span<byte> destination, object item)
+    int ISerializer.Write<TSpanWriter>(TSpanWriter writer, Span<byte> destination, object item)
+    {
+        return item switch
         {
-            return item switch
-            {
-                T t => this.Write(writer, destination, t),
-                null => throw new ArgumentNullException(nameof(item)),
-                _ => throw new ArgumentException($"Argument was not of the correct type. Type = {item.GetType().FullName}, Expected Type = {typeof(T).FullName}")
-            };
-        }
+            T t => this.Write(writer, destination, t),
+            null => throw new ArgumentNullException(nameof(item)),
+            _ => throw new ArgumentException($"Argument was not of the correct type. Type = {item.GetType().FullName}, Expected Type = {typeof(T).FullName}")
+        };
+    }
 
-        public ISerializer<T> WithSettings(SerializerSettings settings)
-        {
-            return new GeneratedSerializerWrapper<T>(this, settings);
-        }
+    public ISerializer<T> WithSettings(SerializerSettings settings)
+    {
+        return new GeneratedSerializerWrapper<T>(this, settings);
     }
 }

@@ -14,62 +14,58 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Attributes
+using System.Linq;
+
+namespace FlatSharp.Attributes;
+
+/// <summary>
+/// Describes kinds of metadata.
+/// </summary>
+public enum FlatBufferMetadataKind
 {
-    using System;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Linq;
-    using System.Reflection;
-
     /// <summary>
-    /// Describes kinds of metadata.
+    /// A custom get/set accessor for a flatbuffer field.
     /// </summary>
-    public enum FlatBufferMetadataKind
+    Accessor = 1,
+}
+
+/// <summary>
+/// Defines a member of a FlatBuffer struct or table.
+/// </summary>
+[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = true, Inherited = true)]
+public class FlatBufferMetadataAttribute : Attribute
+{
+    /// <summary>
+    /// Initializes a new FlatBufferItemAttribute.
+    /// </summary>
+    /// <param name="index">The field index within the struct or table.</param>
+    public FlatBufferMetadataAttribute(FlatBufferMetadataKind kind, string value)
     {
-        /// <summary>
-        /// A custom get/set accessor for a flatbuffer field.
-        /// </summary>
-        Accessor = 1,
+        this.Kind = kind;
+        this.Value = value;
     }
 
     /// <summary>
-    /// Defines a member of a FlatBuffer struct or table.
+    /// The value.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = true, Inherited = true)]
-    public class FlatBufferMetadataAttribute : Attribute
+    public string Value { get; }
+
+    /// <summary>
+    /// The kind of metadata.
+    /// </summary>
+    public FlatBufferMetadataKind Kind { get; }
+}
+
+public static class FlatBufferMetadataAttributeExtensions
+{
+    public static string? GetFlatBufferMetadataOrNull(
+        this MemberInfo memberInfo,
+        FlatBufferMetadataKind kind)
     {
-        /// <summary>
-        /// Initializes a new FlatBufferItemAttribute.
-        /// </summary>
-        /// <param name="index">The field index within the struct or table.</param>
-        public FlatBufferMetadataAttribute(FlatBufferMetadataKind kind, string value)
-        {
-            this.Kind = kind;
-            this.Value = value;
-        }
-
-        /// <summary>
-        /// The value.
-        /// </summary>
-        public string Value { get; }
-
-        /// <summary>
-        /// The kind of metadata.
-        /// </summary>
-        public FlatBufferMetadataKind Kind { get; }
-    }
-
-    public static class FlatBufferMetadataAttributeExtensions
-    {
-        public static string? GetFlatBufferMetadataOrNull(
-            this MemberInfo memberInfo,
-            FlatBufferMetadataKind kind)
-        {
-            return memberInfo
-                .GetCustomAttributes<FlatBufferMetadataAttribute>()
-                .Where(x => x.Kind == kind)
-                .FirstOrDefault()?
-                .Value;
-        }
+        return memberInfo
+            .GetCustomAttributes<FlatBufferMetadataAttribute>()
+            .Where(x => x.Kind == kind)
+            .FirstOrDefault()?
+            .Value;
     }
 }

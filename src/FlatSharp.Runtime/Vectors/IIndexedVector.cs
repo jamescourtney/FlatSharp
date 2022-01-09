@@ -14,67 +14,62 @@
  * limitations under the License.
  */
 
-namespace FlatSharp
+namespace FlatSharp;
+
+/// <summary>
+/// An indexed vector -- suitable for accessing values by their keys.
+/// </summary>
+public interface IIndexedVector<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>>
+    where TValue : class
+    where TKey : notnull
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
+    /// <summary>
+    /// Looks up the value by key.
+    /// </summary>
+    TValue this[TKey key] { get; }
 
     /// <summary>
-    /// An indexed vector -- suitable for accessing values by their keys.
+    /// Indicates if this indexed vector is read only.
     /// </summary>
-    public interface IIndexedVector<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>>
-        where TValue : class
-        where TKey : notnull
-    {
-        /// <summary>
-        /// Looks up the value by key.
-        /// </summary>
-        TValue this[TKey key] { get; }
+    bool IsReadOnly { get; }
 
-        /// <summary>
-        /// Indicates if this indexed vector is read only.
-        /// </summary>
-        bool IsReadOnly { get; }
+    /// <summary>
+    /// Gets the number of items in this vector.
+    /// </summary>
+    int Count { get; }
 
-        /// <summary>
-        /// Gets the number of items in this vector.
-        /// </summary>
-        int Count { get; }
+    /// <summary>
+    /// Tries to get the value of the given key.
+    /// </summary>
+    bool TryGetValue(TKey key, [NotNullWhen(true)] out TValue? value);
 
-        /// <summary>
-        /// Tries to get the value of the given key.
-        /// </summary>
-        bool TryGetValue(TKey key, [NotNullWhen(true)] out TValue? value);
+    /// <summary>
+    /// Returns true if the vector contains the given key.
+    /// </summary>
+    bool ContainsKey(TKey key);
 
-        /// <summary>
-        /// Returns true if the vector contains the given key.
-        /// </summary>
-        bool ContainsKey(TKey key);
+    /// <summary>
+    /// Adds or replaces the given value in the indexed vector.
+    /// </summary>
+    void AddOrReplace(TValue value);
 
-        /// <summary>
-        /// Adds or replaces the given value in the indexed vector.
-        /// </summary>
-        void AddOrReplace(TValue value);
+    /// <summary>
+    /// Tries to add the given value. Fails if a key already exists.
+    /// </summary>
+    bool Add(TValue value);
 
-        /// <summary>
-        /// Tries to add the given value. Fails if a key already exists.
-        /// </summary>
-        bool Add(TValue value);
+    /// <summary>
+    /// Prevents further mutations to this vector.
+    /// </summary>
+    void Freeze();
 
-        /// <summary>
-        /// Prevents further mutations to this vector.
-        /// </summary>
-        void Freeze();
+    /// <summary>
+    /// Clears the vector.
+    /// </summary>
+    void Clear();
 
-        /// <summary>
-        /// Clears the vector.
-        /// </summary>
-        void Clear();
-
-        /// <summary>
-        /// Removes the item identified by the key. This method returns false if the key is not present.
-        /// </summary>
-        bool Remove(TKey key);
-    }
+    /// <summary>
+    /// Removes the item identified by the key. This method returns false if the key is not present.
+    /// </summary>
+    bool Remove(TKey key);
 }

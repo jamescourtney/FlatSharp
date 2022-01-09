@@ -14,141 +14,136 @@
  * limitations under the License.
  */
 
-namespace FlatSharp
+namespace FlatSharp;
+
+/// <summary>
+/// A shared string writer that uses a direct-map hash table.
+/// </summary>
+public class SharedStringWriter : ISharedStringWriter
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Runtime.CompilerServices;
+    private const int DefaultCapacity = 1019;
+    private readonly WriteCacheEntry[] sharedStringOffsetCache;
 
     /// <summary>
-    /// A shared string writer that uses a direct-map hash table.
+    /// Initializes a new shared string writer with the given capacity.
     /// </summary>
-    public class SharedStringWriter : ISharedStringWriter
+    /// <param name="hashTableCapacity">The size of the hash table.</param>
+    public SharedStringWriter(int hashTableCapacity = DefaultCapacity)
     {
-        private const int DefaultCapacity = 1019;
-        private readonly WriteCacheEntry[] sharedStringOffsetCache;
-
-        /// <summary>
-        /// Initializes a new shared string writer with the given capacity.
-        /// </summary>
-        /// <param name="hashTableCapacity">The size of the hash table.</param>
-        public SharedStringWriter(int hashTableCapacity = DefaultCapacity)
+        if (hashTableCapacity <= 0)
         {
-            if (hashTableCapacity <= 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(hashTableCapacity));
-            }
-
-            this.sharedStringOffsetCache = new WriteCacheEntry[hashTableCapacity];
-            this.IsDirty = true; // force reset to be called the first time.
+            throw new ArgumentOutOfRangeException(nameof(hashTableCapacity));
         }
 
-        public bool IsDirty { get; private set; }
+        this.sharedStringOffsetCache = new WriteCacheEntry[hashTableCapacity];
+        this.IsDirty = true; // force reset to be called the first time.
+    }
 
-        /// <summary>
-        /// Resets the internal state to prepare for a new write operation.
-        /// </summary>
-        public void Reset()
+    public bool IsDirty { get; private set; }
+
+    /// <summary>
+    /// Resets the internal state to prepare for a new write operation.
+    /// </summary>
+    public void Reset()
+    {
+        var cache = this.sharedStringOffsetCache;
+        for (int i = 0; i < cache.Length; ++i)
         {
-            var cache = this.sharedStringOffsetCache;
-            for (int i = 0; i < cache.Length; ++i)
+            ref WriteCacheEntry entry = ref cache[i];
+            entry.String = null;
+
+            if (entry.Offsets == null)
             {
-                ref WriteCacheEntry entry = ref cache[i];
-                entry.String = null;
-
-                if (entry.Offsets == null)
-                {
-                    entry.Offsets = new List<int>();
-                }
-
-                entry.Offsets.Clear();
+                entry.Offsets = new List<int>();
             }
 
-            this.IsDirty = false;
+            entry.Offsets.Clear();
         }
 
-        /// <summary>
-        /// Writes a shared string.
-        /// </summary>
-        public void WriteSharedString<TSpanWriter>(
-            TSpanWriter spanWriter,
-            Span<byte> data,
-            int offset,
-            string value,
-            SerializationContext context) where TSpanWriter : ISpanWriter
-        {
-            // Find the associative set that must contain our key.
-            var cache = this.sharedStringOffsetCache;
-            int lineIndex = (int.MaxValue & value.GetHashCode()) % cache.Length;
-            ref WriteCacheEntry line = ref cache[lineIndex];
+        this.IsDirty = false;
+    }
 
-            if (value.Equals(line.String))
+    /// <summary>
+    /// Writes a shared string.
+    /// </summary>
+    public void WriteSharedString<TSpanWriter>(
+        TSpanWriter spanWriter,
+        Span<byte> data,
+        int offset,
+        string value,
+        SerializationContext context) where TSpanWriter : ISpanWriter
+    {
+        // Find the associative set that must contain our key.
+        var cache = this.sharedStringOffsetCache;
+        int lineIndex = (int.MaxValue & value.GetHashCode()) % cache.Length;
+        ref WriteCacheEntry line = ref cache[lineIndex];
+
+        if (value.Equals(line.String))
+        {
+            line.Offsets.Add(offset);
+            return;
+        }
+
+        var offsets = line.Offsets;
+        string? sharedString = line.String;
+        if (sharedString is not null)
+        {
+            FlushSharedString(spanWriter, data, sharedString, offsets, context);
+        }
+
+        line.String = value;
+        offsets.Add(offset);
+
+        this.IsDirty = true;
+    }
+
+    /// <summary>
+    /// Flush any pending writes.
+    /// </summary>
+    public void FlushWrites<TSpanWriter>(TSpanWriter writer, Span<byte> data, SerializationContext context) where TSpanWriter : ISpanWriter
+    {
+        var cache = this.sharedStringOffsetCache;
+        for (int i = 0; i < cache.Length; ++i)
+        {
+            ref WriteCacheEntry item = ref cache[i];
+            var str = item.String;
+
+            if (str is not null)
             {
-                line.Offsets.Add(offset);
-                return;
+                FlushSharedString(writer, data, str, item.Offsets, context);
+                item.String = null;
             }
 
-            var offsets = line.Offsets;
-            string? sharedString = line.String;
-            if (sharedString is not null)
-            {
-                FlushSharedString(spanWriter, data, sharedString, offsets, context);
-            }
-
-            line.String = value;
-            offsets.Add(offset);
-
-            this.IsDirty = true;
+            item.Offsets.Clear();
         }
 
-        /// <summary>
-        /// Flush any pending writes.
-        /// </summary>
-        public void FlushWrites<TSpanWriter>(TSpanWriter writer, Span<byte> data, SerializationContext context) where TSpanWriter : ISpanWriter
+        this.IsDirty = false;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void FlushSharedString<TSpanWriter>(
+        TSpanWriter spanWriter,
+        Span<byte> span,
+        string value,
+        List<int> offsets,
+        SerializationContext context) where TSpanWriter : ISpanWriter
+    {
+        int stringOffset = spanWriter.WriteAndProvisionString(span, value, context);
+        int count = offsets.Count;
+        for (int i = 0; i < count; ++i)
         {
-            var cache = this.sharedStringOffsetCache;
-            for (int i = 0; i < cache.Length; ++i)
-            {
-                ref WriteCacheEntry item = ref cache[i];
-                var str = item.String;
-
-                if (str is not null)
-                {
-                    FlushSharedString(writer, data, str, item.Offsets, context);
-                    item.String = null;
-                }
-
-                item.Offsets.Clear();
-            }
-
-            this.IsDirty = false;
+            spanWriter.WriteUOffset(span, offsets[i], stringOffset);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void FlushSharedString<TSpanWriter>(
-            TSpanWriter spanWriter,
-            Span<byte> span,
-            string value,
-            List<int> offsets,
-            SerializationContext context) where TSpanWriter : ISpanWriter
-        {
-            int stringOffset = spanWriter.WriteAndProvisionString(span, value, context);
-            int count = offsets.Count;
-            for (int i = 0; i < count; ++i)
-            {
-                spanWriter.WriteUOffset(span, offsets[i], stringOffset);
-            }
+        offsets.Clear();
+    }
 
-            offsets.Clear();
-        }
+    // Cache entry. Stored as struct to increase data locality in the array.
+    private struct WriteCacheEntry
+    {
+        // The string
+        public string? String;
 
-        // Cache entry. Stored as struct to increase data locality in the array.
-        private struct WriteCacheEntry
-        {
-            // The string
-            public string? String;
-
-            public List<int> Offsets;
-        }
+        public List<int> Offsets;
     }
 }

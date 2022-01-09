@@ -22,8 +22,6 @@ global using NotNullIfNotNullAttribute = FlatSharp.Polyfills.NotNullIfNotNullAtt
 
 namespace FlatSharp.Polyfills
 {
-    using System;
-
     [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
     internal class NotNullWhenAttribute : Attribute
     {

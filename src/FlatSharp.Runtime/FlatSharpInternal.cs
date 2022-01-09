@@ -14,38 +14,33 @@
  * limitations under the License.
  */
 
-namespace FlatSharp
-{
-    using System;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Runtime.CompilerServices;
+namespace FlatSharp;
 
-    internal static class FlatSharpInternal
+internal static class FlatSharpInternal
+{
+    [ExcludeFromCodeCoverage]
+    public static void Assert(
+        [DoesNotReturnIf(false)] bool condition,
+        string message,
+        [CallerMemberName] string memberName = "",
+        [CallerFilePath] string fileName = "",
+        [CallerLineNumber] int lineNumber = -1)
     {
-        [ExcludeFromCodeCoverage]
-        public static void Assert(
-            [DoesNotReturnIf(false)] bool condition, 
-            string message, 
-            [CallerMemberName] string memberName = "", 
-            [CallerFilePath] string fileName = "", 
-            [CallerLineNumber] int lineNumber = -1)
+        if (!condition)
         {
-            if (!condition)
-            {
-                throw new FlatSharpInternalException(message, memberName, fileName, lineNumber);
-            }
+            throw new FlatSharpInternalException(message, memberName, fileName, lineNumber);
         }
     }
+}
 
-    [ExcludeFromCodeCoverage]
-    public class FlatSharpInternalException : Exception
+[ExcludeFromCodeCoverage]
+public class FlatSharpInternalException : Exception
+{
+    public FlatSharpInternalException(
+        string message,
+        [CallerMemberName] string memberName = "",
+        [CallerFilePath] string fileName = "",
+        [CallerLineNumber] int lineNumber = -1) : base($"FlatSharp Internal Error! Message = '{message}'.File = '{System.IO.Path.GetFileName(fileName)}', Member = '{memberName}:{lineNumber}'")
     {
-        public FlatSharpInternalException(
-            string message,
-            [CallerMemberName] string memberName = "",
-            [CallerFilePath] string fileName = "",
-            [CallerLineNumber] int lineNumber = -1) : base($"FlatSharp Internal Error! Message = '{message}'.File = '{System.IO.Path.GetFileName(fileName)}', Member = '{memberName}:{lineNumber}'")
-        {
-        }
     }
 }
