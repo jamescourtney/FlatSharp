@@ -107,10 +107,10 @@ public class InputBufferTests
     {
         byte[] buffer =
         {
-                4, 0, // vtable length
-                4, 0, // table length
-                4, 0, 0, 0 // soffset to vtable.
-            };
+            4, 0, // vtable length
+            4, 0, // table length
+            4, 0, 0, 0 // soffset to vtable.
+        };
 
         new ArrayInputBuffer(buffer).InitializeVTable(4, out int vtableOffset, out int maxVtableIndex);
         Assert.Equal(0, vtableOffset);
@@ -122,10 +122,10 @@ public class InputBufferTests
     {
         byte[] buffer =
         {
-                3, 0, // vtable length
-                4, 0, // table length
-                4, 0, 0, 0 // soffset to vtable.
-            };
+            3, 0, // vtable length
+            4, 0, // table length
+            4, 0, 0, 0 // soffset to vtable.
+        };
 
         var ex = Assert.Throws<InvalidDataException>(() =>
             new ArrayInputBuffer(buffer).InitializeVTable(4, out _, out _));
@@ -140,14 +140,14 @@ public class InputBufferTests
     {
         byte[] buffer =
         {
-                8, 0, // vtable length
-                12, 0, // table length
-                4, 0, // index 0 offset
-                8, 0, // index 1 offset
-                8, 0, 0, 0, // soffset to vtable.
-                1, 0, 0, 0,
-                2, 0, 0, 0,
-            };
+            8, 0, // vtable length
+            12, 0, // table length
+            4, 0, // index 0 offset
+            8, 0, // index 1 offset
+            8, 0, 0, 0, // soffset to vtable.
+            1, 0, 0, 0,
+            2, 0, 0, 0,
+        };
 
         new ArrayInputBuffer(buffer).InitializeVTable(8, out int vtableOffset, out int maxVtableIndex);
         Assert.Equal(0, vtableOffset);
