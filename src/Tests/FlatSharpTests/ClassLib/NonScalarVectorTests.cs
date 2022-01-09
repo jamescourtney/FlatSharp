@@ -14,182 +14,175 @@
  * limitations under the License.
  */
 
-namespace FlatSharpTests
+using System.Linq;
+
+namespace FlatSharpTests;
+
+/// <summary>
+/// Tests various types of vectors (List/ReadOnlyList/Memory/ReadOnlyMemory/Array) for non-primitive types.
+/// </summary>
+public class NonScalarVectorTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using FlatSharp;
-    using FlatSharp.Attributes;
-    using Xunit;
+    private static readonly Random r = new Random();
 
-    /// <summary>
-    /// Tests various types of vectors (List/ReadOnlyList/Memory/ReadOnlyMemory/Array) for non-primitive types.
-    /// </summary>
-    
-    public class NonScalarVectorTests
+    public static IEnumerable<object[]> EnumValues()
     {
-        private static readonly Random r = new Random();
-
-        public static IEnumerable<object[]> EnumValues()
+        foreach (var item in Enum.GetValues(typeof(FlatBufferDeserializationOption)))
         {
-            foreach (var item in Enum.GetValues(typeof(FlatBufferDeserializationOption)))
-            {
-                yield return new object[] { item };
-            }
+            yield return new object[] { item };
         }
-        
-        [Theory]
-        [MemberData(nameof(EnumValues))]
-        public void StringVector(FlatBufferDeserializationOption option)
-        {
-            this.TestType(
-                option,
-                () =>
-                {
-                    byte[] b = new byte[20];
-                    r.NextBytes(b);
-                    return Convert.ToBase64String(b);
-                });
-        }
+    }
 
-        [Theory]
-        [MemberData(nameof(EnumValues))]
-        public void TableVector(FlatBufferDeserializationOption option)
-        {
-            this.TestType(
-                option,
-                () =>
-                {
-                    byte[] b = new byte[20];
-                    r.NextBytes(b);
-                    return new InnerTable { Value = Convert.ToBase64String(b) };
-                });
-        }
-
-        [Theory]
-        [MemberData(nameof(EnumValues))]
-        public void StructVector(FlatBufferDeserializationOption option)
-        {
-            this.TestType(
-                option,
-                () =>
-                {
-                    return new InnerStruct { Value = r.Next() };
-                });
-        }
-
-        private void TestType<T>(FlatBufferDeserializationOption option, Func<T> generator) where T : IEquatable<T>
-        {
-            var options = new FlatBufferSerializerOptions(option);
-            FlatBufferSerializer serializer = new FlatBufferSerializer(options);
-
+    [Theory]
+    [MemberData(nameof(EnumValues))]
+    public void StringVector(FlatBufferDeserializationOption option)
+    {
+        this.TestType(
+            option,
+            () =>
             {
-                var memoryTable = new RootTable<IList<T>>
-                {
-                    Vector = Enumerable.Range(0, 10).Select(i => generator()).ToArray()
-                };
+                byte[] b = new byte[20];
+                r.NextBytes(b);
+                return Convert.ToBase64String(b);
+            });
+    }
 
-                Span<byte> memory = new byte[10240];
-                int offset = serializer.Serialize(memoryTable, memory);
-                var memoryTableResult = serializer.Parse<RootTable<IList<T>>>(memory.Slice(0, offset).ToArray());
-
-                var resultVector = memoryTableResult.Vector;
-                for (int i = 0; i < memoryTableResult.Vector.Count; ++i)
-                {
-                    Assert.Equal<T>(memoryTable.Vector[i], resultVector[i]);
-
-                    // reference equality should correspond to the serializer.
-                    Assert.Equal(option != FlatBufferDeserializationOption.Lazy, object.ReferenceEquals(resultVector[i], resultVector[i])); 
-                }
-            }
-
+    [Theory]
+    [MemberData(nameof(EnumValues))]
+    public void TableVector(FlatBufferDeserializationOption option)
+    {
+        this.TestType(
+            option,
+            () =>
             {
-                var memoryTable = new RootTable<IReadOnlyList<T>>
-                {
-                    Vector = Enumerable.Range(0, 10).Select(i => generator()).ToArray()
-                };
+                byte[] b = new byte[20];
+                r.NextBytes(b);
+                return new InnerTable { Value = Convert.ToBase64String(b) };
+            });
+    }
 
-                Span<byte> memory = new byte[10240];
-                int offset = serializer.Serialize(memoryTable, memory);
-                var memoryTableResult = serializer.Parse<RootTable<IReadOnlyList<T>>>(memory.Slice(0, offset).ToArray());
-                var resultVector = memoryTableResult.Vector;
-                for (int i = 0; i < memoryTableResult.Vector.Count; ++i)
-                {
-                    Assert.Equal(memoryTable.Vector[i], resultVector[i]);
-
-                    // reference equality should correspond to the serializer.
-                    Assert.Equal(option != FlatBufferDeserializationOption.Lazy, object.ReferenceEquals(resultVector[i], resultVector[i]));
-                }
-            }
-
-            if (option != FlatBufferDeserializationOption.Lazy && option != FlatBufferDeserializationOption.Progressive)
+    [Theory]
+    [MemberData(nameof(EnumValues))]
+    public void StructVector(FlatBufferDeserializationOption option)
+    {
+        this.TestType(
+            option,
+            () =>
             {
-                var memoryTable = new RootTable<T[]>
-                {
-                    Vector = Enumerable.Range(0, 10).Select(i => generator()).ToArray()
-                };
+                return new InnerStruct { Value = r.Next() };
+            });
+    }
 
-                Span<byte> memory = new byte[10240];
-                int offset = serializer.Serialize(memoryTable, memory);
-                var memoryTableResult = serializer.Parse<RootTable<T[]>>(memory.Slice(0, offset).ToArray());
-                var resultVector = memoryTableResult.Vector;
-                for (int i = 0; i < memoryTableResult.Vector.Length; ++i)
-                {
-                    Assert.Equal(memoryTable.Vector[i], resultVector[i]);
-                }
+    private void TestType<T>(FlatBufferDeserializationOption option, Func<T> generator) where T : IEquatable<T>
+    {
+        var options = new FlatBufferSerializerOptions(option);
+        FlatBufferSerializer serializer = new FlatBufferSerializer(options);
+
+        {
+            var memoryTable = new RootTable<IList<T>>
+            {
+                Vector = Enumerable.Range(0, 10).Select(i => generator()).ToArray()
+            };
+
+            Span<byte> memory = new byte[10240];
+            int offset = serializer.Serialize(memoryTable, memory);
+            var memoryTableResult = serializer.Parse<RootTable<IList<T>>>(memory.Slice(0, offset).ToArray());
+
+            var resultVector = memoryTableResult.Vector;
+            for (int i = 0; i < memoryTableResult.Vector.Count; ++i)
+            {
+                Assert.Equal<T>(memoryTable.Vector[i], resultVector[i]);
+
+                // reference equality should correspond to the serializer.
+                Assert.Equal(option != FlatBufferDeserializationOption.Lazy, object.ReferenceEquals(resultVector[i], resultVector[i]));
             }
         }
 
-        [FlatBufferTable]
-        public class RootTable<TVector>
         {
-            [FlatBufferItem(0)]
-            public virtual TVector? Vector { get; set; }
-        }
-
-        [FlatBufferTable]
-        public class InnerTable : IEquatable<InnerTable>
-        {
-            [FlatBufferItem(0)]
-            public virtual string? Value { get; set; }
-
-            public bool Equals(InnerTable other)
+            var memoryTable = new RootTable<IReadOnlyList<T>>
             {
-                return other?.Value == this.Value;
-            }
+                Vector = Enumerable.Range(0, 10).Select(i => generator()).ToArray()
+            };
 
-            public override bool Equals(object obj)
+            Span<byte> memory = new byte[10240];
+            int offset = serializer.Serialize(memoryTable, memory);
+            var memoryTableResult = serializer.Parse<RootTable<IReadOnlyList<T>>>(memory.Slice(0, offset).ToArray());
+            var resultVector = memoryTableResult.Vector;
+            for (int i = 0; i < memoryTableResult.Vector.Count; ++i)
             {
-                return this.Equals(obj as InnerTable);
-            }
+                Assert.Equal(memoryTable.Vector[i], resultVector[i]);
 
-            public override int GetHashCode()
-            {
-                return this.Value.GetHashCode();
+                // reference equality should correspond to the serializer.
+                Assert.Equal(option != FlatBufferDeserializationOption.Lazy, object.ReferenceEquals(resultVector[i], resultVector[i]));
             }
         }
 
-        [FlatBufferStruct]
-        public class InnerStruct : IEquatable<InnerStruct>
+        if (option != FlatBufferDeserializationOption.Lazy && option != FlatBufferDeserializationOption.Progressive)
         {
-            [FlatBufferItem(0)]
-            public virtual int Value { get; set; }
-
-            public bool Equals(InnerStruct other)
+            var memoryTable = new RootTable<T[]>
             {
-                return other?.Value == this.Value;
-            }
+                Vector = Enumerable.Range(0, 10).Select(i => generator()).ToArray()
+            };
 
-            public override bool Equals(object obj)
+            Span<byte> memory = new byte[10240];
+            int offset = serializer.Serialize(memoryTable, memory);
+            var memoryTableResult = serializer.Parse<RootTable<T[]>>(memory.Slice(0, offset).ToArray());
+            var resultVector = memoryTableResult.Vector;
+            for (int i = 0; i < memoryTableResult.Vector.Length; ++i)
             {
-                return this.Equals(obj as InnerStruct);
+                Assert.Equal(memoryTable.Vector[i], resultVector[i]);
             }
+        }
+    }
 
-            public override int GetHashCode()
-            {
-                return this.Value.GetHashCode();
-            }
+    [FlatBufferTable]
+    public class RootTable<TVector>
+    {
+        [FlatBufferItem(0)]
+        public virtual TVector? Vector { get; set; }
+    }
+
+    [FlatBufferTable]
+    public class InnerTable : IEquatable<InnerTable>
+    {
+        [FlatBufferItem(0)]
+        public virtual string? Value { get; set; }
+
+        public bool Equals(InnerTable other)
+        {
+            return other?.Value == this.Value;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return this.Equals(obj as InnerTable);
+        }
+
+        public override int GetHashCode()
+        {
+            return this.Value.GetHashCode();
+        }
+    }
+
+    [FlatBufferStruct]
+    public class InnerStruct : IEquatable<InnerStruct>
+    {
+        [FlatBufferItem(0)]
+        public virtual int Value { get; set; }
+
+        public bool Equals(InnerStruct other)
+        {
+            return other?.Value == this.Value;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return this.Equals(obj as InnerStruct);
+        }
+
+        public override int GetHashCode()
+        {
+            return this.Value.GetHashCode();
         }
     }
 }

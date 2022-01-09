@@ -14,33 +14,28 @@
  * limitations under the License.
  */
 
-namespace FlatSharpTests
+namespace FlatSharpTests;
+
+[FlatBufferTable]
+public class NestedStructs
 {
-    using System;
-    using System.Collections.Generic;
-    using FlatSharp.Attributes;
+    [FlatBufferItem(0)]
+    public virtual OuterStruct? OuterStruct { get; set; }
+}
 
-    [FlatBufferTable]
-    public class NestedStructs
-    {
-        [FlatBufferItem(0)]
-        public virtual OuterStruct? OuterStruct { get; set; }
-    }
+[FlatBufferStruct]
+public class InnerStruct
+{
+    [FlatBufferItem(0)]
+    public virtual int A { get; set; }
+}
 
-    [FlatBufferStruct]
-    public class InnerStruct
-    {
-        [FlatBufferItem(0)]
-        public virtual int A { get; set; }
-    }
+[FlatBufferStruct]
+public class OuterStruct
+{
+    [FlatBufferItem(0)]
+    public virtual InnerStruct InnerStruct { get; set; }
 
-    [FlatBufferStruct]
-    public class OuterStruct
-    {
-        [FlatBufferItem(0)]
-        public virtual InnerStruct InnerStruct { get; set; }
-
-        [FlatBufferItem(1)]
-        public virtual int A { get; set; }
-    }
+    [FlatBufferItem(1)]
+    public virtual int A { get; set; }
 }

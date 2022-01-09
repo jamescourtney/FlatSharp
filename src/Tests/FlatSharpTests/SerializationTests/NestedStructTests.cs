@@ -14,67 +14,60 @@
  * limitations under the License.
  */
 
-namespace FlatSharpTests
+namespace FlatSharpTests;
+
+/// <summary>
+/// Tests serialization of nested structs.
+/// </summary>
+
+public class NestedStructTests
 {
-    using System;
-    using System.Linq;
-    using FlatSharp;
-    using FlatSharp.Attributes;
-    using Xunit;
+    [Fact]
+    public void NestedStructs_Greedy() => this.RunTest(FlatBufferDeserializationOption.Greedy);
 
-    /// <summary>
-    /// Tests serialization of nested structs.
-    /// </summary>
-    
-    public class NestedStructTests
+    [Fact]
+    public void NestedStructs_GreedyMutable() => this.RunTest(FlatBufferDeserializationOption.GreedyMutable);
+
+    [Fact]
+    public void NestedStructs_VectorCache() => this.RunTest(FlatBufferDeserializationOption.Progressive);
+
+    [Fact]
+    public void NestedStructs_Lazy() => this.RunTest(FlatBufferDeserializationOption.Lazy);
+
+    private void RunTest(FlatBufferDeserializationOption option)
     {
-        [Fact]
-        public void NestedStructs_Greedy() => this.RunTest(FlatBufferDeserializationOption.Greedy);
-
-        [Fact]
-        public void NestedStructs_GreedyMutable() => this.RunTest(FlatBufferDeserializationOption.GreedyMutable);
-
-        [Fact]
-        public void NestedStructs_VectorCache() => this.RunTest(FlatBufferDeserializationOption.Progressive);
-
-        [Fact]
-        public void NestedStructs_Lazy() => this.RunTest(FlatBufferDeserializationOption.Lazy);
-
-        private void RunTest(FlatBufferDeserializationOption option)
+        Table table = new Table
         {
-            Table table = new Table
+            Outer = new OuterStruct
             {
-                Outer = new OuterStruct
-                {
-                    InnerVirtual = new InnerStruct { A = 3 },
-                    NonVirtualInner = new InnerStruct { A = 30 }
-                }
-            };
+                InnerVirtual = new InnerStruct { A = 3 },
+                NonVirtualInner = new InnerStruct { A = 30 }
+            }
+        };
 
-            FlatBufferSerializer serializer = new FlatBufferSerializer(option);
-            byte[] data = new byte[1024];
-            serializer.Serialize(table, data);
+        FlatBufferSerializer serializer = new FlatBufferSerializer(option);
+        byte[] data = new byte[1024];
+        serializer.Serialize(table, data);
 
-            var parsed = serializer.Parse<Table>(data);
-            Assert.Equal(3, parsed.Outer.InnerVirtual.A);
-            Assert.Equal(30, parsed.Outer.NonVirtualInner.A);
-        }
+        var parsed = serializer.Parse<Table>(data);
+        Assert.Equal(3, parsed.Outer.InnerVirtual.A);
+        Assert.Equal(30, parsed.Outer.NonVirtualInner.A);
+    }
 
-        [FlatBufferTable]
-        public class Table
-        {
-            [FlatBufferItem(0)]
-            public virtual OuterStruct? Outer { get; set; }
-        }
+    [FlatBufferTable]
+    public class Table
+    {
+        [FlatBufferItem(0)]
+        public virtual OuterStruct? Outer { get; set; }
+    }
 
-        [FlatBufferStruct]
-        public class OuterStruct
-        {
-            [FlatBufferItem(0)]
-            public virtual InnerStruct InnerVirtual { get; set; }
+    [FlatBufferStruct]
+    public class OuterStruct
+    {
+        [FlatBufferItem(0)]
+        public virtual InnerStruct InnerVirtual { get; set; }
 
-            [FlatBufferItem(1)]
-            public InnerStruct NonVirtualInner { get; set; }
-        }
+        [FlatBufferItem(1)]
+        public InnerStruct NonVirtualInner { get; set; }
     }
 }

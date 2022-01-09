@@ -14,98 +14,88 @@
  * limitations under the License.
  */
 
-namespace FlatSharpTests
+using System.Linq;
+using FlatSharp.TypeModel;
+
+namespace FlatSharpTests;
+
+/// <summary>
+/// Binary format testing for vector serialization.
+/// </summary>
+public class OptionalTypeTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.IO;
-    using System.Linq;
-    using System.Runtime.InteropServices;
-    using FlatSharp;
-    using FlatSharp.Attributes;
-    using FlatSharp.TypeModel;
-    using Xunit;
+    [Fact]
+    public void OptionalTypeSerialize_Bool() => this.RunTest<bool>();
 
-    /// <summary>
-    /// Binary format testing for vector serialization.
-    /// </summary>
-    
-    public class OptionalTypeTests
+    [Fact]
+    public void OptionalTypeSerialize_Byte() => this.RunTest<byte>();
+
+    [Fact]
+    public void OptionalTypeSerialize_SByte() => this.RunTest<sbyte>();
+
+    [Fact]
+    public void OptionalTypeSerialize_UShort() => this.RunTest<ushort>();
+
+    [Fact]
+    public void OptionalTypeSerialize_Short() => this.RunTest<short>();
+
+    [Fact]
+    public void OptionalTypeSerialize_UInt() => this.RunTest<uint>();
+
+    [Fact]
+    public void OptionalTypeSerialize_Int() => this.RunTest<int>();
+
+    [Fact]
+    public void OptionalTypeSerialize_ULong() => this.RunTest<ulong>();
+
+    [Fact]
+    public void OptionalTypeSerialize_Float() => this.RunTest<float>();
+
+    [Fact]
+    public void OptionalTypeSerialize_Double() => this.RunTest<double>();
+
+    [Fact]
+    public void OptionalTypeSerialize_ByteEnum() => this.RunTest<ByteEnum>();
+
+    [Fact]
+    public void OptionalTypeSerialize_LongEnum() => this.RunTest<LongEnum>();
+
+    private void RunTest<T>() where T : struct
     {
-        [Fact]
-        public void OptionalTypeSerialize_Bool() => this.RunTest<bool>();
-
-        [Fact]
-        public void OptionalTypeSerialize_Byte() => this.RunTest<byte>();
-
-        [Fact]
-        public void OptionalTypeSerialize_SByte() => this.RunTest<sbyte>();
-
-        [Fact]
-        public void OptionalTypeSerialize_UShort() => this.RunTest<ushort>();
-
-        [Fact]
-        public void OptionalTypeSerialize_Short() => this.RunTest<short>();
-
-        [Fact]
-        public void OptionalTypeSerialize_UInt() => this.RunTest<uint>();
-
-        [Fact]
-        public void OptionalTypeSerialize_Int() => this.RunTest<int>();
-
-        [Fact]
-        public void OptionalTypeSerialize_ULong() => this.RunTest<ulong>();
-
-        [Fact]
-        public void OptionalTypeSerialize_Float() => this.RunTest<float>();
-
-        [Fact]
-        public void OptionalTypeSerialize_Double() => this.RunTest<double>();
-
-        [Fact]
-        public void OptionalTypeSerialize_ByteEnum() => this.RunTest<ByteEnum>();
-
-        [Fact]
-        public void OptionalTypeSerialize_LongEnum() => this.RunTest<LongEnum>();
-
-        private void RunTest<T>() where T : struct
+        OptionalTypeTable<T> table = new OptionalTypeTable<T>
         {
-            OptionalTypeTable<T> table = new OptionalTypeTable<T>
-            {
-                Value = null
-            };
+            Value = null
+        };
 
-            byte[] data = new byte[1024];
-            int defaultBytesWritten = FlatBufferSerializer.Default.Serialize(table, data);
+        byte[] data = new byte[1024];
+        int defaultBytesWritten = FlatBufferSerializer.Default.Serialize(table, data);
 
-            Assert.Equal(12, defaultBytesWritten);
-            Assert.Null(FlatBufferSerializer.Default.Parse<OptionalTypeTable<T>>(data).Value);
+        Assert.Equal(12, defaultBytesWritten);
+        Assert.Null(FlatBufferSerializer.Default.Parse<OptionalTypeTable<T>>(data).Value);
 
-            table.Value = default(T);
-            int actualBytesWritten = FlatBufferSerializer.Default.Serialize(table, data);
+        table.Value = default(T);
+        int actualBytesWritten = FlatBufferSerializer.Default.Serialize(table, data);
 
-            Assert.True(actualBytesWritten >= defaultBytesWritten + RuntimeTypeModel.CreateFrom(typeof(T)).PhysicalLayout.Single().InlineSize);
-            Assert.Equal(default(T), FlatBufferSerializer.Default.Parse<OptionalTypeTable<T>>(data).Value);
-        }
+        Assert.True(actualBytesWritten >= defaultBytesWritten + RuntimeTypeModel.CreateFrom(typeof(T)).PhysicalLayout.Single().InlineSize);
+        Assert.Equal(default(T), FlatBufferSerializer.Default.Parse<OptionalTypeTable<T>>(data).Value);
+    }
 
-        [FlatBufferEnum(typeof(byte))]
-        public enum ByteEnum : byte
-        {
-            A, B, C
-        }
+    [FlatBufferEnum(typeof(byte))]
+    public enum ByteEnum : byte
+    {
+        A, B, C
+    }
 
-        [FlatBufferEnum(typeof(long))]
-        public enum LongEnum : long
-        {
-            A, B, C
-        }
+    [FlatBufferEnum(typeof(long))]
+    public enum LongEnum : long
+    {
+        A, B, C
+    }
 
-        [FlatBufferTable]
-        public class OptionalTypeTable<T> where T : struct
-        {
-            [FlatBufferItem(0)]
-            public virtual T? Value { get; set; }
-        }
+    [FlatBufferTable]
+    public class OptionalTypeTable<T> where T : struct
+    {
+        [FlatBufferItem(0)]
+        public virtual T? Value { get; set; }
     }
 }

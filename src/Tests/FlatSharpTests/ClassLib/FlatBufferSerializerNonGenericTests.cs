@@ -14,52 +14,42 @@
  * limitations under the License.
  */
 
-namespace FlatSharpTests
+namespace FlatSharpTests;
+
+public class FlatBufferSerializerNonGenericTests
 {
-    using System;
-    using System.Buffers;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.IO;
-    using System.Linq;
-    using FlatSharp;
-    using FlatSharp.Attributes;
-    using Xunit;
-
-    public class FlatBufferSerializerNonGenericTests
+    [Fact]
+    public void NonGenericSerializer_FromType()
     {
-        [Fact]
-        public void NonGenericSerializer_FromType()
-        {
-            ISerializer serializer = FlatBufferSerializer.Default.Compile(typeof(SomeTable));
-            Assert.IsAssignableFrom<ISerializer<SomeTable>>(serializer);
-            Assert.Equal(typeof(SomeTable), serializer.RootType);
+        ISerializer serializer = FlatBufferSerializer.Default.Compile(typeof(SomeTable));
+        Assert.IsAssignableFrom<ISerializer<SomeTable>>(serializer);
+        Assert.Equal(typeof(SomeTable), serializer.RootType);
 
-            Assert.True(serializer.GetMaxSize(new SomeTable()) > 0);
-            Assert.Throws<ArgumentNullException>(() => serializer.GetMaxSize(null));
-            Assert.Throws<ArgumentException>(() => serializer.GetMaxSize(new SomeOtherTable()));
+        Assert.True(serializer.GetMaxSize(new SomeTable()) > 0);
+        Assert.Throws<ArgumentNullException>(() => serializer.GetMaxSize(null));
+        Assert.Throws<ArgumentException>(() => serializer.GetMaxSize(new SomeOtherTable()));
 
-            byte[] data = new byte[1024];
-            Assert.True(serializer.Write(data, new SomeTable { A = 3 }) > 0);
-            Assert.Throws<ArgumentNullException>(() => serializer.Write(data, null));
-            Assert.Throws<ArgumentException>(() => serializer.Write(data, new SomeOtherTable()));
+        byte[] data = new byte[1024];
+        Assert.True(serializer.Write(data, new SomeTable { A = 3 }) > 0);
+        Assert.Throws<ArgumentNullException>(() => serializer.Write(data, null));
+        Assert.Throws<ArgumentException>(() => serializer.Write(data, new SomeOtherTable()));
 
-            object parsed = serializer.Parse(data);
-            Assert.True(typeof(SomeTable).IsAssignableFrom(parsed.GetType()));
-            Assert.NotEqual(typeof(SomeTable), parsed.GetType());
-            Assert.IsAssignableFrom<IFlatBufferDeserializedObject>(parsed);
+        object parsed = serializer.Parse(data);
+        Assert.True(typeof(SomeTable).IsAssignableFrom(parsed.GetType()));
+        Assert.NotEqual(typeof(SomeTable), parsed.GetType());
+        Assert.IsAssignableFrom<IFlatBufferDeserializedObject>(parsed);
 
-            var deserialized = (IFlatBufferDeserializedObject)parsed;
-            Assert.Equal(typeof(SomeTable), deserialized.TableOrStructType);
-            Assert.Null(deserialized.InputBuffer); // greedy
-            Assert.Equal(FlatBufferDeserializationOption.Default, deserialized.DeserializationContext.DeserializationOption);
+        var deserialized = (IFlatBufferDeserializedObject)parsed;
+        Assert.Equal(typeof(SomeTable), deserialized.TableOrStructType);
+        Assert.Null(deserialized.InputBuffer); // greedy
+        Assert.Equal(FlatBufferDeserializationOption.Default, deserialized.DeserializationContext.DeserializationOption);
 
-            ISerializer parsedSerializer = FlatBufferSerializer.Default.Compile(deserialized);
-            ISerializer parsedSerializer2 = FlatBufferSerializer.Default.Compile(parsed);
+        ISerializer parsedSerializer = FlatBufferSerializer.Default.Compile(deserialized);
+        ISerializer parsedSerializer2 = FlatBufferSerializer.Default.Compile(parsed);
 
-            Assert.Same(serializer, parsedSerializer);
-            Assert.Same(serializer, parsedSerializer2);
-        }
+        Assert.Same(serializer, parsedSerializer);
+        Assert.Same(serializer, parsedSerializer2);
+    }
 
 #if NETCOREAPP3_1_OR_GREATER
         [Fact]
@@ -109,19 +99,18 @@ namespace FlatSharpTests
         }
 #endif
 
-        [FlatBufferTable]
-        public class SomeTable
-        {
-            [FlatBufferItem(0)]
-            public int A { get; set; }
-        }
+    [FlatBufferTable]
+    public class SomeTable
+    {
+        [FlatBufferItem(0)]
+        public int A { get; set; }
+    }
 
 
-        [FlatBufferTable]
-        public class SomeOtherTable
-        {
-            [FlatBufferItem(0)]
-            public int A { get; set; }
-        }
+    [FlatBufferTable]
+    public class SomeOtherTable
+    {
+        [FlatBufferItem(0)]
+        public int A { get; set; }
     }
 }

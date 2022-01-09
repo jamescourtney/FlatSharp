@@ -14,77 +14,72 @@
  * limitations under the License.
  */
 
-namespace FlatSharpTests
+using FlatSharp.TypeModel;
+
+namespace FlatSharpTests;
+
+public static class ContextHelpers
 {
-    using FlatSharp;
-    using FlatSharp.TypeModel;
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-
-    public static class ContextHelpers
+    public static ParserCodeGenContext CreateParserContext(FlatBufferSerializerOptions? options = null)
     {
-        public static ParserCodeGenContext CreateParserContext(FlatBufferSerializerOptions? options = null)
+        return new ParserCodeGenContext(
+            "a",
+            "b",
+            "c",
+            false,
+            "d",
+            new ReturnsRandomDictionary(),
+            new ReturnsRandomDictionary(),
+            options ?? new FlatBufferSerializerOptions(),
+            TypeModelContainer.CreateDefault(),
+            new Dictionary<ITypeModel, List<TableFieldContext>>());
+    }
+
+    public static SerializationCodeGenContext CreateSerializeContext(FlatBufferSerializerOptions? options = null)
+    {
+        return new SerializationCodeGenContext(
+            "a",
+            "b",
+            "c",
+            "d",
+            "e",
+            "f",
+            false,
+            new ReturnsRandomDictionary(),
+            TypeModelContainer.CreateDefault(),
+            options ?? new FlatBufferSerializerOptions(),
+            new Dictionary<ITypeModel, List<TableFieldContext>>());
+    }
+
+    private class ReturnsRandomDictionary : IReadOnlyDictionary<Type, string>
+    {
+        public string this[Type key] => Guid.NewGuid().ToString();
+
+        public IEnumerable<Type> Keys => new Type[0];
+
+        public IEnumerable<string> Values => new string[0];
+
+        public int Count => 0;
+
+        public bool ContainsKey(Type key)
         {
-            return new ParserCodeGenContext(
-                "a",
-                "b",
-                "c",
-                false,
-                "d",
-                new ReturnsRandomDictionary(),
-                new ReturnsRandomDictionary(),
-                options ?? new FlatBufferSerializerOptions(),
-                TypeModelContainer.CreateDefault(),
-                new Dictionary<ITypeModel, List<TableFieldContext>>());
+            return true;
         }
 
-        public static SerializationCodeGenContext CreateSerializeContext(FlatBufferSerializerOptions? options = null)
+        public IEnumerator<KeyValuePair<Type, string>> GetEnumerator()
         {
-            return new SerializationCodeGenContext(
-                "a",
-                "b",
-                "c",
-                "d",
-                "e",
-                "f",
-                false,
-                new ReturnsRandomDictionary(),
-                TypeModelContainer.CreateDefault(),
-                options ?? new FlatBufferSerializerOptions(),
-                new Dictionary<ITypeModel, List<TableFieldContext>>());
+            yield break;
         }
 
-        private class ReturnsRandomDictionary : IReadOnlyDictionary<Type, string>
+        public bool TryGetValue(Type key, out string value)
         {
-            public string this[Type key] => Guid.NewGuid().ToString();
+            value = this[key];
+            return false;
+        }
 
-            public IEnumerable<Type> Keys => new Type[0];
-
-            public IEnumerable<string> Values => new string[0];
-
-            public int Count => 0;
-
-            public bool ContainsKey(Type key)
-            {
-                return true;
-            }
-
-            public IEnumerator<KeyValuePair<Type, string>> GetEnumerator()
-            {
-                yield break;
-            }
-
-            public bool TryGetValue(Type key, out string value)
-            {
-                value = this[key];
-                return false;
-            }
-
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                yield break;
-            }
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            yield break;
         }
     }
 }

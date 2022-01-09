@@ -14,16 +14,12 @@
  * limitations under the License.
  */
 
-namespace FlatSharpTests
-{
-    using FlatSharp;
-    using System.Collections.Generic;
+namespace FlatSharpTests;
 
-    public class Utf8StringComparer : IComparer<string>
+public class Utf8StringComparer : IComparer<string>
+{
+    public int Compare(string x, string y)
     {
-        public int Compare(string x, string y)
-        {
-            return StringSpanComparer.Instance.Compare(x != null, SerializationHelpers.Encoding.GetBytes(x), y != null, SerializationHelpers.Encoding.GetBytes(y));
-        }
+        return StringSpanComparer.Instance.Compare(x != null, SerializationHelpers.Encoding.GetBytes(x), y != null, SerializationHelpers.Encoding.GetBytes(y));
     }
 }

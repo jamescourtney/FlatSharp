@@ -14,70 +14,58 @@
  * limitations under the License.
  */
 
-namespace FlatSharpTests
+using System.Linq;
+
+namespace FlatSharpTests;
+
+/// <summary>
+/// Verifies expected binary formats for test data.
+/// </summary>
+public class ConstructorTests
 {
-    using System;
-    using System.Buffers.Binary;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using System.Runtime;
-    using System.Runtime.CompilerServices;
-    using System.Text;
-    using FlatSharp;
-    using FlatSharp.Attributes;
-    using FlatSharp.TypeModel;
-    using Xunit;
-
-    /// <summary>
-    /// Verifies expected binary formats for test data.
-    /// </summary>
-    
-    public class ConstructorTests
+    [Fact]
+    public void ConstructorSerializationTests()
     {
-        [Fact]
-        public void ConstructorSerializationTests()
+        OuterTable outer = new OuterTable
         {
-            OuterTable outer = new OuterTable
-            {
-                Struct = new OuterStruct(),
-            };
+            Struct = new OuterStruct(),
+        };
 
-            byte[] data = new byte[1024];
-            FlatBufferSerializer.Default.Serialize(outer, data);
-            var parsed = FlatBufferSerializer.Default.Parse<OuterTable>(data);
+        byte[] data = new byte[1024];
+        FlatBufferSerializer.Default.Serialize(outer, data);
+        var parsed = FlatBufferSerializer.Default.Parse<OuterTable>(data);
 
-            Assert.NotNull(parsed.Context);
-            Assert.Null(outer.Context);
+        Assert.NotNull(parsed.Context);
+        Assert.Null(outer.Context);
 
-            Assert.Null(parsed.Struct.InnerA.Context);
-            Assert.Null(outer.Struct.InnerA.Context);
+        Assert.Null(parsed.Struct.InnerA.Context);
+        Assert.Null(outer.Struct.InnerA.Context);
 
-            Assert.NotNull(parsed.Struct.InnerB.Context);
-            Assert.Null(outer.Struct.InnerB.Context);
-        }
+        Assert.NotNull(parsed.Struct.InnerB.Context);
+        Assert.Null(outer.Struct.InnerB.Context);
+    }
 
-        [Fact]
-        public void Struct_Serialize_InnerNull()
+    [Fact]
+    public void Struct_Serialize_InnerNull()
+    {
+        OuterTable outer = new OuterTable
         {
-            OuterTable outer = new OuterTable
-            {
-                Struct = new OuterStruct(),
-            };
+            Struct = new OuterStruct(),
+        };
 
-            outer.Struct.InnerB = null;
+        outer.Struct.InnerB = null;
 
-            byte[] data = new byte[1024];
-            data.AsSpan().Fill(123);
+        byte[] data = new byte[1024];
+        data.AsSpan().Fill(123);
 
-            int length = FlatBufferSerializer.Default.Serialize(outer, data);
-            var parsed = FlatBufferSerializer.Default.Parse<OuterTable>(data);
+        int length = FlatBufferSerializer.Default.Serialize(outer, data);
+        var parsed = FlatBufferSerializer.Default.Parse<OuterTable>(data);
 
-            // Null overwrites buffer to 0 on serialize.
-            Assert.Equal(0, parsed.Struct.InnerB.Item);
+        // Null overwrites buffer to 0 on serialize.
+        Assert.Equal(0, parsed.Struct.InnerB.Item);
 
-            Span<byte> expected = new byte[]
-            {
+        Span<byte> expected = new byte[]
+        {
                 4, 0, 0, 0,
                 220, 255, 255, 255,
                 1, 0, 0, 0,
@@ -87,108 +75,107 @@ namespace FlatSharpTests
                 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
                 6, 0, 36, 0, 4, 0,
-            };
+        };
 
-            Assert.True(expected.SequenceEqual(data.AsSpan().Slice(0, length)));
-        }
+        Assert.True(expected.SequenceEqual(data.AsSpan().Slice(0, length)));
+    }
 
-        [Fact]
-        public void Struct_Serialize_InnerNull_2()
+    [Fact]
+    public void Struct_Serialize_InnerNull_2()
+    {
+        OuterTable outer = new OuterTable
         {
-            OuterTable outer = new OuterTable
-            {
-                Struct = new OuterStruct(),
-            };
+            Struct = new OuterStruct(),
+        };
 
-            outer.Struct.InnerA = null;
+        outer.Struct.InnerA = null;
 
-            byte[] data = new byte[1024];
-            data.AsSpan().Fill(123);
+        byte[] data = new byte[1024];
+        data.AsSpan().Fill(123);
 
-            FlatBufferSerializer.Default.Serialize(outer, data);
-            var parsed = FlatBufferSerializer.Default.Parse<OuterTable>(data);
+        FlatBufferSerializer.Default.Serialize(outer, data);
+        var parsed = FlatBufferSerializer.Default.Parse<OuterTable>(data);
 
-            // Null overwrites buffer to 0 on serialize.
-            Assert.Equal(0, parsed.Struct.InnerA.Item);
-        }
+        // Null overwrites buffer to 0 on serialize.
+        Assert.Equal(0, parsed.Struct.InnerA.Item);
+    }
 
-        [FlatBufferTable]
-        public class OuterTable
+    [FlatBufferTable]
+    public class OuterTable
+    {
+        public OuterTable()
         {
-            public OuterTable()
-            {
-            }
-
-            protected OuterTable(FlatBufferDeserializationContext context)
-            {
-                this.Context = context;
-            }
-
-            public FlatBufferDeserializationContext Context { get; }
-
-            [FlatBufferItem(0)]
-            public virtual OuterStruct? Struct { get; set; }
         }
 
-        [FlatBufferStruct]
-        public class OuterStruct
+        protected OuterTable(FlatBufferDeserializationContext context)
         {
-            public OuterStruct()
-            {
-                this.InnerA = new InnerStructA(1);
-                this.InnerB = new InnerStructB(2);
-            }
-
-            [FlatBufferItem(0)]
-            public virtual InnerStructA InnerA { get; set; }
-
-            [FlatBufferItem(1)]
-            public virtual InnerStructB InnerB { get; set; }
+            this.Context = context;
         }
 
-        [FlatBufferStruct]
-        public class InnerStructA
+        public FlatBufferDeserializationContext Context { get; }
+
+        [FlatBufferItem(0)]
+        public virtual OuterStruct? Struct { get; set; }
+    }
+
+    [FlatBufferStruct]
+    public class OuterStruct
+    {
+        public OuterStruct()
         {
-            public InnerStructA(int value)
-            {
-                this.Item = value;
-                this.Item2 = value;
-            }
-
-            protected InnerStructA()
-            {
-            }
-
-            public FlatBufferDeserializationContext Context { get; }
-
-            [FlatBufferItem(0)]
-            public virtual int Item { get; set; }
-
-            [FlatBufferItem(1)]
-            public virtual long Item2 { get; set; }
+            this.InnerA = new InnerStructA(1);
+            this.InnerB = new InnerStructB(2);
         }
 
-        [FlatBufferStruct]
-        public class InnerStructB
+        [FlatBufferItem(0)]
+        public virtual InnerStructA InnerA { get; set; }
+
+        [FlatBufferItem(1)]
+        public virtual InnerStructB InnerB { get; set; }
+    }
+
+    [FlatBufferStruct]
+    public class InnerStructA
+    {
+        public InnerStructA(int value)
         {
-            public InnerStructB(int value)
-            {
-                this.Item = value;
-                this.Item2 = value;
-            }
-
-            protected InnerStructB(FlatBufferDeserializationContext context)
-            {
-                this.Context = context;
-            }
-
-            public FlatBufferDeserializationContext Context { get; }
-
-            [FlatBufferItem(0)]
-            public virtual int Item { get; set; }
-
-            [FlatBufferItem(1)]
-            public virtual long Item2 { get; set; }
+            this.Item = value;
+            this.Item2 = value;
         }
+
+        protected InnerStructA()
+        {
+        }
+
+        public FlatBufferDeserializationContext Context { get; }
+
+        [FlatBufferItem(0)]
+        public virtual int Item { get; set; }
+
+        [FlatBufferItem(1)]
+        public virtual long Item2 { get; set; }
+    }
+
+    [FlatBufferStruct]
+    public class InnerStructB
+    {
+        public InnerStructB(int value)
+        {
+            this.Item = value;
+            this.Item2 = value;
+        }
+
+        protected InnerStructB(FlatBufferDeserializationContext context)
+        {
+            this.Context = context;
+        }
+
+        public FlatBufferDeserializationContext Context { get; }
+
+        [FlatBufferItem(0)]
+        public virtual int Item { get; set; }
+
+        [FlatBufferItem(1)]
+        public virtual long Item2 { get; set; }
     }
 }

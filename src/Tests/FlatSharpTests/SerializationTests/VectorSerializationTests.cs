@@ -13,16 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using FlatSharp;
-using FlatSharp.Attributes;
-using Xunit;
 
 namespace FlatSharpTests;
 

@@ -14,57 +14,53 @@
  * limitations under the License.
  */
 
-namespace FlatSharpTests
-{
-    using System.Buffers;
-    using FlatSharp;
-    using FlatSharp.Attributes;
-    using Xunit;
+namespace FlatSharpTests;
 
 #if NETCOREAPP3_1_OR_GREATER
-    /// <summary>
-    /// Tests for the FlatBufferVector class that implements IList.
-    /// </summary>
 
-    public class ISerializerExtensionsTests
+/// <summary>
+/// Tests for the FlatBufferVector class that implements IList.
+/// </summary>
+
+public class ISerializerExtensionsTests
+{
+    [Fact]
+    public void BufferWriter_Generic()
     {
-        [Fact]
-        public void BufferWriter_Generic()
-        {
-            ISerializer<Table> serializer = FlatBufferSerializer.Default.Compile<Table>();
-            ArrayBufferWriter<byte> bw = new();
+        ISerializer<Table> serializer = FlatBufferSerializer.Default.Compile<Table>();
+        ArrayBufferWriter<byte> bw = new();
 
-            int written = serializer.Write(bw, new Table { A = true, B = 3 });
-            Assert.Equal(written, bw.WrittenCount);
+        int written = serializer.Write(bw, new Table { A = true, B = 3 });
+        Assert.Equal(written, bw.WrittenCount);
 
-            Table t = serializer.Parse(bw.WrittenMemory);
-            Assert.True(t.A);
-            Assert.Equal(3, t.B);
-        }
-
-        [Fact]
-        public void BufferWriter_NonGeneric()
-        {
-            ISerializer serializer = FlatBufferSerializer.Default.Compile(typeof(Table));
-            ArrayBufferWriter<byte> bw = new();
-
-            int written = serializer.Write(bw, new Table { A = true, B = 3 });
-            Assert.Equal(written, bw.WrittenCount);
-
-            Table t = (Table)serializer.Parse(bw.WrittenMemory);
-            Assert.True(t.A);
-            Assert.Equal(3, t.B);
-        }
-
-        [FlatBufferTable]
-        public class Table
-        {
-            [FlatBufferItem(0)]
-            public virtual bool A { get; set; }
-
-            [FlatBufferItem(1)]
-            public virtual byte B { get; set; }
-        }
+        Table t = serializer.Parse(bw.WrittenMemory);
+        Assert.True(t.A);
+        Assert.Equal(3, t.B);
     }
-#endif
+
+    [Fact]
+    public void BufferWriter_NonGeneric()
+    {
+        ISerializer serializer = FlatBufferSerializer.Default.Compile(typeof(Table));
+        ArrayBufferWriter<byte> bw = new();
+
+        int written = serializer.Write(bw, new Table { A = true, B = 3 });
+        Assert.Equal(written, bw.WrittenCount);
+
+        Table t = (Table)serializer.Parse(bw.WrittenMemory);
+        Assert.True(t.A);
+        Assert.Equal(3, t.B);
+    }
+
+    [FlatBufferTable]
+    public class Table
+    {
+        [FlatBufferItem(0)]
+        public virtual bool A { get; set; }
+
+        [FlatBufferItem(1)]
+        public virtual byte B { get; set; }
+    }
 }
+
+#endif
