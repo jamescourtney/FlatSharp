@@ -14,38 +14,34 @@
  * limitations under the License.
  */
 
-namespace FlatSharpTests.Compiler
+using System.Linq;
+
+namespace FlatSharpTests.Compiler;
+
+public class MetadataHelpers
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using FlatSharp.Compiler;
+    public static readonly string AllAttributes;
 
-    public class MetadataHelpers
+    static MetadataHelpers()
     {
-        public static readonly string AllAttributes;
+        List<string> names = new List<string>();
 
-        static MetadataHelpers()
-        {
-            List<string> names = new List<string>();
+        names.Add(string.Empty);
+        names.Add(MetadataKeys.SerializerKind);
+        names.Add(MetadataKeys.NonVirtualProperty);
+        names.Add(MetadataKeys.SortedVector);
+        names.Add(MetadataKeys.SharedString);
+        names.Add(MetadataKeys.DefaultConstructorKind);
+        names.Add(MetadataKeys.VectorKind);
+        names.Add(MetadataKeys.Setter);
+        names.Add(MetadataKeys.ValueStruct);
+        names.Add(MetadataKeys.UnsafeValueStructVector);
+        names.Add(MetadataKeys.MemoryMarshalBehavior);
+        names.Add(MetadataKeys.ForceWrite);
+        names.Add(MetadataKeys.WriteThrough);
+        names.Add(MetadataKeys.RpcInterface);
+        names.Add(string.Empty);
 
-            names.Add(string.Empty);
-            names.Add(MetadataKeys.SerializerKind);
-            names.Add(MetadataKeys.NonVirtualProperty);
-            names.Add(MetadataKeys.SortedVector);
-            names.Add(MetadataKeys.SharedString);
-            names.Add(MetadataKeys.DefaultConstructorKind);
-            names.Add(MetadataKeys.VectorKind);
-            names.Add(MetadataKeys.Setter);
-            names.Add(MetadataKeys.ValueStruct);
-            names.Add(MetadataKeys.UnsafeValueStructVector);
-            names.Add(MetadataKeys.MemoryMarshalBehavior);
-            names.Add(MetadataKeys.ForceWrite);
-            names.Add(MetadataKeys.WriteThrough);
-            names.Add(MetadataKeys.RpcInterface);
-            names.Add(string.Empty);
-
-            AllAttributes = string.Join("\r\n", names.Select(x => $"attribute \"{x}\";"));
-        }
+        AllAttributes = string.Join("\r\n", names.Select(x => $"attribute \"{x}\";"));
     }
 }

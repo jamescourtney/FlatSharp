@@ -14,22 +14,14 @@
  * limitations under the License.
  */
 
-namespace FlatSharpTests.Compiler
-{
-    using System;
-    using System.Linq;
-    using System.Reflection;
-    using FlatSharp;
-    using FlatSharp.Compiler;
-    using Xunit;
+namespace FlatSharpTests.Compiler;
 
-    
-    public class NullableAnnotationTests
+public class NullableAnnotationTests
+{
+    [Fact]
+    public void NullableAnnotations()
     {
-        [Fact]
-        public void NullableAnnotations()
-        {
-            string schema = $@"
+        string schema = $@"
             {MetadataHelpers.AllAttributes}
             namespace NullableAnnotationTests;
 
@@ -53,9 +45,8 @@ namespace FlatSharpTests.Compiler
               length:uint;
             }}";
 
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(
-                schema, 
-                new());
-        }
+        Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(
+            schema,
+            new());
     }
 }

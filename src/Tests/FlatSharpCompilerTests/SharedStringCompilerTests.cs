@@ -14,23 +14,14 @@
  * limitations under the License.
  */
 
-namespace FlatSharpTests.Compiler
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reflection;
-    using FlatSharp;
-    using FlatSharp.Attributes;
-    using FlatSharp.Compiler;
-    using Xunit;
+namespace FlatSharpTests.Compiler;
 
-    public class SharedStringCompilerTests
+public class SharedStringCompilerTests
+{
+    [Fact]
+    public void SharedStringMetadataTypeTest()
     {
-        [Fact]
-        public void SharedStringMetadataTypeTest()
-        {
-            string schema = $@"
+        string schema = $@"
             {MetadataHelpers.AllAttributes}
             namespace SharedStringTests;
             table Table {{
@@ -39,19 +30,18 @@ namespace FlatSharpTests.Compiler
                 baz:[string] ({MetadataKeys.VectorKind}:""ilist"", {MetadataKeys.SharedString});
             }}";
 
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
+        Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
 
-            Type tableType = asm.GetTypes().Single(x => x.FullName == "SharedStringTests.Table");
-            var property = tableType.GetProperty("foo");
+        Type tableType = asm.GetTypes().Single(x => x.FullName == "SharedStringTests.Table");
+        var property = tableType.GetProperty("foo");
 
-            Assert.Equal(typeof(string), property.PropertyType);
-            Assert.True(property.GetCustomAttribute<FlatBufferItemAttribute>().SharedString);
+        Assert.Equal(typeof(string), property.PropertyType);
+        Assert.True(property.GetCustomAttribute<FlatBufferItemAttribute>().SharedString);
 
-            Assert.Equal(typeof(string[]), tableType.GetProperty("bar").PropertyType);
-            Assert.True(tableType.GetProperty("bar").GetCustomAttribute<FlatBufferItemAttribute>().SharedString);
+        Assert.Equal(typeof(string[]), tableType.GetProperty("bar").PropertyType);
+        Assert.True(tableType.GetProperty("bar").GetCustomAttribute<FlatBufferItemAttribute>().SharedString);
 
-            Assert.Equal(typeof(IList<string>), tableType.GetProperty("baz").PropertyType);
-            Assert.True(tableType.GetProperty("baz").GetCustomAttribute<FlatBufferItemAttribute>().SharedString);
-        }
+        Assert.Equal(typeof(IList<string>), tableType.GetProperty("baz").PropertyType);
+        Assert.True(tableType.GetProperty("baz").GetCustomAttribute<FlatBufferItemAttribute>().SharedString);
     }
 }

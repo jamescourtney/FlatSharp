@@ -14,32 +14,25 @@
  * limitations under the License.
  */
 
-namespace FlatSharpTests.Compiler
-{
-    using System;
-    using FlatSharp.Compiler;
-    using FlatSharp.Compiler.Schema;
-    using FlatSharp.Compiler.SchemaModel;
-    using Xunit;
+namespace FlatSharpTests.Compiler;
 
-    public class ScalarSizeTests
+public class ScalarSizeTests
+{
+    [Theory]
+    [InlineData(BaseType.Bool, 1)]
+    [InlineData(BaseType.Byte, 1)]
+    [InlineData(BaseType.UByte, 1)]
+    [InlineData(BaseType.Short, 2)]
+    [InlineData(BaseType.UShort, 2)]
+    [InlineData(BaseType.Int, 4)]
+    [InlineData(BaseType.UInt, 4)]
+    [InlineData(BaseType.Float, 4)]
+    [InlineData(BaseType.Long, 8)]
+    [InlineData(BaseType.ULong, 8)]
+    [InlineData(BaseType.Double, 8)]
+    public void SizesCorrect(BaseType type, int expectedSize)
     {
-        [Theory]
-        [InlineData(BaseType.Bool, 1)]
-        [InlineData(BaseType.Byte, 1)]
-        [InlineData(BaseType.UByte, 1)]
-        [InlineData(BaseType.Short, 2)]
-        [InlineData(BaseType.UShort, 2)]
-        [InlineData(BaseType.Int, 4)]
-        [InlineData(BaseType.UInt, 4)]
-        [InlineData(BaseType.Float, 4)]
-        [InlineData(BaseType.Long, 8)]
-        [InlineData(BaseType.ULong, 8)]
-        [InlineData(BaseType.Double, 8)]
-        public void SizesCorrect(BaseType type, int expectedSize)
-        {
-            Assert.True(type.IsScalar());
-            Assert.Equal(expectedSize, type.GetScalarSize());
-        }
+        Assert.True(type.IsScalar());
+        Assert.Equal(expectedSize, type.GetScalarSize());
     }
 }

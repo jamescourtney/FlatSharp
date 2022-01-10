@@ -14,115 +14,104 @@
  * limitations under the License.
  */
 
-namespace FlatSharpTests.Compiler
+namespace FlatSharpTests.Compiler;
+
+public class MetadataTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reflection;
-    using FlatSharp;
-    using FlatSharp.Attributes;
-    using FlatSharp.Compiler;
-    using FlatSharp.TypeModel;
-    using Xunit;
-
-    public class MetadataTests
+    [Fact]
+    public void DeprecatedMetadata()
     {
-        [Fact]
-        public void DeprecatedMetadata()
+        var (prop, type, attribute) = this.CompileAndGetProperty("", "string", MetadataKeys.Deprecated);
+        Assert.True(attribute.Deprecated);
+        Assert.False(attribute.SortedVector);
+    }
+
+    [Fact]
+    public void DeprecatedSortedVector()
+    {
+        var (prop, type, attribute) = this.CompileAndGetProperty("", "[OtherTable]", $"{MetadataKeys.Deprecated},{MetadataKeys.SortedVector}");
+        Assert.True(attribute.Deprecated);
+        Assert.True(attribute.SortedVector);
+    }
+
+    [Fact]
+    public void VectorTypeQuoted()
+    {
+        var (prop, type, attribute) = this.CompileAndGetProperty("", "[string]", $"{MetadataKeys.VectorKind}:\"IList\"");
+        Assert.False(attribute.Deprecated);
+        Assert.False(attribute.SortedVector);
+        Assert.Equal(typeof(IList<string>), prop.PropertyType);
+    }
+
+    [Fact]
+    public void IIndexedVector()
+    {
+        var (prop, type, attribute) = this.CompileAndGetProperty("", "[OtherTable]", $"{MetadataKeys.VectorKind}:\"IIndexedVector\",{MetadataKeys.SortedVector}");
+
+        Assert.False(attribute.Deprecated);
+        Assert.True(attribute.SortedVector);
+        Assert.Equal(typeof(IIndexedVector<,>), prop.PropertyType.GetGenericTypeDefinition());
+        Assert.Equal(typeof(string), prop.PropertyType.GetGenericArguments()[0]);
+        Assert.Contains("OtherTable", prop.PropertyType.GetGenericArguments()[1].FullName);
+    }
+
+    [Fact]
+    public void IIndexedVectorVector_WithSerializer()
+    {
+        var (prop, type, attribute) = this.CompileAndGetProperty(MetadataKeys.SerializerKind, "[OtherTable]", $"{MetadataKeys.VectorKind}:\"IIndexedVector\",{MetadataKeys.SortedVector}");
+
+        Assert.False(attribute.Deprecated);
+        Assert.True(attribute.SortedVector);
+        Assert.Equal(typeof(IIndexedVector<,>), prop.PropertyType.GetGenericTypeDefinition());
+        Assert.Equal(typeof(string), prop.PropertyType.GetGenericArguments()[0]);
+        Assert.Contains("OtherTable", prop.PropertyType.GetGenericArguments()[1].FullName);
+    }
+
+    [Fact]
+    public void IIndexedVector_WithSerializer_NoSortedDeclaration()
+    {
+        var (prop, type, attribute) = this.CompileAndGetProperty(MetadataKeys.SerializerKind, "[OtherTable]", $"{MetadataKeys.VectorKind}:\"IIndexedVector\"");
+
+        Assert.False(attribute.Deprecated);
+        Assert.False(attribute.SortedVector); // dictionaries override this attribute.
+        Assert.Equal(typeof(IIndexedVector<,>), prop.PropertyType.GetGenericTypeDefinition());
+        Assert.Equal(typeof(string), prop.PropertyType.GetGenericArguments()[0]);
+        Assert.Contains("OtherTable", prop.PropertyType.GetGenericArguments()[1].FullName);
+    }
+
+    [Fact]
+    public void PrecompiledSerializer()
+    {
+        var (prop, type, attribute) = this.CompileAndGetProperty(MetadataKeys.SerializerKind, "string", "");
+        Assert.Equal(FlatBufferDeserializationOption.GreedyMutable, type.GetNestedType("GeneratedSerializer", BindingFlags.NonPublic).GetCustomAttribute<FlatSharpGeneratedSerializerAttribute>().DeserializationOption);
+    }
+
+    [Fact]
+    public void PrecompiledSerializerQuoted()
+    {
+        var (prop, type, attribute) = this.CompileAndGetProperty($"{MetadataKeys.SerializerKind}:\"Lazy\"", "string", "");
+        Assert.Equal(FlatBufferDeserializationOption.Lazy, type.GetNestedType("GeneratedSerializer", BindingFlags.NonPublic).GetCustomAttribute<FlatSharpGeneratedSerializerAttribute>().DeserializationOption);
+    }
+
+    private (PropertyInfo, Type, FlatBufferItemAttribute) CompileAndGetProperty(string typeMetadata, string fieldType, string fieldMetadata)
+    {
+        if (!string.IsNullOrEmpty(typeMetadata))
         {
-            var (prop, type, attribute) = this.CompileAndGetProperty("", "string", MetadataKeys.Deprecated);
-            Assert.True(attribute.Deprecated);
-            Assert.False(attribute.SortedVector);
+            typeMetadata = $"({typeMetadata})";
         }
 
-        [Fact]
-        public void DeprecatedSortedVector()
+        if (!string.IsNullOrEmpty(fieldMetadata))
         {
-            var (prop, type, attribute) = this.CompileAndGetProperty("", "[OtherTable]", $"{MetadataKeys.Deprecated},{MetadataKeys.SortedVector}");
-            Assert.True(attribute.Deprecated);
-            Assert.True(attribute.SortedVector);
+            fieldMetadata = $"({fieldMetadata})";
         }
 
-        [Fact]
-        public void VectorTypeQuoted()
-        {
-            var (prop, type, attribute) = this.CompileAndGetProperty("", "[string]", $"{MetadataKeys.VectorKind}:\"IList\"");
-            Assert.False(attribute.Deprecated);
-            Assert.False(attribute.SortedVector);
-            Assert.Equal(typeof(IList<string>), prop.PropertyType);
-        }
+        string schema = $@"{MetadataHelpers.AllAttributes} namespace ns; table MyTable {typeMetadata} {{ Field:{fieldType} {fieldMetadata}; Fake:string; }} table OtherTable {{ String:string (key); }}";
 
-        [Fact]
-        public void IIndexedVector()
-        {
-            var (prop, type, attribute) = this.CompileAndGetProperty("", "[OtherTable]", $"{MetadataKeys.VectorKind}:\"IIndexedVector\",{MetadataKeys.SortedVector}");
+        Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
+        var type = asm.GetType("ns.MyTable");
+        var propInfo = type.GetProperty("Field");
+        var attribute = propInfo.GetCustomAttribute<FlatBufferItemAttribute>();
 
-            Assert.False(attribute.Deprecated);
-            Assert.True(attribute.SortedVector);
-            Assert.Equal(typeof(IIndexedVector<,>), prop.PropertyType.GetGenericTypeDefinition());
-            Assert.Equal(typeof(string), prop.PropertyType.GetGenericArguments()[0]);
-            Assert.Contains("OtherTable", prop.PropertyType.GetGenericArguments()[1].FullName);
-        }
-
-        [Fact]
-        public void IIndexedVectorVector_WithSerializer()
-        {
-            var (prop, type, attribute) = this.CompileAndGetProperty(MetadataKeys.SerializerKind, "[OtherTable]", $"{MetadataKeys.VectorKind}:\"IIndexedVector\",{MetadataKeys.SortedVector}");
-
-            Assert.False(attribute.Deprecated);
-            Assert.True(attribute.SortedVector);
-            Assert.Equal(typeof(IIndexedVector<,>), prop.PropertyType.GetGenericTypeDefinition());
-            Assert.Equal(typeof(string), prop.PropertyType.GetGenericArguments()[0]);
-            Assert.Contains("OtherTable", prop.PropertyType.GetGenericArguments()[1].FullName);
-        }
-
-        [Fact]
-        public void IIndexedVector_WithSerializer_NoSortedDeclaration()
-        {
-            var (prop, type, attribute) = this.CompileAndGetProperty(MetadataKeys.SerializerKind, "[OtherTable]", $"{MetadataKeys.VectorKind}:\"IIndexedVector\"");
-
-            Assert.False(attribute.Deprecated);
-            Assert.False(attribute.SortedVector); // dictionaries override this attribute.
-            Assert.Equal(typeof(IIndexedVector<,>), prop.PropertyType.GetGenericTypeDefinition());
-            Assert.Equal(typeof(string), prop.PropertyType.GetGenericArguments()[0]);
-            Assert.Contains("OtherTable", prop.PropertyType.GetGenericArguments()[1].FullName);
-        }
-
-        [Fact]
-        public void PrecompiledSerializer()
-        {
-            var (prop, type, attribute) = this.CompileAndGetProperty(MetadataKeys.SerializerKind, "string", "");
-            Assert.Equal(FlatBufferDeserializationOption.GreedyMutable, type.GetNestedType("GeneratedSerializer", BindingFlags.NonPublic).GetCustomAttribute<FlatSharpGeneratedSerializerAttribute>().DeserializationOption);
-        }
-
-        [Fact]
-        public void PrecompiledSerializerQuoted()
-        {
-            var (prop, type, attribute) = this.CompileAndGetProperty($"{MetadataKeys.SerializerKind}:\"Lazy\"", "string", "");
-            Assert.Equal(FlatBufferDeserializationOption.Lazy, type.GetNestedType("GeneratedSerializer", BindingFlags.NonPublic).GetCustomAttribute<FlatSharpGeneratedSerializerAttribute>().DeserializationOption);
-        }
-
-        private (PropertyInfo, Type, FlatBufferItemAttribute) CompileAndGetProperty(string typeMetadata, string fieldType, string fieldMetadata)
-        {
-            if (!string.IsNullOrEmpty(typeMetadata))
-            {
-                typeMetadata = $"({typeMetadata})";
-            }
-
-            if (!string.IsNullOrEmpty(fieldMetadata))
-            {
-                fieldMetadata = $"({fieldMetadata})";
-            }
-
-            string schema = $@"{MetadataHelpers.AllAttributes} namespace ns; table MyTable {typeMetadata} {{ Field:{fieldType} {fieldMetadata}; Fake:string; }} table OtherTable {{ String:string (key); }}";
-
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
-            var type = asm.GetType("ns.MyTable");
-            var propInfo = type.GetProperty("Field");
-            var attribute = propInfo.GetCustomAttribute<FlatBufferItemAttribute>();
-
-            return (propInfo, type, attribute);
-        }
+        return (propInfo, type, attribute);
     }
 }

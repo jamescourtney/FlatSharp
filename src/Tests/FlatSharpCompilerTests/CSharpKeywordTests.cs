@@ -14,24 +14,15 @@
  * limitations under the License.
  */
 
-namespace FlatSharpTests.Compiler
+namespace FlatSharpTests.Compiler;
+
+public class CSharpKeywordTests
 {
-    using System;
-    using FlatSharp;
-    using FlatSharp.Compiler;
-    using Xunit;
-
-    
-    public class CSharpKeywordTests
+    [Fact]
+    public void ClassKeyword()
     {
-        [Fact]
-        public void ClassKeyword()
-        {
-            string fbs = $"namespace Foo.Bar; enum class : ubyte (bit_flags) {{ Red, Blue, Green, Yellow }}";
-            var ex = Assert.Throws<FlatSharpCompilationException>(
-                () => FlatSharpCompiler.CompileAndLoadAssembly(fbs, new()));
-
-
-        }
+        string fbs = $"namespace Foo.Bar; enum class : ubyte (bit_flags) {{ Red, Blue, Green, Yellow }}";
+        var ex = Assert.Throws<FlatSharpCompilationException>(
+            () => FlatSharpCompiler.CompileAndLoadAssembly(fbs, new()));
     }
 }
