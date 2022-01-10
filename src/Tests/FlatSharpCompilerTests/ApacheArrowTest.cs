@@ -14,29 +14,22 @@
  * limitations under the License.
  */
 
-namespace FlatSharpTests.Compiler
+namespace FlatSharpTests.Compiler;
+
+public class ApacheArrowTest
 {
-    using System;
-    using System.Reflection;
-    using FlatSharp;
-    using FlatSharp.Compiler;
-    using Xunit;
-
-    
-    public class ApacheArrowTest
+    [Fact]
+    public void Arrow_Compilation()
     {
-        [Fact]
-        public void Arrow_Compilation()
+        foreach (FlatBufferDeserializationOption item in Enum.GetValues(typeof(FlatBufferDeserializationOption)))
         {
-            foreach (FlatBufferDeserializationOption item in Enum.GetValues(typeof(FlatBufferDeserializationOption)))
-            {
-                this.Compile_Arrow(item);
-            }
+            this.Compile_Arrow(item);
         }
+    }
 
-        private void Compile_Arrow(FlatBufferDeserializationOption option)
-        {
-            string schema = $@"
+    private void Compile_Arrow(FlatBufferDeserializationOption option)
+    {
+        string schema = $@"
     // Licensed to the Apache Software Foundation (ASF) under one
     // or more contributor license agreements.  See the NOTICE file
     // distributed with this work for additional information
@@ -477,7 +470,6 @@ namespace FlatSharpTests.Compiler
 
     root_type Schema;";
 
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
-        }
+        Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
     }
 }

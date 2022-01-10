@@ -14,36 +14,35 @@
  * limitations under the License.
  */
 
-namespace FlatSharp
+namespace FlatSharp;
+
+/// <summary>
+/// Defines FlatSharp serializer options.
+/// </summary>
+public enum FlatBufferDeserializationOption
 {
     /// <summary>
-    /// Defines FlatSharp serializer options.
+    /// Full Lazy parsing. Deserialized objects are immutable.
     /// </summary>
-    public enum FlatBufferDeserializationOption
-    {
-        /// <summary>
-        /// Full Lazy parsing. Deserialized objects are immutable.
-        /// </summary>
-        Lazy = 0,
+    Lazy = 0,
 
-        /// <summary>
-        /// Each object in the deserialized payload is read from the underlying buffer at most once. Reads are done on demand and cached. The returned object is immutable.
-        /// </summary>
-        Progressive = 1,
+    /// <summary>
+    /// Each object in the deserialized payload is read from the underlying buffer at most once. Reads are done on demand and cached. The returned object is immutable.
+    /// </summary>
+    Progressive = 1,
 
-        /// <summary>
-        /// The entire object graph is traversed and the deserialized objects do not reference the input buffer. Deserialized objects are immutable.
-        /// </summary>
-        Greedy = 2,
+    /// <summary>
+    /// The entire object graph is traversed and the deserialized objects do not reference the input buffer. Deserialized objects are immutable.
+    /// </summary>
+    Greedy = 2,
 
-        /// <summary>
-        /// Same properties as <see cref="GreedyMutable"/>, but deserialized objects are mutable.
-        /// </summary>
-        GreedyMutable = 3,
+    /// <summary>
+    /// Same properties as <see cref="GreedyMutable"/>, but deserialized objects are mutable.
+    /// </summary>
+    GreedyMutable = 3,
 
-        /// <summary>
-        /// Default options.
-        /// </summary>
-        Default = GreedyMutable,
-    }
+    /// <summary>
+    /// Default options.
+    /// </summary>
+    Default = GreedyMutable,
 }

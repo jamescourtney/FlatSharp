@@ -14,222 +14,216 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.TypeModel
+namespace FlatSharp.TypeModel;
+
+[Flags]
+public enum ContextualTypeModelClassification
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Reflection;
+    /// <summary>
+    /// Default -- no flags.
+    /// </summary>
+    Undefined = 0,
 
-    [Flags]
-    public enum ContextualTypeModelClassification
+    /// <summary>
+    /// Indicates that the field is optional
+    /// </summary>
+    Optional = 1,
+
+    /// <summary>
+    /// Indicates that the field is required.
+    /// </summary>
+    Required = 2,
+
+    /// <summary>
+    /// Indicates that the field is a reference.
+    /// </summary>
+    ReferenceType = 4,
+
+    /// <summary>
+    /// Indicates that the field is a value.
+    /// </summary>
+    ValueType = 8,
+}
+
+/// <summary>
+/// Extensions for <see cref="ITypeModel"/>.
+/// </summary>
+internal static class ITypeModelExtensions
+{
+    /// <summary>
+    /// Indicates if the given type model is a nullable reference in the given context.
+    /// </summary>
+    /// <param name="typeModel">The type model.</param>
+    /// <param name="context">The context (ie, table, struct, vector, etc)</param>
+    public static ContextualTypeModelClassification ClassifyContextually(this ITypeModel typeModel, FlatBufferSchemaType context)
     {
-        /// <summary>
-        /// Default -- no flags.
-        /// </summary>
-        Undefined = 0,
+        var flags = ContextualTypeModelClassification.Undefined;
 
-        /// <summary>
-        /// Indicates that the field is optional
-        /// </summary>
-        Optional = 1,
+        if (typeModel.ClrType.IsValueType)
+        {
+            flags |= ContextualTypeModelClassification.ValueType;
 
-        /// <summary>
-        /// Indicates that the field is required.
-        /// </summary>
-        Required = 2,
+            if (Nullable.GetUnderlyingType(typeModel.ClrType) == null)
+            {
+                flags |= ContextualTypeModelClassification.Required;
+            }
+            else
+            {
+                flags |= ContextualTypeModelClassification.Optional;
+            }
+        }
+        else
+        {
+            flags |= ContextualTypeModelClassification.ReferenceType;
 
-        /// <summary>
-        /// Indicates that the field is a reference.
-        /// </summary>
-        ReferenceType = 4,
+            if (context == FlatBufferSchemaType.Table)
+            {
+                flags |= ContextualTypeModelClassification.Optional;
+            }
+            else
+            {
+                flags |= ContextualTypeModelClassification.Required;
+            }
+        }
 
-        /// <summary>
-        /// Indicates that the field is a value.
-        /// </summary>
-        ValueType = 8,
+        return flags;
+    }
+
+    [ExcludeFromCodeCoverage]
+    public static bool IsRequiredReference(this ContextualTypeModelClassification flags)
+        => flags.HasFlag(ContextualTypeModelClassification.ReferenceType | ContextualTypeModelClassification.Required);
+
+    [ExcludeFromCodeCoverage]
+    public static bool IsOptionalReference(this ContextualTypeModelClassification flags)
+        => flags.HasFlag(ContextualTypeModelClassification.ReferenceType | ContextualTypeModelClassification.Optional);
+
+    [ExcludeFromCodeCoverage]
+    public static bool IsRequiredValue(this ContextualTypeModelClassification flags)
+        => flags.HasFlag(ContextualTypeModelClassification.ValueType | ContextualTypeModelClassification.Required);
+
+    [ExcludeFromCodeCoverage]
+    public static bool IsOptionalValue(this ContextualTypeModelClassification flags)
+        => flags.HasFlag(ContextualTypeModelClassification.ValueType | ContextualTypeModelClassification.Optional);
+
+    [ExcludeFromCodeCoverage]
+    public static bool IsOptional(this ContextualTypeModelClassification flags)
+        => flags.HasFlag(ContextualTypeModelClassification.Optional);
+
+    [ExcludeFromCodeCoverage]
+    public static bool IsRequired(this ContextualTypeModelClassification flags)
+        => flags.HasFlag(ContextualTypeModelClassification.Required);
+
+    [ExcludeFromCodeCoverage]
+    public static bool IsReference(this ContextualTypeModelClassification flags)
+        => flags.HasFlag(ContextualTypeModelClassification.ReferenceType);
+
+    [ExcludeFromCodeCoverage]
+    public static bool IsValue(this ContextualTypeModelClassification flags)
+        => flags.HasFlag(ContextualTypeModelClassification.ValueType);
+
+    /// <summary>
+    /// Shortcut for getting compilable type name.
+    /// </summary>
+    public static string GetCompilableTypeName(this ITypeModel typeModel)
+        => CSharpHelpers.GetCompilableTypeName(typeModel.ClrType);
+
+    /// <summary>
+    /// Shortcut for getting compilable type name.
+    /// </summary>
+    public static string GetGlobalCompilableTypeName(this ITypeModel typeModel)
+        => CSharpHelpers.GetGlobalCompilableTypeName(typeModel.ClrType);
+
+    public static string GetNullableAnnotationTypeName(this ItemMemberModel memberModel, FlatBufferSchemaType context)
+    {
+        var typeName = memberModel.ItemTypeModel.GetCompilableTypeName();
+        if (memberModel.ItemTypeModel.ClassifyContextually(context).IsOptionalReference() && !memberModel.IsRequired)
+        {
+            typeName += "?";
+        }
+
+        return typeName;
     }
 
     /// <summary>
-    /// Extensions for <see cref="ITypeModel"/>.
+    /// Gets a value indicating if the type of this type model is a non-nullable CLR value type.
     /// </summary>
-    internal static class ITypeModelExtensions
+    public static bool IsNonNullableClrValueType(this ITypeModel typeModel)
+        => typeModel.ClrType.IsValueType && Nullable.GetUnderlyingType(typeModel.ClrType) is null;
+
+    /// <summary>
+    /// Returns a boolean expression that compares the given variable name to the given default value literal for inequality.
+    /// </summary>
+    public static string GetNotEqualToDefaultValueLiteralExpression(this ITypeModel typeModel, string variableName, string defaultValueLiteral)
     {
-        /// <summary>
-        /// Indicates if the given type model is a nullable reference in the given context.
-        /// </summary>
-        /// <param name="typeModel">The type model.</param>
-        /// <param name="context">The context (ie, table, struct, vector, etc)</param>
-        public static ContextualTypeModelClassification ClassifyContextually(this ITypeModel typeModel, FlatBufferSchemaType context)
+        if (typeModel.IsNonNullableClrValueType())
         {
-            var flags = ContextualTypeModelClassification.Undefined;
-
-            if (typeModel.ClrType.IsValueType)
+            if (typeModel.ClrType.IsPrimitive || typeModel.ClrType.IsEnum)
             {
-                flags |= ContextualTypeModelClassification.ValueType;
-
-                if (Nullable.GetUnderlyingType(typeModel.ClrType) == null)
-                {
-                    flags |= ContextualTypeModelClassification.Required;
-                }
-                else
-                {
-                    flags |= ContextualTypeModelClassification.Optional;
-                }
+                // Let's hope that != is implemented rationally!
+                return $"{variableName} != {defaultValueLiteral}";
             }
             else
             {
-                flags |= ContextualTypeModelClassification.ReferenceType;
-
-                if (context == FlatBufferSchemaType.Table)
-                {
-                    flags |= ContextualTypeModelClassification.Optional;
-                }
-                else
-                {
-                    flags |= ContextualTypeModelClassification.Required;
-                }
+                // We assume non-primitive structs are not equal.
+                return "true";
             }
-
-            return flags;
         }
-
-        [ExcludeFromCodeCoverage]
-        public static bool IsRequiredReference(this ContextualTypeModelClassification flags)
-            => flags.HasFlag(ContextualTypeModelClassification.ReferenceType | ContextualTypeModelClassification.Required);
-
-        [ExcludeFromCodeCoverage]
-        public static bool IsOptionalReference(this ContextualTypeModelClassification flags)
-            => flags.HasFlag(ContextualTypeModelClassification.ReferenceType | ContextualTypeModelClassification.Optional);
-
-        [ExcludeFromCodeCoverage]
-        public static bool IsRequiredValue(this ContextualTypeModelClassification flags)
-            => flags.HasFlag(ContextualTypeModelClassification.ValueType | ContextualTypeModelClassification.Required);
-
-        [ExcludeFromCodeCoverage]
-        public static bool IsOptionalValue(this ContextualTypeModelClassification flags)
-            => flags.HasFlag(ContextualTypeModelClassification.ValueType | ContextualTypeModelClassification.Optional);
-
-        [ExcludeFromCodeCoverage]
-        public static bool IsOptional(this ContextualTypeModelClassification flags)
-            => flags.HasFlag(ContextualTypeModelClassification.Optional);
-
-        [ExcludeFromCodeCoverage]
-        public static bool IsRequired(this ContextualTypeModelClassification flags)
-            => flags.HasFlag(ContextualTypeModelClassification.Required);
-
-        [ExcludeFromCodeCoverage]
-        public static bool IsReference(this ContextualTypeModelClassification flags)
-            => flags.HasFlag(ContextualTypeModelClassification.ReferenceType);
-
-        [ExcludeFromCodeCoverage]
-        public static bool IsValue(this ContextualTypeModelClassification flags)
-            => flags.HasFlag(ContextualTypeModelClassification.ValueType);
-
-        /// <summary>
-        /// Shortcut for getting compilable type name.
-        /// </summary>
-        public static string GetCompilableTypeName(this ITypeModel typeModel) 
-            => CSharpHelpers.GetCompilableTypeName(typeModel.ClrType);
-
-        /// <summary>
-        /// Shortcut for getting compilable type name.
-        /// </summary>
-        public static string GetGlobalCompilableTypeName(this ITypeModel typeModel)
-            => CSharpHelpers.GetGlobalCompilableTypeName(typeModel.ClrType);
-
-        public static string GetNullableAnnotationTypeName(this ItemMemberModel memberModel, FlatBufferSchemaType context)
+        else
         {
-            var typeName = memberModel.ItemTypeModel.GetCompilableTypeName();
-            if (memberModel.ItemTypeModel.ClassifyContextually(context).IsOptionalReference() && !memberModel.IsRequired)
-            {
-                typeName += "?";
-            }
-
-            return typeName;
+            // Nullable<T> and reference types are easy.
+            return $"!({variableName} is {defaultValueLiteral})";
         }
+    }
 
-        /// <summary>
-        /// Gets a value indicating if the type of this type model is a non-nullable CLR value type.
-        /// </summary>
-        public static bool IsNonNullableClrValueType(this ITypeModel typeModel) 
-            => typeModel.ClrType.IsValueType && Nullable.GetUnderlyingType(typeModel.ClrType) is null;
-
-        /// <summary>
-        /// Returns a boolean expression that compares the given variable name to the given default value literal for inequality.
-        /// </summary>
-        public static string GetNotEqualToDefaultValueLiteralExpression(this ITypeModel typeModel, string variableName, string defaultValueLiteral)
+    /// <summary>
+    /// Returns a compile-time constant default expression for the given type model.
+    /// </summary>
+    public static string GetTypeDefaultExpression(this ITypeModel typeModel)
+    {
+        if (typeModel.IsNonNullableClrValueType())
         {
-            if (typeModel.IsNonNullableClrValueType())
-            {
-                if (typeModel.ClrType.IsPrimitive || typeModel.ClrType.IsEnum)
-                {
-                    // Let's hope that != is implemented rationally!
-                    return $"{variableName} != {defaultValueLiteral}";
-                }
-                else
-                {
-                    // We assume non-primitive structs are not equal.
-                    return "true";
-                }
-            }
-            else
-            {
-                // Nullable<T> and reference types are easy.
-                return $"!({variableName} is {defaultValueLiteral})";
-            }
+            return $"default({typeModel.GetCompilableTypeName()})";
         }
-
-        /// <summary>
-        /// Returns a compile-time constant default expression for the given type model.
-        /// </summary>
-        public static string GetTypeDefaultExpression(this ITypeModel typeModel)
+        else
         {
-            if (typeModel.IsNonNullableClrValueType())
+            return "null";
+        }
+    }
+
+    /// <summary>
+    /// Recursively traverses the full object graph for the given type model.
+    /// </summary>
+    public static void TraverseObjectGraph(this ITypeModel model, HashSet<Type> seenTypes)
+    {
+        if (seenTypes.Add(model.ClrType))
+        {
+            foreach (var child in model.Children)
             {
-                return $"default({typeModel.GetCompilableTypeName()})";
-            }
-            else
-            {
-                return "null";
+                child.TraverseObjectGraph(seenTypes);
             }
         }
+    }
 
-        /// <summary>
-        /// Recursively traverses the full object graph for the given type model.
-        /// </summary>
-        public static void TraverseObjectGraph(this ITypeModel model, HashSet<Type> seenTypes)
+    /// <summary>
+    /// Gets all TableFieldContexts for the entire object graph.
+    /// </summary>
+    public static List<(ITypeModel, TableFieldContext)> GetAllTableFieldContexts(this ITypeModel rootType)
+    {
+        static void GetTableFieldContextsRecursive(ITypeModel model, List<(ITypeModel, TableFieldContext)> contexts, HashSet<Type> seenTypes)
         {
             if (seenTypes.Add(model.ClrType))
             {
+                contexts.AddRange(model.GetFieldContexts());
+
                 foreach (var child in model.Children)
                 {
-                    child.TraverseObjectGraph(seenTypes);
+                    GetTableFieldContextsRecursive(child, contexts, seenTypes);
                 }
             }
         }
 
-        /// <summary>
-        /// Gets all TableFieldContexts for the entire object graph.
-        /// </summary>
-        public static List<(ITypeModel, TableFieldContext)> GetAllTableFieldContexts(this ITypeModel rootType)
-        {
-            static void GetTableFieldContextsRecursive(ITypeModel model, List<(ITypeModel, TableFieldContext)> contexts, HashSet<Type> seenTypes)
-            {
-                if (seenTypes.Add(model.ClrType))
-                {
-                    contexts.AddRange(model.GetFieldContexts());
-
-                    foreach (var child in model.Children)
-                    {
-                        GetTableFieldContextsRecursive(child, contexts, seenTypes);
-                    }
-                }
-            }
-
-            List<(ITypeModel, TableFieldContext)> result = new();
-            GetTableFieldContextsRecursive(rootType, result, new());
-            return result;
-        }
+        List<(ITypeModel, TableFieldContext)> result = new();
+        GetTableFieldContextsRecursive(rootType, result, new());
+        return result;
     }
 }

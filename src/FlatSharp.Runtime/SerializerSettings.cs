@@ -13,34 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-namespace FlatSharp
+
+namespace FlatSharp;
+
+/// <summary>
+/// Settings that can be applied to an <see cref="ISerializer{T}"/> instance.
+/// </summary>
+public class SerializerSettings
 {
-    using System;
+    /// <summary>
+    /// A factory delegate that produces <see cref="ISharedStringWriter"/> instances. The given delegate
+    /// must produce a new, unique <see cref="ISharedStringWriter"/> each time it is invoked.
+    /// </summary>
+    public Func<ISharedStringWriter>? SharedStringWriterFactory
+    {
+        get;
+        set;
+    }
 
     /// <summary>
-    /// Settings that can be applied to an <see cref="ISerializer{T}"/> instance.
+    /// When set, enables a performance optimization that allows serialization of a deserialized object
+    /// to be implemented as a memory copy operation. This feature is experimental and may be removed in
+    /// future releases of FlatSharp.
     /// </summary>
-    public class SerializerSettings
+    public bool EnableMemoryCopySerialization
     {
-        /// <summary>
-        /// A factory delegate that produces <see cref="ISharedStringWriter"/> instances. The given delegate
-        /// must produce a new, unique <see cref="ISharedStringWriter"/> each time it is invoked.
-        /// </summary>
-        public Func<ISharedStringWriter>? SharedStringWriterFactory
-        {
-            get;
-            set;
-        }
-
-        /// <summary>
-        /// When set, enables a performance optimization that allows serialization of a deserialized object
-        /// to be implemented as a memory copy operation. This feature is experimental and may be removed in
-        /// future releases of FlatSharp.
-        /// </summary>
-        public bool EnableMemoryCopySerialization 
-        {
-            get; 
-            set; 
-        }
+        get;
+        set;
     }
 }

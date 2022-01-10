@@ -14,55 +14,46 @@
  * limitations under the License.
  */
 
-namespace FlatSharpTests.Compiler
-{
-    using System;
-    using System.Linq;
-    using System.Reflection;
-    using FlatSharp;
-    using FlatSharp.Attributes;
-    using FlatSharp.Compiler;
-    using Xunit;
+namespace FlatSharpTests.Compiler;
 
-    public class WriteThroughTests
+public class WriteThroughTests
+{
+    [Fact]
+    public void WriteThrough_OnStructField()
     {
-        [Fact]
-        public void WriteThrough_OnStructField()
+        static void Test(FlatBufferDeserializationOption option)
         {
-            static void Test(FlatBufferDeserializationOption option)
-            {
-                string schema = $@"
+            string schema = $@"
                 {MetadataHelpers.AllAttributes}
                 namespace ForceWriteTests;
                 table Table ({MetadataKeys.SerializerKind}:""{option}"") {{ Struct:Struct; }}
                 struct Struct ({MetadataKeys.WriteThrough}) {{ foo:int; bar:int ({MetadataKeys.WriteThrough}:""false""); }} 
-                ";
+            ";
 
-                Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
-                Type tableType = asm.GetType("ForceWriteTests.Table");
-                Type structType = asm.GetType("ForceWriteTests.Struct");
+            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
+            Type tableType = asm.GetType("ForceWriteTests.Table");
+            Type structType = asm.GetType("ForceWriteTests.Struct");
 
-                ISerializer serializer = (ISerializer)tableType.GetProperty("Serializer", BindingFlags.Public | BindingFlags.Static).GetValue(null);
-                dynamic table = Activator.CreateInstance(tableType);
-                table.Struct = (dynamic)Activator.CreateInstance(structType);
-                table.Struct.foo = 42;
-                table.Struct.bar = 65;
+            ISerializer serializer = (ISerializer)tableType.GetProperty("Serializer", BindingFlags.Public | BindingFlags.Static).GetValue(null);
+            dynamic table = Activator.CreateInstance(tableType);
+            table.Struct = (dynamic)Activator.CreateInstance(structType);
+            table.Struct.foo = 42;
+            table.Struct.bar = 65;
 
-                byte[] data = new byte[100];
-                serializer.Write(data, (object)table);
+            byte[] data = new byte[100];
+            serializer.Write(data, (object)table);
 
-                dynamic parsed = serializer.Parse(data);
-                parsed.Struct.foo = 100;
+            dynamic parsed = serializer.Parse(data);
+            parsed.Struct.foo = 100;
 
-                Assert.Throws<NotMutableException>(() => parsed.Struct.bar = 22);
+            Assert.Throws<NotMutableException>(() => parsed.Struct.bar = 22);
 
-                dynamic parsed2 = serializer.Parse(data);
-                Assert.Equal(100, (int)parsed2.Struct.foo);
-                Assert.Equal(65, (int)parsed2.Struct.bar);
-            }
-
-            Test(FlatBufferDeserializationOption.Lazy);
-            Test(FlatBufferDeserializationOption.Progressive);
+            dynamic parsed2 = serializer.Parse(data);
+            Assert.Equal(100, (int)parsed2.Struct.foo);
+            Assert.Equal(65, (int)parsed2.Struct.bar);
         }
+
+        Test(FlatBufferDeserializationOption.Lazy);
+        Test(FlatBufferDeserializationOption.Progressive);
     }
 }

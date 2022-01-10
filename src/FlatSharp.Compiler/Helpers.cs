@@ -14,20 +14,19 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Compiler
-{
-    public static class Helpers
-    {
-        public static (string ns, string typeName) ParseName(string name)
-        {
-            int lastIndex = name.LastIndexOf('.');
-            if (lastIndex == -1)
-            {
-                ErrorContext.Current.RegisterError($"Type '{name}' not within a namespace.");
-                return ("TempNs", name);
-            }
+namespace FlatSharp.Compiler;
 
-            return (name.Substring(0, lastIndex), name.Substring(lastIndex + 1));
+public static class Helpers
+{
+    public static (string ns, string typeName) ParseName(string name)
+    {
+        int lastIndex = name.LastIndexOf('.');
+        if (lastIndex == -1)
+        {
+            ErrorContext.Current.RegisterError($"Type '{name}' not within a namespace.");
+            return ("TempNs", name);
         }
+
+        return (name.Substring(0, lastIndex), name.Substring(lastIndex + 1));
     }
 }

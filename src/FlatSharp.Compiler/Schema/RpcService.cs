@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Compiler.Schema
-{
-    using FlatSharp.Attributes;
-    using System.Collections.Generic;
+using FlatSharp.Attributes;
+
+namespace FlatSharp.Compiler.Schema;
 
 /*
 table Service {
@@ -29,23 +28,22 @@ table Service {
     declaration_file: string;
 }
 */
-    [FlatBufferTable]
-    public class RpcService
-    {
-        [FlatBufferItem(0, Required = true, Key = true)]
-        public virtual string Name { get; set; } = string.Empty;
+[FlatBufferTable]
+public class RpcService
+{
+    [FlatBufferItem(0, Required = true, Key = true)]
+    public virtual string Name { get; set; } = string.Empty;
 
-        // Must be a table.
-        [FlatBufferItem(1)]
-        public virtual IList<RpcCall>? Calls { get; set; }
+    // Must be a table.
+    [FlatBufferItem(1)]
+    public virtual IList<RpcCall>? Calls { get; set; }
 
-        [FlatBufferItem(2)]
-        public virtual IIndexedVector<string, KeyValue>? Attributes { get; set; }
+    [FlatBufferItem(2)]
+    public virtual IIndexedVector<string, KeyValue>? Attributes { get; set; }
 
-        [FlatBufferItem(3)]
-        public virtual IList<string>? Documentation { get; set; }
+    [FlatBufferItem(3)]
+    public virtual IList<string>? Documentation { get; set; }
 
-        [FlatBufferItem(4, Required = true)]
-        public virtual string DeclaringFile { get; set; } = string.Empty;
-    }
+    [FlatBufferItem(4, Required = true)]
+    public virtual string DeclaringFile { get; set; } = string.Empty;
 }

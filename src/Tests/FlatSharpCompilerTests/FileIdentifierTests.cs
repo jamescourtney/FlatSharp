@@ -14,23 +14,14 @@
  * limitations under the License.
  */
 
-namespace FlatSharpTests.Compiler
-{
-    using System;
-    using System.Linq;
-    using System.Reflection;
-    using FlatSharp;
-    using FlatSharp.Attributes;
-    using FlatSharp.Compiler;
-    using Xunit;
+namespace FlatSharpTests.Compiler;
 
-    
-    public class FileIdentifierTests
+public class FileIdentifierTests
+{
+    [Fact]
+    public void Table_Root_Type()
     {
-        [Fact]
-        public void Table_Root_Type()
-        {
-            string schema = $@"
+        string schema = $@"
             namespace FileIdTests.A;
             table Table {{ foo:int; }}
             struct Struct {{ foo:int; }}
@@ -39,54 +30,53 @@ namespace FlatSharpTests.Compiler
             root_type Table;
             ";
 
-            var asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
-            Type tabletype = asm.GetType("FileIdTests.A.Table");
+        var asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
+        Type tabletype = asm.GetType("FileIdTests.A.Table");
 
-            FlatBufferTableAttribute table = tabletype.GetCustomAttribute<FlatBufferTableAttribute>();
-            Assert.NotNull(table);
-            Assert.Equal("abcd", table.FileIdentifier);
-        }
+        FlatBufferTableAttribute table = tabletype.GetCustomAttribute<FlatBufferTableAttribute>();
+        Assert.NotNull(table);
+        Assert.Equal("abcd", table.FileIdentifier);
+    }
 
-        [Fact]
-        public void Struct_Root_Type()
-        {
-            string schema = $@"
+    [Fact]
+    public void Struct_Root_Type()
+    {
+        string schema = $@"
             namespace FileIdTests.A;
             table Table {{ foo:int; }}
             struct Struct {{ foo:int; }}
             root_type Struct;
             ";
 
-            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.Contains("error: root type must be a table", ex.Errors[0]);
-        }
+        var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+        Assert.Contains("error: root type must be a table", ex.Errors[0]);
+    }
 
-        [Fact]
-        public void Enum_Root_Type()
-        {
-            string schema = $@"
+    [Fact]
+    public void Enum_Root_Type()
+    {
+        string schema = $@"
             namespace FileIdTests.A;
             table Table {{ foo:int; }}
             enum Enum : ubyte {{ Foo, Bar, Baz }}
             root_type Enum;
             ";
 
-            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
-            Assert.Contains("error: unknown root type: Enum", ex.Errors[0]);
-        }
+        var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schema, new()));
+        Assert.Contains("error: unknown root type: Enum", ex.Errors[0]);
+    }
 
-        [Fact]
-        public void Root_Type_With_No_File_Identifier()
-        {
-            string schema = $@"
+    [Fact]
+    public void Root_Type_With_No_File_Identifier()
+    {
+        string schema = $@"
             namespace FileIdTests.A;
             table Table {{ foo:int; }}
             root_type Table;
             ";
 
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
-            Assert.Null(
-                asm.GetType("FileIdTests.A.Table").GetCustomAttribute<FlatBufferTableAttribute>().FileIdentifier);
-        }
+        Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
+        Assert.Null(
+            asm.GetType("FileIdTests.A.Table").GetCustomAttribute<FlatBufferTableAttribute>().FileIdentifier);
     }
 }

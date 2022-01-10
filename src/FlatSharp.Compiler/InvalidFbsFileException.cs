@@ -14,26 +14,23 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Compiler
+using System.Linq;
+
+namespace FlatSharp.Compiler;
+
+/// <summary>
+/// Thrown when FlatSharp.Compiler encounters an error in an FBS file.
+/// </summary>
+public class InvalidFbsFileException : Exception
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-
-    /// <summary>
-    /// Thrown when FlatSharp.Compiler encounters an error in an FBS file.
-    /// </summary>
-    public class InvalidFbsFileException : Exception
+    public InvalidFbsFileException(IEnumerable<string> errors) : base("Errors in FBS schema: \r\n" + string.Join("\r\n", errors))
     {
-        public InvalidFbsFileException(IEnumerable<string> errors) : base("Errors in FBS schema: \r\n" + string.Join("\r\n", errors))
-        {
-            this.Errors = errors.ToArray();
-        }
-
-        public InvalidFbsFileException(string error) : this(new[] { error })
-        {
-        }
-
-        public string[] Errors { get; }
+        this.Errors = errors.ToArray();
     }
+
+    public InvalidFbsFileException(string error) : this(new[] { error })
+    {
+    }
+
+    public string[] Errors { get; }
 }

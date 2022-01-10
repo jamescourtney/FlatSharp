@@ -14,66 +14,61 @@
  * limitations under the License.
  */
 
-namespace Samples.IOOptionsExample
+namespace Samples.IOOptionsExample;
+
+/// <summary>
+/// This sample shows some different IO Options when using FlatSharp.
+/// </summary>
+public class IOOperationsExample
 {
-    using System;
-    using System.Collections.Generic;
-    using FlatSharp;
-
-    /// <summary>
-    /// This sample shows some different IO Options when using FlatSharp.
-    /// </summary>
-    public class IOOperationsExample
+    public static void Run()
     {
-        public static void Run()
+        Dog tony = new Dog
         {
-            Dog tony = new Dog
-            {
-                Breed = DogBreed.BostonTerrier,
-                Vitals = new AnimalVitals { Age = 11, Gender = Gender.Male, Name = "Tony" }
-            };
-            Dog rocket = new Dog
-            {
-                Breed = DogBreed.GoldenRetriever,
-                Vitals = new AnimalVitals { Age = 8, Gender = Gender.Female, Name = "Rocket" }
-            };
-            Dog peaches = new Dog
-            {
-                Breed = DogBreed.GermanShepard,
-                Vitals = new AnimalVitals { Age = 14, Gender = Gender.Female, Name = "Peaches" }
-            };
+            Breed = DogBreed.BostonTerrier,
+            Vitals = new AnimalVitals { Age = 11, Gender = Gender.Male, Name = "Tony" }
+        };
+        Dog rocket = new Dog
+        {
+            Breed = DogBreed.GoldenRetriever,
+            Vitals = new AnimalVitals { Age = 8, Gender = Gender.Female, Name = "Rocket" }
+        };
+        Dog peaches = new Dog
+        {
+            Breed = DogBreed.GermanShepard,
+            Vitals = new AnimalVitals { Age = 14, Gender = Gender.Female, Name = "Peaches" }
+        };
 
-            Cat grumpyCat = new Cat
-            {
-                Breed = CatBreed.GrumpyCat,
-                Vitals = new AnimalVitals { Age = 17, Gender = Gender.Female, Name = "Tardar Sauce" }
-            };
+        Cat grumpyCat = new Cat
+        {
+            Breed = CatBreed.GrumpyCat,
+            Vitals = new AnimalVitals { Age = 17, Gender = Gender.Female, Name = "Tardar Sauce" }
+        };
 
-            Person person = new Person
-            {
-                Age = 24,
-                Cats = new[] { grumpyCat },
-                Dogs = new[] { tony, rocket, peaches },
-                FavoritePet = new FavoritePet(rocket),
-                Name = "Nikola Tesla"
-            };
+        Person person = new Person
+        {
+            Age = 24,
+            Cats = new[] { grumpyCat },
+            Dogs = new[] { tony, rocket, peaches },
+            FavoritePet = new FavoritePet(rocket),
+            Name = "Nikola Tesla"
+        };
 
-            // SpanWriter is the core code that writes data to a span. Flatsharp provides one:
-            // However, you can always implement ISpanWriter yourself.
-            SpanWriter spanWriter = default(SpanWriter);
+        // SpanWriter is the core code that writes data to a span. Flatsharp provides one:
+        // However, you can always implement ISpanWriter yourself.
+        SpanWriter spanWriter = default(SpanWriter);
 
-            byte[] buffer = new byte[Person.Serializer.GetMaxSize(person)];
+        byte[] buffer = new byte[Person.Serializer.GetMaxSize(person)];
 
-            int bytesWritten = Person.Serializer.Write(spanWriter, buffer, person);
+        int bytesWritten = Person.Serializer.Write(spanWriter, buffer, person);
 
-            // For reading data, we use InputBuffer. There are more options here:
+        // For reading data, we use InputBuffer. There are more options here:
 
-            // Array and Memory input buffers are general purpose and support all scenarios.
-            var p1 = Person.Serializer.Parse(new ArrayInputBuffer(buffer));
-            var p2 = Person.Serializer.Parse(new MemoryInputBuffer(new Memory<byte>(buffer)));
+        // Array and Memory input buffers are general purpose and support all scenarios.
+        var p1 = Person.Serializer.Parse(new ArrayInputBuffer(buffer));
+        var p2 = Person.Serializer.Parse(new MemoryInputBuffer(new Memory<byte>(buffer)));
 
-            // ReadOnlyMemory input buffer will fail to Parse any objects that have Memory<T> in them (that is -- non read only memory).
-            var p3 = Person.Serializer.Parse(new ReadOnlyMemoryInputBuffer(new ReadOnlyMemory<byte>(buffer)));
-        }
+        // ReadOnlyMemory input buffer will fail to Parse any objects that have Memory<T> in them (that is -- non read only memory).
+        var p3 = Person.Serializer.Parse(new ReadOnlyMemoryInputBuffer(new ReadOnlyMemory<byte>(buffer)));
     }
 }

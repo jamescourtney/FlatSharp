@@ -14,107 +14,101 @@
  * limitations under the License.
  */
 
-namespace FlatSharp
+namespace FlatSharp;
+
+/// <summary>
+/// Extension methods that apply to all <see cref="ISpanWriter"/> implementations.
+/// </summary>
+public static class SpanWriterExtensions
 {
-    using System;
-    using System.Diagnostics;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Runtime.CompilerServices;
+    public static void WriteReadOnlyByteMemoryBlock<TSpanWriter>(
+        this TSpanWriter spanWriter,
+        Span<byte> span,
+        ReadOnlyMemory<byte> memory,
+        int offset,
+        SerializationContext ctx) where TSpanWriter : ISpanWriter
+    {
+        int numberOfItems = memory.Length;
+        int vectorStartOffset = ctx.AllocateVector(itemAlignment: sizeof(byte), numberOfItems, sizePerItem: sizeof(byte));
+
+        spanWriter.WriteUOffset(span, offset, vectorStartOffset);
+        spanWriter.WriteInt(span, numberOfItems, vectorStartOffset);
+
+        memory.Span.CopyTo(span.Slice(vectorStartOffset + sizeof(uint)));
+    }
 
     /// <summary>
-    /// Extension methods that apply to all <see cref="ISpanWriter"/> implementations.
+    /// Writes the given string.
     /// </summary>
-    public static class SpanWriterExtensions
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void WriteString<TSpanWriter>(
+        this TSpanWriter spanWriter,
+        Span<byte> span,
+        string value,
+        int offset,
+        SerializationContext context) where TSpanWriter : ISpanWriter
     {
-        public static void WriteReadOnlyByteMemoryBlock<TSpanWriter>(
-            this TSpanWriter spanWriter,
-            Span<byte> span,
-            ReadOnlyMemory<byte> memory,
-            int offset,
-            SerializationContext ctx) where TSpanWriter : ISpanWriter
+        int stringOffset = spanWriter.WriteAndProvisionString(span, value, context);
+        spanWriter.WriteUOffset(span, offset, stringOffset);
+    }
+
+    /// <summary>
+    /// Writes the string to the buffer, returning the absolute offset of the string.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int WriteAndProvisionString<TSpanWriter>(this TSpanWriter spanWriter, Span<byte> span, string value, SerializationContext context)
+        where TSpanWriter : ISpanWriter
+    {
+        checked
         {
-            int numberOfItems = memory.Length;
-            int vectorStartOffset = ctx.AllocateVector(itemAlignment: sizeof(byte), numberOfItems, sizePerItem: sizeof(byte));
+            var encoding = SerializationHelpers.Encoding;
 
-            spanWriter.WriteUOffset(span, offset, vectorStartOffset);
-            spanWriter.WriteInt(span, numberOfItems, vectorStartOffset);
+            // Allocate more than we need and then give back what we don't use.
+            int maxItems = encoding.GetMaxByteCount(value.Length) + 1;
+            int stringStartOffset = context.AllocateVector(sizeof(byte), maxItems, sizeof(byte));
 
-            memory.Span.CopyTo(span.Slice(vectorStartOffset + sizeof(uint)));
+            int bytesWritten = spanWriter.GetStringBytes(span.Slice(stringStartOffset + sizeof(uint), maxItems), value, encoding);
+
+            // null teriminator
+            span[stringStartOffset + bytesWritten + sizeof(uint)] = 0;
+
+            // write length
+            spanWriter.WriteInt(span, bytesWritten, stringStartOffset);
+
+            // give back unused space. Account for null terminator.
+            context.Offset -= maxItems - (bytesWritten + 1);
+
+            return stringStartOffset;
         }
+    }
 
-        /// <summary>
-        /// Writes the given string.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void WriteString<TSpanWriter>(
-            this TSpanWriter spanWriter,
-            Span<byte> span, 
-            string value, 
-            int offset, 
-            SerializationContext context) where TSpanWriter : ISpanWriter
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void WriteUOffset<TSpanWriter>(this TSpanWriter spanWriter, Span<byte> span, int offset, int secondOffset)
+        where TSpanWriter : ISpanWriter
+    {
+        checked
         {
-            int stringOffset = spanWriter.WriteAndProvisionString(span, value, context);
-            spanWriter.WriteUOffset(span, offset, stringOffset);
+            uint uoffset = (uint)(secondOffset - offset);
+            spanWriter.WriteUInt(span, uoffset, offset);
         }
+    }
 
-        /// <summary>
-        /// Writes the string to the buffer, returning the absolute offset of the string.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int WriteAndProvisionString<TSpanWriter>(this TSpanWriter spanWriter, Span<byte> span, string value, SerializationContext context)
-            where TSpanWriter : ISpanWriter
-        {
-            checked
-            {
-                var encoding = SerializationHelpers.Encoding;
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void WriteBool<TSpanWriter>(this TSpanWriter spanWriter, Span<byte> span, bool b, int offset)
+        where TSpanWriter : ISpanWriter
+    {
+        spanWriter.WriteByte(span, b ? SerializationHelpers.True : SerializationHelpers.False, offset);
+    }
 
-                // Allocate more than we need and then give back what we don't use.
-                int maxItems = encoding.GetMaxByteCount(value.Length) + 1;
-                int stringStartOffset = context.AllocateVector(sizeof(byte), maxItems, sizeof(byte));
-
-                int bytesWritten = spanWriter.GetStringBytes(span.Slice(stringStartOffset + sizeof(uint), maxItems), value, encoding);
-
-                // null teriminator
-                span[stringStartOffset + bytesWritten + sizeof(uint)] = 0;
-
-                // write length
-                spanWriter.WriteInt(span, bytesWritten, stringStartOffset);
-
-                // give back unused space. Account for null terminator.
-                context.Offset -= maxItems - (bytesWritten + 1);
-
-                return stringStartOffset;
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void WriteUOffset<TSpanWriter>(this TSpanWriter spanWriter, Span<byte> span, int offset, int secondOffset)
-            where TSpanWriter : ISpanWriter
-        {
-            checked
-            {
-                uint uoffset = (uint)(secondOffset - offset);
-                spanWriter.WriteUInt(span, uoffset, offset);
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void WriteBool<TSpanWriter>(this TSpanWriter spanWriter, Span<byte> span, bool b, int offset) 
-            where TSpanWriter : ISpanWriter
-        {
-            spanWriter.WriteByte(span, b ? SerializationHelpers.True : SerializationHelpers.False, offset);
-        }
-
-        [ExcludeFromCodeCoverage]
-        [Conditional("DEBUG")]
-        public static void CheckAlignment<TSpanWriter>(this TSpanWriter spanWriter, int offset, int size) where TSpanWriter : ISpanWriter
-        {
+    [ExcludeFromCodeCoverage]
+    [Conditional("DEBUG")]
+    public static void CheckAlignment<TSpanWriter>(this TSpanWriter spanWriter, int offset, int size) where TSpanWriter : ISpanWriter
+    {
 #if DEBUG
-            if (offset % size != 0)
-            {
-                throw new InvalidOperationException($"BugCheck: attempted to read unaligned data at index: {offset}, expected alignment: {size}");
-            }
-#endif
+        if (offset % size != 0)
+        {
+            throw new InvalidOperationException($"BugCheck: attempted to read unaligned data at index: {offset}, expected alignment: {size}");
         }
+#endif
     }
 }

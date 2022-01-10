@@ -14,97 +14,93 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Compiler
+using FlatSharp.TypeModel;
+
+namespace FlatSharp.Compiler;
+
+internal static class CloneMethodsGenerator
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Reflection;
-    using FlatSharp.TypeModel;
-
-    internal static class CloneMethodsGenerator
+    /// <summary>
+    /// Returns the fully qualified clone method name.
+    /// </summary>
+    public static string GenerateCloneMethodsForAssembly(
+        CodeWriter writer,
+        CompilerOptions options,
+        Assembly assembly,
+        TypeModelContainer container)
     {
-        /// <summary>
-        /// Returns the fully qualified clone method name.
-        /// </summary>
-        public static string GenerateCloneMethodsForAssembly(
-            CodeWriter writer,
-            CompilerOptions options,
-            Assembly assembly, 
-            TypeModelContainer container)
+        string @namespace = $"FlatSharp.Compiler.Generated";
+        string className = $"CloneHelpers_{Guid.NewGuid():n}";
+        string methodName = "Clone";
+
+        string fullyQualifiedMethodName = $"{@namespace}.{className}.{methodName}";
+
+        HashSet<Type> seenTypes = new HashSet<Type>();
+        foreach (var type in assembly.GetTypes())
         {
-            string @namespace = $"FlatSharp.Compiler.Generated";
-            string className = $"CloneHelpers_{Guid.NewGuid():n}";
-            string methodName = "Clone";
-
-            string fullyQualifiedMethodName = $"{@namespace}.{className}.{methodName}";
-
-            HashSet<Type> seenTypes = new HashSet<Type>();
-            foreach (var type in assembly.GetTypes())
+            if (type.IsNested)
             {
-                if (type.IsNested)
-                {
-                    continue;
-                }
-
-                if (container.TryCreateTypeModel(type, out var typeModel))
-                {
-                    typeModel.TraverseObjectGraph(seenTypes);
-                }
+                continue;
             }
 
-            Dictionary<Type, string> methodNameMap = new Dictionary<Type, string>();
-            foreach (var seenType in seenTypes)
+            if (container.TryCreateTypeModel(type, out var typeModel))
             {
-                methodNameMap[seenType] = fullyQualifiedMethodName;
+                typeModel.TraverseObjectGraph(seenTypes);
             }
-
-            writer.AppendLine($"namespace {@namespace}");
-            using (writer.WithBlock())
-            {
-                writer.AppendLine($"internal static class {className}");
-                using (writer.WithBlock())
-                {
-                    foreach (var seenType in seenTypes)
-                    {
-                        if (!container.TryCreateTypeModel(seenType, out ITypeModel? model))
-                        {
-                            ErrorContext.Current.RegisterError($"Unable to create type model for Type '{seenType.FullName}.'");
-                            continue;
-                        }
-
-                        GenerateCloneMethod(writer, options, model, methodNameMap);
-                    }
-                }
-            }
-
-            return fullyQualifiedMethodName;
         }
 
-        private static void GenerateCloneMethod(
-            CodeWriter codeWriter, 
-            CompilerOptions options,
-            ITypeModel typeModel, 
-            Dictionary<Type, string> methodNameMap)
+        Dictionary<Type, string> methodNameMap = new Dictionary<Type, string>();
+        foreach (var seenType in seenTypes)
         {
-            string typeName = typeModel.GetGlobalCompilableTypeName();
-            CodeGeneratedMethod method = typeModel.CreateCloneMethodBody(new CloneCodeGenContext("item", methodNameMap));
+            methodNameMap[seenType] = fullyQualifiedMethodName;
+        }
 
-            if (!typeModel.ClrType.IsValueType)
+        writer.AppendLine($"namespace {@namespace}");
+        using (writer.WithBlock())
+        {
+            writer.AppendLine($"internal static class {className}");
+            using (writer.WithBlock())
             {
-                typeName += "?";
-
-                if (options.NullableWarnings == true)
+                foreach (var seenType in seenTypes)
                 {
-                    codeWriter.AppendLine("[return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull(\"item\")]");
+                    if (!container.TryCreateTypeModel(seenType, out ITypeModel? model))
+                    {
+                        ErrorContext.Current.RegisterError($"Unable to create type model for Type '{seenType.FullName}.'");
+                        continue;
+                    }
+
+                    GenerateCloneMethod(writer, options, model, methodNameMap);
                 }
             }
+        }
 
-            codeWriter.AppendLine(method.GetMethodImplAttribute());
-            codeWriter.AppendLine($"public static {typeName} Clone({typeName} item)");
-            using (codeWriter.WithBlock())
+        return fullyQualifiedMethodName;
+    }
+
+    private static void GenerateCloneMethod(
+        CodeWriter codeWriter,
+        CompilerOptions options,
+        ITypeModel typeModel,
+        Dictionary<Type, string> methodNameMap)
+    {
+        string typeName = typeModel.GetGlobalCompilableTypeName();
+        CodeGeneratedMethod method = typeModel.CreateCloneMethodBody(new CloneCodeGenContext("item", methodNameMap));
+
+        if (!typeModel.ClrType.IsValueType)
+        {
+            typeName += "?";
+
+            if (options.NullableWarnings == true)
             {
-                codeWriter.AppendLine(method.MethodBody);
+                codeWriter.AppendLine("[return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull(\"item\")]");
             }
+        }
+
+        codeWriter.AppendLine(method.GetMethodImplAttribute());
+        codeWriter.AppendLine($"public static {typeName} Clone({typeName} item)");
+        using (codeWriter.WithBlock())
+        {
+            codeWriter.AppendLine(method.MethodBody);
         }
     }
 }

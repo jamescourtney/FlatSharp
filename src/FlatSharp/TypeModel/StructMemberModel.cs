@@ -13,83 +13,80 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
- namespace FlatSharp.TypeModel
+
+using FlatSharp.Attributes;
+
+namespace FlatSharp.TypeModel;
+
+/// <summary>
+/// Describes a member of a FlatBuffer struct.
+/// </summary>
+public class StructMemberModel : ItemMemberModel
 {
-    using FlatSharp.Attributes;
-    using System;
-    using System.Reflection;
+    public StructMemberModel(
+        ITypeModel propertyModel,
+        PropertyInfo propertyInfo,
+        FlatBufferItemAttribute attribute,
+        int offset,
+        int length) : base(propertyModel, propertyInfo, attribute)
+    {
+        this.Offset = offset;
+        this.Length = length;
+
+        if (!this.IsVirtual && this.IsWriteThrough)
+        {
+            throw new InvalidFlatBufferDefinitionException($"Struct member '{this.FriendlyName}' declared the WriteThrough attribute, but WriteThrough is only supported on virtual fields.");
+        }
+
+        if (propertyModel.SerializeMethodRequiresContext)
+        {
+            throw new InvalidFlatBufferDefinitionException($"The type model for struct member '{this.FriendlyName}' requires a serialization context, but Structs do not have one.");
+        }
+
+        if (attribute.Required)
+        {
+            throw new InvalidFlatBufferDefinitionException($"Struct member '{this.FriendlyName}' declared the Required attribute. Required is not valid inside structs.");
+        }
+
+        if (attribute.SharedString)
+        {
+            throw new InvalidFlatBufferDefinitionException($"Struct member '{this.FriendlyName}' declared the SharedString attribute. SharedString is not valid inside structs.");
+        }
+    }
 
     /// <summary>
-    /// Describes a member of a FlatBuffer struct.
+    /// When the item is stored in a struct, this is defines the relative offset of this field within the struct.
     /// </summary>
-    public class StructMemberModel : ItemMemberModel
+    public int Offset { get; }
+
+    /// <summary>
+    /// The length of the item when stored in a struct. Does not include padding.
+    /// </summary>
+    public int Length { get; }
+
+    public override string CreateReadItemBody(
+        ParserCodeGenContext context,
+        string vtableLocationVariableName,
+        string vtableMaxIndexVariableName)
     {
-        public StructMemberModel(
-            ITypeModel propertyModel,
-            PropertyInfo propertyInfo,
-            FlatBufferItemAttribute attribute,
-            int offset,
-            int length) : base(propertyModel, propertyInfo, attribute)
+        context = context with
         {
-            this.Offset = offset;
-            this.Length = length;
+            OffsetVariableName = $"{context.OffsetVariableName} + {this.Offset}",
+        };
 
-            if (!this.IsVirtual && this.IsWriteThrough)
-            {
-                throw new InvalidFlatBufferDefinitionException($"Struct member '{this.FriendlyName}' declared the WriteThrough attribute, but WriteThrough is only supported on virtual fields.");
-            }
+        return $"return {context.GetParseInvocation(this.ItemTypeModel.ClrType)};";
+    }
 
-            if (propertyModel.SerializeMethodRequiresContext)
-            {
-                throw new InvalidFlatBufferDefinitionException($"The type model for struct member '{this.FriendlyName}' requires a serialization context, but Structs do not have one.");
-            }
-
-            if (attribute.Required)
-            {
-                throw new InvalidFlatBufferDefinitionException($"Struct member '{this.FriendlyName}' declared the Required attribute. Required is not valid inside structs.");
-            }
-
-            if (attribute.SharedString)
-            {
-                throw new InvalidFlatBufferDefinitionException($"Struct member '{this.FriendlyName}' declared the SharedString attribute. SharedString is not valid inside structs.");
-            }
-        }
-
-        /// <summary>
-        /// When the item is stored in a struct, this is defines the relative offset of this field within the struct.
-        /// </summary>
-        public int Offset { get; }
-
-        /// <summary>
-        /// The length of the item when stored in a struct. Does not include padding.
-        /// </summary>
-        public int Length { get; }
-
-        public override string CreateReadItemBody(
-            ParserCodeGenContext context,
-            string vtableLocationVariableName,
-            string vtableMaxIndexVariableName)
+    public override string CreateWriteThroughBody(
+        SerializationCodeGenContext context,
+        string vtableLocationVariableName,
+        string vtableMaxIndexVariableName)
+    {
+        context = context with
         {
-            context = context with
-            {
-                OffsetVariableName = $"{context.OffsetVariableName} + {this.Offset}",
-            };
+            OffsetVariableName = $"{context.OffsetVariableName} + {this.Offset}"
+        };
 
-            return $"return {context.GetParseInvocation(this.ItemTypeModel.ClrType)};";
-        }
-
-        public override string CreateWriteThroughBody(
-            SerializationCodeGenContext context,
-            string vtableLocationVariableName,
-            string vtableMaxIndexVariableName)
-        {
-            context = context with
-            {
-                OffsetVariableName = $"{context.OffsetVariableName} + {this.Offset}"
-            };
-
-            return context.GetSerializeInvocation(this.ItemTypeModel.ClrType) + ";";
-        }
+        return context.GetSerializeInvocation(this.ItemTypeModel.ClrType) + ";";
     }
 }

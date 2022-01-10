@@ -14,14 +14,10 @@
  * limitations under the License.
  */
 
-namespace FlatSharpTests.Compiler
-{
-    using System;
-    using FlatSharp;
+namespace FlatSharpTests.Compiler;
 
-    public static class CompilerTestHelpers
-    {
-        public static readonly FlatBufferSerializer CompilerTestSerializer = new FlatBufferSerializer(
-            new FlatBufferSerializerOptions { EnableAppDomainInterceptOnAssemblyLoad = true });
-    }
+public static class CompilerTestHelpers
+{
+    public static readonly FlatBufferSerializer CompilerTestSerializer = new FlatBufferSerializer(
+        new FlatBufferSerializerOptions { EnableAppDomainInterceptOnAssemblyLoad = true });
 }

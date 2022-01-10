@@ -14,37 +14,31 @@
  * limitations under the License.
  */
 
-namespace FlatSharpTests
+namespace FlatSharpTests;
+
+[FlatBufferTable]
+public class SortedVectorTest<TIntVectorType>
 {
-    using System;
-    using System.Collections.Generic;
-    using FlatSharp;
-    using FlatSharp.Attributes;
+    [FlatBufferItem(0, SortedVector = true)]
+    public virtual IList<TIntVectorType>? IntVector { get; set; }
 
-    [FlatBufferTable]
-    public class SortedVectorTest<TIntVectorType>
-    {
-        [FlatBufferItem(0, SortedVector = true)]
-        public virtual IList<TIntVectorType>? IntVector { get; set; }
+    [FlatBufferItem(1, SortedVector = true)]
+    public virtual IList<SortedVectorItem<string>>? StringVector { get; set; }
 
-        [FlatBufferItem(1, SortedVector = true)]
-        public virtual IList<SortedVectorItem<string>>? StringVector { get; set; }
+    [FlatBufferItem(2, SortedVector = true)]
+    public virtual IList<SortedVectorItem<double>>? Double { get; set; }
+}
 
-        [FlatBufferItem(2, SortedVector = true)]
-        public virtual IList<SortedVectorItem<double>>? Double { get; set; }
-    }
+[FlatBufferTable]
+public class SortedVectorItem<T>
+{
+    [FlatBufferItem(0, Key = true)]
+    public virtual T? Value { get; set; }
+}
 
-    [FlatBufferTable]
-    public class SortedVectorItem<T>
-    {
-        [FlatBufferItem(0, Key = true)]
-        public virtual T? Value { get; set; }
-    }
-
-    [FlatBufferTable]
-    public class SortedVectorDefaultValueItem
-    {
-        [FlatBufferItem(0, Key = true, DefaultValue = 5)]
-        public virtual int Value { get; set; } = 5;
-    }
+[FlatBufferTable]
+public class SortedVectorDefaultValueItem
+{
+    [FlatBufferItem(0, Key = true, DefaultValue = 5)]
+    public virtual int Value { get; set; } = 5;
 }

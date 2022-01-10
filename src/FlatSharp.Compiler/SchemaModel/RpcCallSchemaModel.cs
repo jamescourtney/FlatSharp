@@ -14,51 +14,47 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Compiler.SchemaModel
+using FlatSharp.Compiler.Schema;
+
+namespace FlatSharp.Compiler.SchemaModel;
+
+public class RpcCallSchemaModel
 {
+    private readonly FlatSharpAttributes attributes;
+    private readonly string fullName;
+    private readonly RpcCall call;
 
-    using FlatSharp;
-    using FlatSharp.Compiler.Schema;
-    using FlatSharp.Attributes;
-
-    public class RpcCallSchemaModel
+    public RpcCallSchemaModel(RpcService parentService, RpcCall call)
     {
-        private readonly FlatSharpAttributes attributes;
-        private readonly string fullName;
-        private readonly RpcCall call;
+        this.attributes = new(call.Attributes);
+        this.fullName = $"{parentService.Name}.{call.Name}";
+        this.call = call;
 
-        public RpcCallSchemaModel(RpcService parentService, RpcCall call)
+        new FlatSharpAttributeValidator(FlatBufferSchemaElementType.RpcCall, $"{parentService.Name}.{call.Name}")
         {
-            this.attributes = new(call.Attributes);
-            this.fullName = $"{parentService.Name}.{call.Name}";
-            this.call = call;
+            StreamingTypeValidator = _ => AttributeValidationResult.Valid,
+        }.Validate(this.attributes);
 
-            new FlatSharpAttributeValidator(FlatBufferSchemaElementType.RpcCall, $"{parentService.Name}.{call.Name}")
-            {
-                StreamingTypeValidator = _ => AttributeValidationResult.Valid,
-            }.Validate(this.attributes);
+        this.ValidateHasSerializer(call.Request);
+        this.ValidateHasSerializer(call.Response);
+    }
 
-            this.ValidateHasSerializer(call.Request);
-            this.ValidateHasSerializer(call.Response);
-        }
+    public string Name => this.call.Name;
 
-        public string Name => this.call.Name;
+    public string RequestType => this.call.Request.Name;
 
-        public string RequestType => this.call.Request.Name;
+    public string ResponseType => this.call.Response.Name;
 
-        public string ResponseType => this.call.Response.Name;
+    public RpcStreamingType StreamingType => this.attributes.StreamingType ?? RpcStreamingType.None;
 
-        public RpcStreamingType StreamingType => this.attributes.StreamingType ?? RpcStreamingType.None;
+    private void ValidateHasSerializer(FlatBufferObject obj)
+    {
+        FlatSharpInternal.Assert(!obj.IsStruct, "expecting only tables");
+        FlatSharpAttributes attrs = new FlatSharpAttributes(obj.Attributes);
 
-        private void ValidateHasSerializer(FlatBufferObject obj)
+        if (attrs.DeserializationOption is null)
         {
-            FlatSharpInternal.Assert(!obj.IsStruct, "expecting only tables");
-            FlatSharpAttributes attrs = new FlatSharpAttributes(obj.Attributes);
-
-            if (attrs.DeserializationOption is null)
-            {
-                ErrorContext.Current.RegisterError($"RPC call '{this.fullName}' uses table '{obj.Name}', which does not specify the '{MetadataKeys.SerializerKind}' attribute.");
-            }
+            ErrorContext.Current.RegisterError($"RPC call '{this.fullName}' uses table '{obj.Name}', which does not specify the '{MetadataKeys.SerializerKind}' attribute.");
         }
     }
 }

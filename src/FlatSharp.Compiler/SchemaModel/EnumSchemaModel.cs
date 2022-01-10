@@ -14,64 +14,58 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Compiler.SchemaModel
+using System.Linq;
+using FlatSharp.Compiler.Schema;
+
+namespace FlatSharp.Compiler.SchemaModel;
+
+public class EnumSchemaModel : BaseSchemaModel
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
+    private readonly bool isFlags;
+    private readonly Dictionary<string, long> nameValueMap;
+    private readonly string underlyingType;
 
-    using FlatSharp;
-    using FlatSharp.Compiler.Schema;
-    using System.Diagnostics.CodeAnalysis;
-
-    public class EnumSchemaModel : BaseSchemaModel
+    private EnumSchemaModel(Schema.Schema schema, FlatBufferEnum @enum) : base(schema, @enum.Name, new FlatSharpAttributes(@enum.Attributes))
     {
-        private readonly bool isFlags;
-        private readonly Dictionary<string, long> nameValueMap;
-        private readonly string underlyingType;
+        FlatSharpInternal.Assert(!@enum.IsUnion, "Not expecting union");
+        FlatSharpInternal.Assert(@enum.UnderlyingType.BaseType.IsInteger(), "Expected scalar base type");
+        FlatSharpInternal.Assert(@enum.UnderlyingType.BaseType.TryGetBuiltInTypeName(out this.underlyingType!), "Couldn't get type name string");
 
-        private EnumSchemaModel(Schema schema, FlatBufferEnum @enum) : base(schema, @enum.Name, new FlatSharpAttributes(@enum.Attributes))
+        this.isFlags = @enum.Attributes?.ContainsKey(MetadataKeys.BitFlags) == true;
+        this.nameValueMap = @enum.Values.ToDictionary(x => x.Value.Key, x => x.Value.Value);
+        this.DeclaringFile = @enum.DeclarationFile;
+    }
+
+    public static bool TryCreate(Schema.Schema schema, FlatBufferEnum @enum, [NotNullWhen(true)] out EnumSchemaModel? model)
+    {
+        model = null;
+        if (@enum.IsUnion || !@enum.UnderlyingType.BaseType.IsInteger())
         {
-            FlatSharpInternal.Assert(!@enum.IsUnion, "Not expecting union");
-            FlatSharpInternal.Assert(@enum.UnderlyingType.BaseType.IsInteger(), "Expected scalar base type");
-            FlatSharpInternal.Assert(@enum.UnderlyingType.BaseType.TryGetBuiltInTypeName(out this.underlyingType!), "Couldn't get type name string");
-
-            this.isFlags = @enum.Attributes?.ContainsKey(MetadataKeys.BitFlags) == true;
-            this.nameValueMap = @enum.Values.ToDictionary(x => x.Value.Key, x => x.Value.Value);
-            this.DeclaringFile = @enum.DeclarationFile;
+            return false;
         }
 
-        public static bool TryCreate(Schema schema, FlatBufferEnum @enum, [NotNullWhen(true)] out EnumSchemaModel? model)
-        {
-            model = null;
-            if (@enum.IsUnion || !@enum.UnderlyingType.BaseType.IsInteger())
-            {
-                return false;
-            }
+        model = new EnumSchemaModel(schema, @enum);
+        return true;
+    }
 
-            model = new EnumSchemaModel(schema, @enum);
-            return true;
+    public override FlatBufferSchemaElementType ElementType => FlatBufferSchemaElementType.Enum;
+
+    public override string DeclaringFile { get; }
+
+    protected override void OnWriteCode(CodeWriter writer, CompileContext context)
+    {
+        if (this.isFlags)
+        {
+            writer.AppendLine("[Flags]");
         }
 
-        public override FlatBufferSchemaElementType ElementType => FlatBufferSchemaElementType.Enum;
-
-        public override string DeclaringFile { get; }
-
-        protected override void OnWriteCode(CodeWriter writer, CompileContext context)
+        writer.AppendLine($"[FlatBufferEnum(typeof({this.underlyingType}))]");
+        writer.AppendLine($"public enum {this.Name} : {this.underlyingType}");
+        using (writer.WithBlock())
         {
-            if (this.isFlags)
+            foreach (var item in this.nameValueMap.OrderBy(x => x.Value))
             {
-                writer.AppendLine("[Flags]");
-            }
-
-            writer.AppendLine($"[FlatBufferEnum(typeof({this.underlyingType}))]");
-            writer.AppendLine($"public enum {this.Name} : {this.underlyingType}");
-            using (writer.WithBlock())
-            {
-                foreach (var item in this.nameValueMap.OrderBy(x => x.Value))
-                {
-                    writer.AppendLine($"{item.Key} = {item.Value},");
-                }
+                writer.AppendLine($"{item.Key} = {item.Value},");
             }
         }
     }

@@ -14,85 +14,81 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Compiler
+using System.Text;
+
+namespace FlatSharp.Compiler;
+
+/// <summary>
+/// Utility class for generating reasonably formatted code.
+/// </summary>
+public class CodeWriter
 {
-    using System;
-    using System.Globalization;
-    using System.Numerics;
-    using System.Text;
+    private const string OneIndent = "    ";
+    private int indent;
+    private readonly StringBuilder builder = new StringBuilder();
 
-    /// <summary>
-    /// Utility class for generating reasonably formatted code.
-    /// </summary>
-    public class CodeWriter
+    public void AppendLine(string line)
     {
-        private const string OneIndent = "    ";
-        private int indent;
-        private readonly StringBuilder builder = new StringBuilder();
-
-        public void AppendLine(string line)
+        for (int i = 0; i < this.indent; ++i)
         {
-            for (int i = 0; i < this.indent; ++i)
-            {
-                this.builder.Append(OneIndent);
-            }
-
-            this.builder.AppendLine(line);
+            this.builder.Append(OneIndent);
         }
 
-        public void AppendMethodSummaryComment(string comment)
+        this.builder.AppendLine(line);
+    }
+
+    public void AppendMethodSummaryComment(string comment)
+    {
+        this.AppendLine("/// <summary>");
+        this.AppendLine($"/// {comment}");
+        this.AppendLine("/// </summary>");
+    }
+
+    public void AppendLine()
+    {
+        for (int i = 0; i < this.indent; ++i)
         {
-            this.AppendLine("/// <summary>");
-            this.AppendLine($"/// {comment}");
-            this.AppendLine("/// </summary>");
+            this.builder.Append(OneIndent);
         }
 
-        public void AppendLine()
-        {
-            for (int i = 0; i < this.indent; ++i)
-            {
-                this.builder.Append(OneIndent);
-            }
+        this.builder.AppendLine();
+    }
 
-            this.builder.AppendLine();
+    public override string ToString()
+    {
+        return this.builder.ToString();
+    }
+
+    public IDisposable IncreaseIndent()
+    {
+        this.indent++;
+        return new FakeDisposable(() => this.indent--);
+    }
+
+    public IDisposable WithBlock()
+    {
+        this.AppendLine("{");
+        this.indent++;
+        return new FakeDisposable(() =>
+        {
+            this.indent--;
+            this.AppendLine("}");
+            this.AppendLine(string.Empty);
+        });
+    }
+
+    private class FakeDisposable : IDisposable
+    {
+        private readonly Action onDispose;
+
+        public FakeDisposable(Action onDispose)
+        {
+            this.onDispose = onDispose;
         }
 
-        public override string ToString()
+        public void Dispose()
         {
-            return this.builder.ToString();
-        }
-
-        public IDisposable IncreaseIndent()
-        {
-            this.indent++;
-            return new FakeDisposable(() => this.indent--);
-        }
-
-        public IDisposable WithBlock()
-        {
-            this.AppendLine("{");
-            this.indent++;
-            return new FakeDisposable(() =>
-            {
-                this.indent--;
-                this.AppendLine("}");
-                this.AppendLine(string.Empty);
-            });
-        }
-
-        private class FakeDisposable : IDisposable
-        {
-            private readonly Action onDispose;
-
-            public FakeDisposable(Action onDispose)
-            {
-                this.onDispose = onDispose;
-            }
-
-            public void Dispose()
-            {
-                this.onDispose();
-            }
+            this.onDispose();
         }
     }
 }

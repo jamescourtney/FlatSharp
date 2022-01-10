@@ -14,44 +14,43 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Compiler.SchemaModel
+namespace FlatSharp.Compiler.SchemaModel;
+
+public class AttributeValidationResult
 {
-    public class AttributeValidationResult
+    private const string ElementTypeSubs = "__ELEMENT_TYPE__";
+    private const string AttributeNameSubs = "__ATTR_NAME__";
+    private const string AttributeValueSubs = "__ATTR_VALUE__";
+
+    public static readonly AttributeValidationResult Valid = new(null, true);
+
+    public static readonly AttributeValidationResult NeverValid = new(
+        $"The attribute {AttributeNameSubs} is never valid on {ElementTypeSubs} elements.",
+        false);
+
+    public static readonly AttributeValidationResult ValueInvalid = new(
+        $"The attribute {AttributeNameSubs} value {AttributeValueSubs} is not valid on {ElementTypeSubs} elements.",
+        false);
+
+    public static readonly AttributeValidationResult NeedsAtLeastDotNet5 = new(
+        $"The attribute {AttributeNameSubs} value {AttributeValueSubs} is not supported in the current .NET Runtime. It requires .NET 5 or later.",
+        false);
+
+    private AttributeValidationResult(string? message, bool isValid)
     {
-        private const string ElementTypeSubs = "__ELEMENT_TYPE__";
-        private const string AttributeNameSubs = "__ATTR_NAME__";
-        private const string AttributeValueSubs = "__ATTR_VALUE__";
+        this.Message = message ?? string.Empty;
+        this.IsValid = isValid;
+    }
 
-        public static readonly AttributeValidationResult Valid = new(null, true);
+    public string Message { get; }
 
-        public static readonly AttributeValidationResult NeverValid = new(
-            $"The attribute {AttributeNameSubs} is never valid on {ElementTypeSubs} elements.",
-            false);
+    public bool IsValid { get; }
 
-        public static readonly AttributeValidationResult ValueInvalid = new(
-            $"The attribute {AttributeNameSubs} value {AttributeValueSubs} is not valid on {ElementTypeSubs} elements.",
-            false);
-
-        public static readonly AttributeValidationResult NeedsAtLeastDotNet5 = new(
-            $"The attribute {AttributeNameSubs} value {AttributeValueSubs} is not supported in the current .NET Runtime. It requires .NET 5 or later.",
-            false);
-
-        private AttributeValidationResult(string? message, bool isValid)
-        {
-            this.Message = message ?? string.Empty;
-            this.IsValid = isValid;
-        }
-
-        public string Message { get; }
-
-        public bool IsValid { get; }
-
-        public string ToString(FlatBufferSchemaElementType type, string attributeName, string attributeValue)
-        {
-            return this.Message
-                .Replace(AttributeNameSubs, $"'{attributeName}'")
-                .Replace(ElementTypeSubs, type.ToString())
-                .Replace(AttributeValueSubs, attributeValue);
-        }
+    public string ToString(FlatBufferSchemaElementType type, string attributeName, string attributeValue)
+    {
+        return this.Message
+            .Replace(AttributeNameSubs, $"'{attributeName}'")
+            .Replace(ElementTypeSubs, type.ToString())
+            .Replace(AttributeValueSubs, attributeValue);
     }
 }

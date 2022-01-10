@@ -14,63 +14,60 @@
  * limitations under the License.
  */
 
-namespace FlatSharp
+using System.IO;
+
+namespace FlatSharp;
+
+/// <summary>
+/// A class that FlatSharp uses to deserialize vectors of unions.
+/// </summary>
+[EditorBrowsable(EditorBrowsableState.Never)]
+public abstract class FlatBufferVectorOfUnion<T, TInputBuffer> : FlatBufferVectorBase<T, TInputBuffer>
+    where TInputBuffer : IInputBuffer
+    where T : IFlatBufferUnion
 {
-    using System;
-    using System.ComponentModel;
-    using System.IO;
+    private readonly int discriminatorVectorOffset;
+    private readonly int offsetVectorOffset;
 
-    /// <summary>
-    /// A class that FlatSharp uses to deserialize vectors of unions.
-    /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public abstract class FlatBufferVectorOfUnion<T, TInputBuffer> : FlatBufferVectorBase<T, TInputBuffer>
-        where TInputBuffer : IInputBuffer
-        where T : IFlatBufferUnion
+    protected FlatBufferVectorOfUnion(
+        TInputBuffer memory,
+        int discriminatorOffset,
+        int offsetVectorOffset,
+        in TableFieldContext fieldContext) : base(memory, fieldContext)
     {
-        private readonly int discriminatorVectorOffset;
-        private readonly int offsetVectorOffset;
+        uint discriminatorCount = memory.ReadUInt(discriminatorOffset);
+        uint offsetCount = memory.ReadUInt(offsetVectorOffset);
 
-        protected FlatBufferVectorOfUnion(
-            TInputBuffer memory,
-            int discriminatorOffset,
-            int offsetVectorOffset,
-            in TableFieldContext fieldContext) : base(memory, fieldContext)
+        if (discriminatorCount != offsetCount)
         {
-            uint discriminatorCount = memory.ReadUInt(discriminatorOffset);
-            uint offsetCount = memory.ReadUInt(offsetVectorOffset);
-
-            if (discriminatorCount != offsetCount)
-            {
-                throw new InvalidDataException($"Union vector had mismatched number of discriminators and offsets.");
-            }
-
-            checked
-            {
-                this.Count = (int)offsetCount;
-                this.discriminatorVectorOffset = discriminatorOffset + sizeof(int);
-                this.offsetVectorOffset = offsetVectorOffset + sizeof(int);
-            }
+            throw new InvalidDataException($"Union vector had mismatched number of discriminators and offsets.");
         }
 
-        protected override void ParseItem(int index, out T item)
+        checked
         {
-            checked
-            {
-                this.ParseItem(
-                    this.memory,
-                    this.discriminatorVectorOffset + index,
-                    this.offsetVectorOffset + (index * sizeof(int)),
-                    this.fieldContext,
-                    out item);
-            }
+            this.Count = (int)offsetCount;
+            this.discriminatorVectorOffset = discriminatorOffset + sizeof(int);
+            this.offsetVectorOffset = offsetVectorOffset + sizeof(int);
         }
-
-        protected abstract void ParseItem(
-            TInputBuffer buffer,
-            int discriminatorOffset,
-            int offsetOffset,
-            TableFieldContext fieldContext,
-            out T item);
     }
+
+    protected override void ParseItem(int index, out T item)
+    {
+        checked
+        {
+            this.ParseItem(
+                this.memory,
+                this.discriminatorVectorOffset + index,
+                this.offsetVectorOffset + (index * sizeof(int)),
+                this.fieldContext,
+                out item);
+        }
+    }
+
+    protected abstract void ParseItem(
+        TInputBuffer buffer,
+        int discriminatorOffset,
+        int offsetOffset,
+        TableFieldContext fieldContext,
+        out T item);
 }

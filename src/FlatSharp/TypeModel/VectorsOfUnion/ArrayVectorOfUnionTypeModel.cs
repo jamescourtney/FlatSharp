@@ -13,54 +13,51 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-namespace FlatSharp.TypeModel
+
+namespace FlatSharp.TypeModel;
+
+/// <summary>
+/// Defines a vector of union type model.
+/// </summary>
+public class ArrayVectorOfUnionTypeModel : BaseVectorOfUnionTypeModel
 {
-    using System;
-
-    /// <summary>
-    /// Defines a vector of union type model.
-    /// </summary>
-    public class ArrayVectorOfUnionTypeModel : BaseVectorOfUnionTypeModel
+    public ArrayVectorOfUnionTypeModel(Type clrType, TypeModelContainer container)
+        : base(clrType, container)
     {
-        public ArrayVectorOfUnionTypeModel(Type clrType, TypeModelContainer container)
-            : base(clrType, container)
+    }
+
+    public override string LengthPropertyName => "Length";
+
+    public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
+    {
+        if (!context.Options.GreedyDeserialize)
         {
+            throw new InvalidFlatBufferDefinitionException("Array vectors may only be used with Greedy serializers.");
         }
 
-        public override string LengthPropertyName => "Length";
+        var (classDef, className) = FlatBufferVectorHelpers.CreateFlatBufferVectorOfUnionSubclass(
+            this.ItemTypeModel,
+            context);
 
-        public override CodeGeneratedMethod CreateParseMethodBody(ParserCodeGenContext context)
-        {
-            if (!context.Options.GreedyDeserialize)
-            {
-                throw new InvalidFlatBufferDefinitionException("Array vectors may only be used with Greedy serializers.");
-            }
+        FlatSharpInternal.Assert(!string.IsNullOrEmpty(context.TableFieldContextVariableName), "expecting table field context");
 
-            var (classDef, className) = FlatBufferVectorHelpers.CreateFlatBufferVectorOfUnionSubclass(
-                this.ItemTypeModel,
-                context);
+        string createFlatBufferVector =
+        $@"new {className}<{context.InputBufferTypeName}>(
+            {context.InputBufferVariableName}, 
+            {context.OffsetVariableName}.offset0 + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}.offset0), 
+            {context.OffsetVariableName}.offset1 + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}.offset1),
+            {context.TableFieldContextVariableName})";
 
-            FlatSharpInternal.Assert(!string.IsNullOrEmpty(context.TableFieldContextVariableName), "expecting table field context");
+        string body = $"return ({createFlatBufferVector}).ToArray();";
 
-            string createFlatBufferVector =
-            $@"new {className}<{context.InputBufferTypeName}>(
-                    {context.InputBufferVariableName}, 
-                    {context.OffsetVariableName}.offset0 + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}.offset0), 
-                    {context.OffsetVariableName}.offset1 + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}.offset1),
-                    {context.TableFieldContextVariableName})";
+        return new CodeGeneratedMethod(body) { ClassDefinition = classDef };
+    }
 
-            string body = $"return ({createFlatBufferVector}).ToArray();";
+    public override Type OnInitialize()
+    {
+        FlatSharpInternal.Assert(this.ClrType.IsArray, $"Array vectors must be arrays. Type = {this.ClrType.FullName}.");
+        FlatSharpInternal.Assert(this.ClrType.GetArrayRank() == 1, "Array vectors may only be single-dimension.");
 
-            return new CodeGeneratedMethod(body) { ClassDefinition = classDef };
-        }
-
-        public override Type OnInitialize()
-        {
-            FlatSharpInternal.Assert(this.ClrType.IsArray, $"Array vectors must be arrays. Type = {this.ClrType.FullName}.");
-            FlatSharpInternal.Assert(this.ClrType.GetArrayRank() == 1, "Array vectors may only be single-dimension.");
-
-            return this.ClrType.GetElementType()!;
-        }
+        return this.ClrType.GetElementType()!;
     }
 }

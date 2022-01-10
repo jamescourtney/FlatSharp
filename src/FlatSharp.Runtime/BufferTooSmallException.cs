@@ -14,23 +14,19 @@
  * limitations under the License.
  */
 
-namespace FlatSharp
+namespace FlatSharp;
+
+/// <summary>
+/// Raised in serialization when the provided buffer was too small.
+/// </summary>
+public sealed class BufferTooSmallException : Exception
 {
-    using System;
-    using System.Text;
+    public BufferTooSmallException() : base($"The provided buffer was too small to hold the serialized data.")
+    {
+    }
 
     /// <summary>
-    /// Raised in serialization when the provided buffer was too small.
+    /// The maximum amount of size needed for this message.
     /// </summary>
-    public sealed class BufferTooSmallException : Exception
-    {
-        public BufferTooSmallException() : base($"The provided buffer was too small to hold the serialized data.")
-        {
-        }
-
-        /// <summary>
-        /// The maximum amount of size needed for this message.
-        /// </summary>
-        public int SizeNeeded { get; internal set; }
-    }
+    public int SizeNeeded { get; internal set; }
 }

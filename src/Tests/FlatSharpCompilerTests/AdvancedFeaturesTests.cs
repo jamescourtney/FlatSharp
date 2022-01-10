@@ -14,25 +14,21 @@
  * limitations under the License.
  */
 
-namespace FlatSharpTests.Compiler
+using FlatSharp.Compiler.SchemaModel;
+
+namespace FlatSharpTests.Compiler;
+
+public class AdvancedFeaturesTests
 {
-    using System;
-    using FlatSharp.Compiler;
-    using FlatSharp.Compiler.SchemaModel;
-    using Xunit;
-
-    public class AdvancedFeaturesTests
+    [Fact]
+    public void Unsupported_AdvancedFeature_Throws()
     {
-        [Fact]
-        public void Unsupported_AdvancedFeature_Throws()
-        {
-            Assert.Throws<InvalidFbsFileException>(
-                () => new RootModel(FlatSharp.Compiler.Schema.AdvancedFeatures.DefaultVectorsAndStrings));
+        Assert.Throws<InvalidFbsFileException>(
+            () => new RootModel(FlatSharp.Compiler.Schema.AdvancedFeatures.DefaultVectorsAndStrings));
 
-            Assert.Throws<InvalidFbsFileException>(
-                () => new RootModel(FlatSharp.Compiler.Schema.AdvancedFeatures.DefaultVectorsAndStrings | FlatSharp.Compiler.Schema.AdvancedFeatures.OptionalScalars));
+        Assert.Throws<InvalidFbsFileException>(
+            () => new RootModel(FlatSharp.Compiler.Schema.AdvancedFeatures.DefaultVectorsAndStrings | FlatSharp.Compiler.Schema.AdvancedFeatures.OptionalScalars));
 
-            new RootModel(FlatSharp.Compiler.Schema.AdvancedFeatures.OptionalScalars);
-        }
+        new RootModel(FlatSharp.Compiler.Schema.AdvancedFeatures.OptionalScalars);
     }
 }

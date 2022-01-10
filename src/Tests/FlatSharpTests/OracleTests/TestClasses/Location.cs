@@ -14,34 +14,30 @@
  * limitations under the License.
  */
 
-namespace FlatSharpTests
+namespace FlatSharpTests;
+
+[FlatBufferTable]
+public class LocationHolder
 {
-    using System.Collections.Generic;
-    using FlatSharp.Attributes;
+    [FlatBufferItem(0)]
+    public virtual Location? Location { get; set; }
 
-    [FlatBufferTable]
-    public class LocationHolder
-    {
-        [FlatBufferItem(0)]
-        public virtual Location? Location { get; set; }
+    [FlatBufferItem(1)]
+    public virtual string? Fake { get; set; }
 
-        [FlatBufferItem(1)]
-        public virtual string? Fake { get; set; }
+    [FlatBufferItem(2)]
+    public virtual IList<Location>? LocationVector { get; set; }
+}
 
-        [FlatBufferItem(2)]
-        public virtual IList<Location>? LocationVector { get; set; }
-    }
+[FlatBufferStruct]
+public class Location
+{
+    [FlatBufferItem(0)]
+    public virtual float X { get; set; }
 
-    [FlatBufferStruct]
-    public class Location
-    {
-        [FlatBufferItem(0)]
-        public virtual float X { get; set; }
+    [FlatBufferItem(1)]
+    public virtual float Y { get; set; }
 
-        [FlatBufferItem(1)]
-        public virtual float Y { get; set; }
-
-        [FlatBufferItem(2)]
-        public virtual float Z { get; set; }
-    }
+    [FlatBufferItem(2)]
+    public virtual float Z { get; set; }
 }

@@ -14,139 +14,132 @@
  * limitations under the License.
  */
 
-namespace FlatSharp
+namespace FlatSharp;
+
+/// <summary>
+/// Some C# codegen helpers.
+/// </summary>
+internal static class CSharpHelpers
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Reflection;
-    using FlatSharp.TypeModel;
+    internal const string GeneratedClassInputBufferFieldName = "__buffer";
+    internal const string GeneratedClassOffsetFieldName = "__offset";
+    internal const string GeneratedClassMaxVtableIndexFieldName = "__maxVTableIndex";
+    internal const string GeneratedClassVTableOffsetFieldName = "__vtableOffset";
 
-    /// <summary>
-    /// Some C# codegen helpers.
-    /// </summary>
-    internal static class CSharpHelpers
+    internal static string GetGlobalCompilableTypeName(this Type t)
     {
-        internal const string GeneratedClassInputBufferFieldName = "__buffer";
-        internal const string GeneratedClassOffsetFieldName = "__offset";
-        internal const string GeneratedClassMaxVtableIndexFieldName = "__maxVTableIndex";
-        internal const string GeneratedClassVTableOffsetFieldName = "__vtableOffset";
+        return $"global::{GetCompilableTypeName(t)}";
+    }
 
-        internal static string GetGlobalCompilableTypeName(this Type t)
+    internal static string GetCompilableTypeName(this Type t)
+    {
+        FlatSharpInternal.Assert(!string.IsNullOrEmpty(t.FullName), $"{t} has null/empty full name.");
+
+        string name;
+        if (t.IsGenericType)
         {
-            return $"global::{GetCompilableTypeName(t)}";
+            List<string> parameters = new List<string>();
+            foreach (var generic in t.GetGenericArguments())
+            {
+                parameters.Add(GetCompilableTypeName(generic));
+            }
+
+            name = $"{t.FullName.Split('`')[0]}<{string.Join(", ", parameters)}>";
+        }
+        else if (t.IsArray)
+        {
+            name = $"{GetCompilableTypeName(t.GetElementType()!)}[]";
+        }
+        else
+        {
+            name = t.FullName;
         }
 
-        internal static string GetCompilableTypeName(this Type t)
+        name = name.Replace('+', '.');
+        return name;
+    }
+
+    internal static (AccessModifier propertyModifier, AccessModifier? getModifer, AccessModifier? setModifier) GetPropertyAccessModifiers(
+        AccessModifier getModifier,
+        AccessModifier? setModifier)
+    {
+        if (setModifier is null || getModifier == setModifier.Value)
         {
-            FlatSharpInternal.Assert(!string.IsNullOrEmpty(t.FullName), $"{t} has null/empty full name.");
-
-            string name;
-            if (t.IsGenericType)
-            {
-                List<string> parameters = new List<string>();
-                foreach (var generic in t.GetGenericArguments())
-                {
-                    parameters.Add(GetCompilableTypeName(generic));
-                }
-
-                name = $"{t.FullName.Split('`')[0]}<{string.Join(", ", parameters)}>";
-            }
-            else if (t.IsArray)
-            {
-                name = $"{GetCompilableTypeName(t.GetElementType()!)}[]";
-            }
-            else
-            {
-                name = t.FullName;
-            }
-
-            name = name.Replace('+', '.');
-            return name;
+            return (getModifier, null, null);
         }
 
-        internal static (AccessModifier propertyModifier, AccessModifier? getModifer, AccessModifier? setModifier) GetPropertyAccessModifiers(
-            AccessModifier getModifier,
-            AccessModifier? setModifier)
+        FlatSharpInternal.Assert(
+            getModifier < setModifier.Value,
+            "Getter expected to be more visible than setter");
+
+        return (getModifier, null, setModifier);
+    }
+
+    internal static (AccessModifier propertyModifier, AccessModifier? getModifer, AccessModifier? setModifier) GetPropertyAccessModifiers(
+        PropertyInfo property,
+        bool convertProtectedInternalToProtected)
+    {
+        FlatSharpInternal.Assert(property.GetMethod is not null, $"Property {property.DeclaringType?.Name}.{property.Name} has null get method.");
+        var getModifier = GetAccessModifier(property.GetMethod, convertProtectedInternalToProtected);
+
+        if (property.SetMethod is null)
         {
-            if (setModifier is null || getModifier == setModifier.Value)
-            {
-                return (getModifier, null, null);
-            }
-
-            FlatSharpInternal.Assert(
-                getModifier < setModifier.Value,
-                "Getter expected to be more visible than setter");
-
-            return (getModifier, null, setModifier);
+            return (getModifier, null, null);
         }
 
-        internal static (AccessModifier propertyModifier, AccessModifier? getModifer, AccessModifier? setModifier) GetPropertyAccessModifiers(
-            PropertyInfo property,
-            bool convertProtectedInternalToProtected)
+        var setModifier = GetAccessModifier(property.SetMethod, convertProtectedInternalToProtected);
+
+        return GetPropertyAccessModifiers(getModifier, setModifier);
+    }
+
+    internal static string ToCSharpString(this AccessModifier? modifier)
+    {
+        return modifier switch
         {
-            FlatSharpInternal.Assert(property.GetMethod is not null, $"Property {property.DeclaringType?.Name}.{property.Name} has null get method.");
-            var getModifier = GetAccessModifier(property.GetMethod, convertProtectedInternalToProtected);
+            null => string.Empty,
+            _ => modifier.Value.ToCSharpString(),
+        };
+    }
 
-            if (property.SetMethod is null)
-            {
-                return (getModifier, null, null);
-            }
+    internal static string ToCSharpString(this AccessModifier modifier)
+    {
+        return modifier switch
+        {
+            AccessModifier.Public => "public",
+            AccessModifier.Protected => "protected",
+            AccessModifier.ProtectedInternal => "protected internal",
+            AccessModifier.Private => "private",
+            _ => throw new InvalidOperationException($"Unexpected access modifier: '{modifier}'.")
+        };
+    }
 
-            var setModifier = GetAccessModifier(property.SetMethod, convertProtectedInternalToProtected);
-
-            return GetPropertyAccessModifiers(getModifier, setModifier);
+    internal static AccessModifier GetAccessModifier(this MethodInfo method, bool convertProtectedInternalToProtected)
+    {
+        if (method.IsPublic)
+        {
+            return AccessModifier.Public;
         }
 
-        internal static string ToCSharpString(this AccessModifier? modifier)
+        if (method.IsFamilyOrAssembly)
         {
-            return modifier switch
-            {
-                null => string.Empty,
-                _ => modifier.Value.ToCSharpString(),
-            };
-        }
-
-        internal static string ToCSharpString(this AccessModifier modifier)
-        {
-            return modifier switch
-            {
-                AccessModifier.Public => "public",
-                AccessModifier.Protected => "protected",
-                AccessModifier.ProtectedInternal => "protected internal",
-                AccessModifier.Private => "private",
-                _ => throw new InvalidOperationException($"Unexpected access modifier: '{modifier}'.")
-            };
-        }
-
-        internal static AccessModifier GetAccessModifier(this MethodInfo method, bool convertProtectedInternalToProtected)
-        {
-            if (method.IsPublic)
-            {
-                return AccessModifier.Public;
-            }
-
-            if (method.IsFamilyOrAssembly)
-            {
-                if (convertProtectedInternalToProtected)
-                {
-                    return AccessModifier.Protected;
-                }
-
-                return AccessModifier.ProtectedInternal;
-            }
-
-            if (method.IsFamily)
+            if (convertProtectedInternalToProtected)
             {
                 return AccessModifier.Protected;
             }
 
-            if (method.IsPrivate)
-            {
-                return AccessModifier.Private;
-            }
-
-            throw new InvalidOperationException("Unexpected method visibility: " + method.Name);
+            return AccessModifier.ProtectedInternal;
         }
+
+        if (method.IsFamily)
+        {
+            return AccessModifier.Protected;
+        }
+
+        if (method.IsPrivate)
+        {
+            return AccessModifier.Private;
+        }
+
+        throw new InvalidOperationException("Unexpected method visibility: " + method.Name);
     }
 }

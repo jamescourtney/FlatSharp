@@ -14,27 +14,19 @@
  * limitations under the License.
  */
 
-namespace FlatSharpTests.Compiler
+namespace FlatSharpTests.Compiler;
+
+public class VirtualMemberTests
 {
-    using System;
-    using System.Linq;
-    using System.Reflection;
-    using FlatSharp;
-    using FlatSharp.Compiler;
-    using Xunit;
+    [Fact]
+    public void DefaultVirtual() => this.VirtualTest(false);
 
-    
-    public class VirtualMemberTests
+    [Fact]
+    public void DefaultNonVirtual() => this.VirtualTest(true);
+
+    private void VirtualTest(bool defaultNonVirtual)
     {
-        [Fact]
-        public void DefaultVirtual() => this.VirtualTest(false);
-
-        [Fact]
-        public void DefaultNonVirtual() => this.VirtualTest(true);
-
-        private void VirtualTest(bool defaultNonVirtual)
-        {
-            string schema = $@"
+        string schema = $@"
             {MetadataHelpers.AllAttributes}
             namespace VirtualTests;
             table VirtualTable ({MetadataKeys.NonVirtualProperty}:""{defaultNonVirtual.ToString().ToLowerInvariant()}"", {MetadataKeys.SerializerKind}:""Lazy"") {{
@@ -53,34 +45,33 @@ namespace FlatSharpTests.Compiler
             table DefaultTable ({MetadataKeys.SerializerKind}:""lazy"") {{ Default:int; Struct:DefaultStruct; }}
             struct DefaultStruct {{ Default:int; }}";
 
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
+        Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
 
-            foreach (var typeName in new[] { "VirtualTests.VirtualTable", "VirtualTests.VirtualStruct" })
-            {
-                Type type = asm.GetType(typeName);
-                Assert.True(type.IsPublic);
-                var defaultProperty = type.GetProperty("Default");
-                var forcedVirtualProperty = type.GetProperty("ForcedVirtual");
-                var forcedNonVirtualProperty = type.GetProperty("ForcedNonVirtual");
+        foreach (var typeName in new[] { "VirtualTests.VirtualTable", "VirtualTests.VirtualStruct" })
+        {
+            Type type = asm.GetType(typeName);
+            Assert.True(type.IsPublic);
+            var defaultProperty = type.GetProperty("Default");
+            var forcedVirtualProperty = type.GetProperty("ForcedVirtual");
+            var forcedNonVirtualProperty = type.GetProperty("ForcedNonVirtual");
 
-                Assert.NotNull(defaultProperty);
-                Assert.NotNull(forcedVirtualProperty);
-                Assert.NotNull(forcedNonVirtualProperty);
+            Assert.NotNull(defaultProperty);
+            Assert.NotNull(forcedVirtualProperty);
+            Assert.NotNull(forcedNonVirtualProperty);
 
-                Assert.Equal(!defaultNonVirtual, defaultProperty.GetMethod.IsVirtual);
-                Assert.True(forcedVirtualProperty.GetMethod.IsVirtual);
-                Assert.False(forcedNonVirtualProperty.GetMethod.IsVirtual);
-            }
+            Assert.Equal(!defaultNonVirtual, defaultProperty.GetMethod.IsVirtual);
+            Assert.True(forcedVirtualProperty.GetMethod.IsVirtual);
+            Assert.False(forcedNonVirtualProperty.GetMethod.IsVirtual);
+        }
 
-            foreach (var typeName in new[] { "VirtualTests.DefaultTable", "VirtualTests.DefaultStruct" })
-            {
-                Type type = asm.GetType(typeName);
-                Assert.True(type.IsPublic);
-                var defaultProperty = type.GetProperty("Default");
+        foreach (var typeName in new[] { "VirtualTests.DefaultTable", "VirtualTests.DefaultStruct" })
+        {
+            Type type = asm.GetType(typeName);
+            Assert.True(type.IsPublic);
+            var defaultProperty = type.GetProperty("Default");
 
-                Assert.NotNull(defaultProperty);
-                Assert.True(defaultProperty.GetMethod.IsVirtual);
-            }
+            Assert.NotNull(defaultProperty);
+            Assert.True(defaultProperty.GetMethod.IsVirtual);
         }
     }
 }

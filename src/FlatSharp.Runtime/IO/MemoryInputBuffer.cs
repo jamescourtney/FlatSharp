@@ -14,127 +14,124 @@
  * limitations under the License.
  */
 
-namespace FlatSharp
+using System.Text;
+
+namespace FlatSharp;
+
+/// <summary>
+/// An implementation of InputBuffer for writable memory segments.
+/// </summary>
+public struct MemoryInputBuffer : IInputBuffer
 {
-    using System;
-    using System.Runtime.CompilerServices;
-    using System.Text;
+    private readonly MemoryPointer pointer;
 
-    /// <summary>
-    /// An implementation of InputBuffer for writable memory segments.
-    /// </summary>
-    public struct MemoryInputBuffer : IInputBuffer
+    public MemoryInputBuffer(Memory<byte> memory)
     {
-        private readonly MemoryPointer pointer;
+        this.pointer = new MemoryPointer { memory = memory };
+    }
 
-        public MemoryInputBuffer(Memory<byte> memory)
-        {
-            this.pointer = new MemoryPointer { memory = memory };
-        }
-
-        public int Length
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => this.pointer.memory.Length;
-        }
-
+    public int Length
+    {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public byte ReadByte(int offset)
-        {
-            return ScalarSpanReader.ReadByte(this.pointer.memory.Span.Slice(offset));
-        }
+        get => this.pointer.memory.Length;
+    }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public sbyte ReadSByte(int offset)
-        {
-            return ScalarSpanReader.ReadSByte(this.pointer.memory.Span.Slice(offset));
-        }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public byte ReadByte(int offset)
+    {
+        return ScalarSpanReader.ReadByte(this.pointer.memory.Span.Slice(offset));
+    }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ushort ReadUShort(int offset)
-        {
-            this.CheckAlignment(offset, sizeof(ushort));
-            return ScalarSpanReader.ReadUShort(this.pointer.memory.Span.Slice(offset));
-        }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public sbyte ReadSByte(int offset)
+    {
+        return ScalarSpanReader.ReadSByte(this.pointer.memory.Span.Slice(offset));
+    }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public short ReadShort(int offset)
-        {
-            this.CheckAlignment(offset, sizeof(short));
-            return ScalarSpanReader.ReadShort(this.pointer.memory.Span.Slice(offset));
-        }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ushort ReadUShort(int offset)
+    {
+        this.CheckAlignment(offset, sizeof(ushort));
+        return ScalarSpanReader.ReadUShort(this.pointer.memory.Span.Slice(offset));
+    }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public uint ReadUInt(int offset)
-        {
-            this.CheckAlignment(offset, sizeof(uint));
-            return ScalarSpanReader.ReadUInt(this.pointer.memory.Span.Slice(offset));
-        }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public short ReadShort(int offset)
+    {
+        this.CheckAlignment(offset, sizeof(short));
+        return ScalarSpanReader.ReadShort(this.pointer.memory.Span.Slice(offset));
+    }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int ReadInt(int offset)
-        {
-            this.CheckAlignment(offset, sizeof(int));
-            return ScalarSpanReader.ReadInt(this.pointer.memory.Span.Slice(offset));
-        }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public uint ReadUInt(int offset)
+    {
+        this.CheckAlignment(offset, sizeof(uint));
+        return ScalarSpanReader.ReadUInt(this.pointer.memory.Span.Slice(offset));
+    }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ulong ReadULong(int offset)
-        {
-            this.CheckAlignment(offset, sizeof(ulong));
-            return ScalarSpanReader.ReadULong(this.pointer.memory.Span.Slice(offset));
-        }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public int ReadInt(int offset)
+    {
+        this.CheckAlignment(offset, sizeof(int));
+        return ScalarSpanReader.ReadInt(this.pointer.memory.Span.Slice(offset));
+    }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public long ReadLong(int offset)
-        {
-            this.CheckAlignment(offset, sizeof(long));
-            return ScalarSpanReader.ReadLong(this.pointer.memory.Span.Slice(offset));
-        }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ulong ReadULong(int offset)
+    {
+        this.CheckAlignment(offset, sizeof(ulong));
+        return ScalarSpanReader.ReadULong(this.pointer.memory.Span.Slice(offset));
+    }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float ReadFloat(int offset)
-        {
-            this.CheckAlignment(offset, sizeof(float));
-            return ScalarSpanReader.ReadFloat(this.pointer.memory.Span.Slice(offset));
-        }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public long ReadLong(int offset)
+    {
+        this.CheckAlignment(offset, sizeof(long));
+        return ScalarSpanReader.ReadLong(this.pointer.memory.Span.Slice(offset));
+    }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public double ReadDouble(int offset)
-        {
-            this.CheckAlignment(offset, sizeof(double));
-            return ScalarSpanReader.ReadDouble(this.pointer.memory.Span.Slice(offset));
-        }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public float ReadFloat(int offset)
+    {
+        this.CheckAlignment(offset, sizeof(float));
+        return ScalarSpanReader.ReadFloat(this.pointer.memory.Span.Slice(offset));
+    }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public string ReadString(int offset, int byteLength, Encoding encoding)
-        {
-            return ScalarSpanReader.ReadString(this.pointer.memory.Span.Slice(offset, byteLength), encoding);
-        }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public double ReadDouble(int offset)
+    {
+        this.CheckAlignment(offset, sizeof(double));
+        return ScalarSpanReader.ReadDouble(this.pointer.memory.Span.Slice(offset));
+    }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Memory<byte> GetByteMemory(int start, int length)
-        {
-            return this.pointer.memory.Slice(start, length);
-        }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public string ReadString(int offset, int byteLength, Encoding encoding)
+    {
+        return ScalarSpanReader.ReadString(this.pointer.memory.Span.Slice(offset, byteLength), encoding);
+    }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length)
-        {
-            return this.GetByteMemory(start, length);
-        }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Memory<byte> GetByteMemory(int start, int length)
+    {
+        return this.pointer.memory.Slice(start, length);
+    }
 
-        public T InvokeParse<T>(IGeneratedSerializer<T> serializer, int offset)
-        {
-            return serializer.Parse(this, offset);
-        }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length)
+    {
+        return this.GetByteMemory(start, length);
+    }
 
-        // Memory<byte> is a relatively heavy struct. It's cheaper to wrap it in a
-        // a reference that will be collected ephemerally in Gen0 than is is to
-        // copy it around.
-        private class MemoryPointer
-        {
-            public Memory<byte> memory;
-        }
+    public T InvokeParse<T>(IGeneratedSerializer<T> serializer, int offset)
+    {
+        return serializer.Parse(this, offset);
+    }
+
+    // Memory<byte> is a relatively heavy struct. It's cheaper to wrap it in a
+    // a reference that will be collected ephemerally in Gen0 than is is to
+    // copy it around.
+    private class MemoryPointer
+    {
+        public Memory<byte> memory;
     }
 }

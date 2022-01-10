@@ -14,66 +14,59 @@
  * limitations under the License.
  */
 
-namespace FlatSharpTests
+namespace FlatSharpTests;
+
+public class OnDeserializedMethodTests
 {
-    using System;
-    using FlatSharp;
-    using FlatSharp.Attributes;
-    using Xunit;
-
-    
-    public class OnDeserializedMethodTests
+    [Fact]
+    public void OnDeserializedMethods_Invoked()
     {
-        [Fact]
-        public void OnDeserializedMethods_Invoked()
+        OnDeserializedTable table = new OnDeserializedTable
         {
-            OnDeserializedTable table = new OnDeserializedTable
+            Foo = "foo",
+            Struct = new OnDeserializedStruct
             {
-                Foo = "foo",
-                Struct = new OnDeserializedStruct
-                {
-                    Foo = 4,
-                }
-            };
-
-            byte[] data = new byte[1024];
-            FlatBufferSerializer.Default.Serialize(table, data);
-
-            var parsed = FlatBufferSerializer.Default.Parse<OnDeserializedTable>(data);
-
-            Assert.True(parsed.OnDeserializedCalled);
-            Assert.True(parsed.Struct.OnDeserializedCalled);
-        }
-
-        [FlatBufferTable]
-        public class OnDeserializedTable
-        {
-            [FlatBufferItem(0)]
-            public virtual string? Foo { get; set; }
-
-            [FlatBufferItem(1)]
-            public virtual OnDeserializedStruct? Struct { get; set; }
-
-            protected void OnFlatSharpDeserialized(FlatBufferDeserializationContext context)
-            {
-                this.OnDeserializedCalled = true;
+                Foo = 4,
             }
+        };
 
-            public bool OnDeserializedCalled { get; set; }
-        }
+        byte[] data = new byte[1024];
+        FlatBufferSerializer.Default.Serialize(table, data);
 
-        [FlatBufferStruct]
-        public class OnDeserializedStruct
+        var parsed = FlatBufferSerializer.Default.Parse<OnDeserializedTable>(data);
+
+        Assert.True(parsed.OnDeserializedCalled);
+        Assert.True(parsed.Struct.OnDeserializedCalled);
+    }
+
+    [FlatBufferTable]
+    public class OnDeserializedTable
+    {
+        [FlatBufferItem(0)]
+        public virtual string? Foo { get; set; }
+
+        [FlatBufferItem(1)]
+        public virtual OnDeserializedStruct? Struct { get; set; }
+
+        protected void OnFlatSharpDeserialized(FlatBufferDeserializationContext context)
         {
-            [FlatBufferItem(0)]
-            public int Foo { get; set; }
-
-            protected void OnFlatSharpDeserialized(FlatBufferDeserializationContext context)
-            {
-                this.OnDeserializedCalled = true;
-            }
-
-            public bool OnDeserializedCalled { get; set; }
+            this.OnDeserializedCalled = true;
         }
+
+        public bool OnDeserializedCalled { get; set; }
+    }
+
+    [FlatBufferStruct]
+    public class OnDeserializedStruct
+    {
+        [FlatBufferItem(0)]
+        public int Foo { get; set; }
+
+        protected void OnFlatSharpDeserialized(FlatBufferDeserializationContext context)
+        {
+            this.OnDeserializedCalled = true;
+        }
+
+        public bool OnDeserializedCalled { get; set; }
     }
 }

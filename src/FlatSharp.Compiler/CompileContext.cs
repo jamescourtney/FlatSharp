@@ -14,54 +14,52 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Compiler
+using FlatSharp.TypeModel;
+
+namespace FlatSharp.Compiler;
+
+/// <summary>
+/// Compilation context
+/// </summary>
+public record CompileContext
 {
-    using FlatSharp.TypeModel;
-    using System.Reflection;
+    /// <summary>
+    /// The current compilation pass.
+    /// </summary>
+    public CodeWritingPass CompilePass { get; init; }
 
     /// <summary>
-    /// Compilation context
+    /// The assembly from the previous step, if any.
     /// </summary>
-    public record CompileContext
-    {
-        /// <summary>
-        /// The current compilation pass.
-        /// </summary>
-        public CodeWritingPass CompilePass { get; init; }
+    public Assembly? PreviousAssembly { get; init; }
 
-        /// <summary>
-        /// The assembly from the previous step, if any.
-        /// </summary>
-        public Assembly? PreviousAssembly { get; init; }
+    /// <summary>
+    /// The input hash.
+    /// </summary>
+    public string InputHash { get; init; } = string.Empty;
 
-        /// <summary>
-        /// The input hash.
-        /// </summary>
-        public string InputHash { get; init; } = string.Empty;
+    /// <summary>
+    /// The Root schema.
+    /// </summary>
+    public Schema.Schema Root { get; init; } = new();
 
-        /// <summary>
-        /// The Root schema.
-        /// </summary>
-        public Schema.Schema Root { get; init; } = new();
+    /// <summary>
+    /// The root FBS file in the compilation.
+    /// </summary>
+    public string RootFile { get; init; } = string.Empty;
 
-        /// <summary>
-        /// The root FBS file in the compilation.
-        /// </summary>
-        public string RootFile { get; init; } = string.Empty;
+    /// <summary>
+    /// The fully qualified name of a static method to deep-clone an item.
+    /// </summary>
+    public string? FullyQualifiedCloneMethodName { get; set; }
 
-        /// <summary>
-        /// The fully qualified name of a static method to deep-clone an item.
-        /// </summary>
-        public string? FullyQualifiedCloneMethodName { get; set; }
+    /// <summary>
+    /// The command line options.
+    /// </summary>
+    public CompilerOptions Options { get; init; } = new CompilerOptions();
 
-        /// <summary>
-        /// The command line options.
-        /// </summary>
-        public CompilerOptions Options { get; init; } = new CompilerOptions();
-
-        /// <summary>
-        /// Resolves type models.
-        /// </summary>
-        public TypeModelContainer TypeModelContainer { get; init; } = TypeModelContainer.CreateDefault();
-    }
+    /// <summary>
+    /// Resolves type models.
+    /// </summary>
+    public TypeModelContainer TypeModelContainer { get; init; } = TypeModelContainer.CreateDefault();
 }

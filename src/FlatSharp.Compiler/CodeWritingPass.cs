@@ -14,32 +14,31 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Compiler
+namespace FlatSharp.Compiler;
+
+/// <summary>
+/// Enumerates the values for code write pass. FlatSharp compiler proceeds in several passes, getting
+/// closer to the final output each time. This multi-phase approach is taken to allow the compiler
+/// to only have a minimal understanding of the type system and the relationship between types. Instead,
+/// it uses reflection on previous invocations to fine-tune its approach.
+/// </summary>
+public enum CodeWritingPass
 {
     /// <summary>
-    /// Enumerates the values for code write pass. FlatSharp compiler proceeds in several passes, getting
-    /// closer to the final output each time. This multi-phase approach is taken to allow the compiler
-    /// to only have a minimal understanding of the type system and the relationship between types. Instead,
-    /// it uses reflection on previous invocations to fine-tune its approach.
+    /// Basic definitions of types and properties are written. Output code is reflectable but not functional.
     /// </summary>
-    public enum CodeWritingPass
-    {
-        /// <summary>
-        /// Basic definitions of types and properties are written. Output code is reflectable but not functional.
-        /// </summary>
-        Initialization = 1,
+    Initialization = 1,
 
-        /// <summary>
-        /// Consumes the assembly from the initialization pass and adds the full details of property definitions. Output code has fully-defined FlatSharp
-        /// data contracts.
-        /// </summary>
-        PropertyModeling = 2,
+    /// <summary>
+    /// Consumes the assembly from the initialization pass and adds the full details of property definitions. Output code has fully-defined FlatSharp
+    /// data contracts.
+    /// </summary>
+    PropertyModeling = 2,
 
-        /// <summary>
-        /// Serializers are generated and included in the output.
-        /// </summary>
-        SerializerAndRpcGeneration = 3,
+    /// <summary>
+    /// Serializers are generated and included in the output.
+    /// </summary>
+    SerializerAndRpcGeneration = 3,
 
-        LastPass = SerializerAndRpcGeneration,
-    }
+    LastPass = SerializerAndRpcGeneration,
 }

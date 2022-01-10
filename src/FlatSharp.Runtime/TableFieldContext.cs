@@ -14,37 +14,33 @@
  * limitations under the License.
  */
 
-namespace FlatSharp
+namespace FlatSharp;
+
+/// <summary>
+/// A contextual containing information about the table field.
+/// </summary>
+[EditorBrowsable(EditorBrowsableState.Never)]
+public sealed class TableFieldContext
 {
-    using System;
-    using System.ComponentModel;
+    public TableFieldContext(string fullName, bool sharedString, bool writeThrough)
+    {
+        this.FullName = fullName;
+        this.SharedString = sharedString;
+        this.WriteThrough = writeThrough;
+    }
 
     /// <summary>
-    /// A contextual containing information about the table field.
+    /// For debug purposes. Contains the full name of the associated table property.
     /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public sealed class TableFieldContext
-    {
-        public TableFieldContext(string fullName, bool sharedString, bool writeThrough)
-        {
-            this.FullName = fullName;
-            this.SharedString = sharedString;
-            this.WriteThrough = writeThrough;
-        }
+    public readonly string FullName;
 
-        /// <summary>
-        /// For debug purposes. Contains the full name of the associated table property.
-        /// </summary>
-        public readonly string FullName;
+    /// <summary>
+    /// Indicates if this context enables shared strings.
+    /// </summary>
+    public readonly bool SharedString;
 
-        /// <summary>
-        /// Indicates if this context enables shared strings.
-        /// </summary>
-        public readonly bool SharedString;
-
-        /// <summary>
-        /// Indicates if this field is flagged as writethrough-enabled.
-        /// </summary>
-        public readonly bool WriteThrough;
-    }
+    /// <summary>
+    /// Indicates if this field is flagged as writethrough-enabled.
+    /// </summary>
+    public readonly bool WriteThrough;
 }

@@ -14,51 +14,50 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Compiler
+namespace FlatSharp.Compiler;
+
+/// <summary>
+/// Defines styles for generating setters.
+/// </summary>
+public enum SetterKind
 {
     /// <summary>
-    /// Defines styles for generating setters.
+    /// A public setter.
     /// </summary>
-    public enum SetterKind
-    {
-        /// <summary>
-        /// A public setter.
-        /// </summary>
-        Public = 0,
+    Public = 0,
 
-        /// <summary>
-        /// A protected setter.
-        /// </summary>
-        Protected = 1,
+    /// <summary>
+    /// A protected setter.
+    /// </summary>
+    Protected = 1,
 
-        /// <summary>
-        /// A protected internal setter.
-        /// </summary>
-        ProtectedInternal = 2,
+    /// <summary>
+    /// A protected internal setter.
+    /// </summary>
+    ProtectedInternal = 2,
 
-        /// <summary>
-        /// A public init-only setter.
-        /// </summary>
-        PublicInit = 3,
+    /// <summary>
+    /// A public init-only setter.
+    /// </summary>
+    PublicInit = 3,
 
-        /// <summary>
-        /// A projected init-only setter.
-        /// </summary>
-        ProtectedInit = 4,
+    /// <summary>
+    /// A projected init-only setter.
+    /// </summary>
+    ProtectedInit = 4,
 
-        /// <summary>
-        /// A protected internal init-only setter.
-        /// </summary>
-        ProtectedInternalInit = 5,
+    /// <summary>
+    /// A protected internal init-only setter.
+    /// </summary>
+    ProtectedInternalInit = 5,
 
-        /// <summary>
-        /// A private setter.
-        /// </summary>
-        Private = 6,
+    /// <summary>
+    /// A private setter.
+    /// </summary>
+    Private = 6,
 
-        /// <summary>
-        /// No setter.
-        /// </summary>
-        None = 7,
-    }
+    /// <summary>
+    /// No setter.
+    /// </summary>
+    None = 7,
 }

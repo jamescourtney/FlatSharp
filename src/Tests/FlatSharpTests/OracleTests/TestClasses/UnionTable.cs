@@ -14,31 +14,26 @@
  * limitations under the License.
  */
 
-namespace FlatSharpTests
+namespace FlatSharpTests;
+
+[FlatBufferTable]
+public class UnionTable
 {
-    using FlatSharp;
-    using FlatSharp.Attributes;
-
-    [FlatBufferTable]
-    public class UnionTable
+    [FlatBufferItem(0)]
+    public virtual FlatBufferUnion<BasicTypes, Location, string>? Union
     {
-        [FlatBufferItem(0)]
-        public virtual FlatBufferUnion<BasicTypes, Location, string>? Union
-        {
-            get;
-            set;
-        }
+        get;
+        set;
     }
+}
 
-
-    [FlatBufferTable]
-    public class ArrayVectorOfUnionTable
+[FlatBufferTable]
+public class ArrayVectorOfUnionTable
+{
+    [FlatBufferItem(0)]
+    public virtual FlatBufferUnion<BasicTypes, Location, string>[]? Union
     {
-        [FlatBufferItem(0)]
-        public virtual FlatBufferUnion<BasicTypes, Location, string>[]? Union
-        {
-            get;
-            set;
-        }
+        get;
+        set;
     }
 }

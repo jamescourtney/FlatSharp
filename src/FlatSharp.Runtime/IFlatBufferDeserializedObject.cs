@@ -14,39 +14,36 @@
  * limitations under the License.
  */
 
-namespace FlatSharp
+namespace FlatSharp;
+
+/// <summary>
+/// An interface applied to objects deserialized by FlatSharp. FlatSharp implements this
+/// interface on deserialized objects. It should not be implemented externally.
+/// </summary>
+public interface IFlatBufferDeserializedObject
 {
-    using System;
+    /// <summary>
+    /// The actual type of the table or struct. This is generally the base class.
+    /// </summary>
+    Type TableOrStructType { get; }
 
     /// <summary>
-    /// An interface applied to objects deserialized by FlatSharp. FlatSharp implements this
-    /// interface on deserialized objects. It should not be implemented externally.
+    /// The context of the deserialized object.
     /// </summary>
-    public interface IFlatBufferDeserializedObject
-    {
-        /// <summary>
-        /// The actual type of the table or struct. This is generally the base class.
-        /// </summary>
-        Type TableOrStructType { get; }
+    FlatBufferDeserializationContext DeserializationContext { get; }
 
-        /// <summary>
-        /// The context of the deserialized object.
-        /// </summary>
-        FlatBufferDeserializationContext DeserializationContext { get; }
+    /// <summary>
+    /// Gets the input buffer instance used to lazily read this object.
+    /// This buffer will not have a value when the derserialization mode 
+    /// is <see cref="FlatBufferDeserializationOption.Greedy"/> or 
+    /// <see cref="FlatBufferDeserializationOption.GreedyMutable"/>.
+    /// </summary>
+    IInputBuffer? InputBuffer { get; }
 
-        /// <summary>
-        /// Gets the input buffer instance used to lazily read this object.
-        /// This buffer will not have a value when the derserialization mode 
-        /// is <see cref="FlatBufferDeserializationOption.Greedy"/> or 
-        /// <see cref="FlatBufferDeserializationOption.GreedyMutable"/>.
-        /// </summary>
-        IInputBuffer? InputBuffer { get; }
-
-        /// <summary>
-        /// Indcates that this deserialized object is immutable or has semantics where all changes
-        /// are written back to the underlying buffer. This can allow serialize operations to be
-        /// implemented as memcopy instead of a full serialize flow.
-        /// </summary>
-        bool CanSerializeWithMemoryCopy { get; }
-    }
+    /// <summary>
+    /// Indcates that this deserialized object is immutable or has semantics where all changes
+    /// are written back to the underlying buffer. This can allow serialize operations to be
+    /// implemented as memcopy instead of a full serialize flow.
+    /// </summary>
+    bool CanSerializeWithMemoryCopy { get; }
 }

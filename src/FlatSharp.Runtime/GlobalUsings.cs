@@ -1,5 +1,6 @@
-﻿/*
- * Copyright 2018 James Courtney
+﻿
+/*
+ * Copyright 2021 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +15,15 @@
  * limitations under the License.
  */
 
-namespace FlatSharpTests;
+global using System;
+global using System.Collections;
+global using System.Collections.Generic;
+global using System.ComponentModel;
+global using System.Diagnostics;
+global using System.Diagnostics.CodeAnalysis;
+global using System.Reflection;
+global using System.Runtime.CompilerServices;
 
-[FlatBufferTable]
-public class TestLinkedListNode
-{
-    [FlatBufferItem(0)]
-    public virtual string? Value { get; set; }
-
-    [FlatBufferItem(1)]
-    public virtual TestLinkedListNode? Next { get; set; }
-}
+#if NETSTANDARD2_0
+global using FlatSharp.Polyfills;
+#endif

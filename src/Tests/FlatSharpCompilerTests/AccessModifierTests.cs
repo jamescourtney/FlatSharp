@@ -14,44 +14,37 @@
  * limitations under the License.
  */
 
-namespace FlatSharpTests.Compiler
+namespace FlatSharpTests.Compiler;
+
+public class AccessModifierTests
 {
-    using System;
-    using System.Linq;
-    using System.Reflection;
-    using FlatSharp;
-    using FlatSharp.Compiler;
-    using Xunit;
-
-    public class AccessModifierTests
+    [Fact]
+    public void TestAccessModifierCombinations_Setters()
     {
-        [Fact]
-        public void TestAccessModifierCombinations_Setters()
+        foreach (SetterKind setterKind in new[] { SetterKind.None, SetterKind.Public, SetterKind.Protected, SetterKind.ProtectedInternal })
         {
-            foreach (SetterKind setterKind in new[] { SetterKind.None, SetterKind.Public, SetterKind.Protected, SetterKind.ProtectedInternal })
+            foreach (FlatBufferDeserializationOption option in Enum.GetValues(typeof(FlatBufferDeserializationOption)))
             {
-                foreach (FlatBufferDeserializationOption option in Enum.GetValues(typeof(FlatBufferDeserializationOption)))
-                {
-                    this.Test(setterKind, option);
-                }
+                this.Test(setterKind, option);
             }
         }
+    }
 
-        [Fact]
-        public void TestAccessModifierCombinations_Init()
+    [Fact]
+    public void TestAccessModifierCombinations_Init()
+    {
+        foreach (SetterKind setterKind in new[] { SetterKind.PublicInit, SetterKind.ProtectedInit, SetterKind.ProtectedInternalInit })
         {
-            foreach (SetterKind setterKind in new[] { SetterKind.PublicInit, SetterKind.ProtectedInit, SetterKind.ProtectedInternalInit })
+            foreach (FlatBufferDeserializationOption option in Enum.GetValues(typeof(FlatBufferDeserializationOption)))
             {
-                foreach (FlatBufferDeserializationOption option in Enum.GetValues(typeof(FlatBufferDeserializationOption)))
-                {
-                    this.Test(setterKind, option);
-                }
+                this.Test(setterKind, option);
             }
         }
+    }
 
-        private void Test(SetterKind setterKind, FlatBufferDeserializationOption option)
-        {
-            string schema = $@"
+    private void Test(SetterKind setterKind, FlatBufferDeserializationOption option)
+    {
+        string schema = $@"
             {MetadataHelpers.AllAttributes}
             namespace VirtualTests;
             table VirtualTable ({MetadataKeys.SerializerKind}:""{option}"") {{
@@ -67,79 +60,78 @@ namespace FlatSharpTests.Compiler
                 ForcedNonVirtual:int ({MetadataKeys.NonVirtualProperty}:""true"", {MetadataKeys.Setter}:""{(setterKind != SetterKind.None ? setterKind : SetterKind.Public)}"");
             }}";
 
-            bool isInit = setterKind == SetterKind.PublicInit
-                       || setterKind == SetterKind.ProtectedInit
-                       || setterKind == SetterKind.ProtectedInternalInit;
+        bool isInit = setterKind == SetterKind.PublicInit
+                   || setterKind == SetterKind.ProtectedInit
+                   || setterKind == SetterKind.ProtectedInternalInit;
 
-            Assembly asm;
+        Assembly asm;
 #if NET5_0_OR_GREATER
-            asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
+        asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
 #else
-            try
-            {
-                asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
-            }
-            catch (InvalidFbsFileException ex) when (isInit)
-            {
-                // 3.1 should bail.
-                Assert.Contains(
-                    $"The attribute '{MetadataKeys.Setter}' value {setterKind} is not supported in the current .NET Runtime. It requires .NET 5 or later.",
-                    ex.Message);
-                return;
-            }
+        try
+        {
+            asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
+        }
+        catch (InvalidFbsFileException ex) when (isInit)
+        {
+            // 3.1 should bail.
+            Assert.Contains(
+                $"The attribute '{MetadataKeys.Setter}' value {setterKind} is not supported in the current .NET Runtime. It requires .NET 5 or later.",
+                ex.Message);
+            return;
+        }
 #endif
 
-            foreach (var typeName in new[] { "VirtualTests.VirtualTable", "VirtualTests.VirtualStruct" })
+        foreach (var typeName in new[] { "VirtualTests.VirtualTable", "VirtualTests.VirtualStruct" })
+        {
+            Type type = asm.GetType(typeName);
+            Assert.True(type.IsPublic);
+            var defaultProperty = type.GetProperty("Default");
+            var forcedVirtualProperty = type.GetProperty("ForcedVirtual");
+            var forcedNonVirtualProperty = type.GetProperty("ForcedNonVirtual");
+
+            Assert.NotNull(defaultProperty);
+            Assert.NotNull(forcedVirtualProperty);
+            Assert.NotNull(forcedNonVirtualProperty);
+
+            Assert.True(defaultProperty.GetMethod.IsPublic);
+            Assert.True(forcedVirtualProperty.GetMethod.IsPublic);
+            Assert.True(forcedNonVirtualProperty.GetMethod.IsPublic);
+
+            if (isInit)
             {
-                Type type = asm.GetType(typeName);
-                Assert.True(type.IsPublic);
-                var defaultProperty = type.GetProperty("Default");
-                var forcedVirtualProperty = type.GetProperty("ForcedVirtual");
-                var forcedNonVirtualProperty = type.GetProperty("ForcedNonVirtual");
+                Assert.Contains(defaultProperty.SetMethod.ReturnParameter.GetRequiredCustomModifiers(), x => x.FullName == "System.Runtime.CompilerServices.IsExternalInit");
+                Assert.Contains(forcedVirtualProperty.SetMethod.ReturnParameter.GetRequiredCustomModifiers(), x => x.FullName == "System.Runtime.CompilerServices.IsExternalInit");
+                Assert.Contains(forcedNonVirtualProperty.SetMethod.ReturnParameter.GetRequiredCustomModifiers(), x => x.FullName == "System.Runtime.CompilerServices.IsExternalInit");
+            }
 
-                Assert.NotNull(defaultProperty);
-                Assert.NotNull(forcedVirtualProperty);
-                Assert.NotNull(forcedNonVirtualProperty);
-
-                Assert.True(defaultProperty.GetMethod.IsPublic);
-                Assert.True(forcedVirtualProperty.GetMethod.IsPublic);
-                Assert.True(forcedNonVirtualProperty.GetMethod.IsPublic);
-
-                if (isInit)
-                {
-                    Assert.Contains(defaultProperty.SetMethod.ReturnParameter.GetRequiredCustomModifiers(), x => x.FullName == "System.Runtime.CompilerServices.IsExternalInit");
-                    Assert.Contains(forcedVirtualProperty.SetMethod.ReturnParameter.GetRequiredCustomModifiers(), x => x.FullName == "System.Runtime.CompilerServices.IsExternalInit");
-                    Assert.Contains(forcedNonVirtualProperty.SetMethod.ReturnParameter.GetRequiredCustomModifiers(), x => x.FullName == "System.Runtime.CompilerServices.IsExternalInit");
-                }
-
-                if (setterKind == SetterKind.None)
-                {
-                    Assert.Null(defaultProperty.SetMethod);
-                    Assert.Null(forcedVirtualProperty.SetMethod);
-                    Assert.NotNull(forcedNonVirtualProperty.SetMethod); // non-virtual can't have null setters.
-                }
-                else if (setterKind == SetterKind.Protected || setterKind == SetterKind.ProtectedInit)
-                {
-                    Assert.True(defaultProperty.SetMethod.IsFamily);
-                    Assert.True(forcedVirtualProperty.SetMethod.IsFamily);
-                    Assert.True(forcedNonVirtualProperty.SetMethod.IsFamily);
-                }
-                else if (setterKind == SetterKind.ProtectedInternal || setterKind == SetterKind.ProtectedInternalInit)
-                {
-                    Assert.True(defaultProperty.SetMethod.IsFamilyOrAssembly);
-                    Assert.True(forcedVirtualProperty.SetMethod.IsFamilyOrAssembly);
-                    Assert.True(forcedNonVirtualProperty.SetMethod.IsFamilyOrAssembly);
-                }
-                else if (setterKind == SetterKind.Public || setterKind == SetterKind.PublicInit)
-                {
-                    Assert.True(defaultProperty.SetMethod.IsPublic);
-                    Assert.True(forcedVirtualProperty.SetMethod.IsPublic);
-                    Assert.True(forcedNonVirtualProperty.SetMethod.IsPublic);
-                }
-                else
-                {
-                    Assert.False(true);
-                }
+            if (setterKind == SetterKind.None)
+            {
+                Assert.Null(defaultProperty.SetMethod);
+                Assert.Null(forcedVirtualProperty.SetMethod);
+                Assert.NotNull(forcedNonVirtualProperty.SetMethod); // non-virtual can't have null setters.
+            }
+            else if (setterKind == SetterKind.Protected || setterKind == SetterKind.ProtectedInit)
+            {
+                Assert.True(defaultProperty.SetMethod.IsFamily);
+                Assert.True(forcedVirtualProperty.SetMethod.IsFamily);
+                Assert.True(forcedNonVirtualProperty.SetMethod.IsFamily);
+            }
+            else if (setterKind == SetterKind.ProtectedInternal || setterKind == SetterKind.ProtectedInternalInit)
+            {
+                Assert.True(defaultProperty.SetMethod.IsFamilyOrAssembly);
+                Assert.True(forcedVirtualProperty.SetMethod.IsFamilyOrAssembly);
+                Assert.True(forcedNonVirtualProperty.SetMethod.IsFamilyOrAssembly);
+            }
+            else if (setterKind == SetterKind.Public || setterKind == SetterKind.PublicInit)
+            {
+                Assert.True(defaultProperty.SetMethod.IsPublic);
+                Assert.True(forcedVirtualProperty.SetMethod.IsPublic);
+                Assert.True(forcedNonVirtualProperty.SetMethod.IsPublic);
+            }
+            else
+            {
+                Assert.False(true);
             }
         }
     }

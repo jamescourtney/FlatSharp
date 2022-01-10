@@ -14,230 +14,224 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Compiler.SchemaModel
+using System.Linq;
+using FlatSharp.Compiler.Schema;
+using FlatSharp.Attributes;
+using FlatSharp.TypeModel;
+
+namespace FlatSharp.Compiler.SchemaModel;
+
+public class ValueStructSchemaModel : BaseSchemaModel
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
+    private readonly FlatBufferObject @struct;
 
-    using FlatSharp;
-    using FlatSharp.Compiler.Schema;
-    using System.Diagnostics.CodeAnalysis;
-    using FlatSharp.Attributes;
-    using FlatSharp.TypeModel;
+    private readonly List<ValueStructFieldModel> fields;
+    private readonly List<ValueStructVectorModel> structVectors;
 
-    public class ValueStructSchemaModel : BaseSchemaModel
+    private ValueStructSchemaModel(Schema.Schema schema, FlatBufferObject @struct) : base(schema, @struct.Name, new FlatSharpAttributes(@struct.Attributes))
     {
-        private readonly FlatBufferObject @struct;
+        FlatSharpInternal.Assert(@struct.IsStruct, "Expecting struct");
+        FlatSharpInternal.Assert(this.Attributes.ValueStruct == true, "Expecting value struct");
 
-        private readonly List<ValueStructFieldModel> fields;
-        private readonly List<ValueStructVectorModel> structVectors;
+        this.@struct = @struct;
+        this.fields = new();
+        this.structVectors = new();
 
-        private ValueStructSchemaModel(Schema schema, FlatBufferObject @struct) : base(schema, @struct.Name, new FlatSharpAttributes(@struct.Attributes))
+        foreach (var kvp in this.@struct.Fields.OrderBy(x => x.Value.Id))
         {
-            FlatSharpInternal.Assert(@struct.IsStruct, "Expecting struct");
-            FlatSharpInternal.Assert(this.Attributes.ValueStruct == true, "Expecting value struct");
+            Field field = kvp.Value;
+            IFlatSharpAttributes attrs = new FlatSharpAttributes(field.Attributes);
 
-            this.@struct = @struct;
-            this.fields = new();
-            this.structVectors = new();
-
-            foreach (var kvp in this.@struct.Fields.OrderBy(x => x.Value.Id))
+            string fieldType = field.Type.ResolveTypeOrElementTypeName(schema, this.Attributes);
+            if (field.Type.BaseType == BaseType.Array)
             {
-                Field field = kvp.Value;
-                IFlatSharpAttributes attrs = new FlatSharpAttributes(field.Attributes);
+                // struct vector
+                int size = field.Type.ElementType.GetScalarSize();
 
-                string fieldType = field.Type.ResolveTypeOrElementTypeName(schema, this.Attributes);
-                if (field.Type.BaseType == BaseType.Array)
+                List<string> vectorFields = new();
+                for (int i = 0; i < field.Type.FixedLength; ++i)
                 {
-                    // struct vector
-                    int size = field.Type.ElementType.GetScalarSize();
+                    string name = $"__flatsharp__{field.Name}_{i}";
 
-                    List<string> vectorFields = new();
-                    for (int i = 0; i < field.Type.FixedLength; ++i)
+                    MutableFlatSharpAttributes tempAttrs = new MutableFlatSharpAttributes(attrs)
                     {
-                        string name = $"__flatsharp__{field.Name}_{i}";
+                        UnsafeStructVector = null,
+                    };
 
-                        MutableFlatSharpAttributes tempAttrs = new MutableFlatSharpAttributes(attrs)
-                        {
-                            UnsafeStructVector = null,
-                        };
-
-                        vectorFields.Add(name);
-                        this.fields.Add(new(field.Offset + (i * size), name, "private", fieldType, $"{field.Name}({i})", this, tempAttrs));
-                    }
-
-                    this.structVectors.Add(new(fieldType, field.Name, vectorFields, this, attrs));
+                    vectorFields.Add(name);
+                    this.fields.Add(new(field.Offset + (i * size), name, "private", fieldType, $"{field.Name}({i})", this, tempAttrs));
                 }
-                else
-                {
-                    this.fields.Add(new(field.Offset, field.Name, "public", fieldType, field.Name, this, attrs));
-                }
+
+                this.structVectors.Add(new(fieldType, field.Name, vectorFields, this, attrs));
             }
-
-            this.AttributeValidator.MemoryMarshalValidator = _ => AttributeValidationResult.Valid;
+            else
+            {
+                this.fields.Add(new(field.Offset, field.Name, "public", fieldType, field.Name, this, attrs));
+            }
         }
 
-        public static bool TryCreate(Schema schema, FlatBufferObject @struct, [NotNullWhen(true)] out ValueStructSchemaModel? model)
+        this.AttributeValidator.MemoryMarshalValidator = _ => AttributeValidationResult.Valid;
+    }
+
+    public static bool TryCreate(Schema.Schema schema, FlatBufferObject @struct, [NotNullWhen(true)] out ValueStructSchemaModel? model)
+    {
+        model = null;
+        if (!@struct.IsStruct)
         {
-            model = null;
-            if (!@struct.IsStruct)
-            {
-                return false;
-            }
-
-            if (@struct.Attributes?.ContainsKey(MetadataKeys.ValueStruct) != true)
-            {
-                return false;
-            }
-
-            model = new ValueStructSchemaModel(schema, @struct);
-            return true;
+            return false;
         }
 
-        public override FlatBufferSchemaElementType ElementType => FlatBufferSchemaElementType.ValueStruct;
-
-        public override string DeclaringFile => this.@struct.DeclarationFile;
-
-        protected override void OnValidate()
+        if (@struct.Attributes?.ContainsKey(MetadataKeys.ValueStruct) != true)
         {
-            // TODO   
+            return false;
         }
 
-        protected override void OnWriteCode(CodeWriter writer, CompileContext context)
+        model = new ValueStructSchemaModel(schema, @struct);
+        return true;
+    }
+
+    public override FlatBufferSchemaElementType ElementType => FlatBufferSchemaElementType.ValueStruct;
+
+    public override string DeclaringFile => this.@struct.DeclarationFile;
+
+    protected override void OnValidate()
+    {
+        // TODO   
+    }
+
+    protected override void OnWriteCode(CodeWriter writer, CompileContext context)
+    {
+        string memMarshalBehavior = string.Empty;
+        if (this.Attributes.MemoryMarshalBehavior is not null)
         {
-            string memMarshalBehavior = string.Empty;
-            if (this.Attributes.MemoryMarshalBehavior is not null)
+            memMarshalBehavior = $"{nameof(FlatBufferStructAttribute.MemoryMarshalBehavior)} = {nameof(MemoryMarshalBehavior)}.{this.Attributes.MemoryMarshalBehavior}";
+        }
+
+        writer.AppendLine($"[FlatBufferStruct({memMarshalBehavior})]");
+        string size = string.Empty;
+        if (context.CompilePass > CodeWritingPass.Initialization)
+        {
+            // load size from type.
+            Type? previousType = context.PreviousAssembly?.GetType(this.FullName);
+            FlatSharpInternal.Assert(previousType is not null, "Previous type was null");
+
+            ITypeModel model = context.TypeModelContainer.CreateTypeModel(previousType);
+            FlatSharpInternal.Assert(model.PhysicalLayout.Length == 1, "Expected physical layout length of 1.");
+
+            size = $", Size = {model.PhysicalLayout[0].InlineSize}";
+        }
+
+        writer.AppendLine($"[System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Explicit{size})]");
+        writer.AppendLine($"public partial struct {this.Name}");
+        using (writer.WithBlock())
+        {
+            foreach (var field in this.fields)
             {
-                memMarshalBehavior = $"{nameof(FlatBufferStructAttribute.MemoryMarshalBehavior)} = {nameof(MemoryMarshalBehavior)}.{this.Attributes.MemoryMarshalBehavior}";
+                writer.AppendLine($"[System.Runtime.InteropServices.FieldOffset({field.Offset})]");
+                writer.AppendLine($"[FlatBufferMetadataAttribute(FlatBufferMetadataKind.Accessor, \"{field.Accessor}\")]");
+                writer.AppendLine($"{field.Visibility} {field.TypeName} {field.Name};");
+                writer.AppendLine();
             }
 
-            writer.AppendLine($"[FlatBufferStruct({memMarshalBehavior})]");
-            string size = string.Empty;
-            if (context.CompilePass > CodeWritingPass.Initialization)
+            foreach (var sv in this.structVectors)
             {
-                // load size from type.
-                Type? previousType = context.PreviousAssembly?.GetType(this.FullName);
-                FlatSharpInternal.Assert(previousType is not null, "Previous type was null");
-
-                ITypeModel model = context.TypeModelContainer.CreateTypeModel(previousType);
-                FlatSharpInternal.Assert(model.PhysicalLayout.Length == 1, "Expected physical layout length of 1.");
-
-                size = $", Size = {model.PhysicalLayout[0].InlineSize}";
-            }
-
-            writer.AppendLine($"[System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Explicit{size})]");
-            writer.AppendLine($"public partial struct {this.Name}");
-            using (writer.WithBlock())
-            {
-                foreach (var field in this.fields)
-                {
-                    writer.AppendLine($"[System.Runtime.InteropServices.FieldOffset({field.Offset})]");
-                    writer.AppendLine($"[FlatBufferMetadataAttribute(FlatBufferMetadataKind.Accessor, \"{field.Accessor}\")]");
-                    writer.AppendLine($"{field.Visibility} {field.TypeName} {field.Name};");
-                    writer.AppendLine();
-                }
-
-                foreach (var sv in this.structVectors)
-                {
-                    writer.AppendLine($"public int {sv.Name}_Length => {sv.Properties.Count};");
-                    writer.AppendLine();
-                    writer.AppendLine($"public static ref {sv.TypeName} {sv.Name}_Item(ref {this.Name} item, int index)");
-                    using (writer.WithBlock())
-                    {
-                        if (sv.Attributes.UnsafeStructVector == true)
-                        {
-                            writer.AppendLine($"if (unchecked((uint)index) >= {sv.Properties.Count})");
-                            using (writer.WithBlock())
-                            {
-                                writer.AppendLine("throw new IndexOutOfRangeException();");
-                            }
-
-                            writer.AppendLine($"return ref System.Runtime.CompilerServices.Unsafe.Add(ref item.{sv.Properties[0]}, index);");
-                        }
-                        else
-                        {
-                            writer.AppendLine("switch (index)");
-                            using (writer.WithBlock())
-                            {
-                                for (int i = 0; i < sv.Properties.Count; ++i)
-                                {
-                                    var item = sv.Properties[i];
-                                    writer.AppendLine($"case {i}: return ref item.{item};");
-                                }
-
-                                writer.AppendLine("default: throw new IndexOutOfRangeException();");
-                            }
-                        }
-                    }
-                }
-            }
-
-            // extensions class.
-            if (this.structVectors.Any())
-            {
-                writer.AppendLine($"public static class {this.Name}__FlatSharpExtensions");
+                writer.AppendLine($"public int {sv.Name}_Length => {sv.Properties.Count};");
+                writer.AppendLine();
+                writer.AppendLine($"public static ref {sv.TypeName} {sv.Name}_Item(ref {this.Name} item, int index)");
                 using (writer.WithBlock())
                 {
-                    foreach (var sv in this.structVectors)
+                    if (sv.Attributes.UnsafeStructVector == true)
                     {
-                        writer.AppendLine($"public static ref {sv.TypeName} {sv.Name}(this ref {this.Name} item, int index)");
+                        writer.AppendLine($"if (unchecked((uint)index) >= {sv.Properties.Count})");
                         using (writer.WithBlock())
                         {
-                            writer.AppendLine($"return ref {this.Name}.{sv.Name}_Item(ref item, index);");
+                            writer.AppendLine("throw new IndexOutOfRangeException();");
+                        }
+
+                        writer.AppendLine($"return ref System.Runtime.CompilerServices.Unsafe.Add(ref item.{sv.Properties[0]}, index);");
+                    }
+                    else
+                    {
+                        writer.AppendLine("switch (index)");
+                        using (writer.WithBlock())
+                        {
+                            for (int i = 0; i < sv.Properties.Count; ++i)
+                            {
+                                var item = sv.Properties[i];
+                                writer.AppendLine($"case {i}: return ref item.{item};");
+                            }
+
+                            writer.AppendLine("default: throw new IndexOutOfRangeException();");
                         }
                     }
                 }
             }
         }
 
-        private class ValueStructVectorModel
+        // extensions class.
+        if (this.structVectors.Any())
         {
-            public ValueStructVectorModel(string type, string name, List<string> properties, ValueStructSchemaModel parent, IFlatSharpAttributes attributes)
+            writer.AppendLine($"public static class {this.Name}__FlatSharpExtensions");
+            using (writer.WithBlock())
             {
-                this.Name = name;
-                this.TypeName = type;
-                this.Name = name;
-                this.Properties = properties;
-                this.Attributes = attributes;
-
-                new FlatSharpAttributeValidator(FlatBufferSchemaElementType.ValueStructField, $"{parent.Name}.{name}")
+                foreach (var sv in this.structVectors)
                 {
-                    UnsafeStructVectorValidator = _ => AttributeValidationResult.Valid,
-                }.Validate(attributes);
+                    writer.AppendLine($"public static ref {sv.TypeName} {sv.Name}(this ref {this.Name} item, int index)");
+                    using (writer.WithBlock())
+                    {
+                        writer.AppendLine($"return ref {this.Name}.{sv.Name}_Item(ref item, index);");
+                    }
+                }
             }
-
-            public IReadOnlyList<string> Properties { get; }
-
-            public string Name { get; }
-
-            public string TypeName { get; }
-
-            public IFlatSharpAttributes Attributes { get; }
         }
+    }
 
-        private class ValueStructFieldModel
+    private class ValueStructVectorModel
+    {
+        public ValueStructVectorModel(string type, string name, List<string> properties, ValueStructSchemaModel parent, IFlatSharpAttributes attributes)
         {
-            public ValueStructFieldModel(int offset, string name, string visibility, string type, string accessor, ValueStructSchemaModel parent, IFlatSharpAttributes attributes)
+            this.Name = name;
+            this.TypeName = type;
+            this.Name = name;
+            this.Properties = properties;
+            this.Attributes = attributes;
+
+            new FlatSharpAttributeValidator(FlatBufferSchemaElementType.ValueStructField, $"{parent.Name}.{name}")
             {
-                this.Offset = offset;
-                this.Name = name;
-                this.Visibility = visibility;
-                this.TypeName = type;
-                this.Accessor = accessor;
-
-                new FlatSharpAttributeValidator(FlatBufferSchemaElementType.ValueStructField, $"{parent.Name}.{name}").Validate(attributes);
-            }
-
-            public int Offset { get; }
-
-            public string Name { get; }
-
-            public string Visibility { get; }
-
-            public string TypeName { get;  }
-
-            public string Accessor { get; }
+                UnsafeStructVectorValidator = _ => AttributeValidationResult.Valid,
+            }.Validate(attributes);
         }
+
+        public IReadOnlyList<string> Properties { get; }
+
+        public string Name { get; }
+
+        public string TypeName { get; }
+
+        public IFlatSharpAttributes Attributes { get; }
+    }
+
+    private class ValueStructFieldModel
+    {
+        public ValueStructFieldModel(int offset, string name, string visibility, string type, string accessor, ValueStructSchemaModel parent, IFlatSharpAttributes attributes)
+        {
+            this.Offset = offset;
+            this.Name = name;
+            this.Visibility = visibility;
+            this.TypeName = type;
+            this.Accessor = accessor;
+
+            new FlatSharpAttributeValidator(FlatBufferSchemaElementType.ValueStructField, $"{parent.Name}.{name}").Validate(attributes);
+        }
+
+        public int Offset { get; }
+
+        public string Name { get; }
+
+        public string Visibility { get; }
+
+        public string TypeName { get; }
+
+        public string Accessor { get; }
     }
 }

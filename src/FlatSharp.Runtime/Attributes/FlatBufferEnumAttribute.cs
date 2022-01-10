@@ -14,32 +14,29 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Attributes
+namespace FlatSharp.Attributes;
+
+/// <summary>
+/// Marks an enum as being elible for FlatSharp serialization. 
+/// </summary>
+/// <remarks>
+/// Usage of enums comes with two main caveats: the enum may only be extended (ie, values cannot be recycled), and 
+/// the underlying type may not be changed.
+/// </remarks>
+[AttributeUsage(AttributeTargets.Enum, AllowMultiple = false, Inherited = true)]
+public class FlatBufferEnumAttribute : Attribute
 {
-    using System;
+    /// <summary>
+    /// Initializes a new instance of the FlatBufferEnumAttribute class.
+    /// </summary>
+    /// <param name="underlyingType">The declared underlying type of the enum. This must match the enum's actual underlying type.</param>
+    public FlatBufferEnumAttribute(Type underlyingType)
+    {
+        this.DeclaredUnderlyingType = underlyingType;
+    }
 
     /// <summary>
-    /// Marks an enum as being elible for FlatSharp serialization. 
+    /// The declared underlying type. This is a saftey check to prevent unintended binary breaks.
     /// </summary>
-    /// <remarks>
-    /// Usage of enums comes with two main caveats: the enum may only be extended (ie, values cannot be recycled), and 
-    /// the underlying type may not be changed.
-    /// </remarks>
-    [AttributeUsage(AttributeTargets.Enum, AllowMultiple = false, Inherited = true)]
-    public class FlatBufferEnumAttribute : Attribute
-    {
-        /// <summary>
-        /// Initializes a new instance of the FlatBufferEnumAttribute class.
-        /// </summary>
-        /// <param name="underlyingType">The declared underlying type of the enum. This must match the enum's actual underlying type.</param>
-        public FlatBufferEnumAttribute(Type underlyingType)
-        {
-            this.DeclaredUnderlyingType = underlyingType;
-        }
-
-        /// <summary>
-        /// The declared underlying type. This is a saftey check to prevent unintended binary breaks.
-        /// </summary>
-        public Type DeclaredUnderlyingType { get; }
-    }
+    public Type DeclaredUnderlyingType { get; }
 }

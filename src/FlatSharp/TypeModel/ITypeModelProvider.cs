@@ -14,22 +14,18 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.TypeModel
-{
-    using System;
-    using System.Diagnostics.CodeAnalysis;
+namespace FlatSharp.TypeModel;
 
+/// <summary>
+/// Provides a type model to FlatSharp.
+/// </summary>
+public interface ITypeModelProvider
+{
     /// <summary>
-    /// Provides a type model to FlatSharp.
+    /// Creates a type model for the given type.
     /// </summary>
-    public interface ITypeModelProvider
-    {
-        /// <summary>
-        /// Creates a type model for the given type.
-        /// </summary>
-        bool TryCreateTypeModel(
-            TypeModelContainer container, 
-            Type type,
-            [NotNullWhen(true)] out ITypeModel? typeModel);
-    }
+    bool TryCreateTypeModel(
+        TypeModelContainer container,
+        Type type,
+        [NotNullWhen(true)] out ITypeModel? typeModel);
 }

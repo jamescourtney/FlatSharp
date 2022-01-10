@@ -14,28 +14,23 @@
  * limitations under the License.
  */
 
-namespace FlatSharpTests
+namespace FlatSharpTests;
+
+[FlatBufferTable]
+public class ScalarVectorsTable
 {
-    using System;
-    using System.Collections.Generic;
-    using FlatSharp.Attributes;
+    [FlatBufferItem(0)]
+    public virtual IList<int>? IntVector { get; set; }
 
-    [FlatBufferTable]
-    public class ScalarVectorsTable
-    {
-        [FlatBufferItem(0)]
-        public virtual IList<int>? IntVector { get; set; }
+    [FlatBufferItem(1)]
+    public virtual IList<long>? LongVector { get; set; }
 
-        [FlatBufferItem(1)]
-        public virtual IList<long>? LongVector { get; set; }
+    [FlatBufferItem(2)]
+    public virtual IList<byte>? ByteVector1 { get; set; }
 
-        [FlatBufferItem(2)]
-        public virtual IList<byte>? ByteVector1 { get; set; }
+    [FlatBufferItem(3)]
+    public virtual Memory<byte>? ByteVector2 { get; set; }
 
-        [FlatBufferItem(3)]
-        public virtual Memory<byte>? ByteVector2 { get; set; }
-
-        [FlatBufferItem(4)]
-        public virtual Memory<byte> ByteVector3 { get; set; }
-    }
+    [FlatBufferItem(4)]
+    public virtual Memory<byte> ByteVector3 { get; set; }
 }

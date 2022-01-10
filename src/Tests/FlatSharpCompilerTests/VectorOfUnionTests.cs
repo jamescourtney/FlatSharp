@@ -14,43 +14,30 @@
  * limitations under the License.
  */
 
-namespace FlatSharpTests.Compiler
+namespace FlatSharpTests.Compiler;
+
+public class VectorOfUnionTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.Linq;
-    using System.Reflection;
-    using System.Runtime.InteropServices;
-    using FlatSharp;
-    using FlatSharp.Attributes;
-    using FlatSharp.Compiler;
-    using FlatSharp.TypeModel;
-    using Xunit;
-
-    
-    public class VectorOfUnionTests
+    [Fact]
+    public void VectorOfUnion_CompilerTests()
     {
-        [Fact]
-        public void VectorOfUnion_CompilerTests()
+        foreach (var vectorKind in new[] { "IList", "IReadOnlyList", "Array" })
         {
-            foreach (var vectorKind in new[] { "IList", "IReadOnlyList", "Array" })
+            foreach (FlatBufferDeserializationOption option in Enum.GetValues(typeof(FlatBufferDeserializationOption)))
             {
-                foreach (FlatBufferDeserializationOption option in Enum.GetValues(typeof(FlatBufferDeserializationOption)))
+                if (vectorKind == "Array" && option != FlatBufferDeserializationOption.Greedy && option != FlatBufferDeserializationOption.GreedyMutable)
                 {
-                    if (vectorKind == "Array" && option != FlatBufferDeserializationOption.Greedy && option != FlatBufferDeserializationOption.GreedyMutable)
-                    {
-                        continue;
-                    }
-
-                    this.RunTest(vectorKind, option);
+                    continue;
                 }
+
+                this.RunTest(vectorKind, option);
             }
         }
+    }
 
-        private void RunTest(string vectorKind, FlatBufferDeserializationOption option)
-        {
-            string schema = $@"
+    private void RunTest(string vectorKind, FlatBufferDeserializationOption option)
+    {
+        string schema = $@"
             {MetadataHelpers.AllAttributes}
             namespace VectorOfUnionTests;
             
@@ -69,9 +56,8 @@ namespace FlatSharpTests.Compiler
                 B:[string];
             }}";
 
-            Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(
-                schema, 
-                new());
-        }
+        Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(
+            schema,
+            new());
     }
 }

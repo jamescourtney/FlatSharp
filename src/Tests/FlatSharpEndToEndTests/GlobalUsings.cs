@@ -1,4 +1,5 @@
-﻿/*
+﻿
+/*
  * Copyright 2021 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,21 +15,20 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Compiler.SchemaModel;
-
-public enum FlatBufferSchemaElementType
-{
-    Unknown = 0,
-    Table = 1,
-    Struct = 2,
-    ValueStruct = 3,
-    Enum = 4,
-    Union = 5,
-    RpcService = 6,
-    TableField = 7,
-    StructField = 8,
-    ValueStructField = 9,
-    StructVector = 10,
-    ValueStructVector = 11,
-    RpcCall = 12,
-}
+global using System;
+global using System.Buffers;
+global using System.Buffers.Binary;
+global using System.Collections;
+global using System.Collections.Generic;
+global using System.ComponentModel;
+global using System.Diagnostics;
+global using System.Diagnostics.CodeAnalysis;
+global using System.Linq;
+global using System.Reflection;
+global using System.Runtime.CompilerServices;
+global using FlatSharp;
+global using FlatSharp.Attributes;
+global using FlatSharp.Compiler;
+global using FlatSharp.Compiler.Schema;
+global using FlatSharp.Compiler.SchemaModel;
+global using Xunit;

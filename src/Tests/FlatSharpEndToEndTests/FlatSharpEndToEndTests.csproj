@@ -36,8 +36,6 @@
     <Compile Include="Grpc\Grpc.fbs.generated.cs" />
     <Compile Remove="ValueStructs\ValueStructs.fbs.generated.cs" />
     <Compile Include="ValueStructs\ValueStructs.fbs.generated.cs" />
-    <Compile Remove="Preallocation\Preallocation.fbs.generated.cs" />
-    <Compile Include="Preallocation\Preallocation.fbs.generated.cs" />
   </ItemGroup>
 
   <Target Name="FBS" BeforeTargets="CoreCompile">
@@ -47,7 +45,6 @@
     <ItemGroup>
       <InputFile Include="Grpc\Grpc.fbs" />
       <InputFile Include="ValueStructs\ValueStructs.fbs" />
-      <InputFile Include="Preallocation\Preallocation.fbs" />
     </ItemGroup>
     <Exec Command="dotnet $(FlatSharpCompilerDll) --nullable-warnings true -i %(InputFile.Identity) -o %(InputFile.RelativeDir)" />
   </Target>

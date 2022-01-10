@@ -14,109 +14,99 @@
  * limitations under the License.
  */
 
-namespace FlatSharpTests
+namespace FlatSharpTests;
+
+using Union = FlatBufferUnion<string, FlatBufferVectorOfUnionTests.Struct, FlatBufferVectorOfUnionTests.Table>;
+
+/// <summary>
+/// Tests for the FlatBufferVector class that implements IList.
+/// </summary>
+
+public class FlatBufferVectorOfUnionTests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.IO;
-    using System.Linq;
-    using FlatSharp;
-    using FlatSharp.Attributes;
-    using Xunit;
+    private TableVector vector;
 
-    using Union = FlatSharp.FlatBufferUnion<string, FlatBufferVectorOfUnionTests.Struct, FlatBufferVectorOfUnionTests.Table>;
-
-    /// <summary>
-    /// Tests for the FlatBufferVector class that implements IList.
-    /// </summary>
-    
-    public class FlatBufferVectorOfUnionTests
+    public FlatBufferVectorOfUnionTests()
     {
-        private TableVector vector;
-
-        public FlatBufferVectorOfUnionTests()
+        var original = new TableVector
         {
-            var original = new TableVector
+            Vector = new[]
             {
-                Vector = new[]
-                {
                     new Union("foobar"),
                     new Union(new Struct { Value = 6 }),
                     new Union(new Table { Value = 5 }),
                 }
-            };
+        };
 
-            Span<byte> buffer = new byte[1024];
+        Span<byte> buffer = new byte[1024];
 
-            var serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions(FlatBufferDeserializationOption.Lazy));
-            int bytesWritten = serializer.Serialize(original, buffer);
-            this.vector = serializer.Parse<TableVector>(buffer.Slice(0, bytesWritten).ToArray());
-        }
+        var serializer = new FlatBufferSerializer(new FlatBufferSerializerOptions(FlatBufferDeserializationOption.Lazy));
+        int bytesWritten = serializer.Serialize(original, buffer);
+        this.vector = serializer.Parse<TableVector>(buffer.Slice(0, bytesWritten).ToArray());
+    }
 
-        [Fact]
-        public void FlatBufferVector_OutOfRange()
+    [Fact]
+    public void FlatBufferVector_OutOfRange()
+    {
+        Assert.Throws<IndexOutOfRangeException>(() => this.vector.Vector[-1]);
+        Assert.Throws<IndexOutOfRangeException>(() => this.vector.Vector[5]);
+    }
+
+    [Fact]
+    public void FlatBufferVector_NotMutable()
+    {
+        Assert.True(this.vector.Vector.IsReadOnly);
+        Assert.Throws<NotMutableException>(() => this.vector.Vector[0] = new Union("foobar"));
+        Assert.Throws<NotMutableException>(() => this.vector.Vector.Add(new Union("foobar")));
+        Assert.Throws<NotMutableException>(() => this.vector.Vector.Clear());
+        Assert.Throws<NotMutableException>(() => this.vector.Vector.Insert(0, new Union("foobar")));
+        Assert.Throws<NotMutableException>(() => this.vector.Vector.Remove(new Union("foobar")));
+        Assert.Throws<NotMutableException>(() => this.vector.Vector.RemoveAt(0));
+    }
+
+    [Fact]
+    public void FlatBufferVector_GetEnumerator()
+    {
+        int i = 0;
+        foreach (var item in this.vector.Vector)
         {
-            Assert.Throws<IndexOutOfRangeException>(() => this.vector.Vector[-1]);
-            Assert.Throws<IndexOutOfRangeException>(() => this.vector.Vector[5]);
+            Assert.Equal(i + 1, item.Discriminator);
+            i++;
         }
+    }
 
-        [Fact]
-        public void FlatBufferVector_NotMutable()
-        {
-            Assert.True(this.vector.Vector.IsReadOnly);
-            Assert.Throws<NotMutableException>(() => this.vector.Vector[0] = new Union("foobar"));
-            Assert.Throws<NotMutableException>(() => this.vector.Vector.Add(new Union("foobar")));
-            Assert.Throws<NotMutableException>(() => this.vector.Vector.Clear());
-            Assert.Throws<NotMutableException>(() => this.vector.Vector.Insert(0, new Union("foobar")));
-            Assert.Throws<NotMutableException>(() => this.vector.Vector.Remove(new Union("foobar")));
-            Assert.Throws<NotMutableException>(() => this.vector.Vector.RemoveAt(0));
-        }
+    [Fact]
+    public void FlatBufferVector_Contains()
+    {
+        Assert.True(this.vector.Vector.Contains(new Union("foobar")));
+        Assert.False(this.vector.Vector.Contains(new Union("blah")));
+    }
 
-        [Fact]
-        public void FlatBufferVector_GetEnumerator()
-        {
-            int i = 0; 
-            foreach (var item in this.vector.Vector)
-            {
-                Assert.Equal(i + 1, item.Discriminator);
-                i++;
-            }
-        }
+    [Fact]
+    public void FlatBufferVector_IndexOf()
+    {
+        Assert.Equal(0, this.vector.Vector.IndexOf(new Union("foobar")));
+        Assert.Equal(-1, this.vector.Vector.IndexOf(new Union("monster")));
+    }
 
-        [Fact]
-        public void FlatBufferVector_Contains()
-        {
-            Assert.True(this.vector.Vector.Contains(new Union("foobar")));
-            Assert.False(this.vector.Vector.Contains(new Union("blah")));
-        }
+    [FlatBufferTable]
+    public class TableVector
+    {
+        [FlatBufferItem(0)]
+        public virtual IList<Union>? Vector { get; set; }
+    }
 
-        [Fact]
-        public void FlatBufferVector_IndexOf()
-        {
-            Assert.Equal(0, this.vector.Vector.IndexOf(new Union("foobar")));
-            Assert.Equal(-1, this.vector.Vector.IndexOf(new Union("monster")));
-        }
+    [FlatBufferTable]
+    public class Table
+    {
+        [FlatBufferItem(0)]
+        public int Value { get; set; }
+    }
 
-        [FlatBufferTable]
-        public class TableVector
-        {
-            [FlatBufferItem(0)]
-            public virtual IList<Union>? Vector { get; set; }
-        }
-
-        [FlatBufferTable]
-        public class Table
-        {
-            [FlatBufferItem(0)]
-            public int Value { get; set; }
-        }
-
-        [FlatBufferStruct]
-        public class Struct
-        {
-            [FlatBufferItem(0)]
-            public int Value { get; set; }
-        }
+    [FlatBufferStruct]
+    public class Struct
+    {
+        [FlatBufferItem(0)]
+        public int Value { get; set; }
     }
 }

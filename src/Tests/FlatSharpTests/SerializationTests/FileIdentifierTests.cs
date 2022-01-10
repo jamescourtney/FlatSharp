@@ -14,85 +14,76 @@
  * limitations under the License.
  */
 
-namespace FlatSharpTests
+namespace FlatSharpTests;
+
+/// <summary>
+/// Tests default values on a table.
+/// </summary>
+
+public class FileIdentifierTests
 {
-    using FlatSharp;
-    using FlatSharp.Attributes;
-    using Xunit;
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.Runtime.InteropServices;
-
-    /// <summary>
-    /// Tests default values on a table.
-    /// </summary>
-    
-    public class FileIdentifierTests
+    private static byte[] EmptyTableWithId =
     {
-        private static byte[] EmptyTableWithId =
-        {
-            8, 0, 0, 0,           // uoffset to the start of the table.
-            97, 98, 99, 100,      // abcd file id
-            252, 255, 255, 255,   // soffset_t to the vtable
-            4, 0,                 // vtable size
-            4, 0,                 // table length
-        };
+        8, 0, 0, 0,           // uoffset to the start of the table.
+        97, 98, 99, 100,      // abcd file id
+        252, 255, 255, 255,   // soffset_t to the vtable
+        4, 0,                 // vtable size
+        4, 0,                 // table length
+    };
 
-        private static byte[] EmptyTableWithoutId =
-        {
-            4, 0, 0, 0,           // uoffset to the start of the table.
-            252, 255, 255, 255,   // soffset_t to the vtable
-            4, 0,                 // vtable size
-            4, 0,                 // table length
-        };
+    private static byte[] EmptyTableWithoutId =
+    {
+        4, 0, 0, 0,           // uoffset to the start of the table.
+        252, 255, 255, 255,   // soffset_t to the vtable
+        4, 0,                 // vtable size
+        4, 0,                 // table length
+    };
 
-        [Fact]
-        public void Write_FileIdentifier()
-        {
-            byte[] bytes = new byte[1024];
-            int bytesWritten = FlatBufferSerializer.Default.Serialize<FileIdentifierTable>(new FileIdentifierTable(), bytes);
+    [Fact]
+    public void Write_FileIdentifier()
+    {
+        byte[] bytes = new byte[1024];
+        int bytesWritten = FlatBufferSerializer.Default.Serialize<FileIdentifierTable>(new FileIdentifierTable(), bytes);
 
-            Assert.Equal(16, bytesWritten);
-            Assert.True(bytes.AsSpan().Slice(0, 16).SequenceEqual(EmptyTableWithId));
+        Assert.Equal(16, bytesWritten);
+        Assert.True(bytes.AsSpan().Slice(0, 16).SequenceEqual(EmptyTableWithId));
 
-            // Empty table; can parse as either.
-            var parsed = FlatBufferSerializer.Default.Parse<NoFileIdentifierTable>(bytes);
-            Assert.NotNull(parsed);
+        // Empty table; can parse as either.
+        var parsed = FlatBufferSerializer.Default.Parse<NoFileIdentifierTable>(bytes);
+        Assert.NotNull(parsed);
 
-            var parsed2 = FlatBufferSerializer.Default.Parse<FileIdentifierTable>(bytes);
-            Assert.NotNull(parsed2);
-        }
+        var parsed2 = FlatBufferSerializer.Default.Parse<FileIdentifierTable>(bytes);
+        Assert.NotNull(parsed2);
+    }
 
-        [Fact]
-        public void Write_NoFileIdentifier()
-        {
-            byte[] bytes = new byte[1024];
-            int bytesWritten = FlatBufferSerializer.Default.Serialize<NoFileIdentifierTable>(new NoFileIdentifierTable(), bytes);
+    [Fact]
+    public void Write_NoFileIdentifier()
+    {
+        byte[] bytes = new byte[1024];
+        int bytesWritten = FlatBufferSerializer.Default.Serialize<NoFileIdentifierTable>(new NoFileIdentifierTable(), bytes);
 
-            Assert.Equal(12, bytesWritten);
-            Assert.True(bytes.AsSpan().Slice(0, 12).SequenceEqual(EmptyTableWithoutId));
+        Assert.Equal(12, bytesWritten);
+        Assert.True(bytes.AsSpan().Slice(0, 12).SequenceEqual(EmptyTableWithoutId));
 
-            // Empty table; can parse as either.
-            var parsed = FlatBufferSerializer.Default.Parse<NoFileIdentifierTable>(bytes);
-            Assert.NotNull(parsed);
+        // Empty table; can parse as either.
+        var parsed = FlatBufferSerializer.Default.Parse<NoFileIdentifierTable>(bytes);
+        Assert.NotNull(parsed);
 
-            var parsed2 = FlatBufferSerializer.Default.Parse<FileIdentifierTable>(bytes);
-            Assert.NotNull(parsed2);
-        }
+        var parsed2 = FlatBufferSerializer.Default.Parse<FileIdentifierTable>(bytes);
+        Assert.NotNull(parsed2);
+    }
 
-        [FlatBufferTable(FileIdentifier = "abcd")]
-        public class FileIdentifierTable
-        {
-            [FlatBufferItem(0)]
-            public virtual int Int { get; set; }
-        }
+    [FlatBufferTable(FileIdentifier = "abcd")]
+    public class FileIdentifierTable
+    {
+        [FlatBufferItem(0)]
+        public virtual int Int { get; set; }
+    }
 
-        [FlatBufferTable]
-        public class NoFileIdentifierTable
-        {
-            [FlatBufferItem(0)]
-            public virtual int Int { get; set; }
-        }
+    [FlatBufferTable]
+    public class NoFileIdentifierTable
+    {
+        [FlatBufferItem(0)]
+        public virtual int Int { get; set; }
     }
 }

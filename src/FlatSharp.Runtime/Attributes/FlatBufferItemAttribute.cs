@@ -14,73 +14,69 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Attributes
+namespace FlatSharp.Attributes;
+
+/// <summary>
+/// Defines a member of a FlatBuffer struct or table.
+/// </summary>
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+public class FlatBufferItemAttribute : Attribute
 {
-    using System;
-    using System.ComponentModel;
+    /// <summary>
+    /// Initializes a new FlatBufferItemAttribute.
+    /// </summary>
+    /// <param name="index">The field index within the struct or table.</param>
+    public FlatBufferItemAttribute(ushort index)
+    {
+        this.Index = index;
+    }
 
     /// <summary>
-    /// Defines a member of a FlatBuffer struct or table.
+    /// The index within the struct or table.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-    public class FlatBufferItemAttribute : Attribute
-    {
-        /// <summary>
-        /// Initializes a new FlatBufferItemAttribute.
-        /// </summary>
-        /// <param name="index">The field index within the struct or table.</param>
-        public FlatBufferItemAttribute(ushort index)
-        {
-            this.Index = index;
-        }
+    public ushort Index { get; }
 
-        /// <summary>
-        /// The index within the struct or table.
-        /// </summary>
-        public ushort Index { get; }
+    /// <summary>
+    /// For tables, indicates if this field is deprecated. Deprecated fields are not written or read.
+    /// </summary>
+    public bool Deprecated { get; set; }
 
-        /// <summary>
-        /// For tables, indicates if this field is deprecated. Deprecated fields are not written or read.
-        /// </summary>
-        public bool Deprecated { get; set; }
+    /// <summary>
+    /// Indicates that the given vector property is to be serialized sorted by the key property of the vector type.
+    /// </summary>
+    public bool SortedVector { get; set; }
 
-        /// <summary>
-        /// Indicates that the given vector property is to be serialized sorted by the key property of the vector type.
-        /// </summary>
-        public bool SortedVector { get; set; }
+    /// <summary>
+    /// Indicates that this field is the key for the table. Keys are used when sorting inside a vector. Only valid on a table.
+    /// </summary>
+    public bool Key { get; set; }
 
-        /// <summary>
-        /// Indicates that this field is the key for the table. Keys are used when sorting inside a vector. Only valid on a table.
-        /// </summary>
-        public bool Key { get; set; }
+    /// <summary>
+    /// For table items, gets or sets the default value. The type of the object must match the
+    /// type of the property.
+    /// </summary>
+    public object? DefaultValue { get; set; }
 
-        /// <summary>
-        /// For table items, gets or sets the default value. The type of the object must match the
-        /// type of the property.
-        /// </summary>
-        public object? DefaultValue { get; set; }
+    /// <summary>
+    /// When set, indicates that this item should always be written to tables,
+    /// even if it matches the default value. An exception is raised if this
+    /// is set in a context where Force-Writing is not allowed.
+    /// </summary>
+    public bool ForceWrite { get; set; }
 
-        /// <summary>
-        /// When set, indicates that this item should always be written to tables,
-        /// even if it matches the default value. An exception is raised if this
-        /// is set in a context where Force-Writing is not allowed.
-        /// </summary>
-        public bool ForceWrite { get; set; }
+    /// <summary>
+    /// When set, indicates that this property is write-through to the underlying vector.
+    /// Only supported on scalars, structs, and enums in addition to vectors of those types.
+    /// </summary>
+    public bool WriteThrough { get; set; }
 
-        /// <summary>
-        /// When set, indicates that this property is write-through to the underlying vector.
-        /// Only supported on scalars, structs, and enums in addition to vectors of those types.
-        /// </summary>
-        public bool WriteThrough { get; set; }
+    /// <summary>
+    /// When set, indicates that the field is required. Only applies to non-scalar fields on tables.
+    /// </summary>
+    public bool Required { get; set; }
 
-        /// <summary>
-        /// When set, indicates that the field is required. Only applies to non-scalar fields on tables.
-        /// </summary>
-        public bool Required { get; set; }
-
-        /// <summary>
-        /// Indicates if strings within this vector or item should be shared.
-        /// </summary>
-        public bool SharedString { get; set; }
-    }
+    /// <summary>
+    /// Indicates if strings within this vector or item should be shared.
+    /// </summary>
+    public bool SharedString { get; set; }
 }

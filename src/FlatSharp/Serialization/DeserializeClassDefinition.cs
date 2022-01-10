@@ -14,153 +14,150 @@
  * limitations under the License.
  */
 
-namespace FlatSharp
+using FlatSharp.TypeModel;
+
+namespace FlatSharp;
+
+internal class DeserializeClassDefinition
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Reflection;
-    using FlatSharp.TypeModel;
+    protected const string InputBufferVariableName = "__buffer";
+    protected const string OffsetVariableName = "__offset";
+    protected const string VTableLocationVariableName = "__vtableOffset";
+    protected const string VTableMaxIndexVariableName = "__vtableMaxIndex";
 
-    internal class DeserializeClassDefinition
+    protected readonly ITypeModel typeModel;
+    protected readonly FlatBufferSerializerOptions options;
+
+    protected readonly List<string> propertyOverrides = new();
+    protected readonly List<string> initializeStatements = new();
+    protected readonly List<string> readMethods = new();
+
+    // Maps field name -> field initializer.
+    protected readonly Dictionary<string, string> instanceFieldDefinitions = new();
+    protected readonly Dictionary<string, string> staticFieldDefinitions = new();
+
+    protected readonly string vtableOffsetAccessor;
+    protected readonly string vtableMaxIndexAccessor;
+
+    protected readonly MethodInfo? onDeserializeMethod;
+
+    public DeserializeClassDefinition(
+        string className,
+        MethodInfo? onDeserializeMethod,
+        ITypeModel typeModel,
+        FlatBufferSerializerOptions options)
     {
-        protected const string InputBufferVariableName = "__buffer";
-        protected const string OffsetVariableName = "__offset";
-        protected const string VTableLocationVariableName = "__vtableOffset";
-        protected const string VTableMaxIndexVariableName = "__vtableMaxIndex";
+        this.ClassName = className;
+        this.typeModel = typeModel;
+        this.options = options;
+        this.onDeserializeMethod = onDeserializeMethod;
 
-        protected readonly ITypeModel typeModel;
-        protected readonly FlatBufferSerializerOptions options;
-
-        protected readonly List<string> propertyOverrides = new();
-        protected readonly List<string> initializeStatements = new();
-        protected readonly List<string> readMethods = new();
-
-        // Maps field name -> field initializer.
-        protected readonly Dictionary<string, string> instanceFieldDefinitions = new();
-        protected readonly Dictionary<string, string> staticFieldDefinitions = new();
-
-        protected readonly string vtableOffsetAccessor;
-        protected readonly string vtableMaxIndexAccessor;
-
-        protected readonly MethodInfo? onDeserializeMethod;
-
-        public DeserializeClassDefinition(
-            string className,
-            MethodInfo? onDeserializeMethod,
-            ITypeModel typeModel,
-            FlatBufferSerializerOptions options)
+        if (!this.options.GreedyDeserialize)
         {
-            this.ClassName = className;
-            this.typeModel = typeModel;
-            this.options = options;
-            this.onDeserializeMethod = onDeserializeMethod;
+            // maintain reference to buffer.
+            this.instanceFieldDefinitions[InputBufferVariableName] = $"private TInputBuffer {InputBufferVariableName};";
+            this.instanceFieldDefinitions[OffsetVariableName] = $"private int {OffsetVariableName};";
 
-            if (!this.options.GreedyDeserialize)
-            {
-                // maintain reference to buffer.
-                this.instanceFieldDefinitions[InputBufferVariableName] = $"private TInputBuffer {InputBufferVariableName};";
-                this.instanceFieldDefinitions[OffsetVariableName] = $"private int {OffsetVariableName};";
-
-                this.initializeStatements.Add($"this.{InputBufferVariableName} = buffer;");
-                this.initializeStatements.Add($"this.{OffsetVariableName} = offset;");
-            }
-
-            if (this.typeModel.SchemaType == FlatBufferSchemaType.Table)
-            {
-                this.vtableMaxIndexAccessor = "__vtableMaxIndex";
-                this.vtableOffsetAccessor = "__vtableLocation";
-
-                this.initializeStatements.Add(
-                    $"buffer.{nameof(InputBufferExtensions.InitializeVTable)}(offset, out var {this.vtableOffsetAccessor}, out var {this.vtableMaxIndexAccessor});");
-
-                if (!options.GreedyDeserialize)
-                {
-                    this.instanceFieldDefinitions[VTableLocationVariableName] = $"private int {VTableLocationVariableName};";
-                    this.instanceFieldDefinitions[VTableMaxIndexVariableName] = $"private int {VTableMaxIndexVariableName};";
-
-                    this.initializeStatements.Add($"this.{VTableLocationVariableName} = {this.vtableOffsetAccessor};");
-                    this.initializeStatements.Add($"this.{VTableMaxIndexVariableName} = {this.vtableMaxIndexAccessor};");
-
-                    this.vtableMaxIndexAccessor = $"this.{VTableMaxIndexVariableName}";
-                    this.vtableOffsetAccessor = $"this.{VTableLocationVariableName}";
-                }
-            }
-            else
-            {
-                this.vtableMaxIndexAccessor = "default";
-                this.vtableOffsetAccessor = "default";
-            }
+            this.initializeStatements.Add($"this.{InputBufferVariableName} = buffer;");
+            this.initializeStatements.Add($"this.{OffsetVariableName} = offset;");
         }
 
-        public static DeserializeClassDefinition Create(
-            string className,
-            MethodInfo? onDeserializeMethod,
-            ITypeModel typeModel,
-            FlatBufferSerializerOptions options)
+        if (this.typeModel.SchemaType == FlatBufferSchemaType.Table)
         {
-            return new DeserializeClassDefinition(className, onDeserializeMethod, typeModel, options);
-        }
+            this.vtableMaxIndexAccessor = "__vtableMaxIndex";
+            this.vtableOffsetAccessor = "__vtableLocation";
 
-        public bool HasEmbeddedBufferReference => !this.options.GreedyDeserialize;
+            this.initializeStatements.Add(
+                $"buffer.{nameof(InputBufferExtensions.InitializeVTable)}(offset, out var {this.vtableOffsetAccessor}, out var {this.vtableMaxIndexAccessor});");
 
-        public string ClassName { get; }
-
-        public void AddProperty(
-            ItemMemberModel itemModel,
-            ParserCodeGenContext context)
-        {
-            this.AddFieldDefinitions(itemModel);
-            this.AddPropertyDefinitions(itemModel, context.SerializeMethodNameMap[itemModel.ItemTypeModel.ClrType]);
-            this.AddCtorStatements(itemModel);
-            this.AddReadMethod(itemModel, context);
-
-            if (itemModel.IsWriteThrough)
+            if (!options.GreedyDeserialize)
             {
-                if (!this.options.SupportsWriteThrough)
-                {
-                    throw new InvalidFlatBufferDefinitionException(
-                        $"Property '{itemModel.PropertyInfo.Name}' of {this.typeModel.SchemaType} '{this.typeModel.GetCompilableTypeName()}' specifies the WriteThrough option. However, WriteThrough is only supported when using deserialization option 'Progressive' or 'Lazy'.");
-                }
+                this.instanceFieldDefinitions[VTableLocationVariableName] = $"private int {VTableLocationVariableName};";
+                this.instanceFieldDefinitions[VTableMaxIndexVariableName] = $"private int {VTableMaxIndexVariableName};";
 
-                this.AddWriteThroughMethod(itemModel, context);
+                this.initializeStatements.Add($"this.{VTableLocationVariableName} = {this.vtableOffsetAccessor};");
+                this.initializeStatements.Add($"this.{VTableMaxIndexVariableName} = {this.vtableMaxIndexAccessor};");
+
+                this.vtableMaxIndexAccessor = $"this.{VTableMaxIndexVariableName}";
+                this.vtableOffsetAccessor = $"this.{VTableLocationVariableName}";
             }
         }
-
-        protected virtual void AddFieldDefinitions(ItemMemberModel itemModel)
+        else
         {
-            if (!itemModel.IsVirtual || this.options.Lazy)
+            this.vtableMaxIndexAccessor = "default";
+            this.vtableOffsetAccessor = "default";
+        }
+    }
+
+    public static DeserializeClassDefinition Create(
+        string className,
+        MethodInfo? onDeserializeMethod,
+        ITypeModel typeModel,
+        FlatBufferSerializerOptions options)
+    {
+        return new DeserializeClassDefinition(className, onDeserializeMethod, typeModel, options);
+    }
+
+    public bool HasEmbeddedBufferReference => !this.options.GreedyDeserialize;
+
+    public string ClassName { get; }
+
+    public void AddProperty(
+        ItemMemberModel itemModel,
+        ParserCodeGenContext context)
+    {
+        this.AddFieldDefinitions(itemModel);
+        this.AddPropertyDefinitions(itemModel, context.SerializeMethodNameMap[itemModel.ItemTypeModel.ClrType]);
+        this.AddCtorStatements(itemModel);
+        this.AddReadMethod(itemModel, context);
+
+        if (itemModel.IsWriteThrough)
+        {
+            if (!this.options.SupportsWriteThrough)
             {
-                return;
+                throw new InvalidFlatBufferDefinitionException(
+                    $"Property '{itemModel.PropertyInfo.Name}' of {this.typeModel.SchemaType} '{this.typeModel.GetCompilableTypeName()}' specifies the WriteThrough option. However, WriteThrough is only supported when using deserialization option 'Progressive' or 'Lazy'.");
             }
 
-            if (!this.options.GreedyDeserialize)
-            {
-                this.instanceFieldDefinitions[GetHasValueFieldName(itemModel)] = $"private byte {GetHasValueFieldName(itemModel)};";
-            }
+            this.AddWriteThroughMethod(itemModel, context);
+        }
+    }
 
-            string typeName = itemModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType);
-            this.instanceFieldDefinitions[GetFieldName(itemModel)] = $"private {typeName} {GetFieldName(itemModel)};";
+    protected virtual void AddFieldDefinitions(ItemMemberModel itemModel)
+    {
+        if (!itemModel.IsVirtual || this.options.Lazy)
+        {
+            return;
         }
 
-        private void AddReadMethod(
-            ItemMemberModel itemModel,
-            ParserCodeGenContext ctx)
+        if (!this.options.GreedyDeserialize)
         {
-            ctx = ctx with
-            {
-                InputBufferTypeName = "TInputBuffer",
-                OffsetVariableName = "offset",
-                InputBufferVariableName = "buffer",
-            };
+            this.instanceFieldDefinitions[GetHasValueFieldName(itemModel)] = $"private byte {GetHasValueFieldName(itemModel)};";
+        }
 
-            string body = itemModel.CreateReadItemBody(
-                ctx,
-                "vtableOffset",
-                "maxVtableIndex");
+        string typeName = itemModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType);
+        this.instanceFieldDefinitions[GetFieldName(itemModel)] = $"private {typeName} {GetFieldName(itemModel)};";
+    }
 
-            string typeName = itemModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType);
-            this.readMethods.Add(
-                $@"
+    private void AddReadMethod(
+        ItemMemberModel itemModel,
+        ParserCodeGenContext ctx)
+    {
+        ctx = ctx with
+        {
+            InputBufferTypeName = "TInputBuffer",
+            OffsetVariableName = "offset",
+            InputBufferVariableName = "buffer",
+        };
+
+        string body = itemModel.CreateReadItemBody(
+            ctx,
+            "vtableOffset",
+            "maxVtableIndex");
+
+        string typeName = itemModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType);
+        this.readMethods.Add(
+            $@"
                 {GetAggressiveInliningAttribute()}
                 private static {typeName} {GetReadIndexMethodName(itemModel)}(
                     TInputBuffer buffer, 
@@ -170,17 +167,17 @@ namespace FlatSharp
                 {{
                     {body}
                 }}");
-        }
+    }
 
-        private void AddWriteThroughMethod(ItemMemberModel itemModel, ParserCodeGenContext parserContext)
-        {
-            var context = parserContext.GetWriteThroughContext(
-                $"buffer.{nameof(IInputBuffer.GetByteMemory)}(0, buffer.{nameof(IInputBuffer.Length)}).Span",
-                "value",
-                "offset");
+    private void AddWriteThroughMethod(ItemMemberModel itemModel, ParserCodeGenContext parserContext)
+    {
+        var context = parserContext.GetWriteThroughContext(
+            $"buffer.{nameof(IInputBuffer.GetByteMemory)}(0, buffer.{nameof(IInputBuffer.Length)}).Span",
+            "value",
+            "offset");
 
-            this.readMethods.Add(
-                $@"
+        this.readMethods.Add(
+            $@"
                     {GetAggressiveInliningAttribute()}
                     private static void {GetWriteMethodName(itemModel)}(
                         TInputBuffer buffer,
@@ -191,37 +188,37 @@ namespace FlatSharp
                     {{
                         {itemModel.CreateWriteThroughBody(context, "vtableOffset", "vtableMaxIndex")}
                     }}");
+    }
+
+    private void AddPropertyDefinitions(ItemMemberModel itemModel, string writeValueMethodName)
+    {
+        if (!itemModel.IsVirtual)
+        {
+            return;
         }
 
-        private void AddPropertyDefinitions(ItemMemberModel itemModel, string writeValueMethodName)
+        string setter = string.Empty;
+        var accessModifiers = CSharpHelpers.GetPropertyAccessModifiers(itemModel.PropertyInfo, this.options.ConvertProtectedInternalToProtected);
+
+        if (itemModel.PropertyInfo.SetMethod is not null)
         {
-            if (!itemModel.IsVirtual)
+            string setterBody = this.GetSetterBody(itemModel);
+
+            string verb = "set";
+            if (itemModel.SetterKind == ItemMemberModel.SetMethodKind.Init)
             {
-                return;
+                verb = "init";
             }
 
-            string setter = string.Empty;
-            var accessModifiers = CSharpHelpers.GetPropertyAccessModifiers(itemModel.PropertyInfo, this.options.ConvertProtectedInternalToProtected);
-
-            if (itemModel.PropertyInfo.SetMethod is not null)
-            {
-                string setterBody = this.GetSetterBody(itemModel);
-
-                string verb = "set";
-                if (itemModel.SetterKind == ItemMemberModel.SetMethodKind.Init)
-                {
-                    verb = "init";
-                }
-
-                setter = $@"
+            setter = $@"
                     {accessModifiers.setModifier.ToCSharpString()} {verb} 
                     {{ 
                         {setterBody} 
                     }}";
-            }
+        }
 
-            string typeName = itemModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType);
-            this.propertyOverrides.Add($@"
+        string typeName = itemModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType);
+        this.propertyOverrides.Add($@"
                 {accessModifiers.propertyModifier.ToCSharpString()} override {typeName} {itemModel.PropertyInfo.Name}
                 {{ 
                     {accessModifiers.getModifer.ToCSharpString()} get
@@ -230,52 +227,52 @@ namespace FlatSharp
                     }}
                     {setter}
                 }}");
+    }
+
+    private void AddCtorStatements(ItemMemberModel itemModel)
+    {
+        var classification = itemModel.ItemTypeModel.ClassifyContextually(this.typeModel.SchemaType);
+
+        string assignment = $"base.{itemModel.PropertyInfo.Name}";
+        if (itemModel.IsVirtual)
+        {
+            assignment = $"this.{GetFieldName(itemModel)}";
         }
 
-        private void AddCtorStatements(ItemMemberModel itemModel)
+        if (this.options.GreedyDeserialize || !itemModel.IsVirtual)
         {
-            var classification = itemModel.ItemTypeModel.ClassifyContextually(this.typeModel.SchemaType);
-
-            string assignment = $"base.{itemModel.PropertyInfo.Name}";
-            if (itemModel.IsVirtual)
+            this.initializeStatements.Add($"{assignment} = {GetReadIndexMethodName(itemModel)}(buffer, offset, {this.vtableOffsetAccessor}, {this.vtableMaxIndexAccessor});");
+        }
+        else if (!this.options.Lazy)
+        {
+            if (classification.IsRequiredReference() || (classification.IsOptionalReference() && itemModel.IsRequired))
             {
-                assignment = $"this.{GetFieldName(itemModel)}";
-            }
-
-            if (this.options.GreedyDeserialize || !itemModel.IsVirtual)
-            {
-                this.initializeStatements.Add($"{assignment} = {GetReadIndexMethodName(itemModel)}(buffer, offset, {this.vtableOffsetAccessor}, {this.vtableMaxIndexAccessor});");
-            }
-            else if (!this.options.Lazy)
-            {
-                if (classification.IsRequiredReference() || (classification.IsOptionalReference() && itemModel.IsRequired))
-                {
-                    this.initializeStatements.Add($"{assignment} = null!;");
-                }
+                this.initializeStatements.Add($"{assignment} = null!;");
             }
         }
+    }
 
-        public override string ToString()
+    public override string ToString()
+    {
+        ConstructorInfo? ctor = this.typeModel.PreferredSubclassConstructor;
+        FlatSharpInternal.Assert(ctor is not null, $"Unable to find a usable subclass constructor for '{this.typeModel.GetCompilableTypeName()}'.");
+
+        string onDeserializedStatement = string.Empty;
+        if (this.onDeserializeMethod is not null)
         {
-            ConstructorInfo? ctor = this.typeModel.PreferredSubclassConstructor;
-            FlatSharpInternal.Assert(ctor is not null, $"Unable to find a usable subclass constructor for '{this.typeModel.GetCompilableTypeName()}'.");
+            onDeserializedStatement = $"base.{this.onDeserializeMethod.Name}(__CtorContext);";
+        }
 
-            string onDeserializedStatement = string.Empty;
-            if (this.onDeserializeMethod is not null)
-            {
-                onDeserializedStatement = $"base.{this.onDeserializeMethod.Name}(__CtorContext);";
-            }
+        string baseParams = string.Empty;
+        if (ctor.GetParameters().Length != 0)
+        {
+            baseParams = "__CtorContext";
+        }
 
-            string baseParams = string.Empty;
-            if (ctor.GetParameters().Length != 0)
-            {
-                baseParams = "__CtorContext";
-            }
+        Type interfaceType = typeof(IFlatBufferDeserializedObject);
 
-            Type interfaceType = typeof(IFlatBufferDeserializedObject);
-
-            return
-            $@"
+        return
+        $@"
                 private sealed class {this.ClassName}<TInputBuffer> 
                     : {typeModel.GetGlobalCompilableTypeName()}
                     , {interfaceType.GetGlobalCompilableTypeName()}
@@ -304,56 +301,56 @@ namespace FlatSharp
                     {string.Join("\r\n", this.readMethods)}
                 }}
 ";
-        }
+    }
 
-        protected virtual string GetSetterBody(ItemMemberModel itemModel)
+    protected virtual string GetSetterBody(ItemMemberModel itemModel)
+    {
+        List<string> setterLines = new List<string>();
+
+        bool writeThrough = this.options.SupportsWriteThrough && itemModel.IsWriteThrough;
+
+        if (this.options.GenerateMutableObjects || writeThrough)
         {
-            List<string> setterLines = new List<string>();
-
-            bool writeThrough = this.options.SupportsWriteThrough && itemModel.IsWriteThrough;
-
-            if (this.options.GenerateMutableObjects || writeThrough)
+            if (!options.Lazy)
             {
-                if (!options.Lazy)
-                {
-                    // If we aren't lazy, we need a backing field.
-                    setterLines.Add($"this.{GetFieldName(itemModel)} = value;");
+                // If we aren't lazy, we need a backing field.
+                setterLines.Add($"this.{GetFieldName(itemModel)} = value;");
 
-                    if (!options.GreedyDeserialize)
-                    {
-                        // If we aren't lazy and aren't greedy, we also need an IsPresent mask.
-                        setterLines.Add($"this.{GetHasValueFieldName(itemModel)} |= {GetHasValueFieldMask(itemModel)};");
-                    }
-                }
-
-                // Finally, if we are writethrough enabled, we need to do that too.
-                if (writeThrough)
+                if (!options.GreedyDeserialize)
                 {
-                    setterLines.Add($"{GetWriteMethodName(itemModel)}({this.GetBufferReference()}, {OffsetVariableName}, value, {this.vtableOffsetAccessor}, {this.vtableMaxIndexAccessor});");
+                    // If we aren't lazy and aren't greedy, we also need an IsPresent mask.
+                    setterLines.Add($"this.{GetHasValueFieldName(itemModel)} |= {GetHasValueFieldMask(itemModel)};");
                 }
             }
-            else
-            {
-                setterLines.Add($"throw new NotMutableException();");
-            }
 
-            return string.Join("\r\n", setterLines);
+            // Finally, if we are writethrough enabled, we need to do that too.
+            if (writeThrough)
+            {
+                setterLines.Add($"{GetWriteMethodName(itemModel)}({this.GetBufferReference()}, {OffsetVariableName}, value, {this.vtableOffsetAccessor}, {this.vtableMaxIndexAccessor});");
+            }
+        }
+        else
+        {
+            setterLines.Add($"throw new NotMutableException();");
         }
 
-        protected virtual string GetGetterBody(ItemMemberModel itemModel)
+        return string.Join("\r\n", setterLines);
+    }
+
+    protected virtual string GetGetterBody(ItemMemberModel itemModel)
+    {
+        string readUnderlyingInvocation = $"{GetReadIndexMethodName(itemModel)}(this.{InputBufferVariableName}, this.{OffsetVariableName}, {this.vtableOffsetAccessor}, {this.vtableMaxIndexAccessor})";
+        if (this.options.GreedyDeserialize)
         {
-            string readUnderlyingInvocation = $"{GetReadIndexMethodName(itemModel)}(this.{InputBufferVariableName}, this.{OffsetVariableName}, {this.vtableOffsetAccessor}, {this.vtableMaxIndexAccessor})";
-            if (this.options.GreedyDeserialize)
-            {
-                return $"return this.{GetFieldName(itemModel)};";
-            }
-            else if (this.options.Lazy)
-            {
-                return $"return {readUnderlyingInvocation};";
-            }
-            else
-            {
-                return $@"
+            return $"return this.{GetFieldName(itemModel)};";
+        }
+        else if (this.options.Lazy)
+        {
+            return $"return {readUnderlyingInvocation};";
+        }
+        else
+        {
+            return $@"
                     if ((this.{GetHasValueFieldName(itemModel)} & {GetHasValueFieldMask(itemModel)}) == 0)
                     {{
                         this.{GetFieldName(itemModel)} = {readUnderlyingInvocation};
@@ -361,55 +358,54 @@ namespace FlatSharp
                     }}
                     return this.{GetFieldName(itemModel)};
                 ";
-            }
         }
+    }
 
-        protected virtual string GetGetOrCreateMethodBody()
-        {
-            return $@"
+    protected virtual string GetGetOrCreateMethodBody()
+    {
+        return $@"
                 var item = new {this.ClassName}<TInputBuffer>(buffer, offset);
                 return item;
             ";
-        }
+    }
 
-        protected virtual string GetCtorMethodDefinition(string onDeserializedStatement, string baseCtorParams)
-        {
-            return $@"
+    protected virtual string GetCtorMethodDefinition(string onDeserializedStatement, string baseCtorParams)
+    {
+        return $@"
                 private {this.ClassName}(TInputBuffer buffer, int offset) : base({baseCtorParams}) 
                 {{ 
                     {string.Join("\r\n", this.initializeStatements)}
                     {onDeserializedStatement}
                 }}
             ";
-        }
+    }
 
-        protected static string GetFieldName(ItemMemberModel itemModel) => $"__index{itemModel.Index}Value";
+    protected static string GetFieldName(ItemMemberModel itemModel) => $"__index{itemModel.Index}Value";
 
-        protected static string GetHasValueFieldName(int index) => $"__mask{index}";
+    protected static string GetHasValueFieldName(int index) => $"__mask{index}";
 
-        protected static string GetHasValueFieldName(ItemMemberModel itemModel) => GetHasValueFieldName(itemModel.Index / 8);
+    protected static string GetHasValueFieldName(ItemMemberModel itemModel) => GetHasValueFieldName(itemModel.Index / 8);
 
-        protected static string GetHasValueFieldMask(ItemMemberModel itemModel) => $"(byte){1 << (itemModel.Index % 8)}";
+    protected static string GetHasValueFieldMask(ItemMemberModel itemModel) => $"(byte){1 << (itemModel.Index % 8)}";
 
-        protected static string GetWriteMethodName(ItemMemberModel itemModel) => $"WriteIndex{itemModel.Index}Value";
+    protected static string GetWriteMethodName(ItemMemberModel itemModel) => $"WriteIndex{itemModel.Index}Value";
 
-        protected static string GetReadIndexMethodName(ItemMemberModel itemModel) => $"ReadIndex{itemModel.Index}Value";
+    protected static string GetReadIndexMethodName(ItemMemberModel itemModel) => $"ReadIndex{itemModel.Index}Value";
 
-        private static string GetAggressiveInliningAttribute()
+    private static string GetAggressiveInliningAttribute()
+    {
+        string inlining = "System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining";
+        string attribute = $"[{typeof(MethodImplAttribute).FullName}({inlining})]";
+        return attribute;
+    }
+
+    protected string GetBufferReference()
+    {
+        if (this.HasEmbeddedBufferReference)
         {
-            string inlining = "System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining";
-            string attribute = $"[{typeof(MethodImplAttribute).FullName}({inlining})]";
-            return attribute;
+            return $"this.{InputBufferVariableName}";
         }
 
-        protected string GetBufferReference()
-        {
-            if (this.HasEmbeddedBufferReference)
-            {
-                return $"this.{InputBufferVariableName}";
-            }
-
-            return "null";
-        }
+        return "null";
     }
 }

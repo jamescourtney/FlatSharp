@@ -14,59 +14,55 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Compiler.Schema
+using FlatSharp.Attributes;
+using FlatSharp.Compiler.SchemaModel;
+
+namespace FlatSharp.Compiler.Schema;
+
+/*
+table Enum {
+    name:string (required, key);
+    values:[EnumVal] (required);  // In order of their values.
+    is_union:bool = false;
+    underlying_type:Type (required);
+    attributes:[KeyValue];
+    documentation:[string];
+    /// File that this Enum is declared in.
+    declaration_file: string;
+}
+*/
+
+[FlatBufferTable]
+public class FlatBufferEnum
 {
-    using FlatSharp.Attributes;
-    using FlatSharp.Compiler.SchemaModel;
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
+    [FlatBufferItem(0, Required = true, Key = true)]
+    public virtual string Name { get; set; } = string.Empty;
 
-    /*
-    table Enum {
-        name:string (required, key);
-        values:[EnumVal] (required);  // In order of their values.
-        is_union:bool = false;
-        underlying_type:Type (required);
-        attributes:[KeyValue];
-        documentation:[string];
-        /// File that this Enum is declared in.
-        declaration_file: string;
-    }
-    */
+    [FlatBufferItem(1, Required = true)]
+    public virtual IIndexedVector<long, EnumVal> Values { get; set; } = new IndexedVector<long, EnumVal>();
 
-    [FlatBufferTable]
-    public class FlatBufferEnum
+    [FlatBufferItem(2)]
+    public virtual bool IsUnion { get; set; }
+
+    [FlatBufferItem(3, Required = true)]
+    public virtual FlatBufferType UnderlyingType { get; set; } = new FlatBufferType();
+
+    [FlatBufferItem(4)]
+    public virtual IIndexedVector<string, KeyValue>? Attributes { get; set; }
+
+    [FlatBufferItem(5)]
+    public virtual IList<string>? Documentation { get; set; }
+
+    [FlatBufferItem(6, Required = true)]
+    public virtual string DeclarationFile { get; set; } = string.Empty;
+
+    public BaseSchemaModel ToSchemaModel(Schema schema)
     {
-        [FlatBufferItem(0, Required = true, Key = true)]
-        public virtual string Name { get; set; } = string.Empty;
-
-        [FlatBufferItem(1, Required = true)]
-        public virtual IIndexedVector<long, EnumVal> Values { get; set; } = new IndexedVector<long, EnumVal>();
-
-        [FlatBufferItem(2)]
-        public virtual bool IsUnion { get; set; }
-
-        [FlatBufferItem(3, Required = true)]
-        public virtual FlatBufferType UnderlyingType { get; set; } = new FlatBufferType();
-
-        [FlatBufferItem(4)]
-        public virtual IIndexedVector<string, KeyValue>? Attributes { get; set; }
-
-        [FlatBufferItem(5)]
-        public virtual IList<string>? Documentation { get; set; }
-
-        [FlatBufferItem(6, Required = true)]
-        public virtual string DeclarationFile { get; set; } = string.Empty;
-
-        public BaseSchemaModel ToSchemaModel(Schema schema)
+        if (EnumSchemaModel.TryCreate(schema, this, out var enumModel))
         {
-            if (EnumSchemaModel.TryCreate(schema, this, out var enumModel))
-            {
-                return enumModel;
-            }
-
-            throw new NotImplementedException();
+            return enumModel;
         }
+
+        throw new NotImplementedException();
     }
 }

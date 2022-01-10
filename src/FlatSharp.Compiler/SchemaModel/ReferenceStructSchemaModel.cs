@@ -14,76 +14,67 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Compiler.SchemaModel
+using FlatSharp.Compiler.Schema;
+
+namespace FlatSharp.Compiler.SchemaModel;
+
+public class ReferenceStructSchemaModel : BaseReferenceTypeSchemaModel
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-
-    using FlatSharp;
-    using FlatSharp.Compiler.Schema;
-    using System.Diagnostics.CodeAnalysis;
-    using FlatSharp.Attributes;
-    using FlatSharp.TypeModel;
-
-    public class ReferenceStructSchemaModel : BaseReferenceTypeSchemaModel
+    private ReferenceStructSchemaModel(Schema.Schema schema, FlatBufferObject @struct) : base(schema, @struct)
     {
-        private ReferenceStructSchemaModel(Schema schema, FlatBufferObject @struct) : base(schema, @struct)
+        FlatSharpInternal.Assert(@struct.IsStruct, "Expecting struct");
+
+        this.AttributeValidator.DefaultConstructorValidator = kind => kind switch
         {
-            FlatSharpInternal.Assert(@struct.IsStruct, "Expecting struct");
+            DefaultConstructorKind.Public or DefaultConstructorKind.PublicObsolete => AttributeValidationResult.Valid,
+            _ => AttributeValidationResult.ValueInvalid,
+        };
 
-            this.AttributeValidator.DefaultConstructorValidator = kind => kind switch
-            {
-                DefaultConstructorKind.Public or DefaultConstructorKind.PublicObsolete => AttributeValidationResult.Valid,
-                _ => AttributeValidationResult.ValueInvalid,
-            };
+        this.AttributeValidator.WriteThroughValidator = _ => AttributeValidationResult.Valid;
 
-            this.AttributeValidator.WriteThroughValidator = _ => AttributeValidationResult.Valid;
+    }
 
+    public static bool TryCreate(Schema.Schema schema, FlatBufferObject @struct, [NotNullWhen(true)] out ReferenceStructSchemaModel? model)
+    {
+        model = null;
+        if (!@struct.IsStruct)
+        {
+            return false;
         }
 
-        public static bool TryCreate(Schema schema, FlatBufferObject @struct, [NotNullWhen(true)] out ReferenceStructSchemaModel? model)
+        if (@struct.Attributes?.ContainsKey(MetadataKeys.ValueStruct) == true)
         {
-            model = null;
-            if (!@struct.IsStruct)
-            {
-                return false;
-            }
-
-            if (@struct.Attributes?.ContainsKey(MetadataKeys.ValueStruct) == true)
-            {
-                return false;
-            }
-
-            model = new ReferenceStructSchemaModel(schema, @struct);
-            return true;
+            return false;
         }
 
-        public override bool OptionalFieldsSupported => false;
+        model = new ReferenceStructSchemaModel(schema, @struct);
+        return true;
+    }
 
-        public override FlatBufferSchemaElementType ElementType => FlatBufferSchemaElementType.Struct;
+    public override bool OptionalFieldsSupported => false;
 
-        protected override void OnValidate()
+    public override FlatBufferSchemaElementType ElementType => FlatBufferSchemaElementType.Struct;
+
+    protected override void OnValidate()
+    {
+        // TODO   
+    }
+
+    protected override void EmitDefaultConstructorFieldInitialization(PropertyFieldModel model, CodeWriter writer, CompileContext context)
+    {
+        if (model.Field.Type.BaseType == BaseType.Obj)
         {
-            // TODO   
+            // another struct. We should new() this up.
+            writer.AppendLine($"this.{model.Field.Name} = new {model.GetTypeName()}();");
         }
+    }
 
-        protected override void EmitDefaultConstructorFieldInitialization(PropertyFieldModel model, CodeWriter writer, CompileContext context)
-        {
-            if (model.Field.Type.BaseType == BaseType.Obj)
-            {
-                // another struct. We should new() this up.
-                writer.AppendLine($"this.{model.Field.Name} = new {model.GetTypeName()}();");
-            }
-        }
+    protected override void EmitClassDefinition(CodeWriter writer, CompileContext context)
+    {
+        string attribute = $"[FlatBufferStruct]";
 
-        protected override void EmitClassDefinition(CodeWriter writer, CompileContext context)
-        {
-            string attribute = $"[FlatBufferStruct]";
-
-            writer.AppendLine(attribute);
-            writer.AppendLine("[System.Runtime.CompilerServices.CompilerGenerated]");
-            writer.AppendLine($"public partial class {this.Name}");
-        }
+        writer.AppendLine(attribute);
+        writer.AppendLine("[System.Runtime.CompilerServices.CompilerGenerated]");
+        writer.AppendLine($"public partial class {this.Name}");
     }
 }

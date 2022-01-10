@@ -14,26 +14,25 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Compiler
+namespace FlatSharp.Compiler;
+
+/// <summary>
+/// Defines styles for generating default constructors.
+/// </summary>
+public enum DefaultConstructorKind
 {
     /// <summary>
-    /// Defines styles for generating default constructors.
+    /// A public default constructor.
     /// </summary>
-    public enum DefaultConstructorKind
-    {
-        /// <summary>
-        /// A public default constructor.
-        /// </summary>
-        Public = 0,
+    Public = 0,
 
-        /// <summary>
-        /// A public default constructor with the 'Obsolete' attribute applied.
-        /// </summary>
-        PublicObsolete = 1,
+    /// <summary>
+    /// A public default constructor with the 'Obsolete' attribute applied.
+    /// </summary>
+    PublicObsolete = 1,
 
-        /// <summary>
-        /// No default constructor.
-        /// </summary>
-        None = 2,
-    }
+    /// <summary>
+    /// No default constructor.
+    /// </summary>
+    None = 2,
 }

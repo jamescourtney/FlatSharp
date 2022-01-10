@@ -14,25 +14,16 @@
  * limitations under the License.
  */
 
-namespace FlatSharpTests.Compiler
-{
-    using System;
-    using System.Linq;
-    using System.Reflection;
-    using System.Threading.Channels;
-    using System.Threading.Tasks;
-    using System.Threading.Tasks.Sources;
-    using FlatSharp;
-    using FlatSharp.Compiler;
-    using Xunit;
+using System.Threading.Channels;
 
-    
-    public class GrpcTests
+namespace FlatSharpTests.Compiler;
+
+public class GrpcTests
+{
+    [Fact]
+    public void RouteGuideTest()
     {
-        [Fact]
-        public void RouteGuideTest()
-        {
-            string schema = $@"
+        string schema = $@"
 {MetadataHelpers.AllAttributes}
 namespace routeguide;
 
@@ -78,48 +69,48 @@ namespace routeguide;
         distance:int;
         elapsed_time:int;
     }}";
-            (Assembly compiled, string source) = FlatSharpCompiler.CompileAndLoadAssemblyWithCode(
-                schema,
-                new(),
-                additionalReferences: new[] 
-                { 
-                    typeof(Grpc.Core.AsyncClientStreamingCall<,>).Assembly, 
-                    typeof(ChannelReader<>).Assembly, 
-                });
+        (Assembly compiled, string source) = FlatSharpCompiler.CompileAndLoadAssemblyWithCode(
+            schema,
+            new(),
+            additionalReferences: new[]
+            {
+                    typeof(Grpc.Core.AsyncClientStreamingCall<,>).Assembly,
+                    typeof(ChannelReader<>).Assembly,
+            });
 
-            var rpcType = compiled.GetType("routeguide.RouteGuide");
-            Assert.NotNull(rpcType);
+        var rpcType = compiled.GetType("routeguide.RouteGuide");
+        Assert.NotNull(rpcType);
 
-            var serverBaseClass = rpcType.GetNestedType("RouteGuideServerBase");
-            Assert.True(serverBaseClass.IsAbstract);
-            var attribute = serverBaseClass.GetCustomAttribute<Grpc.Core.BindServiceMethodAttribute>();
-            Assert.NotNull(attribute);
+        var serverBaseClass = rpcType.GetNestedType("RouteGuideServerBase");
+        Assert.True(serverBaseClass.IsAbstract);
+        var attribute = serverBaseClass.GetCustomAttribute<Grpc.Core.BindServiceMethodAttribute>();
+        Assert.NotNull(attribute);
 
-            var bindServiceMethod = rpcType.GetMethod("BindService", new [] {serverBaseClass});
-            Assert.NotNull(bindServiceMethod);
-            Assert.Equal(bindServiceMethod.Name, attribute.BindMethodName);
-            Assert.Equal(rpcType, attribute.BindType);
-            Assert.True(bindServiceMethod.IsPublic);
-            Assert.True(bindServiceMethod.IsStatic);
+        var bindServiceMethod = rpcType.GetMethod("BindService", new[] { serverBaseClass });
+        Assert.NotNull(bindServiceMethod);
+        Assert.Equal(bindServiceMethod.Name, attribute.BindMethodName);
+        Assert.Equal(rpcType, attribute.BindType);
+        Assert.True(bindServiceMethod.IsPublic);
+        Assert.True(bindServiceMethod.IsStatic);
 
-            var bindServiceOverload =
-                rpcType.GetMethod("BindService", new[] {typeof(Grpc.Core.ServiceBinderBase), serverBaseClass});
-            Assert.NotNull(bindServiceOverload);
-            Assert.Equal(bindServiceOverload.Name, attribute.BindMethodName);
-            Assert.Equal(rpcType, attribute.BindType);
-            Assert.True(bindServiceOverload.IsPublic);
-            Assert.True(bindServiceOverload.IsStatic);
-            Assert.Equal(typeof(void), bindServiceOverload.ReturnType);
+        var bindServiceOverload =
+            rpcType.GetMethod("BindService", new[] { typeof(Grpc.Core.ServiceBinderBase), serverBaseClass });
+        Assert.NotNull(bindServiceOverload);
+        Assert.Equal(bindServiceOverload.Name, attribute.BindMethodName);
+        Assert.Equal(rpcType, attribute.BindType);
+        Assert.True(bindServiceOverload.IsPublic);
+        Assert.True(bindServiceOverload.IsStatic);
+        Assert.Equal(typeof(void), bindServiceOverload.ReturnType);
 
-            var clientClass = rpcType.GetNestedType("RouteGuideClient");
-            Assert.False(clientClass.IsAbstract);
-            Assert.Equal(typeof(Grpc.Core.ClientBase<>), clientClass.BaseType.GetGenericTypeDefinition());
-        }
+        var clientClass = rpcType.GetNestedType("RouteGuideClient");
+        Assert.False(clientClass.IsAbstract);
+        Assert.Equal(typeof(Grpc.Core.ClientBase<>), clientClass.BaseType.GetGenericTypeDefinition());
+    }
 
-        [Fact]
-        public void NoPrecompiledSerializer()
-        {
-            string schema = $@"
+    [Fact]
+    public void NoPrecompiledSerializer()
+    {
+        string schema = $@"
                 {MetadataHelpers.AllAttributes}
                 namespace NoPrecompiledSerializer;
 
@@ -134,19 +125,19 @@ namespace routeguide;
                     longitude:int32;
                 }}";
 
-            var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(
-                schema,
-                new(),
-                additionalReferences: new[]
-                {
+        var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(
+            schema,
+            new(),
+            additionalReferences: new[]
+            {
                     typeof(Grpc.Core.AsyncClientStreamingCall<,>).Assembly,
                     typeof(ChannelReader<>).Assembly,
-                }));
+            }));
 
-            Assert.Contains(
-                "RPC call 'NoPrecompiledSerializer.RouteGuide.GetFeature' uses table 'NoPrecompiledSerializer.Point', which does not specify the 'fs_serializer' attribute.",
-                ex.Message);
-        }
+        Assert.Contains(
+            "RPC call 'NoPrecompiledSerializer.RouteGuide.GetFeature' uses table 'NoPrecompiledSerializer.Point', which does not specify the 'fs_serializer' attribute.",
+            ex.Message);
+    }
 
 #if NET5_0_OR_GREATER
         [Fact]
@@ -190,5 +181,4 @@ namespace routeguide;
             Assert.Equal(interfaceType, rpcType.GetInterfaces()[0]);
         }
 #endif
-    }
 }

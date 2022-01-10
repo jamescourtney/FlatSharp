@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Compiler
+namespace FlatSharp.Compiler;
+
+/// <summary>
+/// Enumerates supported vector types.
+/// </summary>
+public enum VectorType
 {
-    /// <summary>
-    /// Enumerates supported vector types.
-    /// </summary>
-    public enum VectorType
-    {
-        IList,
-        IReadOnlyList,
-        Array,
-        Memory,
-        ReadOnlyMemory,
-        IIndexedVector,
-    }
+    IList,
+    IReadOnlyList,
+    Array,
+    Memory,
+    ReadOnlyMemory,
+    IIndexedVector,
 }

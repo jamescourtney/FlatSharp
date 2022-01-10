@@ -14,44 +14,43 @@
  * limitations under the License.
  */
 
-namespace FlatSharp
+namespace FlatSharp;
+
+/// <summary>
+/// Defines the result of code generating a method.
+/// </summary>
+public record CodeGeneratedMethod
 {
-    /// <summary>
-    /// Defines the result of code generating a method.
-    /// </summary>
-    public record CodeGeneratedMethod
+    public CodeGeneratedMethod(string methodBody)
     {
-        public CodeGeneratedMethod(string methodBody)
+        this.MethodBody = methodBody;
+    }
+
+    /// <summary>
+    /// The body of the method.
+    /// </summary>
+    public string MethodBody { get; init; }
+
+    /// <summary>
+    /// A class definition.
+    /// </summary>
+    public string? ClassDefinition { get; init; }
+
+    /// <summary>
+    /// Indicates if the method should be marked with aggressive inlining.
+    /// </summary>
+    public bool IsMethodInline { get; init; }
+
+    public string GetMethodImplAttribute()
+    {
+        if (this.IsMethodInline)
         {
-            this.MethodBody = methodBody;
+            string inlining = "System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining";
+            return $"[{typeof(MethodImplAttribute).GetGlobalCompilableTypeName()}({inlining})]";
         }
-
-        /// <summary>
-        /// The body of the method.
-        /// </summary>
-        public string MethodBody { get; init; }
-
-        /// <summary>
-        /// A class definition.
-        /// </summary>
-        public string? ClassDefinition { get; init; }
-
-        /// <summary>
-        /// Indicates if the method should be marked with aggressive inlining.
-        /// </summary>
-        public bool IsMethodInline { get; init; }
-
-        public string GetMethodImplAttribute()
+        else
         {
-            if (this.IsMethodInline)
-            {
-                string inlining = "System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining";
-                return $"[{typeof(System.Runtime.CompilerServices.MethodImplAttribute).FullName}({inlining})]";
-            }
-            else
-            {
-                return string.Empty;
-            }
+            return string.Empty;
         }
     }
 }

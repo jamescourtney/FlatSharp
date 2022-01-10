@@ -14,107 +14,100 @@
  * limitations under the License.
  */
 
- namespace FlatSharpTests
+namespace FlatSharpTests;
+
+/// <summary>
+/// Tests default values on a table.
+/// </summary>
+
+public class DeprecatedValueTests
 {
-    using FlatSharp;
-    using FlatSharp.Attributes;
-    using Xunit;
-    using System;
-    using System.Diagnostics;
-    
-    /// <summary>
-    /// Tests default values on a table.
-    /// </summary>
-    
-    public class DeprecatedValueTests
+    [Fact]
+    public void Ignore_DeprecatedValueOnRead()
     {
-        [Fact]
-        public void Ignore_DeprecatedValueOnRead()
+        // hand-craft a table here:
+        byte[] data =
         {
-            // hand-craft a table here:
-            byte[] data =
-            {
-                4, 0, 0, 0,               // uoffset to the start of the table.
-                236, 255, 255, 255,       // soffset_t to the vtable
-                123, 0, 0, 0,             // index 0 value
-                0, 0, 0, 0,               // padding to 8 byte alignment
-                255, 0, 0, 0, 0, 0, 0, 0, // index 1 value
+            4, 0, 0, 0,               // uoffset to the start of the table.
+            236, 255, 255, 255,       // soffset_t to the vtable
+            123, 0, 0, 0,             // index 0 value
+            0, 0, 0, 0,               // padding to 8 byte alignment
+            255, 0, 0, 0, 0, 0, 0, 0, // index 1 value
 
-                8, 0,                     // vtable size
-                20, 0,                    // table length
-                4, 0,                     // index 0 offset (deprecated)
-                12, 0,                    // index 1 offset
-            };
+            8, 0,                     // vtable size
+            20, 0,                    // table length
+            4, 0,                     // index 0 offset (deprecated)
+            12, 0,                    // index 1 offset
+        };
 
-            var parsed = FlatBufferSerializer.Default.Parse<DeprecatedTable>(data);
+        var parsed = FlatBufferSerializer.Default.Parse<DeprecatedTable>(data);
 
-            Assert.Equal(0, parsed.Value);
-            Assert.Equal(255L, parsed.Long);
+        Assert.Equal(0, parsed.Value);
+        Assert.Equal(255L, parsed.Long);
 
-            var nonDeprecatedParsed = FlatBufferSerializer.Default.Parse<NonDeprecatedTable>(data);
+        var nonDeprecatedParsed = FlatBufferSerializer.Default.Parse<NonDeprecatedTable>(data);
 
-            Assert.Equal(123, nonDeprecatedParsed.Value);
-            Assert.Equal(255L, nonDeprecatedParsed.Long);
+        Assert.Equal(123, nonDeprecatedParsed.Value);
+        Assert.Equal(255L, nonDeprecatedParsed.Long);
+    }
+
+    [Fact]
+    public void Ignore_DeprecatedValueOnWrite()
+    {
+        if (Debugger.IsAttached)
+        {
+            // This test has a wonderful way of crashing Visual Studio when the debugger is attached. It runs fine without the debugger attached.
+            return;
         }
 
-        [Fact]
-        public void Ignore_DeprecatedValueOnWrite()
+        var deprecatedTable = new DeprecatedTable
         {
-            if (Debugger.IsAttached)
-            {
-                // This test has a wonderful way of crashing Visual Studio when the debugger is attached. It runs fine without the debugger attached.
-                return;
-            }
+            Value = 123,
+            Long = 255,
+        };
 
-            var deprecatedTable = new DeprecatedTable
-            {
-                Value = 123,
-                Long = 255,
-            };
-
-            // hand-craft a table here: 
-            byte[] data =
-            {
-                4, 0, 0, 0,               // uoffset to the start of the table.
-                244, 255, 255, 255,       // soffset_t to the vtable
-                255, 0, 0, 0, 0, 0, 0, 0, // index 1 value
-
-                8, 0,                     // vtable size
-                12, 0,                    // table length
-                0, 0,                     // index 0 offset (deprecated)
-                4, 0,                     // index 1 offset
-            };
-
-            Span<byte> buffer = new byte[100];
-            int bytesWritten = FlatBufferSerializer.Default.Serialize(deprecatedTable, buffer);
-            byte[] actualBytes = buffer.Slice(0, bytesWritten).ToArray();
-
-            Assert.True(data.AsSpan().SequenceEqual(actualBytes));
-
-            var nonDeprecatedParsed = FlatBufferSerializer.Default.Parse<NonDeprecatedTable>(actualBytes);
-
-            Assert.Equal(0, nonDeprecatedParsed.Value);
-            Assert.Equal(255L, nonDeprecatedParsed.Long);
-        }
-
-        [FlatBufferTable]
-        public class DeprecatedTable
+        // hand-craft a table here: 
+        byte[] data =
         {
-            [FlatBufferItem(0, Deprecated = true)]
-            public virtual int Value { get; set; }
+            4, 0, 0, 0,               // uoffset to the start of the table.
+            244, 255, 255, 255,       // soffset_t to the vtable
+            255, 0, 0, 0, 0, 0, 0, 0, // index 1 value
 
-            [FlatBufferItem(1)]
-            public virtual long Long { get; set; }
-        }
+            8, 0,                     // vtable size
+            12, 0,                    // table length
+            0, 0,                     // index 0 offset (deprecated)
+            4, 0,                     // index 1 offset
+        };
 
-        [FlatBufferTable]
-        public class NonDeprecatedTable
-        {
-            [FlatBufferItem(0)]
-            public virtual int Value { get; set; }
+        Span<byte> buffer = new byte[100];
+        int bytesWritten = FlatBufferSerializer.Default.Serialize(deprecatedTable, buffer);
+        byte[] actualBytes = buffer.Slice(0, bytesWritten).ToArray();
 
-            [FlatBufferItem(1)]
-            public virtual long Long { get; set; }
-        }
+        Assert.True(data.AsSpan().SequenceEqual(actualBytes));
+
+        var nonDeprecatedParsed = FlatBufferSerializer.Default.Parse<NonDeprecatedTable>(actualBytes);
+
+        Assert.Equal(0, nonDeprecatedParsed.Value);
+        Assert.Equal(255L, nonDeprecatedParsed.Long);
+    }
+
+    [FlatBufferTable]
+    public class DeprecatedTable
+    {
+        [FlatBufferItem(0, Deprecated = true)]
+        public virtual int Value { get; set; }
+
+        [FlatBufferItem(1)]
+        public virtual long Long { get; set; }
+    }
+
+    [FlatBufferTable]
+    public class NonDeprecatedTable
+    {
+        [FlatBufferItem(0)]
+        public virtual int Value { get; set; }
+
+        [FlatBufferItem(1)]
+        public virtual long Long { get; set; }
     }
 }
