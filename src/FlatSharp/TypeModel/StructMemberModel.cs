@@ -66,8 +66,7 @@ public class StructMemberModel : ItemMemberModel
 
     public override string CreateReadItemBody(
         ParserCodeGenContext context,
-        string vtableLocationVariableName,
-        string vtableMaxIndexVariableName)
+        string vtableVariableName)
     {
         context = context with
         {
@@ -79,8 +78,7 @@ public class StructMemberModel : ItemMemberModel
 
     public override string CreateWriteThroughBody(
         SerializationCodeGenContext context,
-        string vtableLocationVariableName,
-        string vtableMaxIndexVariableName)
+        string vtableVariableName)
     {
         context = context with
         {

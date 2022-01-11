@@ -154,23 +154,21 @@ public class TableMemberModel : ItemMemberModel
 
     public override string CreateReadItemBody(
         ParserCodeGenContext context,
-        string vtableLocationVariableName,
-        string vtableMaxIndexVariableName)
+        string vtableVariableName)
     {
         if (this.ItemTypeModel.PhysicalLayout.Length == 1)
         {
-            return this.CreateSingleWidthReadItemBody(context, vtableLocationVariableName, vtableMaxIndexVariableName);
+            return this.CreateSingleWidthReadItemBody(context, vtableVariableName);
         }
         else
         {
-            return this.CreateWideReadItemBody(context, vtableLocationVariableName, vtableMaxIndexVariableName);
+            return this.CreateWideReadItemBody(context, vtableVariableName);
         }
     }
 
     public override string CreateWriteThroughBody(
         SerializationCodeGenContext context,
-        string vtableLocationVariableName,
-        string vtableMaxIndexVariableName)
+        string vtableVariableName)
     {
         FlatSharpInternal.Assert(this.ItemTypeModel.PhysicalLayout.Length == 1, "Writethrough not expected for wide vtable items");
         var adjustedContext = context with
@@ -179,14 +177,13 @@ public class TableMemberModel : ItemMemberModel
         };
 
         return $@"
-                {GetFindFieldLocationBlock(adjustedContext.OffsetVariableName, context.OffsetVariableName, vtableMaxIndexVariableName, vtableLocationVariableName)}
-                {adjustedContext.GetSerializeInvocation(this.PropertyInfo.PropertyType)};";
+            {GetFindFieldLocationBlock(adjustedContext.OffsetVariableName, context.OffsetVariableName, vtableVariableName)}
+            {adjustedContext.GetSerializeInvocation(this.PropertyInfo.PropertyType)};";
     }
 
     private string CreateSingleWidthReadItemBody(
         ParserCodeGenContext context,
-        string vtableLocationVariableName,
-        string vtableMaxIndexVariableName)
+        string vtableVariableName)
     {
         var adjustedContext = context with
         {
@@ -194,14 +191,13 @@ public class TableMemberModel : ItemMemberModel
         };
 
         return $@"
-            {GetFindFieldLocationBlock(adjustedContext.OffsetVariableName, context.OffsetVariableName, vtableMaxIndexVariableName, vtableLocationVariableName)}
+            {GetFindFieldLocationBlock(adjustedContext.OffsetVariableName, context.OffsetVariableName, vtableVariableName)}
             return {adjustedContext.GetParseInvocation(this.PropertyInfo.PropertyType)};";
     }
 
     private string CreateWideReadItemBody(
         ParserCodeGenContext context,
-        string vtableLocationVariableName,
-        string vtableMaxIndexVariableName)
+        string vtableVariableName)
     {
         int items = this.ItemTypeModel.PhysicalLayout.Length;
 
@@ -213,7 +209,7 @@ public class TableMemberModel : ItemMemberModel
             int idx = this.Index + i;
 
             relativeOffsets.Add($@"
-                ushort relativeOffset{i} = buffer.ReadUShort({vtableLocationVariableName} + {4 + (2 * idx)});
+                int relativeOffset{i} = {vtableVariableName}.OffsetOf<{context.InputBufferTypeName}>({context.InputBufferVariableName}, {idx});
                 if (relativeOffset{i} == 0)
                 {{
                     {this.GetNotPresentStatement()}
@@ -230,11 +226,11 @@ public class TableMemberModel : ItemMemberModel
         };
 
         return $@"
-            if ({this.Index + items - 1} > {vtableMaxIndexVariableName})
-            {{
-                {this.GetNotPresentStatement()}
-            }}
-
+            // TODO: Investigate. Necessary?
+            // if ({this.Index + items - 1} > {{vtableMaxIndexVariableName}})
+            // {{
+            //    {this.GetNotPresentStatement()}
+            // }}
             {string.Join("\r\n", relativeOffsets)}
 
             var absoluteLocations = ({string.Join(", ", absoluteLocations)});
@@ -257,18 +253,12 @@ public class TableMemberModel : ItemMemberModel
     private string GetFindFieldLocationBlock(
         string locationVariableName,
         string offsetVariableName,
-        string vtableMaxIndexVariableName,
-        string vtableLocationVariableName)
+        string vtableVariableName)
     {
         return $@"
             int {locationVariableName};
             {{
-                if ({this.Index} > {vtableMaxIndexVariableName})
-                {{
-                    {this.GetNotPresentStatement()}
-                }}
-
-                ushort relativeOffset = buffer.ReadUShort({vtableLocationVariableName} + {4 + (2 * this.Index)});
+                int relativeOffset = {vtableVariableName}.OffsetOf(buffer, {this.Index});
                 if (relativeOffset == 0)
                 {{
                     {this.GetNotPresentStatement()}

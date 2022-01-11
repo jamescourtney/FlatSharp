@@ -83,17 +83,30 @@ public static class InputBufferExtensions
     /// <summary>
     /// Validates a vtable and reads the initial bytes of a vtable.
     /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    // TODO: deprecate
     public static void InitializeVTable<TBuffer>(
         this TBuffer buffer,
         int tableOffset,
         out int vtableOffset,
         out int maxVTableIndex) where TBuffer : IInputBuffer
     {
+        InitializeVTable(buffer, tableOffset, out vtableOffset, out maxVTableIndex, out _);
+    }
+
+    /// <summary>
+    /// Validates a vtable and reads the initial bytes of a vtable.
+    /// </summary>
+    public static void InitializeVTable<TBuffer>(
+        this TBuffer buffer,
+        int tableOffset,
+        out int vtableOffset,
+        out int maxVTableIndex,
+        out ushort vtableLength) where TBuffer : IInputBuffer
+    {
         checked
         {
             vtableOffset = tableOffset - buffer.ReadInt(tableOffset);
-            ushort vtableLength = buffer.ReadUShort(vtableOffset);
+            vtableLength = buffer.ReadUShort(vtableOffset);
 
             if (vtableLength < 4)
             {
