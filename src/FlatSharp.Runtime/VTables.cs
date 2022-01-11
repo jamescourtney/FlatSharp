@@ -37,7 +37,7 @@ public struct VTable1 : IVTable
         where TInputBuffer : IInputBuffer
     {
         inputBuffer.InitializeVTable(offset, out int vtableOffset, out int maxVtableIndex, out ushort vtableLength);
-        ReadOnlySpan<byte> vtable = inputBuffer.GetReadOnlyByteMemory(vtableOffset, vtableLength).Span;
+        ReadOnlySpan<byte> vtable = inputBuffer.ReadOnlySpan.Slice(vtableOffset, vtableLength);
 
         
         if (BitConverter.IsLittleEndian && (uint)vtable.Length >= (nuint)6)
@@ -93,7 +93,7 @@ public struct VTable2 : IVTable
         where TInputBuffer : IInputBuffer
     {
         inputBuffer.InitializeVTable(offset, out int vtableOffset, out int maxVtableIndex, out ushort vtableLength);
-        ReadOnlySpan<byte> vtable = inputBuffer.GetReadOnlyByteMemory(vtableOffset, vtableLength).Span;
+        ReadOnlySpan<byte> vtable = inputBuffer.ReadOnlySpan.Slice(vtableOffset, vtableLength);
 
         
         if (BitConverter.IsLittleEndian && (uint)vtable.Length >= (nuint)8)
@@ -162,9 +162,8 @@ public struct VTable3 : IVTable
         where TInputBuffer : IInputBuffer
     {
         inputBuffer.InitializeVTable(offset, out int vtableOffset, out int maxVtableIndex, out ushort vtableLength);
-        ReadOnlySpan<byte> vtable = inputBuffer.GetReadOnlyByteMemory(vtableOffset, vtableLength).Span;
+        ReadOnlySpan<byte> vtable = inputBuffer.ReadOnlySpan.Slice(vtableOffset, vtableLength);
 
-        
         if (BitConverter.IsLittleEndian && (uint)vtable.Length >= (nuint)10)
         {
             item = MemoryMarshal.Cast<byte, VTable3>(vtable.Slice(4, 6))[0];
@@ -245,7 +244,7 @@ public struct VTable4 : IVTable
         where TInputBuffer : IInputBuffer
     {
         inputBuffer.InitializeVTable(offset, out int vtableOffset, out int maxVtableIndex, out ushort vtableLength);
-        ReadOnlySpan<byte> vtable = inputBuffer.GetReadOnlyByteMemory(vtableOffset, vtableLength).Span;
+        ReadOnlySpan<byte> vtable = inputBuffer.ReadOnlySpan.Slice(vtableOffset, vtableLength);
 
         
         if (BitConverter.IsLittleEndian && (uint)vtable.Length >= (nuint)12)
@@ -343,7 +342,7 @@ public struct VTable5 : IVTable
         where TInputBuffer : IInputBuffer
     {
         inputBuffer.InitializeVTable(offset, out int vtableOffset, out int maxVtableIndex, out ushort vtableLength);
-        ReadOnlySpan<byte> vtable = inputBuffer.GetReadOnlyByteMemory(vtableOffset, vtableLength).Span;
+        ReadOnlySpan<byte> vtable = inputBuffer.ReadOnlySpan.Slice(vtableOffset, vtableLength);
 
         
         if (BitConverter.IsLittleEndian && (uint)vtable.Length >= (nuint)14)
@@ -457,7 +456,7 @@ public struct VTable6 : IVTable
         where TInputBuffer : IInputBuffer
     {
         inputBuffer.InitializeVTable(offset, out int vtableOffset, out int maxVtableIndex, out ushort vtableLength);
-        ReadOnlySpan<byte> vtable = inputBuffer.GetReadOnlyByteMemory(vtableOffset, vtableLength).Span;
+        ReadOnlySpan<byte> vtable = inputBuffer.ReadOnlySpan.Slice(vtableOffset, vtableLength);
 
         
         if (BitConverter.IsLittleEndian && (uint)vtable.Length >= (nuint)16)
@@ -588,7 +587,7 @@ public struct VTable7 : IVTable
         where TInputBuffer : IInputBuffer
     {
         inputBuffer.InitializeVTable(offset, out int vtableOffset, out int maxVtableIndex, out ushort vtableLength);
-        ReadOnlySpan<byte> vtable = inputBuffer.GetReadOnlyByteMemory(vtableOffset, vtableLength).Span;
+        ReadOnlySpan<byte> vtable = inputBuffer.ReadOnlySpan.Slice(vtableOffset, vtableLength);
 
         
         if (BitConverter.IsLittleEndian && (uint)vtable.Length >= (nuint)18)
@@ -737,7 +736,7 @@ public struct VTable8 : IVTable
         where TInputBuffer : IInputBuffer
     {
         inputBuffer.InitializeVTable(offset, out int vtableOffset, out int maxVtableIndex, out ushort vtableLength);
-        ReadOnlySpan<byte> vtable = inputBuffer.GetReadOnlyByteMemory(vtableOffset, vtableLength).Span;
+        ReadOnlySpan<byte> vtable = inputBuffer.ReadOnlySpan.Slice(vtableOffset, vtableLength);
 
         
         if (BitConverter.IsLittleEndian && (uint)vtable.Length >= (nuint)20)

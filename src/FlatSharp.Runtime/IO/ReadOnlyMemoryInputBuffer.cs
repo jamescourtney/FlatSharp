@@ -40,6 +40,8 @@ public struct ReadOnlyMemoryInputBuffer : IInputBuffer
         get => this.pointer.memory.Length;
     }
 
+    public ReadOnlySpan<byte> ReadOnlySpan => this.pointer.memory.Span;
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public byte ReadByte(int offset)
     {

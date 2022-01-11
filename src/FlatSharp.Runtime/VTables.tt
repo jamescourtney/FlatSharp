@@ -57,7 +57,7 @@ public struct VTable<#= i #> : IVTable
         where TInputBuffer : IInputBuffer
     {
         inputBuffer.InitializeVTable(offset, out int vtableOffset, out int maxVtableIndex, out ushort vtableLength);
-        ReadOnlySpan<byte> vtable = inputBuffer.GetReadOnlyByteMemory(vtableOffset, vtableLength).Span;
+        ReadOnlySpan<byte> vtable = inputBuffer.ReadOnlySpan.Slice(vtableOffset, vtableLength);
 
         
         if (BitConverter.IsLittleEndian && (uint)vtable.Length >= (nuint)<#= 6 + (2 * maxIndex) #>)

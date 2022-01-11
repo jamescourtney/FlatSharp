@@ -29,6 +29,15 @@ public interface IInputBuffer
     int Length { get; }
 
     /// <summary>
+    /// Gets a <see cref="ReadOnlySpan{byte}"/> covering the entire buffer.
+    /// </summary>
+#if NETSTANDARD2_0
+    ReadOnlySpan<byte> ReadOnlySpan { get; }
+# else
+    ReadOnlySpan<byte> ReadOnlySpan => this.GetReadOnlyByteMemory(0, this.Length).Span;
+#endif
+
+    /// <summary>
     /// Reads the byte at the given offset.
     /// </summary>
     byte ReadByte(int offset);
