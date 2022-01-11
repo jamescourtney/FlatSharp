@@ -25,7 +25,11 @@ namespace FlatSharp;
 /// being thrown. ReadOnlyMemoryInputBuffer guarantees that the objects returned will
 /// not modify in the input buffer (unless unsafe operations / MemoryMarshal) are used.
 /// </summary>
-public struct ReadOnlyMemoryInputBuffer : IInputBuffer
+public struct ReadOnlyMemoryInputBuffer
+    : IInputBuffer
+#if NETSTANDARD2_0
+    , IInputBuffer2
+#endif
 {
     private readonly MemoryPointer pointer;
 
@@ -116,7 +120,6 @@ public struct ReadOnlyMemoryInputBuffer : IInputBuffer
         return ScalarSpanReader.ReadString(this.pointer.memory.Span.Slice(offset, byteLength), encoding);
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Memory<byte> GetByteMemory(int start, int length)
     {
         throw new InvalidOperationException("ReadOnlyMemory inputs may not deserialize writable memory.");
@@ -127,6 +130,14 @@ public struct ReadOnlyMemoryInputBuffer : IInputBuffer
     {
         return this.pointer.memory.Slice(start, length);
     }
+
+    public Span<byte> AsSpan()
+    {
+        throw new InvalidOperationException("ReadOnlyMemory inputs may not deserialize writable memory.");
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ReadOnlySpan<byte> AsReadOnlySpan() => this.pointer.memory.Span;
 
     public T InvokeParse<T>(IGeneratedSerializer<T> serializer, int offset)
     {
