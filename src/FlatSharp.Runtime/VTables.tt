@@ -39,6 +39,7 @@ namespace FlatSharp;
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
 [StructLayout(LayoutKind.Explicit, Size = <#= 2 * i #>)]
+[ExcludeFromCodeCoverage]
 public struct VTable<#= i #> : IVTable
 {
     <#

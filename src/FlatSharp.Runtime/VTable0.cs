@@ -20,6 +20,7 @@ namespace FlatSharp;
 /// Represents a vtable for a table with no fields.
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
+[ExcludeFromCodeCoverage]
 public struct VTable0 : IVTable
 {
     public static void Create<TInputBuffer>(TInputBuffer buffer, int offset, out VTable0 item)

@@ -36,8 +36,6 @@ public struct ArraySegmentInputBuffer
 
     public int Length => this.pointer.segment.Count;
 
-    public ReadOnlySpan<byte> ReadOnlySpan => this.pointer.segment;
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public byte ReadByte(int offset)
     {
