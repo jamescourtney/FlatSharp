@@ -67,45 +67,29 @@ public struct VTable<#= i #> : IVTable
         else
         {
             item = new VTable<#= i #>();
-            if (maxVtableIndex >= 0)
+            switch (maxVtableIndex)
             {
-                switch (maxVtableIndex)
-                {
 <#
     for (int j = 0; j < i; ++j)
     {
 #>
-<#
-    if (j < i - 1)
-    {
-#>
-                    case <#= j #>:
-<# 
-    }
-    else 
-    {
-#>
-                    default:
-<#
-    }
-#>
-                    {
-                        vtable = vtable.Slice(4, <#= 2 * (j + 1)#>);
+                case <#= j #>:
+                {
+                    vtable = vtable.Slice(4, <#= 2 * (j + 1)#>);
 <#
         for (int k = 0; k <= j; ++k)
         {
 #>
-                        item.offset<#= k #> = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(<#= 2 * k #>, 2));
+                    item.offset<#= k #> = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(<#= 2 * k #>, 2));
 <#
         }
 #>
-                    }
-                    break;
+                }
+                break;
 
 <#
     }
 #>
-                }
             }
         }
     }

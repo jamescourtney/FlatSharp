@@ -382,7 +382,7 @@ internal class DeserializeClassDefinition
     {
         if (maxVtableIndex >= 8)
         {
-            return nameof(GenericVTable);
+            return nameof(VTableGeneric);
         }
         else
         {

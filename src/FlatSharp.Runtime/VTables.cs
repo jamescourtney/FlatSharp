@@ -47,18 +47,15 @@ public struct VTable1 : IVTable
         else
         {
             item = new VTable1();
-            if (maxVtableIndex >= 0)
+            switch (maxVtableIndex)
             {
-                switch (maxVtableIndex)
+                case 0:
                 {
-                    default:
-                    {
-                        vtable = vtable.Slice(4, 2);
-                        item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
-                    }
-                    break;
-
+                    vtable = vtable.Slice(4, 2);
+                    item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
                 }
+                break;
+
             }
         }
     }
@@ -106,26 +103,23 @@ public struct VTable2 : IVTable
         else
         {
             item = new VTable2();
-            if (maxVtableIndex >= 0)
+            switch (maxVtableIndex)
             {
-                switch (maxVtableIndex)
+                case 0:
                 {
-                    case 0:
-                    {
-                        vtable = vtable.Slice(4, 2);
-                        item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
-                    }
-                    break;
-
-                    default:
-                    {
-                        vtable = vtable.Slice(4, 4);
-                        item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
-                        item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
-                    }
-                    break;
-
+                    vtable = vtable.Slice(4, 2);
+                    item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
                 }
+                break;
+
+                case 1:
+                {
+                    vtable = vtable.Slice(4, 4);
+                    item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
+                    item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
+                }
+                break;
+
             }
         }
     }
@@ -178,35 +172,32 @@ public struct VTable3 : IVTable
         else
         {
             item = new VTable3();
-            if (maxVtableIndex >= 0)
+            switch (maxVtableIndex)
             {
-                switch (maxVtableIndex)
+                case 0:
                 {
-                    case 0:
-                    {
-                        vtable = vtable.Slice(4, 2);
-                        item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
-                    }
-                    break;
-
-                    case 1:
-                    {
-                        vtable = vtable.Slice(4, 4);
-                        item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
-                        item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
-                    }
-                    break;
-
-                    default:
-                    {
-                        vtable = vtable.Slice(4, 6);
-                        item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
-                        item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
-                        item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
-                    }
-                    break;
-
+                    vtable = vtable.Slice(4, 2);
+                    item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
                 }
+                break;
+
+                case 1:
+                {
+                    vtable = vtable.Slice(4, 4);
+                    item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
+                    item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
+                }
+                break;
+
+                case 2:
+                {
+                    vtable = vtable.Slice(4, 6);
+                    item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
+                    item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
+                    item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
+                }
+                break;
+
             }
         }
     }
@@ -264,45 +255,42 @@ public struct VTable4 : IVTable
         else
         {
             item = new VTable4();
-            if (maxVtableIndex >= 0)
+            switch (maxVtableIndex)
             {
-                switch (maxVtableIndex)
+                case 0:
                 {
-                    case 0:
-                    {
-                        vtable = vtable.Slice(4, 2);
-                        item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
-                    }
-                    break;
-
-                    case 1:
-                    {
-                        vtable = vtable.Slice(4, 4);
-                        item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
-                        item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
-                    }
-                    break;
-
-                    case 2:
-                    {
-                        vtable = vtable.Slice(4, 6);
-                        item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
-                        item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
-                        item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
-                    }
-                    break;
-
-                    default:
-                    {
-                        vtable = vtable.Slice(4, 8);
-                        item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
-                        item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
-                        item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
-                        item.offset3 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(6, 2));
-                    }
-                    break;
-
+                    vtable = vtable.Slice(4, 2);
+                    item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
                 }
+                break;
+
+                case 1:
+                {
+                    vtable = vtable.Slice(4, 4);
+                    item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
+                    item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
+                }
+                break;
+
+                case 2:
+                {
+                    vtable = vtable.Slice(4, 6);
+                    item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
+                    item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
+                    item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
+                }
+                break;
+
+                case 3:
+                {
+                    vtable = vtable.Slice(4, 8);
+                    item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
+                    item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
+                    item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
+                    item.offset3 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(6, 2));
+                }
+                break;
+
             }
         }
     }
@@ -365,56 +353,53 @@ public struct VTable5 : IVTable
         else
         {
             item = new VTable5();
-            if (maxVtableIndex >= 0)
+            switch (maxVtableIndex)
             {
-                switch (maxVtableIndex)
+                case 0:
                 {
-                    case 0:
-                    {
-                        vtable = vtable.Slice(4, 2);
-                        item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
-                    }
-                    break;
-
-                    case 1:
-                    {
-                        vtable = vtable.Slice(4, 4);
-                        item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
-                        item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
-                    }
-                    break;
-
-                    case 2:
-                    {
-                        vtable = vtable.Slice(4, 6);
-                        item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
-                        item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
-                        item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
-                    }
-                    break;
-
-                    case 3:
-                    {
-                        vtable = vtable.Slice(4, 8);
-                        item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
-                        item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
-                        item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
-                        item.offset3 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(6, 2));
-                    }
-                    break;
-
-                    default:
-                    {
-                        vtable = vtable.Slice(4, 10);
-                        item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
-                        item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
-                        item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
-                        item.offset3 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(6, 2));
-                        item.offset4 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(8, 2));
-                    }
-                    break;
-
+                    vtable = vtable.Slice(4, 2);
+                    item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
                 }
+                break;
+
+                case 1:
+                {
+                    vtable = vtable.Slice(4, 4);
+                    item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
+                    item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
+                }
+                break;
+
+                case 2:
+                {
+                    vtable = vtable.Slice(4, 6);
+                    item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
+                    item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
+                    item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
+                }
+                break;
+
+                case 3:
+                {
+                    vtable = vtable.Slice(4, 8);
+                    item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
+                    item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
+                    item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
+                    item.offset3 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(6, 2));
+                }
+                break;
+
+                case 4:
+                {
+                    vtable = vtable.Slice(4, 10);
+                    item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
+                    item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
+                    item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
+                    item.offset3 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(6, 2));
+                    item.offset4 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(8, 2));
+                }
+                break;
+
             }
         }
     }
@@ -482,68 +467,65 @@ public struct VTable6 : IVTable
         else
         {
             item = new VTable6();
-            if (maxVtableIndex >= 0)
+            switch (maxVtableIndex)
             {
-                switch (maxVtableIndex)
+                case 0:
                 {
-                    case 0:
-                    {
-                        vtable = vtable.Slice(4, 2);
-                        item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
-                    }
-                    break;
-
-                    case 1:
-                    {
-                        vtable = vtable.Slice(4, 4);
-                        item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
-                        item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
-                    }
-                    break;
-
-                    case 2:
-                    {
-                        vtable = vtable.Slice(4, 6);
-                        item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
-                        item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
-                        item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
-                    }
-                    break;
-
-                    case 3:
-                    {
-                        vtable = vtable.Slice(4, 8);
-                        item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
-                        item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
-                        item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
-                        item.offset3 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(6, 2));
-                    }
-                    break;
-
-                    case 4:
-                    {
-                        vtable = vtable.Slice(4, 10);
-                        item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
-                        item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
-                        item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
-                        item.offset3 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(6, 2));
-                        item.offset4 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(8, 2));
-                    }
-                    break;
-
-                    default:
-                    {
-                        vtable = vtable.Slice(4, 12);
-                        item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
-                        item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
-                        item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
-                        item.offset3 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(6, 2));
-                        item.offset4 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(8, 2));
-                        item.offset5 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(10, 2));
-                    }
-                    break;
-
+                    vtable = vtable.Slice(4, 2);
+                    item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
                 }
+                break;
+
+                case 1:
+                {
+                    vtable = vtable.Slice(4, 4);
+                    item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
+                    item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
+                }
+                break;
+
+                case 2:
+                {
+                    vtable = vtable.Slice(4, 6);
+                    item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
+                    item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
+                    item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
+                }
+                break;
+
+                case 3:
+                {
+                    vtable = vtable.Slice(4, 8);
+                    item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
+                    item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
+                    item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
+                    item.offset3 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(6, 2));
+                }
+                break;
+
+                case 4:
+                {
+                    vtable = vtable.Slice(4, 10);
+                    item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
+                    item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
+                    item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
+                    item.offset3 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(6, 2));
+                    item.offset4 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(8, 2));
+                }
+                break;
+
+                case 5:
+                {
+                    vtable = vtable.Slice(4, 12);
+                    item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
+                    item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
+                    item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
+                    item.offset3 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(6, 2));
+                    item.offset4 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(8, 2));
+                    item.offset5 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(10, 2));
+                }
+                break;
+
             }
         }
     }
@@ -616,81 +598,78 @@ public struct VTable7 : IVTable
         else
         {
             item = new VTable7();
-            if (maxVtableIndex >= 0)
+            switch (maxVtableIndex)
             {
-                switch (maxVtableIndex)
+                case 0:
                 {
-                    case 0:
-                    {
-                        vtable = vtable.Slice(4, 2);
-                        item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
-                    }
-                    break;
-
-                    case 1:
-                    {
-                        vtable = vtable.Slice(4, 4);
-                        item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
-                        item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
-                    }
-                    break;
-
-                    case 2:
-                    {
-                        vtable = vtable.Slice(4, 6);
-                        item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
-                        item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
-                        item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
-                    }
-                    break;
-
-                    case 3:
-                    {
-                        vtable = vtable.Slice(4, 8);
-                        item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
-                        item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
-                        item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
-                        item.offset3 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(6, 2));
-                    }
-                    break;
-
-                    case 4:
-                    {
-                        vtable = vtable.Slice(4, 10);
-                        item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
-                        item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
-                        item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
-                        item.offset3 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(6, 2));
-                        item.offset4 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(8, 2));
-                    }
-                    break;
-
-                    case 5:
-                    {
-                        vtable = vtable.Slice(4, 12);
-                        item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
-                        item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
-                        item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
-                        item.offset3 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(6, 2));
-                        item.offset4 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(8, 2));
-                        item.offset5 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(10, 2));
-                    }
-                    break;
-
-                    default:
-                    {
-                        vtable = vtable.Slice(4, 14);
-                        item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
-                        item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
-                        item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
-                        item.offset3 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(6, 2));
-                        item.offset4 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(8, 2));
-                        item.offset5 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(10, 2));
-                        item.offset6 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(12, 2));
-                    }
-                    break;
-
+                    vtable = vtable.Slice(4, 2);
+                    item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
                 }
+                break;
+
+                case 1:
+                {
+                    vtable = vtable.Slice(4, 4);
+                    item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
+                    item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
+                }
+                break;
+
+                case 2:
+                {
+                    vtable = vtable.Slice(4, 6);
+                    item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
+                    item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
+                    item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
+                }
+                break;
+
+                case 3:
+                {
+                    vtable = vtable.Slice(4, 8);
+                    item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
+                    item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
+                    item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
+                    item.offset3 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(6, 2));
+                }
+                break;
+
+                case 4:
+                {
+                    vtable = vtable.Slice(4, 10);
+                    item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
+                    item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
+                    item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
+                    item.offset3 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(6, 2));
+                    item.offset4 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(8, 2));
+                }
+                break;
+
+                case 5:
+                {
+                    vtable = vtable.Slice(4, 12);
+                    item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
+                    item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
+                    item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
+                    item.offset3 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(6, 2));
+                    item.offset4 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(8, 2));
+                    item.offset5 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(10, 2));
+                }
+                break;
+
+                case 6:
+                {
+                    vtable = vtable.Slice(4, 14);
+                    item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
+                    item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
+                    item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
+                    item.offset3 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(6, 2));
+                    item.offset4 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(8, 2));
+                    item.offset5 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(10, 2));
+                    item.offset6 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(12, 2));
+                }
+                break;
+
             }
         }
     }
@@ -768,95 +747,92 @@ public struct VTable8 : IVTable
         else
         {
             item = new VTable8();
-            if (maxVtableIndex >= 0)
+            switch (maxVtableIndex)
             {
-                switch (maxVtableIndex)
+                case 0:
                 {
-                    case 0:
-                    {
-                        vtable = vtable.Slice(4, 2);
-                        item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
-                    }
-                    break;
-
-                    case 1:
-                    {
-                        vtable = vtable.Slice(4, 4);
-                        item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
-                        item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
-                    }
-                    break;
-
-                    case 2:
-                    {
-                        vtable = vtable.Slice(4, 6);
-                        item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
-                        item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
-                        item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
-                    }
-                    break;
-
-                    case 3:
-                    {
-                        vtable = vtable.Slice(4, 8);
-                        item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
-                        item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
-                        item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
-                        item.offset3 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(6, 2));
-                    }
-                    break;
-
-                    case 4:
-                    {
-                        vtable = vtable.Slice(4, 10);
-                        item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
-                        item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
-                        item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
-                        item.offset3 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(6, 2));
-                        item.offset4 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(8, 2));
-                    }
-                    break;
-
-                    case 5:
-                    {
-                        vtable = vtable.Slice(4, 12);
-                        item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
-                        item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
-                        item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
-                        item.offset3 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(6, 2));
-                        item.offset4 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(8, 2));
-                        item.offset5 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(10, 2));
-                    }
-                    break;
-
-                    case 6:
-                    {
-                        vtable = vtable.Slice(4, 14);
-                        item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
-                        item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
-                        item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
-                        item.offset3 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(6, 2));
-                        item.offset4 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(8, 2));
-                        item.offset5 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(10, 2));
-                        item.offset6 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(12, 2));
-                    }
-                    break;
-
-                    default:
-                    {
-                        vtable = vtable.Slice(4, 16);
-                        item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
-                        item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
-                        item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
-                        item.offset3 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(6, 2));
-                        item.offset4 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(8, 2));
-                        item.offset5 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(10, 2));
-                        item.offset6 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(12, 2));
-                        item.offset7 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(14, 2));
-                    }
-                    break;
-
+                    vtable = vtable.Slice(4, 2);
+                    item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
                 }
+                break;
+
+                case 1:
+                {
+                    vtable = vtable.Slice(4, 4);
+                    item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
+                    item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
+                }
+                break;
+
+                case 2:
+                {
+                    vtable = vtable.Slice(4, 6);
+                    item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
+                    item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
+                    item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
+                }
+                break;
+
+                case 3:
+                {
+                    vtable = vtable.Slice(4, 8);
+                    item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
+                    item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
+                    item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
+                    item.offset3 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(6, 2));
+                }
+                break;
+
+                case 4:
+                {
+                    vtable = vtable.Slice(4, 10);
+                    item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
+                    item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
+                    item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
+                    item.offset3 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(6, 2));
+                    item.offset4 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(8, 2));
+                }
+                break;
+
+                case 5:
+                {
+                    vtable = vtable.Slice(4, 12);
+                    item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
+                    item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
+                    item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
+                    item.offset3 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(6, 2));
+                    item.offset4 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(8, 2));
+                    item.offset5 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(10, 2));
+                }
+                break;
+
+                case 6:
+                {
+                    vtable = vtable.Slice(4, 14);
+                    item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
+                    item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
+                    item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
+                    item.offset3 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(6, 2));
+                    item.offset4 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(8, 2));
+                    item.offset5 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(10, 2));
+                    item.offset6 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(12, 2));
+                }
+                break;
+
+                case 7:
+                {
+                    vtable = vtable.Slice(4, 16);
+                    item.offset0 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(0, 2));
+                    item.offset1 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(2, 2));
+                    item.offset2 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(4, 2));
+                    item.offset3 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(6, 2));
+                    item.offset4 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(8, 2));
+                    item.offset5 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(10, 2));
+                    item.offset6 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(12, 2));
+                    item.offset7 = BinaryPrimitives.ReadUInt16LittleEndian(vtable.Slice(14, 2));
+                }
+                break;
+
             }
         }
     }

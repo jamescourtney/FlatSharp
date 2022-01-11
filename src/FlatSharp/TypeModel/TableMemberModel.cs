@@ -226,11 +226,6 @@ public class TableMemberModel : ItemMemberModel
         };
 
         return $@"
-            // TODO: Investigate. Necessary?
-            // if ({this.Index + items - 1} > {{vtableMaxIndexVariableName}})
-            // {{
-            //    {this.GetNotPresentStatement()}
-            // }}
             {string.Join("\r\n", relativeOffsets)}
 
             var absoluteLocations = ({string.Join(", ", absoluteLocations)});

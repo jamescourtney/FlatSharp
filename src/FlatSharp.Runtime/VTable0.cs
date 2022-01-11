@@ -17,11 +17,21 @@
 namespace FlatSharp;
 
 /// <summary>
-/// Generic vtable interface.
+/// Represents a vtable for a table with no fields.
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
-public interface IVTable
+public struct VTable0 : IVTable
 {
-    int OffsetOf<TInputBuffer>(TInputBuffer buffer, int index)
-       where TInputBuffer : IInputBuffer;
+    public static void Create<TInputBuffer>(TInputBuffer buffer, int offset, out VTable0 item)
+        where TInputBuffer : IInputBuffer
+    {
+        item = default;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public int OffsetOf<TInputBuffer>(TInputBuffer buffer, int index)
+       where TInputBuffer : IInputBuffer
+    {
+        return 0;
+    }
 }

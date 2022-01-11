@@ -83,19 +83,6 @@ public static class InputBufferExtensions
     /// <summary>
     /// Validates a vtable and reads the initial bytes of a vtable.
     /// </summary>
-    // TODO: deprecate
-    public static void InitializeVTable<TBuffer>(
-        this TBuffer buffer,
-        int tableOffset,
-        out int vtableOffset,
-        out int maxVTableIndex) where TBuffer : IInputBuffer
-    {
-        InitializeVTable(buffer, tableOffset, out vtableOffset, out maxVTableIndex, out _);
-    }
-
-    /// <summary>
-    /// Validates a vtable and reads the initial bytes of a vtable.
-    /// </summary>
     public static void InitializeVTable<TBuffer>(
         this TBuffer buffer,
         int tableOffset,
