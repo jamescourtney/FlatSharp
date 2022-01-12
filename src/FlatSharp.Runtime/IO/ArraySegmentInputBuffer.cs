@@ -21,7 +21,7 @@ namespace FlatSharp;
 /// <summary>
 /// An implementation of <see cref="IInputBuffer"/> for array segments.
 /// </summary>
-public struct ArraySegmentInputBuffer : IInputBuffer
+public struct ArraySegmentInputBuffer : IInputBuffer, IInputBuffer2
 {
     private readonly ArraySegmentPointer pointer;
 
@@ -122,6 +122,18 @@ public struct ArraySegmentInputBuffer : IInputBuffer
     public ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length)
     {
         return this.GetByteMemory(start, length);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ReadOnlySpan<byte> GetReadOnlySpan()
+    {
+        return this.pointer.segment;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Span<byte> GetSpan()
+    {
+        return this.pointer.segment;
     }
 
     public T InvokeParse<T>(IGeneratedSerializer<T> serializer, int offset)

@@ -47,8 +47,10 @@ public abstract class FlatBufferVector<T, TInputBuffer> : FlatBufferVectorBase<T
         {
             if (this.fieldContext.WriteThrough)
             {
+                int itemSize = this.itemSize;
                 int offset = checked(this.offset + (itemSize * index));
-                Span<byte> span = this.memory.GetByteMemory(offset, this.itemSize).Span;
+
+                Span<byte> span = this.memory.AsSpan().Slice(offset, itemSize);
                 this.WriteThrough(value, span);
             }
             else

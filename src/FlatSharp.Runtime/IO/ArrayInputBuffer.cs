@@ -21,7 +21,7 @@ namespace FlatSharp;
 /// <summary>
 /// An implementation of <see cref="IInputBuffer"/> for managed arrays.
 /// </summary>
-public struct ArrayInputBuffer : IInputBuffer
+public struct ArrayInputBuffer : IInputBuffer, IInputBuffer2
 {
     private readonly byte[] memory;
 
@@ -109,16 +109,25 @@ public struct ArrayInputBuffer : IInputBuffer
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Memory<byte> GetByteMemory(int start, int length)
     {
-        checked
-        {
-            return new Memory<byte>(this.memory, start, length);
-        }
+        return new Memory<byte>(this.memory, start, length);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length)
     {
         return this.GetByteMemory(start, length);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ReadOnlySpan<byte> GetReadOnlySpan()
+    {
+        return this.memory;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Span<byte> GetSpan()
+    {
+        return this.memory;
     }
 
     public T InvokeParse<T>(IGeneratedSerializer<T> serializer, int offset)

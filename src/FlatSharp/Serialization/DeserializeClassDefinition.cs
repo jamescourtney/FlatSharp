@@ -172,22 +172,22 @@ internal class DeserializeClassDefinition
     private void AddWriteThroughMethod(ItemMemberModel itemModel, ParserCodeGenContext parserContext)
     {
         var context = parserContext.GetWriteThroughContext(
-            $"buffer.{nameof(IInputBuffer.GetByteMemory)}(0, buffer.{nameof(IInputBuffer.Length)}).Span",
+            $"buffer.{nameof(InputBufferExtensions.AsSpan)}()",
             "value",
             "offset");
 
         this.readMethods.Add(
-            $@"
-                    {GetAggressiveInliningAttribute()}
-                    private static void {GetWriteMethodName(itemModel)}(
-                        TInputBuffer buffer,
-                        int offset,
-                        {itemModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType)} value,
-                        int vtableOffset,
-                        int vtableMaxIndex)
-                    {{
-                        {itemModel.CreateWriteThroughBody(context, "vtableOffset", "vtableMaxIndex")}
-                    }}");
+        $@"
+            {GetAggressiveInliningAttribute()}
+            private static void {GetWriteMethodName(itemModel)}(
+                TInputBuffer buffer,
+                int offset,
+                {itemModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType)} value,
+                int vtableOffset,
+                int vtableMaxIndex)
+            {{
+                {itemModel.CreateWriteThroughBody(context, "vtableOffset", "vtableMaxIndex")}
+            }}");
     }
 
     private void AddPropertyDefinitions(ItemMemberModel itemModel, string writeValueMethodName)
