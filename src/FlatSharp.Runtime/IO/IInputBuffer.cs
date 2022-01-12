@@ -103,7 +103,7 @@ public interface IInputBuffer
 /// <summary>
 /// Extensions to <see cref="IInputBuffer"/>.
 /// </summary>
-public interface IInputBuffer2
+public interface IInputBuffer2 : IInputBuffer
 {
     /// <summary>
     /// Gets a read only span covering the entire input buffer.
