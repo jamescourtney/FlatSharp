@@ -129,7 +129,7 @@ public class ValueStructTypeModel : RuntimeTypeModel
         string body = $@"
             if (BitConverter.IsLittleEndian)
             {{
-                var span = {context.InputBufferVariableName}.AsReadOnlySpan().Slice({context.OffsetVariableName}, {this.inlineSize});
+                var span = {context.InputBufferVariableName}.GetReadOnlyByteMemory({context.OffsetVariableName}, {this.inlineSize}).Span;
                 return {typeof(MemoryMarshal).FullName}.{nameof(MemoryMarshal.Cast)}<byte, {CSharpHelpers.GetGlobalCompilableTypeName(this.ClrType)}>(span)[0];
             }}
             else

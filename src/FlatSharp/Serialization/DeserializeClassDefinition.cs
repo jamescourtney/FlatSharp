@@ -160,7 +160,7 @@ internal class DeserializeClassDefinition
     private void AddWriteThroughMethod(ItemMemberModel itemModel, ParserCodeGenContext parserContext)
     {
         var context = parserContext.GetWriteThroughContext(
-            $"buffer.AsSpan()",
+            $"buffer.GetByteMemory(0, buffer.Length).Span",
             "value",
             "offset");
 

@@ -93,41 +93,9 @@ public interface IInputBuffer
     /// </summary>
     ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length);
 
-    // These methods are implemented as extension methods in netstandard 2.0.
-#if !NETSTANDARD2_0
-    /// <summary>
-    /// Gets the contents of the <see cref="IInputBuffer"/> as a <see cref="Span{byte}"/>.
-    /// </summary>
-    Span<byte> AsSpan() => this.GetByteMemory(0, this.Length).Span;
-
-    /// <summary>
-    /// Gets the contents of the <see cref="IInputBuffer"/> as a <see cref="ReadOnlySpan{byte}"/>.
-    /// </summary>
-    ReadOnlySpan<byte> AsReadOnlySpan() => this.GetReadOnlyByteMemory(0, this.Length).Span;
-#endif
-
     /// <summary>
     /// Invokes the parse method on the <see cref="IGeneratedSerializer{T}"/> parameter. Allows passing
     /// generic parameters.
     /// </summary>
     TItem InvokeParse<TItem>(IGeneratedSerializer<TItem> serializer, int offset);
 }
-
-#if NETSTANDARD2_0
-/// <summary>
-/// Additions to the <see cref="IInputBuffer"/> interface. FlatSharp will be fastest when user-defined
-/// <see cref="IInputBuffer"/>s implement this interface, but it is not required.
-/// </summary>
-public interface IInputBuffer2 : IInputBuffer
-{
-    /// <summary>
-    /// Gets the contents of the <see cref="IInputBuffer"/> as a <see cref="Span{byte}"/>.
-    /// </summary>
-    Span<byte> AsSpan();
-
-    /// <summary>
-    /// Gets the contents of the <see cref="IInputBuffer"/> as a <see cref="ReadOnlySpan{byte}"/>.
-    /// </summary>
-    ReadOnlySpan<byte> AsReadOnlySpan();
-}
-#endif

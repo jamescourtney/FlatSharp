@@ -135,42 +135,6 @@ public static class InputBufferExtensions
         }
     }
 
-    // TODO: Deprecate in FlatSharp 7 or when dropping netstandard 2_0.
-#if NETSTANDARD2_0
-    /// <summary>
-    /// Gets the contents of the <see cref="IInputBuffer"/> as a <see cref="Span{byte}"/>.
-    /// </summary>
-    public static Span<byte> AsSpan<TInputBuffer>(this TInputBuffer buffer)
-        where TInputBuffer : IInputBuffer
-    {
-        // Don't use "is InputBuffer2 buffer2" syntax here as it causes a box.
-        if (buffer is IInputBuffer2)
-        {
-            return ((IInputBuffer2)buffer).AsSpan();
-        }
-        else
-        {
-            return buffer.GetByteMemory(0, buffer.Length).Span;
-        }
-    }
-
-    /// <summary>
-    /// Gets the contents of the <see cref="IInputBuffer"/> as a <see cref="ReadOnlySpan{byte}"/>.
-    /// </summary>
-    public static ReadOnlySpan<byte> AsReadOnlySpan<TInputBuffer>(this TInputBuffer buffer)
-        where TInputBuffer : IInputBuffer
-    {
-        if (buffer is IInputBuffer2)
-        {
-            return ((IInputBuffer2)buffer).AsReadOnlySpan();
-        }
-        else
-        {
-            return buffer.GetReadOnlyByteMemory(0, buffer.Length).Span;
-        }
-    }
-#endif
-
     [ExcludeFromCodeCoverage] // Not currently used.
     [Conditional("DEBUG")]
     public static void CheckAlignment<TBuffer>(this TBuffer buffer, int offset, int size) where TBuffer : IInputBuffer
