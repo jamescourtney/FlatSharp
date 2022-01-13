@@ -20,7 +20,7 @@ namespace FlatSharp;
 /// Represents a vtable for an arbitrary table.
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
-public struct VTableGeneric : IVTable
+public struct VTableGeneric
 {
     private int offset;
     private int maxIndex;

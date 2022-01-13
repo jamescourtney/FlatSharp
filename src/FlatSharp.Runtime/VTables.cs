@@ -27,7 +27,7 @@ namespace FlatSharp;
 [EditorBrowsable(EditorBrowsableState.Never)]
 [StructLayout(LayoutKind.Explicit, Size = 2)]
 [ExcludeFromCodeCoverage]
-public struct VTable1 : IVTable
+public struct VTable1
 {
         
     [FieldOffset(0)]
@@ -80,7 +80,7 @@ public struct VTable1 : IVTable
 [EditorBrowsable(EditorBrowsableState.Never)]
 [StructLayout(LayoutKind.Explicit, Size = 4)]
 [ExcludeFromCodeCoverage]
-public struct VTable2 : IVTable
+public struct VTable2
 {
         
     [FieldOffset(0)]
@@ -146,7 +146,7 @@ public struct VTable2 : IVTable
 [EditorBrowsable(EditorBrowsableState.Never)]
 [StructLayout(LayoutKind.Explicit, Size = 6)]
 [ExcludeFromCodeCoverage]
-public struct VTable3 : IVTable
+public struct VTable3
 {
         
     [FieldOffset(0)]
@@ -226,7 +226,7 @@ public struct VTable3 : IVTable
 [EditorBrowsable(EditorBrowsableState.Never)]
 [StructLayout(LayoutKind.Explicit, Size = 8)]
 [ExcludeFromCodeCoverage]
-public struct VTable4 : IVTable
+public struct VTable4
 {
         
     [FieldOffset(0)]
@@ -321,7 +321,7 @@ public struct VTable4 : IVTable
 [EditorBrowsable(EditorBrowsableState.Never)]
 [StructLayout(LayoutKind.Explicit, Size = 10)]
 [ExcludeFromCodeCoverage]
-public struct VTable5 : IVTable
+public struct VTable5
 {
         
     [FieldOffset(0)]
@@ -432,7 +432,7 @@ public struct VTable5 : IVTable
 [EditorBrowsable(EditorBrowsableState.Never)]
 [StructLayout(LayoutKind.Explicit, Size = 12)]
 [ExcludeFromCodeCoverage]
-public struct VTable6 : IVTable
+public struct VTable6
 {
         
     [FieldOffset(0)]
@@ -560,7 +560,7 @@ public struct VTable6 : IVTable
 [EditorBrowsable(EditorBrowsableState.Never)]
 [StructLayout(LayoutKind.Explicit, Size = 14)]
 [ExcludeFromCodeCoverage]
-public struct VTable7 : IVTable
+public struct VTable7
 {
         
     [FieldOffset(0)]
@@ -706,7 +706,7 @@ public struct VTable7 : IVTable
 [EditorBrowsable(EditorBrowsableState.Never)]
 [StructLayout(LayoutKind.Explicit, Size = 16)]
 [ExcludeFromCodeCoverage]
-public struct VTable8 : IVTable
+public struct VTable8
 {
         
     [FieldOffset(0)]

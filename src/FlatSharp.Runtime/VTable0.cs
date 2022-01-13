@@ -21,7 +21,7 @@ namespace FlatSharp;
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
 [ExcludeFromCodeCoverage]
-public struct VTable0 : IVTable
+public struct VTable0
 {
     public static void Create<TInputBuffer>(TInputBuffer buffer, int offset, out VTable0 item)
         where TInputBuffer : IInputBuffer
