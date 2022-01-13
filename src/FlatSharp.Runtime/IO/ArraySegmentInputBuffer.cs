@@ -109,7 +109,13 @@ public struct ArraySegmentInputBuffer : IInputBuffer
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Memory<byte> GetByteMemory(int start, int length)
     {
-        return this.pointer.segment.AsMemory().Slice(start, length);
+        checked
+        {
+            FlatSharpInternal.Assert(start >= 0, "GetByteMemory.Start was negative.");
+
+            var seg = this.pointer.segment;
+            return new Memory<byte>(seg.Array, seg.Offset + start, length);
+        }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -114,6 +114,7 @@ public struct ReadOnlyMemoryInputBuffer : IInputBuffer
         return ScalarSpanReader.ReadString(this.pointer.memory.Span.Slice(offset, byteLength), encoding);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Memory<byte> GetByteMemory(int start, int length)
     {
         throw new InvalidOperationException("ReadOnlyMemory inputs may not deserialize writable memory.");
