@@ -165,18 +165,16 @@ internal class DeserializeClassDefinition
             "value",
             "offset");
 
-        this.readMethods.Add(
-            $@"
-                    {GetAggressiveInliningAttribute()}
-                    private static void {GetWriteMethodName(itemModel)}(
-                        TInputBuffer buffer,
-                        int offset,
-                        {itemModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType)} value,
-                        int vtableOffset,
-                        int vtableMaxIndex)
-                    {{
-                        {itemModel.CreateWriteThroughBody(context, "vtableOffset", "vtableMaxIndex")}
-                    }}");
+        this.readMethods.Add($@"
+            {GetAggressiveInliningAttribute()}
+            private static void {GetWriteMethodName(itemModel)}(
+                TInputBuffer buffer,
+                int offset,
+                {itemModel.GetNullableAnnotationTypeName(this.typeModel.SchemaType)} value,
+                {this.vtableTypeName} vtable)
+            {{
+                {itemModel.CreateWriteThroughBody(context, "vtable")}
+            }}");
     }
 
     private void AddPropertyDefinitions(ItemMemberModel itemModel, string writeValueMethodName)
