@@ -120,6 +120,7 @@ $@"
                 using System.Runtime.CompilerServices;
                 using FlatSharp;
                 using FlatSharp.Attributes;
+                using FlatSharp.Internal;
 
                 {code}
             }}";

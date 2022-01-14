@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-namespace FlatSharp;
+namespace FlatSharp.Internal;
 
 /// <summary>
 /// Represents a vtable for an arbitrary table.

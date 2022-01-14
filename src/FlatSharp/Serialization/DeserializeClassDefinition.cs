@@ -15,6 +15,7 @@
  */
 
 using FlatSharp.TypeModel;
+using FlatSharp.Internal;
 
 namespace FlatSharp;
 

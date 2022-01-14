@@ -16,14 +16,13 @@
 
 using System.Runtime.InteropServices;
 
-namespace FlatSharp;
+namespace FlatSharp.Internal;
 
 /// <summary>
 /// Represents a vtable for a table with 2 fields.
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
 [StructLayout(LayoutKind.Explicit, Size = 4)]
-[ExcludeFromCodeCoverage]
 public struct VTable2 : IVTable
 {
     [FieldOffset(0)]

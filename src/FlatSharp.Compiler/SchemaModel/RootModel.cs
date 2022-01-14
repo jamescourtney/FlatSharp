@@ -62,6 +62,7 @@ public class RootModel
         writer.AppendLine("using System.Threading.Tasks;");
         writer.AppendLine("using FlatSharp;");
         writer.AppendLine("using FlatSharp.Attributes;");
+        writer.AppendLine("using FlatSharp.Internal;");
 
         // disable obsolete warnings. Flatsharp allows marking default constructors
         // as obsolete and we don't want to raise warnings for our own code.

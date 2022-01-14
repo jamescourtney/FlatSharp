@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-namespace FlatSharp;
+namespace FlatSharp.Internal;
 
 /// <summary>
 /// Represents a vtable for a table with no fields.
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
-[ExcludeFromCodeCoverage]
 public struct VTable0 : IVTable
 {
     public int MaxSupportedIndex => -1;

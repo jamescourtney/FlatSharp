@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-using System.Linq;
-using FlatSharp.TypeModel;
+using FlatSharp.Internal;
 
 namespace FlatSharpTests;
 
@@ -24,37 +23,37 @@ public class VTableTests
     public delegate void CreateCallback<TVTable>(ArrayInputBuffer buffer, int offset, out TVTable vt);
 
     [Fact]
-    public void VTable0() => this.RunTests<VTable0>(-1, FlatSharp.VTable0.Create);
+    public void Test_VTable0() => this.RunTests<VTable0>(-1, VTable0.Create);
 
 
     [Fact]
-    public void VTable1() => this.RunTests<VTable1>(0, FlatSharp.VTable1.Create);
+    public void Test_VTable1() => this.RunTests<VTable1>(0, VTable1.Create);
 
 
     [Fact]
-    public void VTable2() => this.RunTests<VTable2>(1, FlatSharp.VTable2.Create);
+    public void Test_VTable2() => this.RunTests<VTable2>(1, VTable2.Create);
 
 
     [Fact]
-    public void VTable3() => this.RunTests<VTable3>(2, FlatSharp.VTable3.Create);
+    public void Test_VTable3() => this.RunTests<VTable3>(2, VTable3.Create);
 
     [Fact]
-    public void VTable4() => this.RunTests<VTable4>(3, FlatSharp.VTable4.Create);
+    public void Test_VTable4() => this.RunTests<VTable4>(3, VTable4.Create);
     
     [Fact]
-    public void VTable5() => this.RunTests<VTable5>(4, FlatSharp.VTable5.Create);
+    public void Test_VTable5() => this.RunTests<VTable5>(4, VTable5.Create);
 
     [Fact]
-    public void VTable6() => this.RunTests<VTable6>(5, FlatSharp.VTable6.Create);
+    public void Test_VTable6() => this.RunTests<VTable6>(5, VTable6.Create);
 
     [Fact]
-    public void VTable7() => this.RunTests<VTable7>(6, FlatSharp.VTable7.Create);
+    public void Test_VTable7() => this.RunTests<VTable7>(6, VTable7.Create);
 
     [Fact]
-    public void VTable8() => this.RunTests<VTable8>(7, FlatSharp.VTable8.Create);
+    public void Test_VTable8() => this.RunTests<VTable8>(7, VTable8.Create);
 
     [Fact]
-    public void VTableGeneric() => this.RunTests<VTableGeneric>(255, FlatSharp.VTableGeneric.Create);
+    public void Test_VTableGeneric() => this.RunTests<VTableGeneric>(255, VTableGeneric.Create);
 
     private void RunTests<TVTable>(int expectedMaxIndex, CreateCallback<TVTable> callback)
         where TVTable : struct, IVTable

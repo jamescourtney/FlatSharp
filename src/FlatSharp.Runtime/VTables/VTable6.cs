@@ -16,12 +16,13 @@
 
 using System.Runtime.InteropServices;
 
-namespace FlatSharp;
+namespace FlatSharp.Internal;
 
 /// <summary>
 /// Represents a vtable for a table with 6 fields.
 /// </summary>
 [StructLayout(LayoutKind.Explicit, Size = 12)]
+[EditorBrowsable(EditorBrowsableState.Never)]
 public struct VTable6 : IVTable
 {
     [FieldOffset(0)]
@@ -117,6 +118,7 @@ public struct VTable6 : IVTable
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int OffsetOf<TInputBuffer>(TInputBuffer buffer, int index)
         where TInputBuffer : IInputBuffer
     {
