@@ -47,43 +47,41 @@ public struct VTable4 : IVTable
     public static void Create<TInputBuffer>(TInputBuffer inputBuffer, int offset, out VTable4 item)
         where TInputBuffer : IInputBuffer
     {
-        inputBuffer.InitializeVTable(offset, out int vtableOffset, out int maxVtableIndex, out ushort vtableLength);
-        ReadOnlySpan<byte> vtable = inputBuffer.GetReadOnlyByteMemory(vtableOffset, vtableLength).Span;
-
-        if (maxVtableIndex > 3)
-        {
-            maxVtableIndex = 3;
-        }
+        inputBuffer.InitializeVTable(
+            offset,
+            out _,
+            out nuint fieldCount,
+            out ReadOnlySpan<byte> fieldData);
 
         item = new VTable4();
-        switch (maxVtableIndex)
+        switch (fieldCount)
         {
             case 0:
-            {
-                vtable = vtable.Slice(4, 2);
-                item.offset0 = ScalarSpanReader.ReadUShort(vtable);
-            }
-            break;
+                break;
 
             case 1:
             {
-                vtable = vtable.Slice(4, 4);
-                item.offset0ui = ScalarSpanReader.ReadUInt(vtable);
+                item.offset0 = ScalarSpanReader.ReadUShort(fieldData);
             }
             break;
 
             case 2:
             {
-                vtable = vtable.Slice(4, 6);
-                item.offset0ui = ScalarSpanReader.ReadUInt(vtable);
-                item.offset4 = ScalarSpanReader.ReadUShort(vtable.Slice(4, 2));
+                item.offset0ui = ScalarSpanReader.ReadUInt(fieldData);
             }
             break;
 
             case 3:
             {
-                vtable = vtable.Slice(4, 8);
-                item.offset0ul = ScalarSpanReader.ReadULong(vtable);
+                fieldData = fieldData.Slice(0, 6);
+                item.offset0ui = ScalarSpanReader.ReadUInt(fieldData);
+                item.offset4 = ScalarSpanReader.ReadUShort(fieldData.Slice(4, 2));
+            }
+            break;
+
+            default:
+            {
+                item.offset0ul = ScalarSpanReader.ReadULong(fieldData);
             }
             break;
         }

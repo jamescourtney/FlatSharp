@@ -83,25 +83,26 @@ public static class InputBufferExtensions
     /// <summary>
     /// Validates a vtable and reads the initial bytes of a vtable.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void InitializeVTable<TBuffer>(
         this TBuffer buffer,
         int tableOffset,
         out int vtableOffset,
-        out int maxVTableIndex,
-        out ushort vtableLength) where TBuffer : IInputBuffer
+        out nuint vtableFieldCount,
+        out ReadOnlySpan<byte> fieldData) where TBuffer : IInputBuffer
     {
         checked
         {
             vtableOffset = tableOffset - buffer.ReadInt(tableOffset);
-            vtableLength = buffer.ReadUShort(vtableOffset);
+            ushort vtableLength = buffer.ReadUShort(vtableOffset);
 
             if (vtableLength < 4)
             {
                 ThrowInvalidVtableException();
             }
 
-            // Can be negative when all indexes are absent. This is by design.
-            maxVTableIndex = (vtableLength / 2) - 3;
+            fieldData = buffer.AsReadOnlySpan().Slice(vtableOffset, vtableLength).Slice(4);
+            vtableFieldCount = (nuint)fieldData.Length / 2;
         }
     }
 

@@ -68,76 +68,74 @@ public struct VTable8 : IVTable
         out VTable8 item)
         where TInputBuffer : IInputBuffer
     {
-        inputBuffer.InitializeVTable(offset, out int vtableOffset, out int maxVtableIndex, out ushort vtableLength);
-        ReadOnlySpan<byte> vtable = inputBuffer.GetReadOnlyByteMemory(vtableOffset, vtableLength).Span;
-
-        if (maxVtableIndex > 7)
-        {
-            maxVtableIndex = 7;
-        }
+        inputBuffer.InitializeVTable(
+            offset,
+            out _,
+            out nuint fieldCount,
+            out ReadOnlySpan<byte> fieldData);
 
         item = new VTable8();
-        switch (maxVtableIndex)
+        switch (fieldCount)
         {
             case 0:
-            {
-                vtable = vtable.Slice(4, 2);
-                item.offset0 = ScalarSpanReader.ReadUShort(vtable);
-            }
-            break;
+                break;
 
             case 1:
             {
-                vtable = vtable.Slice(4, 4);
-                item.offset0ui = ScalarSpanReader.ReadUInt(vtable);
+                item.offset0 = ScalarSpanReader.ReadUShort(fieldData);
             }
             break;
 
             case 2:
             {
-                vtable = vtable.Slice(4, 6);
-                item.offset0ui = ScalarSpanReader.ReadUInt(vtable);
-                item.offset4 = ScalarSpanReader.ReadUShort(vtable.Slice(4, 2));
+                item.offset0ui = ScalarSpanReader.ReadUInt(fieldData);
             }
             break;
 
             case 3:
             {
-                vtable = vtable.Slice(4, 8);
-                item.offset0ul = ScalarSpanReader.ReadULong(vtable);
+                fieldData = fieldData.Slice(0, 6);
+                item.offset0ui = ScalarSpanReader.ReadUInt(fieldData);
+                item.offset4 = ScalarSpanReader.ReadUShort(fieldData.Slice(4, 2));
             }
             break;
 
             case 4:
             {
-                vtable = vtable.Slice(4, 10);
-                item.offset0ul = ScalarSpanReader.ReadULong(vtable);
-                item.offset8 = ScalarSpanReader.ReadUShort(vtable.Slice(8, 2));
+                item.offset0ul = ScalarSpanReader.ReadULong(fieldData);
             }
             break;
 
             case 5:
             {
-                vtable = vtable.Slice(4, 12);
-                item.offset0ul = ScalarSpanReader.ReadULong(vtable);
-                item.offset8ui = ScalarSpanReader.ReadUInt(vtable.Slice(8, 4));
+                fieldData = fieldData.Slice(0, 10);
+                item.offset0ul = ScalarSpanReader.ReadULong(fieldData);
+                item.offset8 = ScalarSpanReader.ReadUShort(fieldData.Slice(8, 2));
             }
             break;
 
             case 6:
             {
-                vtable = vtable.Slice(4, 14);
-                item.offset0ul = ScalarSpanReader.ReadULong(vtable);
-                item.offset8ui = ScalarSpanReader.ReadUInt(vtable.Slice(8, 4));
-                item.offset12 = ScalarSpanReader.ReadUShort(vtable.Slice(12, 2));
+                fieldData = fieldData.Slice(0, 12);
+                item.offset0ul = ScalarSpanReader.ReadULong(fieldData);
+                item.offset8ui = ScalarSpanReader.ReadUInt(fieldData.Slice(8, 4));
             }
             break;
 
             case 7:
             {
-                vtable = vtable.Slice(4, 16);
-                item.offset0ul = ScalarSpanReader.ReadULong(vtable);
-                item.offset8ul = ScalarSpanReader.ReadULong(vtable.Slice(8, 8));
+                fieldData = fieldData.Slice(0, 14);
+                item.offset0ul = ScalarSpanReader.ReadULong(fieldData);
+                item.offset8ui = ScalarSpanReader.ReadUInt(fieldData.Slice(8, 4));
+                item.offset12 = ScalarSpanReader.ReadUShort(fieldData.Slice(12, 2));
+            }
+            break;
+
+            default:
+            {
+                fieldData = fieldData.Slice(0, 16);
+                item.offset0ul = ScalarSpanReader.ReadULong(fieldData);
+                item.offset8ul = ScalarSpanReader.ReadULong(fieldData.Slice(8, 8));
             }
             break;
         }

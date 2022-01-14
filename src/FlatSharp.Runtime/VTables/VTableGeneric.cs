@@ -22,7 +22,7 @@ namespace FlatSharp.Internal;
 public struct VTableGeneric : IVTable
 {
     private int offset;
-    private int maxIndex;
+    private nuint count;
 
     public int MaxSupportedIndex => 255;
 
@@ -34,7 +34,7 @@ public struct VTableGeneric : IVTable
         {
             item = new VTableGeneric();
 
-            buffer.InitializeVTable(offset, out item.offset, out item.maxIndex, out _);
+            buffer.InitializeVTable(offset, out item.offset, out item.count, out _);
             item.offset += 2 * sizeof(ushort); // skip past vtable length and table length
         }
     }
@@ -42,7 +42,7 @@ public struct VTableGeneric : IVTable
     public int OffsetOf<TInputBuffer>(TInputBuffer buffer, int index)
        where TInputBuffer : IInputBuffer
     {
-        if ((uint)index > this.maxIndex)
+        if ((uint)index >= this.count)
         {
             return 0;
         }
