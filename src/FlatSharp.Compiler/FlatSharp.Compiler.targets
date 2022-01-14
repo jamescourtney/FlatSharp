@@ -32,7 +32,7 @@
                             {
                                 if (!Directory.Exists(include))
                                 {
-                                    errors.Add(string.Format("FlatSharpSchema.IncludePath must only contain existing directories, seperated by a semi-colon. '{0}' is not a valid directory.", include));
+                                    errors.Add(string.Format("FlatSharpSchema.IncludePath must only contain existing directories, separated by a semi-colon. '{0}' is not a valid directory.", include));
                                     return null;
                                 }
                                 
