@@ -20,10 +20,12 @@ namespace FlatSharp;
 /// Represents a vtable for an arbitrary table.
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
-public struct VTableGeneric
+public struct VTableGeneric : IVTable
 {
     private int offset;
     private int maxIndex;
+
+    public int MaxSupportedIndex => 255;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Create<TInputBuffer>(TInputBuffer buffer, int offset, out VTableGeneric item)

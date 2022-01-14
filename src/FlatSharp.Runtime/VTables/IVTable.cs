@@ -16,23 +16,10 @@
 
 namespace FlatSharp;
 
-/// <summary>
-/// Represents a vtable for a table with no fields.
-/// </summary>
-[EditorBrowsable(EditorBrowsableState.Never)]
-[ExcludeFromCodeCoverage]
-public struct VTable0
+internal interface IVTable
 {
-    public static void Create<TInputBuffer>(TInputBuffer buffer, int offset, out VTable0 item)
-        where TInputBuffer : IInputBuffer
-    {
-        item = default;
-    }
+    public int MaxSupportedIndex { get; }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public int OffsetOf<TInputBuffer>(TInputBuffer buffer, int index)
-       where TInputBuffer : IInputBuffer
-    {
-        return 0;
-    }
+    int OffsetOf<TInputBuffer>(TInputBuffer buffer, int index)
+        where TInputBuffer : IInputBuffer;
 }

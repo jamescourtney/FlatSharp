@@ -14,10 +14,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Update="VTables.tt">
-      <LastGenOutput>VTables.cs</LastGenOutput>
-      <Generator>TextTemplatingFileGenerator</Generator>
-    </None>
     <None Update="SpanComparers.tt">
       <LastGenOutput>SpanComparers.cs</LastGenOutput>
       <Generator>TextTemplatingFileGenerator</Generator>
@@ -42,11 +38,6 @@
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>UnionTypes.tt</DependentUpon>
-    </Compile>
-    <Compile Update="VTables.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>VTables.tt</DependentUpon>
     </Compile>
   </ItemGroup>
 
