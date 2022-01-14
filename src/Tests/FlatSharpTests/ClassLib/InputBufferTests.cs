@@ -283,6 +283,16 @@ public class InputBufferTests
         if (inputBuffer is IInputBuffer2 b2)
         {
             Assert.Equal(isReadOnly, b2.IsReadOnly);
+            Assert.True(b2.GetReadOnlyMemory().Span.SequenceEqual(buffer));
+
+            if (isReadOnly)
+            {
+                Assert.Throws<InvalidOperationException>(() => b2.GetMemory());
+            }
+            else
+            {
+                Assert.True(b2.GetMemory().Span.SequenceEqual(buffer));
+            }
         }
 
         if (isReadOnly)

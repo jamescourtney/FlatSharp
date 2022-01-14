@@ -16,6 +16,7 @@
 
 using System.Linq;
 using System.Runtime.InteropServices;
+using FlatSharp.CodeGen;
 using FlatSharp.TypeModel;
 
 namespace FlatSharpTests;

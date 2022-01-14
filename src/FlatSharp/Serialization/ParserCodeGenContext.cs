@@ -17,7 +17,7 @@
 using System.Text;
 using FlatSharp.TypeModel;
 
-namespace FlatSharp;
+namespace FlatSharp.CodeGen;
 
 /// <summary>
 /// Code gen context for parse methods.

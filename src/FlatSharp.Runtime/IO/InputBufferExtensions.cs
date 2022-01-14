@@ -16,7 +16,7 @@
 
 using System.IO;
 
-namespace FlatSharp;
+namespace FlatSharp.Internal;
 
 /// <summary>
 /// Extensions for input buffers.

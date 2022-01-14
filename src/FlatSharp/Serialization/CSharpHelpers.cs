@@ -14,18 +14,13 @@
  * limitations under the License.
  */
 
-namespace FlatSharp;
+namespace FlatSharp.CodeGen;
 
 /// <summary>
 /// Some C# codegen helpers.
 /// </summary>
 internal static class CSharpHelpers
 {
-    internal const string GeneratedClassInputBufferFieldName = "__buffer";
-    internal const string GeneratedClassOffsetFieldName = "__offset";
-    internal const string GeneratedClassMaxVtableIndexFieldName = "__maxVTableIndex";
-    internal const string GeneratedClassVTableOffsetFieldName = "__vtableOffset";
-
     internal static string GetGlobalCompilableTypeName(this Type t)
     {
         return $"global::{GetCompilableTypeName(t)}";

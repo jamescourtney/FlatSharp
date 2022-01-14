@@ -24,6 +24,8 @@ global using System.Diagnostics.CodeAnalysis;
 global using System.Reflection;
 global using System.Runtime.CompilerServices;
 
+global using FlatSharp.Internal;
+
 #if NETSTANDARD2_0
 global using FlatSharp.Polyfills;
 #endif

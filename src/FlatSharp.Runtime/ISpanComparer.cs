@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-namespace FlatSharp;
+namespace FlatSharp.Internal;
 
 /// <summary>
 /// An analog of IComparer for Spans. The implementation performs comparison consistent with the type the span represents.
 /// </summary>
-[EditorBrowsable(EditorBrowsableState.Never)]
 public interface ISpanComparer
 {
     /// <summary>

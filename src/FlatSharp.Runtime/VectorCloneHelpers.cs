@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-namespace FlatSharp;
+namespace FlatSharp.Internal;
 
 /// <summary>
 /// Helper methods for deep-cloning vectors.
 /// </summary>
-[EditorBrowsable(EditorBrowsableState.Never)]
 public static class VectorCloneHelpers
 {
     [return: NotNullIfNotNull("item")]

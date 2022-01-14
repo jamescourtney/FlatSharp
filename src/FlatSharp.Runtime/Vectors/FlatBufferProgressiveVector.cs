@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-namespace FlatSharp;
+namespace FlatSharp.Internal;
 
 /// <summary>
 /// A vector implementation that is filled on demand. Optimized
 /// for data locality, random access, and reasonably low memory overhead.
 /// </summary>
-[EditorBrowsable(EditorBrowsableState.Never)]
 public class FlatBufferProgressiveVector<T, TInputBuffer> : IList<T>, IReadOnlyList<T>, IFlatBufferDeserializedVector
     where T : notnull
     where TInputBuffer : IInputBuffer

@@ -132,6 +132,18 @@ public struct ArrayInputBuffer : IInputBuffer, IInputBuffer2
         return this.memory;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Memory<byte> GetMemory()
+    {
+        return this.memory;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ReadOnlyMemory<byte> GetReadOnlyMemory()
+    {
+        return this.memory;
+    }
+
     public T InvokeParse<T>(IGeneratedSerializer<T> serializer, int offset)
     {
         return serializer.Parse(this, offset);

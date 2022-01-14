@@ -19,9 +19,8 @@ using System.Runtime.InteropServices;
 namespace FlatSharp.Internal;
 
 /// <summary>
-/// Represents a vtable for a table with 4 fields.
+/// Represents a vtable for a table with up to 4 fields.
 /// </summary>
-[EditorBrowsable(EditorBrowsableState.Never)]
 [StructLayout(LayoutKind.Explicit, Size = 8)]
 public struct VTable4 : IVTable
 {
@@ -29,13 +28,13 @@ public struct VTable4 : IVTable
     private ushort offset0;
 
     [FieldOffset(2)]
-    private ushort offset1;
-
-    [FieldOffset(4)]
     private ushort offset2;
 
+    [FieldOffset(4)]
+    private ushort offset4;
+
     [FieldOffset(6)]
-    private ushort offset3;
+    private ushort offset6;
 
     [FieldOffset(0)]
     private ulong offset0ul;
@@ -77,7 +76,7 @@ public struct VTable4 : IVTable
             {
                 vtable = vtable.Slice(4, 6);
                 item.offset0ui = ScalarSpanReader.ReadUInt(vtable);
-                item.offset2 = ScalarSpanReader.ReadUShort(vtable.Slice(4, 2));
+                item.offset4 = ScalarSpanReader.ReadUShort(vtable.Slice(4, 2));
             }
             break;
 
@@ -97,9 +96,9 @@ public struct VTable4 : IVTable
         switch (index)
         {
             case 0: return this.offset0;
-            case 1: return this.offset1;
-            case 2: return this.offset2;
-            case 3: return this.offset3;
+            case 1: return this.offset2;
+            case 2: return this.offset4;
+            case 3: return this.offset6;
             default: return 0;
         }
     }

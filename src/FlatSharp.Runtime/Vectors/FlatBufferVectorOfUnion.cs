@@ -16,12 +16,11 @@
 
 using System.IO;
 
-namespace FlatSharp;
+namespace FlatSharp.Internal;
 
 /// <summary>
 /// A class that FlatSharp uses to deserialize vectors of unions.
 /// </summary>
-[EditorBrowsable(EditorBrowsableState.Never)]
 public abstract class FlatBufferVectorOfUnion<T, TInputBuffer> : FlatBufferVectorBase<T, TInputBuffer>
     where TInputBuffer : IInputBuffer
     where T : IFlatBufferUnion

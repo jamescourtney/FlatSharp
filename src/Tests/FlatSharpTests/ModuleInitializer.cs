@@ -16,9 +16,8 @@
 
 namespace FlatSharpTests
 {
-    using System;
     using System.Runtime.CompilerServices;
-    using FlatSharp;
+    using FlatSharp.CodeGen;
 
     public partial class ModuleInitializer
     {

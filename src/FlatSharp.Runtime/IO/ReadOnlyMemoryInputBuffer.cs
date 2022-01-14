@@ -27,6 +27,8 @@ namespace FlatSharp;
 /// </summary>
 public struct ReadOnlyMemoryInputBuffer : IInputBuffer, IInputBuffer2
 {
+    private const string ErrorMessage = "ReadOnlyMemory inputs may not deserialize writable memory.";
+
     private readonly MemoryPointer pointer;
 
     public ReadOnlyMemoryInputBuffer(ReadOnlyMemory<byte> memory)
@@ -118,7 +120,7 @@ public struct ReadOnlyMemoryInputBuffer : IInputBuffer, IInputBuffer2
 
     public Memory<byte> GetByteMemory(int start, int length)
     {
-        throw new InvalidOperationException("ReadOnlyMemory inputs may not deserialize writable memory.");
+        throw new InvalidOperationException(ErrorMessage);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -133,9 +135,20 @@ public struct ReadOnlyMemoryInputBuffer : IInputBuffer, IInputBuffer2
         return this.pointer.memory.Span;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ReadOnlyMemory<byte> GetReadOnlyMemory()
+    {
+        return this.pointer.memory;
+    }
+
     public Span<byte> GetSpan()
     {
-        throw new InvalidOperationException("ReadOnlyMemory inputs may not deserialize writable memory.");
+        throw new InvalidOperationException(ErrorMessage);
+    }
+
+    public Memory<byte> GetMemory()
+    {
+        throw new InvalidOperationException(ErrorMessage);
     }
 
     public T InvokeParse<T>(IGeneratedSerializer<T> serializer, int offset)
