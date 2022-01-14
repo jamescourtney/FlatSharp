@@ -55,7 +55,7 @@ public class InputBufferTests
         this.InputBufferTest(new MemoryInputBuffer(Input));
         this.StringInputBufferTest(new MemoryInputBuffer(StringInput));
         this.TestDeserializeBoth(b => new MemoryInputBuffer(b));
-        this.TestReadByteArray(b => new MemoryInputBuffer(b));
+        this.TestReadByteArray(false, b => new MemoryInputBuffer(b));
         this.TableSerializationTest(
             default(SpanWriter),
             (s, b) => s.Parse<PrimitiveTypesTable>(b.AsMemory()));
@@ -68,7 +68,7 @@ public class InputBufferTests
         this.StringInputBufferTest(new ReadOnlyMemoryInputBuffer(StringInput));
 
         this.TestDeserialize<ReadOnlyMemoryInputBuffer, ReadOnlyMemoryTable>(b => new ReadOnlyMemoryInputBuffer(b));
-        this.TestReadByteArray(b => new ReadOnlyMemoryInputBuffer(b));
+        this.TestReadByteArray(true, b => new ReadOnlyMemoryInputBuffer(b));
         var ex = Assert.Throws<InvalidOperationException>(
             () => this.TestDeserialize<ReadOnlyMemoryInputBuffer, MemoryTable>(b => new ReadOnlyMemoryInputBuffer(b)));
         Assert.Equal("ReadOnlyMemory inputs may not deserialize writable memory.", ex.Message);
@@ -84,7 +84,19 @@ public class InputBufferTests
         this.InputBufferTest(new ArrayInputBuffer(Input));
         this.StringInputBufferTest(new ArrayInputBuffer(StringInput));
         this.TestDeserializeBoth(b => new ArrayInputBuffer(b));
-        this.TestReadByteArray(b => new ArrayInputBuffer(b));
+        this.TestReadByteArray(false, b => new ArrayInputBuffer(b));
+        this.TableSerializationTest(
+            default(SpanWriter),
+            (s, b) => s.Parse<PrimitiveTypesTable>(b));
+    }
+
+    [Fact]
+    public void BufferWithoutIInputBuffer2Implementation()
+    {
+        this.InputBufferTest(new FakeInputBuffer(Input));
+        this.StringInputBufferTest(new FakeInputBuffer(StringInput));
+        this.TestDeserializeBoth(b => new FakeInputBuffer(b));
+        this.TestReadByteArray(false, b => new FakeInputBuffer(b));
         this.TableSerializationTest(
             default(SpanWriter),
             (s, b) => s.Parse<PrimitiveTypesTable>(b));
@@ -96,7 +108,7 @@ public class InputBufferTests
         this.InputBufferTest(new ArraySegmentInputBuffer(new ArraySegment<byte>(Input)));
         this.StringInputBufferTest(new ArraySegmentInputBuffer(new ArraySegment<byte>(StringInput)));
         this.TestDeserializeBoth(b => new ArraySegmentInputBuffer(new ArraySegment<byte>(b)));
-        this.TestReadByteArray(b => new ArraySegmentInputBuffer(new ArraySegment<byte>(b)));
+        this.TestReadByteArray(false, b => new ArraySegmentInputBuffer(new ArraySegment<byte>(b)));
         this.TableSerializationTest(
             default(SpanWriter),
             (s, b) => s.Parse<PrimitiveTypesTable>(new ArraySegment<byte>(b)));
@@ -226,7 +238,7 @@ public class InputBufferTests
         this.CompareEqual<int>(sizeof(int), i => BinaryPrimitives.ReadInt32LittleEndian(mem.Span.Slice(i)), i => ib.ReadInt(i));
 
 #if NETCOREAPP2_1_OR_GREATER
-            this.CompareEqual<float>(sizeof(float), i => BitConverter.ToSingle(mem.Span.Slice(i)), i => ib.ReadFloat(i));
+        this.CompareEqual<float>(sizeof(float), i => BitConverter.ToSingle(mem.Span.Slice(i)), i => ib.ReadFloat(i));
 #endif
 
         this.CompareEqual<ulong>(sizeof(ulong), i => BinaryPrimitives.ReadUInt64LittleEndian(mem.Span.Slice(i)), i => ib.ReadULong(i));
@@ -258,7 +270,7 @@ public class InputBufferTests
         this.TestDeserialize<TBuffer, MemoryTable>(bufferBuilder);
     }
 
-    private void TestReadByteArray<TBuffer>(Func<byte[], TBuffer> bufferBuilder) where TBuffer : IInputBuffer
+    private void TestReadByteArray<TBuffer>(bool isReadOnly, Func<byte[], TBuffer> bufferBuilder) where TBuffer : IInputBuffer
     {
         byte[] buffer = new byte[] { 4, 0, 0, 0, 7, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7 };
         TBuffer inputBuffer = bufferBuilder(buffer);
@@ -266,6 +278,22 @@ public class InputBufferTests
         byte[] expected = new byte[] { 1, 2, 3, 4, 5, 6, 7, };
 
         Assert.True(inputBuffer.ReadByteReadOnlyMemoryBlock(0).Span.SequenceEqual(expected));
+        Assert.True(inputBuffer.AsReadOnlySpan().SequenceEqual(buffer));
+
+        if (inputBuffer is IInputBuffer2 b2)
+        {
+            Assert.Equal(isReadOnly, b2.IsReadOnly);
+        }
+
+        if (isReadOnly)
+        {
+            Assert.Throws<InvalidOperationException>(() => inputBuffer.AsSpan());
+        }
+        else
+        {
+            Assert.True(inputBuffer.ReadByteMemoryBlock(0).Span.SequenceEqual(expected));
+            Assert.True(inputBuffer.AsSpan().SequenceEqual(buffer));
+        }
     }
 
     private void TestDeserialize<TBuffer, TType>(Func<byte[], TBuffer> bufferBuilder)
@@ -350,5 +378,88 @@ public class InputBufferTests
         public virtual Memory<byte> Memory { get; set; }
 
         ReadOnlyMemory<byte> IMemoryTable.Memory { get => this.Memory; set => this.Memory = MemoryMarshal.AsMemory(value); }
+    }
+
+    // Does not implement IInputBuffer2. Ensures that nothing breaks.
+    public struct FakeInputBuffer : IInputBuffer
+    {
+        private ArrayInputBuffer innerBuffer;
+
+        public FakeInputBuffer(byte[] data)
+        {
+            this.innerBuffer = new ArrayInputBuffer(data);
+        }
+
+        public int Length => ((IInputBuffer)innerBuffer).Length;
+
+        public Memory<byte> GetByteMemory(int start, int length)
+        {
+            return ((IInputBuffer)innerBuffer).GetByteMemory(start, length);
+        }
+
+        public ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length)
+        {
+            return ((IInputBuffer)innerBuffer).GetReadOnlyByteMemory(start, length);
+        }
+
+        public TItem InvokeParse<TItem>(IGeneratedSerializer<TItem> serializer, int offset)
+        {
+            return ((IInputBuffer)innerBuffer).InvokeParse<TItem>(serializer, offset);
+        }
+
+        public byte ReadByte(int offset)
+        {
+            return ((IInputBuffer)innerBuffer).ReadByte(offset);
+        }
+
+        public double ReadDouble(int offset)
+        {
+            return ((IInputBuffer)innerBuffer).ReadDouble(offset);
+        }
+
+        public float ReadFloat(int offset)
+        {
+            return ((IInputBuffer)innerBuffer).ReadFloat(offset);
+        }
+
+        public int ReadInt(int offset)
+        {
+            return ((IInputBuffer)innerBuffer).ReadInt(offset);
+        }
+
+        public long ReadLong(int offset)
+        {
+            return ((IInputBuffer)innerBuffer).ReadLong(offset);
+        }
+
+        public sbyte ReadSByte(int offset)
+        {
+            return ((IInputBuffer)innerBuffer).ReadSByte(offset);
+        }
+
+        public short ReadShort(int offset)
+        {
+            return ((IInputBuffer)innerBuffer).ReadShort(offset);
+        }
+
+        public string ReadString(int offset, int byteLength, Encoding encoding)
+        {
+            return ((IInputBuffer)innerBuffer).ReadString(offset, byteLength, encoding);
+        }
+
+        public uint ReadUInt(int offset)
+        {
+            return ((IInputBuffer)innerBuffer).ReadUInt(offset);
+        }
+
+        public ulong ReadULong(int offset)
+        {
+            return ((IInputBuffer)innerBuffer).ReadULong(offset);
+        }
+
+        public ushort ReadUShort(int offset)
+        {
+            return ((IInputBuffer)innerBuffer).ReadUShort(offset);
+        }
     }
 }

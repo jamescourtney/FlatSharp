@@ -106,6 +106,11 @@ public interface IInputBuffer
 public interface IInputBuffer2 : IInputBuffer
 {
     /// <summary>
+    /// Indicates if this instance is read only.
+    /// </summary>
+    bool IsReadOnly { get; }
+
+    /// <summary>
     /// Gets a read only span covering the entire input buffer.
     /// </summary>
     ReadOnlySpan<byte> GetReadOnlySpan();

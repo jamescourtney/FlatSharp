@@ -30,6 +30,8 @@ public struct ArraySegmentInputBuffer : IInputBuffer, IInputBuffer2
         this.pointer = new ArraySegmentPointer { segment = memory };
     }
 
+    public bool IsReadOnly => false;
+
     public int Length => this.pointer.segment.Count;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

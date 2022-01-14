@@ -30,6 +30,8 @@ public struct MemoryInputBuffer : IInputBuffer, IInputBuffer2
         this.pointer = new MemoryPointer { memory = memory };
     }
 
+    public bool IsReadOnly => false;
+
     public int Length
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
