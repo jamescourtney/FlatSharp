@@ -120,6 +120,7 @@ $@"
                 using System.Runtime.CompilerServices;
                 using FlatSharp;
                 using FlatSharp.Attributes;
+                using FlatSharp.Internal;
 
                 {code}
             }}";
@@ -163,42 +164,42 @@ $@"
         string? compilerVersion = typeof(RoslynSerializerGenerator).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version;
 
         string code = $@"
-                [{nameof(FlatSharpGeneratedSerializerAttribute)}({nameof(FlatBufferDeserializationOption)}.{this.options.DeserializationOption})]
-                {visibility} sealed class {GeneratedSerializerClassName} : {nameof(IGeneratedSerializer<byte>)}<{typeof(TRoot).GetGlobalCompilableTypeName()}>
-                {{    
-                    // Method generated to help AOT compilers make good decisions about generics.
-                    public void __AotHelper()
-                    {{
-                        this.Write<ISpanWriter>(default!, new byte[10], default!, default!, default!);
-                        this.Write<SpanWriter>(default!, new byte[10], default!, default!, default!);
+            [{nameof(FlatSharpGeneratedSerializerAttribute)}({nameof(FlatBufferDeserializationOption)}.{this.options.DeserializationOption})]
+            {visibility} sealed class {GeneratedSerializerClassName} : {nameof(IGeneratedSerializer<byte>)}<{typeof(TRoot).GetGlobalCompilableTypeName()}>
+            {{    
+                // Method generated to help AOT compilers make good decisions about generics.
+                public void __AotHelper()
+                {{
+                    this.Write<ISpanWriter>(default!, new byte[10], default!, default!, default!);
+                    this.Write<SpanWriter>(default!, new byte[10], default!, default!, default!);
 
-                        this.Parse<IInputBuffer>(default!, 0);
-                        this.Parse<MemoryInputBuffer>(default!, 0);
-                        this.Parse<ReadOnlyMemoryInputBuffer>(default!, 0);
-                        this.Parse<ArrayInputBuffer>(default!, 0);
-                        this.Parse<ArraySegmentInputBuffer>(default!, 0);
+                    this.Parse<IInputBuffer>(default!, 0);
+                    this.Parse<MemoryInputBuffer>(default!, 0);
+                    this.Parse<ReadOnlyMemoryInputBuffer>(default!, 0);
+                    this.Parse<ArrayInputBuffer>(default!, 0);
+                    this.Parse<ArraySegmentInputBuffer>(default!, 0);
 
-                        throw new InvalidOperationException(""__AotHelper is not intended to be invoked"");
-                    }}
-
-                    public {GeneratedSerializerClassName}()
-                    {{
-                        string? runtimeVersion = System.Reflection.CustomAttributeExtensions.GetCustomAttribute<System.Reflection.AssemblyFileVersionAttribute>(typeof(SpanWriter).Assembly)?.Version;
-                        string compilerVersion = ""{compilerVersion}"";
-
-                        if (runtimeVersion != compilerVersion)
-                        {{
-                            throw new InvalidOperationException($""FlatSharp runtime version didn't match compiler version. Ensure all FlatSharp NuGet packages use the same version. Runtime = '{{runtimeVersion}}', Compiler = '{{compilerVersion}}'."");
-                        }}
-
-                        if (string.IsNullOrEmpty(runtimeVersion))
-                        {{
-                            throw new InvalidOperationException($""Unable to find FlatSharp.Runtime version. Ensure all FlatSharp NuGet packages use the same version. Runtime = '{{runtimeVersion}}', Compiler = '{{compilerVersion}}'."");
-                        }}
-                    }}
-
-                    {string.Join("\r\n", this.methodDeclarations.Select(x => x.ToFullString()))}
+                    throw new InvalidOperationException(""__AotHelper is not intended to be invoked"");
                 }}
+
+                public {GeneratedSerializerClassName}()
+                {{
+                    string? runtimeVersion = System.Reflection.CustomAttributeExtensions.GetCustomAttribute<System.Reflection.AssemblyFileVersionAttribute>(typeof(SpanWriter).Assembly)?.Version;
+                    string compilerVersion = ""{compilerVersion}"";
+
+                    if (runtimeVersion != compilerVersion)
+                    {{
+                        throw new InvalidOperationException($""FlatSharp runtime version didn't match compiler version. Ensure all FlatSharp NuGet packages use the same version. Runtime = '{{runtimeVersion}}', Compiler = '{{compilerVersion}}'."");
+                    }}
+
+                    if (string.IsNullOrEmpty(runtimeVersion))
+                    {{
+                        throw new InvalidOperationException($""Unable to find FlatSharp.Runtime version. Ensure all FlatSharp NuGet packages use the same version. Runtime = '{{runtimeVersion}}', Compiler = '{{compilerVersion}}'."");
+                    }}
+                }}
+
+                {string.Join("\r\n", this.methodDeclarations.Select(x => x.ToFullString()))}
+            }}
 ";
 
         return code;

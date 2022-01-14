@@ -9,8 +9,8 @@
   
   <PropertyGroup>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>6.0.5</Version>
-    <PackageVersion>6.0.5</PackageVersion>
+    <Version>6.1.0</Version>
+    <PackageVersion>6.1.0</PackageVersion>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <Authors>James Courtney</Authors>
     <Description>FlatSharp is a fast, idiomatic implementation of the FlatBuffer binary format.</Description>
