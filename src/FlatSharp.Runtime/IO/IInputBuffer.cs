@@ -99,3 +99,25 @@ public interface IInputBuffer
     /// </summary>
     TItem InvokeParse<TItem>(IGeneratedSerializer<TItem> serializer, int offset);
 }
+
+/// <summary>
+/// Extensions to <see cref="IInputBuffer"/>.
+/// </summary>
+public interface IInputBuffer2 : IInputBuffer
+{
+    /// <summary>
+    /// Indicates if this instance is read only.
+    /// </summary>
+    bool IsReadOnly { get; }
+
+    /// <summary>
+    /// Gets a read only span covering the entire input buffer.
+    /// </summary>
+    ReadOnlySpan<byte> GetReadOnlySpan();
+
+    /// <summary>
+    /// Gets a span covering the entire input buffer.
+    /// </summary>
+    /// <returns></returns>
+    Span<byte> GetSpan();
+}

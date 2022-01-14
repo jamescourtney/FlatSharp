@@ -153,7 +153,7 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
                 throw new BufferTooSmallException { SizeNeeded = inputBuffer.Length };
             }
 
-            inputBuffer.GetReadOnlyByteMemory(0, inputBuffer.Length).Span.CopyTo(destination);
+            inputBuffer.AsReadOnlySpan().CopyTo(destination);
             return inputBuffer.Length;
         }
 

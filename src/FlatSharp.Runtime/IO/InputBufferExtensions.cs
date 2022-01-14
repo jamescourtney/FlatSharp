@@ -135,8 +135,43 @@ public static class InputBufferExtensions
         }
     }
 
+    /// <summary>
+    /// Gets a read only span covering the entire input buffer.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ReadOnlySpan<byte> AsReadOnlySpan<TBuffer>(this TBuffer buffer) where TBuffer : IInputBuffer
+    {
+        if (buffer is IInputBuffer2)
+        {
+            return ((IInputBuffer2)buffer).GetReadOnlySpan();
+        }
+        else
+        {
+            return buffer.GetReadOnlyByteMemory(0, buffer.Length).Span;
+        }
+    }
+
+    /// <summary>
+    /// Gets a span covering the entire input buffer.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<byte> AsSpan<TBuffer>(this TBuffer buffer) where TBuffer : IInputBuffer
+    {
+        // Since this method is inlined, the JIT knows for sure the type of TBuffer
+        // and can elide this condition.
+        if (buffer is IInputBuffer2)
+        {
+            return ((IInputBuffer2)buffer).GetSpan();
+        }
+        else
+        {
+            return buffer.GetByteMemory(0, buffer.Length).Span;
+        }
+    }
+
     [ExcludeFromCodeCoverage] // Not currently used.
     [Conditional("DEBUG")]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void CheckAlignment<TBuffer>(this TBuffer buffer, int offset, int size) where TBuffer : IInputBuffer
     {
 #if DEBUG

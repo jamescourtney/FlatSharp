@@ -6,13 +6,14 @@
     <TargetFrameworks>net6.0</TargetFrameworks>
     <DelaySign>false</DelaySign>
     <SignAssembly>false</SignAssembly>
+    <DefineConstants>$(DefineContants);FLATSHARP_6_0_0_OR_GREATER</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.13.1" />
     <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.13.1" />
-    <PackageReference Include="FlatSharp" Version="4.2.3" />
-    <PackageReference Include="FlatSharp.Runtime" Version="4.2.3" />
+    <PackageReference Include="FlatSharp" Version="6.0.5" />
+    <PackageReference Include="FlatSharp.Runtime" Version="6.0.5" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="protobuf-net" Version="3.0.101" />
     <PackageReference Include="MessagePack" Version="2.3.75" />
