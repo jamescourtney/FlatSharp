@@ -19,7 +19,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Threading;
-using System.Threading.Tasks;
 
 using CommandLine;
 using FlatSharp.TypeModel;
