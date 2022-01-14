@@ -124,10 +124,14 @@ public class InputBufferTests
             4, 0, 0, 0 // soffset to vtable.
         };
 
-        new ArrayInputBuffer(buffer).InitializeVTable(4, out int vtableOffset, out int maxVtableIndex, out ushort vtableLength);
+        new ArrayInputBuffer(buffer).InitializeVTable(
+            4, 
+            out int vtableOffset,
+            out nuint fieldCount,
+            out ReadOnlySpan<byte> fieldData);
         Assert.Equal(0, vtableOffset);
-        Assert.Equal(-1, maxVtableIndex);
-        Assert.Equal(4, vtableLength);
+        Assert.Equal((nuint)0, fieldCount);
+        Assert.Equal(0, fieldData.Length);
     }
 
     [Fact]
@@ -162,10 +166,15 @@ public class InputBufferTests
             2, 0, 0, 0,
         };
 
-        new ArrayInputBuffer(buffer).InitializeVTable(8, out int vtableOffset, out int maxVtableIndex, out ushort vtableLength);
+        new ArrayInputBuffer(buffer).InitializeVTable(
+            8,
+            out int vtableOffset,
+            out nuint fieldCount,
+            out ReadOnlySpan<byte> fieldData);
+
         Assert.Equal(0, vtableOffset);
-        Assert.Equal(1, maxVtableIndex);
-        Assert.Equal(8, vtableLength);
+        Assert.Equal((nuint)2, fieldCount);
+        Assert.Equal(4, fieldData.Length);
     }
 
     [Fact]
