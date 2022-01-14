@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-namespace FlatSharp;
+namespace FlatSharp.Internal;
 
 /// <summary>
 /// An <see cref="IIndexedVector{TKey, TValue}"/> implementation that loads data progressively.
 /// </summary>
-[EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class FlatBufferProgressiveIndexedVector<TKey, TValue, TInputBuffer> : IIndexedVector<TKey, TValue>
     where TValue : class
     where TKey : notnull

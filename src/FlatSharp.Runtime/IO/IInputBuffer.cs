@@ -116,8 +116,17 @@ public interface IInputBuffer2 : IInputBuffer
     ReadOnlySpan<byte> GetReadOnlySpan();
 
     /// <summary>
+    /// Gets a read only memory covering the entire input buffer.
+    /// </summary>
+    ReadOnlyMemory<byte> GetReadOnlyMemory();
+
+    /// <summary>
     /// Gets a span covering the entire input buffer.
     /// </summary>
-    /// <returns></returns>
     Span<byte> GetSpan();
+
+    /// <summary>
+    /// Gets a memory covering the entire input buffer.
+    /// </summary>
+    Memory<byte> GetMemory();
 }

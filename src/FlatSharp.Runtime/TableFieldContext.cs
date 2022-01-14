@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-namespace FlatSharp;
+namespace FlatSharp.Internal;
 
 /// <summary>
-/// A contextual containing information about the table field.
+/// A context containing information about the table field.
 /// </summary>
-[EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class TableFieldContext
 {
     public TableFieldContext(string fullName, bool sharedString, bool writeThrough)

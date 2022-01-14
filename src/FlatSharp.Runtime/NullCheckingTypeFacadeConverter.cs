@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-namespace FlatSharp.Runtime;
+using FlatSharp.Runtime;
+
+namespace FlatSharp.Internal;
 
 /// <summary>
 /// Adds a null check to Facade converters for underlying reference types.
 /// </summary>
-[EditorBrowsable(EditorBrowsableState.Never)]
 public struct NullCheckingTypeFacadeConverter<TUnderlyingType, TType, TConverter>
     : ITypeFacadeConverter<TUnderlyingType, TType>
     where TConverter : struct, ITypeFacadeConverter<TUnderlyingType, TType>

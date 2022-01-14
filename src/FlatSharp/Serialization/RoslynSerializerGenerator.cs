@@ -27,7 +27,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Formatting;
 
-namespace FlatSharp;
+namespace FlatSharp.CodeGen;
 
 /// <summary>
 /// Generates a collection of methods to help serialize the given root type.

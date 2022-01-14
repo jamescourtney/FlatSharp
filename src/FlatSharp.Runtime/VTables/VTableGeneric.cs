@@ -19,7 +19,6 @@ namespace FlatSharp.Internal;
 /// <summary>
 /// Represents a vtable for an arbitrary table.
 /// </summary>
-[EditorBrowsable(EditorBrowsableState.Never)]
 public struct VTableGeneric : IVTable
 {
     private int offset;
@@ -40,7 +39,6 @@ public struct VTableGeneric : IVTable
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int OffsetOf<TInputBuffer>(TInputBuffer buffer, int index)
        where TInputBuffer : IInputBuffer
     {

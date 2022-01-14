@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-namespace FlatSharp;
+namespace FlatSharp.Internal;
 
 /// <summary>
 /// A base flat buffer vector for non-unions.

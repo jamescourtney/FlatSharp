@@ -138,6 +138,18 @@ public struct ArraySegmentInputBuffer : IInputBuffer, IInputBuffer2
         return this.pointer.segment;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Memory<byte> GetMemory()
+    {
+        return this.pointer.segment;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ReadOnlyMemory<byte> GetReadOnlyMemory()
+    {
+        return this.pointer.segment;
+    }
+
     public T InvokeParse<T>(IGeneratedSerializer<T> serializer, int offset)
     {
         return serializer.Parse(this, offset);

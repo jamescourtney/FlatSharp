@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-namespace FlatSharp;
+namespace FlatSharp.CodeGen;
 
 /// <summary>
 /// Defines the result of code generating a method.

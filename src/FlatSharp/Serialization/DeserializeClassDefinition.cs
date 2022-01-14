@@ -15,9 +15,8 @@
  */
 
 using FlatSharp.TypeModel;
-using FlatSharp.Internal;
 
-namespace FlatSharp;
+namespace FlatSharp.CodeGen;
 
 internal class DeserializeClassDefinition
 {
@@ -385,9 +384,14 @@ internal class DeserializeClassDefinition
         {
             return nameof(VTableGeneric);
         }
+        else if (maxVtableIndex >= 4)
+        {
+            return nameof(VTable8);
+        }
         else
         {
-            return $"VTable{maxVtableIndex + 1}";
+            FlatSharpInternal.Assert(maxVtableIndex < 4, "expected small vtable");
+            return nameof(VTable4);
         }
     }
 

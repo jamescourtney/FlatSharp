@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-namespace FlatSharp;
+namespace FlatSharp.Internal;
 
 /// <summary>
 /// A base flat buffer vector, common to standard vectors and unions.
 /// </summary>
-[EditorBrowsable(EditorBrowsableState.Never)]
 public abstract class FlatBufferVectorBase<T, TInputBuffer> : IList<T>, IReadOnlyList<T>
     where TInputBuffer : IInputBuffer
 {

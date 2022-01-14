@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-namespace FlatSharp;
+namespace FlatSharp.CodeGen;
 
 /// <summary>
 /// Code gen context for serialization methods.

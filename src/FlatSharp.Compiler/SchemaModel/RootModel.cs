@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using FlatSharp.CodeGen;
 using FlatSharp.Compiler.Schema;
 
 namespace FlatSharp.Compiler.SchemaModel;

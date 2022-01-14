@@ -15,8 +15,10 @@
  */
 
 using System.Runtime.ExceptionServices;
-using FlatSharp.Compiler.Schema;
+
 using FlatSharp.Attributes;
+using FlatSharp.CodeGen;
+using FlatSharp.Compiler.Schema;
 
 namespace FlatSharp.Compiler.SchemaModel;
 

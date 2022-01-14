@@ -21,6 +21,7 @@ using System.Security.Cryptography;
 using System.Threading;
 
 using CommandLine;
+using FlatSharp.CodeGen;
 using FlatSharp.TypeModel;
 
 namespace FlatSharp.Compiler;

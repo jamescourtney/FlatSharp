@@ -33,6 +33,7 @@ using System.Buffers;
 using System.Buffers.Binary;
 using System.Linq;
 using FlatSharp.Attributes;
+using FlatSharp.Internal;
 
 namespace FlatSharp;
 

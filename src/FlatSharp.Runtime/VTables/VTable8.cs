@@ -19,47 +19,46 @@ using System.Runtime.InteropServices;
 namespace FlatSharp.Internal;
 
 /// <summary>
-/// Represents a vtable for a table with 8 fields.
+/// Represents a vtable for a table with up to 8 fields.
 /// </summary>
 [StructLayout(LayoutKind.Explicit, Size = 16)]
-[EditorBrowsable(EditorBrowsableState.Never)]
 public struct VTable8 : IVTable
 {
     [FieldOffset(0)]
     private ushort offset0;
 
     [FieldOffset(2)]
-    private ushort offset1;
-
-    [FieldOffset(4)]
     private ushort offset2;
 
-    [FieldOffset(6)]
-    private ushort offset3;
-
-    [FieldOffset(8)]
+    [FieldOffset(4)]
     private ushort offset4;
 
-    [FieldOffset(10)]
-    private ushort offset5;
-
-    [FieldOffset(12)]
+    [FieldOffset(6)]
     private ushort offset6;
 
+    [FieldOffset(8)]
+    private ushort offset8;
+
+    [FieldOffset(10)]
+    private ushort offset10;
+
+    [FieldOffset(12)]
+    private ushort offset12;
+
     [FieldOffset(14)]
-    private ushort offset7;
+    private ushort offset14;
 
     [FieldOffset(0)]
     private uint offset0ui;
 
     [FieldOffset(8)]
-    private uint offset2ui;
+    private uint offset8ui;
 
     [FieldOffset(0)]
     private ulong offset0ul;
 
     [FieldOffset(8)]
-    private ulong offset1ul;
+    private ulong offset8ul;
 
     public int MaxSupportedIndex => 7;
 
@@ -98,7 +97,7 @@ public struct VTable8 : IVTable
             {
                 vtable = vtable.Slice(4, 6);
                 item.offset0ui = ScalarSpanReader.ReadUInt(vtable);
-                item.offset2 = ScalarSpanReader.ReadUShort(vtable.Slice(4, 2));
+                item.offset4 = ScalarSpanReader.ReadUShort(vtable.Slice(4, 2));
             }
             break;
 
@@ -113,7 +112,7 @@ public struct VTable8 : IVTable
             {
                 vtable = vtable.Slice(4, 10);
                 item.offset0ul = ScalarSpanReader.ReadULong(vtable);
-                item.offset4 = ScalarSpanReader.ReadUShort(vtable.Slice(8, 2));
+                item.offset8 = ScalarSpanReader.ReadUShort(vtable.Slice(8, 2));
             }
             break;
 
@@ -121,7 +120,7 @@ public struct VTable8 : IVTable
             {
                 vtable = vtable.Slice(4, 12);
                 item.offset0ul = ScalarSpanReader.ReadULong(vtable);
-                item.offset2ui = ScalarSpanReader.ReadUInt(vtable.Slice(8, 4));
+                item.offset8ui = ScalarSpanReader.ReadUInt(vtable.Slice(8, 4));
             }
             break;
 
@@ -129,8 +128,8 @@ public struct VTable8 : IVTable
             {
                 vtable = vtable.Slice(4, 14);
                 item.offset0ul = ScalarSpanReader.ReadULong(vtable);
-                item.offset2ui = ScalarSpanReader.ReadUInt(vtable.Slice(8, 4));
-                item.offset6 = ScalarSpanReader.ReadUShort(vtable.Slice(12, 2));
+                item.offset8ui = ScalarSpanReader.ReadUInt(vtable.Slice(8, 4));
+                item.offset12 = ScalarSpanReader.ReadUShort(vtable.Slice(12, 2));
             }
             break;
 
@@ -138,7 +137,7 @@ public struct VTable8 : IVTable
             {
                 vtable = vtable.Slice(4, 16);
                 item.offset0ul = ScalarSpanReader.ReadULong(vtable);
-                item.offset1ul = ScalarSpanReader.ReadULong(vtable.Slice(8, 8));
+                item.offset8ul = ScalarSpanReader.ReadULong(vtable.Slice(8, 8));
             }
             break;
         }
@@ -151,13 +150,13 @@ public struct VTable8 : IVTable
         switch (index)
         {
             case 0: return this.offset0;
-            case 1: return this.offset1;
-            case 2: return this.offset2;
-            case 3: return this.offset3;
-            case 4: return this.offset4;
-            case 5: return this.offset5;
-            case 6: return this.offset6;
-            case 7: return this.offset7;
+            case 1: return this.offset2;
+            case 2: return this.offset4;
+            case 3: return this.offset6;
+            case 4: return this.offset8;
+            case 5: return this.offset10;
+            case 6: return this.offset12;
+            case 7: return this.offset14;
             default: return 0;
         }
     }

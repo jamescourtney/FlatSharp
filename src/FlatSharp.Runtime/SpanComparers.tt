@@ -39,7 +39,7 @@
     };
 #>
 
-namespace FlatSharp;
+namespace FlatSharp.Internal;
 
 <#
     foreach (var pair in types)
@@ -48,8 +48,7 @@ namespace FlatSharp;
         var typeName = pair.typeName;
         var className = $"{casedName}SpanComparer";
 #>
-    
-[EditorBrowsable(EditorBrowsableState.Never)]
+
 public struct <#=className#> : ISpanComparer
 {
     private readonly <#=typeName#> defaultValue;
@@ -67,8 +66,7 @@ public struct <#=className#> : ISpanComparer
         return leftValue.CompareTo(rightValue);
     }
 }
-    
-[EditorBrowsable(EditorBrowsableState.Never)]
+
 [ExcludeFromCodeCoverage] // Not currently used.
 public struct Nullable<#=className#> : ISpanComparer
 {

@@ -16,10 +16,9 @@
 
 
 
-namespace FlatSharp;
+namespace FlatSharp.Internal;
 
-    
-[EditorBrowsable(EditorBrowsableState.Never)]
+
 public struct BoolSpanComparer : ISpanComparer
 {
     private readonly bool defaultValue;
@@ -37,8 +36,7 @@ public struct BoolSpanComparer : ISpanComparer
         return leftValue.CompareTo(rightValue);
     }
 }
-    
-[EditorBrowsable(EditorBrowsableState.Never)]
+
 [ExcludeFromCodeCoverage] // Not currently used.
 public struct NullableBoolSpanComparer : ISpanComparer
 {
@@ -57,8 +55,7 @@ public struct NullableBoolSpanComparer : ISpanComparer
     }
 }
 
-    
-[EditorBrowsable(EditorBrowsableState.Never)]
+
 public struct ByteSpanComparer : ISpanComparer
 {
     private readonly byte defaultValue;
@@ -76,8 +73,7 @@ public struct ByteSpanComparer : ISpanComparer
         return leftValue.CompareTo(rightValue);
     }
 }
-    
-[EditorBrowsable(EditorBrowsableState.Never)]
+
 [ExcludeFromCodeCoverage] // Not currently used.
 public struct NullableByteSpanComparer : ISpanComparer
 {
@@ -96,8 +92,7 @@ public struct NullableByteSpanComparer : ISpanComparer
     }
 }
 
-    
-[EditorBrowsable(EditorBrowsableState.Never)]
+
 public struct SByteSpanComparer : ISpanComparer
 {
     private readonly sbyte defaultValue;
@@ -115,8 +110,7 @@ public struct SByteSpanComparer : ISpanComparer
         return leftValue.CompareTo(rightValue);
     }
 }
-    
-[EditorBrowsable(EditorBrowsableState.Never)]
+
 [ExcludeFromCodeCoverage] // Not currently used.
 public struct NullableSByteSpanComparer : ISpanComparer
 {
@@ -135,8 +129,7 @@ public struct NullableSByteSpanComparer : ISpanComparer
     }
 }
 
-    
-[EditorBrowsable(EditorBrowsableState.Never)]
+
 public struct UShortSpanComparer : ISpanComparer
 {
     private readonly ushort defaultValue;
@@ -154,8 +147,7 @@ public struct UShortSpanComparer : ISpanComparer
         return leftValue.CompareTo(rightValue);
     }
 }
-    
-[EditorBrowsable(EditorBrowsableState.Never)]
+
 [ExcludeFromCodeCoverage] // Not currently used.
 public struct NullableUShortSpanComparer : ISpanComparer
 {
@@ -174,8 +166,7 @@ public struct NullableUShortSpanComparer : ISpanComparer
     }
 }
 
-    
-[EditorBrowsable(EditorBrowsableState.Never)]
+
 public struct ShortSpanComparer : ISpanComparer
 {
     private readonly short defaultValue;
@@ -193,8 +184,7 @@ public struct ShortSpanComparer : ISpanComparer
         return leftValue.CompareTo(rightValue);
     }
 }
-    
-[EditorBrowsable(EditorBrowsableState.Never)]
+
 [ExcludeFromCodeCoverage] // Not currently used.
 public struct NullableShortSpanComparer : ISpanComparer
 {
@@ -213,8 +203,7 @@ public struct NullableShortSpanComparer : ISpanComparer
     }
 }
 
-    
-[EditorBrowsable(EditorBrowsableState.Never)]
+
 public struct IntSpanComparer : ISpanComparer
 {
     private readonly int defaultValue;
@@ -232,8 +221,7 @@ public struct IntSpanComparer : ISpanComparer
         return leftValue.CompareTo(rightValue);
     }
 }
-    
-[EditorBrowsable(EditorBrowsableState.Never)]
+
 [ExcludeFromCodeCoverage] // Not currently used.
 public struct NullableIntSpanComparer : ISpanComparer
 {
@@ -252,8 +240,7 @@ public struct NullableIntSpanComparer : ISpanComparer
     }
 }
 
-    
-[EditorBrowsable(EditorBrowsableState.Never)]
+
 public struct UIntSpanComparer : ISpanComparer
 {
     private readonly uint defaultValue;
@@ -271,8 +258,7 @@ public struct UIntSpanComparer : ISpanComparer
         return leftValue.CompareTo(rightValue);
     }
 }
-    
-[EditorBrowsable(EditorBrowsableState.Never)]
+
 [ExcludeFromCodeCoverage] // Not currently used.
 public struct NullableUIntSpanComparer : ISpanComparer
 {
@@ -291,8 +277,7 @@ public struct NullableUIntSpanComparer : ISpanComparer
     }
 }
 
-    
-[EditorBrowsable(EditorBrowsableState.Never)]
+
 public struct LongSpanComparer : ISpanComparer
 {
     private readonly long defaultValue;
@@ -310,8 +295,7 @@ public struct LongSpanComparer : ISpanComparer
         return leftValue.CompareTo(rightValue);
     }
 }
-    
-[EditorBrowsable(EditorBrowsableState.Never)]
+
 [ExcludeFromCodeCoverage] // Not currently used.
 public struct NullableLongSpanComparer : ISpanComparer
 {
@@ -330,8 +314,7 @@ public struct NullableLongSpanComparer : ISpanComparer
     }
 }
 
-    
-[EditorBrowsable(EditorBrowsableState.Never)]
+
 public struct ULongSpanComparer : ISpanComparer
 {
     private readonly ulong defaultValue;
@@ -349,8 +332,7 @@ public struct ULongSpanComparer : ISpanComparer
         return leftValue.CompareTo(rightValue);
     }
 }
-    
-[EditorBrowsable(EditorBrowsableState.Never)]
+
 [ExcludeFromCodeCoverage] // Not currently used.
 public struct NullableULongSpanComparer : ISpanComparer
 {
@@ -369,8 +351,7 @@ public struct NullableULongSpanComparer : ISpanComparer
     }
 }
 
-    
-[EditorBrowsable(EditorBrowsableState.Never)]
+
 public struct FloatSpanComparer : ISpanComparer
 {
     private readonly float defaultValue;
@@ -388,8 +369,7 @@ public struct FloatSpanComparer : ISpanComparer
         return leftValue.CompareTo(rightValue);
     }
 }
-    
-[EditorBrowsable(EditorBrowsableState.Never)]
+
 [ExcludeFromCodeCoverage] // Not currently used.
 public struct NullableFloatSpanComparer : ISpanComparer
 {
@@ -408,8 +388,7 @@ public struct NullableFloatSpanComparer : ISpanComparer
     }
 }
 
-    
-[EditorBrowsable(EditorBrowsableState.Never)]
+
 public struct DoubleSpanComparer : ISpanComparer
 {
     private readonly double defaultValue;
@@ -427,8 +406,7 @@ public struct DoubleSpanComparer : ISpanComparer
         return leftValue.CompareTo(rightValue);
     }
 }
-    
-[EditorBrowsable(EditorBrowsableState.Never)]
+
 [ExcludeFromCodeCoverage] // Not currently used.
 public struct NullableDoubleSpanComparer : ISpanComparer
 {
