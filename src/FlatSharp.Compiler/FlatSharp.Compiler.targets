@@ -1,6 +1,66 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Project>
 
+    <!-- Task to process the FlatSharpSchema:
+       - Filters out duplicate files.
+       - Transforms the 'IncludePath' metadata property to absolute paths (semi-colon separated). -->
+    <UsingTask TaskName="ProcessFlatSharpSchema" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+        <ParameterGroup>
+            <Inputs ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+            <Result ParameterType="Microsoft.Build.Framework.ITaskItem[]" Output="true" />
+        </ParameterGroup>
+        <Task>
+            <Using Namespace="System.IO" />
+            <Code Type="Fragment" Language="cs">
+<![CDATA[
+                if (Inputs == null || Inputs.Length == 0)
+                {
+                    Result = Array.Empty<ITaskItem>();
+                    return true;
+                }
+
+                var errors = new HashSet<string>();
+                var alreadySeen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var outputList = new List<ITaskItem>(Inputs.Length);
+
+                foreach (var item in Inputs)
+                {
+                    if (alreadySeen.Add(item.ItemSpec))
+                    {
+                        var includePath = String.Join(";", item.GetMetadata("IncludePath").Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                            .Select(include =>
+                            {
+                                if (!Directory.Exists(include))
+                                {
+                                    errors.Add(string.Format("FlatSharpSchema.IncludePath must only contain existing directories, seperated by a semi-colon. '{0}' is not a valid directory.", include));
+                                    return null;
+                                }
+                                
+                                return Path.GetFullPath(include);
+                            }));
+                        item.SetMetadata("IncludePath", includePath);
+                        outputList.Add(item);
+                    }
+                }
+                
+                if (errors.Any())
+                {
+                    foreach (var error in errors)
+                    {
+                        Log.LogError(error);
+                    }
+                    
+                    Result = Array.Empty<ITaskItem>();
+                    return false;
+                }
+
+                Result = outputList.ToArray();
+                return true;
+]]>
+            </Code>
+        </Task>
+    </UsingTask>
+
     <!-- Tell Visual Studio that fbs files can result in build changes. 
        https://github.com/dotnet/project-system/blob/cd275918ef9f181f6efab96715a91db7aabec832/docs/up-to-date-check.md -->
     <ItemGroup>
@@ -37,11 +97,19 @@
             Condition=" '$(CompilerPath)' == '' " 
             Text="FlatSharp.Compiler requires .NET Core 3.1, .NET 5.0, or .NET 6.0 to be installed and available on the PATH." />
 
-        <Message Text="dotnet $(CompilerPath) --nullable-warnings $(FlatSharpNullable) --input &quot;%(FlatSharpSchema.fullpath)&quot; --output $(IntermediateOutputPath)" Importance="high" />
+        <ProcessFlatSharpSchema Inputs="@(FlatSharpSchema)">
+            <Output TaskParameter="Result" ItemName="ProcessedFlatSharpSchema" />
+        </ProcessFlatSharpSchema>
+
+        <Message
+            Text="dotnet $(CompilerPath) --nullable-warnings $(FlatSharpNullable) --input &quot;%(ProcessedFlatSharpSchema.fullpath)&quot; --includes &quot;%(ProcessedFlatSharpSchema.IncludePath)&quot; --output $(IntermediateOutputPath)"
+            Condition=" '%(ProcessedFlatSharpSchema.fullpath)' != '' "
+            Importance="high" />
+
         <Exec
-            Command="dotnet $(CompilerPath) --nullable-warnings $(FlatSharpNullable) --input &quot;%(FlatSharpSchema.fullpath)&quot; --output $(IntermediateOutputPath) "
+            Command="dotnet $(CompilerPath) --nullable-warnings $(FlatSharpNullable) --input &quot;%(ProcessedFlatSharpSchema.fullpath)&quot; --includes &quot;%(ProcessedFlatSharpSchema.IncludePath)&quot; --output $(IntermediateOutputPath)"
             CustomErrorRegularExpression=".*"
-            Condition=" '%(FlatSharpSchema.fullpath)' != '' " />
+            Condition=" '%(ProcessedFlatSharpSchema.fullpath)' != '' " />
 
         <ItemGroup>
             <GeneratedFbs Include="$(IntermediateOutputPath)*.generated.cs" />

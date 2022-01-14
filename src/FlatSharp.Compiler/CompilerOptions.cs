@@ -26,6 +26,9 @@ public record CompilerOptions
     [Option('o', "output", HelpText = "Output directory", Required = true)]
     public string? OutputDirectory { get; set; }
 
+    [Option('I', "includes", HelpText = "Includes search directory path(s)")]
+    public string? IncludesDirectory { get; set; }
+
     [Option("nullable-warnings", Default = false)]
     public bool? NullableWarnings { get; set; }
 

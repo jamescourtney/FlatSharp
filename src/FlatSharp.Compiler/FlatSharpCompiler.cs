@@ -19,6 +19,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Threading;
+using System.Threading.Tasks;
 
 using CommandLine;
 using FlatSharp.TypeModel;
@@ -272,19 +273,35 @@ public class FlatSharpCompiler
             }
         };
 
-        foreach (var arg in new[]
+        var args = new List<string>
         {
-                "-b",
-                "--schema",
-                "--bfbs-comments",
-                "--bfbs-builtins",
-                "--bfbs-filenames",
-                info.DirectoryName!, // Files always have a directory name, dammit!
-                "--no-warnings",
-                "-o",
-                outputDir,
-                info.FullName
-            })
+            "-b",
+            "--schema",
+            "--bfbs-comments",
+            "--bfbs-builtins",
+            "--bfbs-filenames",
+            info.DirectoryName!, // Files always have a directory name, dammit!
+            "--no-warnings",
+            "-o",
+            outputDir,
+        };
+
+        if (!string.IsNullOrEmpty(options.IncludesDirectory))
+        {
+            // One or more includes directory has been specified
+            foreach (var includePath in options.IncludesDirectory.Split(';', StringSplitOptions.RemoveEmptyEntries))
+            {
+                args.AddRange(new[]
+                {
+                    "-I",
+                    new DirectoryInfo(includePath).FullName,
+                });
+            }
+        }
+
+        args.Add(info.FullName);
+
+        foreach (var arg in args)
         {
             p.StartInfo.ArgumentList.Add(arg);
         }
