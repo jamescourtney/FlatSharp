@@ -114,6 +114,7 @@ public class StructTypeModel : RuntimeTypeModel
             className,
             this.onDeserializeMethod,
             this,
+            -1,
             context.Options);
 
         // Build up a list of property overrides.

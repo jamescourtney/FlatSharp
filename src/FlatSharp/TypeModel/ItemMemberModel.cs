@@ -197,21 +197,17 @@ public abstract class ItemMemberModel
     /// Creates a method body to read the given property. This is contextual depending
     /// on whether this member is table/struct/etc.
     /// </summary>
-    /// <param name="vtableLocationVariableName">For tables, the offset of the vtable.</param>
-    /// <param name="vtableMaxIndexVariableName">For tables, the max index of the vtable.</param>
+    /// <param name="vtableVariableName">For tables, the <see cref="IVTable"/> variable name.</param>
     public abstract string CreateReadItemBody(
         ParserCodeGenContext context,
-        string vtableLocationVariableName,
-        string vtableMaxIndexVariableName);
+        string vtableVariableName);
 
     /// <summary>
     /// Creates a method body to write the given property back to the buffer. This is contextual depending
     /// on whether this member is table/struct/etc.
     /// </summary>
-    /// <param name="vtableLocationVariableName">For tables, the offset of the vtable.</param>
-    /// <param name="vtableMaxIndexVariableName">For tables, the max index of the vtable.</param>
+    /// <param name="vtableVariableName">For tables, the <see cref="IVTable"/> variable name.</param>
     public abstract string CreateWriteThroughBody(
         SerializationCodeGenContext context,
-        string vtableLocationVariableName,
-        string vtableMaxIndexVariableName);
+        string vtableVariableName);
 }

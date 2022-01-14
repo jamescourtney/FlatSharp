@@ -112,9 +112,10 @@ public class InputBufferTests
             4, 0, 0, 0 // soffset to vtable.
         };
 
-        new ArrayInputBuffer(buffer).InitializeVTable(4, out int vtableOffset, out int maxVtableIndex);
+        new ArrayInputBuffer(buffer).InitializeVTable(4, out int vtableOffset, out int maxVtableIndex, out ushort vtableLength);
         Assert.Equal(0, vtableOffset);
         Assert.Equal(-1, maxVtableIndex);
+        Assert.Equal(4, vtableLength);
     }
 
     [Fact]
@@ -128,7 +129,7 @@ public class InputBufferTests
         };
 
         var ex = Assert.Throws<InvalidDataException>(() =>
-            new ArrayInputBuffer(buffer).InitializeVTable(4, out _, out _));
+            new ArrayInputBuffer(buffer).InitializeVTable(4, out _, out _, out _));
 
         Assert.Equal(
             "FlatBuffer was in an invalid format: VTable was not long enough to be valid.",
@@ -149,9 +150,10 @@ public class InputBufferTests
             2, 0, 0, 0,
         };
 
-        new ArrayInputBuffer(buffer).InitializeVTable(8, out int vtableOffset, out int maxVtableIndex);
+        new ArrayInputBuffer(buffer).InitializeVTable(8, out int vtableOffset, out int maxVtableIndex, out ushort vtableLength);
         Assert.Equal(0, vtableOffset);
         Assert.Equal(1, maxVtableIndex);
+        Assert.Equal(8, vtableLength);
     }
 
     [Fact]
