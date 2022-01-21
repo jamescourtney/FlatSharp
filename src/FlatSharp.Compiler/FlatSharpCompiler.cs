@@ -182,21 +182,11 @@ public class FlatSharpCompiler
         string fbsFile = Path.GetTempFileName() + ".fbs";
         try
         {
-            Assembly[] additionalRefs = additionalReferences?.ToArray() ?? Array.Empty<Assembly>();
-
             File.WriteAllText(fbsFile, fbsSchema);
-            options.InputFile = fbsFile;
-
-            byte[] bfbs = GetBfbs(options);
-            CreateCSharp(bfbs, "hash", options, out string cSharp);
-
-            var (assembly, formattedText, _) = RoslynSerializerGenerator.CompileAssembly(cSharp, true, additionalRefs);
-            string debugText = formattedText();
-            return (assembly, cSharp);
+            return CompileAndLoadAssemblyWithCode(new FileInfo(fbsFile), options, additionalReferences);
         }
         finally
         {
-            ErrorContext.Current.Clear();
             File.Delete(fbsFile);
         }
     }
@@ -215,7 +205,80 @@ public class FlatSharpCompiler
         return asm;
     }
 
-    internal static byte[] GetBfbs(CompilerOptions options)
+    // Test hook
+    internal static Assembly[] CompileAndLoadAssemblies(
+        IEnumerable<(string FileName, string Content)> fbsSchemas,
+        CompilerOptions options,
+        IEnumerable<Assembly>? additionalReferences = null)
+    {
+        Assembly[] additionalRefs = additionalReferences?.ToArray() ?? Array.Empty<Assembly>();
+        var assemblies = new List<Assembly>();
+
+        var tempDir = Path.GetFileNameWithoutExtension(Path.GetTempFileName());
+
+        if (!string.IsNullOrEmpty(options.IncludesDirectory))
+        {
+            // Convert includes directories into absolute paths as would be done by the targets file
+            var paths = options.IncludesDirectory.Split(';', StringSplitOptions.RemoveEmptyEntries);
+            options.IncludesDirectory = string.Join(';', paths.Select(path => Path.GetFullPath(Path.Combine(tempDir, path))));
+        }
+
+        try
+        {
+            Directory.CreateDirectory(tempDir);
+
+            var fbsFiles = new List<FileInfo>();
+
+            foreach (var fbsSchema in fbsSchemas)
+            {
+                var fbsFile = new FileInfo(Path.Combine(tempDir, fbsSchema.FileName));
+                fbsFile.Directory?.Create();
+                File.WriteAllText(fbsFile.FullName, fbsSchema.Content);
+
+                fbsFiles.Add(fbsFile);
+            }
+
+            foreach (var fbsFile in fbsFiles)
+            {
+                var (asm, _) = CompileAndLoadAssemblyWithCode(fbsFile, options, additionalRefs);
+                assemblies.Add(asm);
+                additionalRefs = additionalRefs.Append(asm).ToArray();
+            }
+        }
+        finally
+        {
+            Directory.Delete(tempDir, true);
+        }
+
+        return assemblies.ToArray();
+    }
+
+    // Test hook
+    private static (Assembly, string) CompileAndLoadAssemblyWithCode(
+        FileInfo fbsFile,
+        CompilerOptions options,
+        IEnumerable<Assembly>? additionalReferences = null)
+    {
+        try
+        {
+            Assembly[] additionalRefs = additionalReferences?.ToArray() ?? Array.Empty<Assembly>();
+
+            options.InputFile = fbsFile.FullName;
+
+            byte[] bfbs = GetBfbs(options);
+            CreateCSharp(bfbs, "hash", options, out string cSharp);
+
+            var (assembly, formattedText, _) = RoslynSerializerGenerator.CompileAssembly(cSharp, true, additionalRefs);
+            string debugText = formattedText();
+            return (assembly, cSharp);
+        }
+        finally
+        {
+            ErrorContext.Current.Clear();
+        }
+    }
+
+    private static byte[] GetBfbs(CompilerOptions options)
     {
         string flatcPath;
 
