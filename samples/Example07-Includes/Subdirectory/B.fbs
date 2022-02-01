@@ -14,11 +14,14 @@
  * limitations under the License.
  */
 
+include "Shared/C.fbs";
+
 namespace Samples.IncludesExample;
 
 enum EnumFromB : ubyte { One, Two, Three }
 
 table TableFromB {
+    NestedTableC:TableFromC;
     String:string;
 }
 

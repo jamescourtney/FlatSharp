@@ -14,20 +14,8 @@
  * limitations under the License.
  */
 
-include "Subdirectory/B.fbs";
-include "Shared/C.fbs";
-
 namespace Samples.IncludesExample;
 
-table TableFromA {
-   NestedTableB:TableFromB;
-   NestedTableC:TableFromC;
-   NestedEnum:EnumFromB;
-   NestedStruct1:StructFromA;
-   NestedStruct2:StructFromB;
-}
-
-struct StructFromA {
-  NestedStruct:StructFromB;
-  Value:int;
+table TableFromC {
+    String:string;
 }
