@@ -631,7 +631,7 @@ $@"
             sortInvocation = @$"
                 {context.SerializationContextVariableName}.{nameof(SerializationContext.AddPostSerializeAction)}(
                     (tempSpan, ctx) =>
-                    {nameof(Internal.SortedVectorHelpers)}.{nameof(Internal.SortedVectorHelpers.SortVector)}(
+                    {nameof(SortedVectorHelpersInternal)}.{nameof(SortedVectorHelpersInternal.SortVector)}(
                         tempSpan, 
                         {OffsetVariableName(index, 0)}, 
                         {keyMember.Index}, 

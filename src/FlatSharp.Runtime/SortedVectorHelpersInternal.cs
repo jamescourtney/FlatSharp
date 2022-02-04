@@ -38,7 +38,7 @@ namespace FlatSharp.Internal;
 /// Helper methods for dealing with sorted vectors. This class provides functionality for both sorting vectors and
 /// binary searching through them.
 /// </summary>
-public static class SortedVectorHelpers
+public static class SortedVectorHelpersInternal
 {
     /// <summary>
     /// Sorts the given flatbuffer vector. This method, used incorrectly, is a fantastic way to corrupt your buffer.
