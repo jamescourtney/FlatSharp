@@ -1,10 +1,24 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Project>
 
+    <Choose>
+        <When Condition=" '$(MSBuildVersion.Substring(0,2))' >= 16 Or
+                         ('$(MSBuildVersion.Substring(0,2))' == 15 And '$(MSBuildVersion.Substring(3,1))' >= 8) ">
+            <PropertyGroup>
+                <TaskFactory>RoslynCodeTaskFactory</TaskFactory>
+            </PropertyGroup>
+        </When>
+        <Otherwise>
+            <PropertyGroup>
+                <TaskFactory>CodeTaskFactory</TaskFactory>
+            </PropertyGroup>
+        </Otherwise>
+    </Choose>
+
     <!-- Task to process the FlatSharpSchema:
        - Filters out duplicate files.
        - Transforms the 'IncludePath' metadata property to absolute paths (semi-colon separated). -->
-    <UsingTask TaskName="ProcessFlatSharpSchema" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+    <UsingTask TaskName="ProcessFlatSharpSchema" TaskFactory="$(TaskFactory)" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
         <ParameterGroup>
             <Inputs ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
             <Result ParameterType="Microsoft.Build.Framework.ITaskItem[]" Output="true" />
