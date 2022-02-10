@@ -255,13 +255,13 @@ internal class DeserializeClassDefinition
             baseParams = "__CtorContext";
         }
 
-        Type interfaceType = typeof(IFlatBufferDeserializedObject);
+        string interfaceGlobalName = typeof(IFlatBufferDeserializedObject).GetGlobalCompilableTypeName();
 
         return
         $@"
             private sealed class {this.ClassName}<TInputBuffer> 
                 : {typeModel.GetGlobalCompilableTypeName()}
-                , {interfaceType.GetGlobalCompilableTypeName()}
+                , {interfaceGlobalName}
                 where TInputBuffer : IInputBuffer
             {{
                 private static readonly {typeof(FlatBufferDeserializationContext).GetGlobalCompilableTypeName()} __CtorContext 
@@ -278,10 +278,10 @@ internal class DeserializeClassDefinition
 
                 {this.GetCtorMethodDefinition(onDeserializedStatement, baseParams)}
 
-                {typeof(Type).GetGlobalCompilableTypeName()} {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.TableOrStructType)} => typeof({typeModel.GetCompilableTypeName()});
-                {typeof(FlatBufferDeserializationContext).GetGlobalCompilableTypeName()} {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.DeserializationContext)} => __CtorContext;
-                {typeof(IInputBuffer).GetGlobalCompilableTypeName()}? {nameof(IFlatBufferDeserializedObject)}.{nameof(IFlatBufferDeserializedObject.InputBuffer)} => {this.GetBufferReference()};
-                bool {typeof(IFlatBufferDeserializedObject).GetGlobalCompilableTypeName()}.{nameof(IFlatBufferDeserializedObject.CanSerializeWithMemoryCopy)} => {this.options.CanSerializeWithMemoryCopy.ToString().ToLowerInvariant()};
+                {typeof(Type).GetGlobalCompilableTypeName()} {interfaceGlobalName}.{nameof(IFlatBufferDeserializedObject.TableOrStructType)} => typeof({typeModel.GetCompilableTypeName()});
+                {typeof(FlatBufferDeserializationContext).GetGlobalCompilableTypeName()} {interfaceGlobalName}.{nameof(IFlatBufferDeserializedObject.DeserializationContext)} => __CtorContext;
+                {typeof(IInputBuffer).GetGlobalCompilableTypeName()}? {interfaceGlobalName}.{nameof(IFlatBufferDeserializedObject.InputBuffer)} => {this.GetBufferReference()};
+                bool {interfaceGlobalName}.{nameof(IFlatBufferDeserializedObject.CanSerializeWithMemoryCopy)} => {this.options.CanSerializeWithMemoryCopy.ToString().ToLowerInvariant()};
 
                 {string.Join("\r\n", this.propertyOverrides)}
                 {string.Join("\r\n", this.readMethods)}
