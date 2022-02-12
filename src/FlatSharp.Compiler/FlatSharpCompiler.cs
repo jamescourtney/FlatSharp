@@ -509,7 +509,7 @@ public class FlatSharpCompiler
         var schema = FlatBufferSerializer.Default.Parse<Schema.Schema>(bfbs);
 
         // Modify
-        if (options.NormalizeFieldNames)
+        if (options.NormalizeFieldNames == true)
         {
             foreach (Schema.FlatBufferObject item in schema.Objects)
             {

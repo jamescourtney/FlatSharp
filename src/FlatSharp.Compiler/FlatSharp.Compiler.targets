@@ -87,6 +87,10 @@
             <FlatSharpNullable Condition=" '$(Nullable)' == 'enable' ">true</FlatSharpNullable>
         </PropertyGroup>
 
+        <PropertyGroup Condition=" '$(FlatSharpNameNormalization)' == '' ">
+            <FlatSharpNameNormalization>false</FlatSharpNameNormalization>
+        </PropertyGroup>
+
         <!-- Query the installed SDKs. -->
         <Exec Command="dotnet --list-sdks" ConsoleToMsBuild="true">
             <Output TaskParameter="ConsoleOutput" PropertyName="StdOut" />
@@ -121,7 +125,12 @@
             Importance="high" />
 
         <Exec
-            Command="dotnet $(CompilerPath) --nullable-warnings $(FlatSharpNullable) --input &quot;%(ProcessedFlatSharpSchema.fullpath)&quot; --includes &quot;%(ProcessedFlatSharpSchema.IncludePath)&quot; --output $(IntermediateOutputPath)"
+            Command="dotnet $(CompilerPath) 
+                    --nullable-warnings $(FlatSharpNullable)
+                    --normalize-field-names $(FlatSharpNameNormalization)
+                    --input &quot;%(ProcessedFlatSharpSchema.fullpath)&quot;
+                    --includes &quot;%(ProcessedFlatSharpSchema.IncludePath)&quot;
+                    --output $(IntermediateOutputPath)"
             CustomErrorRegularExpression=".*"
             Condition=" '%(ProcessedFlatSharpSchema.fullpath)' != '' " />
 

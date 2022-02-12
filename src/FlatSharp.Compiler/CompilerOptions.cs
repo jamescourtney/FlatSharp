@@ -30,7 +30,7 @@ public record CompilerOptions
     public string? IncludesDirectory { get; set; }
 
     [Option("normalize-field-names", Default = false, HelpText = "Normalize snake_case and lowerPascalCase field names to UpperPascalCase.")]
-    public bool NormalizeFieldNames { get; set; }
+    public bool? NormalizeFieldNames { get; set; }
 
     [Option("nullable-warnings", Default = false, HelpText = "Emit full nullable annotations and enable warnings.")]
     public bool? NullableWarnings { get; set; }
