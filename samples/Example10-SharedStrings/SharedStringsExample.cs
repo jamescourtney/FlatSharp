@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+using FlatSharp.Internal;
+
 namespace Samples.SharedStrings;
 
 /// <summary>
