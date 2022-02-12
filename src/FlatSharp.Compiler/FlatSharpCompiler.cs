@@ -18,6 +18,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 
 using CommandLine;
@@ -432,13 +433,12 @@ public class FlatSharpCompiler
             // Pass 3: We generate serializers and RPC definitions.
             var steps = new[]
             {
-                    CodeWritingPass.Initialization,
-                    CodeWritingPass.PropertyModeling,
-                    CodeWritingPass.SerializerAndRpcGeneration,
-                };
+                CodeWritingPass.Initialization,
+                CodeWritingPass.PropertyModeling,
+                CodeWritingPass.SerializerAndRpcGeneration,
+            };
 
-            FlatBufferSerializer serializer = new FlatBufferSerializer(FlatBufferDeserializationOption.Greedy); // immutable.
-            var schema = serializer.Parse<Schema.Schema>(bfbs);
+            var schema = ParseSchema(bfbs, options);
             var rootModel = schema.ToRootModel();
 
             ErrorContext.Current.ThrowIfHasErrors();
@@ -484,5 +484,48 @@ public class FlatSharpCompiler
                 csharp = RoslynSerializerGenerator.GetFormattedText(csharp);
             }
         }
+    }
+
+    private static Schema.Schema ParseSchema(byte[] bfbs, CompilerOptions options)
+    {
+        static string NormalizeName(string name)
+        {
+            StringBuilder sb = new();
+            string[] parts = name.Split('_', StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (string part in parts)
+            {
+                sb.Append(char.ToUpperInvariant(part[0]));
+                if (part.Length > 1)
+                {
+                    sb.Append(part.AsSpan()[1..]);
+                }
+            }
+
+            return sb.ToString();
+        }
+
+        // Mutable
+        var schema = FlatBufferSerializer.Default.Parse<Schema.Schema>(bfbs);
+
+        // Modify
+        if (options.NormalizeFieldNames)
+        {
+            foreach (Schema.FlatBufferObject item in schema.Objects)
+            {
+                foreach (var field in item.Fields)
+                {
+                    field.Name = NormalizeName(field.Name);
+                }
+            }
+        }
+
+        // Serialize
+        byte[] temp = new byte[FlatBufferSerializer.Default.GetMaxSize(schema)];
+        FlatBufferSerializer.Default.Serialize(schema, temp);
+
+        // Immutable.
+        var serializer = new FlatBufferSerializer(FlatBufferDeserializationOption.Greedy);
+        return serializer.Parse<Schema.Schema>(temp);
     }
 }

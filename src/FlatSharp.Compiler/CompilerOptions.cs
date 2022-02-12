@@ -29,7 +29,10 @@ public record CompilerOptions
     [Option('I', "includes", HelpText = "Includes search directory path(s)")]
     public string? IncludesDirectory { get; set; }
 
-    [Option("nullable-warnings", Default = false)]
+    [Option("normalize-field-names", Default = false, HelpText = "Normalize snake_case and lowerPascalCase field names to UpperPascalCase.")]
+    public bool NormalizeFieldNames { get; set; }
+
+    [Option("nullable-warnings", Default = false, HelpText = "Emit full nullable annotations and enable warnings.")]
     public bool? NullableWarnings { get; set; }
 
     [Option("flatc-path", Hidden = true)]

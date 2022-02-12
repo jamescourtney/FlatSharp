@@ -37,9 +37,8 @@ public class ValueStructSchemaModel : BaseSchemaModel
         this.fields = new();
         this.structVectors = new();
 
-        foreach (var kvp in this.@struct.Fields.OrderBy(x => x.Value.Id))
+        foreach (Field field in this.@struct.Fields.OrderBy(x => x.Id))
         {
-            Field field = kvp.Value;
             IFlatSharpAttributes attrs = new FlatSharpAttributes(field.Attributes);
 
             string fieldType = field.Type.ResolveTypeOrElementTypeName(schema, this.Attributes);

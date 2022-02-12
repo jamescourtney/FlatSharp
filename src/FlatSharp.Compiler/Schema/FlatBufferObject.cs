@@ -37,8 +37,8 @@ public class FlatBufferObject
     [FlatBufferItem(0, Required = true, Key = true)]
     public virtual string Name { get; set; } = string.Empty;
 
-    [FlatBufferItem(1, Required = true)]
-    public virtual IIndexedVector<string, Field> Fields { get; set; } = new IndexedVector<string, Field>();
+    [FlatBufferItem(1, Required = true, SortedVector = true)]
+    public virtual IList<Field> Fields { get; set; } = new List<Field>();
 
     [FlatBufferItem(2)]
     public virtual bool IsStruct { get; set; }
