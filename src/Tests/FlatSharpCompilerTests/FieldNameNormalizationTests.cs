@@ -30,6 +30,7 @@ public class FieldNameNormalizationTests
                 item_two : int32;
                 item__three : int32;
                 lowerPascalCase : int32;
+                item_f : int32;
             }}
 
             struct Struct {{
@@ -37,6 +38,7 @@ public class FieldNameNormalizationTests
                 item_two : int32;
                 ____item__three__ : int32;
                 lowerPascalCase : int32;
+                item_f : int32;
             }}";
 
         Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(
@@ -54,6 +56,7 @@ public class FieldNameNormalizationTests
             Assert.NotNull(type.GetProperty("ItemOne"));
             Assert.NotNull(type.GetProperty("ItemTwo"));
             Assert.NotNull(type.GetProperty("ItemThree"));
+            Assert.NotNull(type.GetProperty("ItemF"));
             Assert.NotNull(type.GetProperty("LowerPascalCase"));
         }
     }
