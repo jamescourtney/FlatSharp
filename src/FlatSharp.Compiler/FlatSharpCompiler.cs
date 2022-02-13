@@ -488,23 +488,6 @@ public class FlatSharpCompiler
 
     private static Schema.Schema ParseSchema(byte[] bfbs, CompilerOptions options)
     {
-        static string NormalizeName(string name)
-        {
-            StringBuilder sb = new();
-            string[] parts = name.Split('_', StringSplitOptions.RemoveEmptyEntries);
-
-            foreach (string part in parts)
-            {
-                sb.Append(char.ToUpperInvariant(part[0]));
-                if (part.Length > 1)
-                {
-                    sb.Append(part.AsSpan()[1..]);
-                }
-            }
-
-            return sb.ToString();
-        }
-
         // Mutable
         var schema = FlatBufferSerializer.Default.Parse<Schema.Schema>(bfbs);
 
@@ -513,9 +496,9 @@ public class FlatSharpCompiler
         {
             foreach (Schema.FlatBufferObject item in schema.Objects)
             {
-                foreach (var field in item.Fields)
+                foreach (Schema.Field field in item.Fields)
                 {
-                    field.Name = NormalizeName(field.Name);
+                    field.Name = NormalizeFieldName(field.Name);
                 }
             }
         }
@@ -527,5 +510,22 @@ public class FlatSharpCompiler
         // Immutable.
         var serializer = new FlatBufferSerializer(FlatBufferDeserializationOption.Greedy);
         return serializer.Parse<Schema.Schema>(temp);
+    }
+
+    private static string NormalizeFieldName(string name)
+    {
+        StringBuilder sb = new();
+        string[] parts = name.Split('_', StringSplitOptions.RemoveEmptyEntries);
+
+        foreach (string part in parts)
+        {
+            sb.Append(char.ToUpperInvariant(part[0]));
+            if (part.Length > 1)
+            {
+                sb.Append(part.AsSpan()[1..]);
+            }
+        }
+
+        return sb.ToString();
     }
 }
