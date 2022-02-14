@@ -45,6 +45,7 @@
     <ItemGroup>
       <InputFile Include="Grpc\Grpc.fbs" />
       <InputFile Include="ValueStructs\ValueStructs.fbs" />
+      <InputFile Include="Documentation\Documentation.fbs" />
     </ItemGroup>
     <Exec Command="dotnet $(FlatSharpCompilerDll) --nullable-warnings true -i %(InputFile.Identity) -o %(InputFile.RelativeDir)" />
   </Target>

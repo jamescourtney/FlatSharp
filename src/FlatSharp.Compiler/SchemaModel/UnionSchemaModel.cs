@@ -67,6 +67,7 @@ public class UnionSchemaModel : BaseSchemaModel
 
         string interfaceName = $"IFlatBufferUnion<{string.Join(", ", innerTypes.Select(x => x.resolvedType))}>";
 
+        writer.AppendSummaryComment(this.Name, "union", this.union.Documentation);
         writer.AppendLine("[System.Runtime.CompilerServices.CompilerGenerated]");
         writer.AppendLine($"public partial struct {this.Name} : {interfaceName}");
         using (writer.WithBlock())

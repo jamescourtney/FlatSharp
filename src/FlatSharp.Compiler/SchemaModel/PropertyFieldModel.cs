@@ -129,6 +129,7 @@ public record PropertyFieldModel
 
     public void WriteCode(CodeWriter writer)
     {
+        writer.AppendSummaryComment(this.FieldName, "property", this.Field.Documentation);
         writer.AppendLine(this.GetAttribute());
 
         string setter = this.Attributes.SetterKind switch

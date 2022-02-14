@@ -22,8 +22,9 @@ namespace FlatSharp.Compiler.SchemaModel;
 public class EnumSchemaModel : BaseSchemaModel
 {
     private readonly bool isFlags;
-    private readonly Dictionary<string, long> nameValueMap;
+    private readonly Dictionary<string, EnumVal> nameValueMap;
     private readonly string underlyingType;
+    private readonly IEnumerable<string>? documentation;
 
     private EnumSchemaModel(Schema.Schema schema, FlatBufferEnum @enum) : base(schema, @enum.Name, new FlatSharpAttributes(@enum.Attributes))
     {
@@ -32,8 +33,9 @@ public class EnumSchemaModel : BaseSchemaModel
         FlatSharpInternal.Assert(@enum.UnderlyingType.BaseType.TryGetBuiltInTypeName(out this.underlyingType!), "Couldn't get type name string");
 
         this.isFlags = @enum.Attributes?.ContainsKey(MetadataKeys.BitFlags) == true;
-        this.nameValueMap = @enum.Values.ToDictionary(x => x.Value.Key, x => x.Value.Value);
+        this.nameValueMap = @enum.Values.ToDictionary(x => x.Value.Key, x => x.Value);
         this.DeclaringFile = @enum.DeclarationFile;
+        this.documentation = @enum.Documentation;
     }
 
     public static bool TryCreate(Schema.Schema schema, FlatBufferEnum @enum, [NotNullWhen(true)] out EnumSchemaModel? model)
@@ -54,6 +56,8 @@ public class EnumSchemaModel : BaseSchemaModel
 
     protected override void OnWriteCode(CodeWriter writer, CompileContext context)
     {
+        writer.AppendSummaryComment(this.Name, "enum", this.documentation);
+
         if (this.isFlags)
         {
             writer.AppendLine("[Flags]");
@@ -63,9 +67,14 @@ public class EnumSchemaModel : BaseSchemaModel
         writer.AppendLine($"public enum {this.Name} : {this.underlyingType}");
         using (writer.WithBlock())
         {
-            foreach (var item in this.nameValueMap.OrderBy(x => x.Value))
+            foreach (var item in this.nameValueMap.OrderBy(x => x.Value.Value))
             {
-                writer.AppendLine($"{item.Key} = {item.Value},");
+                if (item.Value.Documentation?.Any() == true)
+                {
+                    writer.AppendSummaryComment(item.Value.Documentation);
+                }
+
+                writer.AppendLine($"{item.Key} = {item.Value.Value},");
             }
         }
     }

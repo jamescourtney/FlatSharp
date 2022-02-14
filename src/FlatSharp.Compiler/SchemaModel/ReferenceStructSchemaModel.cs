@@ -73,6 +73,7 @@ public class ReferenceStructSchemaModel : BaseReferenceTypeSchemaModel
     {
         string attribute = $"[FlatBufferStruct]";
 
+        writer.AppendSummaryComment(this.Name, "struct", this.Documentation);
         writer.AppendLine(attribute);
         writer.AppendLine("[System.Runtime.CompilerServices.CompilerGenerated]");
         writer.AppendLine($"public partial class {this.Name}");
