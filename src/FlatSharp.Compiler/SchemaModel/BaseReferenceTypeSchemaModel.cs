@@ -37,14 +37,14 @@ public abstract class BaseReferenceTypeSchemaModel : BaseSchemaModel
         this.table = table;
 
         int previousIndex = -1;
-        foreach (var field in table.Fields.OrderBy(x => x.Value.Id))
+        foreach (var field in table.Fields.OrderBy(x => x.Id))
         {
-            if (PropertyFieldModel.TryCreate(this, field.Value, previousIndex, out PropertyFieldModel? model))
+            if (PropertyFieldModel.TryCreate(this, field, previousIndex, out PropertyFieldModel? model))
             {
                 previousIndex = model.Index;
                 this.properties[model.Index] = model;
             }
-            else if (StructVectorPropertyFieldModel.TryCreate(this, field.Value, previousIndex, out StructVectorPropertyFieldModel? svModel))
+            else if (StructVectorPropertyFieldModel.TryCreate(this, field, previousIndex, out StructVectorPropertyFieldModel? svModel))
             {
                 for (int i = 0; i < svModel.Properties.Count; ++i)
                 {

@@ -282,9 +282,9 @@ public record PropertyFieldModel
         var table = this.Parent.Schema.Objects[this.Field.Type.Index];
         foreach (var item in table.Fields)
         {
-            if (item.Value.Key)
+            if (item.Key)
             {
-                keyType = item.Value.Type.ResolveTypeOrElementTypeName(this.Parent.Schema, new FlatSharpAttributes(item.Value.Attributes));
+                keyType = item.Type.ResolveTypeOrElementTypeName(this.Parent.Schema, new FlatSharpAttributes(item.Attributes));
                 return true;
             }
         }
