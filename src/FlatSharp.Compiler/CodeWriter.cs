@@ -43,27 +43,23 @@ public class CodeWriter
         this.AppendSummaryComment((IEnumerable<string>)summaryParts);
     }
 
-    public void AppendSummaryComment(IEnumerable<string> summaryParts)
+    public void AppendSummaryComment(IEnumerable<string>? summaryParts)
     {
-        this.AppendLine("/// <summary>");
-
-        foreach (string line in summaryParts)
+        if (summaryParts is not null && summaryParts.Any())
         {
-            this.AppendLine($"/// {line}");
-        }
+            this.AppendLine("/// <summary>");
 
-        this.AppendLine("/// </summary>");
-    }
+            foreach (string line in summaryParts)
+            {
 
-    public void AppendSummaryComment(string elementName, string elementType, IEnumerable<string>? documentationLines)
-    {
-        if (documentationLines is not null && documentationLines.Any())
-        {
-            this.AppendSummaryComment(documentationLines);
-        }
-        else
-        {
-            this.AppendSummaryComment($"The {elementName} {elementType}.");
+                System.Xml.XmlDocument xmlDoc = new();
+                var root = xmlDoc.CreateElement("root");
+                root.InnerText = line;
+
+                this.AppendLine($"/// {root.InnerXml}");
+            }
+
+            this.AppendLine("/// </summary>");
         }
     }
 

@@ -87,7 +87,7 @@ public class TableSchemaModel : BaseReferenceTypeSchemaModel
 
         string attribute = $"[FlatBufferTable({fileId})]";
 
-        writer.AppendSummaryComment(this.Name, "table", this.Documentation);
+        writer.AppendSummaryComment(this.Documentation);
         writer.AppendLine(attribute);
         writer.AppendLine("[System.Runtime.CompilerServices.CompilerGenerated]");
         writer.AppendLine($"public partial class {this.Name}");

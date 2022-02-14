@@ -56,7 +56,7 @@ public class EnumSchemaModel : BaseSchemaModel
 
     protected override void OnWriteCode(CodeWriter writer, CompileContext context)
     {
-        writer.AppendSummaryComment(this.Name, "enum", this.documentation);
+        writer.AppendSummaryComment(this.documentation);
 
         if (this.isFlags)
         {

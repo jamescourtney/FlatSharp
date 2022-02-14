@@ -100,6 +100,8 @@ public class ValueStructSchemaModel : BaseSchemaModel
 
     protected override void OnWriteCode(CodeWriter writer, CompileContext context)
     {
+        writer.AppendSummaryComment(this.@struct.Documentation);
+
         string memMarshalBehavior = string.Empty;
         if (this.Attributes.MemoryMarshalBehavior is not null)
         {
@@ -126,7 +128,7 @@ public class ValueStructSchemaModel : BaseSchemaModel
         {
             foreach (var field in this.fields)
             {
-                writer.AppendSummaryComment(field.Name, "field", field.Documentation);
+                writer.AppendSummaryComment(field.Documentation);
                 writer.AppendLine($"[System.Runtime.InteropServices.FieldOffset({field.Offset})]");
                 writer.AppendLine($"[FlatBufferMetadataAttribute(FlatBufferMetadataKind.Accessor, \"{field.Accessor}\")]");
                 writer.AppendLine($"{field.Visibility} {field.TypeName} {field.Name};");
@@ -140,7 +142,7 @@ public class ValueStructSchemaModel : BaseSchemaModel
 
                 writer.AppendLine();
 
-                AppendStructVectorComment(writer, sv);
+                writer.AppendSummaryComment(sv.Documentation);
                 writer.AppendLine($"public static ref {sv.TypeName} {sv.Name}_Item(ref {this.Name} item, int index)");
                 using (writer.WithBlock())
                 {
@@ -180,7 +182,7 @@ public class ValueStructSchemaModel : BaseSchemaModel
             {
                 foreach (var sv in this.structVectors)
                 {
-                    AppendStructVectorComment(writer, sv);
+                    writer.AppendSummaryComment(sv.Documentation);
                     writer.AppendLine($"public static ref {sv.TypeName} {sv.Name}(this ref {this.Name} item, int index)");
                     using (writer.WithBlock())
                     {
@@ -188,18 +190,6 @@ public class ValueStructSchemaModel : BaseSchemaModel
                     }
                 }
             }
-        }
-    }
-
-    private static void AppendStructVectorComment(CodeWriter writer, ValueStructVectorModel sv)
-    {
-        if (sv.Documentation?.Any() == true)
-        {
-            writer.AppendSummaryComment(sv.Documentation);
-        }
-        else
-        {
-            writer.AppendSummaryComment($"Gets the item at position <paramref name=\"index\" /> from the <c>{sv.Name}</c> vector.");
         }
     }
 

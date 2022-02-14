@@ -47,6 +47,8 @@ public class RpcCallSchemaModel
 
     public RpcStreamingType StreamingType => this.attributes.StreamingType ?? RpcStreamingType.None;
 
+    public IEnumerable<string>? Documentation => this.call.Documentation;
+
     private void ValidateHasSerializer(FlatBufferObject obj)
     {
         FlatSharpInternal.Assert(!obj.IsStruct, "expecting only tables");

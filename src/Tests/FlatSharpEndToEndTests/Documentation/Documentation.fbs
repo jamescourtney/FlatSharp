@@ -1,10 +1,17 @@
 ﻿
 attribute "fs_serializer";
+attribute "fs_rpcInterface";
 attribute "fs_unsafeStructVector";
 attribute "fs_valueStruct";
 attribute "fs_writeThrough";
 
 namespace FlatSharpEndToEndTests.Documentation;
+
+enum UndocumentedEnum : ubyte
+{
+    A,
+    B
+}
 
 /// CommentTest:73c67946-5c52-4643-baa9-a1a0c0d758d7
 enum TestEnum : uint
@@ -17,19 +24,33 @@ enum TestEnum : uint
 /// CommentTest:d54eef2c-f1d0-497f-874f-eeb0e47588b6
 union TestUnion
 { 
-    /// CommentTest:a6ab36fb-2389-49b8-954b-b461e543ad00
     RefStruct,
     ValueStruct,
     Table
 }
 
-/// CommentTest: eb9a0f9a-6f4e-4839-be67-e719b411a274
-table Table
+union UndocumentedUnion
+{ 
+    RefStruct,
+    ValueStruct,
+    Table
+}
+
+/// CommentTest:eb9a0f9a-6f4e-4839-be67-e719b411a274
+table Table (fs_serializer)
 {
-    /// CommentTest: 41b60a53-10a9-4f4a-9d36-3bf73fb95392
+    /// CommentTest:41b60a53-10a9-4f4a-9d36-3bf73fb95392
     Property : int;
 
+    /// <><>
+    EscapeTest : int;
+
     Uncommented : int;
+}
+
+
+table UndocumentedTable
+{
 }
 
 /// CommentTest:cb1b9369-c724-4106-b02b-2afe4984cf89
@@ -45,6 +66,11 @@ struct RefStruct
     UncommentedVector : [ int : 1 ];
 }
 
+struct UncommentedRefStruct
+{
+    Property : int;
+}
+
 /// CommentTest:7a379625-7511-48f9-8b57-34b41c073da8
 struct ValueStruct (fs_valueStruct)
 {
@@ -56,4 +82,11 @@ struct ValueStruct (fs_valueStruct)
 
     UncommentedProperty : int;
     UncommentedVector : [ int : 1 ];
+}
+
+/// CommentTest:d9232e86-035e-4b86-bc77-a3cb04575ba1
+rpc_service Service (fs_rpcInterface)
+{
+    /// CommentTest:932b099d-1cff-4533-81f3-b0eef65e21f3
+    MethodCall(Table) : Table;
 }

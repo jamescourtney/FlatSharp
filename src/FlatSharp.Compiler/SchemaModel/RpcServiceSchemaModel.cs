@@ -73,6 +73,7 @@ public class RpcServiceSchemaModel : BaseSchemaModel
             this.DefineInterface(writer);
         }
 
+        writer.AppendSummaryComment(this.service.Documentation);
         writer.AppendLine($"public static partial class {this.Name}");
         using (writer.WithBlock())
         {
@@ -189,12 +190,14 @@ public class RpcServiceSchemaModel : BaseSchemaModel
     {
         string baseClassName = $"{this.Name}ServerBase";
 
+        writer.AppendSummaryComment(this.service.Documentation);
         writer.AppendLine($"[{GrpcCore}.BindServiceMethod(typeof({this.Name}), \"BindService\")]");
         writer.AppendLine($"public abstract partial class {baseClassName}");
         using (writer.WithBlock())
         {
             foreach (var call in this.calls)
             {
+                writer.AppendSummaryComment(call.Documentation);
                 writer.AppendLine(this.GetServerMethodSignature(call));
             }
         }
@@ -284,6 +287,7 @@ public class RpcServiceSchemaModel : BaseSchemaModel
 
     private void DefineInterface(CodeWriter writer)
     {
+        writer.AppendSummaryComment(this.service.Documentation);
         writer.AppendLine($"public interface {this.interfaceName}");
         using (writer.WithBlock())
         {
@@ -292,18 +296,22 @@ public class RpcServiceSchemaModel : BaseSchemaModel
                 switch (call.StreamingType)
                 {
                     case RpcStreamingType.Unary:
+                        writer.AppendSummaryComment(call.Documentation);
                         writer.AppendLine($"Task<{call.ResponseType}> {call.Name}({call.RequestType} request, CancellationToken token);");
                         break;
 
                     case RpcStreamingType.Client:
+                        writer.AppendSummaryComment(call.Documentation);
                         writer.AppendLine($"Task<{call.ResponseType}> {call.Name}({Channels}.ChannelReader<{call.RequestType}> requestChannel, CancellationToken token);");
                         break;
 
                     case RpcStreamingType.Server:
+                        writer.AppendSummaryComment(call.Documentation);
                         writer.AppendLine($"Task {call.Name}({call.RequestType} request, {Channels}.ChannelWriter<{call.ResponseType}> responseChannel, CancellationToken token);");
                         break;
 
                     case RpcStreamingType.Bidirectional:
+                        writer.AppendSummaryComment(call.Documentation);
                         writer.AppendLine($"Task {call.Name}({Channels}.ChannelReader<{call.RequestType}> requestChannel, {Channels}.ChannelWriter<{call.ResponseType}> responseChannel, CancellationToken token);");
                         break;
                 }
@@ -322,6 +330,7 @@ public class RpcServiceSchemaModel : BaseSchemaModel
             interfaceDeclaration = $", {this.interfaceName}";
         }
 
+        writer.AppendSummaryComment(this.service.Documentation);
         writer.AppendLine($"public partial class {clientClassName} : {GrpcCore}.ClientBase<{clientClassName}>{interfaceDeclaration}");
         using (writer.WithBlock())
         {
@@ -522,12 +531,14 @@ public class RpcServiceSchemaModel : BaseSchemaModel
        RpcCallSchemaModel call,
        Dictionary<string, string> methodMap)
     {
+        writer.AppendSummaryComment(call.Documentation);
         writer.AppendLine($"public virtual {GrpcCore}.{returnType}<{call.ResponseType}> {call.Name}({call.RequestType} request, {GrpcCore}.Metadata? headers = null, System.DateTime? deadline = null, {CancellationToken} cancellationToken = default({CancellationToken}))");
         using (writer.WithBlock())
         {
             writer.AppendLine($"return {call.Name}(request, new {GrpcCore}.CallOptions(headers, deadline, cancellationToken));");
         }
 
+        writer.AppendSummaryComment(call.Documentation);
         writer.AppendLine($"public virtual {GrpcCore}.{returnType}<{call.ResponseType}> {call.Name}({call.RequestType} request, {GrpcCore}.CallOptions options)");
         using (writer.WithBlock())
         {
@@ -541,12 +552,14 @@ public class RpcServiceSchemaModel : BaseSchemaModel
         RpcCallSchemaModel call,
         Dictionary<string, string> methodMap)
     {
+        writer.AppendSummaryComment(call.Documentation);
         writer.AppendLine($"public virtual {GrpcCore}.{key}<{call.RequestType}, {call.ResponseType}> {call.Name}({GrpcCore}.Metadata? headers = null, System.DateTime? deadline = null, {CancellationToken} cancellationToken = default({CancellationToken}))");
         using (writer.WithBlock())
         {
             writer.AppendLine($"return {call.Name}(new {GrpcCore}.CallOptions(headers, deadline, cancellationToken));");
         }
 
+        writer.AppendSummaryComment(call.Documentation);
         writer.AppendLine($"public virtual {GrpcCore}.{key}<{call.RequestType}, {call.ResponseType}> {call.Name}({GrpcCore}.CallOptions options)");
         using (writer.WithBlock())
         {
