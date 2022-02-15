@@ -137,7 +137,7 @@ public class ValueStructSchemaModel : BaseSchemaModel
 
             foreach (var sv in this.structVectors)
             {
-                writer.AppendSummaryComment($"Gets the number of items in the <c>{sv.Name}</c> vector.");
+                writer.AppendSummaryComment($"Gets the number of items in the {sv.Name} vector.");
                 writer.AppendLine($"public int {sv.Name}_Length => {sv.Properties.Count};");
 
                 writer.AppendLine();
