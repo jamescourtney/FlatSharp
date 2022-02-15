@@ -14,3 +14,4 @@
 /src/Grpc/NativeGrpc/NativeGrpc.vcxproj.user
 **/coverage.net5.0.xml
 /src/Tests/Coverage/coverage.xml
+/src/Tests/FlatSharpEndToEndTests/FlatSharpEndToEndTests.xml

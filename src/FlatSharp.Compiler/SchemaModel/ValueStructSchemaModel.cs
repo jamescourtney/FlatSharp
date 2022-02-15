@@ -58,14 +58,14 @@ public class ValueStructSchemaModel : BaseSchemaModel
                     };
 
                     vectorFields.Add(name);
-                    this.fields.Add(new(field.Offset + (i * size), name, "private", fieldType, $"{field.Name}({i})", this, tempAttrs));
+                    this.fields.Add(new(field.Offset + (i * size), name, "private", fieldType, $"{field.Name}({i})", null, this, tempAttrs));
                 }
 
-                this.structVectors.Add(new(fieldType, field.Name, vectorFields, this, attrs));
+                this.structVectors.Add(new(fieldType, field.Name, vectorFields, this, field.Documentation, attrs));
             }
             else
             {
-                this.fields.Add(new(field.Offset, field.Name, "public", fieldType, field.Name, this, attrs));
+                this.fields.Add(new(field.Offset, field.Name, "public", fieldType, field.Name, field.Documentation, this, attrs));
             }
         }
 
@@ -100,6 +100,8 @@ public class ValueStructSchemaModel : BaseSchemaModel
 
     protected override void OnWriteCode(CodeWriter writer, CompileContext context)
     {
+        writer.AppendSummaryComment(this.@struct.Documentation);
+
         string memMarshalBehavior = string.Empty;
         if (this.Attributes.MemoryMarshalBehavior is not null)
         {
@@ -126,6 +128,7 @@ public class ValueStructSchemaModel : BaseSchemaModel
         {
             foreach (var field in this.fields)
             {
+                writer.AppendSummaryComment(field.Documentation);
                 writer.AppendLine($"[System.Runtime.InteropServices.FieldOffset({field.Offset})]");
                 writer.AppendLine($"[FlatBufferMetadataAttribute(FlatBufferMetadataKind.Accessor, \"{field.Accessor}\")]");
                 writer.AppendLine($"{field.Visibility} {field.TypeName} {field.Name};");
@@ -134,8 +137,12 @@ public class ValueStructSchemaModel : BaseSchemaModel
 
             foreach (var sv in this.structVectors)
             {
+                writer.AppendSummaryComment($"Gets the number of items in the {sv.Name} vector.");
                 writer.AppendLine($"public int {sv.Name}_Length => {sv.Properties.Count};");
+
                 writer.AppendLine();
+
+                writer.AppendSummaryComment(sv.Documentation);
                 writer.AppendLine($"public static ref {sv.TypeName} {sv.Name}_Item(ref {this.Name} item, int index)");
                 using (writer.WithBlock())
                 {
@@ -175,6 +182,7 @@ public class ValueStructSchemaModel : BaseSchemaModel
             {
                 foreach (var sv in this.structVectors)
                 {
+                    writer.AppendSummaryComment(sv.Documentation);
                     writer.AppendLine($"public static ref {sv.TypeName} {sv.Name}(this ref {this.Name} item, int index)");
                     using (writer.WithBlock())
                     {
@@ -187,13 +195,20 @@ public class ValueStructSchemaModel : BaseSchemaModel
 
     private class ValueStructVectorModel
     {
-        public ValueStructVectorModel(string type, string name, List<string> properties, ValueStructSchemaModel parent, IFlatSharpAttributes attributes)
+        public ValueStructVectorModel(
+            string type,
+            string name,
+            List<string> properties,
+            ValueStructSchemaModel parent,
+            IEnumerable<string>? documentation,
+            IFlatSharpAttributes attributes)
         {
             this.Name = name;
             this.TypeName = type;
             this.Name = name;
             this.Properties = properties;
             this.Attributes = attributes;
+            this.Documentation = documentation;
 
             new FlatSharpAttributeValidator(FlatBufferSchemaElementType.ValueStructField, $"{parent.Name}.{name}")
             {
@@ -207,18 +222,29 @@ public class ValueStructSchemaModel : BaseSchemaModel
 
         public string TypeName { get; }
 
+        public IEnumerable<string>? Documentation { get; }
+
         public IFlatSharpAttributes Attributes { get; }
     }
 
     private class ValueStructFieldModel
     {
-        public ValueStructFieldModel(int offset, string name, string visibility, string type, string accessor, ValueStructSchemaModel parent, IFlatSharpAttributes attributes)
+        public ValueStructFieldModel(
+            int offset,
+            string name,
+            string visibility,
+            string type,
+            string accessor,
+            IEnumerable<string>? documentation,
+            ValueStructSchemaModel parent,
+            IFlatSharpAttributes attributes)
         {
             this.Offset = offset;
             this.Name = name;
             this.Visibility = visibility;
             this.TypeName = type;
             this.Accessor = accessor;
+            this.Documentation = documentation;
 
             new FlatSharpAttributeValidator(FlatBufferSchemaElementType.ValueStructField, $"{parent.Name}.{name}").Validate(attributes);
         }
@@ -232,5 +258,7 @@ public class ValueStructSchemaModel : BaseSchemaModel
         public string TypeName { get; }
 
         public string Accessor { get; }
+
+        public IEnumerable<string>? Documentation { get; }
     }
 }

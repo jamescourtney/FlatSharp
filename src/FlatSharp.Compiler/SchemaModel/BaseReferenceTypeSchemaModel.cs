@@ -63,6 +63,8 @@ public abstract class BaseReferenceTypeSchemaModel : BaseSchemaModel
 
     public sealed override string DeclaringFile { get; }
 
+    public IEnumerable<string>? Documentation => this.table.Documentation;
+
     protected sealed override void OnWriteCode(CodeWriter writer, CompileContext context)
     {
         this.EmitClassDefinition(writer, context);

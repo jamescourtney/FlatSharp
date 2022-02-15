@@ -10,6 +10,8 @@
     <SignAssembly>true</SignAssembly>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>annotations</Nullable>
+    <DocumentationFile>$(OutputPath)$(AssemblyName).xml</DocumentationFile>
+    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
   
   <ItemGroup>
@@ -36,6 +38,8 @@
     <Compile Include="Grpc\Grpc.fbs.generated.cs" />
     <Compile Remove="ValueStructs\ValueStructs.fbs.generated.cs" />
     <Compile Include="ValueStructs\ValueStructs.fbs.generated.cs" />
+    <Compile Remove="Documentation\Documentation.fbs.generated.cs" />
+    <Compile Include="Documentation\Documentation.fbs.generated.cs" />
   </ItemGroup>
 
   <Target Name="FBS" BeforeTargets="CoreCompile">
@@ -45,6 +49,7 @@
     <ItemGroup>
       <InputFile Include="Grpc\Grpc.fbs" />
       <InputFile Include="ValueStructs\ValueStructs.fbs" />
+      <InputFile Include="Documentation\Documentation.fbs" />
     </ItemGroup>
     <Exec Command="dotnet $(FlatSharpCompilerDll) --nullable-warnings true -i %(InputFile.Identity) -o %(InputFile.RelativeDir)" />
   </Target>

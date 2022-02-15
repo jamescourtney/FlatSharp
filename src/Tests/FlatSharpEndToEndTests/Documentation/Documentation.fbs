@@ -1,0 +1,92 @@
+﻿
+attribute "fs_serializer";
+attribute "fs_rpcInterface";
+attribute "fs_unsafeStructVector";
+attribute "fs_valueStruct";
+attribute "fs_writeThrough";
+
+namespace FlatSharpEndToEndTests.Documentation;
+
+enum UndocumentedEnum : ubyte
+{
+    A,
+    B
+}
+
+/// CommentTest:73c67946-5c52-4643-baa9-a1a0c0d758d7
+enum TestEnum : uint
+{
+    /// CommentTest:282048b4-2817-4312-93ec-8c21e8d42f8d
+    A,
+    Uncommented
+}
+
+/// CommentTest:d54eef2c-f1d0-497f-874f-eeb0e47588b6
+union TestUnion
+{ 
+    RefStruct,
+    ValueStruct,
+    Table
+}
+
+union UndocumentedUnion
+{ 
+    RefStruct,
+    ValueStruct,
+    Table
+}
+
+/// CommentTest:eb9a0f9a-6f4e-4839-be67-e719b411a274
+table Table (fs_serializer)
+{
+    /// CommentTest:41b60a53-10a9-4f4a-9d36-3bf73fb95392
+    Property : int;
+
+    /// <><>
+    EscapeTest : int;
+
+    Uncommented : int;
+}
+
+
+table UndocumentedTable
+{
+}
+
+/// CommentTest:cb1b9369-c724-4106-b02b-2afe4984cf89
+struct RefStruct
+{
+    /// CommentTest:95571f1b-c255-4191-a489-2b06ddcae495
+    Property : int;
+    
+    /// CommentTest:93efd448-fa30-4ddb-9d3b-56ca3f10b403
+    Vector : [ int : 1 ];
+
+    UncommentedProperty : int;
+    UncommentedVector : [ int : 1 ];
+}
+
+struct UncommentedRefStruct
+{
+    Property : int;
+}
+
+/// CommentTest:7a379625-7511-48f9-8b57-34b41c073da8
+struct ValueStruct (fs_valueStruct)
+{
+    /// CommentTest:62d5d69b-b3a0-4446-9abe-d0b314555a4b
+    Property : int;
+
+    /// CommentTest:30add22e-345d-46e2-a1a2-346043cfd444
+    Vector : [ int : 1 ];
+
+    UncommentedProperty : int;
+    UncommentedVector : [ int : 1 ];
+}
+
+/// CommentTest:d9232e86-035e-4b86-bc77-a3cb04575ba1
+rpc_service Service (fs_rpcInterface)
+{
+    /// CommentTest:932b099d-1cff-4533-81f3-b0eef65e21f3
+    MethodCall(Table) : Table;
+}

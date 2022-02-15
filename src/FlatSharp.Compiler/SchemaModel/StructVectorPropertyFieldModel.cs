@@ -32,6 +32,7 @@ public record StructVectorPropertyFieldModel
         this.Attributes = attributes;
         this.Parent = parent;
         this.FieldName = field.Name;
+        this.Documentation = field.Documentation;
 
         List<PropertyFieldModel> propertyModels = new List<PropertyFieldModel>();
         for (int i = 0; i < field.Type.FixedLength; ++i)
@@ -80,6 +81,8 @@ public record StructVectorPropertyFieldModel
 
     public string FieldName { get; init; }
 
+    public IEnumerable<string>? Documentation { get; init; }
+
     public IReadOnlyList<PropertyFieldModel> Properties { get; init; }
 
     public static bool TryCreate(
@@ -115,6 +118,7 @@ public record StructVectorPropertyFieldModel
         writer.AppendLine($"private {structName}? __{this.Field.Name};");
         writer.AppendLine();
 
+        writer.AppendSummaryComment(this.Documentation);
         writer.AppendLine($"public {structName} {this.Field.Name} => (__{this.Field.Name} ??= new {structName}(this));");
         writer.AppendLine();
 
@@ -191,7 +195,9 @@ public record StructVectorPropertyFieldModel
 
             foreach (var collectionType in new[] { $"ReadOnlySpan<{typeName}>", $"IReadOnlyList<{typeName}>" })
             {
-                writer.AppendMethodSummaryComment($"Deep copies the first {this.Properties.Count} items from the source into this struct vector.");
+                writer.AppendSummaryComment(
+                    $"Deep copies the first {this.Properties.Count} items from the source into this struct vector.");
+
                 writer.AppendLine($"public void CopyFrom({collectionType} source)");
                 using (writer.WithBlock())
                 {

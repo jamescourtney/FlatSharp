@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Linq;
 using System.Text;
 
 namespace FlatSharp.Compiler;
@@ -37,11 +38,29 @@ public class CodeWriter
         this.builder.AppendLine(line);
     }
 
-    public void AppendMethodSummaryComment(string comment)
+    public void AppendSummaryComment(params string[] summaryParts)
     {
-        this.AppendLine("/// <summary>");
-        this.AppendLine($"/// {comment}");
-        this.AppendLine("/// </summary>");
+        this.AppendSummaryComment((IEnumerable<string>)summaryParts);
+    }
+
+    public void AppendSummaryComment(IEnumerable<string>? summaryParts)
+    {
+        if (summaryParts is not null && summaryParts.Any())
+        {
+            this.AppendLine("/// <summary>");
+
+            foreach (string line in summaryParts)
+            {
+
+                System.Xml.XmlDocument xmlDoc = new();
+                var root = xmlDoc.CreateElement("root");
+                root.InnerText = line;
+
+                this.AppendLine($"/// {root.InnerXml}");
+            }
+
+            this.AppendLine("/// </summary>");
+        }
     }
 
     public void AppendLine()
