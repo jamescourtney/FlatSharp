@@ -25,6 +25,8 @@ enum Fruit : byte { Apples, Pears, Bananas }
 // to use FlatBufferSerializer to make one for us at runtime. It also means we don't need
 // a reference to the "FlatSharp" nuget package. Only "FlatSharp.Runtime" is required.
 // Runtime vs build-time generated serializers perform equally well.
+
+/// This comment is injected into C# because of the '///'
 table FooBarContainer (fs_serializer:"greedymutable") // Valid values are: "greedy", "greedymutable", "progressive", and "lazy"
 {
   list:[FooBar] (fs_vector:"IList");  // Can also be IReadOnlyList,Array,Memory,ReadOnlyMemory
