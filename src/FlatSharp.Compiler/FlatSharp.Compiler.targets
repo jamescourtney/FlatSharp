@@ -50,7 +50,7 @@
                                     return null;
                                 }
                                 
-                                return Path.GetFullPath(include);
+                                return Path.GetFullPath(include).TrimEnd('\\');
                             }));
                         item.SetMetadata("IncludePath", includePath);
                         outputList.Add(item);
