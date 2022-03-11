@@ -172,7 +172,23 @@ public record PropertyFieldModel
 
         if (this.Field.DefaultDouble != 0)
         {
-            return $"({typeName}){this.Field.DefaultDouble:G17}d";
+            if (double.IsNaN(this.Field.DefaultDouble))
+            {
+                return $"{typeName}.NaN";
+            }
+            else if (double.IsPositiveInfinity(this.Field.DefaultDouble))
+            {
+                return $"{typeName}.PositiveInfinity";
+            }
+            else if (double.IsNegativeInfinity(this.Field.DefaultDouble))
+            {
+                return $"{typeName}.NegativeInfinity";
+            }
+            else
+            {
+                FlatSharpInternal.Assert(double.IsFinite(this.Field.DefaultDouble), "Expected finite default double");
+                return $"({typeName}){this.Field.DefaultDouble:G17}d";
+            }
         }
         else
         {
