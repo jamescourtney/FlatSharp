@@ -148,9 +148,9 @@ public struct MemoryInputBuffer : IInputBuffer, IInputBuffer2
         return this.pointer.memory;
     }
 
-    public T InvokeParse<T>(IGeneratedSerializer<T> serializer, int offset)
+    public T InvokeParse<T>(IGeneratedSerializer<T> serializer, int offset, int objectDepthLimit)
     {
-        return serializer.Parse(this, offset);
+        return serializer.Parse(this, offset, objectDepthLimit);
     }
 
     // Memory<byte> is a relatively heavy struct. It's cheaper to wrap it in a

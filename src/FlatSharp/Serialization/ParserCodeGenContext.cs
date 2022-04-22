@@ -27,6 +27,7 @@ public record ParserCodeGenContext
     public ParserCodeGenContext(
         string inputBufferVariableName,
         string offsetVariableName,
+        string objectDepthLimitVariableName,
         string inputBufferTypeName,
         bool isOffsetByRef,
         string tableFieldContextVariableName,
@@ -39,6 +40,7 @@ public record ParserCodeGenContext
         this.InputBufferVariableName = inputBufferVariableName;
         this.OffsetVariableName = offsetVariableName;
         this.InputBufferTypeName = inputBufferTypeName;
+        this.ObjectDepthLimitVariableName = objectDepthLimitVariableName;
         this.MethodNameMap = methodNameMap;
         this.SerializeMethodNameMap = serializeMethodNameMap;
         this.IsOffsetByRef = isOffsetByRef;
@@ -62,6 +64,11 @@ public record ParserCodeGenContext
     /// The variable name of the span writer. Represents a <see cref="SpanWriter"/> value.
     /// </summary>
     public string OffsetVariableName { get; init; }
+
+    /// <summary>
+    /// The name of the variable that tracks the remaining depth limit. Decremented down the stack.
+    /// </summary>
+    public string ObjectDepthLimitVariableName { get; init; }
 
     /// <summary>
     /// Indicates if the offset variable is passed by reference.
@@ -112,6 +119,8 @@ public record ParserCodeGenContext
         }
 
         sb.Append(this.OffsetVariableName);
+        sb.Append(", ");
+        sb.Append(this.ObjectDepthLimitVariableName);
 
         if (typeModel.TableFieldContextRequirements.HasFlag(TableFieldContextRequirements.Parse))
         {

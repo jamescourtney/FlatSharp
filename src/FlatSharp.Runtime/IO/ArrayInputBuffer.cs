@@ -144,8 +144,8 @@ public struct ArrayInputBuffer : IInputBuffer, IInputBuffer2
         return this.memory;
     }
 
-    public T InvokeParse<T>(IGeneratedSerializer<T> serializer, int offset)
+    public T InvokeParse<T>(IGeneratedSerializer<T> serializer, int offset, int objectDepthLimit)
     {
-        return serializer.Parse(this, offset);
+        return serializer.Parse(this, offset, objectDepthLimit);
     }
 }

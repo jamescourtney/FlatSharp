@@ -97,7 +97,7 @@ public interface IInputBuffer
     /// Invokes the parse method on the <see cref="IGeneratedSerializer{T}"/> parameter. Allows passing
     /// generic parameters.
     /// </summary>
-    TItem InvokeParse<TItem>(IGeneratedSerializer<TItem> serializer, int offset);
+    TItem InvokeParse<TItem>(IGeneratedSerializer<TItem> serializer, int offset, int objectDepthLimit);
 }
 
 /// <summary>

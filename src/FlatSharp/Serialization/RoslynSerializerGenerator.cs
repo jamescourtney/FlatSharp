@@ -173,11 +173,11 @@ $@"
                     this.Write<ISpanWriter>(default!, new byte[10], default!, default!, default!);
                     this.Write<SpanWriter>(default!, new byte[10], default!, default!, default!);
 
-                    this.Parse<IInputBuffer>(default!, 0);
-                    this.Parse<MemoryInputBuffer>(default!, 0);
-                    this.Parse<ReadOnlyMemoryInputBuffer>(default!, 0);
-                    this.Parse<ArrayInputBuffer>(default!, 0);
-                    this.Parse<ArraySegmentInputBuffer>(default!, 0);
+                    this.Parse<IInputBuffer>(default!, 0, 0);
+                    this.Parse<MemoryInputBuffer>(default!, 0, 0);
+                    this.Parse<ReadOnlyMemoryInputBuffer>(default!, 0, 0);
+                    this.Parse<ArrayInputBuffer>(default!, 0, 0);
+                    this.Parse<ArraySegmentInputBuffer>(default!, 0, 0);
 
                     throw new InvalidOperationException(""__AotHelper is not intended to be invoked"");
                 }}
@@ -485,10 +485,10 @@ $@"
         {
             string methodText =
 $@"
-                public {CSharpHelpers.GetGlobalCompilableTypeName(rootType)} Parse<TInputBuffer>(TInputBuffer buffer, int offset) 
+                public {CSharpHelpers.GetGlobalCompilableTypeName(rootType)} Parse<TInputBuffer>(TInputBuffer buffer, int offset, int objectDepthLimit) 
                     where TInputBuffer : IInputBuffer
                 {{
-                    return {this.readMethods[rootType]}(buffer, offset);
+                    return {this.readMethods[rootType]}(buffer, offset, objectDepthLimit);
                 }}
 ";
             this.methodDeclarations.Add(CSharpSyntaxTree.ParseText(methodText, ParseOptions).GetRoot());
@@ -531,7 +531,7 @@ $@"
                 : string.Empty;
 
             var maxSizeContext = new GetMaxSizeCodeGenContext("value", getMaxSizeFieldContextVariableName, this.maxSizeMethods, this.options, this.typeModelContainer, allContextsMap);
-            var parseContext = new ParserCodeGenContext("buffer", "offset", "TInputBuffer", isOffsetByRef, parseFieldContextVariableName, this.readMethods, this.writeMethods, this.options, this.typeModelContainer, allContextsMap);
+            var parseContext = new ParserCodeGenContext("buffer", "offset", "objectDepthLimit", "TInputBuffer", isOffsetByRef, parseFieldContextVariableName, this.readMethods, this.writeMethods, this.options, this.typeModelContainer, allContextsMap);
             var serializeContext = new SerializationCodeGenContext("context", "span", "spanWriter", "value", "offset", serializeFieldContextVariableName, isOffsetByRef, this.writeMethods, this.typeModelContainer, this.options, allContextsMap);
 
             var maxSizeMethod = typeModel.CreateGetMaxSizeMethodBody(maxSizeContext);
@@ -630,7 +630,8 @@ $@"
             {method.GetMethodImplAttribute()}
             private static {clrType} {this.readMethods[typeModel.ClrType]}<TInputBuffer>(
                 TInputBuffer {context.InputBufferVariableName}, 
-                {GetVTableOffsetVariableType(typeModel.PhysicalLayout.Length)} {context.OffsetVariableName}
+                {GetVTableOffsetVariableType(typeModel.PhysicalLayout.Length)} {context.OffsetVariableName},
+                int {context.ObjectDepthLimitVariableName}
                 {tableFieldContextParameter}) where TInputBuffer : IInputBuffer
             {{
                 {method.MethodBody}

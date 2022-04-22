@@ -30,6 +30,7 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
     private readonly ThreadLocal<ISharedStringWriter>? sharedStringWriter;
     private readonly bool enableMemoryCopySerialization;
     private readonly string? fileIdentifier;
+    private readonly int objectDepthLimit;
 
     public GeneratedSerializerWrapper(
         IGeneratedSerializer<T>? innerSerializer,
@@ -45,6 +46,7 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
         var tableAttribute = typeof(T).GetCustomAttribute<Attributes.FlatBufferTableAttribute>();
         this.fileIdentifier = tableAttribute?.FileIdentifier;
         this.sharedStringWriter = new ThreadLocal<ISharedStringWriter>(() => new SharedStringWriter());
+        this.objectDepthLimit = 2500; // sane default.
     }
 
     private GeneratedSerializerWrapper(GeneratedSerializerWrapper<T> template, SerializerSettings settings)
@@ -54,6 +56,7 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
         this.AssemblyBytes = template.AssemblyBytes;
         this.innerSerializer = template.innerSerializer;
         this.fileIdentifier = template.fileIdentifier;
+        this.objectDepthLimit = template.objectDepthLimit;
 
         this.enableMemoryCopySerialization = settings.EnableMemoryCopySerialization;
 
@@ -61,6 +64,16 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
         if (writerFactory is not null)
         {
             this.sharedStringWriter = new ThreadLocal<ISharedStringWriter>(writerFactory);
+        }
+
+        if (settings.ObjectDepthLimit is not null)
+        {
+            if (settings.ObjectDepthLimit <= 0)
+            {
+                throw new ArgumentException("ObjectDepthLimit must be nonnegative.");
+            }
+
+            this.objectDepthLimit = settings.ObjectDepthLimit.Value;
         }
     }
 
@@ -120,7 +133,7 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
         }
 
         // In case buffer is a reference type or is a boxed value, this allows it the opportunity to "wrap" itself in a value struct for efficiency.
-        return buffer.InvokeParse(this.innerSerializer, 0);
+        return buffer.InvokeParse(this.innerSerializer, 0, this.objectDepthLimit);
     }
 
     object ISerializer.Parse<TInputBuffer>(TInputBuffer buffer) => this.Parse(buffer);

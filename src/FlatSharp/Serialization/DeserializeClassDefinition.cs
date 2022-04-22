@@ -139,6 +139,7 @@ internal class DeserializeClassDefinition
             InputBufferTypeName = "TInputBuffer",
             OffsetVariableName = "offset",
             InputBufferVariableName = "buffer",
+            ObjectDepthLimitVariableName = "objectDepthLimit",
         };
 
         string body = itemModel.CreateReadItemBody(
@@ -151,7 +152,8 @@ internal class DeserializeClassDefinition
             private static {typeName} {GetReadIndexMethodName(itemModel)}(
                 TInputBuffer buffer, 
                 int offset, 
-                {this.vtableTypeName} vtable)
+                {this.vtableTypeName} vtable,
+                int objectDepthLimit)
             {{
                 {body}
             }}");
