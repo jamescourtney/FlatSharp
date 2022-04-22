@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+using System.IO;
+
 namespace FlatSharp;
 
 internal static class FlatSharpInternal

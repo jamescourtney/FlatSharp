@@ -31,6 +31,7 @@ internal static class FlatBufferVectorHelpers
             InputBufferVariableName = "memory",
             IsOffsetByRef = false,
             TableFieldContextVariableName = "fieldContext",
+            ObjectDepthLimitVariableName = "objectDepth",
         };
 
         var serializeContext = parseContext.GetWriteThroughContext("data", "item", "0");
@@ -48,13 +49,15 @@ internal static class FlatBufferVectorHelpers
                         {parseContext.InputBufferTypeName} memory,
                         int offset,
                         int itemSize,
-                        {nameof(TableFieldContext)} fieldContext) : base(memory, offset, itemSize, fieldContext)
+                        int objectDepth,
+                        {nameof(TableFieldContext)} fieldContext) : base(memory, offset, itemSize, objectDepth, fieldContext)
                     {{
                     }}
 
                     protected override void ParseItem(
                         {parseContext.InputBufferTypeName} memory,
                         int offset,
+                        int objectDepth,
                         {nameof(TableFieldContext)} fieldContext,
                         out {itemType.GetGlobalCompilableTypeName()} item)
                     {{
@@ -84,6 +87,7 @@ internal static class FlatBufferVectorHelpers
             IsOffsetByRef = true,
             TableFieldContextVariableName = "fieldContext",
             OffsetVariableName = "temp",
+            ObjectDepthLimitVariableName = "objectDepth",
         };
 
         string classDef = $@"
@@ -94,7 +98,8 @@ internal static class FlatBufferVectorHelpers
                         {context.InputBufferTypeName} memory,
                         int discriminatorOffset,
                         int offsetVectorOffset,
-                        {nameof(TableFieldContext)} fieldContext) : base(memory, discriminatorOffset, offsetVectorOffset, fieldContext)
+                        int objectDepth,
+                        {nameof(TableFieldContext)} fieldContext) : base(memory, discriminatorOffset, offsetVectorOffset, objectDepth, fieldContext)
                     {{
                     }}
 
@@ -102,6 +107,7 @@ internal static class FlatBufferVectorHelpers
                         {context.InputBufferTypeName} memory,
                         int discriminatorOffset,
                         int offsetOffset,
+                        int objectDepth,
                         {nameof(TableFieldContext)} {context.TableFieldContextVariableName},
                         out {typeModel.GetGlobalCompilableTypeName()} item)
                     {{

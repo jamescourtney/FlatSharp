@@ -696,7 +696,7 @@ $@"
             classDef.AddProperty(value, tempContext);
         }
 
-        string body = $"return {this.tableReaderClassName}<{context.InputBufferTypeName}>.GetOrCreate({context.InputBufferVariableName}, {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}));";
+        string body = $"return {this.tableReaderClassName}<{context.InputBufferTypeName}>.GetOrCreate({context.InputBufferVariableName}, {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}), {context.ObjectDepthLimitVariableName});";
         return new CodeGeneratedMethod(body)
         {
             ClassDefinition = classDef.ToString(),

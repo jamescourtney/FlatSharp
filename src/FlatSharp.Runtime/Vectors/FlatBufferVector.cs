@@ -29,7 +29,8 @@ public abstract class FlatBufferVector<T, TInputBuffer> : FlatBufferVectorBase<T
         TInputBuffer memory,
         int offset,
         int itemSize,
-        in TableFieldContext fieldContext) : base(memory, fieldContext)
+        int objectDepthLimit,
+        in TableFieldContext fieldContext) : base(memory, objectDepthLimit, fieldContext)
     {
         this.offset = offset;
         this.itemSize = itemSize;
@@ -75,10 +76,10 @@ public abstract class FlatBufferVector<T, TInputBuffer> : FlatBufferVectorBase<T
     protected override void ParseItem(int index, out T item)
     {
         int offset = checked(this.offset + (this.itemSize * index));
-        this.ParseItem(this.memory, offset, this.fieldContext, out item);
+        this.ParseItem(this.memory, offset, base.objectDepth, this.fieldContext, out item);
     }
 
-    protected abstract void ParseItem(TInputBuffer buffer, int offset, TableFieldContext context, out T item);
+    protected abstract void ParseItem(TInputBuffer buffer, int offset, int objectDepthLimit, TableFieldContext context, out T item);
 
     protected abstract void WriteThrough(T item, Span<byte> data);
 }

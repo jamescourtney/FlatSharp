@@ -634,6 +634,7 @@ $@"
                 int {context.ObjectDepthLimitVariableName}
                 {tableFieldContextParameter}) where TInputBuffer : IInputBuffer
             {{
+                {typeof(SerializationHelpers).GetGlobalCompilableTypeName()}.{nameof(SerializationHelpers.EnsureDepthLimit)}({context.ObjectDepthLimitVariableName}--);
                 {method.MethodBody}
             }}";
 

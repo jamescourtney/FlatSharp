@@ -17,7 +17,7 @@
 using System.IO;
 using System.Text;
 
-namespace FlatSharp;
+namespace FlatSharp.Internal;
 
 /// <summary>
 /// Collection of methods that help to serialize objects. It's kind of a hodge-podge,
@@ -92,4 +92,20 @@ public static class SerializationHelpers
     {
         throw new InvalidDataException("FlatSharp encountered a null reference in an invalid context, such as a vector. Vectors are not permitted to have null objects.");
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void EnsureDepthLimit(int remainingDepth)
+    {
+        if (remainingDepth <= 0)
+        {
+            ThrowDepthLimitExceededException();
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void ThrowDepthLimitExceededException()
+    {
+        throw new InvalidDataException($"FlatSharp passed the configured depth limit when deserializing. This can be configured with 'IGeneratedSerializer.WithSettings'.");
+    }
+
 }

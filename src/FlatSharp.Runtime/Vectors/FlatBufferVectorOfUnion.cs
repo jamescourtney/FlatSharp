@@ -32,7 +32,8 @@ public abstract class FlatBufferVectorOfUnion<T, TInputBuffer> : FlatBufferVecto
         TInputBuffer memory,
         int discriminatorOffset,
         int offsetVectorOffset,
-        in TableFieldContext fieldContext) : base(memory, fieldContext)
+        int objectDepth,
+        in TableFieldContext fieldContext) : base(memory, objectDepth, fieldContext)
     {
         uint discriminatorCount = memory.ReadUInt(discriminatorOffset);
         uint offsetCount = memory.ReadUInt(offsetVectorOffset);
@@ -58,6 +59,7 @@ public abstract class FlatBufferVectorOfUnion<T, TInputBuffer> : FlatBufferVecto
                 this.memory,
                 this.discriminatorVectorOffset + index,
                 this.offsetVectorOffset + (index * sizeof(int)),
+                base.objectDepth,
                 this.fieldContext,
                 out item);
         }
@@ -67,6 +69,7 @@ public abstract class FlatBufferVectorOfUnion<T, TInputBuffer> : FlatBufferVecto
         TInputBuffer buffer,
         int discriminatorOffset,
         int offsetOffset,
+        int objectDepth,
         TableFieldContext fieldContext,
         out T item);
 }

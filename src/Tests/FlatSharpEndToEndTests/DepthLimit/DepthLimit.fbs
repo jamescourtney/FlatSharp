@@ -1,0 +1,18 @@
+﻿
+attribute "fs_serializer";
+attribute "fs_sharedString";
+attribute "fs_rpcInterface";
+
+namespace FlatSharpEndToEndTests.DepthLimit;
+
+table GreedyLinkedListNode (fs_serializer)
+{
+    Next : GreedyLinkedListNode;
+    Value : int;
+}
+
+table LazyLinkedListNode (fs_serializer:"Lazy")
+{
+    Next : LazyLinkedListNode;
+    Value : int;
+}
