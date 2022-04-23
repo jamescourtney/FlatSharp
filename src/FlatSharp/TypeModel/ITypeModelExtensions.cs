@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+using System.Linq;
+
 namespace FlatSharp.TypeModel;
 
 [Flags]
@@ -191,32 +193,85 @@ internal static class ITypeModelExtensions
     }
 
     /// <summary>
-    /// Recursively traverses the children of the given model. Returns true if any
-    /// of those children reference the parent model, which indicates a cycle.
+    /// Returns true if the dependency graph of this type model contains a cycle. Implemented without recursion
+    /// to accomodate complex graphs.
     /// </summary>
-    public static bool IsSelfReferential(this ITypeModel model)
+    public static bool ContainsCycle(this ITypeModel model)
     {
-        HashSet<Type> seenTypes = new();
-        foreach (var child in model.Children)
+        // Bad implementation, but probably won't be a problem.
+        HashSet<Type> visited = new();
+        HashSet<Type> onStack = new();
+        Stack<ITypeModel> stack = new();
+
+        IList<ITypeModel> list = model.TraverseObjectGraph(out _);
+        for (int i = 0; i < list.Count; ++i)
         {
-            child.TraverseObjectGraph(seenTypes);
+            ITypeModel current = list[i];
+
+            if (visited.Contains(current.ClrType))
+            {
+                continue;
+            }
+
+            stack.Push(current);
+
+            while (stack.Count > 0)
+            {
+                ITypeModel top = stack.Peek();
+
+                if (visited.Add(top.ClrType))
+                {
+                    onStack.Add(top.ClrType);
+                }
+                else
+                {
+                    onStack.Remove(top.ClrType);
+                    stack.Pop();
+                }
+
+                foreach (ITypeModel child in top.Children)
+                {
+                    if (!visited.Contains(child.ClrType))
+                    {
+                        stack.Push(child);
+                    }
+                    else if (onStack.Contains(child.ClrType))
+                    {
+                        return true;
+                    }
+                }
+            }
         }
 
-        return seenTypes.Contains(model.ClrType);
+        return false;
     }
 
     /// <summary>
     /// Recursively traverses the full object graph for the given type model.
     /// </summary>
-    public static void TraverseObjectGraph(this ITypeModel model, HashSet<Type> seenTypes)
+    public static IList<ITypeModel> TraverseObjectGraph(this ITypeModel model, out HashSet<Type> seenTypes)
     {
-        if (seenTypes.Add(model.ClrType))
+        Queue<ITypeModel> discoveryQueue = new();
+        List<ITypeModel> distinctModels = new();
+        seenTypes = new();
+
+        discoveryQueue.Enqueue(model);
+
+        while (discoveryQueue.Count > 0)
         {
-            foreach (var child in model.Children)
+            ITypeModel next = discoveryQueue.Dequeue();
+            if (seenTypes.Add(next.ClrType))
             {
-                child.TraverseObjectGraph(seenTypes);
+                distinctModels.Add(next);
+
+                foreach (var child in next.Children)
+                {
+                    discoveryQueue.Enqueue(child);
+                }
             }
         }
+
+        return distinctModels;
     }
 
     /// <summary>

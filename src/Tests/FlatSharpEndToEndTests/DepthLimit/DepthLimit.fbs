@@ -26,3 +26,13 @@ table LazyLinkedListNode
     Next : LazyLinkedListNode;
     Value : int;
 }
+
+table A (fs_serializer:"Lazy")
+{
+    Item : B;
+}
+
+table B
+{
+    List : [A];
+}

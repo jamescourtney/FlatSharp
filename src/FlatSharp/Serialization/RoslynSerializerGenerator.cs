@@ -396,8 +396,7 @@ $@"
     /// </summary>
     private void DefineMethods(ITypeModel rootModel)
     {
-        HashSet<Type> types = new HashSet<Type>();
-        rootModel.TraverseObjectGraph(types);
+        rootModel.TraverseObjectGraph(out HashSet<Type> types);
 
         foreach (var type in types)
         {
@@ -413,8 +412,7 @@ $@"
         var rootModel = this.typeModelContainer.CreateTypeModel(typeof(TRoot));
 
         // all type model types.
-        HashSet<Type> types = new HashSet<Type>();
-        rootModel.TraverseObjectGraph(types);
+        rootModel.TraverseObjectGraph(out HashSet<Type> types);
 
         foreach (var type in types.ToArray())
         {
@@ -497,6 +495,7 @@ $@"
 
     private void ImplementMethods(ITypeModel rootTypeModel)
     {
+        bool containsCycle = rootTypeModel.ContainsCycle();
         List<(ITypeModel, TableFieldContext)> allContexts = rootTypeModel.GetAllTableFieldContexts();
 
         Dictionary<ITypeModel, List<TableFieldContext>> allContextsMap = new();
@@ -539,7 +538,7 @@ $@"
             var writeMethod = typeModel.CreateSerializeMethodBody(serializeContext);
 
             this.GenerateGetMaxSizeMethod(typeModel, maxSizeMethod, maxSizeContext);
-            this.GenerateParseMethod(typeModel, parseMethod, parseContext);
+            this.GenerateParseMethod(containsCycle, typeModel, parseMethod, parseContext);
             this.GenerateSerializeMethod(typeModel, writeMethod, serializeContext);
 
             string? extraClasses = typeModel.CreateExtraClasses();
@@ -615,7 +614,7 @@ $@"
         this.AddMethod(method, declaration);
     }
 
-    private void GenerateParseMethod(ITypeModel typeModel, CodeGeneratedMethod method, ParserCodeGenContext context)
+    private void GenerateParseMethod(bool rootContainsCycle, ITypeModel typeModel, CodeGeneratedMethod method, ParserCodeGenContext context)
     {
         string tableFieldContextParameter = string.Empty;
         if (typeModel.TableFieldContextRequirements.HasFlag(TableFieldContextRequirements.Parse))
@@ -625,7 +624,7 @@ $@"
 
         string clrType = typeModel.GetGlobalCompilableTypeName();
         string depthCheck = string.Empty;
-        if (typeModel.RequiresParseDepthTracking)
+        if (rootContainsCycle)
         {
             depthCheck = $"{typeof(SerializationHelpers).GetGlobalCompilableTypeName()}.{nameof(SerializationHelpers.EnsureDepthLimit)}({context.ObjectDepthLimitVariableName});";
         }
