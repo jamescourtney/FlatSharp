@@ -21,8 +21,12 @@ public class DepthLimitTestCases
     [Fact]
     public void GreedyLinkedList()
     {
-        GreedyLinkedListNode head = new GreedyLinkedListNode { Value = 0 };
-        GreedyLinkedListNode current = head;
+        GreedyLinkedListContainer list = new GreedyLinkedListContainer
+        {
+            Head = new() { Value = 0 }
+        };
+
+        GreedyLinkedListNode current = list.Head;
 
         for (int i = 0; i < 999; ++i)
         {
@@ -32,9 +36,9 @@ public class DepthLimitTestCases
         }
 
         byte[] buffer = new byte[10 * 1024 * 1024];
-        GreedyLinkedListNode.Serializer.Write(buffer, head);
+        GreedyLinkedListContainer.Serializer.Write(buffer, list);
 
-        var serializer = GreedyLinkedListNode.Serializer.WithSettings(new SerializerSettings { ObjectDepthLimit = 999 });
+        var serializer = GreedyLinkedListContainer.Serializer.WithSettings(new SerializerSettings { ObjectDepthLimit = 10 });
 
         var result = serializer.Parse(buffer);
     }
@@ -42,8 +46,12 @@ public class DepthLimitTestCases
     [Fact]
     public void LazyLinkedList()
     {
-        LazyLinkedListNode head = new LazyLinkedListNode { Value = 0 };
-        LazyLinkedListNode current = head;
+        LazyLinkedListContainer list = new LazyLinkedListContainer
+        {
+            Head = new() { Value = 0 }
+        };
+
+        LazyLinkedListNode current = list.Head;
 
         for (int i = 0; i < 999; ++i)
         {
@@ -53,15 +61,16 @@ public class DepthLimitTestCases
         }
 
         byte[] buffer = new byte[10 * 1024 * 1024];
-        LazyLinkedListNode.Serializer.Write(buffer, head);
+        LazyLinkedListContainer.Serializer.Write(buffer, list);
 
-        var serializer = LazyLinkedListNode.Serializer.WithSettings(new SerializerSettings { ObjectDepthLimit = 999 });
+        var serializer = LazyLinkedListContainer.Serializer.WithSettings(new SerializerSettings { ObjectDepthLimit = 10 });
 
-        var result = serializer.Parse(buffer);
+        var parsedList = serializer.Parse(buffer);
+        var head = parsedList.Head;
 
-        while (result.Next is not null)
+        while (head is not null)
         {
-            result = result.Next;
+            head = head.Next;
         }
     }
 }

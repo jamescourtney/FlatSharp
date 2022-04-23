@@ -96,7 +96,7 @@ public static class SerializationHelpers
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void EnsureDepthLimit(int remainingDepth)
     {
-        if (remainingDepth <= 0)
+        if (remainingDepth < 0)
         {
             ThrowDepthLimitExceededException();
         }
@@ -107,5 +107,4 @@ public static class SerializationHelpers
     {
         throw new InvalidDataException($"FlatSharp passed the configured depth limit when deserializing. This can be configured with 'IGeneratedSerializer.WithSettings'.");
     }
-
 }

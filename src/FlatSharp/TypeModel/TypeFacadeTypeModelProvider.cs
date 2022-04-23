@@ -77,6 +77,8 @@ internal class TypeFacadeTypeModelProvider<TConverter, TUnderlying, TType> : ITy
 
         public bool SerializesInline => this.underlyingModel.SerializesInline;
 
+        public bool RequiresParseDepthTracking => this.underlyingModel.RequiresParseDepthTracking;
+
         public IEnumerable<ITypeModel> Children => new[] { this.underlyingModel };
 
         public ConstructorInfo? PreferredSubclassConstructor => this.underlyingModel.PreferredSubclassConstructor;

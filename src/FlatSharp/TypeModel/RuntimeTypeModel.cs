@@ -91,6 +91,11 @@ public abstract class RuntimeTypeModel : ITypeModel
     public abstract bool SerializesInline { get; }
 
     /// <summary>
+    /// Indicates if this object requires depth tracking on parse calls.
+    /// </summary>
+    public virtual bool RequiresParseDepthTracking => false;
+
+    /// <summary>
     /// Serialization method requires a <see cref="SerializationContext"/> argument.
     /// </summary>
     public virtual bool SerializeMethodRequiresContext => true;

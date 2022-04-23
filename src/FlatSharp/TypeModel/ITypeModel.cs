@@ -91,6 +91,11 @@ public interface ITypeModel
     int MaxInlineSize { get; }
 
     /// <summary>
+    /// Indicates if this type model requires depth tracking on parse operations.
+    /// </summary>
+    bool RequiresParseDepthTracking { get; }
+
+    /// <summary>
     /// When true, indicates that this type model serializes directly at the offset provided (ie, it does not write a uoffset).
     /// This is the equivalent of a FlatBuffer "value" type.
     /// </summary>

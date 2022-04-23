@@ -5,13 +5,23 @@ attribute "fs_rpcInterface";
 
 namespace FlatSharpEndToEndTests.DepthLimit;
 
-table GreedyLinkedListNode (fs_serializer)
+table GreedyLinkedListContainer (fs_serializer)
+{
+    Head : GreedyLinkedListNode;
+}
+
+table GreedyLinkedListNode
 {
     Next : GreedyLinkedListNode;
     Value : int;
 }
 
-table LazyLinkedListNode (fs_serializer:"Lazy")
+table LazyLinkedListContainer (fs_serializer:"Lazy")
+{
+    Head : LazyLinkedListNode;
+}
+
+table LazyLinkedListNode
 {
     Next : LazyLinkedListNode;
     Value : int;

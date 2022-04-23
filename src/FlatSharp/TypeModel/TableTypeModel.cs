@@ -44,6 +44,7 @@ public class TableTypeModel : RuntimeTypeModel
     private ConstructorInfo? preferredConstructor;
     private MethodInfo? onDeserializeMethod;
     private FlatBufferTableAttribute attribute = null!;
+    private bool requiresParseDepthTracking;
     private readonly string tableReaderClassName = "tableReader_" + Guid.NewGuid().ToString("n");
 
     internal TableTypeModel(Type clrType, TypeModelContainer typeModelProvider) : base(clrType, typeModelProvider)
@@ -94,6 +95,11 @@ public class TableTypeModel : RuntimeTypeModel
     /// Tables are written by reference.
     /// </summary>
     public override bool SerializesInline => false;
+
+    /// <summary>
+    /// Indicates if this table requires parse depth tracking.
+    /// </summary>
+    public override bool RequiresParseDepthTracking => this.requiresParseDepthTracking;
 
     /// <summary>
     /// Gets the maximum used index in this vtable.
@@ -203,6 +209,8 @@ public class TableTypeModel : RuntimeTypeModel
 
             this.memberTypes[index] = model;
         }
+
+        this.requiresParseDepthTracking = this.IsSelfReferential();
     }
 
     public override List<(ITypeModel, TableFieldContext)> GetFieldContexts()

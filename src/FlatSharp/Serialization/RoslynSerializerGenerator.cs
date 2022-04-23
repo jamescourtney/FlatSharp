@@ -624,6 +624,11 @@ $@"
         }
 
         string clrType = typeModel.GetGlobalCompilableTypeName();
+        string depthCheck = string.Empty;
+        if (typeModel.RequiresParseDepthTracking)
+        {
+            depthCheck = $"{typeof(SerializationHelpers).GetGlobalCompilableTypeName()}.{nameof(SerializationHelpers.EnsureDepthLimit)}({context.ObjectDepthLimitVariableName});";
+        }
 
         string declaration =
         $@"
@@ -634,7 +639,8 @@ $@"
                 int {context.ObjectDepthLimitVariableName}
                 {tableFieldContextParameter}) where TInputBuffer : IInputBuffer
             {{
-                {typeof(SerializationHelpers).GetGlobalCompilableTypeName()}.{nameof(SerializationHelpers.EnsureDepthLimit)}({context.ObjectDepthLimitVariableName}--);
+                --{context.ObjectDepthLimitVariableName};
+                {depthCheck}
                 {method.MethodBody}
             }}";
 

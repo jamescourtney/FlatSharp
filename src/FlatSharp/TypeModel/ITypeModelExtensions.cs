@@ -191,6 +191,21 @@ internal static class ITypeModelExtensions
     }
 
     /// <summary>
+    /// Recursively traverses the children of the given model. Returns true if any
+    /// of those children reference the parent model, which indicates a cycle.
+    /// </summary>
+    public static bool IsSelfReferential(this ITypeModel model)
+    {
+        HashSet<Type> seenTypes = new();
+        foreach (var child in model.Children)
+        {
+            child.TraverseObjectGraph(seenTypes);
+        }
+
+        return seenTypes.Contains(model.ClrType);
+    }
+
+    /// <summary>
     /// Recursively traverses the full object graph for the given type model.
     /// </summary>
     public static void TraverseObjectGraph(this ITypeModel model, HashSet<Type> seenTypes)
