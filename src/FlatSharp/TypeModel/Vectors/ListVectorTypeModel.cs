@@ -114,6 +114,7 @@ public class ListVectorTypeModel : BaseVectorTypeModel
                 {context.InputBufferVariableName}, 
                 {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}), 
                 {this.PaddedMemberInlineSize},
+                {context.RemainingDepthVariableName},
                 {context.TableFieldContextVariableName})";
 
         return new CodeGeneratedMethod(CreateParseBody(this.ItemTypeModel, createFlatBufferVector, context)) { ClassDefinition = vectorClassDef };

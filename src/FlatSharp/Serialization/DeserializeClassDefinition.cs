@@ -23,6 +23,7 @@ internal class DeserializeClassDefinition
     protected const string InputBufferVariableName = "__buffer";
     protected const string OffsetVariableName = "__offset";
     protected const string VTableVariableName = "__vtable";
+    protected const string RemainingDepthVariableName = "__remainingDepth";
 
     protected readonly ITypeModel typeModel;
     protected readonly FlatBufferSerializerOptions options;
@@ -37,6 +38,7 @@ internal class DeserializeClassDefinition
     protected readonly MethodInfo? onDeserializeMethod;
     protected readonly string vtableTypeName;
     protected readonly string vtableAccessor;
+    protected readonly string remainingDepthAccessor;
 
     private DeserializeClassDefinition(
         string className,
@@ -51,27 +53,35 @@ internal class DeserializeClassDefinition
         this.vtableTypeName = GetVTableTypeName(maxVtableIndex);
         this.onDeserializeMethod = onDeserializeMethod;
 
-        if (!this.options.GreedyDeserialize)
-        {
-            // maintain reference to buffer.
-            this.instanceFieldDefinitions[InputBufferVariableName] = $"private TInputBuffer {InputBufferVariableName};";
-            this.instanceFieldDefinitions[OffsetVariableName] = $"private int {OffsetVariableName};";
-            this.initializeStatements.Add($"this.{InputBufferVariableName} = buffer;");
-            this.initializeStatements.Add($"this.{OffsetVariableName} = offset;");
-        }
-
         this.vtableAccessor = "default";
-        if (this.typeModel.SchemaType == FlatBufferSchemaType.Table)
+
+        if (this.options.GreedyDeserialize)
         {
-            if (this.options.GreedyDeserialize)
+            this.remainingDepthAccessor = "remainingDepth";
+
+            if (this.typeModel.SchemaType == FlatBufferSchemaType.Table)
             {
-                // Greedy tables decode a vtable in the constructor but don't stor eit.
+                // Greedy tables decode a vtable in the constructor but don't store it.
                 this.initializeStatements.Add($"{this.vtableTypeName}.Create<TInputBuffer>(buffer, offset, out var vtable);");
                 this.vtableAccessor = "vtable";
             }
-            else
+        }
+        else
+        {
+            this.remainingDepthAccessor = $"this.{RemainingDepthVariableName}";
+
+            // maintain reference to buffer.
+            this.instanceFieldDefinitions[InputBufferVariableName] = $"private TInputBuffer {InputBufferVariableName};";
+            this.instanceFieldDefinitions[OffsetVariableName] = $"private int {OffsetVariableName};";
+            this.instanceFieldDefinitions[RemainingDepthVariableName] = $"private short {RemainingDepthVariableName};";
+
+            this.initializeStatements.Add($"this.{InputBufferVariableName} = buffer;");
+            this.initializeStatements.Add($"this.{OffsetVariableName} = offset;");
+            this.initializeStatements.Add($"{this.remainingDepthAccessor} = remainingDepth;");
+
+            if (this.typeModel.SchemaType == FlatBufferSchemaType.Table)
             {
-                // non-greedy tables also carry a vtable.
+                // Non-greedy tables store the vtable.
                 this.vtableAccessor = $"this.{VTableVariableName}";
                 this.initializeStatements.Add($"{this.vtableTypeName}.Create<TInputBuffer>(buffer, offset, out {this.vtableAccessor});");
                 this.instanceFieldDefinitions[VTableVariableName] = $"private {this.vtableTypeName} {VTableVariableName};";
@@ -139,6 +149,7 @@ internal class DeserializeClassDefinition
             InputBufferTypeName = "TInputBuffer",
             OffsetVariableName = "offset",
             InputBufferVariableName = "buffer",
+            RemainingDepthVariableName = "remainingDepth",
         };
 
         string body = itemModel.CreateReadItemBody(
@@ -151,7 +162,8 @@ internal class DeserializeClassDefinition
             private static {typeName} {GetReadIndexMethodName(itemModel)}(
                 TInputBuffer buffer, 
                 int offset, 
-                {this.vtableTypeName} vtable)
+                {this.vtableTypeName} vtable,
+                short remainingDepth)
             {{
                 {body}
             }}");
@@ -227,7 +239,7 @@ internal class DeserializeClassDefinition
 
         if (this.options.GreedyDeserialize || !itemModel.IsVirtual)
         {
-            this.initializeStatements.Add($"{assignment} = {GetReadIndexMethodName(itemModel)}(buffer, offset, {this.vtableAccessor});");
+            this.initializeStatements.Add($"{assignment} = {GetReadIndexMethodName(itemModel)}(buffer, offset, {this.vtableAccessor}, {this.remainingDepthAccessor});");
         }
         else if (!this.options.Lazy)
         {
@@ -271,7 +283,7 @@ internal class DeserializeClassDefinition
 
                 {string.Join("\r\n", this.instanceFieldDefinitions.Values)}
 
-                public static {this.ClassName}<TInputBuffer> GetOrCreate(TInputBuffer buffer, int offset)
+                public static {this.ClassName}<TInputBuffer> GetOrCreate(TInputBuffer buffer, int offset, short remainingDepth)
                 {{
                     {this.GetGetOrCreateMethodBody()}
                 }}
@@ -325,7 +337,7 @@ internal class DeserializeClassDefinition
 
     protected virtual string GetGetterBody(ItemMemberModel itemModel)
     {
-        string readUnderlyingInvocation = $"{GetReadIndexMethodName(itemModel)}(this.{InputBufferVariableName}, this.{OffsetVariableName}, {this.vtableAccessor})";
+        string readUnderlyingInvocation = $"{GetReadIndexMethodName(itemModel)}(this.{InputBufferVariableName}, this.{OffsetVariableName}, {this.vtableAccessor}, {this.remainingDepthAccessor})";
         if (this.options.GreedyDeserialize)
         {
             return $"return this.{GetFieldName(itemModel)};";
@@ -350,7 +362,7 @@ internal class DeserializeClassDefinition
     protected virtual string GetGetOrCreateMethodBody()
     {
         return $@"
-            var item = new {this.ClassName}<TInputBuffer>(buffer, offset);
+            var item = new {this.ClassName}<TInputBuffer>(buffer, offset, remainingDepth);
             return item;
         ";
     }
@@ -358,7 +370,7 @@ internal class DeserializeClassDefinition
     protected virtual string GetCtorMethodDefinition(string onDeserializedStatement, string baseCtorParams)
     {
         return $@"
-            private {this.ClassName}(TInputBuffer buffer, int offset) : base({baseCtorParams}) 
+            private {this.ClassName}(TInputBuffer buffer, int offset, short remainingDepth) : base({baseCtorParams}) 
             {{ 
                 {string.Join("\r\n", this.initializeStatements)}
                 {onDeserializedStatement}

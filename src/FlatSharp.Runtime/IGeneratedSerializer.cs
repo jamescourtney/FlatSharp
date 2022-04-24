@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2018 James Courtney
+ * Copyright 2022 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,23 @@
  * limitations under the License.
  */
 
-namespace FlatSharp;
+namespace FlatSharp.Internal;
+
+/// <summary>
+/// Wrapper struct to pass arguments into <see cref="IGeneratedSerializer{T}.Parse{TInputBuffer}(TInputBuffer, GeneratedSerializerParseArguments)"/>.
+/// </summary>
+public readonly struct GeneratedSerializerParseArguments
+{
+    public GeneratedSerializerParseArguments(int offset, short depthLimit)
+    {
+        this.Offset = offset;
+        this.DepthLimit = depthLimit;
+    }
+
+    public int Offset { get; }
+
+    public short DepthLimit { get; }
+}
 
 /// <summary>
 /// An interface implemented dynamically by FlatSharp for reading and writing data from a buffer.
@@ -49,5 +65,7 @@ public interface IGeneratedSerializer<T>
     /// <summary>
     /// Parses the given buffer as an instance of <typeparamref name="T"/> from the given offset.
     /// </summary>
-    T Parse<TInputBuffer>(TInputBuffer buffer, int offset) where TInputBuffer : IInputBuffer;
+    T Parse<TInputBuffer>(
+        TInputBuffer buffer,
+        in GeneratedSerializerParseArguments arguments) where TInputBuffer : IInputBuffer;
 }

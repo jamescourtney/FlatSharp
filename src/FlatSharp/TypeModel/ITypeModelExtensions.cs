@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+using System.Linq;
+
 namespace FlatSharp.TypeModel;
 
 [Flags]
@@ -191,15 +193,49 @@ internal static class ITypeModelExtensions
     }
 
     /// <summary>
+    /// Indicates if the given type model has enough recursive depth to require object depth tracking (ie, there
+    /// is a risk of stack overflow). This can be due to an excessively deep object graph or a cycle (we do not care which).
+    /// </summary>
+    public static bool IsDeepEnoughToRequireDepthTracking(this ITypeModel typeModel)
+    {
+        static bool Recurse(ITypeModel model, int depthRemaining)
+        {
+            if (depthRemaining <= 0)
+            {
+                return true;
+            }
+
+            foreach (var child in model.Children)
+            {
+                if (Recurse(child, depthRemaining - 1))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        return Recurse(typeModel, 500);
+    }
+
+    /// <summary>
     /// Recursively traverses the full object graph for the given type model.
     /// </summary>
     public static void TraverseObjectGraph(this ITypeModel model, HashSet<Type> seenTypes)
     {
-        if (seenTypes.Add(model.ClrType))
+        Queue<ITypeModel> discoveryQueue = new();
+        discoveryQueue.Enqueue(model);
+
+        while (discoveryQueue.Count > 0)
         {
-            foreach (var child in model.Children)
+            ITypeModel next = discoveryQueue.Dequeue();
+            if (seenTypes.Add(next.ClrType))
             {
-                child.TraverseObjectGraph(seenTypes);
+                foreach (var child in next.Children)
+                {
+                    discoveryQueue.Enqueue(child);
+                }
             }
         }
     }

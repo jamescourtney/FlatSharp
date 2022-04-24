@@ -421,9 +421,9 @@ public class InputBufferTests
             return ((IInputBuffer)innerBuffer).GetReadOnlyByteMemory(start, length);
         }
 
-        public TItem InvokeParse<TItem>(IGeneratedSerializer<TItem> serializer, int offset)
+        public TItem InvokeParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments)
         {
-            return ((IInputBuffer)innerBuffer).InvokeParse<TItem>(serializer, offset);
+            return ((IInputBuffer)innerBuffer).InvokeParse<TItem>(serializer, arguments);
         }
 
         public byte ReadByte(int offset)

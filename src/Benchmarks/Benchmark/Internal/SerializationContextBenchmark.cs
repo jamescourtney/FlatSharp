@@ -18,6 +18,7 @@ namespace Benchmark
 {
     using BenchmarkDotNet.Attributes;
     using FlatSharp;
+    using FlatSharp.Internal;
     using System;
     using System.Collections.Generic;
 

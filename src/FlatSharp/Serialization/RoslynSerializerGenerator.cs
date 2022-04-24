@@ -173,11 +173,12 @@ $@"
                     this.Write<ISpanWriter>(default!, new byte[10], default!, default!, default!);
                     this.Write<SpanWriter>(default!, new byte[10], default!, default!, default!);
 
-                    this.Parse<IInputBuffer>(default!, 0);
-                    this.Parse<MemoryInputBuffer>(default!, 0);
-                    this.Parse<ReadOnlyMemoryInputBuffer>(default!, 0);
-                    this.Parse<ArrayInputBuffer>(default!, 0);
-                    this.Parse<ArraySegmentInputBuffer>(default!, 0);
+                    this.Parse<IInputBuffer>(default!, default);
+                    this.Parse<IInputBuffer2>(default!, default);
+                    this.Parse<MemoryInputBuffer>(default!, default);
+                    this.Parse<ReadOnlyMemoryInputBuffer>(default!, default);
+                    this.Parse<ArrayInputBuffer>(default!, default);
+                    this.Parse<ArraySegmentInputBuffer>(default!, default);
 
                     throw new InvalidOperationException(""__AotHelper is not intended to be invoked"");
                 }}
@@ -396,7 +397,7 @@ $@"
     /// </summary>
     private void DefineMethods(ITypeModel rootModel)
     {
-        HashSet<Type> types = new HashSet<Type>();
+        HashSet<Type> types = new();
         rootModel.TraverseObjectGraph(types);
 
         foreach (var type in types)
@@ -413,7 +414,7 @@ $@"
         var rootModel = this.typeModelContainer.CreateTypeModel(typeof(TRoot));
 
         // all type model types.
-        HashSet<Type> types = new HashSet<Type>();
+        HashSet<Type> types = new();
         rootModel.TraverseObjectGraph(types);
 
         foreach (var type in types.ToArray())
@@ -485,10 +486,10 @@ $@"
         {
             string methodText =
 $@"
-                public {CSharpHelpers.GetGlobalCompilableTypeName(rootType)} Parse<TInputBuffer>(TInputBuffer buffer, int offset) 
+                public {CSharpHelpers.GetGlobalCompilableTypeName(rootType)} Parse<TInputBuffer>(TInputBuffer buffer, in {typeof(GeneratedSerializerParseArguments).GetGlobalCompilableTypeName()} args) 
                     where TInputBuffer : IInputBuffer
                 {{
-                    return {this.readMethods[rootType]}(buffer, offset);
+                    return {this.readMethods[rootType]}(buffer, args.{nameof(GeneratedSerializerParseArguments.Offset)}, args.{nameof(GeneratedSerializerParseArguments.DepthLimit)});
                 }}
 ";
             this.methodDeclarations.Add(CSharpSyntaxTree.ParseText(methodText, ParseOptions).GetRoot());
@@ -497,6 +498,7 @@ $@"
 
     private void ImplementMethods(ITypeModel rootTypeModel)
     {
+        bool requiresDepthTracking = rootTypeModel.IsDeepEnoughToRequireDepthTracking();
         List<(ITypeModel, TableFieldContext)> allContexts = rootTypeModel.GetAllTableFieldContexts();
 
         Dictionary<ITypeModel, List<TableFieldContext>> allContextsMap = new();
@@ -531,7 +533,7 @@ $@"
                 : string.Empty;
 
             var maxSizeContext = new GetMaxSizeCodeGenContext("value", getMaxSizeFieldContextVariableName, this.maxSizeMethods, this.options, this.typeModelContainer, allContextsMap);
-            var parseContext = new ParserCodeGenContext("buffer", "offset", "TInputBuffer", isOffsetByRef, parseFieldContextVariableName, this.readMethods, this.writeMethods, this.options, this.typeModelContainer, allContextsMap);
+            var parseContext = new ParserCodeGenContext("buffer", "offset", "remainingDepth", "TInputBuffer", isOffsetByRef, parseFieldContextVariableName, this.readMethods, this.writeMethods, this.options, this.typeModelContainer, allContextsMap);
             var serializeContext = new SerializationCodeGenContext("context", "span", "spanWriter", "value", "offset", serializeFieldContextVariableName, isOffsetByRef, this.writeMethods, this.typeModelContainer, this.options, allContextsMap);
 
             var maxSizeMethod = typeModel.CreateGetMaxSizeMethodBody(maxSizeContext);
@@ -539,7 +541,7 @@ $@"
             var writeMethod = typeModel.CreateSerializeMethodBody(serializeContext);
 
             this.GenerateGetMaxSizeMethod(typeModel, maxSizeMethod, maxSizeContext);
-            this.GenerateParseMethod(typeModel, parseMethod, parseContext);
+            this.GenerateParseMethod(requiresDepthTracking, typeModel, parseMethod, parseContext);
             this.GenerateSerializeMethod(typeModel, writeMethod, serializeContext);
 
             string? extraClasses = typeModel.CreateExtraClasses();
@@ -615,7 +617,7 @@ $@"
         this.AddMethod(method, declaration);
     }
 
-    private void GenerateParseMethod(ITypeModel typeModel, CodeGeneratedMethod method, ParserCodeGenContext context)
+    private void GenerateParseMethod(bool requiresDepthTracking, ITypeModel typeModel, CodeGeneratedMethod method, ParserCodeGenContext context)
     {
         string tableFieldContextParameter = string.Empty;
         if (typeModel.TableFieldContextRequirements.HasFlag(TableFieldContextRequirements.Parse))
@@ -625,14 +627,26 @@ $@"
 
         string clrType = typeModel.GetGlobalCompilableTypeName();
 
+        // If we require depth tracking due to the schema, inject the if statement and the decrement instruction.
+        string depthCheck = string.Empty;
+        if (requiresDepthTracking)
+        {
+            depthCheck = $@"
+                --{context.RemainingDepthVariableName};
+                {typeof(SerializationHelpers).GetGlobalCompilableTypeName()}.{nameof(SerializationHelpers.EnsureDepthLimit)}({context.RemainingDepthVariableName});
+            ";
+        }
+
         string declaration =
         $@"
             {method.GetMethodImplAttribute()}
             private static {clrType} {this.readMethods[typeModel.ClrType]}<TInputBuffer>(
                 TInputBuffer {context.InputBufferVariableName}, 
-                {GetVTableOffsetVariableType(typeModel.PhysicalLayout.Length)} {context.OffsetVariableName}
+                {GetVTableOffsetVariableType(typeModel.PhysicalLayout.Length)} {context.OffsetVariableName},
+                short {context.RemainingDepthVariableName}
                 {tableFieldContextParameter}) where TInputBuffer : IInputBuffer
             {{
+                {depthCheck}
                 {method.MethodBody}
             }}";
 

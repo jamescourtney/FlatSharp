@@ -93,6 +93,7 @@ public class ArrayVectorTypeModel : BaseVectorTypeModel
                     {context.InputBufferVariableName}, 
                     {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}), 
                     {this.PaddedMemberInlineSize},
+                    {context.RemainingDepthVariableName},
                     {context.TableFieldContextVariableName})";
 
             body = $"return ({createFlatBufferVector}).ToArray();";

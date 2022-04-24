@@ -16,7 +16,7 @@
 
 using System.Threading;
 
-namespace FlatSharp;
+namespace FlatSharp.Internal;
 
 /// <summary>
 /// A context object for a FlatBuffer serialize operation. The context is responsible for allocating space in the buffer

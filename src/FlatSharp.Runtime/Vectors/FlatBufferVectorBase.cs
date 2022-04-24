@@ -24,12 +24,15 @@ public abstract class FlatBufferVectorBase<T, TInputBuffer> : IList<T>, IReadOnl
 {
     protected readonly TInputBuffer memory;
     protected readonly TableFieldContext fieldContext;
+    protected readonly short remainingDepth;
 
     protected FlatBufferVectorBase(
         TInputBuffer memory,
+        short remainingDepth,
         TableFieldContext fieldContext)
     {
         this.memory = memory;
+        this.remainingDepth = remainingDepth;
         this.fieldContext = fieldContext;
     }
 
