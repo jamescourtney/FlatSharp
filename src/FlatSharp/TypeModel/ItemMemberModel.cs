@@ -48,6 +48,11 @@ public abstract class ItemMemberModel
         this.IsRequired = attribute.Required;
         this.Attribute = attribute;
 
+        if (getMethod is null)
+        {
+            throw new InvalidFlatBufferDefinitionException($"Property {this.DeclaringType} on did not declare a getter.");
+        }
+
         if (setMethod is not null)
         {
             this.SetterKind = SetMethodKind.Set;
@@ -57,48 +62,56 @@ public abstract class ItemMemberModel
             }
         }
 
-        string declaringType = "";
-        if (propertyInfo.DeclaringType is not null)
-        {
-            declaringType = CSharpHelpers.GetCompilableTypeName(propertyInfo.DeclaringType);
-        }
+        this.IsVirtual = CanBeOverridden(getMethod);
+    }
 
-        declaringType = $"{declaringType}.{propertyInfo.Name} (Index {attribute.Index})";
-
-        if (getMethod == null)
-        {
-            throw new InvalidFlatBufferDefinitionException($"Property {declaringType} on did not declare a getter.");
-        }
+    internal virtual void Validate()
+    {
+        MethodInfo getMethod = this.PropertyInfo.GetMethod!; // validated in .ctor.
+        var setMethod = this.PropertyInfo.SetMethod;
 
         if (!getMethod.IsPublic && string.IsNullOrEmpty(this.CustomAccessor))
         {
-            throw new InvalidFlatBufferDefinitionException($"Property {declaringType} must declare a public getter.");
+            throw new InvalidFlatBufferDefinitionException($"Property {this.DeclaringType} must declare a public getter.");
         }
 
-        if (CanBeOverridden(getMethod))
+        if (this.IsVirtual)
         {
-            this.IsVirtual = true;
             if (!ValidateVirtualPropertyMethod(getMethod, false))
             {
-                throw new InvalidFlatBufferDefinitionException($"Property {declaringType} did not declare a public/protected virtual getter.");
+                throw new InvalidFlatBufferDefinitionException($"Property {this.DeclaringType} did not declare a public/protected virtual getter.");
             }
 
             if (!ValidateVirtualPropertyMethod(setMethod, true))
             {
-                throw new InvalidFlatBufferDefinitionException($"Property {declaringType} declared a set method, but it was not public/protected and virtual.");
+                throw new InvalidFlatBufferDefinitionException($"Property {this.DeclaringType} declared a set method, but it was not public/protected and virtual.");
             }
         }
         else
         {
             if (!ValidateNonVirtualMethod(getMethod))
             {
-                throw new InvalidFlatBufferDefinitionException($"Non-virtual property {declaringType} must declare a public and non-abstract getter.");
+                throw new InvalidFlatBufferDefinitionException($"Non-virtual property {this.DeclaringType} must declare a public and non-abstract getter.");
             }
 
             if (!ValidateNonVirtualMethod(setMethod))
             {
-                throw new InvalidFlatBufferDefinitionException($"Non-virtual property {declaringType} must declare a public/protected and non-abstract setter.");
+                throw new InvalidFlatBufferDefinitionException($"Non-virtual property {this.DeclaringType} must declare a public/protected and non-abstract setter.");
             }
+        }
+    }
+
+    protected string DeclaringType
+    {
+        get
+        {
+            string declaringType = "";
+            if (this.PropertyInfo.DeclaringType is not null)
+            {
+                declaringType = CSharpHelpers.GetCompilableTypeName(this.PropertyInfo.DeclaringType);
+            }
+
+            return $"{declaringType}.{this.PropertyInfo.Name} (Index {this.Index})";
         }
     }
 

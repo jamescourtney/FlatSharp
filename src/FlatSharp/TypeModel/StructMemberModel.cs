@@ -32,23 +32,28 @@ public class StructMemberModel : ItemMemberModel
     {
         this.Offset = offset;
         this.Length = length;
+    }
+
+    internal override void Validate()
+    {
+        base.Validate();
 
         if (!this.IsVirtual && this.IsWriteThrough)
         {
             throw new InvalidFlatBufferDefinitionException($"Struct member '{this.FriendlyName}' declared the WriteThrough attribute, but WriteThrough is only supported on virtual fields.");
         }
 
-        if (propertyModel.SerializeMethodRequiresContext)
+        if (this.ItemTypeModel.SerializeMethodRequiresContext)
         {
             throw new InvalidFlatBufferDefinitionException($"The type model for struct member '{this.FriendlyName}' requires a serialization context, but Structs do not have one.");
         }
 
-        if (attribute.Required)
+        if (this.Attribute.Required)
         {
             throw new InvalidFlatBufferDefinitionException($"Struct member '{this.FriendlyName}' declared the Required attribute. Required is not valid inside structs.");
         }
 
-        if (attribute.SharedString)
+        if (this.Attribute.SharedString)
         {
             throw new InvalidFlatBufferDefinitionException($"Struct member '{this.FriendlyName}' declared the SharedString attribute. SharedString is not valid inside structs.");
         }

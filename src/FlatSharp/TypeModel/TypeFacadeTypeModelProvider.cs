@@ -138,6 +138,10 @@ internal class TypeFacadeTypeModelProvider<TConverter, TUnderlying, TType> : ITy
         {
         }
 
+        public void CrossTypeValidate()
+        {
+        }
+
         public string FormatDefaultValueAsLiteral(object? defaultValue) => this.GetTypeDefaultExpression();
 
         public bool TryGetSpanComparerType([NotNullWhen(true)] out Type? comparerType)

@@ -23,6 +23,8 @@ namespace FlatSharp.TypeModel;
 /// </summary>
 public class TableMemberModel : ItemMemberModel
 {
+    private bool hasWriteThroughAttribute;
+
     public TableMemberModel(
         ITypeModel propertyModel,
         PropertyInfo propertyInfo,
@@ -34,20 +36,33 @@ public class TableMemberModel : ItemMemberModel
         this.IsDeprecated = attribute.Deprecated;
         this.ForceWrite = attribute.ForceWrite;
         this.IsSharedString = attribute.SharedString;
+        this.hasWriteThroughAttribute = this.IsWriteThrough;
+        
+        if (this.IsWriteThrough && this.ItemTypeModel.SchemaType == FlatBufferSchemaType.Vector)
+        {
+            // Reset writethrough to false. The attribute indicates that the members of the vector
+            // are write-through-able, but the actual vector is not.
+            this.IsWriteThrough = false;
+        }
+    }
 
-        if (!propertyModel.IsValidTableMember)
+    internal override void Validate()
+    {
+        base.Validate();
+
+        if (!this.ItemTypeModel.IsValidTableMember)
         {
             throw new InvalidFlatBufferDefinitionException($"Table property '{this.FriendlyName}' cannot be part of a flatbuffer table.");
         }
 
-        if (this.DefaultValue is not null && !propertyModel.ValidateDefaultValue(this.DefaultValue))
+        if (this.DefaultValue is not null && !this.ItemTypeModel.ValidateDefaultValue(this.DefaultValue))
         {
-            throw new InvalidFlatBufferDefinitionException($"Table property '{this.FriendlyName}' declared default value of type {propertyModel.ClrType.Name}, but the value was of type {this.DefaultValue.GetType().GetCompilableTypeName()}. Please ensure that the property is allowed to have a default value and that the types match.");
+            throw new InvalidFlatBufferDefinitionException($"Table property '{this.FriendlyName}' declared default value of type {this.ItemTypeModel.ClrType.Name}, but the value was of type {this.DefaultValue.GetType().GetCompilableTypeName()}. Please ensure that the property is allowed to have a default value and that the types match.");
         }
 
         static bool IsValueStruct(ITypeModel model) => model.SchemaType == FlatBufferSchemaType.Struct && model.ClrType.IsValueType;
 
-        if (this.IsWriteThrough)
+        if (this.hasWriteThroughAttribute)
         {
             if (IsValueStruct(this.ItemTypeModel))
             {
@@ -76,10 +91,6 @@ public class TableMemberModel : ItemMemberModel
                 FlatSharpInternal.Assert(
                     !underlyingModel.SerializeMethodRequiresContext,
                     "write through struct vector member expects serialization context");
-
-                // Reset writethrough to false. The attribute indicates that the members of the vector
-                // are write-through-able, but the actual vector is not.
-                this.IsWriteThrough = false;
             }
             else
             {
@@ -89,7 +100,7 @@ public class TableMemberModel : ItemMemberModel
 
         if (this.IsRequired)
         {
-            if (propertyModel.SchemaType == FlatBufferSchemaType.Scalar)
+            if (this.ItemTypeModel.SchemaType == FlatBufferSchemaType.Scalar)
             {
                 throw new InvalidFlatBufferDefinitionException($"Table property '{this.FriendlyName}' declared the Required attribute. Required is only valid on non-scalar table fields.");
             }
@@ -101,11 +112,11 @@ public class TableMemberModel : ItemMemberModel
 
         if (this.IsSharedString)
         {
-            if (propertyModel.SchemaType == FlatBufferSchemaType.String)
+            if (this.ItemTypeModel.SchemaType == FlatBufferSchemaType.String)
             {
                 // regular ol' string
             }
-            else if (propertyModel.TryGetUnderlyingVectorType(out ITypeModel? memberModel) && memberModel.SchemaType == FlatBufferSchemaType.String)
+            else if (this.ItemTypeModel.TryGetUnderlyingVectorType(out ITypeModel? memberModel) && memberModel.SchemaType == FlatBufferSchemaType.String)
             {
                 // vector of string.
             }

@@ -172,26 +172,8 @@ public class TableTypeModel : RuntimeTypeModel
                     throw new InvalidFlatBufferDefinitionException($"Table {this.GetCompilableTypeName()} has more than one [FlatBufferItemAttribute] with Key set to true.");
                 }
 
-                if (!property.ItemTypeModel.IsValidSortedVectorKey)
-                {
-                    throw new InvalidFlatBufferDefinitionException($"Table {this.GetCompilableTypeName()} declares a key property on a type that that does not support being a key in a sorted vector.");
-                }
-
-                if (!property.ItemTypeModel.TryGetSpanComparerType(out _))
-                {
-                    throw new InvalidFlatBufferDefinitionException($"Table {this.GetCompilableTypeName()} declares a key property on a type whose type model does not supply a ISpanComparer type.");
-                }
-
-                if (model.IsDeprecated)
-                {
-                    throw new InvalidFlatBufferDefinitionException($"Table {this.GetCompilableTypeName()} declares a key property that is deprecated.");
-                }
-
                 this.KeyMember = model;
             }
-
-            ValidateSortedVector(model);
-            this.ValidateForceWrite(model);
 
             for (int i = 0; i < model.ItemTypeModel.PhysicalLayout.Length; ++i)
             {
@@ -203,6 +185,22 @@ public class TableTypeModel : RuntimeTypeModel
 
             this.memberTypes[index] = model;
         }
+    }
+
+    public override void CrossTypeValidate()
+    {
+        foreach (var kvp in this.memberTypes)
+        {
+            TableMemberModel memberModel = kvp.Value;
+
+            memberModel.Validate();
+
+            ValidateSortedVector(memberModel);
+            this.ValidateKey(memberModel);
+            this.ValidateForceWrite(memberModel);
+        }
+
+        base.CrossTypeValidate();
     }
 
     public override List<(ITypeModel, TableFieldContext)> GetFieldContexts()
@@ -224,6 +222,27 @@ public class TableTypeModel : RuntimeTypeModel
             if (!model.ItemTypeModel.ClassifyContextually(this.SchemaType).IsRequiredValue())
             {
                 throw new InvalidFlatBufferDefinitionException($"Property '{model.PropertyInfo.Name}' on table '{this.GetCompilableTypeName()}' declares the {nameof(FlatBufferItemAttribute.ForceWrite)} option, but the type is not supported for force write.");
+            }
+        }
+    }
+
+    private void ValidateKey(TableMemberModel memberModel)
+    {
+        if (memberModel.IsKey)
+        {
+            if (!memberModel.ItemTypeModel.IsValidSortedVectorKey)
+            {
+                throw new InvalidFlatBufferDefinitionException($"Table {this.GetCompilableTypeName()} declares a key property on a type that that does not support being a key in a sorted vector.");
+            }
+
+            if (!memberModel.ItemTypeModel.TryGetSpanComparerType(out _))
+            {
+                throw new InvalidFlatBufferDefinitionException($"Table {this.GetCompilableTypeName()} declares a key property on a type whose type model does not supply a ISpanComparer type.");
+            }
+
+            if (memberModel.IsDeprecated)
+            {
+                throw new InvalidFlatBufferDefinitionException($"Table {this.GetCompilableTypeName()} declares a key property that is deprecated.");
             }
         }
     }

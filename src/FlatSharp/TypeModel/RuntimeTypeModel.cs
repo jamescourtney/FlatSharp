@@ -40,6 +40,10 @@ public abstract class RuntimeTypeModel : ITypeModel
     {
     }
 
+    public virtual void CrossTypeValidate()
+    {
+    }
+
     /// <summary>
     /// The type of the item in the CLR.
     /// </summary>
@@ -110,6 +114,9 @@ public abstract class RuntimeTypeModel : ITypeModel
     /// </summary>
     public virtual ConstructorInfo? PreferredSubclassConstructor => null;
 
+    /// <summary>
+    /// Gets the children of this type model.
+    /// </summary>
     public abstract IEnumerable<ITypeModel> Children { get; }
 
     /// <summary>

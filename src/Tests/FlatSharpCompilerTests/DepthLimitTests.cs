@@ -96,7 +96,6 @@ public class DepthLimitTests
         CompileAndVerify(fbs, "Foo.Bar.A", true);
     }
 
-    /*
     [Fact]
     public void TableCycleWithIndexedVector()
     {
@@ -110,7 +109,6 @@ public class DepthLimitTests
 
         CompileAndVerify(fbs, "Foo.Bar.A", true);
     }
-    */
 
     private static void CompileAndVerify(string fbs, string typeName, bool needsTracking)
     {

@@ -188,7 +188,12 @@ public interface ITypeModel
     void AdjustTableMember(TableMemberModel source);
 
     /// <summary>
-    /// Initializes and validates the type model.
+    /// Initializes the type model. Implementations may perform some first-order validations that are local to the type they are enclosing.
     /// </summary>
     void Initialize();
+
+    /// <summary>
+    /// Validates the type model for correctness after the entire type graph has been loaded. Validates cross-object dependencies.
+    /// </summary>
+    void CrossTypeValidate();
 }

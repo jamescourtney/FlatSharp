@@ -46,6 +46,11 @@ public class IndexedVectorTypeModel : BaseVectorTypeModel
         this.keyTypeModel = this.typeModelContainer.CreateTypeModel(keyType);
         this.valueTypeModel = this.typeModelContainer.CreateTypeModel(valueType);
 
+        return valueType;
+    }
+
+    public override void CrossTypeValidate()
+    {
         if (this.valueTypeModel.SchemaType != FlatBufferSchemaType.Table)
         {
             throw new InvalidFlatBufferDefinitionException(
@@ -68,13 +73,13 @@ public class IndexedVectorTypeModel : BaseVectorTypeModel
                 $"FlatSharp indexed vector keys must supply a span comparer. KeyType = '{this.keyMemberModel.ItemTypeModel.GetCompilableTypeName()}'.");
         }
 
-        if (keyMemberModel.ItemTypeModel.ClrType != this.keyTypeModel.ClrType)
+        if (this.keyMemberModel.ItemTypeModel.ClrType != this.keyTypeModel.ClrType)
         {
             throw new InvalidFlatBufferDefinitionException(
                 $"FlatSharp indexed vector keys must have the same type as the key of the value. KeyType = {this.keyTypeModel.GetCompilableTypeName()}, Value Key Type = '{this.valueTypeModel.GetCompilableTypeName()}'.");
         }
 
-        return valueType;
+        base.CrossTypeValidate();
     }
 
     public override void AdjustTableMember(TableMemberModel source)
