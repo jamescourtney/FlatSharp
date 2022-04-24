@@ -193,68 +193,38 @@ internal static class ITypeModelExtensions
     }
 
     /// <summary>
-    /// Returns true if the dependency graph of this type model contains a cycle. Implemented without recursion
-    /// to accomodate complex graphs.
+    /// Indicates if the given type model has enough recursive depth to require object depth tracking (ie, there
+    /// is a risk of stack overflow). This can be due to an excessively deep object graph or a cycle (we do not care which).
     /// </summary>
-    public static bool ContainsCycle(this ITypeModel model)
+    public static bool IsDeepEnoughToRequireDepthTracking(this ITypeModel typeModel)
     {
-        // Bad implementation, but probably won't be a problem.
-        HashSet<Type> visited = new();
-        HashSet<Type> onStack = new();
-        Stack<ITypeModel> stack = new();
-
-        IList<ITypeModel> list = model.TraverseObjectGraph(out _);
-        for (int i = 0; i < list.Count; ++i)
+        static bool Recurse(ITypeModel model, int depthRemaining)
         {
-            ITypeModel current = list[i];
-
-            if (visited.Contains(current.ClrType))
+            if (depthRemaining <= 0)
             {
-                continue;
+                return true;
             }
 
-            stack.Push(current);
-
-            while (stack.Count > 0)
+            foreach (var child in model.Children)
             {
-                ITypeModel top = stack.Peek();
-
-                if (visited.Add(top.ClrType))
+                if (Recurse(child, depthRemaining - 1))
                 {
-                    onStack.Add(top.ClrType);
-                }
-                else
-                {
-                    onStack.Remove(top.ClrType);
-                    stack.Pop();
-                }
-
-                foreach (ITypeModel child in top.Children)
-                {
-                    if (!visited.Contains(child.ClrType))
-                    {
-                        stack.Push(child);
-                    }
-                    else if (onStack.Contains(child.ClrType))
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
+
+            return false;
         }
 
-        return false;
+        return Recurse(typeModel, 500);
     }
 
     /// <summary>
     /// Recursively traverses the full object graph for the given type model.
     /// </summary>
-    public static IList<ITypeModel> TraverseObjectGraph(this ITypeModel model, out HashSet<Type> seenTypes)
+    public static void TraverseObjectGraph(this ITypeModel model, HashSet<Type> seenTypes)
     {
         Queue<ITypeModel> discoveryQueue = new();
-        List<ITypeModel> distinctModels = new();
-        seenTypes = new();
-
         discoveryQueue.Enqueue(model);
 
         while (discoveryQueue.Count > 0)
@@ -262,16 +232,12 @@ internal static class ITypeModelExtensions
             ITypeModel next = discoveryQueue.Dequeue();
             if (seenTypes.Add(next.ClrType))
             {
-                distinctModels.Add(next);
-
                 foreach (var child in next.Children)
                 {
                     discoveryQueue.Enqueue(child);
                 }
             }
         }
-
-        return distinctModels;
     }
 
     /// <summary>

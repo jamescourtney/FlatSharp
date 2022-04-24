@@ -16,6 +16,7 @@
 
 using FlatSharp.TypeModel;
 using System.Linq;
+using System.Text;
 
 namespace FlatSharpTests.Compiler;
 
@@ -47,6 +48,26 @@ public class DepthLimitTests
         CompileAndVerify(fbs, "Foo.Bar.A", true);
     }
 
+    [Theory]
+    [InlineData(499, false)]
+    [InlineData(500, true)]
+    public void DeepTable_NoCycle(int depth, bool expectCycleTracking)
+    {
+        StringBuilder sb = new();
+        sb.Append($@"
+            {MetadataHelpers.AllAttributes}
+            namespace Foo.Bar;
+            table T0 {{ Value : int; }} 
+        ");
+
+        for (int i = 1; i < depth; ++i)
+        {
+            sb.AppendLine($"table T{i} {{ Previous : T{i - 1}; }}");
+        }
+
+        CompileAndVerify(sb.ToString(), $"Foo.Bar.T{depth - 1}", expectCycleTracking);
+    }
+
     [Fact]
     public void TableCycleWithListVector()
     {
@@ -75,6 +96,7 @@ public class DepthLimitTests
         CompileAndVerify(fbs, "Foo.Bar.A", true);
     }
 
+    /*
     [Fact]
     public void TableCycleWithIndexedVector()
     {
@@ -88,6 +110,7 @@ public class DepthLimitTests
 
         CompileAndVerify(fbs, "Foo.Bar.A", true);
     }
+    */
 
     private static void CompileAndVerify(string fbs, string typeName, bool needsTracking)
     {
