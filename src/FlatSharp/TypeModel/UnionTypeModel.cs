@@ -259,13 +259,16 @@ $@"
 
     public override void Initialize()
     {
-        HashSet<Type> uniqueTypes = new HashSet<Type>();
-
         // Look for the actual FlatBufferUnion.
         Type unionType = this.ClrType.GetInterfaces()
             .Single(x => x != typeof(IFlatBufferUnion) && typeof(IFlatBufferUnion).IsAssignableFrom(x));
 
         this.memberTypeModels = unionType.GetGenericArguments().Select(this.typeModelContainer.CreateTypeModel).ToArray();
+    }
+
+    public override void CrossTypeValidate()
+    {
+        HashSet<Type> uniqueTypes = new HashSet<Type>();
 
         foreach (var item in this.memberTypeModels)
         {
@@ -278,5 +281,7 @@ $@"
                 throw new InvalidFlatBufferDefinitionException($"Unions must consist of unique types. The type '{item.GetCompilableTypeName()}' was repeated.");
             }
         }
+
+        base.CrossTypeValidate();
     }
 }

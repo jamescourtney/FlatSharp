@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System.Collections.Concurrent;
 using FlatSharp.Runtime;
 
 namespace FlatSharp.TypeModel;
@@ -30,8 +29,13 @@ namespace FlatSharp.TypeModel;
 /// </summary>
 public sealed class TypeModelContainer
 {
-    private readonly ConcurrentDictionary<Type, ITypeModel> cache = new ConcurrentDictionary<Type, ITypeModel>();
-    private readonly List<ITypeModelProvider> providers = new List<ITypeModelProvider>();
+    private readonly object SyncRoot = new();
+    private readonly List<ITypeModelProvider> providers = new();
+    private readonly Queue<ITypeModel> validationQueue = new();
+
+    // Tracks the recursion depth in TryCreateTypeModel.
+    private Dictionary<Type, ITypeModel> cache = new();
+    private int recursiveTypeModelDepth;
 
     private TypeModelContainer()
     {
@@ -139,10 +143,97 @@ public sealed class TypeModelContainer
         bool throwOnError,
         [NotNullWhen(true)] out ITypeModel? typeModel)
     {
-        if (this.cache.TryGetValue(type, out typeModel))
+        lock (this.SyncRoot)
         {
-            return true;
+            // Try to retrieve from cache.
+            if (this.cache.TryGetValue(type, out typeModel))
+            {
+                return true;
+            }
+
+            // Not in cache -- we are creating something new. If we are the
+            // first item on the stack, make a copy of the current cache
+            // and store in 'oldCache'. This is in case we need to roll back
+            // the change in case of an error in the new type model we are
+            // going to create.
+            Dictionary<Type, ITypeModel>? oldCache = null;
+
+            if (++this.recursiveTypeModelDepth == 1)
+            {
+                // We are the first call. Let's clone the existing cache.
+                oldCache = this.cache;
+                this.cache = new Dictionary<Type, ITypeModel>(oldCache);
+                this.validationQueue.Clear();
+            }
+
+            bool success = false;
+
+            try
+            {
+                if (this.TryCreateTypeModelImpl(type, throwOnError, out typeModel))
+                {
+                    success = true;
+
+                    // Enqueue items we created successfully into the validation queue. We'll validate
+                    // these in order (hence a queue), so the most specific/actionable errors come up
+                    // first.
+                    validationQueue.Enqueue(typeModel);
+                }
+            }
+            catch
+            {
+                success = false;
+                if (throwOnError)
+                {
+                    throw;
+                }
+            }
+            finally
+            {
+                // Decrement stack depth. If we are removing the last stack frame, then do validation.
+                --this.recursiveTypeModelDepth;
+                if (oldCache is not null)
+                {
+                    FlatSharpInternal.Assert(this.recursiveTypeModelDepth == 0, "Expecting 0 depth");
+
+                    try
+                    {
+                        while (this.validationQueue.Count > 0)
+                        {
+                            this.validationQueue.Dequeue().CrossTypeValidate();
+                        }
+                    }
+                    catch
+                    {
+                        success = false;
+
+                        if (throwOnError)
+                        {
+                            throw;
+                        }
+                    }
+                    finally
+                    {
+                        this.validationQueue.Clear();
+                        if (!success)
+                        {
+                            // In case of a validation error, roll back changes.
+                            this.cache = oldCache;
+                        }
+                    }
+                }
+            }
+
+            return success;
         }
+    }
+
+    private bool TryCreateTypeModelImpl(
+        Type type,
+        bool throwOnError,
+        [NotNullWhen(true)] out ITypeModel? typeModel)
+    {
+        typeModel = null;
 
         foreach (var provider in this.providers)
         {
@@ -152,7 +243,7 @@ public sealed class TypeModelContainer
             }
         }
 
-        if (typeModel != null)
+        if (typeModel is not null)
         {
             this.cache[type] = typeModel;
 
@@ -163,7 +254,7 @@ public sealed class TypeModelContainer
             }
             catch
             {
-                this.cache.TryRemove(type, out _);
+                this.cache.Remove(type);
 
                 if (throwOnError)
                 {

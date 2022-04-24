@@ -31,7 +31,6 @@ public class StructTypeModel : RuntimeTypeModel
     private int maxAlignment = 1;
     private ConstructorInfo? preferredConstructor;
     private MethodInfo? onDeserializeMethod;
-    private FlatBufferStructAttribute attribute = null!;
 
     internal StructTypeModel(Type clrType, TypeModelContainer container) : base(clrType, container)
     {
@@ -184,9 +183,7 @@ public class StructTypeModel : RuntimeTypeModel
     {
         {
             FlatBufferStructAttribute? attribute = this.ClrType.GetCustomAttribute<FlatBufferStructAttribute>();
-
             FlatSharpInternal.Assert(attribute != null, "Missing attribute.");
-            this.attribute = attribute!;
         }
 
         TableTypeModel.EnsureClassCanBeInheritedByOutsideAssembly(this.ClrType, out this.preferredConstructor);
@@ -239,11 +236,6 @@ public class StructTypeModel : RuntimeTypeModel
             expectedIndex++;
             ITypeModel propertyModel = this.typeModelContainer.CreateTypeModel(property.PropertyType);
 
-            if (!propertyModel.IsValidStructMember || propertyModel.PhysicalLayout.Length > 1)
-            {
-                throw new InvalidFlatBufferDefinitionException($"Struct '{this.GetCompilableTypeName()}' property {property.Name} (Index {index}) with type {CSharpHelpers.GetCompilableTypeName(property.PropertyType)} cannot be part of a flatbuffer struct.");
-            }
-
             int propertySize = propertyModel.PhysicalLayout[0].InlineSize;
             int propertyAlignment = propertyModel.PhysicalLayout[0].Alignment;
             this.maxAlignment = Math.Max(propertyAlignment, this.maxAlignment);
@@ -262,5 +254,22 @@ public class StructTypeModel : RuntimeTypeModel
             this.memberTypes.Add(model);
             this.inlineSize += length;
         }
+    }
+
+    public override void CrossTypeValidate()
+    {
+        foreach (StructMemberModel member in this.memberTypes)
+        {
+            ITypeModel memberModel = member.ItemTypeModel;
+            
+            if (!memberModel.IsValidStructMember || memberModel.PhysicalLayout.Length > 1)
+            {
+                throw new InvalidFlatBufferDefinitionException($"Struct '{this.GetCompilableTypeName()}' property {member.PropertyInfo.Name} (Index {member.Index}) with type {CSharpHelpers.GetCompilableTypeName(member.PropertyInfo.PropertyType)} cannot be part of a flatbuffer struct.");
+            }
+
+            member.Validate();
+        }
+
+        base.CrossTypeValidate();
     }
 }
