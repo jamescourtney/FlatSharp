@@ -18,6 +18,15 @@ namespace FlatSharpTests;
 
 public class DepthLimitTests
 {
+    [Fact]
+    public void InvalidDepthLimit()
+    {
+        Assert.Throws<ArgumentException>(() => 
+            FlatBufferSerializer.Default
+                .Compile<LinkedListNode>()
+                .WithSettings(new SerializerSettings { ObjectDepthLimit = -1 }));
+    }
+
     [Theory]
     [InlineData(FlatBufferDeserializationOption.GreedyMutable, 1000, 999, false)]
     [InlineData(FlatBufferDeserializationOption.GreedyMutable, 1000, 1000, true)]
