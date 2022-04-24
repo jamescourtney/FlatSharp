@@ -106,7 +106,7 @@ public class IndexedVectorTypeModel : BaseVectorTypeModel
             {context.InputBufferVariableName}, 
             {context.OffsetVariableName} + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}), 
             {this.PaddedMemberInlineSize},
-            {context.ObjectDepthLimitVariableName},
+            {context.RemainingDepthVariableName},
             {context.TableFieldContextVariableName})";
 
         string mutable = context.Options.GenerateMutableObjects.ToString().ToLowerInvariant();

@@ -44,9 +44,10 @@ public class SerializerSettings
 
     /// <summary>
     /// When set, specifies a depth limit for nested objects. Enforced at deserialization time.
-    /// If set to <c>null</c>, a default value will be used.
+    /// If set to <c>null</c>, a default value of <c>1000</c> will be used. This setting may be used to prevent
+    /// stack overflow errors and otherwise guard against malicious inputs.
     /// </summary>
-    public int? ObjectDepthLimit
+    public short? ObjectDepthLimit
     {
         get;
         set;

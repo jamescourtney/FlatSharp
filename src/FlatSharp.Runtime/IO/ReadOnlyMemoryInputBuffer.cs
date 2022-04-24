@@ -151,9 +151,9 @@ public struct ReadOnlyMemoryInputBuffer : IInputBuffer, IInputBuffer2
         throw new InvalidOperationException(ErrorMessage);
     }
 
-    public T InvokeParse<T>(IGeneratedSerializer<T> serializer, int offset, int objectDepthLimit)
+    public T InvokeParse<T>(IGeneratedSerializer<T> serializer, in GeneratedSerializerParseArguments arguments)
     {
-        return serializer.Parse(this, offset, objectDepthLimit);
+        return serializer.Parse(this, arguments);
     }
 
     // Memory<byte> is a relatively heavy struct. It's cheaper to wrap it in a

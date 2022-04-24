@@ -149,10 +149,9 @@ public struct ArraySegmentInputBuffer : IInputBuffer, IInputBuffer2
     {
         return this.pointer.segment;
     }
-
-    public T InvokeParse<T>(IGeneratedSerializer<T> serializer, int offset, int objectDepthLimit)
+    public T InvokeParse<T>(IGeneratedSerializer<T> serializer, in GeneratedSerializerParseArguments arguments)
     {
-        return serializer.Parse(this, offset, objectDepthLimit);
+        return serializer.Parse(this, arguments);
     }
 
     // Array Segment is a relatively heavy struct. It contains an array pointer, an int offset, and and int length.

@@ -94,7 +94,7 @@ public static class SerializationHelpers
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void EnsureDepthLimit(int remainingDepth)
+    public static void EnsureDepthLimit(short remainingDepth)
     {
         if (remainingDepth < 0)
         {

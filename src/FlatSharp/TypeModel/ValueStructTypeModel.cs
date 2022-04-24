@@ -111,7 +111,7 @@ public class ValueStructTypeModel : RuntimeTypeModel
                 item.{member.accessor} = {context.MethodNameMap[member.model.ClrType]}<{context.InputBufferTypeName}>(
                     {context.InputBufferVariableName}, 
                     {context.OffsetVariableName} + {member.offset},
-                    {context.ObjectDepthLimitVariableName});");
+                    {context.RemainingDepthVariableName});");
         }
 
         string nonMarshalBody = $@"

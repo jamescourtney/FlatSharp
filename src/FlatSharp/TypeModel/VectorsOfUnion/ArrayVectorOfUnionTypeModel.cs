@@ -46,7 +46,7 @@ public class ArrayVectorOfUnionTypeModel : BaseVectorOfUnionTypeModel
             {context.InputBufferVariableName}, 
             {context.OffsetVariableName}.offset0 + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}.offset0), 
             {context.OffsetVariableName}.offset1 + {context.InputBufferVariableName}.{nameof(InputBufferExtensions.ReadUOffset)}({context.OffsetVariableName}.offset1),
-            {context.ObjectDepthLimitVariableName},
+            {context.RemainingDepthVariableName},
             {context.TableFieldContextVariableName})";
 
         string body = $"return ({createFlatBufferVector}).ToArray();";
