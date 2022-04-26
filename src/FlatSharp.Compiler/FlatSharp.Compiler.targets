@@ -30,7 +30,8 @@
                 if (Inputs == null || Inputs.Length == 0)
                 {
                     Result = Array.Empty<ITaskItem>();
-                    return true;
+                    Success = true;
+                    goto End;
                 }
 
                 var errors = new HashSet<string>();
@@ -65,11 +66,19 @@
                     }
                     
                     Result = Array.Empty<ITaskItem>();
-                    return false;
+                    Success = false;
+                }
+                else
+                {
+                    Result = outputList.ToArray();
+                    Success = true;
                 }
 
-                Result = outputList.ToArray();
-                return true;
+                // Empty block to allow jumping to the return statement.
+                End:
+                {
+                }
+
 ]]>
             </Code>
         </Task>
