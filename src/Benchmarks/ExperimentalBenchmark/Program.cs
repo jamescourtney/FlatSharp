@@ -34,15 +34,13 @@ namespace BenchmarkCore
         )]
         public FlatBufferDeserializationOption Option { get; set; }
 
-        [Params(10000)]
+        [Params(5000)]
         public int Length { get; set; }
 
         [Params(1)]
         public int TravCount { get; set; }
 
-        private FlatBufferSerializer serializer;
-
-        private Table tableToWrite;
+        private Wrapper tableToWrite;
 
         private byte[] tableToRead;
 
@@ -53,55 +51,37 @@ namespace BenchmarkCore
         [GlobalSetup]
         public void Setup()
         {
-            this.serializer = new FlatBufferSerializer(this.Option);
-
             this.tableToWrite = new()
             {
-                Items = new List<VecTable>()
+                Vector = new List<Table>(),
             };
 
             this.keys = new();
+            Random r = new();
 
             for (int i = 0; i < this.Length; ++i)
             {
                 string key = Guid.NewGuid().ToString();
 
                 this.keys.Add(key);
-                this.tableToWrite.Items.Add(new VecTable
+                this.tableToWrite.Vector.Add(new()
                 {
-                    Key = key,
+                    A = r.Next() % 2 == 0 ? "A" : null,
+                    B = r.Next() % 2 == 0 ? "B" : null,
+                    C = r.Next() % 2 == 0 ? "C" : null,
+                    D = r.Next() % 2 == 0 ? "D" : null,
                 });
             }
 
-            int bytesNeeded = this.serializer.GetMaxSize(this.tableToWrite);
+            int bytesNeeded = Wrapper.Serializer.GetMaxSize(this.tableToWrite);
             this.tableToRead = new byte[bytesNeeded];
-            this.serializer.Serialize(this.tableToWrite, this.tableToRead);
+            Wrapper.Serializer.Write(this.tableToRead, this.tableToWrite);
         }
 
         [Benchmark]
         public void Serialize()
         {
-            this.serializer.Serialize(this.tableToWrite, this.tableToRead);
-        }
-
-        [Benchmark]
-        public int ParseAndTraverse()
-        {
-            var t = this.serializer.Parse<Table>(this.tableToRead);
-            var items = t.Items;
-            var keys = this.keys;
-
-            int found = 0;
-            foreach (var key in keys)
-            {
-                var findResult = items.BinarySearchByFlatBufferKey(key);
-                if (findResult != null)
-                {
-                    found++;
-                }
-            }
-
-            return found;
+            Wrapper.Serializer.Write(this.tableToRead, this.tableToWrite);
         }
     }
 
@@ -109,6 +89,10 @@ namespace BenchmarkCore
     {
         public static void Main(string[] args)
         {
+            //    Benchmark b = new();
+            //    b.Length = 5000;
+            //    b.Setup();
+
             Job job = Job.ShortRun
                 .WithAnalyzeLaunchVariance(true)
                 .WithLaunchCount(1)

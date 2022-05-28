@@ -5,13 +5,19 @@ attribute "fs_valueStruct";
 attribute "fs_unsafeStructVector";
 attribute "fs_nonVirtual";
 attribute "fs_sortedVector";
+attribute "fs_sharedString";
 
 namespace BenchmarkCore;
 
-table Table {
-    Items : [ VecTable ] (fs_sortedVector);
+table Wrapper (fs_serializer)
+{
+   Vector : [ Table ];
 }
 
-table VecTable {
-    Key : string (key);
+table Table {
+    A : string;
+    B : string;
+    C : string;
+    D : string;
 }
+

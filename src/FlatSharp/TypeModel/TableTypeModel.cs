@@ -493,7 +493,7 @@ public class TableTypeModel : RuntimeTypeModel
             }
         }
 
-        bool useSwitchForSerialize = this.optionalReferenceFieldCount is > 0 and <= 4;
+        bool useSwitchForSerialize = this.optionalReferenceFieldCount is > 1 and <= 4;
 
         foreach (var t in items)
         {
@@ -534,6 +534,9 @@ public class TableTypeModel : RuntimeTypeModel
             uint maxSwitchCase = (uint)(1 << this.optionalReferenceFieldCount) - 1;
 
             List<string> cases = new();
+
+            cases.Add("case 0: break;");
+
             for (int @case = 1; @case <= maxSwitchCase; ++@case)
             {
                 List<string> elements = new();
