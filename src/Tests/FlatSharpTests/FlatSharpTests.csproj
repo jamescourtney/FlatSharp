@@ -2,7 +2,7 @@
   <Import Project="..\..\common.props" />
 
   <PropertyGroup>
-    <TargetFrameworks Condition=" '$(AppVeyorBuild)' != 'true' ">net47;net472;netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(AppVeyorBuild)' != 'true' ">net472;netcoreapp3.1;net6.0</TargetFrameworks>
     <TargetFrameworks Condition=" '$(AppVeyorBuild)' == 'true' ">netcoreapp2.1;net47;netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <AssemblyName>FlatSharpTests</AssemblyName>

@@ -187,7 +187,7 @@ public class TableTypeModel : RuntimeTypeModel
             this.memberTypes[index] = model;
             if (!model.ItemTypeModel.SerializesInline && !model.IsRequired)
             {
-                model.OptionalReferenceIndex = ++this.optionalReferenceFieldCount;
+                model.OptionalReferenceIndex = this.optionalReferenceFieldCount++;
             }
         }
     }
@@ -511,8 +511,14 @@ public class TableTypeModel : RuntimeTypeModel
             {
                 if (!useSwitchForSerialize || t.model.OptionalReferenceIndex is null)
                 {
+                    string condition = $"if ({OffsetVariableName(t.vtableIndex, 0)} != tableStart)";
+                    if (t.model.IsRequired)
+                    {
+                        condition = string.Empty;
+                    }
+
                     writeBlocks.Add($@"
-                        if ({OffsetVariableName(t.vtableIndex, 0)} != tableStart)
+                        {condition}
                         {{
                             {this.GetSerializeCoreBlock(t.vtableIndex, t.valueVariableName, t.layout, t.model, context)}
                         }}
@@ -534,12 +540,12 @@ public class TableTypeModel : RuntimeTypeModel
 
                 foreach (var t in items)
                 {
-                    if (t.model.OptionalReferenceIndex is null)
+                    if (t.model.OptionalReferenceIndex is null || t.modelIndex != 0)
                     {
                         continue;
                     }
 
-                    if ((t.model.OptionalReferenceIndex.Value & @case) != 0)
+                    if (((1 << t.model.OptionalReferenceIndex.Value) & @case) != 0)
                     {
                         elements.Add($@"
                         {{
@@ -649,7 +655,7 @@ $@"
         string flagsBlock = string.Empty;
         if (flagsVariableName is not null && memberModel.OptionalReferenceIndex is not null)
         {
-            flagsBlock = $"{flagsVariableName} |= {memberModel.OptionalReferenceIndex.Value};";
+            flagsBlock = $"{flagsVariableName} |= {1 << memberModel.OptionalReferenceIndex.Value};";
         }
 
         string setVtableBlock = string.Empty;
