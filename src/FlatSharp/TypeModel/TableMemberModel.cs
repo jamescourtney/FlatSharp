@@ -159,6 +159,11 @@ public class TableMemberModel : ItemMemberModel
     public bool IsSharedString { get; set; }
 
     /// <summary>
+    /// ??
+    /// </summary>
+    public int? OptionalReferenceIndex { get; set; } 
+
+    /// <summary>
     /// Returns a C# literal that is equal to the default value.
     /// </summary>
     public string DefaultValueLiteral => this.ItemTypeModel.FormatDefaultValueAsLiteral(this.DefaultValue);

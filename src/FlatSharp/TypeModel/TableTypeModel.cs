@@ -45,6 +45,7 @@ public class TableTypeModel : RuntimeTypeModel
     private MethodInfo? onDeserializeMethod;
     private FlatBufferTableAttribute attribute = null!;
     private readonly string tableReaderClassName = "tableReader_" + Guid.NewGuid().ToString("n");
+    private int optionalReferenceFieldCount;
 
     internal TableTypeModel(Type clrType, TypeModelContainer typeModelProvider) : base(clrType, typeModelProvider)
     {
@@ -184,6 +185,10 @@ public class TableTypeModel : RuntimeTypeModel
             }
 
             this.memberTypes[index] = model;
+            if (!model.ItemTypeModel.SerializesInline && !model.IsRequired)
+            {
+                model.OptionalReferenceIndex = ++this.optionalReferenceFieldCount;
+            }
         }
     }
 
@@ -413,6 +418,8 @@ public class TableTypeModel : RuntimeTypeModel
 
     public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
     {
+        const string FlagsVariableName = "flags";
+
         var type = this.ClrType;
         int maxIndex = this.MaxIndex;
         int maxInlineSize = this.NonPaddedMaxTableInlineSize;
@@ -486,6 +493,8 @@ public class TableTypeModel : RuntimeTypeModel
             }
         }
 
+        bool useSwitchForSerialize = this.optionalReferenceFieldCount is > 0 and <= 4;
+
         foreach (var t in items)
         {
             prepareBlocks.Add(this.GetPrepareSerializeBlock(
@@ -493,19 +502,67 @@ public class TableTypeModel : RuntimeTypeModel
                 t.vtableIndex,
                 t.modelIndex,
                 t.valueVariableName,
+                useSwitchForSerialize ? FlagsVariableName : null,
                 t.layout,
                 t.model,
                 context));
 
             if (t.modelIndex == 0 && !t.model.ItemTypeModel.SerializesInline)
             {
-                writeBlocks.Add($@"
-                    if ({OffsetVariableName(t.vtableIndex, 0)} != tableStart)
-                    {{
-                        {this.GetSerializeCoreBlock(t.vtableIndex, t.modelIndex, t.valueVariableName, t.layout, t.model, context)}
-                    }}
-                ");
+                if (!useSwitchForSerialize || t.model.OptionalReferenceIndex is null)
+                {
+                    writeBlocks.Add($@"
+                        if ({OffsetVariableName(t.vtableIndex, 0)} != tableStart)
+                        {{
+                            {this.GetSerializeCoreBlock(t.vtableIndex, t.valueVariableName, t.layout, t.model, context)}
+                        }}
+                    ");
+                }
             }
+        }
+
+        string flagsDeclaration = string.Empty;
+        if (useSwitchForSerialize)
+        {
+            flagsDeclaration = $"ulong {FlagsVariableName} = 0;";
+            uint maxSwitchCase = (uint)(1 << this.optionalReferenceFieldCount) - 1;
+
+            List<string> cases = new();
+            for (int @case = 1; @case <= maxSwitchCase; ++@case)
+            {
+                List<string> elements = new();
+
+                foreach (var t in items)
+                {
+                    if (t.model.OptionalReferenceIndex is null)
+                    {
+                        continue;
+                    }
+
+                    if ((t.model.OptionalReferenceIndex.Value & @case) != 0)
+                    {
+                        elements.Add($@"
+                        {{
+                            {this.GetSerializeCoreBlock(t.vtableIndex, t.valueVariableName, t.layout, t.model, context)}
+                        }}");
+                    }
+                }
+
+                cases.Add($@"
+                        case {@case}:
+                        {{
+                            {string.Join("\r\n", elements)}
+                        }}
+                        break;
+                    ");
+            }
+
+            writeBlocks.Add($@"
+                switch ({FlagsVariableName})
+                {{
+                    {string.Join("\r\n", cases)}
+                }}
+            ");
         }
 
         // Start by asking for the worst-case number of bytes from the serializationcontext.
@@ -514,6 +571,7 @@ $@"
             int tableStart = {context.SerializationContextVariableName}.{nameof(SerializationContext.AllocateSpace)}({maxInlineSize}, sizeof(int));
             {context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteUOffset)}({context.SpanVariableName}, {context.OffsetVariableName}, tableStart);
             int currentOffset = tableStart + sizeof(int); // skip past vtable soffset_t.
+            {flagsDeclaration}
 
             int vtableLength = {minVtableLength};
             Span<byte> vtable = stackalloc byte[{4 + 2 * (maxIndex + 1)}];
@@ -558,6 +616,7 @@ $@"
         int index,
         int i,
         string valueVariableName,
+        string? flagsVariableName,
         PhysicalLayoutElement layout,
         TableMemberModel memberModel,
         SerializationCodeGenContext context)
@@ -587,6 +646,12 @@ $@"
             {OffsetVariableName(index, i)} = currentOffset;
             currentOffset += {layout.InlineSize};";
 
+        string flagsBlock = string.Empty;
+        if (flagsVariableName is not null && memberModel.OptionalReferenceIndex is not null)
+        {
+            flagsBlock = $"{flagsVariableName} |= {memberModel.OptionalReferenceIndex.Value};";
+        }
+
         string setVtableBlock = string.Empty;
         if (i == memberModel.ItemTypeModel.PhysicalLayout.Length - 1)
         {
@@ -615,7 +680,7 @@ $@"
         if (memberModel.ItemTypeModel.SerializesInline)
         {
             inlineSerialize = this.GetSerializeCoreBlock(
-                index, i, valueVariableName, layout, memberModel, context);
+                index, valueVariableName, layout, memberModel, context);
         }
 
         return $@"
@@ -623,6 +688,7 @@ $@"
             {condition} 
             {{
                 {prepareBlock}
+                {flagsBlock}
                 {inlineSerialize}
                 {setVtableBlock}
             }}
@@ -632,7 +698,6 @@ $@"
 
     private string GetSerializeCoreBlock(
         int index,
-        int i,
         string valueVariableName,
         PhysicalLayoutElement layout,
         TableMemberModel memberModel,
