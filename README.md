@@ -14,7 +14,7 @@ All FlatSharp packages are published on nuget.org:
 - **FlatSharp**: Support for runtime schemas with C# attributes. Includes `FlatBufferSerializer`.
 - **FlatSharp.Compiler**: Build time compiler for generating C# from an FBS schema.
 
-As of version 3.3.1, FlatSharp is in production use at Microsoft. 
+FlatSharp is a mature library and has been shipped to production at Microsoft and other companies. Full status can be found at [ProjectStatus.md](ProjectStatus.md).
 
 ### Getting Started
 If you're completely new to FlatBuffers, take a minute to look over [the FlatBuffer overview](https://google.github.io/flatbuffers/index.html#flatbuffers_overview). Additionally, it's worth the time to understand the different elements of [FlatBuffer schemas](https://google.github.io/flatbuffers/flatbuffers_guide_writing_schema.html).
