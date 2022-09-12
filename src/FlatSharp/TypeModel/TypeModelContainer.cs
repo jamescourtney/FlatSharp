@@ -31,7 +31,7 @@ public sealed class TypeModelContainer
 {
     private readonly object SyncRoot = new();
     private readonly List<ITypeModelProvider> providers = new();
-    private readonly LinkedList<ITypeModel> validationQueue = new();
+    private readonly Queue<ITypeModel> validationQueue = new();
 
     // Tracks the recursion depth in TryCreateTypeModel.
     private Dictionary<Type, ITypeModel> cache = new();
@@ -173,25 +173,7 @@ public sealed class TypeModelContainer
                 if (this.TryCreateTypeModelImpl(type, throwOnError, out typeModel))
                 {
                     success = true;
-                    this.validationQueue.AddLast(typeModel);
-
-                    /*
-                    try
-                    {
-                        typeModel.Validate();
-                    }
-                    catch (InvalidFlatBufferDefinitionException)
-                    {
-                        this.cache.Remove(type);
-
-                        FlatSharpInternal.Assert(
-                            this.TryCreateTypeModelImpl(type, throwOnError, out typeModel),
-                            "Expect to recreate type model");
-
-                        // Defer until later -- maybe not ready.
-                        validationQueue.Enqueue(typeModel);
-                    }
-                    */
+                    this.validationQueue.Enqueue(typeModel);
                 }
             }
             catch
@@ -212,36 +194,7 @@ public sealed class TypeModelContainer
 
                     try
                     {
-                        bool progress = true;
-
-                        while (progress && this.validationQueue.Count > 0)
-                        {
-                            int toProcess = this.validationQueue.Count;
-                            progress = false;
-                            while (--toProcess >= 0)
-                            {
-                                var node = this.validationQueue.First!;
-                                this.validationQueue.RemoveFirst();
-
-                                try
-                                {
-                                    node.Value.Validate();
-                                    progress = true;
-                                }
-                                catch
-                                {
-                                    this.validationQueue.AddLast(node);
-                                }
-                            }
-                        }
-
-                        if (!progress && validationQueue.Count > 0)
-                        {
-                            foreach (var item in this.validationQueue)
-                            {
-                                item.Validate();
-                            }
-                        }
+                        this.ProcessValidationQueue();
                     }
                     catch
                     {
@@ -265,6 +218,47 @@ public sealed class TypeModelContainer
             }
 
             return success;
+        }
+    }
+
+    /// <summary>
+    /// Processes the queue of pending validations, retrying until progress is no longer being made.
+    /// This approach can accomodate most circular dependencies, where items depend upon each other.
+    /// </summary>
+    private void ProcessValidationQueue()
+    {
+        bool progress = true;
+
+        // Keep going until we no longer make progress.
+        while (progress)
+        {
+            progress = false;
+            int toProcess = this.validationQueue.Count;
+
+            while (toProcess-- > 0)
+            {
+                ITypeModel toValidate = this.validationQueue.Dequeue();
+
+                try
+                {
+                    toValidate.Validate();
+                    progress = true;
+                }
+                catch (InvalidFlatBufferDefinitionException)
+                {
+                    // If we failed to validate, it might be legitimate, or it might be that
+                    // we just don't have enough context yet.
+                    this.validationQueue.Enqueue(toValidate);
+                }
+            }
+        }
+
+        if (validationQueue.Count > 0)
+        {
+            foreach (var item in this.validationQueue)
+            {
+                item.Validate();
+            }
         }
     }
 

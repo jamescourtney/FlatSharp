@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-using System.Linq;
-
 namespace FlatSharpTests.Compiler;
 
 public class RealExamples
 {
     [Fact]
-    public void IssueTest()
+    public void RecursiveUnionTest()
     {
         string schema = $@"
 namespace a;
@@ -40,7 +38,6 @@ table TableThatStartsItAll {{
 }}
 ";
         Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
-
     }
 
     [Theory]
