@@ -40,7 +40,7 @@ public abstract class RuntimeTypeModel : ITypeModel
     {
     }
 
-    public virtual void CrossTypeValidate()
+    public virtual void Validate()
     {
     }
 

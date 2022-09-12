@@ -266,7 +266,7 @@ $@"
         this.memberTypeModels = unionType.GetGenericArguments().Select(this.typeModelContainer.CreateTypeModel).ToArray();
     }
 
-    public override void CrossTypeValidate()
+    public override void Validate()
     {
         HashSet<Type> uniqueTypes = new HashSet<Type>();
 
@@ -282,6 +282,6 @@ $@"
             }
         }
 
-        base.CrossTypeValidate();
+        base.Validate();
     }
 }

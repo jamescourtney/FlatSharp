@@ -138,7 +138,7 @@ internal class TypeFacadeTypeModelProvider<TConverter, TUnderlying, TType> : ITy
         {
         }
 
-        public void CrossTypeValidate()
+        public void Validate()
         {
         }
 

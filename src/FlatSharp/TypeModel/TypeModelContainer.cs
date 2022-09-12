@@ -173,11 +173,7 @@ public sealed class TypeModelContainer
                 if (this.TryCreateTypeModelImpl(type, throwOnError, out typeModel))
                 {
                     success = true;
-
-                    // Enqueue items we created successfully into the validation queue. We'll validate
-                    // these in order (hence a queue), so the most specific/actionable errors come up
-                    // first.
-                    validationQueue.Enqueue(typeModel);
+                    this.validationQueue.Enqueue(typeModel);
                 }
             }
             catch
@@ -198,10 +194,7 @@ public sealed class TypeModelContainer
 
                     try
                     {
-                        while (this.validationQueue.Count > 0)
-                        {
-                            this.validationQueue.Dequeue().CrossTypeValidate();
-                        }
+                        this.ProcessValidationQueue();
                     }
                     catch
                     {
@@ -225,6 +218,47 @@ public sealed class TypeModelContainer
             }
 
             return success;
+        }
+    }
+
+    /// <summary>
+    /// Processes the queue of pending validations, retrying until progress is no longer being made.
+    /// This approach can accomodate most circular dependencies, where items depend upon each other.
+    /// </summary>
+    private void ProcessValidationQueue()
+    {
+        bool progress = true;
+
+        // Keep going until we no longer make progress.
+        while (progress)
+        {
+            progress = false;
+            int toProcess = this.validationQueue.Count;
+
+            while (toProcess-- > 0)
+            {
+                ITypeModel toValidate = this.validationQueue.Dequeue();
+
+                try
+                {
+                    toValidate.Validate();
+                    progress = true;
+                }
+                catch (InvalidFlatBufferDefinitionException)
+                {
+                    // If we failed to validate, it might be legitimate, or it might be that
+                    // we just don't have enough context yet.
+                    this.validationQueue.Enqueue(toValidate);
+                }
+            }
+        }
+
+        if (validationQueue.Count > 0)
+        {
+            foreach (var item in this.validationQueue)
+            {
+                item.Validate();
+            }
         }
     }
 

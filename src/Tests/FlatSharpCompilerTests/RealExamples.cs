@@ -14,12 +14,32 @@
  * limitations under the License.
  */
 
-using System.Linq;
-
 namespace FlatSharpTests.Compiler;
 
 public class RealExamples
 {
+    [Fact]
+    public void RecursiveUnionTest()
+    {
+        string schema = $@"
+namespace a;
+union UnionA {{
+    TableA,
+}}
+
+table TableA {{
+    union_a: UnionA;
+}}
+
+namespace b;
+
+table TableThatStartsItAll {{
+    union_a: a.UnionA;
+}}
+";
+        Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
+    }
+
     [Theory]
     [InlineData(FlatBufferDeserializationOption.Greedy, "Array", typeof(string[]))]
     [InlineData(FlatBufferDeserializationOption.GreedyMutable, "Array", typeof(string[]))]

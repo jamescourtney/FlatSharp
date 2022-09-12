@@ -49,7 +49,7 @@ public class IndexedVectorTypeModel : BaseVectorTypeModel
         return valueType;
     }
 
-    public override void CrossTypeValidate()
+    public override void Validate()
     {
         if (this.valueTypeModel.SchemaType != FlatBufferSchemaType.Table)
         {
@@ -79,7 +79,7 @@ public class IndexedVectorTypeModel : BaseVectorTypeModel
                 $"FlatSharp indexed vector keys must have the same type as the key of the value. KeyType = {this.keyTypeModel.GetCompilableTypeName()}, Value Key Type = '{this.valueTypeModel.GetCompilableTypeName()}'.");
         }
 
-        base.CrossTypeValidate();
+        base.Validate();
     }
 
     public override void AdjustTableMember(TableMemberModel source)
