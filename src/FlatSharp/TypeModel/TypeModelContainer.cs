@@ -31,7 +31,7 @@ public sealed class TypeModelContainer
 {
     private readonly object SyncRoot = new();
     private readonly List<ITypeModelProvider> providers = new();
-    private readonly Queue<ITypeModel> validationQueue = new();
+    private readonly LinkedList<ITypeModel> validationQueue = new();
 
     // Tracks the recursion depth in TryCreateTypeModel.
     private Dictionary<Type, ITypeModel> cache = new();
@@ -173,11 +173,25 @@ public sealed class TypeModelContainer
                 if (this.TryCreateTypeModelImpl(type, throwOnError, out typeModel))
                 {
                     success = true;
+                    this.validationQueue.AddLast(typeModel);
 
-                    // Enqueue items we created successfully into the validation queue. We'll validate
-                    // these in order (hence a queue), so the most specific/actionable errors come up
-                    // first.
-                    validationQueue.Enqueue(typeModel);
+                    /*
+                    try
+                    {
+                        typeModel.Validate();
+                    }
+                    catch (InvalidFlatBufferDefinitionException)
+                    {
+                        this.cache.Remove(type);
+
+                        FlatSharpInternal.Assert(
+                            this.TryCreateTypeModelImpl(type, throwOnError, out typeModel),
+                            "Expect to recreate type model");
+
+                        // Defer until later -- maybe not ready.
+                        validationQueue.Enqueue(typeModel);
+                    }
+                    */
                 }
             }
             catch
@@ -198,9 +212,35 @@ public sealed class TypeModelContainer
 
                     try
                     {
-                        while (this.validationQueue.Count > 0)
+                        bool progress = true;
+
+                        while (progress && this.validationQueue.Count > 0)
                         {
-                            this.validationQueue.Dequeue().CrossTypeValidate();
+                            int toProcess = this.validationQueue.Count;
+                            progress = false;
+                            while (--toProcess >= 0)
+                            {
+                                var node = this.validationQueue.First!;
+                                this.validationQueue.RemoveFirst();
+
+                                try
+                                {
+                                    node.Value.Validate();
+                                    progress = true;
+                                }
+                                catch
+                                {
+                                    this.validationQueue.AddLast(node);
+                                }
+                            }
+                        }
+
+                        if (!progress && validationQueue.Count > 0)
+                        {
+                            foreach (var item in this.validationQueue)
+                            {
+                                item.Validate();
+                            }
                         }
                     }
                     catch

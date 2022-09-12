@@ -181,23 +181,32 @@ public class StructTypeModel : RuntimeTypeModel
 
     public override void Initialize()
     {
+        base.Initialize();
+
+        foreach (var propertyTuple in this.GetProperties())
+        {
+            // Create downstream dependencies.
+            this.typeModelContainer.CreateTypeModel(propertyTuple.Property.PropertyType);
+        }
+    }
+
+    public override void Validate()
+    {
+        base.Validate();
+
         {
             FlatBufferStructAttribute? attribute = this.ClrType.GetCustomAttribute<FlatBufferStructAttribute>();
             FlatSharpInternal.Assert(attribute != null, "Missing attribute.");
         }
+        
+        // Reset in case validation is invoked multiple times.
+        this.inlineSize = 0;
+        this.memberTypes.Clear();
 
         TableTypeModel.EnsureClassCanBeInheritedByOutsideAssembly(this.ClrType, out this.preferredConstructor);
         this.onDeserializeMethod = TableTypeModel.ValidateOnDeserializedMethod(this);
 
-        var properties = this.ClrType
-            .GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-            .Select(x => new
-            {
-                Property = x,
-                Attribute = x.GetCustomAttribute<FlatBufferItemAttribute>()! // suppress check here; we filter on the next line.
-                })
-            .Where(x => x.Attribute is not null)
-            .OrderBy(x => x.Attribute.Index);
+        var properties = this.GetProperties();
 
         if (!properties.Any())
         {
@@ -205,7 +214,6 @@ public class StructTypeModel : RuntimeTypeModel
         }
 
         ushort expectedIndex = 0;
-        this.inlineSize = 0;
 
         foreach (var item in properties)
         {
@@ -254,14 +262,11 @@ public class StructTypeModel : RuntimeTypeModel
             this.memberTypes.Add(model);
             this.inlineSize += length;
         }
-    }
 
-    public override void CrossTypeValidate()
-    {
         foreach (StructMemberModel member in this.memberTypes)
         {
             ITypeModel memberModel = member.ItemTypeModel;
-            
+
             if (!memberModel.IsValidStructMember || memberModel.PhysicalLayout.Length > 1)
             {
                 throw new InvalidFlatBufferDefinitionException($"Struct '{this.GetCompilableTypeName()}' property {member.PropertyInfo.Name} (Index {member.Index}) with type {CSharpHelpers.GetCompilableTypeName(member.PropertyInfo.PropertyType)} cannot be part of a flatbuffer struct.");
@@ -269,7 +274,14 @@ public class StructTypeModel : RuntimeTypeModel
 
             member.Validate();
         }
+    }
 
-        base.CrossTypeValidate();
+    private IEnumerable<(PropertyInfo Property, FlatBufferItemAttribute Attribute)> GetProperties()
+    {
+        return this.ClrType
+            .GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+            .Select(x => (Property: x, Attribute: x.GetCustomAttribute<FlatBufferItemAttribute>()!))
+            .Where(x => x.Attribute is not null)
+            .OrderBy(x => x.Attribute.Index);
     }
 }

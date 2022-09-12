@@ -126,31 +126,32 @@ public class TableTypeModel : RuntimeTypeModel
 
     public override void Initialize()
     {
+        foreach (var propertyTuple in this.GetProperties())
+        {
+            this.typeModelContainer.CreateTypeModel(propertyTuple.Property.PropertyType);
+        }
+    }
+
+    public override void Validate()
+    {
         {
             FlatBufferTableAttribute? attr = this.ClrType.GetCustomAttribute<FlatBufferTableAttribute>();
             FlatSharpInternal.Assert(attr != null, "Table object missing attribute");
             this.attribute = attr;
         }
 
+        this.memberTypes.Clear();
+        this.occupiedVtableSlots.Clear();
+        this.KeyMember = null;
+        this.onDeserializeMethod = null;
+        this.preferredConstructor = null;
+
         ValidateFileIdentifier(this.attribute.FileIdentifier);
 
         EnsureClassCanBeInheritedByOutsideAssembly(this.ClrType, out this.preferredConstructor);
         this.onDeserializeMethod = ValidateOnDeserializedMethod(this);
 
-        var properties = this.ClrType.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-            .Select(x => new
-            {
-                Property = x,
-                Attribute = x.GetCustomAttribute<FlatBufferItemAttribute>(),
-            })
-            .Where(x => x.Attribute is not null)
-            .Select(x => new
-            {
-                x.Property,
-                Attribute = x.Attribute!, // not null by virtue of filter above.
-                ItemTypeModel = this.typeModelContainer.CreateTypeModel(x.Property.PropertyType),
-            })
-            .ToList();
+        var properties = this.GetProperties();
 
         ushort maxIndex = 0;
         foreach (var property in properties)
@@ -158,12 +159,14 @@ public class TableTypeModel : RuntimeTypeModel
             ushort index = property.Attribute.Index;
             maxIndex = Math.Max(index, maxIndex);
 
+            ITypeModel itemTypeModel = this.typeModelContainer.CreateTypeModel(property.Property.PropertyType);
+
             TableMemberModel model = new TableMemberModel(
-                property.ItemTypeModel,
+                itemTypeModel,
                 property.Property,
                 property.Attribute);
 
-            property.ItemTypeModel.AdjustTableMember(model);
+            itemTypeModel.AdjustTableMember(model);
 
             if (property.Attribute.Key)
             {
@@ -185,10 +188,7 @@ public class TableTypeModel : RuntimeTypeModel
 
             this.memberTypes[index] = model;
         }
-    }
 
-    public override void CrossTypeValidate()
-    {
         foreach (var kvp in this.memberTypes)
         {
             TableMemberModel memberModel = kvp.Value;
@@ -199,8 +199,6 @@ public class TableTypeModel : RuntimeTypeModel
             this.ValidateKey(memberModel);
             this.ValidateForceWrite(memberModel);
         }
-
-        base.CrossTypeValidate();
     }
 
     public override List<(ITypeModel, TableFieldContext)> GetFieldContexts()
@@ -213,6 +211,18 @@ public class TableTypeModel : RuntimeTypeModel
         }
 
         return items;
+    }
+
+    private IEnumerable<(PropertyInfo Property, FlatBufferItemAttribute Attribute)> GetProperties()
+    {
+        return this.ClrType.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+            .Select(x => new
+            {
+                Property = x,
+                Attribute = x.GetCustomAttribute<FlatBufferItemAttribute>(),
+            })
+            .Where(x => x.Attribute is not null)
+            .Select(x => (x.Property, x.Attribute!));
     }
 
     private void ValidateForceWrite(TableMemberModel model)

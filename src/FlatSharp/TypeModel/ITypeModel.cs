@@ -195,5 +195,5 @@ public interface ITypeModel
     /// <summary>
     /// Validates the type model for correctness after the entire type graph has been loaded. Validates cross-object dependencies.
     /// </summary>
-    void CrossTypeValidate();
+    void Validate();
 }

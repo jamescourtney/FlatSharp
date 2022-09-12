@@ -211,7 +211,7 @@ public abstract class BaseVectorTypeModel : RuntimeTypeModel
         this.ItemTypeModel = this.typeModelContainer.CreateTypeModel(this.OnInitialize());
     }
 
-    public override void CrossTypeValidate()
+    public override void Validate()
     {
         if (!this.ItemTypeModel.IsValidVectorMember)
         {
@@ -223,7 +223,7 @@ public abstract class BaseVectorTypeModel : RuntimeTypeModel
             throw new InvalidFlatBufferDefinitionException($"Vectors may only store vtable layouts with one item. Consider a custom vector type model for other vector kinds.");
         }
 
-        base.CrossTypeValidate();
+        base.Validate();
     }
 
     /// <summary>
