@@ -23,6 +23,7 @@ using System.Threading;
 
 using CommandLine;
 using FlatSharp.CodeGen;
+using FlatSharp.Compiler.SchemaModel;
 using FlatSharp.TypeModel;
 
 namespace FlatSharp.Compiler;
@@ -496,9 +497,19 @@ public class FlatSharpCompiler
         {
             foreach (Schema.FlatBufferObject item in schema.Objects)
             {
+                bool? preserveFieldCasingParent = item.Attributes != null ? new FlatSharpAttributes(item.Attributes).PreserveFieldCasing : default;
                 foreach (Schema.Field field in item.Fields)
                 {
-                    field.Name = NormalizeFieldName(field.Name);
+                    bool? preserveFieldCasing = field.Attributes != null ? preserveFieldCasing = new FlatSharpAttributes(field.Attributes).PreserveFieldCasing : default;
+
+                    var preserve = (preserveFieldCasing ?? preserveFieldCasingParent) switch
+                    {
+                        false or null => false,
+                        true => true,
+                    };
+
+                    if (!preserve)
+                        field.Name = NormalizeFieldName(field.Name);
                 }
             }
         }

@@ -104,6 +104,15 @@ public static class MetadataKeys
     public const string RpcInterface = "fs_rpcInterface";
 
     /// <summary>
+    /// Controls whether field names are affected by --normalize-field-names option.
+    /// Valid On:
+    /// - Table (as a default for all fields in the table, overridden by the setting on a field)
+    /// - Struct (as a default for all fields in the struct, overridden by the setting on a field)
+    /// - Field 
+    /// </summary>
+    public const string PreserveFieldCasing = "fs_preserveFieldCasing";
+
+    /// <summary>
     /// Marks a table field as deprecated. Deprecated fields do not have their values serialized or parsed.
     /// Valid On:
     /// - Table field
