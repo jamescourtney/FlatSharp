@@ -26,6 +26,9 @@ namespace FlatSharp;
 public sealed class FlatBufferSerializer
 {
     public static FlatBufferSerializer Default { get; } = new FlatBufferSerializer(new FlatBufferSerializerOptions());
+    
+    // Test hook
+    internal static FlatBufferSerializer DefaultWithUnitySupport { get; } = new FlatBufferSerializer(new FlatBufferSerializerOptions(), TypeModelContainer.CreateDefault().WithUnitySupport(true));
 
     private readonly Dictionary<Type, object> serializerCache = new();
 

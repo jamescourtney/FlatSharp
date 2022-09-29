@@ -320,6 +320,7 @@ public record PropertyFieldModel
             VectorType.Memory => $"Memory<{innerType}>",
             VectorType.ReadOnlyMemory => $"ReadOnlyMemory<{innerType}>",
             VectorType.IIndexedVector => $"IIndexedVector<{keyType ?? "string"}, {innerType}>",
+            VectorType.UnityNativeArray => $"Unity.Collections.NativeArray<{innerType}>",
 
             // Unqualified ubyte vectors default to Memory.
             null => this.Field.Type.ElementType == BaseType.UByte 

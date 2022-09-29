@@ -15,6 +15,7 @@
  */
 
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace FlatSharp.Internal;
 
@@ -134,6 +135,23 @@ public static class InputBufferExtensions
             // The local value stores a uoffset_t, so follow that now.
             uoffset = uoffset + buffer.ReadUOffset(uoffset);
             return buffer.GetReadOnlyMemory().Slice(uoffset + sizeof(uint), (int)buffer.ReadUInt(uoffset));
+        }
+    }
+    
+    public static Span<TElement> UnsafeReadSpan<TBuffer, TElement>(this TBuffer buffer, int uoffset) where TBuffer : IInputBuffer where TElement : struct
+    {
+        checked
+        {   
+            // The local value stores a uoffset_t, so follow that now.
+            uoffset = uoffset + buffer.ReadUOffset(uoffset);
+
+            // We need to construct a Span<TElement> from byte buffer that:
+            // 1. starts at correct offset for vector data
+            // 2. has a length based on *TElement* count not *byte* count
+            var byteSpanAtDataOffset = buffer.GetSpan().Slice(uoffset + sizeof(uint));
+            var sourceSpan = MemoryMarshal.Cast<byte, TElement>(byteSpanAtDataOffset).Slice(0, (int)buffer.ReadUInt(uoffset));
+
+            return sourceSpan;
         }
     }
 

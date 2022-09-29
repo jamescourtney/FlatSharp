@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+using System.Runtime.InteropServices;
+
 namespace FlatSharp.Internal;
 
 /// <summary>
@@ -35,6 +37,27 @@ public static class SpanWriterExtensions
         spanWriter.WriteInt(span, numberOfItems, vectorStartOffset);
 
         memory.Span.CopyTo(span.Slice(vectorStartOffset + sizeof(uint)));
+    }
+    
+    public static void UnsafeWriteSpan<TSpanWriter, TElement>(
+        this TSpanWriter spanWriter,
+        Span<byte> span,
+        Span<TElement> buffer,
+        int offset,
+        SerializationContext ctx) where TSpanWriter : ISpanWriter where TElement : struct
+    {
+        int numberOfItems = buffer.Length;
+        int vectorStartOffset = ctx.AllocateVector(
+            itemAlignment: Unsafe.SizeOf<TElement>(),
+            numberOfItems,
+            sizePerItem: Unsafe.SizeOf<TElement>());
+
+        spanWriter.WriteUOffset(span, offset, vectorStartOffset);
+        spanWriter.WriteInt(span, numberOfItems, vectorStartOffset);
+
+
+        var start = span.Slice(vectorStartOffset + sizeof(uint));
+        MemoryMarshal.Cast<TElement, byte>(buffer).CopyTo(start);
     }
 
     /// <summary>

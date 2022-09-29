@@ -18,6 +18,8 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using FlatSharp.TypeModel;
+using Unity.Collections;
 
 namespace FlatSharpTests;
 
@@ -111,8 +113,8 @@ public class VectorSerializationTests
                 };
 
                 Span<byte> target = new byte[1024];
-                int offset = FlatBufferSerializer.Default.Serialize(root, target);
-                string csharp = FlatBufferSerializer.Default.Compile(root).GetCSharp();
+                int offset = FlatBufferSerializer.DefaultWithUnitySupport.Serialize(root, target);
+                string csharp = FlatBufferSerializer.DefaultWithUnitySupport.Compile(root).GetCSharp();
 
                 target = target.Slice(0, offset);
 
@@ -123,8 +125,10 @@ public class VectorSerializationTests
             Test<IReadOnlyList<byte>>(a => a.ToList());
             Test<Memory<byte>>(a => a.AsMemory());
             Test<ReadOnlyMemory<byte>>(a => a.AsMemory());
+            Test<NativeArray<byte>>(a => new NativeArray<byte>(a, Allocator.Temp));
             Test<Memory<byte>?>(a => a.AsMemory());
             Test<ReadOnlyMemory<byte>?>(a => a.AsMemory());
+            Test<NativeArray<byte>?>(a => new NativeArray<byte>(a, Allocator.Temp));
         }
 
         [Fact]
@@ -150,8 +154,8 @@ public class VectorSerializationTests
                 };
 
                 Span<byte> target = new byte[1024];
-                int offset = FlatBufferSerializer.Default.Serialize(root, target);
-                string csharp = FlatBufferSerializer.Default.Compile(root).GetCSharp();
+                int offset = FlatBufferSerializer.DefaultWithUnitySupport.Serialize(root, target);
+                string csharp = FlatBufferSerializer.DefaultWithUnitySupport.Compile(root).GetCSharp();
 
                 target = target.Slice(0, offset);
 
@@ -162,8 +166,10 @@ public class VectorSerializationTests
             Test<IReadOnlyList<int>>(new List<int>());
             Test<Memory<byte>>(new Memory<byte>(new byte[0]));
             Test<ReadOnlyMemory<byte>>(new ReadOnlyMemory<byte>(new byte[0]));
+            Test<NativeArray<byte>>(new NativeArray<byte>(new byte[0], Allocator.Temp));
             Test<Memory<byte>?>(new Memory<byte>(new byte[0]));
             Test<ReadOnlyMemory<byte>?>(new ReadOnlyMemory<byte>(new byte[0]));
+            Test<NativeArray<byte>?>(new NativeArray<byte>(new byte[0], Allocator.Temp));
             Test<IIndexedVector<string, TableWithKey<string>>>(new IndexedVector<string, TableWithKey<string>>());
         }
 
@@ -186,8 +192,8 @@ public class VectorSerializationTests
                 };
 
                 Span<byte> target = new byte[1024];
-                int offset = FlatBufferSerializer.Default.Serialize(root, target);
-                string csharp = FlatBufferSerializer.Default.Compile(root).GetCSharp();
+                int offset = FlatBufferSerializer.DefaultWithUnitySupport.Serialize(root, target);
+                string csharp = FlatBufferSerializer.DefaultWithUnitySupport.Compile(root).GetCSharp();
 
                 target = target.Slice(0, offset);
 
@@ -198,6 +204,7 @@ public class VectorSerializationTests
             Test<IReadOnlyList<int>>();
             Test<Memory<byte>?>();
             Test<ReadOnlyMemory<byte>?>();
+            Test<NativeArray<byte>?>();
             Test<IIndexedVector<string, TableWithKey<string>>>();
 
             Test<IList<FlatBufferUnion<string>>>();
