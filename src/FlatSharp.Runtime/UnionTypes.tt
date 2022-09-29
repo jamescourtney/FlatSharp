@@ -22,7 +22,7 @@
 <#@ output extension=".cs" #>
 
 <#
-    int numGenerics = 30;
+    int numGenerics = 50;
 #>
 
 namespace FlatSharp;
