@@ -56,6 +56,10 @@ public class UnionsExample
             caseDoggo: d => d.Breed.ToString(),
             caseCat: c => c.Breed.ToString(),
             caseFish: f => f.Kind.ToString());
+         
+        // Finally, each union can accept a visitor. Using structs as visitors
+        // will allow you to benefit from devirtualization if performance is a concern.
+        string? name = pet.Accept<PetNameVisitor, string?>(new PetNameVisitor());
     }
 
     /// <summary>
@@ -95,6 +99,27 @@ public class UnionsExample
                 case1: (Dog d) => { },
                 case2: (Cat c) => { },
                 case3: (Fish f) => { });
+
+            string? name = union.Accept<PetNameVisitor, string?>(new PetNameVisitor());
+        }
+    }
+
+    // Pet.Visitor<string?> implements IFlatBufferUnionVisitor<string?, Dog, Cat, Fish>
+    public struct PetNameVisitor : Pet.Visitor<string?>
+    {
+        public string? Visit(Dog item)
+        {
+            return item.Name;
+        }
+
+        public string? Visit(Cat item)
+        {
+            return item.Name;
+        }
+
+        public string? Visit(Fish item)
+        {
+            return item.Name;
         }
     }
 }
