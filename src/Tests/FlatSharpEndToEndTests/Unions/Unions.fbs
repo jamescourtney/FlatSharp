@@ -1,0 +1,17 @@
+﻿
+attribute "fs_serializer";
+attribute "fs_sharedString";
+attribute "fs_rpcInterface";
+
+namespace FlatSharpEndToEndTests.Unions;
+
+struct A { V : uint; }
+struct B { V : uint; }
+struct C { V : uint; }
+struct D { V : uint; }
+
+union MyUnion { A, B, C, D }
+
+table Container (fs_serializer) {
+    Value : [MyUnion];
+}

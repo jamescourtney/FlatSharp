@@ -49,17 +49,19 @@ public class UnionTests
         string[] expectedAliases = new[] { "First", "B", "Foobar_C" };
 
         // Validate nested enum
-        Type nestedEnum = unionType.GetNestedTypes().Single();
+        Type nestedEnum = unionType.GetNestedTypes().Where(x => x.IsEnum).Single();
         Assert.True(nestedEnum.IsEnum);
         Assert.Equal("ItemKind", nestedEnum.Name);
         Assert.Equal(typeof(byte), Enum.GetUnderlyingType(nestedEnum));
         Assert.Equal(types.Length + 1, Enum.GetValues(nestedEnum).Length);
-
         Assert.Equal("NONE", Enum.GetName(nestedEnum, (byte)0));
+
         for (int i = 0; i < types.Length; ++i)
         {
             Assert.Equal(expectedAliases[i], Enum.GetName(nestedEnum, (byte)(i + 1)));
         }
+
+        Type nestedVistior = unionType.GetNestedTypes().Where(x => x.IsInterface).Single();
 
         // Custom union defines ctors for all input types.
         foreach (var type in types)

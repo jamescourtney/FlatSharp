@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2020 James Courtney
+ * Copyright 2022 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,11 +24,4139 @@ public interface IFlatBufferUnion
 }
 
 
+public interface IFlatBufferUnionVisitor<TReturn, T1>
+{
+    
+    TReturn Visit(T1 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+    
+    TReturn Visit(T12 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+    
+    TReturn Visit(T12 item);
+
+    
+    TReturn Visit(T13 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+    
+    TReturn Visit(T12 item);
+
+    
+    TReturn Visit(T13 item);
+
+    
+    TReturn Visit(T14 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+    
+    TReturn Visit(T12 item);
+
+    
+    TReturn Visit(T13 item);
+
+    
+    TReturn Visit(T14 item);
+
+    
+    TReturn Visit(T15 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+    
+    TReturn Visit(T12 item);
+
+    
+    TReturn Visit(T13 item);
+
+    
+    TReturn Visit(T14 item);
+
+    
+    TReturn Visit(T15 item);
+
+    
+    TReturn Visit(T16 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+    
+    TReturn Visit(T12 item);
+
+    
+    TReturn Visit(T13 item);
+
+    
+    TReturn Visit(T14 item);
+
+    
+    TReturn Visit(T15 item);
+
+    
+    TReturn Visit(T16 item);
+
+    
+    TReturn Visit(T17 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+    
+    TReturn Visit(T12 item);
+
+    
+    TReturn Visit(T13 item);
+
+    
+    TReturn Visit(T14 item);
+
+    
+    TReturn Visit(T15 item);
+
+    
+    TReturn Visit(T16 item);
+
+    
+    TReturn Visit(T17 item);
+
+    
+    TReturn Visit(T18 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+    
+    TReturn Visit(T12 item);
+
+    
+    TReturn Visit(T13 item);
+
+    
+    TReturn Visit(T14 item);
+
+    
+    TReturn Visit(T15 item);
+
+    
+    TReturn Visit(T16 item);
+
+    
+    TReturn Visit(T17 item);
+
+    
+    TReturn Visit(T18 item);
+
+    
+    TReturn Visit(T19 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+    
+    TReturn Visit(T12 item);
+
+    
+    TReturn Visit(T13 item);
+
+    
+    TReturn Visit(T14 item);
+
+    
+    TReturn Visit(T15 item);
+
+    
+    TReturn Visit(T16 item);
+
+    
+    TReturn Visit(T17 item);
+
+    
+    TReturn Visit(T18 item);
+
+    
+    TReturn Visit(T19 item);
+
+    
+    TReturn Visit(T20 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+    
+    TReturn Visit(T12 item);
+
+    
+    TReturn Visit(T13 item);
+
+    
+    TReturn Visit(T14 item);
+
+    
+    TReturn Visit(T15 item);
+
+    
+    TReturn Visit(T16 item);
+
+    
+    TReturn Visit(T17 item);
+
+    
+    TReturn Visit(T18 item);
+
+    
+    TReturn Visit(T19 item);
+
+    
+    TReturn Visit(T20 item);
+
+    
+    TReturn Visit(T21 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+    
+    TReturn Visit(T12 item);
+
+    
+    TReturn Visit(T13 item);
+
+    
+    TReturn Visit(T14 item);
+
+    
+    TReturn Visit(T15 item);
+
+    
+    TReturn Visit(T16 item);
+
+    
+    TReturn Visit(T17 item);
+
+    
+    TReturn Visit(T18 item);
+
+    
+    TReturn Visit(T19 item);
+
+    
+    TReturn Visit(T20 item);
+
+    
+    TReturn Visit(T21 item);
+
+    
+    TReturn Visit(T22 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+    
+    TReturn Visit(T12 item);
+
+    
+    TReturn Visit(T13 item);
+
+    
+    TReturn Visit(T14 item);
+
+    
+    TReturn Visit(T15 item);
+
+    
+    TReturn Visit(T16 item);
+
+    
+    TReturn Visit(T17 item);
+
+    
+    TReturn Visit(T18 item);
+
+    
+    TReturn Visit(T19 item);
+
+    
+    TReturn Visit(T20 item);
+
+    
+    TReturn Visit(T21 item);
+
+    
+    TReturn Visit(T22 item);
+
+    
+    TReturn Visit(T23 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+    
+    TReturn Visit(T12 item);
+
+    
+    TReturn Visit(T13 item);
+
+    
+    TReturn Visit(T14 item);
+
+    
+    TReturn Visit(T15 item);
+
+    
+    TReturn Visit(T16 item);
+
+    
+    TReturn Visit(T17 item);
+
+    
+    TReturn Visit(T18 item);
+
+    
+    TReturn Visit(T19 item);
+
+    
+    TReturn Visit(T20 item);
+
+    
+    TReturn Visit(T21 item);
+
+    
+    TReturn Visit(T22 item);
+
+    
+    TReturn Visit(T23 item);
+
+    
+    TReturn Visit(T24 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+    
+    TReturn Visit(T12 item);
+
+    
+    TReturn Visit(T13 item);
+
+    
+    TReturn Visit(T14 item);
+
+    
+    TReturn Visit(T15 item);
+
+    
+    TReturn Visit(T16 item);
+
+    
+    TReturn Visit(T17 item);
+
+    
+    TReturn Visit(T18 item);
+
+    
+    TReturn Visit(T19 item);
+
+    
+    TReturn Visit(T20 item);
+
+    
+    TReturn Visit(T21 item);
+
+    
+    TReturn Visit(T22 item);
+
+    
+    TReturn Visit(T23 item);
+
+    
+    TReturn Visit(T24 item);
+
+    
+    TReturn Visit(T25 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+    
+    TReturn Visit(T12 item);
+
+    
+    TReturn Visit(T13 item);
+
+    
+    TReturn Visit(T14 item);
+
+    
+    TReturn Visit(T15 item);
+
+    
+    TReturn Visit(T16 item);
+
+    
+    TReturn Visit(T17 item);
+
+    
+    TReturn Visit(T18 item);
+
+    
+    TReturn Visit(T19 item);
+
+    
+    TReturn Visit(T20 item);
+
+    
+    TReturn Visit(T21 item);
+
+    
+    TReturn Visit(T22 item);
+
+    
+    TReturn Visit(T23 item);
+
+    
+    TReturn Visit(T24 item);
+
+    
+    TReturn Visit(T25 item);
+
+    
+    TReturn Visit(T26 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+    
+    TReturn Visit(T12 item);
+
+    
+    TReturn Visit(T13 item);
+
+    
+    TReturn Visit(T14 item);
+
+    
+    TReturn Visit(T15 item);
+
+    
+    TReturn Visit(T16 item);
+
+    
+    TReturn Visit(T17 item);
+
+    
+    TReturn Visit(T18 item);
+
+    
+    TReturn Visit(T19 item);
+
+    
+    TReturn Visit(T20 item);
+
+    
+    TReturn Visit(T21 item);
+
+    
+    TReturn Visit(T22 item);
+
+    
+    TReturn Visit(T23 item);
+
+    
+    TReturn Visit(T24 item);
+
+    
+    TReturn Visit(T25 item);
+
+    
+    TReturn Visit(T26 item);
+
+    
+    TReturn Visit(T27 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+    
+    TReturn Visit(T12 item);
+
+    
+    TReturn Visit(T13 item);
+
+    
+    TReturn Visit(T14 item);
+
+    
+    TReturn Visit(T15 item);
+
+    
+    TReturn Visit(T16 item);
+
+    
+    TReturn Visit(T17 item);
+
+    
+    TReturn Visit(T18 item);
+
+    
+    TReturn Visit(T19 item);
+
+    
+    TReturn Visit(T20 item);
+
+    
+    TReturn Visit(T21 item);
+
+    
+    TReturn Visit(T22 item);
+
+    
+    TReturn Visit(T23 item);
+
+    
+    TReturn Visit(T24 item);
+
+    
+    TReturn Visit(T25 item);
+
+    
+    TReturn Visit(T26 item);
+
+    
+    TReturn Visit(T27 item);
+
+    
+    TReturn Visit(T28 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+    
+    TReturn Visit(T12 item);
+
+    
+    TReturn Visit(T13 item);
+
+    
+    TReturn Visit(T14 item);
+
+    
+    TReturn Visit(T15 item);
+
+    
+    TReturn Visit(T16 item);
+
+    
+    TReturn Visit(T17 item);
+
+    
+    TReturn Visit(T18 item);
+
+    
+    TReturn Visit(T19 item);
+
+    
+    TReturn Visit(T20 item);
+
+    
+    TReturn Visit(T21 item);
+
+    
+    TReturn Visit(T22 item);
+
+    
+    TReturn Visit(T23 item);
+
+    
+    TReturn Visit(T24 item);
+
+    
+    TReturn Visit(T25 item);
+
+    
+    TReturn Visit(T26 item);
+
+    
+    TReturn Visit(T27 item);
+
+    
+    TReturn Visit(T28 item);
+
+    
+    TReturn Visit(T29 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+    
+    TReturn Visit(T12 item);
+
+    
+    TReturn Visit(T13 item);
+
+    
+    TReturn Visit(T14 item);
+
+    
+    TReturn Visit(T15 item);
+
+    
+    TReturn Visit(T16 item);
+
+    
+    TReturn Visit(T17 item);
+
+    
+    TReturn Visit(T18 item);
+
+    
+    TReturn Visit(T19 item);
+
+    
+    TReturn Visit(T20 item);
+
+    
+    TReturn Visit(T21 item);
+
+    
+    TReturn Visit(T22 item);
+
+    
+    TReturn Visit(T23 item);
+
+    
+    TReturn Visit(T24 item);
+
+    
+    TReturn Visit(T25 item);
+
+    
+    TReturn Visit(T26 item);
+
+    
+    TReturn Visit(T27 item);
+
+    
+    TReturn Visit(T28 item);
+
+    
+    TReturn Visit(T29 item);
+
+    
+    TReturn Visit(T30 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+    
+    TReturn Visit(T12 item);
+
+    
+    TReturn Visit(T13 item);
+
+    
+    TReturn Visit(T14 item);
+
+    
+    TReturn Visit(T15 item);
+
+    
+    TReturn Visit(T16 item);
+
+    
+    TReturn Visit(T17 item);
+
+    
+    TReturn Visit(T18 item);
+
+    
+    TReturn Visit(T19 item);
+
+    
+    TReturn Visit(T20 item);
+
+    
+    TReturn Visit(T21 item);
+
+    
+    TReturn Visit(T22 item);
+
+    
+    TReturn Visit(T23 item);
+
+    
+    TReturn Visit(T24 item);
+
+    
+    TReturn Visit(T25 item);
+
+    
+    TReturn Visit(T26 item);
+
+    
+    TReturn Visit(T27 item);
+
+    
+    TReturn Visit(T28 item);
+
+    
+    TReturn Visit(T29 item);
+
+    
+    TReturn Visit(T30 item);
+
+    
+    TReturn Visit(T31 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+    
+    TReturn Visit(T12 item);
+
+    
+    TReturn Visit(T13 item);
+
+    
+    TReturn Visit(T14 item);
+
+    
+    TReturn Visit(T15 item);
+
+    
+    TReturn Visit(T16 item);
+
+    
+    TReturn Visit(T17 item);
+
+    
+    TReturn Visit(T18 item);
+
+    
+    TReturn Visit(T19 item);
+
+    
+    TReturn Visit(T20 item);
+
+    
+    TReturn Visit(T21 item);
+
+    
+    TReturn Visit(T22 item);
+
+    
+    TReturn Visit(T23 item);
+
+    
+    TReturn Visit(T24 item);
+
+    
+    TReturn Visit(T25 item);
+
+    
+    TReturn Visit(T26 item);
+
+    
+    TReturn Visit(T27 item);
+
+    
+    TReturn Visit(T28 item);
+
+    
+    TReturn Visit(T29 item);
+
+    
+    TReturn Visit(T30 item);
+
+    
+    TReturn Visit(T31 item);
+
+    
+    TReturn Visit(T32 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+    
+    TReturn Visit(T12 item);
+
+    
+    TReturn Visit(T13 item);
+
+    
+    TReturn Visit(T14 item);
+
+    
+    TReturn Visit(T15 item);
+
+    
+    TReturn Visit(T16 item);
+
+    
+    TReturn Visit(T17 item);
+
+    
+    TReturn Visit(T18 item);
+
+    
+    TReturn Visit(T19 item);
+
+    
+    TReturn Visit(T20 item);
+
+    
+    TReturn Visit(T21 item);
+
+    
+    TReturn Visit(T22 item);
+
+    
+    TReturn Visit(T23 item);
+
+    
+    TReturn Visit(T24 item);
+
+    
+    TReturn Visit(T25 item);
+
+    
+    TReturn Visit(T26 item);
+
+    
+    TReturn Visit(T27 item);
+
+    
+    TReturn Visit(T28 item);
+
+    
+    TReturn Visit(T29 item);
+
+    
+    TReturn Visit(T30 item);
+
+    
+    TReturn Visit(T31 item);
+
+    
+    TReturn Visit(T32 item);
+
+    
+    TReturn Visit(T33 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+    
+    TReturn Visit(T12 item);
+
+    
+    TReturn Visit(T13 item);
+
+    
+    TReturn Visit(T14 item);
+
+    
+    TReturn Visit(T15 item);
+
+    
+    TReturn Visit(T16 item);
+
+    
+    TReturn Visit(T17 item);
+
+    
+    TReturn Visit(T18 item);
+
+    
+    TReturn Visit(T19 item);
+
+    
+    TReturn Visit(T20 item);
+
+    
+    TReturn Visit(T21 item);
+
+    
+    TReturn Visit(T22 item);
+
+    
+    TReturn Visit(T23 item);
+
+    
+    TReturn Visit(T24 item);
+
+    
+    TReturn Visit(T25 item);
+
+    
+    TReturn Visit(T26 item);
+
+    
+    TReturn Visit(T27 item);
+
+    
+    TReturn Visit(T28 item);
+
+    
+    TReturn Visit(T29 item);
+
+    
+    TReturn Visit(T30 item);
+
+    
+    TReturn Visit(T31 item);
+
+    
+    TReturn Visit(T32 item);
+
+    
+    TReturn Visit(T33 item);
+
+    
+    TReturn Visit(T34 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+    
+    TReturn Visit(T12 item);
+
+    
+    TReturn Visit(T13 item);
+
+    
+    TReturn Visit(T14 item);
+
+    
+    TReturn Visit(T15 item);
+
+    
+    TReturn Visit(T16 item);
+
+    
+    TReturn Visit(T17 item);
+
+    
+    TReturn Visit(T18 item);
+
+    
+    TReturn Visit(T19 item);
+
+    
+    TReturn Visit(T20 item);
+
+    
+    TReturn Visit(T21 item);
+
+    
+    TReturn Visit(T22 item);
+
+    
+    TReturn Visit(T23 item);
+
+    
+    TReturn Visit(T24 item);
+
+    
+    TReturn Visit(T25 item);
+
+    
+    TReturn Visit(T26 item);
+
+    
+    TReturn Visit(T27 item);
+
+    
+    TReturn Visit(T28 item);
+
+    
+    TReturn Visit(T29 item);
+
+    
+    TReturn Visit(T30 item);
+
+    
+    TReturn Visit(T31 item);
+
+    
+    TReturn Visit(T32 item);
+
+    
+    TReturn Visit(T33 item);
+
+    
+    TReturn Visit(T34 item);
+
+    
+    TReturn Visit(T35 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+    
+    TReturn Visit(T12 item);
+
+    
+    TReturn Visit(T13 item);
+
+    
+    TReturn Visit(T14 item);
+
+    
+    TReturn Visit(T15 item);
+
+    
+    TReturn Visit(T16 item);
+
+    
+    TReturn Visit(T17 item);
+
+    
+    TReturn Visit(T18 item);
+
+    
+    TReturn Visit(T19 item);
+
+    
+    TReturn Visit(T20 item);
+
+    
+    TReturn Visit(T21 item);
+
+    
+    TReturn Visit(T22 item);
+
+    
+    TReturn Visit(T23 item);
+
+    
+    TReturn Visit(T24 item);
+
+    
+    TReturn Visit(T25 item);
+
+    
+    TReturn Visit(T26 item);
+
+    
+    TReturn Visit(T27 item);
+
+    
+    TReturn Visit(T28 item);
+
+    
+    TReturn Visit(T29 item);
+
+    
+    TReturn Visit(T30 item);
+
+    
+    TReturn Visit(T31 item);
+
+    
+    TReturn Visit(T32 item);
+
+    
+    TReturn Visit(T33 item);
+
+    
+    TReturn Visit(T34 item);
+
+    
+    TReturn Visit(T35 item);
+
+    
+    TReturn Visit(T36 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+    
+    TReturn Visit(T12 item);
+
+    
+    TReturn Visit(T13 item);
+
+    
+    TReturn Visit(T14 item);
+
+    
+    TReturn Visit(T15 item);
+
+    
+    TReturn Visit(T16 item);
+
+    
+    TReturn Visit(T17 item);
+
+    
+    TReturn Visit(T18 item);
+
+    
+    TReturn Visit(T19 item);
+
+    
+    TReturn Visit(T20 item);
+
+    
+    TReturn Visit(T21 item);
+
+    
+    TReturn Visit(T22 item);
+
+    
+    TReturn Visit(T23 item);
+
+    
+    TReturn Visit(T24 item);
+
+    
+    TReturn Visit(T25 item);
+
+    
+    TReturn Visit(T26 item);
+
+    
+    TReturn Visit(T27 item);
+
+    
+    TReturn Visit(T28 item);
+
+    
+    TReturn Visit(T29 item);
+
+    
+    TReturn Visit(T30 item);
+
+    
+    TReturn Visit(T31 item);
+
+    
+    TReturn Visit(T32 item);
+
+    
+    TReturn Visit(T33 item);
+
+    
+    TReturn Visit(T34 item);
+
+    
+    TReturn Visit(T35 item);
+
+    
+    TReturn Visit(T36 item);
+
+    
+    TReturn Visit(T37 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+    
+    TReturn Visit(T12 item);
+
+    
+    TReturn Visit(T13 item);
+
+    
+    TReturn Visit(T14 item);
+
+    
+    TReturn Visit(T15 item);
+
+    
+    TReturn Visit(T16 item);
+
+    
+    TReturn Visit(T17 item);
+
+    
+    TReturn Visit(T18 item);
+
+    
+    TReturn Visit(T19 item);
+
+    
+    TReturn Visit(T20 item);
+
+    
+    TReturn Visit(T21 item);
+
+    
+    TReturn Visit(T22 item);
+
+    
+    TReturn Visit(T23 item);
+
+    
+    TReturn Visit(T24 item);
+
+    
+    TReturn Visit(T25 item);
+
+    
+    TReturn Visit(T26 item);
+
+    
+    TReturn Visit(T27 item);
+
+    
+    TReturn Visit(T28 item);
+
+    
+    TReturn Visit(T29 item);
+
+    
+    TReturn Visit(T30 item);
+
+    
+    TReturn Visit(T31 item);
+
+    
+    TReturn Visit(T32 item);
+
+    
+    TReturn Visit(T33 item);
+
+    
+    TReturn Visit(T34 item);
+
+    
+    TReturn Visit(T35 item);
+
+    
+    TReturn Visit(T36 item);
+
+    
+    TReturn Visit(T37 item);
+
+    
+    TReturn Visit(T38 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+    
+    TReturn Visit(T12 item);
+
+    
+    TReturn Visit(T13 item);
+
+    
+    TReturn Visit(T14 item);
+
+    
+    TReturn Visit(T15 item);
+
+    
+    TReturn Visit(T16 item);
+
+    
+    TReturn Visit(T17 item);
+
+    
+    TReturn Visit(T18 item);
+
+    
+    TReturn Visit(T19 item);
+
+    
+    TReturn Visit(T20 item);
+
+    
+    TReturn Visit(T21 item);
+
+    
+    TReturn Visit(T22 item);
+
+    
+    TReturn Visit(T23 item);
+
+    
+    TReturn Visit(T24 item);
+
+    
+    TReturn Visit(T25 item);
+
+    
+    TReturn Visit(T26 item);
+
+    
+    TReturn Visit(T27 item);
+
+    
+    TReturn Visit(T28 item);
+
+    
+    TReturn Visit(T29 item);
+
+    
+    TReturn Visit(T30 item);
+
+    
+    TReturn Visit(T31 item);
+
+    
+    TReturn Visit(T32 item);
+
+    
+    TReturn Visit(T33 item);
+
+    
+    TReturn Visit(T34 item);
+
+    
+    TReturn Visit(T35 item);
+
+    
+    TReturn Visit(T36 item);
+
+    
+    TReturn Visit(T37 item);
+
+    
+    TReturn Visit(T38 item);
+
+    
+    TReturn Visit(T39 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+    
+    TReturn Visit(T12 item);
+
+    
+    TReturn Visit(T13 item);
+
+    
+    TReturn Visit(T14 item);
+
+    
+    TReturn Visit(T15 item);
+
+    
+    TReturn Visit(T16 item);
+
+    
+    TReturn Visit(T17 item);
+
+    
+    TReturn Visit(T18 item);
+
+    
+    TReturn Visit(T19 item);
+
+    
+    TReturn Visit(T20 item);
+
+    
+    TReturn Visit(T21 item);
+
+    
+    TReturn Visit(T22 item);
+
+    
+    TReturn Visit(T23 item);
+
+    
+    TReturn Visit(T24 item);
+
+    
+    TReturn Visit(T25 item);
+
+    
+    TReturn Visit(T26 item);
+
+    
+    TReturn Visit(T27 item);
+
+    
+    TReturn Visit(T28 item);
+
+    
+    TReturn Visit(T29 item);
+
+    
+    TReturn Visit(T30 item);
+
+    
+    TReturn Visit(T31 item);
+
+    
+    TReturn Visit(T32 item);
+
+    
+    TReturn Visit(T33 item);
+
+    
+    TReturn Visit(T34 item);
+
+    
+    TReturn Visit(T35 item);
+
+    
+    TReturn Visit(T36 item);
+
+    
+    TReturn Visit(T37 item);
+
+    
+    TReturn Visit(T38 item);
+
+    
+    TReturn Visit(T39 item);
+
+    
+    TReturn Visit(T40 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+    
+    TReturn Visit(T12 item);
+
+    
+    TReturn Visit(T13 item);
+
+    
+    TReturn Visit(T14 item);
+
+    
+    TReturn Visit(T15 item);
+
+    
+    TReturn Visit(T16 item);
+
+    
+    TReturn Visit(T17 item);
+
+    
+    TReturn Visit(T18 item);
+
+    
+    TReturn Visit(T19 item);
+
+    
+    TReturn Visit(T20 item);
+
+    
+    TReturn Visit(T21 item);
+
+    
+    TReturn Visit(T22 item);
+
+    
+    TReturn Visit(T23 item);
+
+    
+    TReturn Visit(T24 item);
+
+    
+    TReturn Visit(T25 item);
+
+    
+    TReturn Visit(T26 item);
+
+    
+    TReturn Visit(T27 item);
+
+    
+    TReturn Visit(T28 item);
+
+    
+    TReturn Visit(T29 item);
+
+    
+    TReturn Visit(T30 item);
+
+    
+    TReturn Visit(T31 item);
+
+    
+    TReturn Visit(T32 item);
+
+    
+    TReturn Visit(T33 item);
+
+    
+    TReturn Visit(T34 item);
+
+    
+    TReturn Visit(T35 item);
+
+    
+    TReturn Visit(T36 item);
+
+    
+    TReturn Visit(T37 item);
+
+    
+    TReturn Visit(T38 item);
+
+    
+    TReturn Visit(T39 item);
+
+    
+    TReturn Visit(T40 item);
+
+    
+    TReturn Visit(T41 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+    
+    TReturn Visit(T12 item);
+
+    
+    TReturn Visit(T13 item);
+
+    
+    TReturn Visit(T14 item);
+
+    
+    TReturn Visit(T15 item);
+
+    
+    TReturn Visit(T16 item);
+
+    
+    TReturn Visit(T17 item);
+
+    
+    TReturn Visit(T18 item);
+
+    
+    TReturn Visit(T19 item);
+
+    
+    TReturn Visit(T20 item);
+
+    
+    TReturn Visit(T21 item);
+
+    
+    TReturn Visit(T22 item);
+
+    
+    TReturn Visit(T23 item);
+
+    
+    TReturn Visit(T24 item);
+
+    
+    TReturn Visit(T25 item);
+
+    
+    TReturn Visit(T26 item);
+
+    
+    TReturn Visit(T27 item);
+
+    
+    TReturn Visit(T28 item);
+
+    
+    TReturn Visit(T29 item);
+
+    
+    TReturn Visit(T30 item);
+
+    
+    TReturn Visit(T31 item);
+
+    
+    TReturn Visit(T32 item);
+
+    
+    TReturn Visit(T33 item);
+
+    
+    TReturn Visit(T34 item);
+
+    
+    TReturn Visit(T35 item);
+
+    
+    TReturn Visit(T36 item);
+
+    
+    TReturn Visit(T37 item);
+
+    
+    TReturn Visit(T38 item);
+
+    
+    TReturn Visit(T39 item);
+
+    
+    TReturn Visit(T40 item);
+
+    
+    TReturn Visit(T41 item);
+
+    
+    TReturn Visit(T42 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+    
+    TReturn Visit(T12 item);
+
+    
+    TReturn Visit(T13 item);
+
+    
+    TReturn Visit(T14 item);
+
+    
+    TReturn Visit(T15 item);
+
+    
+    TReturn Visit(T16 item);
+
+    
+    TReturn Visit(T17 item);
+
+    
+    TReturn Visit(T18 item);
+
+    
+    TReturn Visit(T19 item);
+
+    
+    TReturn Visit(T20 item);
+
+    
+    TReturn Visit(T21 item);
+
+    
+    TReturn Visit(T22 item);
+
+    
+    TReturn Visit(T23 item);
+
+    
+    TReturn Visit(T24 item);
+
+    
+    TReturn Visit(T25 item);
+
+    
+    TReturn Visit(T26 item);
+
+    
+    TReturn Visit(T27 item);
+
+    
+    TReturn Visit(T28 item);
+
+    
+    TReturn Visit(T29 item);
+
+    
+    TReturn Visit(T30 item);
+
+    
+    TReturn Visit(T31 item);
+
+    
+    TReturn Visit(T32 item);
+
+    
+    TReturn Visit(T33 item);
+
+    
+    TReturn Visit(T34 item);
+
+    
+    TReturn Visit(T35 item);
+
+    
+    TReturn Visit(T36 item);
+
+    
+    TReturn Visit(T37 item);
+
+    
+    TReturn Visit(T38 item);
+
+    
+    TReturn Visit(T39 item);
+
+    
+    TReturn Visit(T40 item);
+
+    
+    TReturn Visit(T41 item);
+
+    
+    TReturn Visit(T42 item);
+
+    
+    TReturn Visit(T43 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+    
+    TReturn Visit(T12 item);
+
+    
+    TReturn Visit(T13 item);
+
+    
+    TReturn Visit(T14 item);
+
+    
+    TReturn Visit(T15 item);
+
+    
+    TReturn Visit(T16 item);
+
+    
+    TReturn Visit(T17 item);
+
+    
+    TReturn Visit(T18 item);
+
+    
+    TReturn Visit(T19 item);
+
+    
+    TReturn Visit(T20 item);
+
+    
+    TReturn Visit(T21 item);
+
+    
+    TReturn Visit(T22 item);
+
+    
+    TReturn Visit(T23 item);
+
+    
+    TReturn Visit(T24 item);
+
+    
+    TReturn Visit(T25 item);
+
+    
+    TReturn Visit(T26 item);
+
+    
+    TReturn Visit(T27 item);
+
+    
+    TReturn Visit(T28 item);
+
+    
+    TReturn Visit(T29 item);
+
+    
+    TReturn Visit(T30 item);
+
+    
+    TReturn Visit(T31 item);
+
+    
+    TReturn Visit(T32 item);
+
+    
+    TReturn Visit(T33 item);
+
+    
+    TReturn Visit(T34 item);
+
+    
+    TReturn Visit(T35 item);
+
+    
+    TReturn Visit(T36 item);
+
+    
+    TReturn Visit(T37 item);
+
+    
+    TReturn Visit(T38 item);
+
+    
+    TReturn Visit(T39 item);
+
+    
+    TReturn Visit(T40 item);
+
+    
+    TReturn Visit(T41 item);
+
+    
+    TReturn Visit(T42 item);
+
+    
+    TReturn Visit(T43 item);
+
+    
+    TReturn Visit(T44 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+    
+    TReturn Visit(T12 item);
+
+    
+    TReturn Visit(T13 item);
+
+    
+    TReturn Visit(T14 item);
+
+    
+    TReturn Visit(T15 item);
+
+    
+    TReturn Visit(T16 item);
+
+    
+    TReturn Visit(T17 item);
+
+    
+    TReturn Visit(T18 item);
+
+    
+    TReturn Visit(T19 item);
+
+    
+    TReturn Visit(T20 item);
+
+    
+    TReturn Visit(T21 item);
+
+    
+    TReturn Visit(T22 item);
+
+    
+    TReturn Visit(T23 item);
+
+    
+    TReturn Visit(T24 item);
+
+    
+    TReturn Visit(T25 item);
+
+    
+    TReturn Visit(T26 item);
+
+    
+    TReturn Visit(T27 item);
+
+    
+    TReturn Visit(T28 item);
+
+    
+    TReturn Visit(T29 item);
+
+    
+    TReturn Visit(T30 item);
+
+    
+    TReturn Visit(T31 item);
+
+    
+    TReturn Visit(T32 item);
+
+    
+    TReturn Visit(T33 item);
+
+    
+    TReturn Visit(T34 item);
+
+    
+    TReturn Visit(T35 item);
+
+    
+    TReturn Visit(T36 item);
+
+    
+    TReturn Visit(T37 item);
+
+    
+    TReturn Visit(T38 item);
+
+    
+    TReturn Visit(T39 item);
+
+    
+    TReturn Visit(T40 item);
+
+    
+    TReturn Visit(T41 item);
+
+    
+    TReturn Visit(T42 item);
+
+    
+    TReturn Visit(T43 item);
+
+    
+    TReturn Visit(T44 item);
+
+    
+    TReturn Visit(T45 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45, T46>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+    
+    TReturn Visit(T12 item);
+
+    
+    TReturn Visit(T13 item);
+
+    
+    TReturn Visit(T14 item);
+
+    
+    TReturn Visit(T15 item);
+
+    
+    TReturn Visit(T16 item);
+
+    
+    TReturn Visit(T17 item);
+
+    
+    TReturn Visit(T18 item);
+
+    
+    TReturn Visit(T19 item);
+
+    
+    TReturn Visit(T20 item);
+
+    
+    TReturn Visit(T21 item);
+
+    
+    TReturn Visit(T22 item);
+
+    
+    TReturn Visit(T23 item);
+
+    
+    TReturn Visit(T24 item);
+
+    
+    TReturn Visit(T25 item);
+
+    
+    TReturn Visit(T26 item);
+
+    
+    TReturn Visit(T27 item);
+
+    
+    TReturn Visit(T28 item);
+
+    
+    TReturn Visit(T29 item);
+
+    
+    TReturn Visit(T30 item);
+
+    
+    TReturn Visit(T31 item);
+
+    
+    TReturn Visit(T32 item);
+
+    
+    TReturn Visit(T33 item);
+
+    
+    TReturn Visit(T34 item);
+
+    
+    TReturn Visit(T35 item);
+
+    
+    TReturn Visit(T36 item);
+
+    
+    TReturn Visit(T37 item);
+
+    
+    TReturn Visit(T38 item);
+
+    
+    TReturn Visit(T39 item);
+
+    
+    TReturn Visit(T40 item);
+
+    
+    TReturn Visit(T41 item);
+
+    
+    TReturn Visit(T42 item);
+
+    
+    TReturn Visit(T43 item);
+
+    
+    TReturn Visit(T44 item);
+
+    
+    TReturn Visit(T45 item);
+
+    
+    TReturn Visit(T46 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45, T46, T47>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+    
+    TReturn Visit(T12 item);
+
+    
+    TReturn Visit(T13 item);
+
+    
+    TReturn Visit(T14 item);
+
+    
+    TReturn Visit(T15 item);
+
+    
+    TReturn Visit(T16 item);
+
+    
+    TReturn Visit(T17 item);
+
+    
+    TReturn Visit(T18 item);
+
+    
+    TReturn Visit(T19 item);
+
+    
+    TReturn Visit(T20 item);
+
+    
+    TReturn Visit(T21 item);
+
+    
+    TReturn Visit(T22 item);
+
+    
+    TReturn Visit(T23 item);
+
+    
+    TReturn Visit(T24 item);
+
+    
+    TReturn Visit(T25 item);
+
+    
+    TReturn Visit(T26 item);
+
+    
+    TReturn Visit(T27 item);
+
+    
+    TReturn Visit(T28 item);
+
+    
+    TReturn Visit(T29 item);
+
+    
+    TReturn Visit(T30 item);
+
+    
+    TReturn Visit(T31 item);
+
+    
+    TReturn Visit(T32 item);
+
+    
+    TReturn Visit(T33 item);
+
+    
+    TReturn Visit(T34 item);
+
+    
+    TReturn Visit(T35 item);
+
+    
+    TReturn Visit(T36 item);
+
+    
+    TReturn Visit(T37 item);
+
+    
+    TReturn Visit(T38 item);
+
+    
+    TReturn Visit(T39 item);
+
+    
+    TReturn Visit(T40 item);
+
+    
+    TReturn Visit(T41 item);
+
+    
+    TReturn Visit(T42 item);
+
+    
+    TReturn Visit(T43 item);
+
+    
+    TReturn Visit(T44 item);
+
+    
+    TReturn Visit(T45 item);
+
+    
+    TReturn Visit(T46 item);
+
+    
+    TReturn Visit(T47 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45, T46, T47, T48>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+    
+    TReturn Visit(T12 item);
+
+    
+    TReturn Visit(T13 item);
+
+    
+    TReturn Visit(T14 item);
+
+    
+    TReturn Visit(T15 item);
+
+    
+    TReturn Visit(T16 item);
+
+    
+    TReturn Visit(T17 item);
+
+    
+    TReturn Visit(T18 item);
+
+    
+    TReturn Visit(T19 item);
+
+    
+    TReturn Visit(T20 item);
+
+    
+    TReturn Visit(T21 item);
+
+    
+    TReturn Visit(T22 item);
+
+    
+    TReturn Visit(T23 item);
+
+    
+    TReturn Visit(T24 item);
+
+    
+    TReturn Visit(T25 item);
+
+    
+    TReturn Visit(T26 item);
+
+    
+    TReturn Visit(T27 item);
+
+    
+    TReturn Visit(T28 item);
+
+    
+    TReturn Visit(T29 item);
+
+    
+    TReturn Visit(T30 item);
+
+    
+    TReturn Visit(T31 item);
+
+    
+    TReturn Visit(T32 item);
+
+    
+    TReturn Visit(T33 item);
+
+    
+    TReturn Visit(T34 item);
+
+    
+    TReturn Visit(T35 item);
+
+    
+    TReturn Visit(T36 item);
+
+    
+    TReturn Visit(T37 item);
+
+    
+    TReturn Visit(T38 item);
+
+    
+    TReturn Visit(T39 item);
+
+    
+    TReturn Visit(T40 item);
+
+    
+    TReturn Visit(T41 item);
+
+    
+    TReturn Visit(T42 item);
+
+    
+    TReturn Visit(T43 item);
+
+    
+    TReturn Visit(T44 item);
+
+    
+    TReturn Visit(T45 item);
+
+    
+    TReturn Visit(T46 item);
+
+    
+    TReturn Visit(T47 item);
+
+    
+    TReturn Visit(T48 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45, T46, T47, T48, T49>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+    
+    TReturn Visit(T12 item);
+
+    
+    TReturn Visit(T13 item);
+
+    
+    TReturn Visit(T14 item);
+
+    
+    TReturn Visit(T15 item);
+
+    
+    TReturn Visit(T16 item);
+
+    
+    TReturn Visit(T17 item);
+
+    
+    TReturn Visit(T18 item);
+
+    
+    TReturn Visit(T19 item);
+
+    
+    TReturn Visit(T20 item);
+
+    
+    TReturn Visit(T21 item);
+
+    
+    TReturn Visit(T22 item);
+
+    
+    TReturn Visit(T23 item);
+
+    
+    TReturn Visit(T24 item);
+
+    
+    TReturn Visit(T25 item);
+
+    
+    TReturn Visit(T26 item);
+
+    
+    TReturn Visit(T27 item);
+
+    
+    TReturn Visit(T28 item);
+
+    
+    TReturn Visit(T29 item);
+
+    
+    TReturn Visit(T30 item);
+
+    
+    TReturn Visit(T31 item);
+
+    
+    TReturn Visit(T32 item);
+
+    
+    TReturn Visit(T33 item);
+
+    
+    TReturn Visit(T34 item);
+
+    
+    TReturn Visit(T35 item);
+
+    
+    TReturn Visit(T36 item);
+
+    
+    TReturn Visit(T37 item);
+
+    
+    TReturn Visit(T38 item);
+
+    
+    TReturn Visit(T39 item);
+
+    
+    TReturn Visit(T40 item);
+
+    
+    TReturn Visit(T41 item);
+
+    
+    TReturn Visit(T42 item);
+
+    
+    TReturn Visit(T43 item);
+
+    
+    TReturn Visit(T44 item);
+
+    
+    TReturn Visit(T45 item);
+
+    
+    TReturn Visit(T46 item);
+
+    
+    TReturn Visit(T47 item);
+
+    
+    TReturn Visit(T48 item);
+
+    
+    TReturn Visit(T49 item);
+
+
+}
+
+
+public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45, T46, T47, T48, T49, T50>
+{
+    
+    TReturn Visit(T1 item);
+
+    
+    TReturn Visit(T2 item);
+
+    
+    TReturn Visit(T3 item);
+
+    
+    TReturn Visit(T4 item);
+
+    
+    TReturn Visit(T5 item);
+
+    
+    TReturn Visit(T6 item);
+
+    
+    TReturn Visit(T7 item);
+
+    
+    TReturn Visit(T8 item);
+
+    
+    TReturn Visit(T9 item);
+
+    
+    TReturn Visit(T10 item);
+
+    
+    TReturn Visit(T11 item);
+
+    
+    TReturn Visit(T12 item);
+
+    
+    TReturn Visit(T13 item);
+
+    
+    TReturn Visit(T14 item);
+
+    
+    TReturn Visit(T15 item);
+
+    
+    TReturn Visit(T16 item);
+
+    
+    TReturn Visit(T17 item);
+
+    
+    TReturn Visit(T18 item);
+
+    
+    TReturn Visit(T19 item);
+
+    
+    TReturn Visit(T20 item);
+
+    
+    TReturn Visit(T21 item);
+
+    
+    TReturn Visit(T22 item);
+
+    
+    TReturn Visit(T23 item);
+
+    
+    TReturn Visit(T24 item);
+
+    
+    TReturn Visit(T25 item);
+
+    
+    TReturn Visit(T26 item);
+
+    
+    TReturn Visit(T27 item);
+
+    
+    TReturn Visit(T28 item);
+
+    
+    TReturn Visit(T29 item);
+
+    
+    TReturn Visit(T30 item);
+
+    
+    TReturn Visit(T31 item);
+
+    
+    TReturn Visit(T32 item);
+
+    
+    TReturn Visit(T33 item);
+
+    
+    TReturn Visit(T34 item);
+
+    
+    TReturn Visit(T35 item);
+
+    
+    TReturn Visit(T36 item);
+
+    
+    TReturn Visit(T37 item);
+
+    
+    TReturn Visit(T38 item);
+
+    
+    TReturn Visit(T39 item);
+
+    
+    TReturn Visit(T40 item);
+
+    
+    TReturn Visit(T41 item);
+
+    
+    TReturn Visit(T42 item);
+
+    
+    TReturn Visit(T43 item);
+
+    
+    TReturn Visit(T44 item);
+
+    
+    TReturn Visit(T45 item);
+
+    
+    TReturn Visit(T46 item);
+
+    
+    TReturn Visit(T47 item);
+
+    
+    TReturn Visit(T48 item);
+
+    
+    TReturn Visit(T49 item);
+
+    
+    TReturn Visit(T50 item);
+
+
+}
+
+
         public interface IFlatBufferUnion<T1> : IFlatBufferUnion
                     where T1 : notnull
                 {
                     T1 Item1 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1> : IFlatBufferUnion<T1>
@@ -83,7 +4211,20 @@ public interface IFlatBufferUnion
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1)
@@ -175,7 +4316,10 @@ public interface IFlatBufferUnion
                 {
                     T1 Item1 { get; }
                     T2 Item2 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2> : IFlatBufferUnion<T1, T2>
@@ -273,7 +4417,22 @@ public interface IFlatBufferUnion
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -389,7 +4548,10 @@ System.Func<TState, T2, TResult> case2)
                     T1 Item1 { get; }
                     T2 Item2 { get; }
                     T3 Item3 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3> : IFlatBufferUnion<T1, T2, T3>
@@ -530,7 +4692,24 @@ System.Func<TState, T2, TResult> case2)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -670,7 +4849,10 @@ System.Func<TState, T3, TResult> case3)
                     T2 Item2 { get; }
                     T3 Item3 { get; }
                     T4 Item4 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4> : IFlatBufferUnion<T1, T2, T3, T4>
@@ -854,7 +5036,26 @@ System.Func<TState, T3, TResult> case3)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -1018,7 +5219,10 @@ System.Func<TState, T4, TResult> case4)
                     T3 Item3 { get; }
                     T4 Item4 { get; }
                     T5 Item5 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5> : IFlatBufferUnion<T1, T2, T3, T4, T5>
@@ -1245,7 +5449,28 @@ System.Func<TState, T4, TResult> case4)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -1433,7 +5658,10 @@ System.Func<TState, T5, TResult> case5)
                     T4 Item4 { get; }
                     T5 Item5 { get; }
                     T6 Item6 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6>
@@ -1703,7 +5931,30 @@ System.Func<TState, T5, TResult> case5)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -1915,7 +6166,10 @@ System.Func<TState, T6, TResult> case6)
                     T5 Item5 { get; }
                     T6 Item6 { get; }
                     T7 Item7 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7>
@@ -2228,7 +6482,32 @@ System.Func<TState, T6, TResult> case6)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -2464,7 +6743,10 @@ System.Func<TState, T7, TResult> case7)
                     T6 Item6 { get; }
                     T7 Item7 { get; }
                     T8 Item8 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8>
@@ -2820,7 +7102,34 @@ System.Func<TState, T7, TResult> case7)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -3080,7 +7389,10 @@ System.Func<TState, T8, TResult> case8)
                     T7 Item7 { get; }
                     T8 Item8 { get; }
                     T9 Item9 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9>
@@ -3479,7 +7791,36 @@ System.Func<TState, T8, TResult> case8)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -3763,7 +8104,10 @@ System.Func<TState, T9, TResult> case9)
                     T8 Item8 { get; }
                     T9 Item9 { get; }
                     T10 Item10 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>
@@ -4205,7 +8549,38 @@ System.Func<TState, T9, TResult> case9)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -4513,7 +8888,10 @@ System.Func<TState, T10, TResult> case10)
                     T9 Item9 { get; }
                     T10 Item10 { get; }
                     T11 Item11 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>
@@ -4998,7 +9376,40 @@ System.Func<TState, T10, TResult> case10)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -5330,7 +9741,10 @@ System.Func<TState, T11, TResult> case11)
                     T10 Item10 { get; }
                     T11 Item11 { get; }
                     T12 Item12 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>
@@ -5858,7 +10272,42 @@ System.Func<TState, T11, TResult> case11)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    case 12:
+                        return visitor.Visit((T12)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -6214,7 +10663,10 @@ System.Func<TState, T12, TResult> case12)
                     T11 Item11 { get; }
                     T12 Item12 { get; }
                     T13 Item13 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>
@@ -6785,7 +11237,44 @@ System.Func<TState, T12, TResult> case12)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    case 12:
+                        return visitor.Visit((T12)this.value);
+                                    case 13:
+                        return visitor.Visit((T13)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -7165,7 +11654,10 @@ System.Func<TState, T13, TResult> case13)
                     T12 Item12 { get; }
                     T13 Item13 { get; }
                     T14 Item14 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>
@@ -7779,7 +12271,46 @@ System.Func<TState, T13, TResult> case13)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    case 12:
+                        return visitor.Visit((T12)this.value);
+                                    case 13:
+                        return visitor.Visit((T13)this.value);
+                                    case 14:
+                        return visitor.Visit((T14)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -8183,7 +12714,10 @@ System.Func<TState, T14, TResult> case14)
                     T13 Item13 { get; }
                     T14 Item14 { get; }
                     T15 Item15 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>
@@ -8840,7 +13374,48 @@ System.Func<TState, T14, TResult> case14)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    case 12:
+                        return visitor.Visit((T12)this.value);
+                                    case 13:
+                        return visitor.Visit((T13)this.value);
+                                    case 14:
+                        return visitor.Visit((T14)this.value);
+                                    case 15:
+                        return visitor.Visit((T15)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -9268,7 +13843,10 @@ System.Func<TState, T15, TResult> case15)
                     T14 Item14 { get; }
                     T15 Item15 { get; }
                     T16 Item16 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>
@@ -9968,7 +14546,50 @@ System.Func<TState, T15, TResult> case15)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    case 12:
+                        return visitor.Visit((T12)this.value);
+                                    case 13:
+                        return visitor.Visit((T13)this.value);
+                                    case 14:
+                        return visitor.Visit((T14)this.value);
+                                    case 15:
+                        return visitor.Visit((T15)this.value);
+                                    case 16:
+                        return visitor.Visit((T16)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -10420,7 +15041,10 @@ System.Func<TState, T16, TResult> case16)
                     T15 Item15 { get; }
                     T16 Item16 { get; }
                     T17 Item17 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>
@@ -11163,7 +15787,52 @@ System.Func<TState, T16, TResult> case16)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    case 12:
+                        return visitor.Visit((T12)this.value);
+                                    case 13:
+                        return visitor.Visit((T13)this.value);
+                                    case 14:
+                        return visitor.Visit((T14)this.value);
+                                    case 15:
+                        return visitor.Visit((T15)this.value);
+                                    case 16:
+                        return visitor.Visit((T16)this.value);
+                                    case 17:
+                        return visitor.Visit((T17)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -11639,7 +16308,10 @@ System.Func<TState, T17, TResult> case17)
                     T16 Item16 { get; }
                     T17 Item17 { get; }
                     T18 Item18 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>
@@ -12425,7 +17097,54 @@ System.Func<TState, T17, TResult> case17)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    case 12:
+                        return visitor.Visit((T12)this.value);
+                                    case 13:
+                        return visitor.Visit((T13)this.value);
+                                    case 14:
+                        return visitor.Visit((T14)this.value);
+                                    case 15:
+                        return visitor.Visit((T15)this.value);
+                                    case 16:
+                        return visitor.Visit((T16)this.value);
+                                    case 17:
+                        return visitor.Visit((T17)this.value);
+                                    case 18:
+                        return visitor.Visit((T18)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -12925,7 +17644,10 @@ System.Func<TState, T18, TResult> case18)
                     T17 Item17 { get; }
                     T18 Item18 { get; }
                     T19 Item19 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>
@@ -13754,7 +18476,56 @@ System.Func<TState, T18, TResult> case18)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    case 12:
+                        return visitor.Visit((T12)this.value);
+                                    case 13:
+                        return visitor.Visit((T13)this.value);
+                                    case 14:
+                        return visitor.Visit((T14)this.value);
+                                    case 15:
+                        return visitor.Visit((T15)this.value);
+                                    case 16:
+                        return visitor.Visit((T16)this.value);
+                                    case 17:
+                        return visitor.Visit((T17)this.value);
+                                    case 18:
+                        return visitor.Visit((T18)this.value);
+                                    case 19:
+                        return visitor.Visit((T19)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -14278,7 +19049,10 @@ System.Func<TState, T19, TResult> case19)
                     T18 Item18 { get; }
                     T19 Item19 { get; }
                     T20 Item20 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>
@@ -15150,7 +19924,58 @@ System.Func<TState, T19, TResult> case19)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    case 12:
+                        return visitor.Visit((T12)this.value);
+                                    case 13:
+                        return visitor.Visit((T13)this.value);
+                                    case 14:
+                        return visitor.Visit((T14)this.value);
+                                    case 15:
+                        return visitor.Visit((T15)this.value);
+                                    case 16:
+                        return visitor.Visit((T16)this.value);
+                                    case 17:
+                        return visitor.Visit((T17)this.value);
+                                    case 18:
+                        return visitor.Visit((T18)this.value);
+                                    case 19:
+                        return visitor.Visit((T19)this.value);
+                                    case 20:
+                        return visitor.Visit((T20)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -15698,7 +20523,10 @@ System.Func<TState, T20, TResult> case20)
                     T19 Item19 { get; }
                     T20 Item20 { get; }
                     T21 Item21 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>
@@ -16613,7 +21441,60 @@ System.Func<TState, T20, TResult> case20)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    case 12:
+                        return visitor.Visit((T12)this.value);
+                                    case 13:
+                        return visitor.Visit((T13)this.value);
+                                    case 14:
+                        return visitor.Visit((T14)this.value);
+                                    case 15:
+                        return visitor.Visit((T15)this.value);
+                                    case 16:
+                        return visitor.Visit((T16)this.value);
+                                    case 17:
+                        return visitor.Visit((T17)this.value);
+                                    case 18:
+                        return visitor.Visit((T18)this.value);
+                                    case 19:
+                        return visitor.Visit((T19)this.value);
+                                    case 20:
+                        return visitor.Visit((T20)this.value);
+                                    case 21:
+                        return visitor.Visit((T21)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -17185,7 +22066,10 @@ System.Func<TState, T21, TResult> case21)
                     T20 Item20 { get; }
                     T21 Item21 { get; }
                     T22 Item22 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>
@@ -18143,7 +23027,62 @@ System.Func<TState, T21, TResult> case21)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    case 12:
+                        return visitor.Visit((T12)this.value);
+                                    case 13:
+                        return visitor.Visit((T13)this.value);
+                                    case 14:
+                        return visitor.Visit((T14)this.value);
+                                    case 15:
+                        return visitor.Visit((T15)this.value);
+                                    case 16:
+                        return visitor.Visit((T16)this.value);
+                                    case 17:
+                        return visitor.Visit((T17)this.value);
+                                    case 18:
+                        return visitor.Visit((T18)this.value);
+                                    case 19:
+                        return visitor.Visit((T19)this.value);
+                                    case 20:
+                        return visitor.Visit((T20)this.value);
+                                    case 21:
+                        return visitor.Visit((T21)this.value);
+                                    case 22:
+                        return visitor.Visit((T22)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -18739,7 +23678,10 @@ System.Func<TState, T22, TResult> case22)
                     T21 Item21 { get; }
                     T22 Item22 { get; }
                     T23 Item23 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>
@@ -19740,7 +24682,64 @@ System.Func<TState, T22, TResult> case22)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    case 12:
+                        return visitor.Visit((T12)this.value);
+                                    case 13:
+                        return visitor.Visit((T13)this.value);
+                                    case 14:
+                        return visitor.Visit((T14)this.value);
+                                    case 15:
+                        return visitor.Visit((T15)this.value);
+                                    case 16:
+                        return visitor.Visit((T16)this.value);
+                                    case 17:
+                        return visitor.Visit((T17)this.value);
+                                    case 18:
+                        return visitor.Visit((T18)this.value);
+                                    case 19:
+                        return visitor.Visit((T19)this.value);
+                                    case 20:
+                        return visitor.Visit((T20)this.value);
+                                    case 21:
+                        return visitor.Visit((T21)this.value);
+                                    case 22:
+                        return visitor.Visit((T22)this.value);
+                                    case 23:
+                        return visitor.Visit((T23)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -20360,7 +25359,10 @@ System.Func<TState, T23, TResult> case23)
                     T22 Item22 { get; }
                     T23 Item23 { get; }
                     T24 Item24 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>
@@ -21404,7 +26406,66 @@ System.Func<TState, T23, TResult> case23)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    case 12:
+                        return visitor.Visit((T12)this.value);
+                                    case 13:
+                        return visitor.Visit((T13)this.value);
+                                    case 14:
+                        return visitor.Visit((T14)this.value);
+                                    case 15:
+                        return visitor.Visit((T15)this.value);
+                                    case 16:
+                        return visitor.Visit((T16)this.value);
+                                    case 17:
+                        return visitor.Visit((T17)this.value);
+                                    case 18:
+                        return visitor.Visit((T18)this.value);
+                                    case 19:
+                        return visitor.Visit((T19)this.value);
+                                    case 20:
+                        return visitor.Visit((T20)this.value);
+                                    case 21:
+                        return visitor.Visit((T21)this.value);
+                                    case 22:
+                        return visitor.Visit((T22)this.value);
+                                    case 23:
+                        return visitor.Visit((T23)this.value);
+                                    case 24:
+                        return visitor.Visit((T24)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -22048,7 +27109,10 @@ System.Func<TState, T24, TResult> case24)
                     T23 Item23 { get; }
                     T24 Item24 { get; }
                     T25 Item25 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>
@@ -23135,7 +28199,68 @@ System.Func<TState, T24, TResult> case24)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    case 12:
+                        return visitor.Visit((T12)this.value);
+                                    case 13:
+                        return visitor.Visit((T13)this.value);
+                                    case 14:
+                        return visitor.Visit((T14)this.value);
+                                    case 15:
+                        return visitor.Visit((T15)this.value);
+                                    case 16:
+                        return visitor.Visit((T16)this.value);
+                                    case 17:
+                        return visitor.Visit((T17)this.value);
+                                    case 18:
+                        return visitor.Visit((T18)this.value);
+                                    case 19:
+                        return visitor.Visit((T19)this.value);
+                                    case 20:
+                        return visitor.Visit((T20)this.value);
+                                    case 21:
+                        return visitor.Visit((T21)this.value);
+                                    case 22:
+                        return visitor.Visit((T22)this.value);
+                                    case 23:
+                        return visitor.Visit((T23)this.value);
+                                    case 24:
+                        return visitor.Visit((T24)this.value);
+                                    case 25:
+                        return visitor.Visit((T25)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -23803,7 +28928,10 @@ System.Func<TState, T25, TResult> case25)
                     T24 Item24 { get; }
                     T25 Item25 { get; }
                     T26 Item26 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>
@@ -24933,7 +30061,70 @@ System.Func<TState, T25, TResult> case25)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    case 12:
+                        return visitor.Visit((T12)this.value);
+                                    case 13:
+                        return visitor.Visit((T13)this.value);
+                                    case 14:
+                        return visitor.Visit((T14)this.value);
+                                    case 15:
+                        return visitor.Visit((T15)this.value);
+                                    case 16:
+                        return visitor.Visit((T16)this.value);
+                                    case 17:
+                        return visitor.Visit((T17)this.value);
+                                    case 18:
+                        return visitor.Visit((T18)this.value);
+                                    case 19:
+                        return visitor.Visit((T19)this.value);
+                                    case 20:
+                        return visitor.Visit((T20)this.value);
+                                    case 21:
+                        return visitor.Visit((T21)this.value);
+                                    case 22:
+                        return visitor.Visit((T22)this.value);
+                                    case 23:
+                        return visitor.Visit((T23)this.value);
+                                    case 24:
+                        return visitor.Visit((T24)this.value);
+                                    case 25:
+                        return visitor.Visit((T25)this.value);
+                                    case 26:
+                        return visitor.Visit((T26)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -25625,7 +30816,10 @@ System.Func<TState, T26, TResult> case26)
                     T25 Item25 { get; }
                     T26 Item26 { get; }
                     T27 Item27 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>
@@ -26798,7 +31992,72 @@ System.Func<TState, T26, TResult> case26)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    case 12:
+                        return visitor.Visit((T12)this.value);
+                                    case 13:
+                        return visitor.Visit((T13)this.value);
+                                    case 14:
+                        return visitor.Visit((T14)this.value);
+                                    case 15:
+                        return visitor.Visit((T15)this.value);
+                                    case 16:
+                        return visitor.Visit((T16)this.value);
+                                    case 17:
+                        return visitor.Visit((T17)this.value);
+                                    case 18:
+                        return visitor.Visit((T18)this.value);
+                                    case 19:
+                        return visitor.Visit((T19)this.value);
+                                    case 20:
+                        return visitor.Visit((T20)this.value);
+                                    case 21:
+                        return visitor.Visit((T21)this.value);
+                                    case 22:
+                        return visitor.Visit((T22)this.value);
+                                    case 23:
+                        return visitor.Visit((T23)this.value);
+                                    case 24:
+                        return visitor.Visit((T24)this.value);
+                                    case 25:
+                        return visitor.Visit((T25)this.value);
+                                    case 26:
+                        return visitor.Visit((T26)this.value);
+                                    case 27:
+                        return visitor.Visit((T27)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -27514,7 +32773,10 @@ System.Func<TState, T27, TResult> case27)
                     T26 Item26 { get; }
                     T27 Item27 { get; }
                     T28 Item28 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>
@@ -28730,7 +33992,74 @@ System.Func<TState, T27, TResult> case27)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    case 12:
+                        return visitor.Visit((T12)this.value);
+                                    case 13:
+                        return visitor.Visit((T13)this.value);
+                                    case 14:
+                        return visitor.Visit((T14)this.value);
+                                    case 15:
+                        return visitor.Visit((T15)this.value);
+                                    case 16:
+                        return visitor.Visit((T16)this.value);
+                                    case 17:
+                        return visitor.Visit((T17)this.value);
+                                    case 18:
+                        return visitor.Visit((T18)this.value);
+                                    case 19:
+                        return visitor.Visit((T19)this.value);
+                                    case 20:
+                        return visitor.Visit((T20)this.value);
+                                    case 21:
+                        return visitor.Visit((T21)this.value);
+                                    case 22:
+                        return visitor.Visit((T22)this.value);
+                                    case 23:
+                        return visitor.Visit((T23)this.value);
+                                    case 24:
+                        return visitor.Visit((T24)this.value);
+                                    case 25:
+                        return visitor.Visit((T25)this.value);
+                                    case 26:
+                        return visitor.Visit((T26)this.value);
+                                    case 27:
+                        return visitor.Visit((T27)this.value);
+                                    case 28:
+                        return visitor.Visit((T28)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -29470,7 +34799,10 @@ System.Func<TState, T28, TResult> case28)
                     T27 Item27 { get; }
                     T28 Item28 { get; }
                     T29 Item29 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>
@@ -30729,7 +36061,76 @@ System.Func<TState, T28, TResult> case28)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    case 12:
+                        return visitor.Visit((T12)this.value);
+                                    case 13:
+                        return visitor.Visit((T13)this.value);
+                                    case 14:
+                        return visitor.Visit((T14)this.value);
+                                    case 15:
+                        return visitor.Visit((T15)this.value);
+                                    case 16:
+                        return visitor.Visit((T16)this.value);
+                                    case 17:
+                        return visitor.Visit((T17)this.value);
+                                    case 18:
+                        return visitor.Visit((T18)this.value);
+                                    case 19:
+                        return visitor.Visit((T19)this.value);
+                                    case 20:
+                        return visitor.Visit((T20)this.value);
+                                    case 21:
+                        return visitor.Visit((T21)this.value);
+                                    case 22:
+                        return visitor.Visit((T22)this.value);
+                                    case 23:
+                        return visitor.Visit((T23)this.value);
+                                    case 24:
+                        return visitor.Visit((T24)this.value);
+                                    case 25:
+                        return visitor.Visit((T25)this.value);
+                                    case 26:
+                        return visitor.Visit((T26)this.value);
+                                    case 27:
+                        return visitor.Visit((T27)this.value);
+                                    case 28:
+                        return visitor.Visit((T28)this.value);
+                                    case 29:
+                        return visitor.Visit((T29)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -31493,7 +36894,10 @@ System.Func<TState, T29, TResult> case29)
                     T28 Item28 { get; }
                     T29 Item29 { get; }
                     T30 Item30 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>
@@ -32795,7 +38199,78 @@ System.Func<TState, T29, TResult> case29)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    case 12:
+                        return visitor.Visit((T12)this.value);
+                                    case 13:
+                        return visitor.Visit((T13)this.value);
+                                    case 14:
+                        return visitor.Visit((T14)this.value);
+                                    case 15:
+                        return visitor.Visit((T15)this.value);
+                                    case 16:
+                        return visitor.Visit((T16)this.value);
+                                    case 17:
+                        return visitor.Visit((T17)this.value);
+                                    case 18:
+                        return visitor.Visit((T18)this.value);
+                                    case 19:
+                        return visitor.Visit((T19)this.value);
+                                    case 20:
+                        return visitor.Visit((T20)this.value);
+                                    case 21:
+                        return visitor.Visit((T21)this.value);
+                                    case 22:
+                        return visitor.Visit((T22)this.value);
+                                    case 23:
+                        return visitor.Visit((T23)this.value);
+                                    case 24:
+                        return visitor.Visit((T24)this.value);
+                                    case 25:
+                        return visitor.Visit((T25)this.value);
+                                    case 26:
+                        return visitor.Visit((T26)this.value);
+                                    case 27:
+                        return visitor.Visit((T27)this.value);
+                                    case 28:
+                        return visitor.Visit((T28)this.value);
+                                    case 29:
+                        return visitor.Visit((T29)this.value);
+                                    case 30:
+                        return visitor.Visit((T30)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -33583,7 +39058,10 @@ System.Func<TState, T30, TResult> case30)
                     T29 Item29 { get; }
                     T30 Item30 { get; }
                     T31 Item31 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31>
@@ -34928,7 +40406,80 @@ System.Func<TState, T30, TResult> case30)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    case 12:
+                        return visitor.Visit((T12)this.value);
+                                    case 13:
+                        return visitor.Visit((T13)this.value);
+                                    case 14:
+                        return visitor.Visit((T14)this.value);
+                                    case 15:
+                        return visitor.Visit((T15)this.value);
+                                    case 16:
+                        return visitor.Visit((T16)this.value);
+                                    case 17:
+                        return visitor.Visit((T17)this.value);
+                                    case 18:
+                        return visitor.Visit((T18)this.value);
+                                    case 19:
+                        return visitor.Visit((T19)this.value);
+                                    case 20:
+                        return visitor.Visit((T20)this.value);
+                                    case 21:
+                        return visitor.Visit((T21)this.value);
+                                    case 22:
+                        return visitor.Visit((T22)this.value);
+                                    case 23:
+                        return visitor.Visit((T23)this.value);
+                                    case 24:
+                        return visitor.Visit((T24)this.value);
+                                    case 25:
+                        return visitor.Visit((T25)this.value);
+                                    case 26:
+                        return visitor.Visit((T26)this.value);
+                                    case 27:
+                        return visitor.Visit((T27)this.value);
+                                    case 28:
+                        return visitor.Visit((T28)this.value);
+                                    case 29:
+                        return visitor.Visit((T29)this.value);
+                                    case 30:
+                        return visitor.Visit((T30)this.value);
+                                    case 31:
+                        return visitor.Visit((T31)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -35740,7 +41291,10 @@ System.Func<TState, T31, TResult> case31)
                     T30 Item30 { get; }
                     T31 Item31 { get; }
                     T32 Item32 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32>
@@ -37128,7 +42682,82 @@ System.Func<TState, T31, TResult> case31)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    case 12:
+                        return visitor.Visit((T12)this.value);
+                                    case 13:
+                        return visitor.Visit((T13)this.value);
+                                    case 14:
+                        return visitor.Visit((T14)this.value);
+                                    case 15:
+                        return visitor.Visit((T15)this.value);
+                                    case 16:
+                        return visitor.Visit((T16)this.value);
+                                    case 17:
+                        return visitor.Visit((T17)this.value);
+                                    case 18:
+                        return visitor.Visit((T18)this.value);
+                                    case 19:
+                        return visitor.Visit((T19)this.value);
+                                    case 20:
+                        return visitor.Visit((T20)this.value);
+                                    case 21:
+                        return visitor.Visit((T21)this.value);
+                                    case 22:
+                        return visitor.Visit((T22)this.value);
+                                    case 23:
+                        return visitor.Visit((T23)this.value);
+                                    case 24:
+                        return visitor.Visit((T24)this.value);
+                                    case 25:
+                        return visitor.Visit((T25)this.value);
+                                    case 26:
+                        return visitor.Visit((T26)this.value);
+                                    case 27:
+                        return visitor.Visit((T27)this.value);
+                                    case 28:
+                        return visitor.Visit((T28)this.value);
+                                    case 29:
+                        return visitor.Visit((T29)this.value);
+                                    case 30:
+                        return visitor.Visit((T30)this.value);
+                                    case 31:
+                        return visitor.Visit((T31)this.value);
+                                    case 32:
+                        return visitor.Visit((T32)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -37964,7 +43593,10 @@ System.Func<TState, T32, TResult> case32)
                     T31 Item31 { get; }
                     T32 Item32 { get; }
                     T33 Item33 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33>
@@ -39395,7 +45027,84 @@ System.Func<TState, T32, TResult> case32)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    case 12:
+                        return visitor.Visit((T12)this.value);
+                                    case 13:
+                        return visitor.Visit((T13)this.value);
+                                    case 14:
+                        return visitor.Visit((T14)this.value);
+                                    case 15:
+                        return visitor.Visit((T15)this.value);
+                                    case 16:
+                        return visitor.Visit((T16)this.value);
+                                    case 17:
+                        return visitor.Visit((T17)this.value);
+                                    case 18:
+                        return visitor.Visit((T18)this.value);
+                                    case 19:
+                        return visitor.Visit((T19)this.value);
+                                    case 20:
+                        return visitor.Visit((T20)this.value);
+                                    case 21:
+                        return visitor.Visit((T21)this.value);
+                                    case 22:
+                        return visitor.Visit((T22)this.value);
+                                    case 23:
+                        return visitor.Visit((T23)this.value);
+                                    case 24:
+                        return visitor.Visit((T24)this.value);
+                                    case 25:
+                        return visitor.Visit((T25)this.value);
+                                    case 26:
+                        return visitor.Visit((T26)this.value);
+                                    case 27:
+                        return visitor.Visit((T27)this.value);
+                                    case 28:
+                        return visitor.Visit((T28)this.value);
+                                    case 29:
+                        return visitor.Visit((T29)this.value);
+                                    case 30:
+                        return visitor.Visit((T30)this.value);
+                                    case 31:
+                        return visitor.Visit((T31)this.value);
+                                    case 32:
+                        return visitor.Visit((T32)this.value);
+                                    case 33:
+                        return visitor.Visit((T33)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -40255,7 +45964,10 @@ System.Func<TState, T33, TResult> case33)
                     T32 Item32 { get; }
                     T33 Item33 { get; }
                     T34 Item34 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34>
@@ -41729,7 +47441,86 @@ System.Func<TState, T33, TResult> case33)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    case 12:
+                        return visitor.Visit((T12)this.value);
+                                    case 13:
+                        return visitor.Visit((T13)this.value);
+                                    case 14:
+                        return visitor.Visit((T14)this.value);
+                                    case 15:
+                        return visitor.Visit((T15)this.value);
+                                    case 16:
+                        return visitor.Visit((T16)this.value);
+                                    case 17:
+                        return visitor.Visit((T17)this.value);
+                                    case 18:
+                        return visitor.Visit((T18)this.value);
+                                    case 19:
+                        return visitor.Visit((T19)this.value);
+                                    case 20:
+                        return visitor.Visit((T20)this.value);
+                                    case 21:
+                        return visitor.Visit((T21)this.value);
+                                    case 22:
+                        return visitor.Visit((T22)this.value);
+                                    case 23:
+                        return visitor.Visit((T23)this.value);
+                                    case 24:
+                        return visitor.Visit((T24)this.value);
+                                    case 25:
+                        return visitor.Visit((T25)this.value);
+                                    case 26:
+                        return visitor.Visit((T26)this.value);
+                                    case 27:
+                        return visitor.Visit((T27)this.value);
+                                    case 28:
+                        return visitor.Visit((T28)this.value);
+                                    case 29:
+                        return visitor.Visit((T29)this.value);
+                                    case 30:
+                        return visitor.Visit((T30)this.value);
+                                    case 31:
+                        return visitor.Visit((T31)this.value);
+                                    case 32:
+                        return visitor.Visit((T32)this.value);
+                                    case 33:
+                        return visitor.Visit((T33)this.value);
+                                    case 34:
+                        return visitor.Visit((T34)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -42613,7 +48404,10 @@ System.Func<TState, T34, TResult> case34)
                     T33 Item33 { get; }
                     T34 Item34 { get; }
                     T35 Item35 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35>
@@ -44130,7 +49924,88 @@ System.Func<TState, T34, TResult> case34)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    case 12:
+                        return visitor.Visit((T12)this.value);
+                                    case 13:
+                        return visitor.Visit((T13)this.value);
+                                    case 14:
+                        return visitor.Visit((T14)this.value);
+                                    case 15:
+                        return visitor.Visit((T15)this.value);
+                                    case 16:
+                        return visitor.Visit((T16)this.value);
+                                    case 17:
+                        return visitor.Visit((T17)this.value);
+                                    case 18:
+                        return visitor.Visit((T18)this.value);
+                                    case 19:
+                        return visitor.Visit((T19)this.value);
+                                    case 20:
+                        return visitor.Visit((T20)this.value);
+                                    case 21:
+                        return visitor.Visit((T21)this.value);
+                                    case 22:
+                        return visitor.Visit((T22)this.value);
+                                    case 23:
+                        return visitor.Visit((T23)this.value);
+                                    case 24:
+                        return visitor.Visit((T24)this.value);
+                                    case 25:
+                        return visitor.Visit((T25)this.value);
+                                    case 26:
+                        return visitor.Visit((T26)this.value);
+                                    case 27:
+                        return visitor.Visit((T27)this.value);
+                                    case 28:
+                        return visitor.Visit((T28)this.value);
+                                    case 29:
+                        return visitor.Visit((T29)this.value);
+                                    case 30:
+                        return visitor.Visit((T30)this.value);
+                                    case 31:
+                        return visitor.Visit((T31)this.value);
+                                    case 32:
+                        return visitor.Visit((T32)this.value);
+                                    case 33:
+                        return visitor.Visit((T33)this.value);
+                                    case 34:
+                        return visitor.Visit((T34)this.value);
+                                    case 35:
+                        return visitor.Visit((T35)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -45038,7 +50913,10 @@ System.Func<TState, T35, TResult> case35)
                     T34 Item34 { get; }
                     T35 Item35 { get; }
                     T36 Item36 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36>
@@ -46598,7 +52476,90 @@ System.Func<TState, T35, TResult> case35)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    case 12:
+                        return visitor.Visit((T12)this.value);
+                                    case 13:
+                        return visitor.Visit((T13)this.value);
+                                    case 14:
+                        return visitor.Visit((T14)this.value);
+                                    case 15:
+                        return visitor.Visit((T15)this.value);
+                                    case 16:
+                        return visitor.Visit((T16)this.value);
+                                    case 17:
+                        return visitor.Visit((T17)this.value);
+                                    case 18:
+                        return visitor.Visit((T18)this.value);
+                                    case 19:
+                        return visitor.Visit((T19)this.value);
+                                    case 20:
+                        return visitor.Visit((T20)this.value);
+                                    case 21:
+                        return visitor.Visit((T21)this.value);
+                                    case 22:
+                        return visitor.Visit((T22)this.value);
+                                    case 23:
+                        return visitor.Visit((T23)this.value);
+                                    case 24:
+                        return visitor.Visit((T24)this.value);
+                                    case 25:
+                        return visitor.Visit((T25)this.value);
+                                    case 26:
+                        return visitor.Visit((T26)this.value);
+                                    case 27:
+                        return visitor.Visit((T27)this.value);
+                                    case 28:
+                        return visitor.Visit((T28)this.value);
+                                    case 29:
+                        return visitor.Visit((T29)this.value);
+                                    case 30:
+                        return visitor.Visit((T30)this.value);
+                                    case 31:
+                        return visitor.Visit((T31)this.value);
+                                    case 32:
+                        return visitor.Visit((T32)this.value);
+                                    case 33:
+                        return visitor.Visit((T33)this.value);
+                                    case 34:
+                        return visitor.Visit((T34)this.value);
+                                    case 35:
+                        return visitor.Visit((T35)this.value);
+                                    case 36:
+                        return visitor.Visit((T36)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -47530,7 +53491,10 @@ System.Func<TState, T36, TResult> case36)
                     T35 Item35 { get; }
                     T36 Item36 { get; }
                     T37 Item37 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37>
@@ -49133,7 +55097,92 @@ System.Func<TState, T36, TResult> case36)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    case 12:
+                        return visitor.Visit((T12)this.value);
+                                    case 13:
+                        return visitor.Visit((T13)this.value);
+                                    case 14:
+                        return visitor.Visit((T14)this.value);
+                                    case 15:
+                        return visitor.Visit((T15)this.value);
+                                    case 16:
+                        return visitor.Visit((T16)this.value);
+                                    case 17:
+                        return visitor.Visit((T17)this.value);
+                                    case 18:
+                        return visitor.Visit((T18)this.value);
+                                    case 19:
+                        return visitor.Visit((T19)this.value);
+                                    case 20:
+                        return visitor.Visit((T20)this.value);
+                                    case 21:
+                        return visitor.Visit((T21)this.value);
+                                    case 22:
+                        return visitor.Visit((T22)this.value);
+                                    case 23:
+                        return visitor.Visit((T23)this.value);
+                                    case 24:
+                        return visitor.Visit((T24)this.value);
+                                    case 25:
+                        return visitor.Visit((T25)this.value);
+                                    case 26:
+                        return visitor.Visit((T26)this.value);
+                                    case 27:
+                        return visitor.Visit((T27)this.value);
+                                    case 28:
+                        return visitor.Visit((T28)this.value);
+                                    case 29:
+                        return visitor.Visit((T29)this.value);
+                                    case 30:
+                        return visitor.Visit((T30)this.value);
+                                    case 31:
+                        return visitor.Visit((T31)this.value);
+                                    case 32:
+                        return visitor.Visit((T32)this.value);
+                                    case 33:
+                        return visitor.Visit((T33)this.value);
+                                    case 34:
+                        return visitor.Visit((T34)this.value);
+                                    case 35:
+                        return visitor.Visit((T35)this.value);
+                                    case 36:
+                        return visitor.Visit((T36)this.value);
+                                    case 37:
+                        return visitor.Visit((T37)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -50089,7 +56138,10 @@ System.Func<TState, T37, TResult> case37)
                     T36 Item36 { get; }
                     T37 Item37 { get; }
                     T38 Item38 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38>
@@ -51735,7 +57787,94 @@ System.Func<TState, T37, TResult> case37)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    case 12:
+                        return visitor.Visit((T12)this.value);
+                                    case 13:
+                        return visitor.Visit((T13)this.value);
+                                    case 14:
+                        return visitor.Visit((T14)this.value);
+                                    case 15:
+                        return visitor.Visit((T15)this.value);
+                                    case 16:
+                        return visitor.Visit((T16)this.value);
+                                    case 17:
+                        return visitor.Visit((T17)this.value);
+                                    case 18:
+                        return visitor.Visit((T18)this.value);
+                                    case 19:
+                        return visitor.Visit((T19)this.value);
+                                    case 20:
+                        return visitor.Visit((T20)this.value);
+                                    case 21:
+                        return visitor.Visit((T21)this.value);
+                                    case 22:
+                        return visitor.Visit((T22)this.value);
+                                    case 23:
+                        return visitor.Visit((T23)this.value);
+                                    case 24:
+                        return visitor.Visit((T24)this.value);
+                                    case 25:
+                        return visitor.Visit((T25)this.value);
+                                    case 26:
+                        return visitor.Visit((T26)this.value);
+                                    case 27:
+                        return visitor.Visit((T27)this.value);
+                                    case 28:
+                        return visitor.Visit((T28)this.value);
+                                    case 29:
+                        return visitor.Visit((T29)this.value);
+                                    case 30:
+                        return visitor.Visit((T30)this.value);
+                                    case 31:
+                        return visitor.Visit((T31)this.value);
+                                    case 32:
+                        return visitor.Visit((T32)this.value);
+                                    case 33:
+                        return visitor.Visit((T33)this.value);
+                                    case 34:
+                        return visitor.Visit((T34)this.value);
+                                    case 35:
+                        return visitor.Visit((T35)this.value);
+                                    case 36:
+                        return visitor.Visit((T36)this.value);
+                                    case 37:
+                        return visitor.Visit((T37)this.value);
+                                    case 38:
+                        return visitor.Visit((T38)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -52715,7 +58854,10 @@ System.Func<TState, T38, TResult> case38)
                     T37 Item37 { get; }
                     T38 Item38 { get; }
                     T39 Item39 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39>
@@ -54404,7 +60546,96 @@ System.Func<TState, T38, TResult> case38)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    case 12:
+                        return visitor.Visit((T12)this.value);
+                                    case 13:
+                        return visitor.Visit((T13)this.value);
+                                    case 14:
+                        return visitor.Visit((T14)this.value);
+                                    case 15:
+                        return visitor.Visit((T15)this.value);
+                                    case 16:
+                        return visitor.Visit((T16)this.value);
+                                    case 17:
+                        return visitor.Visit((T17)this.value);
+                                    case 18:
+                        return visitor.Visit((T18)this.value);
+                                    case 19:
+                        return visitor.Visit((T19)this.value);
+                                    case 20:
+                        return visitor.Visit((T20)this.value);
+                                    case 21:
+                        return visitor.Visit((T21)this.value);
+                                    case 22:
+                        return visitor.Visit((T22)this.value);
+                                    case 23:
+                        return visitor.Visit((T23)this.value);
+                                    case 24:
+                        return visitor.Visit((T24)this.value);
+                                    case 25:
+                        return visitor.Visit((T25)this.value);
+                                    case 26:
+                        return visitor.Visit((T26)this.value);
+                                    case 27:
+                        return visitor.Visit((T27)this.value);
+                                    case 28:
+                        return visitor.Visit((T28)this.value);
+                                    case 29:
+                        return visitor.Visit((T29)this.value);
+                                    case 30:
+                        return visitor.Visit((T30)this.value);
+                                    case 31:
+                        return visitor.Visit((T31)this.value);
+                                    case 32:
+                        return visitor.Visit((T32)this.value);
+                                    case 33:
+                        return visitor.Visit((T33)this.value);
+                                    case 34:
+                        return visitor.Visit((T34)this.value);
+                                    case 35:
+                        return visitor.Visit((T35)this.value);
+                                    case 36:
+                        return visitor.Visit((T36)this.value);
+                                    case 37:
+                        return visitor.Visit((T37)this.value);
+                                    case 38:
+                        return visitor.Visit((T38)this.value);
+                                    case 39:
+                        return visitor.Visit((T39)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -55408,7 +61639,10 @@ System.Func<TState, T39, TResult> case39)
                     T38 Item38 { get; }
                     T39 Item39 { get; }
                     T40 Item40 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40>
@@ -57140,7 +63374,98 @@ System.Func<TState, T39, TResult> case39)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    case 12:
+                        return visitor.Visit((T12)this.value);
+                                    case 13:
+                        return visitor.Visit((T13)this.value);
+                                    case 14:
+                        return visitor.Visit((T14)this.value);
+                                    case 15:
+                        return visitor.Visit((T15)this.value);
+                                    case 16:
+                        return visitor.Visit((T16)this.value);
+                                    case 17:
+                        return visitor.Visit((T17)this.value);
+                                    case 18:
+                        return visitor.Visit((T18)this.value);
+                                    case 19:
+                        return visitor.Visit((T19)this.value);
+                                    case 20:
+                        return visitor.Visit((T20)this.value);
+                                    case 21:
+                        return visitor.Visit((T21)this.value);
+                                    case 22:
+                        return visitor.Visit((T22)this.value);
+                                    case 23:
+                        return visitor.Visit((T23)this.value);
+                                    case 24:
+                        return visitor.Visit((T24)this.value);
+                                    case 25:
+                        return visitor.Visit((T25)this.value);
+                                    case 26:
+                        return visitor.Visit((T26)this.value);
+                                    case 27:
+                        return visitor.Visit((T27)this.value);
+                                    case 28:
+                        return visitor.Visit((T28)this.value);
+                                    case 29:
+                        return visitor.Visit((T29)this.value);
+                                    case 30:
+                        return visitor.Visit((T30)this.value);
+                                    case 31:
+                        return visitor.Visit((T31)this.value);
+                                    case 32:
+                        return visitor.Visit((T32)this.value);
+                                    case 33:
+                        return visitor.Visit((T33)this.value);
+                                    case 34:
+                        return visitor.Visit((T34)this.value);
+                                    case 35:
+                        return visitor.Visit((T35)this.value);
+                                    case 36:
+                        return visitor.Visit((T36)this.value);
+                                    case 37:
+                        return visitor.Visit((T37)this.value);
+                                    case 38:
+                        return visitor.Visit((T38)this.value);
+                                    case 39:
+                        return visitor.Visit((T39)this.value);
+                                    case 40:
+                        return visitor.Visit((T40)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -58168,7 +64493,10 @@ System.Func<TState, T40, TResult> case40)
                     T39 Item39 { get; }
                     T40 Item40 { get; }
                     T41 Item41 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41>
@@ -59943,7 +66271,100 @@ System.Func<TState, T40, TResult> case40)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    case 12:
+                        return visitor.Visit((T12)this.value);
+                                    case 13:
+                        return visitor.Visit((T13)this.value);
+                                    case 14:
+                        return visitor.Visit((T14)this.value);
+                                    case 15:
+                        return visitor.Visit((T15)this.value);
+                                    case 16:
+                        return visitor.Visit((T16)this.value);
+                                    case 17:
+                        return visitor.Visit((T17)this.value);
+                                    case 18:
+                        return visitor.Visit((T18)this.value);
+                                    case 19:
+                        return visitor.Visit((T19)this.value);
+                                    case 20:
+                        return visitor.Visit((T20)this.value);
+                                    case 21:
+                        return visitor.Visit((T21)this.value);
+                                    case 22:
+                        return visitor.Visit((T22)this.value);
+                                    case 23:
+                        return visitor.Visit((T23)this.value);
+                                    case 24:
+                        return visitor.Visit((T24)this.value);
+                                    case 25:
+                        return visitor.Visit((T25)this.value);
+                                    case 26:
+                        return visitor.Visit((T26)this.value);
+                                    case 27:
+                        return visitor.Visit((T27)this.value);
+                                    case 28:
+                        return visitor.Visit((T28)this.value);
+                                    case 29:
+                        return visitor.Visit((T29)this.value);
+                                    case 30:
+                        return visitor.Visit((T30)this.value);
+                                    case 31:
+                        return visitor.Visit((T31)this.value);
+                                    case 32:
+                        return visitor.Visit((T32)this.value);
+                                    case 33:
+                        return visitor.Visit((T33)this.value);
+                                    case 34:
+                        return visitor.Visit((T34)this.value);
+                                    case 35:
+                        return visitor.Visit((T35)this.value);
+                                    case 36:
+                        return visitor.Visit((T36)this.value);
+                                    case 37:
+                        return visitor.Visit((T37)this.value);
+                                    case 38:
+                        return visitor.Visit((T38)this.value);
+                                    case 39:
+                        return visitor.Visit((T39)this.value);
+                                    case 40:
+                        return visitor.Visit((T40)this.value);
+                                    case 41:
+                        return visitor.Visit((T41)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -60995,7 +67416,10 @@ System.Func<TState, T41, TResult> case41)
                     T40 Item40 { get; }
                     T41 Item41 { get; }
                     T42 Item42 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42>
@@ -62813,7 +69237,102 @@ System.Func<TState, T41, TResult> case41)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    case 12:
+                        return visitor.Visit((T12)this.value);
+                                    case 13:
+                        return visitor.Visit((T13)this.value);
+                                    case 14:
+                        return visitor.Visit((T14)this.value);
+                                    case 15:
+                        return visitor.Visit((T15)this.value);
+                                    case 16:
+                        return visitor.Visit((T16)this.value);
+                                    case 17:
+                        return visitor.Visit((T17)this.value);
+                                    case 18:
+                        return visitor.Visit((T18)this.value);
+                                    case 19:
+                        return visitor.Visit((T19)this.value);
+                                    case 20:
+                        return visitor.Visit((T20)this.value);
+                                    case 21:
+                        return visitor.Visit((T21)this.value);
+                                    case 22:
+                        return visitor.Visit((T22)this.value);
+                                    case 23:
+                        return visitor.Visit((T23)this.value);
+                                    case 24:
+                        return visitor.Visit((T24)this.value);
+                                    case 25:
+                        return visitor.Visit((T25)this.value);
+                                    case 26:
+                        return visitor.Visit((T26)this.value);
+                                    case 27:
+                        return visitor.Visit((T27)this.value);
+                                    case 28:
+                        return visitor.Visit((T28)this.value);
+                                    case 29:
+                        return visitor.Visit((T29)this.value);
+                                    case 30:
+                        return visitor.Visit((T30)this.value);
+                                    case 31:
+                        return visitor.Visit((T31)this.value);
+                                    case 32:
+                        return visitor.Visit((T32)this.value);
+                                    case 33:
+                        return visitor.Visit((T33)this.value);
+                                    case 34:
+                        return visitor.Visit((T34)this.value);
+                                    case 35:
+                        return visitor.Visit((T35)this.value);
+                                    case 36:
+                        return visitor.Visit((T36)this.value);
+                                    case 37:
+                        return visitor.Visit((T37)this.value);
+                                    case 38:
+                        return visitor.Visit((T38)this.value);
+                                    case 39:
+                        return visitor.Visit((T39)this.value);
+                                    case 40:
+                        return visitor.Visit((T40)this.value);
+                                    case 41:
+                        return visitor.Visit((T41)this.value);
+                                    case 42:
+                        return visitor.Visit((T42)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -63889,7 +70408,10 @@ System.Func<TState, T42, TResult> case42)
                     T41 Item41 { get; }
                     T42 Item42 { get; }
                     T43 Item43 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43>
@@ -65750,7 +72272,104 @@ System.Func<TState, T42, TResult> case42)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    case 12:
+                        return visitor.Visit((T12)this.value);
+                                    case 13:
+                        return visitor.Visit((T13)this.value);
+                                    case 14:
+                        return visitor.Visit((T14)this.value);
+                                    case 15:
+                        return visitor.Visit((T15)this.value);
+                                    case 16:
+                        return visitor.Visit((T16)this.value);
+                                    case 17:
+                        return visitor.Visit((T17)this.value);
+                                    case 18:
+                        return visitor.Visit((T18)this.value);
+                                    case 19:
+                        return visitor.Visit((T19)this.value);
+                                    case 20:
+                        return visitor.Visit((T20)this.value);
+                                    case 21:
+                        return visitor.Visit((T21)this.value);
+                                    case 22:
+                        return visitor.Visit((T22)this.value);
+                                    case 23:
+                        return visitor.Visit((T23)this.value);
+                                    case 24:
+                        return visitor.Visit((T24)this.value);
+                                    case 25:
+                        return visitor.Visit((T25)this.value);
+                                    case 26:
+                        return visitor.Visit((T26)this.value);
+                                    case 27:
+                        return visitor.Visit((T27)this.value);
+                                    case 28:
+                        return visitor.Visit((T28)this.value);
+                                    case 29:
+                        return visitor.Visit((T29)this.value);
+                                    case 30:
+                        return visitor.Visit((T30)this.value);
+                                    case 31:
+                        return visitor.Visit((T31)this.value);
+                                    case 32:
+                        return visitor.Visit((T32)this.value);
+                                    case 33:
+                        return visitor.Visit((T33)this.value);
+                                    case 34:
+                        return visitor.Visit((T34)this.value);
+                                    case 35:
+                        return visitor.Visit((T35)this.value);
+                                    case 36:
+                        return visitor.Visit((T36)this.value);
+                                    case 37:
+                        return visitor.Visit((T37)this.value);
+                                    case 38:
+                        return visitor.Visit((T38)this.value);
+                                    case 39:
+                        return visitor.Visit((T39)this.value);
+                                    case 40:
+                        return visitor.Visit((T40)this.value);
+                                    case 41:
+                        return visitor.Visit((T41)this.value);
+                                    case 42:
+                        return visitor.Visit((T42)this.value);
+                                    case 43:
+                        return visitor.Visit((T43)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -66850,7 +73469,10 @@ System.Func<TState, T43, TResult> case43)
                     T42 Item42 { get; }
                     T43 Item43 { get; }
                     T44 Item44 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44>
@@ -68754,7 +75376,106 @@ System.Func<TState, T43, TResult> case43)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    case 12:
+                        return visitor.Visit((T12)this.value);
+                                    case 13:
+                        return visitor.Visit((T13)this.value);
+                                    case 14:
+                        return visitor.Visit((T14)this.value);
+                                    case 15:
+                        return visitor.Visit((T15)this.value);
+                                    case 16:
+                        return visitor.Visit((T16)this.value);
+                                    case 17:
+                        return visitor.Visit((T17)this.value);
+                                    case 18:
+                        return visitor.Visit((T18)this.value);
+                                    case 19:
+                        return visitor.Visit((T19)this.value);
+                                    case 20:
+                        return visitor.Visit((T20)this.value);
+                                    case 21:
+                        return visitor.Visit((T21)this.value);
+                                    case 22:
+                        return visitor.Visit((T22)this.value);
+                                    case 23:
+                        return visitor.Visit((T23)this.value);
+                                    case 24:
+                        return visitor.Visit((T24)this.value);
+                                    case 25:
+                        return visitor.Visit((T25)this.value);
+                                    case 26:
+                        return visitor.Visit((T26)this.value);
+                                    case 27:
+                        return visitor.Visit((T27)this.value);
+                                    case 28:
+                        return visitor.Visit((T28)this.value);
+                                    case 29:
+                        return visitor.Visit((T29)this.value);
+                                    case 30:
+                        return visitor.Visit((T30)this.value);
+                                    case 31:
+                        return visitor.Visit((T31)this.value);
+                                    case 32:
+                        return visitor.Visit((T32)this.value);
+                                    case 33:
+                        return visitor.Visit((T33)this.value);
+                                    case 34:
+                        return visitor.Visit((T34)this.value);
+                                    case 35:
+                        return visitor.Visit((T35)this.value);
+                                    case 36:
+                        return visitor.Visit((T36)this.value);
+                                    case 37:
+                        return visitor.Visit((T37)this.value);
+                                    case 38:
+                        return visitor.Visit((T38)this.value);
+                                    case 39:
+                        return visitor.Visit((T39)this.value);
+                                    case 40:
+                        return visitor.Visit((T40)this.value);
+                                    case 41:
+                        return visitor.Visit((T41)this.value);
+                                    case 42:
+                        return visitor.Visit((T42)this.value);
+                                    case 43:
+                        return visitor.Visit((T43)this.value);
+                                    case 44:
+                        return visitor.Visit((T44)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -69878,7 +76599,10 @@ System.Func<TState, T44, TResult> case44)
                     T43 Item43 { get; }
                     T44 Item44 { get; }
                     T45 Item45 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45>
@@ -71825,7 +78549,108 @@ System.Func<TState, T44, TResult> case44)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    case 12:
+                        return visitor.Visit((T12)this.value);
+                                    case 13:
+                        return visitor.Visit((T13)this.value);
+                                    case 14:
+                        return visitor.Visit((T14)this.value);
+                                    case 15:
+                        return visitor.Visit((T15)this.value);
+                                    case 16:
+                        return visitor.Visit((T16)this.value);
+                                    case 17:
+                        return visitor.Visit((T17)this.value);
+                                    case 18:
+                        return visitor.Visit((T18)this.value);
+                                    case 19:
+                        return visitor.Visit((T19)this.value);
+                                    case 20:
+                        return visitor.Visit((T20)this.value);
+                                    case 21:
+                        return visitor.Visit((T21)this.value);
+                                    case 22:
+                        return visitor.Visit((T22)this.value);
+                                    case 23:
+                        return visitor.Visit((T23)this.value);
+                                    case 24:
+                        return visitor.Visit((T24)this.value);
+                                    case 25:
+                        return visitor.Visit((T25)this.value);
+                                    case 26:
+                        return visitor.Visit((T26)this.value);
+                                    case 27:
+                        return visitor.Visit((T27)this.value);
+                                    case 28:
+                        return visitor.Visit((T28)this.value);
+                                    case 29:
+                        return visitor.Visit((T29)this.value);
+                                    case 30:
+                        return visitor.Visit((T30)this.value);
+                                    case 31:
+                        return visitor.Visit((T31)this.value);
+                                    case 32:
+                        return visitor.Visit((T32)this.value);
+                                    case 33:
+                        return visitor.Visit((T33)this.value);
+                                    case 34:
+                        return visitor.Visit((T34)this.value);
+                                    case 35:
+                        return visitor.Visit((T35)this.value);
+                                    case 36:
+                        return visitor.Visit((T36)this.value);
+                                    case 37:
+                        return visitor.Visit((T37)this.value);
+                                    case 38:
+                        return visitor.Visit((T38)this.value);
+                                    case 39:
+                        return visitor.Visit((T39)this.value);
+                                    case 40:
+                        return visitor.Visit((T40)this.value);
+                                    case 41:
+                        return visitor.Visit((T41)this.value);
+                                    case 42:
+                        return visitor.Visit((T42)this.value);
+                                    case 43:
+                        return visitor.Visit((T43)this.value);
+                                    case 44:
+                        return visitor.Visit((T44)this.value);
+                                    case 45:
+                        return visitor.Visit((T45)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -72973,7 +79798,10 @@ System.Func<TState, T45, TResult> case45)
                     T44 Item44 { get; }
                     T45 Item45 { get; }
                     T46 Item46 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45, T46>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45, T46> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45, T46>
@@ -74963,7 +81791,110 @@ System.Func<TState, T45, TResult> case45)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45, T46>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    case 12:
+                        return visitor.Visit((T12)this.value);
+                                    case 13:
+                        return visitor.Visit((T13)this.value);
+                                    case 14:
+                        return visitor.Visit((T14)this.value);
+                                    case 15:
+                        return visitor.Visit((T15)this.value);
+                                    case 16:
+                        return visitor.Visit((T16)this.value);
+                                    case 17:
+                        return visitor.Visit((T17)this.value);
+                                    case 18:
+                        return visitor.Visit((T18)this.value);
+                                    case 19:
+                        return visitor.Visit((T19)this.value);
+                                    case 20:
+                        return visitor.Visit((T20)this.value);
+                                    case 21:
+                        return visitor.Visit((T21)this.value);
+                                    case 22:
+                        return visitor.Visit((T22)this.value);
+                                    case 23:
+                        return visitor.Visit((T23)this.value);
+                                    case 24:
+                        return visitor.Visit((T24)this.value);
+                                    case 25:
+                        return visitor.Visit((T25)this.value);
+                                    case 26:
+                        return visitor.Visit((T26)this.value);
+                                    case 27:
+                        return visitor.Visit((T27)this.value);
+                                    case 28:
+                        return visitor.Visit((T28)this.value);
+                                    case 29:
+                        return visitor.Visit((T29)this.value);
+                                    case 30:
+                        return visitor.Visit((T30)this.value);
+                                    case 31:
+                        return visitor.Visit((T31)this.value);
+                                    case 32:
+                        return visitor.Visit((T32)this.value);
+                                    case 33:
+                        return visitor.Visit((T33)this.value);
+                                    case 34:
+                        return visitor.Visit((T34)this.value);
+                                    case 35:
+                        return visitor.Visit((T35)this.value);
+                                    case 36:
+                        return visitor.Visit((T36)this.value);
+                                    case 37:
+                        return visitor.Visit((T37)this.value);
+                                    case 38:
+                        return visitor.Visit((T38)this.value);
+                                    case 39:
+                        return visitor.Visit((T39)this.value);
+                                    case 40:
+                        return visitor.Visit((T40)this.value);
+                                    case 41:
+                        return visitor.Visit((T41)this.value);
+                                    case 42:
+                        return visitor.Visit((T42)this.value);
+                                    case 43:
+                        return visitor.Visit((T43)this.value);
+                                    case 44:
+                        return visitor.Visit((T44)this.value);
+                                    case 45:
+                        return visitor.Visit((T45)this.value);
+                                    case 46:
+                        return visitor.Visit((T46)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -76135,7 +83066,10 @@ System.Func<TState, T46, TResult> case46)
                     T45 Item45 { get; }
                     T46 Item46 { get; }
                     T47 Item47 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45, T46, T47>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45, T46, T47> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45, T46, T47>
@@ -78168,7 +85102,112 @@ System.Func<TState, T46, TResult> case46)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45, T46, T47>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    case 12:
+                        return visitor.Visit((T12)this.value);
+                                    case 13:
+                        return visitor.Visit((T13)this.value);
+                                    case 14:
+                        return visitor.Visit((T14)this.value);
+                                    case 15:
+                        return visitor.Visit((T15)this.value);
+                                    case 16:
+                        return visitor.Visit((T16)this.value);
+                                    case 17:
+                        return visitor.Visit((T17)this.value);
+                                    case 18:
+                        return visitor.Visit((T18)this.value);
+                                    case 19:
+                        return visitor.Visit((T19)this.value);
+                                    case 20:
+                        return visitor.Visit((T20)this.value);
+                                    case 21:
+                        return visitor.Visit((T21)this.value);
+                                    case 22:
+                        return visitor.Visit((T22)this.value);
+                                    case 23:
+                        return visitor.Visit((T23)this.value);
+                                    case 24:
+                        return visitor.Visit((T24)this.value);
+                                    case 25:
+                        return visitor.Visit((T25)this.value);
+                                    case 26:
+                        return visitor.Visit((T26)this.value);
+                                    case 27:
+                        return visitor.Visit((T27)this.value);
+                                    case 28:
+                        return visitor.Visit((T28)this.value);
+                                    case 29:
+                        return visitor.Visit((T29)this.value);
+                                    case 30:
+                        return visitor.Visit((T30)this.value);
+                                    case 31:
+                        return visitor.Visit((T31)this.value);
+                                    case 32:
+                        return visitor.Visit((T32)this.value);
+                                    case 33:
+                        return visitor.Visit((T33)this.value);
+                                    case 34:
+                        return visitor.Visit((T34)this.value);
+                                    case 35:
+                        return visitor.Visit((T35)this.value);
+                                    case 36:
+                        return visitor.Visit((T36)this.value);
+                                    case 37:
+                        return visitor.Visit((T37)this.value);
+                                    case 38:
+                        return visitor.Visit((T38)this.value);
+                                    case 39:
+                        return visitor.Visit((T39)this.value);
+                                    case 40:
+                        return visitor.Visit((T40)this.value);
+                                    case 41:
+                        return visitor.Visit((T41)this.value);
+                                    case 42:
+                        return visitor.Visit((T42)this.value);
+                                    case 43:
+                        return visitor.Visit((T43)this.value);
+                                    case 44:
+                        return visitor.Visit((T44)this.value);
+                                    case 45:
+                        return visitor.Visit((T45)this.value);
+                                    case 46:
+                        return visitor.Visit((T46)this.value);
+                                    case 47:
+                        return visitor.Visit((T47)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -79364,7 +86403,10 @@ System.Func<TState, T47, TResult> case47)
                     T46 Item46 { get; }
                     T47 Item47 { get; }
                     T48 Item48 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45, T46, T47, T48>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45, T46, T47, T48> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45, T46, T47, T48>
@@ -81440,7 +88482,114 @@ System.Func<TState, T47, TResult> case47)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45, T46, T47, T48>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    case 12:
+                        return visitor.Visit((T12)this.value);
+                                    case 13:
+                        return visitor.Visit((T13)this.value);
+                                    case 14:
+                        return visitor.Visit((T14)this.value);
+                                    case 15:
+                        return visitor.Visit((T15)this.value);
+                                    case 16:
+                        return visitor.Visit((T16)this.value);
+                                    case 17:
+                        return visitor.Visit((T17)this.value);
+                                    case 18:
+                        return visitor.Visit((T18)this.value);
+                                    case 19:
+                        return visitor.Visit((T19)this.value);
+                                    case 20:
+                        return visitor.Visit((T20)this.value);
+                                    case 21:
+                        return visitor.Visit((T21)this.value);
+                                    case 22:
+                        return visitor.Visit((T22)this.value);
+                                    case 23:
+                        return visitor.Visit((T23)this.value);
+                                    case 24:
+                        return visitor.Visit((T24)this.value);
+                                    case 25:
+                        return visitor.Visit((T25)this.value);
+                                    case 26:
+                        return visitor.Visit((T26)this.value);
+                                    case 27:
+                        return visitor.Visit((T27)this.value);
+                                    case 28:
+                        return visitor.Visit((T28)this.value);
+                                    case 29:
+                        return visitor.Visit((T29)this.value);
+                                    case 30:
+                        return visitor.Visit((T30)this.value);
+                                    case 31:
+                        return visitor.Visit((T31)this.value);
+                                    case 32:
+                        return visitor.Visit((T32)this.value);
+                                    case 33:
+                        return visitor.Visit((T33)this.value);
+                                    case 34:
+                        return visitor.Visit((T34)this.value);
+                                    case 35:
+                        return visitor.Visit((T35)this.value);
+                                    case 36:
+                        return visitor.Visit((T36)this.value);
+                                    case 37:
+                        return visitor.Visit((T37)this.value);
+                                    case 38:
+                        return visitor.Visit((T38)this.value);
+                                    case 39:
+                        return visitor.Visit((T39)this.value);
+                                    case 40:
+                        return visitor.Visit((T40)this.value);
+                                    case 41:
+                        return visitor.Visit((T41)this.value);
+                                    case 42:
+                        return visitor.Visit((T42)this.value);
+                                    case 43:
+                        return visitor.Visit((T43)this.value);
+                                    case 44:
+                        return visitor.Visit((T44)this.value);
+                                    case 45:
+                        return visitor.Visit((T45)this.value);
+                                    case 46:
+                        return visitor.Visit((T46)this.value);
+                                    case 47:
+                        return visitor.Visit((T47)this.value);
+                                    case 48:
+                        return visitor.Visit((T48)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -82660,7 +89809,10 @@ System.Func<TState, T48, TResult> case48)
                     T47 Item47 { get; }
                     T48 Item48 { get; }
                     T49 Item49 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45, T46, T47, T48, T49>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45, T46, T47, T48, T49> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45, T46, T47, T48, T49>
@@ -84779,7 +91931,116 @@ System.Func<TState, T48, TResult> case48)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45, T46, T47, T48, T49>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    case 12:
+                        return visitor.Visit((T12)this.value);
+                                    case 13:
+                        return visitor.Visit((T13)this.value);
+                                    case 14:
+                        return visitor.Visit((T14)this.value);
+                                    case 15:
+                        return visitor.Visit((T15)this.value);
+                                    case 16:
+                        return visitor.Visit((T16)this.value);
+                                    case 17:
+                        return visitor.Visit((T17)this.value);
+                                    case 18:
+                        return visitor.Visit((T18)this.value);
+                                    case 19:
+                        return visitor.Visit((T19)this.value);
+                                    case 20:
+                        return visitor.Visit((T20)this.value);
+                                    case 21:
+                        return visitor.Visit((T21)this.value);
+                                    case 22:
+                        return visitor.Visit((T22)this.value);
+                                    case 23:
+                        return visitor.Visit((T23)this.value);
+                                    case 24:
+                        return visitor.Visit((T24)this.value);
+                                    case 25:
+                        return visitor.Visit((T25)this.value);
+                                    case 26:
+                        return visitor.Visit((T26)this.value);
+                                    case 27:
+                        return visitor.Visit((T27)this.value);
+                                    case 28:
+                        return visitor.Visit((T28)this.value);
+                                    case 29:
+                        return visitor.Visit((T29)this.value);
+                                    case 30:
+                        return visitor.Visit((T30)this.value);
+                                    case 31:
+                        return visitor.Visit((T31)this.value);
+                                    case 32:
+                        return visitor.Visit((T32)this.value);
+                                    case 33:
+                        return visitor.Visit((T33)this.value);
+                                    case 34:
+                        return visitor.Visit((T34)this.value);
+                                    case 35:
+                        return visitor.Visit((T35)this.value);
+                                    case 36:
+                        return visitor.Visit((T36)this.value);
+                                    case 37:
+                        return visitor.Visit((T37)this.value);
+                                    case 38:
+                        return visitor.Visit((T38)this.value);
+                                    case 39:
+                        return visitor.Visit((T39)this.value);
+                                    case 40:
+                        return visitor.Visit((T40)this.value);
+                                    case 41:
+                        return visitor.Visit((T41)this.value);
+                                    case 42:
+                        return visitor.Visit((T42)this.value);
+                                    case 43:
+                        return visitor.Visit((T43)this.value);
+                                    case 44:
+                        return visitor.Visit((T44)this.value);
+                                    case 45:
+                        return visitor.Visit((T45)this.value);
+                                    case 46:
+                        return visitor.Visit((T46)this.value);
+                                    case 47:
+                        return visitor.Visit((T47)this.value);
+                                    case 48:
+                        return visitor.Visit((T48)this.value);
+                                    case 49:
+                        return visitor.Visit((T49)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,
@@ -86023,7 +93284,10 @@ System.Func<TState, T49, TResult> case49)
                     T48 Item48 { get; }
                     T49 Item49 { get; }
                     T50 Item50 { get; }
-                }
+        
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45, T46, T47, T48, T49, T50>;
+        }
 
         [ExcludeFromCodeCoverage]
         public struct FlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45, T46, T47, T48, T49, T50> : IFlatBufferUnion<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45, T46, T47, T48, T49, T50>
@@ -88185,7 +95449,118 @@ System.Func<TState, T49, TResult> case49)
                 }
             }
                 
-            
+                        
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45, T46, T47, T48, T49, T50>
+            {
+                switch (this.discriminator)
+                {
+                                    case 1:
+                        return visitor.Visit((T1)this.value);
+                                    case 2:
+                        return visitor.Visit((T2)this.value);
+                                    case 3:
+                        return visitor.Visit((T3)this.value);
+                                    case 4:
+                        return visitor.Visit((T4)this.value);
+                                    case 5:
+                        return visitor.Visit((T5)this.value);
+                                    case 6:
+                        return visitor.Visit((T6)this.value);
+                                    case 7:
+                        return visitor.Visit((T7)this.value);
+                                    case 8:
+                        return visitor.Visit((T8)this.value);
+                                    case 9:
+                        return visitor.Visit((T9)this.value);
+                                    case 10:
+                        return visitor.Visit((T10)this.value);
+                                    case 11:
+                        return visitor.Visit((T11)this.value);
+                                    case 12:
+                        return visitor.Visit((T12)this.value);
+                                    case 13:
+                        return visitor.Visit((T13)this.value);
+                                    case 14:
+                        return visitor.Visit((T14)this.value);
+                                    case 15:
+                        return visitor.Visit((T15)this.value);
+                                    case 16:
+                        return visitor.Visit((T16)this.value);
+                                    case 17:
+                        return visitor.Visit((T17)this.value);
+                                    case 18:
+                        return visitor.Visit((T18)this.value);
+                                    case 19:
+                        return visitor.Visit((T19)this.value);
+                                    case 20:
+                        return visitor.Visit((T20)this.value);
+                                    case 21:
+                        return visitor.Visit((T21)this.value);
+                                    case 22:
+                        return visitor.Visit((T22)this.value);
+                                    case 23:
+                        return visitor.Visit((T23)this.value);
+                                    case 24:
+                        return visitor.Visit((T24)this.value);
+                                    case 25:
+                        return visitor.Visit((T25)this.value);
+                                    case 26:
+                        return visitor.Visit((T26)this.value);
+                                    case 27:
+                        return visitor.Visit((T27)this.value);
+                                    case 28:
+                        return visitor.Visit((T28)this.value);
+                                    case 29:
+                        return visitor.Visit((T29)this.value);
+                                    case 30:
+                        return visitor.Visit((T30)this.value);
+                                    case 31:
+                        return visitor.Visit((T31)this.value);
+                                    case 32:
+                        return visitor.Visit((T32)this.value);
+                                    case 33:
+                        return visitor.Visit((T33)this.value);
+                                    case 34:
+                        return visitor.Visit((T34)this.value);
+                                    case 35:
+                        return visitor.Visit((T35)this.value);
+                                    case 36:
+                        return visitor.Visit((T36)this.value);
+                                    case 37:
+                        return visitor.Visit((T37)this.value);
+                                    case 38:
+                        return visitor.Visit((T38)this.value);
+                                    case 39:
+                        return visitor.Visit((T39)this.value);
+                                    case 40:
+                        return visitor.Visit((T40)this.value);
+                                    case 41:
+                        return visitor.Visit((T41)this.value);
+                                    case 42:
+                        return visitor.Visit((T42)this.value);
+                                    case 43:
+                        return visitor.Visit((T43)this.value);
+                                    case 44:
+                        return visitor.Visit((T44)this.value);
+                                    case 45:
+                        return visitor.Visit((T45)this.value);
+                                    case 46:
+                        return visitor.Visit((T46)this.value);
+                                    case 47:
+                        return visitor.Visit((T47)this.value);
+                                    case 48:
+                        return visitor.Visit((T48)this.value);
+                                    case 49:
+                        return visitor.Visit((T49)this.value);
+                                    case 50:
+                        return visitor.Visit((T50)this.value);
+                                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
+
             public void Switch(
                 System.Action defaultCase,
                 System.Action<T1> case1,

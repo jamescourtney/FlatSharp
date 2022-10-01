@@ -40,6 +40,8 @@
     <Compile Include="ValueStructs\ValueStructs.fbs.generated.cs" />
     <Compile Remove="Documentation\Documentation.fbs.generated.cs" />
     <Compile Include="Documentation\Documentation.fbs.generated.cs" />
+    <Compile Remove="Unions\Unions.fbs.generated.cs" />
+    <Compile Include="Unions\Unions.fbs.generated.cs" />
   </ItemGroup>
 
   <Target Name="FBS" BeforeTargets="CoreCompile">
@@ -50,6 +52,7 @@
       <InputFile Include="Grpc\Grpc.fbs" />
       <InputFile Include="ValueStructs\ValueStructs.fbs" />
       <InputFile Include="Documentation\Documentation.fbs" />
+      <InputFile Include="Unions\Unions.fbs" />
     </ItemGroup>
     <Exec Command="dotnet $(FlatSharpCompilerDll) --nullable-warnings true -i %(InputFile.Identity) -o %(InputFile.RelativeDir)" />
   </Target>

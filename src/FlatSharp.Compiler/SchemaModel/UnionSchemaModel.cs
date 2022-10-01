@@ -16,6 +16,7 @@
 
 using System.Linq;
 using FlatSharp.Compiler.Schema;
+using FlatSharp.CodeGen;
 
 namespace FlatSharp.Compiler.SchemaModel;
 
@@ -176,10 +177,40 @@ public class UnionSchemaModel : BaseSchemaModel
             }
 
             // Switch methods.
+            this.WriteAcceptMethod(writer, innerTypes);
             this.WriteSwitchMethod(writer, true, true, innerTypes);
             this.WriteSwitchMethod(writer, true, false, innerTypes);
             this.WriteSwitchMethod(writer, false, true, innerTypes);
             this.WriteSwitchMethod(writer, false, false, innerTypes);
+        }
+    }
+
+    private void WriteAcceptMethod(
+        CodeWriter writer,
+        List<(string resolvedType, EnumVal value)> components)
+    {
+        string visitorBaseType = $"IFlatBufferUnionVisitor<TReturn, {string.Join(", ", components.Select(x => x.resolvedType))}>";
+
+        writer.AppendSummaryComment("A convenience interface for implementing a visitor.");
+        writer.AppendLine($"public interface Visitor<TReturn> : {visitorBaseType} {{ }}");
+
+        writer.AppendSummaryComment("Accepts a visitor into this FlatBufferUnion.");
+        writer.AppendLine($"public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)");
+        writer.AppendLine($"   where TVisitor : {visitorBaseType}");
+        using (writer.WithBlock())
+        {
+            writer.AppendLine("var disc = this.Discriminator;");
+            writer.AppendLine("switch (disc)");
+            using (writer.WithBlock())
+            {
+                foreach (var item in components)
+                {
+                    long index = item.value.Value;
+                    writer.AppendLine($"case {index}: return visitor.Visit(({item.resolvedType})this.value);");
+                }
+
+                writer.AppendLine($"default: throw new {typeof(InvalidOperationException).GetCompilableTypeName()}(\"Unexpected discriminator: \" + disc);");
+            }
         }
     }
 
