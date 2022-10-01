@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2020 James Courtney
+ * Copyright 2022 James Courtney
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,29 @@ public interface IFlatBufferUnion
     byte Discriminator { get; }
 }
 
+<#
+    for (int i = 1; i <= numGenerics; ++i)
+    {
+#>
+
+public interface IFlatBufferUnionVisitor<TReturn, <#= string.Join(", ", Enumerable.Range(1, i).Select(x => $"T{x}")) #>>
+{
+<#
+        for (int j = 1; j <= i; ++j)
+        {
+#>
+    
+    TReturn Visit(T<#= j #> item);
+
+<#
+        }
+#>
+
+}
+
+<#
+    }
+#>
 
 <#
     for (int i = 0; i < numGenerics; ++i)
@@ -47,6 +70,9 @@ public interface IFlatBufferUnion
         <# foreach (var genericType in range) { #>
             T<#= genericType #> Item<#= genericType #> { get; }
         <# } #>
+
+            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, <#= genericList #>>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -110,6 +136,21 @@ public interface IFlatBufferUnion
             <# 
             } 
             #>
+            
+
+            public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+                where TVisitor : IFlatBufferUnionVisitor<TReturn, <#= genericList #>>
+            {
+                switch (this.discriminator)
+                {
+                <# foreach (var genericType in range) { #>
+                    case <#= genericType #>:
+                        return visitor.Visit((T<#= genericType #>)this.value);
+                <# } #>
+                    default:
+                        throw new InvalidOperationException("Unexpected discriminator: " + this.discriminator);
+                }
+            }
 
             public void Switch(
                 System.Action defaultCase,
