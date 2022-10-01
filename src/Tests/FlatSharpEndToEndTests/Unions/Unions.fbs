@@ -11,13 +11,7 @@ struct C { V : uint; }
 struct D { V : uint; }
 
 union MyUnion { A, B, C, D }
-union MyUnionExtended { A, B, C, D, Table : Container }
 
 table Container (fs_serializer) {
     Value : [MyUnion];
 }
-
-table ContainerExtended (fs_serializer) {
-    Value : [MyUnionExtended];
-}
-

@@ -71,8 +71,8 @@ public interface IFlatBufferUnionVisitor<TReturn, <#= string.Join(", ", Enumerab
             T<#= genericType #> Item<#= genericType #> { get; }
         <# } #>
 
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, <#= genericList #>>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, <#= genericList #>>;
         }
 
         [ExcludeFromCodeCoverage]

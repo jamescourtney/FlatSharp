@@ -4154,8 +4154,8 @@ public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8
                 {
                     T1 Item1 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -4317,8 +4317,8 @@ public interface IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8
                     T1 Item1 { get; }
                     T2 Item2 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -4549,8 +4549,8 @@ System.Func<TState, T2, TResult> case2)
                     T2 Item2 { get; }
                     T3 Item3 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -4850,8 +4850,8 @@ System.Func<TState, T3, TResult> case3)
                     T3 Item3 { get; }
                     T4 Item4 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -5220,8 +5220,8 @@ System.Func<TState, T4, TResult> case4)
                     T4 Item4 { get; }
                     T5 Item5 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -5659,8 +5659,8 @@ System.Func<TState, T5, TResult> case5)
                     T5 Item5 { get; }
                     T6 Item6 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -6167,8 +6167,8 @@ System.Func<TState, T6, TResult> case6)
                     T6 Item6 { get; }
                     T7 Item7 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -6744,8 +6744,8 @@ System.Func<TState, T7, TResult> case7)
                     T7 Item7 { get; }
                     T8 Item8 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -7390,8 +7390,8 @@ System.Func<TState, T8, TResult> case8)
                     T8 Item8 { get; }
                     T9 Item9 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -8105,8 +8105,8 @@ System.Func<TState, T9, TResult> case9)
                     T9 Item9 { get; }
                     T10 Item10 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -8889,8 +8889,8 @@ System.Func<TState, T10, TResult> case10)
                     T10 Item10 { get; }
                     T11 Item11 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -9742,8 +9742,8 @@ System.Func<TState, T11, TResult> case11)
                     T11 Item11 { get; }
                     T12 Item12 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -10664,8 +10664,8 @@ System.Func<TState, T12, TResult> case12)
                     T12 Item12 { get; }
                     T13 Item13 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -11655,8 +11655,8 @@ System.Func<TState, T13, TResult> case13)
                     T13 Item13 { get; }
                     T14 Item14 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -12715,8 +12715,8 @@ System.Func<TState, T14, TResult> case14)
                     T14 Item14 { get; }
                     T15 Item15 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -13844,8 +13844,8 @@ System.Func<TState, T15, TResult> case15)
                     T15 Item15 { get; }
                     T16 Item16 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -15042,8 +15042,8 @@ System.Func<TState, T16, TResult> case16)
                     T16 Item16 { get; }
                     T17 Item17 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -16309,8 +16309,8 @@ System.Func<TState, T17, TResult> case17)
                     T17 Item17 { get; }
                     T18 Item18 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -17645,8 +17645,8 @@ System.Func<TState, T18, TResult> case18)
                     T18 Item18 { get; }
                     T19 Item19 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -19050,8 +19050,8 @@ System.Func<TState, T19, TResult> case19)
                     T19 Item19 { get; }
                     T20 Item20 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -20524,8 +20524,8 @@ System.Func<TState, T20, TResult> case20)
                     T20 Item20 { get; }
                     T21 Item21 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -22067,8 +22067,8 @@ System.Func<TState, T21, TResult> case21)
                     T21 Item21 { get; }
                     T22 Item22 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -23679,8 +23679,8 @@ System.Func<TState, T22, TResult> case22)
                     T22 Item22 { get; }
                     T23 Item23 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -25360,8 +25360,8 @@ System.Func<TState, T23, TResult> case23)
                     T23 Item23 { get; }
                     T24 Item24 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -27110,8 +27110,8 @@ System.Func<TState, T24, TResult> case24)
                     T24 Item24 { get; }
                     T25 Item25 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -28929,8 +28929,8 @@ System.Func<TState, T25, TResult> case25)
                     T25 Item25 { get; }
                     T26 Item26 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -30817,8 +30817,8 @@ System.Func<TState, T26, TResult> case26)
                     T26 Item26 { get; }
                     T27 Item27 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -32774,8 +32774,8 @@ System.Func<TState, T27, TResult> case27)
                     T27 Item27 { get; }
                     T28 Item28 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -34800,8 +34800,8 @@ System.Func<TState, T28, TResult> case28)
                     T28 Item28 { get; }
                     T29 Item29 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -36895,8 +36895,8 @@ System.Func<TState, T29, TResult> case29)
                     T29 Item29 { get; }
                     T30 Item30 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -39059,8 +39059,8 @@ System.Func<TState, T30, TResult> case30)
                     T30 Item30 { get; }
                     T31 Item31 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -41292,8 +41292,8 @@ System.Func<TState, T31, TResult> case31)
                     T31 Item31 { get; }
                     T32 Item32 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -43594,8 +43594,8 @@ System.Func<TState, T32, TResult> case32)
                     T32 Item32 { get; }
                     T33 Item33 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -45965,8 +45965,8 @@ System.Func<TState, T33, TResult> case33)
                     T33 Item33 { get; }
                     T34 Item34 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -48405,8 +48405,8 @@ System.Func<TState, T34, TResult> case34)
                     T34 Item34 { get; }
                     T35 Item35 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -50914,8 +50914,8 @@ System.Func<TState, T35, TResult> case35)
                     T35 Item35 { get; }
                     T36 Item36 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -53492,8 +53492,8 @@ System.Func<TState, T36, TResult> case36)
                     T36 Item36 { get; }
                     T37 Item37 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -56139,8 +56139,8 @@ System.Func<TState, T37, TResult> case37)
                     T37 Item37 { get; }
                     T38 Item38 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -58855,8 +58855,8 @@ System.Func<TState, T38, TResult> case38)
                     T38 Item38 { get; }
                     T39 Item39 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -61640,8 +61640,8 @@ System.Func<TState, T39, TResult> case39)
                     T39 Item39 { get; }
                     T40 Item40 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -64494,8 +64494,8 @@ System.Func<TState, T40, TResult> case40)
                     T40 Item40 { get; }
                     T41 Item41 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -67417,8 +67417,8 @@ System.Func<TState, T41, TResult> case41)
                     T41 Item41 { get; }
                     T42 Item42 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -70409,8 +70409,8 @@ System.Func<TState, T42, TResult> case42)
                     T42 Item42 { get; }
                     T43 Item43 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -73470,8 +73470,8 @@ System.Func<TState, T43, TResult> case43)
                     T43 Item43 { get; }
                     T44 Item44 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -76600,8 +76600,8 @@ System.Func<TState, T44, TResult> case44)
                     T44 Item44 { get; }
                     T45 Item45 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -79799,8 +79799,8 @@ System.Func<TState, T45, TResult> case45)
                     T45 Item45 { get; }
                     T46 Item46 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45, T46>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45, T46>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -83067,8 +83067,8 @@ System.Func<TState, T46, TResult> case46)
                     T46 Item46 { get; }
                     T47 Item47 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45, T46, T47>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45, T46, T47>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -86404,8 +86404,8 @@ System.Func<TState, T47, TResult> case47)
                     T47 Item47 { get; }
                     T48 Item48 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45, T46, T47, T48>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45, T46, T47, T48>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -89810,8 +89810,8 @@ System.Func<TState, T48, TResult> case48)
                     T48 Item48 { get; }
                     T49 Item49 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45, T46, T47, T48, T49>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45, T46, T47, T48, T49>;
         }
 
         [ExcludeFromCodeCoverage]
@@ -93285,8 +93285,8 @@ System.Func<TState, T49, TResult> case49)
                     T49 Item49 { get; }
                     T50 Item50 { get; }
         
-            TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
-                where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45, T46, T47, T48, T49, T50>;
+            //TReturn Accept<TVisitor, TReturn>(TVisitor visitor)
+            //    where TVisitor : IFlatBufferUnionVisitor<TReturn, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45, T46, T47, T48, T49, T50>;
         }
 
         [ExcludeFromCodeCoverage]

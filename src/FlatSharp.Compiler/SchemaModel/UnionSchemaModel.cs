@@ -16,6 +16,7 @@
 
 using System.Linq;
 using FlatSharp.Compiler.Schema;
+using FlatSharp.CodeGen;
 
 namespace FlatSharp.Compiler.SchemaModel;
 
@@ -188,11 +189,14 @@ public class UnionSchemaModel : BaseSchemaModel
         CodeWriter writer,
         List<(string resolvedType, EnumVal value)> components)
     {
-        string visitorType = $"IFlatBufferUnionVisitor<TReturn, {string.Join(", ", components.Select(x => x.resolvedType))}>";
+        string visitorBaseType = $"IFlatBufferUnionVisitor<TReturn, {string.Join(", ", components.Select(x => x.resolvedType))}>";
+
+        writer.AppendSummaryComment("A convenience interface for implementing a visitor.");
+        writer.AppendLine($"public interface Visitor<TReturn> : {visitorBaseType} {{ }}");
 
         writer.AppendSummaryComment("Accepts a visitor into this FlatBufferUnion.");
         writer.AppendLine($"public TReturn Accept<TVisitor, TReturn>(TVisitor visitor)");
-        writer.AppendLine($"   where TVisitor : {visitorType}");
+        writer.AppendLine($"   where TVisitor : {visitorBaseType}");
         using (writer.WithBlock())
         {
             writer.AppendLine("var disc = this.Discriminator;");
@@ -205,7 +209,7 @@ public class UnionSchemaModel : BaseSchemaModel
                     writer.AppendLine($"case {index}: return visitor.Visit(({item.resolvedType})this.value);");
                 }
 
-                writer.AppendLine("default: return visitor.VisitUnknown(disc);");
+                writer.AppendLine($"default: throw new {typeof(InvalidOperationException).GetCompilableTypeName()}(\"Unexpected discriminator: \" + disc);");
             }
         }
     }
