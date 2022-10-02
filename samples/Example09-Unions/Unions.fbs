@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+ attribute "fs_serializer";
+
 namespace Samples.Unions;
 
 enum DogBreed : byte { Golden, Lab, Corgi }
@@ -30,7 +32,7 @@ table Dog { Breed:DogBreed; Name:string; }
 table Cat { Breed:CatBreed; Name:string; }
 table Fish { Kind:FishKind; Weight:float64; Name:string; }
 
-table Person 
+table Person
 { 
 	// A person can have one pet. Either a dog, cat, or fish.
 	Pet:Pet;
