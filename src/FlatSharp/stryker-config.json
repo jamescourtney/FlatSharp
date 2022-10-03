@@ -1,0 +1,10 @@
+{
+    "stryker-config":
+    {
+        "project": "FlatSharp.csproj",
+        "test-projects": [
+           "../Tests/FlatSharpTests/FlatSharpTests.csproj"
+        ],
+        "target-framework": "net6.0"
+    }
+}
