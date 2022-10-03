@@ -3,7 +3,6 @@
     {
         "project": "FlatSharp.Compiler.csproj",
         "test-projects": [
-           "../Tests/FlatSharpTests/FlatSharpTests.csproj",
            "../Tests/FlatSharpCompilerTests/FlatSharpCompilerTests.csproj"
         ],
         "target-framework": "net6.0"
