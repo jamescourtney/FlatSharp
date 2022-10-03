@@ -12,6 +12,7 @@ jobs:
     runs-on: windows-2019
     env:
       AppVeyorBuild: true
+      
     steps:
     - uses: actions/checkout@v2
     
@@ -39,16 +40,25 @@ jobs:
       working-directory: src
       run: dotnet restore
       
-    - name: Build Compiler
-      working-directory: src/FlatSharp.Compiler
-      run: dotnet build -c Release --no-restore
-      
-    - name: Build
-      working-directory: src
-      run: dotnet build -c Release --no-restore
-      
     - name: Install Stryker
       run: dotnet tool install -g dotnet-stryker
       
-    - name: Run Stryker
-      run: dotnet stryker
+    - name: Run Stryker FlatSharp/Runtime
+      working-directory: src/Tests/FlatSharpTests
+      run: dotnet-stryker -p FlatSharp.Runtime.csproj
+      
+    - name: Run Stryker FlatSharp/FlatSharp
+      working-directory: src/Tests/FlatSharpTests
+      run: dotnet-stryker -p FlatSharp.csproj
+      
+    - name: Run Stryker FlatSharpCompiler/Compiler
+      working-directory: src/Tests/FlatSharpCompilerTests
+      run: dotnet-stryker -p FlatSharp.Compiler.csproj
+      
+    - name: Run Stryker FlatSharpCompiler/Runtime
+      working-directory: src/Tests/FlatSharpCompilerTests
+      run: dotnet-stryker -p FlatSharp.Runtime.csproj
+      
+    - name: Run Stryker FlatSharpCompiler/FlatSharp
+      working-directory: src/Tests/FlatSharpCompilerTests
+      run: dotnet-stryker -p FlatSharp.csproj
