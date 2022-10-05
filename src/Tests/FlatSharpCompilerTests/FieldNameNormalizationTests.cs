@@ -19,7 +19,7 @@ namespace FlatSharpTests.Compiler;
 public class FieldNameNormalizationTests
 {
     [Fact]
-    public void NullableAnnotations()
+    public void NormalizeFieldNames()
     {
         string schema = $@"
             {MetadataHelpers.AllAttributes}
@@ -58,6 +58,74 @@ public class FieldNameNormalizationTests
             Assert.NotNull(type.GetProperty("ItemThree"));
             Assert.NotNull(type.GetProperty("ItemF"));
             Assert.NotNull(type.GetProperty("LowerPascalCase"));
+        }
+    }
+
+    [Fact]
+    public void PreserveFieldCasingOnField()
+    {
+        string schema = $@"
+            {MetadataHelpers.AllAttributes}
+            namespace FieldNameNormalizationTests;
+
+            table Table {{
+                item_one : int32;
+                item_two : int32 ({MetadataKeys.PreserveFieldCasing});
+            }}
+
+            struct Struct {{
+                item_one : int32;
+                item_two : int32 ({MetadataKeys.PreserveFieldCasing});
+            }}";
+
+        Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(
+            schema,
+            new CompilerOptions
+            {
+                NormalizeFieldNames = true,
+            });
+
+        foreach (string typeName in new[] { "FieldNameNormalizationTests.Table", "FieldNameNormalizationTests.Struct" })
+        {
+            Type type = asm.GetType(typeName);
+
+            Assert.NotNull(type);
+            Assert.NotNull(type.GetProperty("ItemOne"));
+            Assert.NotNull(type.GetProperty("item_two"));
+        }
+    }
+
+    [Fact]
+    public void PreserveFieldCasingOnParent()
+    {
+        string schema = $@"
+            {MetadataHelpers.AllAttributes}
+            namespace FieldNameNormalizationTests;
+
+            table Table ({MetadataKeys.PreserveFieldCasing}) {{
+                item_one : int32 ({MetadataKeys.PreserveFieldCasing}:""false"");
+                item_two : int32;
+            }}
+
+            struct Struct ({MetadataKeys.PreserveFieldCasing}) {{
+                item_one : int32 ({MetadataKeys.PreserveFieldCasing}:""false"");
+                item_two : int32;
+            }}";
+
+        Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(
+            schema,
+            new CompilerOptions
+            {
+                NormalizeFieldNames = true,
+            });
+
+        foreach (string typeName in new[] { "FieldNameNormalizationTests.Table", "FieldNameNormalizationTests.Struct" })
+        {
+            Type type = asm.GetType(typeName);
+
+            Assert.NotNull(type);
+            Assert.NotNull(type.GetProperty("ItemOne"));
+            Assert.NotNull(type.GetProperty("item_two"));
         }
     }
 }

@@ -29,6 +29,8 @@ public interface IFlatSharpAttributes
 
     bool? NonVirtual { get; }
 
+    bool? PreserveFieldCasing { get; }
+
     bool? RpcInterface { get; }
 
     SetterKind? SetterKind { get; }

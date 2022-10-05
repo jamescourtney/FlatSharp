@@ -33,6 +33,7 @@ public class MutableFlatSharpAttributes : IFlatSharpAttributes
             this.ForceWrite = other.ForceWrite;
             this.MemoryMarshalBehavior = other.MemoryMarshalBehavior;
             this.NonVirtual = other.NonVirtual;
+            this.PreserveFieldCasing = other.PreserveFieldCasing;
             this.RpcInterface = other.RpcInterface;
             this.SetterKind = other.SetterKind;
             this.SharedString = other.SharedString;
@@ -54,6 +55,8 @@ public class MutableFlatSharpAttributes : IFlatSharpAttributes
     public MemoryMarshalBehavior? MemoryMarshalBehavior { get; set; }
 
     public bool? NonVirtual { get; set; }
+
+    public bool? PreserveFieldCasing { get; set; }
 
     public bool? RpcInterface { get; set; }
 
