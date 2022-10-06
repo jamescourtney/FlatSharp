@@ -477,7 +477,7 @@ public class TypeModelTests
     {
         var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
             RuntimeTypeModel.CreateFrom(typeof(GenericStruct<int?>)));
-        Assert.Equal("Struct 'FlatSharpTests.TypeModelTests.GenericStruct<System.Nullable<System.Int32>>' property Value (Index 0) with type System.Nullable<System.Int32> cannot be part of a flatbuffer struct.", ex.Message);
+        Assert.Equal("Struct 'FlatSharpTests.TypeModelTests.GenericStruct<System.Int32?>' property Value (Index 0) with type System.Int32? cannot be part of a flatbuffer struct.", ex.Message);
     }
 
     [Fact]
@@ -485,7 +485,7 @@ public class TypeModelTests
     {
         var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
             RuntimeTypeModel.CreateFrom(typeof(GenericStruct<TaggedEnum?>)));
-        Assert.Equal("Struct 'FlatSharpTests.TypeModelTests.GenericStruct<System.Nullable<FlatSharpTests.TypeModelTests.TaggedEnum>>' property Value (Index 0) with type System.Nullable<FlatSharpTests.TypeModelTests.TaggedEnum> cannot be part of a flatbuffer struct.", ex.Message);
+        Assert.Equal("Struct 'FlatSharpTests.TypeModelTests.GenericStruct<FlatSharpTests.TypeModelTests.TaggedEnum?>' property Value (Index 0) with type FlatSharpTests.TypeModelTests.TaggedEnum? cannot be part of a flatbuffer struct.", ex.Message);
     }
 
     [Fact]
@@ -588,7 +588,7 @@ public class TypeModelTests
     {
         var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
             RuntimeTypeModel.CreateFrom(typeof(GenericTable<IList<int?>>)));
-        Assert.Equal("Type 'System.Nullable<System.Int32>' is not a valid vector member.", ex.Message);
+        Assert.Equal("Type 'System.Int32?' is not a valid vector member.", ex.Message);
     }
 
     [Fact]
@@ -596,7 +596,7 @@ public class TypeModelTests
     {
         var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
             RuntimeTypeModel.CreateFrom(typeof(GenericTable<IList<TaggedEnum?>>)));
-        Assert.Equal("Type 'System.Nullable<FlatSharpTests.TypeModelTests.TaggedEnum>' is not a valid vector member.", ex.Message);
+        Assert.Equal("Type 'FlatSharpTests.TypeModelTests.TaggedEnum?' is not a valid vector member.", ex.Message);
     }
 
     [Fact]
@@ -777,7 +777,7 @@ public class TypeModelTests
     {
         var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
                RuntimeTypeModel.CreateFrom(typeof(SortedVector<TaggedEnum?[]>)));
-        Assert.Equal("Type 'System.Nullable<FlatSharpTests.TypeModelTests.TaggedEnum>' is not a valid vector member.", ex.Message);
+        Assert.Equal("Type 'FlatSharpTests.TypeModelTests.TaggedEnum?' is not a valid vector member.", ex.Message);
     }
 
     [Fact]
@@ -801,7 +801,7 @@ public class TypeModelTests
     {
         var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
                RuntimeTypeModel.CreateFrom(typeof(SortedVector<int?[]>)));
-        Assert.Equal("Type 'System.Nullable<System.Int32>' is not a valid vector member.", ex.Message);
+        Assert.Equal("Type 'System.Int32?' is not a valid vector member.", ex.Message);
     }
 
     [Fact]
@@ -835,40 +835,40 @@ public class TypeModelTests
     public void TypeModel_SortedVector_OfTableWithOptionalKey_NotAllowed()
     {
         var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<bool?>>)));
-        Assert.Equal("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.Nullable<System.Boolean>> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
+        Assert.Equal("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.Boolean?> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
 
         ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<byte?>[]>)));
-        Assert.Equal("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.Nullable<System.Byte>> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
+        Assert.Equal("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.Byte?> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
 
         ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<sbyte?>[]>)));
-        Assert.Equal("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.Nullable<System.SByte>> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
+        Assert.Equal("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.SByte?> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
 
         ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<ushort?>[]>)));
-        Assert.Equal("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.Nullable<System.UInt16>> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
+        Assert.Equal("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.UInt16?> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
 
         ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<short?>[]>)));
-        Assert.Equal("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.Nullable<System.Int16>> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
+        Assert.Equal("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.Int16?> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
 
         ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<uint?>[]>)));
-        Assert.Equal("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.Nullable<System.UInt32>> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
+        Assert.Equal("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.UInt32?> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
 
         ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<int?>[]>)));
-        Assert.Equal("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.Nullable<System.Int32>> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
+        Assert.Equal("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.Int32?> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
 
         ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<ulong?>[]>)));
-        Assert.Equal("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.Nullable<System.UInt64>> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
+        Assert.Equal("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.UInt64?> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
 
         ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<long?>[]>)));
-        Assert.Equal("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.Nullable<System.Int64>> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
+        Assert.Equal("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.Int64?> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
 
         ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<float?>[]>)));
-        Assert.Equal("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.Nullable<System.Single>> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
+        Assert.Equal("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.Single?> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
 
         ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<double?>[]>)));
-        Assert.Equal("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.Nullable<System.Double>> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
+        Assert.Equal("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.Double?> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
 
         ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() => RuntimeTypeModel.CreateFrom(typeof(SortedVector<SortedVectorKeyTable<TaggedEnum?>[]>)));
-        Assert.Equal("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.Nullable<FlatSharpTests.TypeModelTests.TaggedEnum>> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
+        Assert.Equal("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<FlatSharpTests.TypeModelTests.TaggedEnum?> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
     }
 
     [Fact]
@@ -908,7 +908,7 @@ public class TypeModelTests
     {
         var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
             RuntimeTypeModel.CreateFrom(typeof(SortedVector<IList<SortedVectorKeyTable<TaggedEnum?>>>)));
-        Assert.Equal("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<System.Nullable<FlatSharpTests.TypeModelTests.TaggedEnum>> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
+        Assert.Equal("Table FlatSharpTests.TypeModelTests.SortedVectorKeyTable<FlatSharpTests.TypeModelTests.TaggedEnum?> declares a key property on a type that that does not support being a key in a sorted vector.", ex.Message);
     }
 
     [Fact]
@@ -974,7 +974,7 @@ public class TypeModelTests
     {
         var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
             RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, FlatBufferUnion<string, GenericStruct<int>>?>?>)));
-        Assert.Equal("Unions may not store 'System.Nullable<FlatSharp.FlatBufferUnion<System.String, FlatSharpTests.TypeModelTests.GenericStruct<System.Int32>>>'.", ex.Message);
+        Assert.Equal("Unions may not store 'FlatSharp.FlatBufferUnion<System.String, FlatSharpTests.TypeModelTests.GenericStruct<System.Int32>>?'.", ex.Message);
     }
 
     [Fact]
@@ -990,7 +990,7 @@ public class TypeModelTests
     {
         var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
             RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, int?>>)));
-        Assert.Equal("Unions may not store 'System.Nullable<System.Int32>'.", ex.Message);
+        Assert.Equal("Unions may not store 'System.Int32?'.", ex.Message);
     }
 
     [Fact]
@@ -1006,7 +1006,7 @@ public class TypeModelTests
     {
         var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() =>
             RuntimeTypeModel.CreateFrom(typeof(GenericTable<FlatBufferUnion<string, TaggedEnum?>?>)));
-        Assert.Equal("Unions may not store 'System.Nullable<FlatSharpTests.TypeModelTests.TaggedEnum>'.", ex.Message);
+        Assert.Equal("Unions may not store 'FlatSharpTests.TypeModelTests.TaggedEnum?'.", ex.Message);
     }
 
     [Fact]

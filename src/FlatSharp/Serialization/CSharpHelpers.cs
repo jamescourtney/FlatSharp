@@ -33,13 +33,21 @@ internal static class CSharpHelpers
         string name;
         if (t.IsGenericType)
         {
-            List<string> parameters = new List<string>();
-            foreach (var generic in t.GetGenericArguments())
+            var nullableElementType = Nullable.GetUnderlyingType(t);
+            if (nullableElementType != null)
             {
-                parameters.Add(GetCompilableTypeName(generic));
+                name = $"{GetCompilableTypeName(nullableElementType)}?";
             }
+            else
+            {
+                List<string> parameters = new List<string>();
+                foreach (var generic in t.GetGenericArguments())
+                {
+                    parameters.Add(GetCompilableTypeName(generic));
+                }
 
-            name = $"{t.FullName.Split('`')[0]}<{string.Join(", ", parameters)}>";
+                name = $"{t.FullName.Split('`')[0]}<{string.Join(", ", parameters)}>";
+            }
         }
         else if (t.IsArray)
         {
