@@ -620,6 +620,10 @@ $@"
 $@"
             namespace {ns}
             {{
+                // Make sure we can reference the namespace of the type we are using.
+                // Ensures that extension methods, etc are available.
+                using {typeModel.ClrType.Namespace};
+
                 internal static class {name}
                 {{
                     {string.Join("\r\n", methods)}

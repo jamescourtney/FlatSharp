@@ -84,16 +84,6 @@ public class RootModel
         writer.AppendLine("using FlatSharp.Attributes;");
         writer.AppendLine("using FlatSharp.Internal;");
 
-        // Find all namespaces of types in the model.
-        HashSet<string> seenNamespaces = new();
-        foreach (var obj in this.elements.Values)
-        {
-            if (seenNamespaces.Add(obj.Namespace))
-            {
-                writer.AppendLine($"using {obj.Namespace};");
-            }
-        }
-
 
         // disable obsolete warnings. Flatsharp allows marking default constructors
         // as obsolete and we don't want to raise warnings for our own code.
