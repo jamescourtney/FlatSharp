@@ -107,8 +107,11 @@ public class ValueStructTypeModel : RuntimeTypeModel
         for (int i = 0; i < this.members.Count; ++i)
         {
             var member = this.members[i];
+
+            var parts = context.MethodNameResolver.ResolveParse(context.Options.DeserializationOption, member.model.ClrType);
+
             propertyStatements.Add($@"
-                item.{member.accessor} = {context.MethodNameMap[member.model.ClrType]}<{context.InputBufferTypeName}>(
+                item.{member.accessor} = {parts.@namespace}.{parts.className}.{parts.methodName}<{context.InputBufferTypeName}>(
                     {context.InputBufferVariableName}, 
                     {context.OffsetVariableName} + {member.offset},
                     {context.RemainingDepthVariableName});");

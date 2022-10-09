@@ -52,4 +52,13 @@ public class SerializerSettings
         get;
         set;
     }
+
+    /// <summary>
+    /// When set, specifies a deserialization mode to use with the .Deserialize method.
+    /// </summary>
+    public FlatBufferDeserializationOption? DeserializationMode
+    {
+        get;
+        set;
+    }
 }

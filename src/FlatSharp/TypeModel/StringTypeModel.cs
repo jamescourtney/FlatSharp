@@ -100,11 +100,8 @@ public class StringTypeModel : RuntimeTypeModel
 
     public override CodeGeneratedMethod CreateSerializeMethodBody(SerializationCodeGenContext context)
     {
-        string body;
-        if (context.AllFieldContexts.SelectMany(x => x.Value).Any(x => x.SharedString))
-        {
-            // If we know this schema includes shared strings, add the if statement here.
-            body = $@"
+        string body             // If we know this schema includes shared strings, add the if statement here.
+            = $@"
                 if ({context.TableFieldContextVariableName}.{nameof(TableFieldContext.SharedString)})
                 {{
                     var sharedStringWriter = {context.SerializationContextVariableName}.{nameof(SerializationContext.SharedStringWriter)};
@@ -127,19 +124,6 @@ public class StringTypeModel : RuntimeTypeModel
                     {context.OffsetVariableName},
                     {context.SerializationContextVariableName});
             ";
-        }
-        else
-        {
-            // otherwise, we can omit that code entirely.
-            body = $@"
-                {context.SpanWriterVariableName}.{nameof(SpanWriterExtensions.WriteString)}(
-                    {context.SpanVariableName},
-                    {context.ValueVariableName},
-                    {context.OffsetVariableName},
-                    {context.SerializationContextVariableName});
-            ";
-        }
-
         return new CodeGeneratedMethod(body);
     }
 

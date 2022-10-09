@@ -5,13 +5,17 @@ attribute "fs_rpcInterface";
 
 namespace FlatSharpEndToEndTests.Unions;
 
-struct A { V : uint; }
-struct B { V : uint; }
-struct C { V : uint; }
-struct D { V : uint; }
+table A (fs_serializer:"Progressive")
+{
+    Item : C;
+}
 
-union MyUnion { A, B, C, D }
+table B (fs_serializer:"Progressive")
+{
+    Item : C;
+}
 
-table Container (fs_serializer) {
-    Value : [MyUnion];
+table C
+{
+    Value : string;
 }

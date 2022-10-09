@@ -116,20 +116,11 @@ public class TableSchemaModel : BaseReferenceTypeSchemaModel
 
         var options = new FlatBufferSerializerOptions(deserializationOption) { ConvertProtectedInternalToProtected = false };
         var generator = new RoslynSerializerGenerator(options, context.TypeModelContainer);
+        var resolver = new DefaultMethodNameResolver();
 
-        MethodInfo method = generator.GetType()
-                                     .GetMethod(nameof(RoslynSerializerGenerator.GenerateCSharp), BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)!
-                                     .MakeGenericMethod(type);
+        string helper = generator.ImplementHelperClass(context.TypeModelContainer.CreateTypeModel(type), resolver);
 
-        try
-        {
-            string code = (string)method.Invoke(generator, new[] { "private" })!;
-            return code;
-        }
-        catch (TargetInvocationException ex)
-        {
-            ExceptionDispatchInfo.Capture(ex.InnerException!).Throw();
-            throw;
-        }
+        // todo
+        return String.Empty;
     }
 }

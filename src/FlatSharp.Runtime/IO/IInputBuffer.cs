@@ -93,11 +93,13 @@ public interface IInputBuffer
     /// </summary>
     ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length);
 
-    /// <summary>
-    /// Invokes the parse method on the <see cref="IGeneratedSerializer{T}"/> parameter. Allows passing
-    /// generic parameters.
-    /// </summary>
-    TItem InvokeParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments);
+    TItem InvokeParseLazy<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments);
+
+    TItem InvokeParseProgressive<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments);
+
+    TItem InvokeParseGreedy<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments);
+
+    TItem InvokeParseGreedyMutable<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments);
 }
 
 /// <summary>

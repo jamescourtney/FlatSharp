@@ -108,19 +108,20 @@ internal class DeserializeClassDefinition
         ParserCodeGenContext context)
     {
         this.AddFieldDefinitions(itemModel);
-        this.AddPropertyDefinitions(itemModel, context.SerializeMethodNameMap[itemModel.ItemTypeModel.ClrType]);
+        this.AddPropertyDefinitions(itemModel);
         this.AddCtorStatements(itemModel);
         this.AddReadMethod(itemModel, context);
 
         if (itemModel.IsWriteThrough)
         {
-            if (!this.options.SupportsWriteThrough)
+            if (this.options.SupportsWriteThrough)
             {
-                throw new InvalidFlatBufferDefinitionException(
-                    $"Property '{itemModel.PropertyInfo.Name}' of {this.typeModel.SchemaType} '{this.typeModel.GetCompilableTypeName()}' specifies the WriteThrough option. However, WriteThrough is only supported when using deserialization option 'Progressive' or 'Lazy'.");
+                this.AddWriteThroughMethod(itemModel, context);
             }
+            else
+            {
 
-            this.AddWriteThroughMethod(itemModel, context);
+            }
         }
     }
 
@@ -188,7 +189,7 @@ internal class DeserializeClassDefinition
             }}");
     }
 
-    private void AddPropertyDefinitions(ItemMemberModel itemModel, string writeValueMethodName)
+    private void AddPropertyDefinitions(ItemMemberModel itemModel)
     {
         if (!itemModel.IsVirtual)
         {

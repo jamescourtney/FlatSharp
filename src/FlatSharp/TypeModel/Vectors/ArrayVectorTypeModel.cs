@@ -60,11 +60,6 @@ public class ArrayVectorTypeModel : BaseVectorTypeModel
         string body;
         FlatSharpInternal.Assert(this.ItemTypeModel is not null, "Flatsharp internal error: ItemTypeModel null");
 
-        if (!context.Options.GreedyDeserialize)
-        {
-            throw new InvalidFlatBufferDefinitionException("Array vectors may only be used with Greedy serializers.");
-        }
-
         ValidateWriteThrough(
             writeThroughSupported: false,
             this,

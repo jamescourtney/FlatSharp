@@ -65,13 +65,6 @@ public class DeserializationOptionsTests
     }
 
     [Fact]
-    public void DeserializationOption_Lazy_Array()
-    {
-        var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() => this.SerializeAndParse<string[]>(FlatBufferDeserializationOption.Lazy, Strings));
-        Assert.Equal("Array vectors may only be used with Greedy serializers.", ex.Message);
-    }
-
-    [Fact]
     public void DeserializationOption_Lazy_Memory()
     {
         var table = this.SerializeAndParse<Memory<byte>>(FlatBufferDeserializationOption.Lazy, Bytes);
@@ -99,13 +92,6 @@ public class DeserializationOptionsTests
         Assert.Equal(Bytes.Length, table.Vector.Length);
         Assert.Throws<NotMutableException>(() => table.First.First = 3);
         Assert.Throws<NotMutableException>(() => table.First = null);
-    }
-
-    [Fact]
-    public void DeserializationOption_Progressive_Array()
-    {
-        var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() => this.SerializeAndParse<string[]>(FlatBufferDeserializationOption.Progressive, Strings));
-        Assert.Equal("Array vectors may only be used with Greedy serializers.", ex.Message);
     }
 
     [Fact]

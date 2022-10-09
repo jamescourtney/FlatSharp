@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+using FlatSharp.CodeGen;
+using FlatSharp.TypeModel;
+
 namespace FlatSharp.Compiler.SchemaModel;
 
 public abstract class BaseSchemaModel
@@ -51,6 +54,11 @@ public abstract class BaseSchemaModel
 
     public abstract FlatBufferSchemaElementType ElementType { get; }
 
+    public virtual bool TryGetTypeModel(CompileContext context, [NotNullWhen(true)] out ITypeModel? typeModel)
+    {
+        return context.TypeModelContainer.TryCreateTypeModel(context.PreviousAssembly.GetType(this.FullName), out typeModel);
+    }
+
     private void Validate()
     {
         this.AttributeValidator.Validate(this.Attributes);
@@ -63,12 +71,30 @@ public abstract class BaseSchemaModel
         {
             this.Validate();
 
+            if (context.CompilePass >= CodeWritingPass.SerializerAndRpcGeneration)
+            {
+                this.WriteHelperClass(writer, context);
+            }
+
             writer.AppendLine($"namespace {this.Namespace}");
             using (writer.WithBlock())
             {
                 this.OnWriteCode(writer, context);
             }
         }
+    }
+
+    protected virtual void WriteHelperClass(CodeWriter writer, CompileContext context)
+    {
+        // Emit serializers and whatnot if we are on second pass.
+        Type? type = context.PreviousAssembly?.GetType(this.FullName);
+        FlatSharpInternal.Assert(type is not null, $"Flatsharp failed to find expected type '{this.FullName}' in assembly.");
+
+        var options = new FlatBufferSerializerOptions() { ConvertProtectedInternalToProtected = false };
+        var generator = new RoslynSerializerGenerator(options, context.TypeModelContainer);
+        string helper = generator.ImplementHelperClass(context.TypeModelContainer.CreateTypeModel(type), new DefaultMethodNameResolver());
+
+        writer.AppendLine(helper);
     }
 
     protected abstract void OnWriteCode(CodeWriter writer, CompileContext context);

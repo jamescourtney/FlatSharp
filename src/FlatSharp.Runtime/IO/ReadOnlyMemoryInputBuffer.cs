@@ -151,10 +151,13 @@ public struct ReadOnlyMemoryInputBuffer : IInputBuffer, IInputBuffer2
         throw new InvalidOperationException(ErrorMessage);
     }
 
-    public T InvokeParse<T>(IGeneratedSerializer<T> serializer, in GeneratedSerializerParseArguments arguments)
-    {
-        return serializer.Parse(this, arguments);
-    }
+    public T InvokeParseLazy<T>(IGeneratedSerializer<T> serializer, in GeneratedSerializerParseArguments arguments) => serializer.ParseLazy(this, arguments);
+
+    public T InvokeParseProgressive<T>(IGeneratedSerializer<T> serializer, in GeneratedSerializerParseArguments arguments) => serializer.ParseProgressive(this, arguments);
+
+    public T InvokeParseGreedy<T>(IGeneratedSerializer<T> serializer, in GeneratedSerializerParseArguments arguments) => serializer.ParseGreedy(this, arguments);
+
+    public T InvokeParseGreedyMutable<T>(IGeneratedSerializer<T> serializer, in GeneratedSerializerParseArguments arguments) => serializer.ParseGreedyMutable(this, arguments);
 
     // Memory<byte> is a relatively heavy struct. It's cheaper to wrap it in a
     // a reference that will be collected ephemerally in Gen0 than is is to

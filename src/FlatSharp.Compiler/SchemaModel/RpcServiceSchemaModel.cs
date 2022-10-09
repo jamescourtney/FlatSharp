@@ -61,6 +61,10 @@ public class RpcServiceSchemaModel : BaseSchemaModel
 
     public override string DeclaringFile => this.service.DeclaringFile;
 
+    protected override void WriteHelperClass(CodeWriter writer, CompileContext context)
+    {
+    }
+
     protected override void OnWriteCode(CodeWriter writer, CompileContext context)
     {
         if (context.CompilePass < CodeWritingPass.SerializerAndRpcGeneration)

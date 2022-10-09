@@ -14,10 +14,81 @@
  * limitations under the License.
  */
 
+using System.Security.Cryptography;
 using System.Text;
 using FlatSharp.TypeModel;
 
 namespace FlatSharp.CodeGen;
+
+public interface IMethodNameResolver
+{
+    (string @namespace, string name) ResolveGeneratedSerializerClassName(Type type);
+
+    (string @namespace, string name) ResolveHelperClassName(Type type);
+
+    (string @namespace, string className, string methodName) ResolveGetMaxSize(Type type);
+
+    (string @namespace, string className, string methodName) ResolveParse(FlatBufferDeserializationOption option, Type type);
+
+    (string @namespace, string className, string methodName) ResolveSerialize(Type type);
+}
+
+public class DefaultMethodNameResolver : IMethodNameResolver
+{
+    private readonly Dictionary<Type, string> namespaceMapping = new();
+
+    private const string FlatSharpGenerated = "FlatSharp.Generated";
+    private const string HelperClassName = "FlatSharpHelpers";
+    private const string GeneratedSerializer = "GeneratedSerializer";
+
+    public (string @namespace, string name) ResolveGeneratedSerializerClassName(Type type)
+    {
+        return (this.GetNamespace(type), GeneratedSerializer);
+    }
+
+public (string @namespace, string name) ResolveHelperClassName(Type type)
+    {
+        return (this.GetNamespace(type), HelperClassName);
+    }
+
+    public (string @namespace, string className, string methodName) ResolveGetMaxSize(Type type)
+    {
+        return (this.GetGlobalNamespace(type), HelperClassName, "GetMaxSize");
+    }
+
+    public (string @namespace, string className, string methodName) ResolveParse(FlatBufferDeserializationOption option, Type type)
+    {
+        return (this.GetGlobalNamespace(type), HelperClassName, $"Parse_{option}");
+    }
+
+    public (string @namespace, string className, string methodName) ResolveSerialize(Type type)
+    {
+        return (this.GetGlobalNamespace(type), HelperClassName, $"Serialize");
+    }
+
+    private string GetGlobalNamespace(Type type)
+    {
+        return $"global::{this.GetNamespace(type)}";
+    }
+
+    private string GetNamespace(Type type)
+    {
+        if (this.namespaceMapping.TryGetValue(type, out string? ns))
+        {
+            return ns;
+        }
+
+        byte[] data = Encoding.UTF8.GetBytes(type.FullName!);
+        using var sha = SHA256.Create();
+
+        byte[] hash = sha.ComputeHash(data);
+
+        ns = $"{FlatSharpGenerated}.N{BitConverter.ToString(hash).Replace("-", string.Empty)}";
+        this.namespaceMapping[type] = ns;
+
+        return ns;
+    }
+}
 
 /// <summary>
 /// Code gen context for parse methods.
@@ -31,8 +102,7 @@ public record ParserCodeGenContext
         string inputBufferTypeName,
         bool isOffsetByRef,
         string tableFieldContextVariableName,
-        IReadOnlyDictionary<Type, string> methodNameMap,
-        IReadOnlyDictionary<Type, string> serializeMethodNameMap,
+        IMethodNameResolver methodNameResolver,
         FlatBufferSerializerOptions options,
         TypeModelContainer typeModelContainer,
         IReadOnlyDictionary<ITypeModel, List<TableFieldContext>> allFieldContexts)
@@ -41,8 +111,7 @@ public record ParserCodeGenContext
         this.OffsetVariableName = offsetVariableName;
         this.InputBufferTypeName = inputBufferTypeName;
         this.RemainingDepthVariableName = remainingDepthVariableName;
-        this.MethodNameMap = methodNameMap;
-        this.SerializeMethodNameMap = serializeMethodNameMap;
+        this.MethodNameResolver = methodNameResolver;
         this.IsOffsetByRef = isOffsetByRef;
         this.Options = options;
         this.TypeModelContainer = typeModelContainer;
@@ -81,14 +150,9 @@ public record ParserCodeGenContext
     public string TableFieldContextVariableName { get; init; }
 
     /// <summary>
-    /// A mapping of type to serialize method name for that type.
+    /// Resolves method names.
     /// </summary>
-    public IReadOnlyDictionary<Type, string> MethodNameMap { get; }
-
-    /// <summary>
-    /// A mapping of type to serialize method name for that type.
-    /// </summary>
-    public IReadOnlyDictionary<Type, string> SerializeMethodNameMap { get; }
+    public IMethodNameResolver MethodNameResolver { get; init; }
 
     /// <summary>
     /// Serialization options.
@@ -111,7 +175,9 @@ public record ParserCodeGenContext
     public string GetParseInvocation(Type type)
     {
         ITypeModel typeModel = this.TypeModelContainer.CreateTypeModel(type);
-        StringBuilder sb = new($"{this.MethodNameMap[type]}({this.InputBufferVariableName}, ");
+
+        var parts = this.MethodNameResolver.ResolveParse(this.Options.DeserializationOption, type);
+        StringBuilder sb = new($"{parts.@namespace}.{parts.className}.{parts.methodName}({this.InputBufferVariableName}, ");
 
         if (this.IsOffsetByRef)
         {
@@ -143,7 +209,7 @@ public record ParserCodeGenContext
             offsetVariableName,
             this.TableFieldContextVariableName,
             this.IsOffsetByRef,
-            this.SerializeMethodNameMap,
+            this.MethodNameResolver,
             this.TypeModelContainer,
             this.Options,
             this.AllFieldContexts);
