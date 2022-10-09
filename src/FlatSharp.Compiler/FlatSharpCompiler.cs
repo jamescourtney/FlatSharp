@@ -34,9 +34,6 @@ public class FlatSharpCompiler
 
     private static string AssemblyVersion => typeof(FlatSharpCompiler).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "unknown";
 
-    private static readonly FlatBufferSerializer ImmutableSerializer = new FlatBufferSerializer(FlatBufferDeserializationOption.Greedy);
-    private static readonly FlatBufferSerializer MutableSerializer = new FlatBufferSerializer(FlatBufferDeserializationOption.GreedyMutable);
-
     [ExcludeFromCodeCoverage]
     static int Main(string[] args)
     {
@@ -502,8 +499,15 @@ public class FlatSharpCompiler
 
     private static Schema.Schema ParseSchema(byte[] bfbs, CompilerOptions options)
     {
+        ISerializer<Schema.Schema> mutableSerializer = FlatBufferSerializer.Default.Compile<Schema.Schema>();
+        ISerializer<Schema.Schema> immutableSerializer = mutableSerializer
+            .WithSettings(new SerializerSettings 
+            { 
+                DeserializationMode = FlatBufferDeserializationOption.Greedy 
+            });
+
         // Mutable
-        var schema = MutableSerializer.Parse<Schema.Schema>(bfbs);
+        var schema = mutableSerializer.Parse(bfbs);
 
         // Modify
         if (options.NormalizeFieldNames == true)
@@ -530,11 +534,11 @@ public class FlatSharpCompiler
         }
 
         // Serialize
-        byte[] temp = new byte[ImmutableSerializer.GetMaxSize(schema)];
-        ImmutableSerializer.Serialize(schema, temp);
+        byte[] temp = new byte[mutableSerializer.GetMaxSize(schema)];
+        mutableSerializer.Write(temp, schema);
 
         // Immutable.
-        return ImmutableSerializer.Parse<Schema.Schema>(temp);
+        return immutableSerializer.Parse(temp);
     }
 
     private static string NormalizeFieldName(string name)

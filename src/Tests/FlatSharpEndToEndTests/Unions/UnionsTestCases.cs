@@ -16,7 +16,6 @@
 
 namespace FlatSharpEndToEndTests.Unions;
 
-/*
 public class UnionsTestCases
 {
     [Fact]
@@ -162,4 +161,3 @@ public class UnionsTestCases
         public Type Visit(D item) => typeof(D);
     }
 }
-*/
