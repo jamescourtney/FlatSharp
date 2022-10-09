@@ -48,7 +48,7 @@ public class EchoServiceTestCases
             EchoService.Serializer<MultiStringMessage>.Value = MultiStringMessage.Serializer.WithSettings(
                 new SerializerSettings
                 {
-                    SharedStringWriterFactory = null
+                    SharedStringWriterFactory = () => null,
                 });
 
             int length = await this.SharedStringsTest_Common();

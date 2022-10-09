@@ -119,7 +119,7 @@ public record SerializationCodeGenContext
 
         StringBuilder sb = new StringBuilder();
 
-        var methodParts = this.MethodNameResolver.ResolveSerialize(type);
+        var methodParts = this.MethodNameResolver.ResolveSerialize(typeModel);
         sb.Append($"{methodParts.@namespace}.{methodParts.className}.{methodParts.methodName}({this.SpanWriterVariableName}, {this.SpanVariableName}, {this.ValueVariableName}, {byRef}{this.OffsetVariableName}");
 
         if (typeModel.SerializeMethodRequiresContext)

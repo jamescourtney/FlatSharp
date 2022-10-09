@@ -33,16 +33,6 @@
     <ProjectReference Include="..\..\FlatSharp.Runtime\FlatSharp.Runtime.csproj" />
     <ProjectReference Include="..\..\FlatSharp\FlatSharp.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Remove="Grpc\Grpc.fbs.generated.cs" />
-    <Compile Include="Grpc\Grpc.fbs.generated.cs" />
-    <Compile Remove="ValueStructs\ValueStructs.fbs.generated.cs" />
-    <Compile Include="ValueStructs\ValueStructs.fbs.generated.cs" />
-    <Compile Remove="Documentation\Documentation.fbs.generated.cs" />
-    <Compile Include="Documentation\Documentation.fbs.generated.cs" />
-    <Compile Remove="Unions\Unions.fbs.generated.cs" />
-    <Compile Include="Unions\Unions.fbs.generated.cs" />
-  </ItemGroup>
 
   <Target Name="FBS" BeforeTargets="CoreCompile">
     <PropertyGroup>
@@ -54,6 +44,6 @@
       <InputFile Include="Documentation\Documentation.fbs" />
       <InputFile Include="Unions\Unions.fbs" />
     </ItemGroup>
-    <Exec Command="dotnet $(FlatSharpCompilerDll) --nullable-warnings true -i %(InputFile.Identity) -o %(InputFile.RelativeDir)" />
+    <Exec Command="dotnet $(FlatSharpCompilerDll) --nullable-warnings true -i @(InputFile) -o ." />
   </Target>
 </Project>

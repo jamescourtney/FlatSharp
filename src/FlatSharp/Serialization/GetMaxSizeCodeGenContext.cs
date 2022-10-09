@@ -77,7 +77,7 @@ public record GetMaxSizeCodeGenContext
     {
         ITypeModel typeModel = this.TypeModelContainer.CreateTypeModel(type);
 
-        var parts = this.MethodNameResolver.ResolveGetMaxSize(type);
+        var parts = this.MethodNameResolver.ResolveGetMaxSize(typeModel);
         StringBuilder sb = new($"{parts.@namespace}.{parts.className}.{parts.methodName}({this.ValueVariableName}");
 
         if (typeModel.TableFieldContextRequirements.HasFlag(TableFieldContextRequirements.GetMaxSize))

@@ -89,15 +89,19 @@ public class FlatSharpCompiler
 
                     List<byte[]> bfbs = GetBfbs(options);
 
-                    byte[] hashBytes = new byte[32];
                     using (var hash = SHA256.Create())
                     {
+                        byte[] hashBytes = new byte[32];
                         foreach (var schema in bfbs)
                         {
-                            hash.TransformBlock(schema, 0, schema.Length, hashBytes, 0);
+                            var tempHash = hash.ComputeHash(schema);
+                            for (int i = 0; i < 32; ++i)
+                            {
+                                hashBytes[i] ^= tempHash[i];
+                            }
                         }
 
-                        inputHash += "." + Convert.ToBase64String(hash.TransformFinalBlock(new byte[0], 0, 0));
+                        inputHash += "." + Convert.ToBase64String(hashBytes);
                     }
 
                     if (File.Exists(outputFullPath))

@@ -159,7 +159,7 @@ $@"
             parts.Add(this.ImplementHelperClass(this.typeModelContainer.CreateTypeModel(type), resolver));
         }
 
-        var serializerParts = resolver.ResolveGeneratedSerializerClassName(typeof(TRoot));
+        var serializerParts = resolver.ResolveGeneratedSerializerClassName(this.typeModelContainer.CreateTypeModel(typeof(TRoot)));
         string fullName = $"{serializerParts.@namespace}.{serializerParts.name}";
         return (string.Join("\r\n\r\n", parts), fullName);
     }
@@ -391,10 +391,11 @@ $@"
 
     private (string body, string fullName) ImplementInterfaceMethod(Type rootType, IMethodNameResolver resolver)
     {
+        ITypeModel typeModel = this.typeModelContainer.CreateTypeModel(rootType);
         List<string> bodyParts = new();
 
         {
-            var parts = resolver.ResolveSerialize(rootType);
+            var parts = resolver.ResolveSerialize(typeModel);
             string methodText =
 $@"
                 public void Write<TSpanWriter>(TSpanWriter writer, Span<byte> target, {CSharpHelpers.GetGlobalCompilableTypeName(rootType)} root, int offset, SerializationContext context)
@@ -407,7 +408,7 @@ $@"
         }
 
         {
-            var parts = resolver.ResolveGetMaxSize(rootType);
+            var parts = resolver.ResolveGetMaxSize(typeModel);
             string methodText =
 $@"
                 public int GetMaxSize({CSharpHelpers.GetGlobalCompilableTypeName(rootType)} root)
@@ -428,7 +429,7 @@ $@"
 
         foreach (var pair in pairs)
         {
-            var parts = resolver.ResolveParse(pair.Item2, rootType);
+            var parts = resolver.ResolveParse(pair.Item2, typeModel);
             string methodText =
 $@"
                 public {CSharpHelpers.GetGlobalCompilableTypeName(rootType)} {pair.Item1}<TInputBuffer>(TInputBuffer buffer, in {typeof(GeneratedSerializerParseArguments).GetGlobalCompilableTypeName()} args) 
@@ -442,7 +443,7 @@ $@"
 
         string? compilerVersion = typeof(RoslynSerializerGenerator).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version;
 
-        var resolvedName = resolver.ResolveGeneratedSerializerClassName(rootType);
+        var resolvedName = resolver.ResolveGeneratedSerializerClassName(typeModel);
 
         string code = $@"
         namespace {resolvedName.@namespace}
@@ -567,17 +568,31 @@ $@"
             methods.Add(writeMethod.ClassDefinition ?? string.Empty);
         }
 
-        foreach (var option in DistinctDeserializationOptions)
+        if (typeModel.IsParsingInvariant)
         {
-            var adjustedOptions = this.options with { DeserializationOption = option };
-
-            var parseContext = new ParserCodeGenContext("buffer", "offset", "remainingDepth", "TInputBuffer", isOffsetByRef, parseFieldContextVariableName, resolver, adjustedOptions, this.typeModelContainer, allContextsMap);
+            var parseContext = new ParserCodeGenContext("buffer", "offset", "remainingDepth", "TInputBuffer", isOffsetByRef, parseFieldContextVariableName, resolver, options, this.typeModelContainer, allContextsMap);
             var parseMethod = typeModel.CreateParseMethodBody(parseContext);
-
+            
             if (parseMethod is not null)
             {
                 methods.Add(this.GenerateParseMethod(requiresDepthTracking, typeModel, parseMethod, parseContext));
                 methods.Add(parseMethod.ClassDefinition ?? string.Empty);
+            }
+        }
+        else
+        {
+            foreach (var option in DistinctDeserializationOptions)
+            {
+                var adjustedOptions = this.options with { DeserializationOption = option };
+
+                var parseContext = new ParserCodeGenContext("buffer", "offset", "remainingDepth", "TInputBuffer", isOffsetByRef, parseFieldContextVariableName, resolver, adjustedOptions, this.typeModelContainer, allContextsMap);
+                var parseMethod = typeModel.CreateParseMethodBody(parseContext);
+
+                if (parseMethod is not null)
+                {
+                    methods.Add(this.GenerateParseMethod(requiresDepthTracking, typeModel, parseMethod, parseContext));
+                    methods.Add(parseMethod.ClassDefinition ?? string.Empty);
+                }
             }
         }
 
@@ -592,7 +607,7 @@ $@"
             return string.Empty;
         }
 
-        (string ns, string name) = resolver.ResolveHelperClassName(typeModel.ClrType);
+        (string ns, string name) = resolver.ResolveHelperClassName(typeModel);
 
         string serializerBody = string.Empty;
         if (typeModel.SchemaType == FlatBufferSchemaType.Table)
@@ -673,7 +688,7 @@ $@"
         string declaration =
 $@"
             {method.GetMethodImplAttribute()}
-            internal static int {context.MethodNameResolver.ResolveGetMaxSize(typeModel.ClrType).methodName}({typeModel.GetGlobalCompilableTypeName()} {context.ValueVariableName}{tableFieldContextParameter})
+            internal static int {context.MethodNameResolver.ResolveGetMaxSize(typeModel).methodName}({typeModel.GetGlobalCompilableTypeName()} {context.ValueVariableName}{tableFieldContextParameter})
             {{
                 {method.MethodBody}
             }}";
@@ -704,7 +719,7 @@ $@"
         string fullText =
         $@"
             {method.GetMethodImplAttribute()}
-            internal static {clrType} {context.MethodNameResolver.ResolveParse(context.Options.DeserializationOption, typeModel.ClrType).methodName}<TInputBuffer>(
+            internal static {clrType} {context.MethodNameResolver.ResolveParse(context.Options.DeserializationOption, typeModel).methodName}<TInputBuffer>(
                 TInputBuffer {context.InputBufferVariableName}, 
                 {GetVTableOffsetVariableType(typeModel.PhysicalLayout.Length)} {context.OffsetVariableName},
                 short {context.RemainingDepthVariableName}
@@ -735,7 +750,7 @@ $@"
         string fullText =
 $@"
             {method.GetMethodImplAttribute()}
-            internal static void {context.MethodNameResolver.ResolveSerialize(typeModel.ClrType).methodName}<TSpanWriter>(
+            internal static void {context.MethodNameResolver.ResolveSerialize(typeModel).methodName}<TSpanWriter>(
                 TSpanWriter {context.SpanWriterVariableName}, 
                 Span<byte> {context.SpanVariableName}, 
                 {CSharpHelpers.GetGlobalCompilableTypeName(typeModel.ClrType)} {context.ValueVariableName}, 

@@ -67,7 +67,15 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
         Func<ISharedStringWriter>? writerFactory = settings.SharedStringWriterFactory;
         if (writerFactory is not null)
         {
-            this.sharedStringWriter = new ThreadLocal<ISharedStringWriter>(writerFactory);
+            ISharedStringWriter writer = writerFactory();
+            if (writer is not null)
+            {
+                this.sharedStringWriter = new ThreadLocal<ISharedStringWriter>(writerFactory);
+            }
+            else
+            {
+                this.sharedStringWriter = null;
+            }
         }
 
         if (settings.ObjectDepthLimit is not null)

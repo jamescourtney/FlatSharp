@@ -19,6 +19,7 @@ using System.Runtime.ExceptionServices;
 using FlatSharp.Attributes;
 using FlatSharp.CodeGen;
 using FlatSharp.Compiler.Schema;
+using FlatSharp.TypeModel;
 
 namespace FlatSharp.Compiler.SchemaModel;
 
@@ -59,7 +60,8 @@ public class TableSchemaModel : BaseReferenceTypeSchemaModel
         if (this.Attributes.DeserializationOption is not null && context.CompilePass >= CodeWritingPass.SerializerAndRpcGeneration)
         {
             DefaultMethodNameResolver resolver = new();
-            (string ns, string name) = resolver.ResolveGeneratedSerializerClassName(context.PreviousAssembly!.GetType(this.FullName)!);
+            ITypeModel model = context.TypeModelContainer.CreateTypeModel(context.PreviousAssembly!.GetType(this.FullName)!);
+            (string ns, string name) = resolver.ResolveGeneratedSerializerClassName(model);
 
             string optionTypeName = typeof(FlatBufferDeserializationOption).GetGlobalCompilableTypeName();
 

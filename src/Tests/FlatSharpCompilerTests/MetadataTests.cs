@@ -79,6 +79,7 @@ public class MetadataTests
         Assert.Contains("OtherTable", prop.PropertyType.GetGenericArguments()[1].FullName);
     }
 
+    /*
     [Fact]
     public void PrecompiledSerializer()
     {
@@ -92,6 +93,7 @@ public class MetadataTests
         var (prop, type, attribute) = this.CompileAndGetProperty($"{MetadataKeys.SerializerKind}:\"Lazy\"", "string", "");
         Assert.Equal(FlatBufferDeserializationOption.Lazy, type.GetNestedType("GeneratedSerializer", BindingFlags.NonPublic).GetCustomAttribute<FlatSharpGeneratedSerializerAttribute>().DeserializationOption);
     }
+    */
 
     private (PropertyInfo, Type, FlatBufferItemAttribute) CompileAndGetProperty(string typeMetadata, string fieldType, string fieldMetadata)
     {
