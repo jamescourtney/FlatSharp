@@ -27,7 +27,7 @@ public static class ISerializerExtensions
     /// Wraps the given generated serializer as an ISerializer.
     /// </summary>
     [ExcludeFromCodeCoverage]
-    public static ISerializer<T> AsISerializer<T>(this IGeneratedSerializer<T> generatedSerializer, FlatBufferDeserializationOption option = FlatBufferDeserializationOption.Default) where T : class
+    public static ISerializer<T> AsISerializer<T>(this IGeneratedSerializer<T> generatedSerializer, FlatBufferDeserializationOption option) where T : class
     {
         return new GeneratedSerializerWrapper<T>(option, generatedSerializer, null, () => null, null);
     }

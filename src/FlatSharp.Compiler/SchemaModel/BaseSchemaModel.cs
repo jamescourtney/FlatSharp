@@ -50,14 +50,7 @@ public abstract class BaseSchemaModel
 
     public string FullName { get; }
 
-    public abstract string DeclaringFile { get; }
-
     public abstract FlatBufferSchemaElementType ElementType { get; }
-
-    public virtual bool TryGetTypeModel(CompileContext context, [NotNullWhen(true)] out ITypeModel? typeModel)
-    {
-        return context.TypeModelContainer.TryCreateTypeModel(context.PreviousAssembly.GetType(this.FullName), out typeModel);
-    }
 
     private void Validate()
     {
@@ -67,34 +60,22 @@ public abstract class BaseSchemaModel
 
     public void WriteCode(CodeWriter writer, CompileContext context)
     {
-        if (context.CompilePass < CodeWritingPass.LastPass || context.RootFile == this.DeclaringFile)
+        this.Validate();
+
+        writer.AppendLine($"namespace {this.Namespace}");
+        using (writer.WithBlock())
         {
-            this.Validate();
-
-            if (context.CompilePass >= CodeWritingPass.SerializerAndRpcGeneration)
-            {
-                this.WriteHelperClass(writer, context);
-            }
-
-            writer.AppendLine($"namespace {this.Namespace}");
-            using (writer.WithBlock())
-            {
-                this.OnWriteCode(writer, context);
-            }
+            this.OnWriteCode(writer, context);
         }
     }
 
-    protected virtual void WriteHelperClass(CodeWriter writer, CompileContext context)
+    public virtual void TraverseTypeModel(CompileContext context, HashSet<Type> seenTypes)
     {
-        // Emit serializers and whatnot if we are on second pass.
-        Type? type = context.PreviousAssembly?.GetType(this.FullName);
-        FlatSharpInternal.Assert(type is not null, $"Flatsharp failed to find expected type '{this.FullName}' in assembly.");
+        Type? thisType = context.PreviousAssembly?.GetType(this.FullName);
+        FlatSharpInternal.Assert(thisType is not null, "Expecting to find the type...");
 
-        var options = new FlatBufferSerializerOptions() { ConvertProtectedInternalToProtected = false };
-        var generator = new RoslynSerializerGenerator(options, context.TypeModelContainer);
-        string helper = generator.ImplementHelperClass(context.TypeModelContainer.CreateTypeModel(type), new DefaultMethodNameResolver());
-
-        writer.AppendLine(helper);
+        ITypeModel typeModel = context.TypeModelContainer.CreateTypeModel(thisType);
+        typeModel.TraverseObjectGraph(seenTypes);
     }
 
     protected abstract void OnWriteCode(CodeWriter writer, CompileContext context);

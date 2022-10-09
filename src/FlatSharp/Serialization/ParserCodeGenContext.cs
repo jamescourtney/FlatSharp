@@ -46,7 +46,7 @@ public class DefaultMethodNameResolver : IMethodNameResolver
         return (this.GetNamespace(type), GeneratedSerializer);
     }
 
-public (string @namespace, string name) ResolveHelperClassName(Type type)
+    public (string @namespace, string name) ResolveHelperClassName(Type type)
     {
         return (this.GetNamespace(type), HelperClassName);
     }
@@ -73,18 +73,16 @@ public (string @namespace, string name) ResolveHelperClassName(Type type)
 
     private string GetNamespace(Type type)
     {
-        if (this.namespaceMapping.TryGetValue(type, out string? ns))
+        if (!this.namespaceMapping.TryGetValue(type, out string? ns))
         {
-            return ns;
+            byte[] data = Encoding.UTF8.GetBytes(type.GetGlobalCompilableTypeName());
+            using var sha = SHA256.Create();
+
+            byte[] hash = sha.ComputeHash(data);
+
+            ns = $"{FlatSharpGenerated}.N{BitConverter.ToString(hash).Replace("-", string.Empty)}";
+            this.namespaceMapping[type] = ns;
         }
-
-        byte[] data = Encoding.UTF8.GetBytes(type.FullName!);
-        using var sha = SHA256.Create();
-
-        byte[] hash = sha.ComputeHash(data);
-
-        ns = $"{FlatSharpGenerated}.N{BitConverter.ToString(hash).Replace("-", string.Empty)}";
-        this.namespaceMapping[type] = ns;
 
         return ns;
     }

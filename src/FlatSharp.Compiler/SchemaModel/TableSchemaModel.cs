@@ -58,22 +58,17 @@ public class TableSchemaModel : BaseReferenceTypeSchemaModel
     {
         if (this.Attributes.DeserializationOption is not null && context.CompilePass >= CodeWritingPass.SerializerAndRpcGeneration)
         {
-            // generate the serializer.
-            string serializer = this.GenerateSerializerForType(
-                context,
-                this.Attributes.DeserializationOption.Value);
+            DefaultMethodNameResolver resolver = new();
+            (string ns, string name) = resolver.ResolveGeneratedSerializerClassName(context.PreviousAssembly!.GetType(this.FullName)!);
 
-            writer.AppendLine($"public static ISerializer<{this.FullName}> Serializer {{ get; }} = new {RoslynSerializerGenerator.GeneratedSerializerClassName}().AsISerializer();");
+            string optionTypeName = typeof(FlatBufferDeserializationOption).GetGlobalCompilableTypeName();
+
+            writer.AppendLine($"public static ISerializer<{this.FullName}> Serializer {{ get; }} = new {ns}.{name}().AsISerializer({optionTypeName}.{this.Attributes.DeserializationOption.Value});");
 
             writer.AppendLine();
 
             writer.AppendLine($"ISerializer {nameof(IFlatBufferSerializable)}.{nameof(IFlatBufferSerializable.Serializer)} => Serializer;");
             writer.AppendLine($"ISerializer<{this.FullName}> {nameof(IFlatBufferSerializable)}<{this.FullName}>.{nameof(IFlatBufferSerializable.Serializer)} => Serializer;");
-
-            writer.AppendLine();
-            writer.AppendLine($"#region Serializer for {this.FullName}");
-            writer.AppendLine(serializer);
-            writer.AppendLine($"#endregion");
         }
     }
 
@@ -105,22 +100,5 @@ public class TableSchemaModel : BaseReferenceTypeSchemaModel
     protected override void EmitDefaultConstructorFieldInitialization(PropertyFieldModel model, CodeWriter writer, CompileContext context)
     {
         writer.AppendLine($"this.{model.Field.Name} = {model.GetDefaultValue()};");
-    }
-
-    private string GenerateSerializerForType(
-        CompileContext context,
-        FlatBufferDeserializationOption deserializationOption)
-    {
-        Type? type = context.PreviousAssembly?.GetType(this.FullName);
-        FlatSharpInternal.Assert(type is not null, $"Flatsharp failed to find expected type '{this.FullName}' in assembly.");
-
-        var options = new FlatBufferSerializerOptions(deserializationOption) { ConvertProtectedInternalToProtected = false };
-        var generator = new RoslynSerializerGenerator(options, context.TypeModelContainer);
-        var resolver = new DefaultMethodNameResolver();
-
-        string helper = generator.ImplementHelperClass(context.TypeModelContainer.CreateTypeModel(type), resolver);
-
-        // todo
-        return String.Empty;
     }
 }

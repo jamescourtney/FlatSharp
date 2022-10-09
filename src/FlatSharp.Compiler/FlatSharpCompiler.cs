@@ -34,6 +34,9 @@ public class FlatSharpCompiler
 
     private static string AssemblyVersion => typeof(FlatSharpCompiler).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "unknown";
 
+    private static readonly FlatBufferSerializer ImmutableSerializer = new FlatBufferSerializer(FlatBufferDeserializationOption.Greedy);
+    private static readonly FlatBufferSerializer MutableSerializer = new FlatBufferSerializer(FlatBufferDeserializationOption.GreedyMutable);
+
     [ExcludeFromCodeCoverage]
     static int Main(string[] args)
     {
@@ -59,7 +62,7 @@ public class FlatSharpCompiler
     [ExcludeFromCodeCoverage]
     private static int RunCompiler(CompilerOptions options)
     {
-        if (string.IsNullOrEmpty(options.InputFile))
+        if (options.InputFiles?.Any() != true)
         {
             Console.Error.WriteLine($"FlatSharp Compiler: No input file specified.");
             return -1;
@@ -72,8 +75,7 @@ public class FlatSharpCompiler
         }
 
         // Read existing file to see if we even need to do any work.
-        string fbsFileName = Path.GetFileName(options.InputFile);
-        string outputFileName = fbsFileName + ".generated.cs";
+        string outputFileName = "FlatSharp.generated.cs";
         string outputFullPath = Path.Combine(options.OutputDirectory, outputFileName);
 
         try
@@ -85,11 +87,17 @@ public class FlatSharpCompiler
                 {
                     string inputHash = AssemblyVersion;
 
-                    byte[] bfbs = GetBfbs(options);
+                    List<byte[]> bfbs = GetBfbs(options);
 
+                    byte[] hashBytes = new byte[32];
                     using (var hash = SHA256.Create())
                     {
-                        inputHash += "." + Convert.ToBase64String(hash.ComputeHash(bfbs));
+                        foreach (var schema in bfbs)
+                        {
+                            hash.TransformBlock(schema, 0, schema.Length, hashBytes, 0);
+                        }
+
+                        inputHash += "." + Convert.ToBase64String(hash.TransformFinalBlock(new byte[0], 0, 0));
                     }
 
                     if (File.Exists(outputFullPath))
@@ -158,9 +166,9 @@ public class FlatSharpCompiler
 
             return -1;
         }
-        catch (FileNotFoundException)
+        catch (FileNotFoundException fex)
         {
-            Console.Error.WriteLine($"File '{options.InputFile}' was not found");
+            Console.Error.WriteLine($"File '{fex.FileName}' was not found");
             return -1;
         }
         catch (IndexOutOfRangeException)
@@ -182,15 +190,16 @@ public class FlatSharpCompiler
         CompilerOptions options,
         IEnumerable<Assembly>? additionalReferences = null)
     {
-        string fbsFile = Path.GetTempFileName() + ".fbs";
+        string temp = Path.GetTempFileName() + ".fbs";
+        File.WriteAllText(temp, fbsSchema);
+
         try
         {
-            File.WriteAllText(fbsFile, fbsSchema);
-            return CompileAndLoadAssemblyWithCode(new FileInfo(fbsFile), options, additionalReferences);
+            return CompileAndLoadAssemblyWithCode(new[] { new FileInfo(temp) }, options, additionalReferences);
         }
         finally
         {
-            File.Delete(fbsFile);
+            File.Delete(temp);
         }
     }
 
@@ -209,13 +218,12 @@ public class FlatSharpCompiler
     }
 
     // Test hook
-    internal static Assembly[] CompileAndLoadAssemblies(
+    internal static Assembly CompileAndLoadAssembly(
         IEnumerable<(string FileName, string Content)> fbsSchemas,
         CompilerOptions options,
         IEnumerable<Assembly>? additionalReferences = null)
     {
         Assembly[] additionalRefs = additionalReferences?.ToArray() ?? Array.Empty<Assembly>();
-        var assemblies = new List<Assembly>();
 
         var tempDir = Path.GetFileNameWithoutExtension(Path.GetTempFileName());
 
@@ -241,24 +249,19 @@ public class FlatSharpCompiler
                 fbsFiles.Add(fbsFile);
             }
 
-            foreach (var fbsFile in fbsFiles)
-            {
-                var (asm, _) = CompileAndLoadAssemblyWithCode(fbsFile, options, additionalRefs);
-                assemblies.Add(asm);
-                additionalRefs = additionalRefs.Append(asm).ToArray();
-            }
+            var (asm, _) = CompileAndLoadAssemblyWithCode(fbsFiles, options, additionalRefs);
+
+            return asm;
         }
         finally
         {
             Directory.Delete(tempDir, true);
         }
-
-        return assemblies.ToArray();
     }
 
     // Test hook
     private static (Assembly, string) CompileAndLoadAssemblyWithCode(
-        FileInfo fbsFile,
+        IEnumerable<FileInfo> fbsFiles,
         CompilerOptions options,
         IEnumerable<Assembly>? additionalReferences = null)
     {
@@ -266,9 +269,9 @@ public class FlatSharpCompiler
         {
             Assembly[] additionalRefs = additionalReferences?.ToArray() ?? Array.Empty<Assembly>();
 
-            options.InputFile = fbsFile.FullName;
+            options.InputFiles = fbsFiles.Select(x => x.FullName);
 
-            byte[] bfbs = GetBfbs(options);
+            List<byte[]> bfbs = GetBfbs(options);
             CreateCSharp(bfbs, "hash", options, out string cSharp);
 
             var (assembly, formattedText, _) = RoslynSerializerGenerator.CompileAssembly(cSharp, true, additionalRefs);
@@ -281,7 +284,7 @@ public class FlatSharpCompiler
         }
     }
 
-    private static byte[] GetBfbs(CompilerOptions options)
+    private static List<byte[]> GetBfbs(CompilerOptions options)
     {
         string flatcPath;
 
@@ -324,7 +327,6 @@ public class FlatSharpCompiler
         string outputDir = Path.Combine(temp, dirName);
 
         Directory.CreateDirectory(outputDir);
-        FileInfo info = new FileInfo(options.InputFile);
 
         using var p = new Process
         {
@@ -344,8 +346,6 @@ public class FlatSharpCompiler
             "--schema",
             "--bfbs-comments",
             "--bfbs-builtins",
-            "--bfbs-filenames",
-            info.DirectoryName!, // Files always have a directory name, dammit!
             "--no-warnings",
             "-o",
             outputDir,
@@ -364,7 +364,10 @@ public class FlatSharpCompiler
             }
         }
 
-        args.Add(info.FullName);
+        foreach (var item in options.InputFiles)
+        {
+            args.Add(new FileInfo(item).FullName);
+        }
 
         foreach (var arg in args)
         {
@@ -395,8 +398,13 @@ public class FlatSharpCompiler
 
             if (p.ExitCode == 0)
             {
-                string output = Directory.GetFiles(outputDir, "*.bfbs").Single();
-                return File.ReadAllBytes(output);
+                List<byte[]> bfbs = new();
+                foreach (string output in Directory.GetFiles(outputDir, "*.bfbs"))
+                {
+                    bfbs.Add(File.ReadAllBytes(output));
+                }
+
+                return bfbs;
             }
             else
             {
@@ -416,7 +424,7 @@ public class FlatSharpCompiler
     }
 
     private static void CreateCSharp(
-        byte[] bfbs,
+        List<byte[]> bfbs,
         string inputHash,
         CompilerOptions options,
         out string csharp)
@@ -439,8 +447,11 @@ public class FlatSharpCompiler
                 CodeWritingPass.SerializerAndRpcGeneration,
             };
 
-            var schema = ParseSchema(bfbs, options);
-            var rootModel = schema.ToRootModel();
+            RootModel rootModel = new(Schema.AdvancedFeatures.None);
+            foreach (var s in bfbs)
+            {
+                rootModel.UnionWith(ParseSchema(s, options).ToRootModel());
+            }
 
             ErrorContext.Current.ThrowIfHasErrors();
 
@@ -466,9 +477,7 @@ public class FlatSharpCompiler
                     {
                         CompilePass = step,
                         Options = localOptions,
-                        RootFile = $"//{Path.GetFileName(options.InputFile)}",
                         InputHash = inputHash,
-                        Root = schema,
                         PreviousAssembly = assembly,
                         TypeModelContainer = TypeModelContainer.CreateDefault(),
                     });
@@ -490,7 +499,7 @@ public class FlatSharpCompiler
     private static Schema.Schema ParseSchema(byte[] bfbs, CompilerOptions options)
     {
         // Mutable
-        var schema = FlatBufferSerializer.Default.Parse<Schema.Schema>(bfbs);
+        var schema = MutableSerializer.Parse<Schema.Schema>(bfbs);
 
         // Modify
         if (options.NormalizeFieldNames == true)
@@ -509,18 +518,19 @@ public class FlatSharpCompiler
                     };
 
                     if (!preserve)
+                    {
                         field.Name = NormalizeFieldName(field.Name);
+                    }
                 }
             }
         }
 
         // Serialize
-        byte[] temp = new byte[FlatBufferSerializer.Default.GetMaxSize(schema)];
-        FlatBufferSerializer.Default.Serialize(schema, temp);
+        byte[] temp = new byte[ImmutableSerializer.GetMaxSize(schema)];
+        ImmutableSerializer.Serialize(schema, temp);
 
         // Immutable.
-        var serializer = new FlatBufferSerializer(FlatBufferDeserializationOption.Greedy);
-        return serializer.Parse<Schema.Schema>(temp);
+        return ImmutableSerializer.Parse<Schema.Schema>(temp);
     }
 
     private static string NormalizeFieldName(string name)

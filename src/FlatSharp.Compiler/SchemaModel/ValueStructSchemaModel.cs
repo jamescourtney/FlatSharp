@@ -91,8 +91,6 @@ public class ValueStructSchemaModel : BaseSchemaModel
 
     public override FlatBufferSchemaElementType ElementType => FlatBufferSchemaElementType.ValueStruct;
 
-    public override string DeclaringFile => this.@struct.DeclarationFile;
-
     protected override void OnValidate()
     {
         // TODO   

@@ -80,8 +80,6 @@ public record PropertyFieldModel
 
     public IFlatSharpAttributes Attributes { get; init; }
 
-    public bool DefaultOptional { get; init; }
-
     public string FieldName { get; init; }
 
     public int Index { get; init; }

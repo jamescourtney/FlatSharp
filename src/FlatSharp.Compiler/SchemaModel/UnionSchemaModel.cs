@@ -43,8 +43,6 @@ public class UnionSchemaModel : BaseSchemaModel
         return true;
     }
 
-    public override string DeclaringFile => this.union.DeclarationFile;
-
     public override FlatBufferSchemaElementType ElementType => FlatBufferSchemaElementType.Union;
 
     protected override void OnWriteCode(CodeWriter writer, CompileContext context)

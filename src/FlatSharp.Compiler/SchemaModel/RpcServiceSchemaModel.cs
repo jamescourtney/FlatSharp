@@ -59,9 +59,7 @@ public class RpcServiceSchemaModel : BaseSchemaModel
 
     public override FlatBufferSchemaElementType ElementType => FlatBufferSchemaElementType.RpcService;
 
-    public override string DeclaringFile => this.service.DeclaringFile;
-
-    protected override void WriteHelperClass(CodeWriter writer, CompileContext context)
+    public override void TraverseTypeModel(CompileContext context, HashSet<Type> seenTypes)
     {
     }
 

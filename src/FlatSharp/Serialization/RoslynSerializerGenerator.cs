@@ -38,8 +38,6 @@ internal class RoslynSerializerGenerator
 {
     private static IReadOnlyList<FlatBufferDeserializationOption> DistinctDeserializationOptions = Enum.GetValues(typeof(FlatBufferDeserializationOption)).Cast<FlatBufferDeserializationOption>().Distinct().ToList();
 
-    public const string GeneratedSerializerClassName = "GeneratedSerializer";
-
     private static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(LanguageVersion.CSharp8);
     private static readonly ConcurrentDictionary<string, (Assembly, byte[])> AssemblyNameReferenceMapping = new ConcurrentDictionary<string, (Assembly, byte[])>();
 
@@ -142,7 +140,7 @@ $@"
             assemblyData);
     }
 
-    internal (string text, string serializerTypeName) GenerateCSharpRecursive<TRoot>(string visibility = "public")
+    internal (string text, string serializerTypeName) GenerateCSharpRecursive<TRoot>()
     {
         ITypeModel rootModel = this.typeModelContainer.CreateTypeModel(typeof(TRoot));
         if (rootModel.SchemaType != FlatBufferSchemaType.Table)
@@ -161,9 +159,9 @@ $@"
             parts.Add(this.ImplementHelperClass(this.typeModelContainer.CreateTypeModel(type), resolver));
         }
 
-        var (serializerBody, serializerFullName) = this.ImplementInterfaceMethod(typeof(TRoot), resolver);
-        parts.Add(serializerBody);
-        return (string.Join("\r\n\r\n", parts), serializerFullName);
+        var serializerParts = resolver.ResolveGeneratedSerializerClassName(typeof(TRoot));
+        string fullName = $"{serializerParts.@namespace}.{serializerParts.name}";
+        return (string.Join("\r\n\r\n", parts), fullName);
     }
 
     internal static string GetFormattedText(string cSharpCode)
@@ -557,11 +555,17 @@ $@"
 
         List<string> methods = new();
 
-        methods.Add(this.GenerateGetMaxSizeMethod(typeModel, maxSizeMethod, maxSizeContext));
-        methods.Add(maxSizeMethod.ClassDefinition ?? string.Empty);
+        if (maxSizeMethod is not null)
+        {
+            methods.Add(this.GenerateGetMaxSizeMethod(typeModel, maxSizeMethod, maxSizeContext));
+            methods.Add(maxSizeMethod.ClassDefinition ?? string.Empty);
+        }
 
-        methods.Add(this.GenerateSerializeMethod(typeModel, writeMethod, serializeContext));
-        methods.Add(writeMethod.ClassDefinition ?? string.Empty);
+        if (writeMethod is not null)
+        {
+            methods.Add(this.GenerateSerializeMethod(typeModel, writeMethod, serializeContext));
+            methods.Add(writeMethod.ClassDefinition ?? string.Empty);
+        }
 
         foreach (var option in DistinctDeserializationOptions)
         {
@@ -569,13 +573,33 @@ $@"
 
             var parseContext = new ParserCodeGenContext("buffer", "offset", "remainingDepth", "TInputBuffer", isOffsetByRef, parseFieldContextVariableName, resolver, adjustedOptions, this.typeModelContainer, allContextsMap);
             var parseMethod = typeModel.CreateParseMethodBody(parseContext);
-            methods.Add(this.GenerateParseMethod(requiresDepthTracking, typeModel, parseMethod, parseContext));
-            methods.Add(parseMethod.ClassDefinition ?? string.Empty);
+
+            if (parseMethod is not null)
+            {
+                methods.Add(this.GenerateParseMethod(requiresDepthTracking, typeModel, parseMethod, parseContext));
+                methods.Add(parseMethod.ClassDefinition ?? string.Empty);
+            }
         }
 
-        methods.Add(typeModel.CreateExtraClasses() ?? string.Empty);
+        string? extraClasses = typeModel.CreateExtraClasses();
+        if (!string.IsNullOrEmpty(extraClasses))
+        {
+            methods.Add(extraClasses);
+        }
+
+        if (methods.Count == 0)
+        {
+            return string.Empty;
+        }
 
         (string ns, string name) = resolver.ResolveHelperClassName(typeModel.ClrType);
+
+        string serializerBody = string.Empty;
+        if (typeModel.SchemaType == FlatBufferSchemaType.Table)
+        {
+            // Generate a serializer as well.
+            (serializerBody, _) = ImplementInterfaceMethod(typeModel.ClrType, resolver);
+        }
 
         string @class =
 $@"
@@ -586,6 +610,8 @@ $@"
                     {string.Join("\r\n", methods)}
                 }}
             }}
+
+            {serializerBody}
 ";
 
         return @class;
