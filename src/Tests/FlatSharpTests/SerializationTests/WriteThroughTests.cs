@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
 
 using FlatSharp.CodeGen;
@@ -390,6 +391,19 @@ public class WriteThroughTests
             parsed = serializer.Parse<WriteThroughTable_Required<ValueStruct>>(result);
             Assert.Equal(4, parsed.Item.Value);
         }
+
+        [Theory]
+        [InlineData(FlatBufferDeserializationOption.Greedy)]
+        [InlineData(FlatBufferDeserializationOption.GreedyMutable)]
+        public void Failure_Greedy(FlatBufferDeserializationOption option)
+        {
+            FlatBufferSerializer serializer = new FlatBufferSerializer(option);
+            var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() => serializer.Compile<WriteThroughTable_Required<ValueStruct>>());
+
+            Assert.Equal(
+                "Property 'Item' of Table 'FlatSharpTests.WriteThroughTests.WriteThroughTable_Required<FlatSharpTests.WriteThroughTests.ValueStruct>' specifies the WriteThrough option. However, WriteThrough is only supported when using deserialization option 'Progressive' or 'Lazy'.",
+                ex.Message);
+        }
     }
 
     public class Vector
@@ -423,38 +437,44 @@ public class WriteThroughTests
             Assert.Equal(4, parsed.Item[0].Value);
         }
 
-        // Tests combinations that appear to work but don't do anything.
         [Theory]
-        [InlineData(FlatBufferDeserializationOption.Greedy, true)]
-        [InlineData(FlatBufferDeserializationOption.GreedyMutable, false)]
-        public void GreedyIgnores(FlatBufferDeserializationOption option, bool expectNotMutable)
+        [InlineData(FlatBufferDeserializationOption.Greedy)]
+        [InlineData(FlatBufferDeserializationOption.GreedyMutable)]
+        public void Failures_Array_AtCompile(FlatBufferDeserializationOption option)
+        {
+            FlatBufferSerializer serializer = new FlatBufferSerializer(option);
+            var tableType = typeof(WriteThroughTable_NotRequired<ValueStruct[]>);
+
+            var ex = Assert.Throws<InvalidFlatBufferDefinitionException>(() => serializer.Compile(tableType));
+
+            Assert.Equal(
+                $"Field '{tableType.GetCompilableTypeName()}.Item' declares the WriteThrough option. WriteThrough is only supported for IList vectors.",
+                ex.Message);
+        }
+
+        [Theory]
+        [InlineData(FlatBufferDeserializationOption.Greedy)]
+        [InlineData(FlatBufferDeserializationOption.GreedyMutable)]
+        public void Failures_IList_AtRuntime(FlatBufferDeserializationOption option)
         {
             FlatBufferSerializer serializer = new FlatBufferSerializer(option);
 
-            WriteThroughTable_NotRequired<IList<ValueStruct>> table = new()
+            var item = new WriteThroughTable_NotRequired<IList<ValueStruct>>
             {
-                Item = new List<ValueStruct>
+                Item = new List<ValueStruct>()
                 {
-                    new() { Value = 1 }
+                    new ValueStruct { Value = 1 },
+                    new ValueStruct { Value = 2 },
+                    new ValueStruct { Value = 3 },
                 }
             };
 
             byte[] buffer = new byte[1024];
-            serializer.Serialize<WriteThroughTable_NotRequired<IList<ValueStruct>>>(table, buffer);
+            serializer.Serialize(item, buffer);
             var parsed = serializer.Parse<WriteThroughTable_NotRequired<IList<ValueStruct>>>(buffer);
 
-            Action callback = () => parsed.Item[0] = new ValueStruct { Value = 4 };
-            if (expectNotMutable)
-            {
-                Assert.Throws<NotSupportedException>(callback);
-            }
-            else
-            {
-                callback();
-            }
-
-            parsed = serializer.Parse<WriteThroughTable_NotRequired<IList<ValueStruct>>>(buffer);
-            Assert.Equal(1, parsed.Item[0].Value);
+            Assert.IsType<ReadOnlyCollection<ValueStruct>>(parsed.Item);
+            Assert.Throws<NotSupportedException>(() => parsed.Item[0] = new ValueStruct { Value = 4 });
         }
     }
 

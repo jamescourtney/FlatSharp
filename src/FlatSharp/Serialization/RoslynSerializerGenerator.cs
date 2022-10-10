@@ -518,18 +518,23 @@ $@"
     internal string ImplementHelperClass(ITypeModel typeModel, IMethodNameResolver resolver)
     {
         bool requiresDepthTracking = typeModel.IsDeepEnoughToRequireDepthTracking();
-        List<(ITypeModel, TableFieldContext)> allContexts = typeModel.GetAllTableFieldContexts();
-
-        Dictionary<ITypeModel, List<TableFieldContext>> allContextsMap = new();
-        foreach (var item in allContexts)
+        
+        // Find all table field contexts in the whole graph. This can probably
+        // be cached...
+        Dictionary<ITypeModel, HashSet<TableFieldContext>> allContextsMap = new();
+        foreach (ITypeModel model in this.typeModelContainer.GetEnumerator())
         {
-            if (!allContextsMap.TryGetValue(item.Item1, out List<TableFieldContext>? list))
+            var contexts = model.GetAllTableFieldContexts();
+            foreach (var ctx in contexts)
             {
-                list = new();
-                allContextsMap[item.Item1] = list;
-            }
+                if (!allContextsMap.TryGetValue(ctx.Item1, out HashSet<TableFieldContext>? set))
+                {
+                    set = new();
+                    allContextsMap[ctx.Item1] = set;
+                }
 
-            list.Add(item.Item2);
+                set.Add(ctx.Item2);
+            }
         }
 
         bool isOffsetByRef = typeModel.PhysicalLayout.Length > 1;

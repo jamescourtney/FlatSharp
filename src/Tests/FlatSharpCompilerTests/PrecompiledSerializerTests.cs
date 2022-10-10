@@ -142,19 +142,14 @@ public class PrecompiledSerializerTests
         string schema = $"{MetadataHelpers.AllAttributes} namespace Test; table FooTable ({metadata}) {{ foo:string; bar:string; }}";
         Assembly asm = FlatSharpCompiler.CompileAndLoadAssembly(schema, new());
 
-        /*
         Type type = asm.GetType("Test.FooTable");
         Assert.NotNull(type);
 
-        Type serializerType = type.GetNestedType(RoslynSerializerGenerator.GeneratedSerializerClassName, BindingFlags.NonPublic | BindingFlags.Public);
+        PropertyInfo serializerProp = type.GetProperty("Serializer", BindingFlags.Public | BindingFlags.Static);
+        Assert.NotNull(serializerProp);
 
-        Assert.NotNull(serializerType);
-        Assert.True(serializerType.IsNested);
-        Assert.True(serializerType.IsNestedPrivate);
-
-        var attribute = serializerType.GetCustomAttribute<FlatSharpGeneratedSerializerAttribute>();
-        Assert.NotNull(attribute);
-        Assert.Equal(expectedFlags, attribute.DeserializationOption);*/
+        ISerializer serializer = (ISerializer)serializerProp.GetValue(null);
+        Assert.Equal(expectedFlags, serializer.DeserializationOption);
     }
 }
 

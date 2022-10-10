@@ -30,7 +30,7 @@ public record GetMaxSizeCodeGenContext
         IMethodNameResolver methodNameResolver,
         FlatBufferSerializerOptions options,
         TypeModelContainer typeModelContainer,
-        IReadOnlyDictionary<ITypeModel, List<TableFieldContext>> allFieldContexts)
+        IReadOnlyDictionary<ITypeModel, HashSet<TableFieldContext>> allFieldContexts)
     {
         this.ValueVariableName = valueVariableName;
         this.TableFieldContextVariableName = tableFieldContextVariableName;
@@ -68,7 +68,7 @@ public record GetMaxSizeCodeGenContext
     /// <summary>
     /// All contexts for the entire object graph.
     /// </summary>
-    public IReadOnlyDictionary<ITypeModel, List<TableFieldContext>> AllFieldContexts { get; }
+    public IReadOnlyDictionary<ITypeModel, HashSet<TableFieldContext>> AllFieldContexts { get; }
 
     /// <summary>
     /// Gets a get max size invocation for the given type.

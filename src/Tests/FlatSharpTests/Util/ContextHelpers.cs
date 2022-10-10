@@ -33,7 +33,7 @@ public static class ContextHelpers
             new DefaultMethodNameResolver(),
             options ?? new FlatBufferSerializerOptions(),
             TypeModelContainer.CreateDefault(),
-            new Dictionary<ITypeModel, List<TableFieldContext>>());
+            new Dictionary<ITypeModel, HashSet<TableFieldContext>>());
     }
 
     public static SerializationCodeGenContext CreateSerializeContext(FlatBufferSerializerOptions? options = null)
@@ -49,6 +49,6 @@ public static class ContextHelpers
             new DefaultMethodNameResolver(),
             TypeModelContainer.CreateDefault(),
             options ?? new FlatBufferSerializerOptions(),
-            new Dictionary<ITypeModel, List<TableFieldContext>>());
+            new Dictionary<ITypeModel, HashSet<TableFieldContext>>());
     }
 }

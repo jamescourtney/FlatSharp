@@ -34,7 +34,7 @@ public record ParserCodeGenContext
         IMethodNameResolver methodNameResolver,
         FlatBufferSerializerOptions options,
         TypeModelContainer typeModelContainer,
-        IReadOnlyDictionary<ITypeModel, List<TableFieldContext>> allFieldContexts)
+        IReadOnlyDictionary<ITypeModel, HashSet<TableFieldContext>> allFieldContexts)
     {
         this.InputBufferVariableName = inputBufferVariableName;
         this.OffsetVariableName = offsetVariableName;
@@ -96,7 +96,7 @@ public record ParserCodeGenContext
     /// <summary>
     /// All contexts for the entire object graph.
     /// </summary>
-    public IReadOnlyDictionary<ITypeModel, List<TableFieldContext>> AllFieldContexts { get; }
+    public IReadOnlyDictionary<ITypeModel, HashSet<TableFieldContext>> AllFieldContexts { get; }
 
     /// <summary>
     /// Gets a parse invocation for the given type.

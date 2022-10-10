@@ -35,7 +35,7 @@ public record SerializationCodeGenContext
         IMethodNameResolver methodNameResolver,
         TypeModelContainer typeModelContainer,
         FlatBufferSerializerOptions options,
-        IReadOnlyDictionary<ITypeModel, List<TableFieldContext>> allFieldContexts)
+        IReadOnlyDictionary<ITypeModel, HashSet<TableFieldContext>> allFieldContexts)
     {
         this.SerializationContextVariableName = serializationContextVariableName;
         this.SpanWriterVariableName = spanWriterVariableName;
@@ -103,7 +103,7 @@ public record SerializationCodeGenContext
     /// <summary>
     /// All contexts for the entire object graph.
     /// </summary>
-    public IReadOnlyDictionary<ITypeModel, List<TableFieldContext>> AllFieldContexts { get; }
+    public IReadOnlyDictionary<ITypeModel, HashSet<TableFieldContext>> AllFieldContexts { get; }
 
     /// <summary>
     /// Gets a serialization invocation for the given type.
