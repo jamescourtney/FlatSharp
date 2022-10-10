@@ -143,12 +143,4 @@ public struct ArrayInputBuffer : IInputBuffer, IInputBuffer2
     {
         return this.memory;
     }
-
-    public T InvokeParseLazy<T>(IGeneratedSerializer<T> serializer, in GeneratedSerializerParseArguments arguments) => serializer.ParseLazy(this, arguments);
-
-    public T InvokeParseProgressive<T>(IGeneratedSerializer<T> serializer, in GeneratedSerializerParseArguments arguments) => serializer.ParseProgressive(this, arguments);
-
-    public T InvokeParseGreedy<T>(IGeneratedSerializer<T> serializer, in GeneratedSerializerParseArguments arguments) => serializer.ParseGreedy(this, arguments);
-
-    public T InvokeParseGreedyMutable<T>(IGeneratedSerializer<T> serializer, in GeneratedSerializerParseArguments arguments) => serializer.ParseGreedyMutable(this, arguments);
 }

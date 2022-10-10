@@ -92,14 +92,6 @@ public interface IInputBuffer
     /// Reads the read only byte memory at the given offset with the given length.
     /// </summary>
     ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length);
-
-    TItem InvokeParseLazy<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments);
-
-    TItem InvokeParseProgressive<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments);
-
-    TItem InvokeParseGreedy<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments);
-
-    TItem InvokeParseGreedyMutable<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments);
 }
 
 /// <summary>

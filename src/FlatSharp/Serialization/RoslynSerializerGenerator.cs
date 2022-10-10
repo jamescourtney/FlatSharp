@@ -550,62 +550,38 @@ $@"
 
         var maxSizeContext = new GetMaxSizeCodeGenContext("value", getMaxSizeFieldContextVariableName, resolver, this.options, this.typeModelContainer, allContextsMap);
         var serializeContext = new SerializationCodeGenContext("context", "span", "spanWriter", "value", "offset", serializeFieldContextVariableName, isOffsetByRef, resolver, this.typeModelContainer, this.options, allContextsMap);
+        var parseContext = new ParserCodeGenContext("buffer", "offset", "remainingDepth", "TInputBuffer", isOffsetByRef, parseFieldContextVariableName, resolver, options, this.typeModelContainer, allContextsMap);
 
-        var maxSizeMethod = typeModel.CreateGetMaxSizeMethodBody(maxSizeContext);
-        var writeMethod = typeModel.CreateSerializeMethodBody(serializeContext);
+        CodeGeneratedMethod maxSizeMethod = typeModel.CreateGetMaxSizeMethodBody(maxSizeContext);
+        CodeGeneratedMethod writeMethod = typeModel.CreateSerializeMethodBody(serializeContext);
 
         List<string> methods = new();
 
-        if (maxSizeMethod is not null)
-        {
-            methods.Add(this.GenerateGetMaxSizeMethod(typeModel, maxSizeMethod, maxSizeContext));
-            methods.Add(maxSizeMethod.ClassDefinition ?? string.Empty);
-        }
+        methods.Add(this.GenerateGetMaxSizeMethod(typeModel, maxSizeMethod, maxSizeContext));
+        methods.Add(maxSizeMethod.ClassDefinition ?? string.Empty);
 
-        if (writeMethod is not null)
-        {
-            methods.Add(this.GenerateSerializeMethod(typeModel, writeMethod, serializeContext));
-            methods.Add(writeMethod.ClassDefinition ?? string.Empty);
-        }
+        methods.Add(this.GenerateSerializeMethod(typeModel, writeMethod, serializeContext));
+        methods.Add(writeMethod.ClassDefinition ?? string.Empty);
 
         if (typeModel.IsParsingInvariant)
         {
-            var parseContext = new ParserCodeGenContext("buffer", "offset", "remainingDepth", "TInputBuffer", isOffsetByRef, parseFieldContextVariableName, resolver, options, this.typeModelContainer, allContextsMap);
             var parseMethod = typeModel.CreateParseMethodBody(parseContext);
-            
-            if (parseMethod is not null)
-            {
-                methods.Add(this.GenerateParseMethod(requiresDepthTracking, typeModel, parseMethod, parseContext));
-                methods.Add(parseMethod.ClassDefinition ?? string.Empty);
-            }
+
+            methods.Add(this.GenerateParseMethod(requiresDepthTracking, typeModel, parseMethod, parseContext));
+            methods.Add(parseMethod.ClassDefinition ?? string.Empty);
         }
         else
         {
             foreach (var option in DistinctDeserializationOptions)
             {
-                var adjustedOptions = this.options with { DeserializationOption = option };
-
-                var parseContext = new ParserCodeGenContext("buffer", "offset", "remainingDepth", "TInputBuffer", isOffsetByRef, parseFieldContextVariableName, resolver, adjustedOptions, this.typeModelContainer, allContextsMap);
+                parseContext = parseContext with { Options = this.options with { DeserializationOption = option } };
                 var parseMethod = typeModel.CreateParseMethodBody(parseContext);
-
-                if (parseMethod is not null)
-                {
-                    methods.Add(this.GenerateParseMethod(requiresDepthTracking, typeModel, parseMethod, parseContext));
-                    methods.Add(parseMethod.ClassDefinition ?? string.Empty);
-                }
+                methods.Add(this.GenerateParseMethod(requiresDepthTracking, typeModel, parseMethod, parseContext));
+                methods.Add(parseMethod.ClassDefinition ?? string.Empty);
             }
         }
 
-        string? extraClasses = typeModel.CreateExtraClasses();
-        if (!string.IsNullOrEmpty(extraClasses))
-        {
-            methods.Add(extraClasses);
-        }
-
-        if (methods.Count == 0)
-        {
-            return string.Empty;
-        }
+        methods.Add(typeModel.CreateExtraClasses() ?? string.Empty);
 
         (string ns, string name) = resolver.ResolveHelperClassName(typeModel);
 

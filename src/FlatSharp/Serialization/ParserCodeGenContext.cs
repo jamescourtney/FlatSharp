@@ -86,7 +86,7 @@ public record ParserCodeGenContext
     /// <summary>
     /// Serialization options.
     /// </summary>
-    public FlatBufferSerializerOptions Options { get; }
+    public FlatBufferSerializerOptions Options { get; init; }
 
     /// <summary>
     /// The type model container.

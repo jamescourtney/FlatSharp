@@ -421,13 +421,6 @@ public class InputBufferTests
             return ((IInputBuffer)innerBuffer).GetReadOnlyByteMemory(start, length);
         }
 
-        public T InvokeParseLazy<T>(IGeneratedSerializer<T> serializer, in GeneratedSerializerParseArguments arguments) => ((IInputBuffer)innerBuffer).InvokeParseLazy<T>(serializer, arguments);
-
-        public T InvokeParseProgressive<T>(IGeneratedSerializer<T> serializer, in GeneratedSerializerParseArguments arguments) => ((IInputBuffer)innerBuffer).InvokeParseProgressive<T>(serializer, arguments);
-
-        public T InvokeParseGreedy<T>(IGeneratedSerializer<T> serializer, in GeneratedSerializerParseArguments arguments) => ((IInputBuffer)innerBuffer).InvokeParseGreedy<T>(serializer, arguments);
-
-        public T InvokeParseGreedyMutable<T>(IGeneratedSerializer<T> serializer, in GeneratedSerializerParseArguments arguments) => ((IInputBuffer)innerBuffer).InvokeParseGreedyMutable<T>(serializer, arguments);
         public byte ReadByte(int offset)
         {
             return ((IInputBuffer)innerBuffer).ReadByte(offset);

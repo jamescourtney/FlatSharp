@@ -149,19 +149,21 @@ internal class GeneratedSerializerWrapper<T> : ISerializer<T>, ISerializer where
             throw new ArgumentException("Buffer is too small to be valid!");
         }
 
+        var parseArgs = new GeneratedSerializerParseArguments(0, this.remainingDepthLimit);
+
         switch (this.option)
         {
             case FlatBufferDeserializationOption.Lazy:
-                return buffer.InvokeParseLazy(this.innerSerializer, new GeneratedSerializerParseArguments(0, this.remainingDepthLimit));
+                return this.innerSerializer.ParseLazy(buffer, in parseArgs);
 
             case FlatBufferDeserializationOption.Progressive:
-                return buffer.InvokeParseProgressive(this.innerSerializer, new GeneratedSerializerParseArguments(0, this.remainingDepthLimit));
+                return this.innerSerializer.ParseProgressive(buffer, in parseArgs);
 
             case FlatBufferDeserializationOption.Greedy:
-                return buffer.InvokeParseGreedy(this.innerSerializer, new GeneratedSerializerParseArguments(0, this.remainingDepthLimit));
+                return this.innerSerializer.ParseGreedy(buffer, in parseArgs);
 
             case FlatBufferDeserializationOption.GreedyMutable:
-                return buffer.InvokeParseGreedyMutable(this.innerSerializer, new GeneratedSerializerParseArguments(0, this.remainingDepthLimit));
+                return this.innerSerializer.ParseGreedyMutable(buffer, in parseArgs);
         }
 
         FlatSharpInternal.Assert(false, "Unexpected deserialization mode: " + this.option);
