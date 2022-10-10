@@ -165,6 +165,7 @@ public class FlatSharpCompiler
         return 0;
     }
 
+    [ExcludeFromCodeCoverage]
     private static bool IsInputUnchanged(string outputFullPath, string inputHash)
     {
         if (!File.Exists(outputFullPath))
@@ -202,6 +203,7 @@ public class FlatSharpCompiler
         return false;
     }
 
+    [ExcludeFromCodeCoverage]
     private static string ComputeInputHash(List<byte[]> bfbs)
     {
         string inputHash = AssemblyVersion;
