@@ -131,8 +131,6 @@
             <Output TaskParameter="IncludeDirectories" PropertyName="Includes" />
         </ProcessFlatSharpSchema>
 
-        <Message Text="Resolved includes: $(Includes)" Importance="high" />
-
         <Message
             Text="dotnet $(CompilerPath) --nullable-warnings $(FlatSharpNullable) --normalize-field-names $(FlatSharpNameNormalization) --input &quot;@(FlatSharpSchema)&quot; --includes &quot;$(Includes)&quot; --output $(IntermediateOutputPath)"
             Importance="high" />
