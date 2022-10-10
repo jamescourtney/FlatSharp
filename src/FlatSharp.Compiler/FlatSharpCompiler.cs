@@ -72,7 +72,7 @@ public class FlatSharpCompiler
         }
 
         // Read existing file to see if we even need to do any work.
-        string outputFileName = "FlatSharp.generated.cs";
+        const string outputFileName = "FlatSharp.generated.cs";
         string outputFullPath = Path.Combine(options.OutputDirectory, outputFileName);
 
         try
@@ -82,33 +82,13 @@ public class FlatSharpCompiler
             {
                 try
                 {
-                    string inputHash = AssemblyVersion;
-
                     List<byte[]> bfbs = GetBfbs(options);
 
-                    using (var hash = SHA256.Create())
-                    {
-                        byte[] hashBytes = new byte[32];
-                        foreach (var schema in bfbs)
-                        {
-                            var tempHash = hash.ComputeHash(schema);
-                            for (int i = 0; i < 32; ++i)
-                            {
-                                hashBytes[i] ^= tempHash[i];
-                            }
-                        }
+                    string inputHash = ComputeInputHash(bfbs);
 
-                        inputHash += "." + Convert.ToBase64String(hashBytes);
-                    }
-
-                    if (File.Exists(outputFullPath))
+                    if (IsInputUnchanged(outputFullPath, inputHash))
                     {
-                        string existingOutput = File.ReadAllText(outputFullPath);
-                        if (existingOutput.Contains(inputHash) && !existingOutput.StartsWith(FailureMessage))
-                        {
-                            // Input file unchanged.
-                            return 0;
-                        }
+                        return 0;
                     }
 
                     string cSharp = string.Empty;
@@ -183,6 +163,64 @@ public class FlatSharpCompiler
         }
 
         return 0;
+    }
+
+    private static bool IsInputUnchanged(string outputFullPath, string inputHash)
+    {
+        if (!File.Exists(outputFullPath))
+        {
+            return false;
+        }
+
+        using StreamReader reader = File.OpenText(outputFullPath);
+
+        bool hasFailureMessage = false;
+        bool containsInputHash = false;
+
+        for (int i = 0; i < 30; ++i)
+        {
+            string? line = reader.ReadLine();
+            if (line is null)
+            {
+                break;
+            }
+
+            hasFailureMessage |= line.Contains(FailureMessage);
+            containsInputHash |= line.Contains(inputHash);
+        }
+
+        if (hasFailureMessage)
+        {
+            return false;
+        }
+
+        if (containsInputHash)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private static string ComputeInputHash(List<byte[]> bfbs)
+    {
+        string inputHash = AssemblyVersion;
+        using (var hash = SHA256.Create())
+        {
+            byte[] hashBytes = new byte[32];
+            foreach (var schema in bfbs)
+            {
+                var tempHash = hash.ComputeHash(schema);
+                for (int i = 0; i < 32; ++i)
+                {
+                    hashBytes[i] ^= tempHash[i];
+                }
+            }
+
+            inputHash += "." + Convert.ToBase64String(hashBytes);
+        }
+
+        return inputHash;
     }
 
     // Test hook
