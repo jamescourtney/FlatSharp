@@ -49,6 +49,47 @@ public class InputBufferTests
         StringInput = stringData;
     }
 
+    [Theory]
+    [InlineData(FlatBufferDeserializationOption.Greedy)]
+    [InlineData(FlatBufferDeserializationOption.GreedyMutable)]
+    [InlineData(FlatBufferDeserializationOption.Lazy)]
+    [InlineData(FlatBufferDeserializationOption.Progressive)]
+    public void SerializationInvocations(FlatBufferDeserializationOption option)
+    {
+        var serializer = FlatBufferSerializer
+                            .Default
+                            .Compile<PrimitiveTypesTable>()
+                            .WithSettings(new()
+                            {
+                                DeserializationMode = option,
+                            });
+
+        byte[] data = new byte[1024];
+        serializer.Write(data, new PrimitiveTypesTable());
+
+        IInputBuffer[] inputBuffers = new IInputBuffer[]
+        {
+            new ArrayInputBuffer(data),
+            new ArraySegmentInputBuffer(new ArraySegment<byte>(data)),
+            new MemoryInputBuffer(data),
+            new ReadOnlyMemoryInputBuffer(data),
+        };
+
+        foreach (IInputBuffer buffer in inputBuffers)
+        {
+            var item = serializer.Parse(buffer);
+
+            if (item is IFlatBufferDeserializedObject obj)
+            {
+                Assert.Equal(option, obj.DeserializationContext.DeserializationOption);
+            }
+            else
+            {
+                Assert.False(true);
+            }
+        }
+    }
+
     [Fact]
     public void MemoryInputBuffer()
     {
@@ -413,12 +454,32 @@ public class InputBufferTests
 
         public Memory<byte> GetByteMemory(int start, int length)
         {
-            return ((IInputBuffer)innerBuffer).GetByteMemory(start, length);
+            return ((IInputBuffer)this.innerBuffer).GetByteMemory(start, length);
         }
 
         public ReadOnlyMemory<byte> GetReadOnlyByteMemory(int start, int length)
         {
-            return ((IInputBuffer)innerBuffer).GetReadOnlyByteMemory(start, length);
+            return ((IInputBuffer)this.innerBuffer).GetReadOnlyByteMemory(start, length);
+        }
+
+        public TItem InvokeGreedyMutableParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments)
+        {
+            return ((IInputBuffer)this.innerBuffer).InvokeGreedyMutableParse<TItem>(serializer, arguments);
+        }
+
+        public TItem InvokeGreedyParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments)
+        {
+            return ((IInputBuffer)this.innerBuffer).InvokeGreedyParse<TItem>(serializer, arguments);
+        }
+
+        public TItem InvokeLazyParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments)
+        {
+            return ((IInputBuffer)this.innerBuffer).InvokeLazyParse<TItem>(serializer, arguments);
+        }
+
+        public TItem InvokeProgressiveParse<TItem>(IGeneratedSerializer<TItem> serializer, in GeneratedSerializerParseArguments arguments)
+        {
+            return ((IInputBuffer)this.innerBuffer).InvokeProgressiveParse<TItem>(serializer, arguments);
         }
 
         public byte ReadByte(int offset)
