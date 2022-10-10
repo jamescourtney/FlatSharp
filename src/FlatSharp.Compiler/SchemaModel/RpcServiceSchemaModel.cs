@@ -44,6 +44,7 @@ public class RpcServiceSchemaModel : BaseSchemaModel
     {
         this.service = service;
         this.interfaceName = $"I{this.Name}";
+        this.DeclaringFile = service.DeclaringFile;
         this.calls = new();
 
         if (service.Calls is not null)
@@ -58,6 +59,8 @@ public class RpcServiceSchemaModel : BaseSchemaModel
     }
 
     public override FlatBufferSchemaElementType ElementType => FlatBufferSchemaElementType.RpcService;
+
+    public override string DeclaringFile { get; }
 
     public override void TraverseTypeModel(CompileContext context, HashSet<Type> seenTypes)
     {

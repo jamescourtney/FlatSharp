@@ -43,10 +43,9 @@ public class RootModel
         {
             if (this.elements.TryGetValue(kvp.Key, out BaseSchemaModel? model))
             {
-                // Not checking for full equality (though maybe we should...)
-                if (kvp.Value.GetType() != model.GetType())
+                if (model.DeclaringFile != kvp.Value.DeclaringFile)
                 {
-                    throw new InvalidFbsFileException($"Same type declared in different FBS files: '{kvp.Key}'");
+                    ErrorContext.Current.RegisterError($"Duplicate type declared in two different FBS files: {model.FullName}. File1: {model.DeclaringFile}, File2: {model.DeclaringFile}");
                 }
             }
             else

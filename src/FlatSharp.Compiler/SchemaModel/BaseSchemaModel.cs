@@ -50,6 +50,8 @@ public abstract class BaseSchemaModel
 
     public string FullName { get; }
 
+    public abstract string DeclaringFile { get; }
+
     public abstract FlatBufferSchemaElementType ElementType { get; }
 
     private void Validate()

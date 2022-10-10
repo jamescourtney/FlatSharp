@@ -34,6 +34,7 @@ public class ValueStructSchemaModel : BaseSchemaModel
         FlatSharpInternal.Assert(this.Attributes.ValueStruct == true, "Expecting value struct");
 
         this.@struct = @struct;
+        this.DeclaringFile = @struct.DeclarationFile;
         this.fields = new();
         this.structVectors = new();
 
@@ -90,6 +91,8 @@ public class ValueStructSchemaModel : BaseSchemaModel
     }
 
     public override FlatBufferSchemaElementType ElementType => FlatBufferSchemaElementType.ValueStruct;
+
+    public override string DeclaringFile { get; }
 
     protected override void OnValidate()
     {

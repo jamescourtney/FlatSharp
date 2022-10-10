@@ -35,6 +35,7 @@ public class EnumSchemaModel : BaseSchemaModel
         this.isFlags = @enum.Attributes?.ContainsKey(MetadataKeys.BitFlags) == true;
         this.nameValueMap = @enum.Values.ToDictionary(x => x.Value.Key, x => x.Value);
         this.documentation = @enum.Documentation;
+        this.DeclaringFile = @enum.DeclarationFile;
     }
 
     public static bool TryCreate(Schema.Schema schema, FlatBufferEnum @enum, [NotNullWhen(true)] out EnumSchemaModel? model)
@@ -50,6 +51,8 @@ public class EnumSchemaModel : BaseSchemaModel
     }
 
     public override FlatBufferSchemaElementType ElementType => FlatBufferSchemaElementType.Enum;
+
+    public override string DeclaringFile { get; }
 
     protected override void OnWriteCode(CodeWriter writer, CompileContext context)
     {

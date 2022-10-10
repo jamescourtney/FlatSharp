@@ -61,6 +61,29 @@ public class IncludeTests
     }
 
     [Fact]
+    public void IncludeTest_DuplicateTypes()
+    {
+        var schemaA = $@"
+            namespace Foobar;
+            table A {{ Value : int; }}
+        ";
+
+        var schemaB = $@"
+            namespace Foobar;
+            table A {{ Value : int; }}
+        ";
+
+        var schemas = new[]
+        {
+            (@"Foo\B.fbs", schemaB),
+            (@"A.fbs", schemaA),
+        };
+
+        var ex = Assert.Throws<InvalidFbsFileException>(() => FlatSharpCompiler.CompileAndLoadAssembly(schemas, new()));
+        Assert.Contains(ex.Errors, s => s.StartsWith("Duplicate type declared in two different FBS files: Foobar.A"));
+    }
+
+    [Fact]
     public void IncludeTest_IncludePaths()
     {
         var schemaA = $@"

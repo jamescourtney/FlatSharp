@@ -385,6 +385,8 @@ public class FlatSharpCompiler
             "--schema",
             "--bfbs-comments",
             "--bfbs-builtins",
+            "--bfbs-filenames",
+            Path.GetDirectoryName(typeof(FlatSharpCompiler).Assembly.Location!)!,
             "--no-warnings",
             "-o",
             outputDir,
