@@ -65,6 +65,20 @@ public class DeserializationOptionsTests
     }
 
     [Fact]
+    public void DeserializationOption_Lazy_Array()
+    {
+        var result = this.SerializeAndParse<string[]>(FlatBufferDeserializationOption.Lazy, Strings);
+        Assert.Equal(Strings, result.Vector);
+    }
+
+    [Fact]
+    public void DeserializationOption_Progressive_Array()
+    {
+        var result = this.SerializeAndParse<string[]>(FlatBufferDeserializationOption.Progressive, Strings);
+        Assert.Equal(Strings, result.Vector);
+    }
+
+    [Fact]
     public void DeserializationOption_Lazy_Memory()
     {
         var table = this.SerializeAndParse<Memory<byte>>(FlatBufferDeserializationOption.Lazy, Bytes);
