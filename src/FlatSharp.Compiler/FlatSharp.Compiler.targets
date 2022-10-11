@@ -89,7 +89,7 @@
         <UpToDateCheckInput Include="@(FlatSharpSchema)" />
     </ItemGroup>
 
-    <Target Name="FlatSharpFbsCompile" BeforeTargets="ResolveAssemblyReferences">
+    <Target Name="FlatSharpFbsCompile" BeforeTargets="ResolveAssemblyReferences" Condition=" '@(FlatSharpSchema)' != '' ">
         <PropertyGroup Condition=" '$(FlatSharpNullable)' == '' ">
             <FlatSharpNullable>false</FlatSharpNullable>
             <FlatSharpNullable Condition=" '$(Nullable)' == 'enable' ">true</FlatSharpNullable>
@@ -137,8 +137,7 @@
 
         <Exec
             Command="dotnet $(CompilerPath) --nullable-warnings $(FlatSharpNullable) --normalize-field-names $(FlatSharpNameNormalization) --input &quot;@(FlatSharpSchema)&quot; --includes &quot;$(Includes)&quot; --output $(IntermediateOutputPath)"
-            CustomErrorRegularExpression=".*" 
-            Condition=" '@(FlatSharpSchema)' != '' "/>
+            CustomErrorRegularExpression=".*" />
 
         <ItemGroup>
             <GeneratedFbs Include="$(IntermediateOutputPath)*.generated.cs" />
