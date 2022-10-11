@@ -47,19 +47,13 @@ public struct VTable4 : IVTable
     public static void Create<TInputBuffer>(TInputBuffer inputBuffer, int offset, out VTable4 item)
         where TInputBuffer : IInputBuffer
     {
-        inputBuffer.InitializeVTable(
-            offset,
-            out _,
-            out nuint fieldCount,
-            out ReadOnlySpan<byte> fieldData);
-
         if (BitConverter.IsLittleEndian)
         {
-            InitializeLittleEndian(fieldCount, fieldData, out item);
+            CreateLittleEndian(inputBuffer, offset, out item);
         }
         else
         {
-            InitializeBigEndian(fieldCount, fieldData, out item);
+            CreateBigEndian(inputBuffer, offset, out item);
         }
     }
 
@@ -81,11 +75,15 @@ public struct VTable4 : IVTable
     /// A generic/safe initialize method for BE archtectures.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void InitializeBigEndian(
-        nuint fieldCount,
-        ReadOnlySpan<byte> fieldData,
-        out VTable4 item)
+    internal static void CreateBigEndian<TInputBuffer>(TInputBuffer inputBuffer, int offset, out VTable4 item)
+        where TInputBuffer : IInputBuffer
     {
+        inputBuffer.InitializeVTable(
+            offset,
+            out _,
+            out nuint fieldCount,
+            out ReadOnlySpan<byte> fieldData);
+
         item = new VTable4();
         switch (fieldCount)
         {
@@ -131,11 +129,15 @@ public struct VTable4 : IVTable
     /// An optimized load mmethod for LE architectures.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void InitializeLittleEndian(
-        nuint fieldCount,
-        ReadOnlySpan<byte> fieldData,
-        out VTable4 item)
+    internal static void CreateLittleEndian<TInputBuffer>(TInputBuffer inputBuffer, int offset, out VTable4 item)
+        where TInputBuffer : IInputBuffer
     {
+        inputBuffer.InitializeVTable(
+            offset,
+            out _,
+            out nuint fieldCount,
+            out ReadOnlySpan<byte> fieldData);
+
         item = new VTable4();
         switch (fieldCount)
         {
